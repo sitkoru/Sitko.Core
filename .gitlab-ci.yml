@@ -10,7 +10,7 @@ build:
         - dotnet pack -c Release /p:PackageVersion=$BASE_VERSION.$CI_PIPELINE_ID -o $CI_PROJECT_DIR/nugets
         - mkdir -p Composer/Core
         - mkdir -p Composer/PQ
-        - find $CI_PROJECT_DIR/src/Sitko.Core.Grpc/Proto -name "*.proto" | xargs /usr/local/bin/protoc --php_out=$CI_PROJECT_DIR/Composer/Core --grpc_out $CI_PROJECT_DIR/Composer/Core --proto_path=/opt/include --proto_path=$CI_PROJECT_DIR/src/Sitko.Core.Grpc/Proto --plugin=protoc-gen-grpc=/usr/local/bin/grpc_php_plugin
+        - find $CI_PROJECT_DIR/src/Sitko.Core.Grpc/Proto -name "*.proto" | xargs /usr/local/bin/protoc --php_out=$CI_PROJECT_DIR/Composer/Core --grpc_out $CI_PROJECT_DIR/Composer/Core --proto_path=/opt/include --proto_path=$CI_PROJECT_DIR/src/Sitko.Core.Grpc/Proto --plugin=protoc-gen-grpc=/usr/local/bin/grpc_php_client_plugin
         - find $CI_PROJECT_DIR/src/Sitko.Core.PersistentQueue/Proto -name "*.proto" | xargs /usr/local/bin/protoc --php_out=$CI_PROJECT_DIR/Composer/PQ --proto_path=/opt/include --proto_path=$CI_PROJECT_DIR/src/Sitko.Core.PersistentQueue/Proto
     artifacts:
         paths:
