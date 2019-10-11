@@ -2,19 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using MYCG.Core.PersistentQueue.Queue;
 using Sitko.Core.Metrics;
-using Sitko.Core.PersistentQueue;
 using Sitko.Core.PersistentQueue.Common;
 using Sitko.Core.PersistentQueue.Consumer;
 using Sitko.Core.PersistentQueue.HostedService;
 using Sitko.Core.PersistentQueue.Internal;
 using Sitko.Core.PersistentQueue.Producer;
+using Sitko.Core.PersistentQueue.Queue;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace MYCG.Core.PersistentQueue.Tests
+namespace Sitko.Core.PersistentQueue.Tests
 {
     public class RequestResponseTest : BaseTest<PersistentQueueTestScope>
     {

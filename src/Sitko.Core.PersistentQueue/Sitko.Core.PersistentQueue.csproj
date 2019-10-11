@@ -9,11 +9,15 @@
     <PackageReference Include="NATS.Client" Version="0.9.0" />
     <PackageReference Include="STAN.Client" Version="0.1.7" />
     <PackageReference Include="System.Threading.Channels" Version="4.6.0" />
-    <Protobuf Include="Protobuf\proto\MY.CG\PersistentQueue\QueueMsg.proto" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Infrastructure\Sitko.Core.Infrastructure.csproj" />
     <ProjectReference Include="..\Sitko.Core.Metrics\Sitko.Core.Metrics.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Protobuf Include="Proto\Sitko\PersistentQueue\QueueMsg.proto">
+      <Generator>MSBuild:Compile</Generator>
+    </Protobuf>
   </ItemGroup>
 
 </Project>

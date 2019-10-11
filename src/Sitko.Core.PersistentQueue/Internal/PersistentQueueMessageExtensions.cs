@@ -1,8 +1,8 @@
 ﻿using System;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
-using MYCG.Core.PersistentQueue.Queue;
 using Sitko.Core.PersistentQueue.Common;
+using Sitko.Core.PersistentQueue.Queue;
 
 namespace Sitko.Core.PersistentQueue.Internal
 {

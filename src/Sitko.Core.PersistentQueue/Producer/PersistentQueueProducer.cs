@@ -4,10 +4,10 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Google.Protobuf;
 using Microsoft.Extensions.Logging;
-using MYCG.Core.PersistentQueue.Queue;
 using NATS.Client;
 using Sitko.Core.PersistentQueue.Common;
 using Sitko.Core.PersistentQueue.Internal;
+using Sitko.Core.PersistentQueue.Queue;
 
 namespace Sitko.Core.PersistentQueue.Producer
 {
