@@ -28,7 +28,7 @@ release:
         - find nugets -name *.nupkg -exec dotnet nuget push {} -s $NUGET_HOST -k $NUGET_API_KEY \;
         # auth ssh
         - mkdir -p ~/.ssh
-        - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+        - cat "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
         - cat ~/.ssh/id_rsa
         - chmod 600 ~/.ssh/id_rsa
         - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
