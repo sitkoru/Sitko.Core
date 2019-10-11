@@ -19,42 +19,42 @@ release:
     only:
         - master
     script:
-        # auth ssh
-        - mkdir -p ~/.ssh
-        - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-        - chmod 600 ~/.ssh/id_rsa
-        - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-        # configure git
-        - git config --global user.email "deployer@gitlab.0xdev.ru"
-        - git config --global user.name "Deployer"
         # push packages
         - find nugets -name *.nupkg -exec dotnet nuget push {} -s $NUGET_HOST -k $NUGET_API_KEY \;
-        # push grpc php package
-        - git clone ssh://git@gitlab.0xdev.ru:2224/cg/MYCG.Core.Grpc.PHP.git /tmp/php/grpc
-        - mkdir -p /tmp/php/grpc/src
-        - rm -rf /tmp/php/grpc/src/*
-        - cp -a src/MYCG.Core.Grpc/Composer/* /tmp/php/grpc/src
-        - echo v$BASE_VERSION.$CI_PIPELINE_ID > /tmp/php/grpc/VERSION
-        - cd /tmp/php/grpc
-        - git add .
-        - git commit -m "Release $CI_PIPELINE_ID"
-        - git tag -a v$BASE_VERSION.$CI_PIPELINE_ID -m "Release $CI_PIPELINE_ID"
-        - git push
-        - git push origin v$BASE_VERSION.$CI_PIPELINE_ID
-        # upload common proto files to server
-        - cd $CI_PROJECT_DIR
-        - tar czf proto.tgz -C src/MYCG.Core.Grpc/Proto .
-        - ssh $DEPLOY_USER@$DEPLOY_HOST "mkdir -p /var/www/proto"
-        - rsync -az proto.tgz $DEPLOY_USER@$DEPLOY_HOST:/var/www/proto
-        # push pq php package
-        - git clone ssh://git@gitlab.0xdev.ru:2224/cg/MYCG.Core.PersistentQueue.PHP.git /tmp/php/pq
-        - mkdir -p /tmp/php/pq/src
-        - rm -rf /tmp/php/pq/src/*
-        - cp -a src/MYCG.Core.PersistentQueue/Protobuf/Generated/PHP/* /tmp/php/pq/src
-        - echo v$BASE_VERSION.$CI_PIPELINE_ID > /tmp/php/pq/VERSION
-        - cd /tmp/php/pq
-        - git add .
-        - git commit -m "Release $CI_PIPELINE_ID"
-        - git tag -a v$BASE_VERSION.$CI_PIPELINE_ID -m "Release $CI_PIPELINE_ID"
-        - git push
-        - git push origin v$BASE_VERSION.$CI_PIPELINE_ID
+        # auth ssh
+#        - mkdir -p ~/.ssh
+#        - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+#        - chmod 600 ~/.ssh/id_rsa
+#        - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+#        # configure git
+#        - git config --global user.email "deployer@gitlab.0xdev.ru"
+#        - git config --global user.name "Deployer"
+#        # push grpc php package
+#        - git clone ssh://git@gitlab.0xdev.ru:2224/cg/MYCG.Core.Grpc.PHP.git /tmp/php/grpc
+#        - mkdir -p /tmp/php/grpc/src
+#        - rm -rf /tmp/php/grpc/src/*
+#        - cp -a src/MYCG.Core.Grpc/Composer/* /tmp/php/grpc/src
+#        - echo v$BASE_VERSION.$CI_PIPELINE_ID > /tmp/php/grpc/VERSION
+#        - cd /tmp/php/grpc
+#        - git add .
+#        - git commit -m "Release $CI_PIPELINE_ID"
+#        - git tag -a v$BASE_VERSION.$CI_PIPELINE_ID -m "Release $CI_PIPELINE_ID"
+#        - git push
+#        - git push origin v$BASE_VERSION.$CI_PIPELINE_ID
+#        # upload common proto files to server
+#        - cd $CI_PROJECT_DIR
+#        - tar czf proto.tgz -C src/MYCG.Core.Grpc/Proto .
+#        - ssh $DEPLOY_USER@$DEPLOY_HOST "mkdir -p /var/www/proto"
+#        - rsync -az proto.tgz $DEPLOY_USER@$DEPLOY_HOST:/var/www/proto
+#        # push pq php package
+#        - git clone ssh://git@gitlab.0xdev.ru:2224/cg/MYCG.Core.PersistentQueue.PHP.git /tmp/php/pq
+#        - mkdir -p /tmp/php/pq/src
+#        - rm -rf /tmp/php/pq/src/*
+#        - cp -a src/MYCG.Core.PersistentQueue/Protobuf/Generated/PHP/* /tmp/php/pq/src
+#        - echo v$BASE_VERSION.$CI_PIPELINE_ID > /tmp/php/pq/VERSION
+#        - cd /tmp/php/pq
+#        - git add .
+#        - git commit -m "Release $CI_PIPELINE_ID"
+#        - git tag -a v$BASE_VERSION.$CI_PIPELINE_ID -m "Release $CI_PIPELINE_ID"
+#        - git push
+#        - git push origin v$BASE_VERSION.$CI_PIPELINE_ID
