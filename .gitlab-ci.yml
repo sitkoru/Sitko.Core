@@ -35,7 +35,7 @@ release:
         - git config --global user.email "deployer@gitlab.0xdev.ru"
         - git config --global user.name "Deployer"
         # push grpc php package
-        - git clone ssh://git@gitlab.0xdev.ru:2224/Sitko/Sitko.Core.Grpc.Php.git /tmp/php/grpc
+        - git clone ssh://git@gitlab.0xdev.ru:2224/Sitko/Core.Grpc.Php.git /tmp/php/grpc
         - mkdir -p /tmp/php/grpc/src
         - rm -rf /tmp/php/grpc/src/*
         - cp -a $CI_PROJECT_DIR/Composer/Core/* /tmp/php/grpc/src
@@ -52,10 +52,10 @@ release:
         - ssh $DEPLOY_USER@$DEPLOY_HOST "mkdir -p /var/www/proto"
         - rsync -az proto.tgz $DEPLOY_USER@$DEPLOY_HOST:/var/www/proto
         # push pq php package
-        - git clone ssh://git@gitlab.0xdev.ru:2224/Sitko/Sitko.Core.PersistentQueue.Php.git /tmp/php/pq
+        - git clone ssh://git@gitlab.0xdev.ru:2224/Sitko/Core.PersistentQueue.Php.git /tmp/php/pq
         - mkdir -p /tmp/php/pq/src
         - rm -rf /tmp/php/pq/src/*
-        - cp -a src/MYCG.Core.PersistentQueue/Protobuf/Generated/PHP/* /tmp/php/pq/src
+        - cp -a $CI_PROJECT_DIR/Composer/PersistentQueue/* /tmp/php/pq/src
         - echo v$BASE_VERSION.$CI_PIPELINE_ID > /tmp/php/pq/VERSION
         - cd /tmp/php/pq
         - git add .
