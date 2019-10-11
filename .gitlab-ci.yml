@@ -51,7 +51,7 @@ release:
         - cd $CI_PROJECT_DIR
         - tar czf sitko.tgz -C src/Sitko.Core.Grpc/Proto .
         - ssh $DEPLOY_USER@$DEPLOY_HOST "mkdir -p /var/www/proto"
-        - rsync -az proto.tgz $DEPLOY_USER@$DEPLOY_HOST:/var/www/proto
+        - rsync -az sitko.tgz $DEPLOY_USER@$DEPLOY_HOST:/var/www/proto
         # push pq php package
         - git clone ssh://git@gitlab.0xdev.ru:2224/Sitko/Core.PersistentQueue.Php.git /tmp/php/pq
         - mkdir -p /tmp/php/pq/src
