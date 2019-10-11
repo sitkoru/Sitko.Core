@@ -8,7 +8,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.3.104.33" />
+    <PackageReference Include="AWSSDK.S3" Version="3.3.104.35" />
     <PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="3.0.0" />
   </ItemGroup>
 
