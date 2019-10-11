@@ -56,7 +56,7 @@ release:
         - git clone ssh://git@gitlab.0xdev.ru:2224/Sitko/Core.PersistentQueue.Php.git /tmp/php/pq
         - mkdir -p /tmp/php/pq/src
         - rm -rf /tmp/php/pq/src/*
-        - cp -a $CI_PROJECT_DIR/Composer/PersistentQueue/* /tmp/php/pq/src
+        - cp -a $CI_PROJECT_DIR/Composer/PQ/* /tmp/php/pq/src
         - echo v$BASE_VERSION.$CI_PIPELINE_ID > /tmp/php/pq/VERSION
         - cd /tmp/php/pq
         - git add .
