@@ -43,6 +43,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Web", "src\Sitko
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.App", "src\Sitko.Core.App\Sitko.Core.App.csproj", "{2C6B2F01-27A5-471A-AC75-7402EF1564BE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Files", "Solution Files", "{D906C736-D09C-49BD-BE76-9C3F5F8144F2}"
+ProjectSection(SolutionItems) = preProject
+	.editorconfig = .editorconfig
+	.gitignore = .gitignore
+	NuGet.config = NuGet.config
+	README.md = README.md
+	.gitlab-ci.yml = .gitlab-ci.yml
+EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
