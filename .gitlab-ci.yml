@@ -9,7 +9,8 @@ build:
     script:
         - dotnet pack -c Release /p:PackageVersion=$BASE_VERSION.$CI_PIPELINE_ID -o $CI_PROJECT_DIR/nugets
     artifacts:
-        untracked: true
+        paths:
+            - $CI_PROJECT_DIR/nugets
 
 release:
     stage: release
