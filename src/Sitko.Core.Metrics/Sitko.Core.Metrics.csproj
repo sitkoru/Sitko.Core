@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="App.Metrics" Version="3.1.0" />
+    <PackageReference Include="App.Metrics.Extensions.Configuration" Version="3.1.0" />
+    <PackageReference Include="App.Metrics.Formatters.Prometheus" Version="3.1.0" />
+    <PackageReference Include="App.Metrics.AspNetCore" Version="3.1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Sitko.Core.Infrastructure\Sitko.Core.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

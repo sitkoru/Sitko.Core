@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package Sitko.Core.Grpc;
+
+message ApiResponseInfo {
+    ApiResponseError Error = 1;
+    bool IsSuccess = 2;
+    int32 TotalItems = 3;
+}
+
+message ApiResponseError {
+    repeated string Errors = 1;
+    int32 Code = 2;
+}
