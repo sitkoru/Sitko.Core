@@ -29,7 +29,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Xunit", "src\Sit
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{10C46F0D-1B13-447E-AD22-F01DDB5A79FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MYCG.Core.PersistentQueue.Tests", "tests\MYCG.Core.PersistentQueue.Tests\MYCG.Core.PersistentQueue.Tests.csproj", "{5ABB458A-A39A-4427-99CB-67BF64211B4F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.PersistentQueue.Tests", "tests\Sitko.Core.PersistentQueue.Tests\Sitko.Core.PersistentQueue.Tests.csproj", "{5ABB458A-A39A-4427-99CB-67BF64211B4F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Grpc", "src\Sitko.Core.Grpc\Sitko.Core.Grpc.csproj", "{52B78812-1CDD-4999-83BA-51B549A0A64F}"
 EndProject
