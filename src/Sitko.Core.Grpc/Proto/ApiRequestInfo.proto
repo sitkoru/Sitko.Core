@@ -1,0 +1,19 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+
+package Sitko.Core.Grpc;
+
+message ApiRequestInfo {
+    string Id = 1;
+    int32 UserId = 2;
+    int32 ProjectId = 3;
+    bool UserIsAdmin = 4;
+    repeated string UserFlags = 5;
+    google.protobuf.Timestamp Date = 6;
+    string OrderBy = 7;
+    int32 Limit = 8;
+    int32 Offset = 9;
+    string Filter = 10;
+    google.protobuf.Timestamp DateFrom = 11;
+    google.protobuf.Timestamp DateTo = 12;
+}

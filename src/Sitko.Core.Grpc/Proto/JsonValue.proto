@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package Sitko.Core.Grpc;
+
+message JsonValue {
+    string Json = 1;
+}
