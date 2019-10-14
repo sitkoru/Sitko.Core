@@ -105,6 +105,8 @@ namespace Sitko.Core.Grpc.Server
                         });
                     }
                 }
+
+                ApplicationStore.Set("grpcServer", true);
             });
         }
     }
