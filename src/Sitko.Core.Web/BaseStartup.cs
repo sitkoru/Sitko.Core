@@ -139,15 +139,15 @@ namespace Sitko.Core.Web
             appBuilder.UseStaticFiles();
             appBuilder.UseSession();
 
-            application.BeforeRoutingHook(appBuilder);
+            application.BeforeRoutingHook(Configuration, Environment, appBuilder);
             ConfigureBeforeRouting(appBuilder);
             appBuilder.UseRouting();
-            application.AfterRoutingHook(appBuilder);
+            application.AfterRoutingHook(Configuration, Environment, appBuilder);
             ConfigureAfterRouting(appBuilder);
 
             appBuilder.UseEndpoints(endpoints =>
             {
-                application.EndpointsHook(appBuilder, endpoints);
+                application.EndpointsHook(Configuration, Environment, appBuilder, endpoints);
                 ConfigureEndpoints(appBuilder, endpoints);
             });
         }
