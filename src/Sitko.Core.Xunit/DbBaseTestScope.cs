@@ -33,7 +33,7 @@ namespace Sitko.Core.Xunit
             if (testInMemory)
             {
                 application.AddModule<InMemoryDatabaseModule<TDbContext>, InMemoryDatabaseModuleConfig>(
-                    (configuration, environment) => new InMemoryDatabaseModuleConfig(name));
+                    (configuration, environment) => GetInMemoryDatabaseModuleConfig(name));
             }
             else
             {
@@ -51,6 +51,11 @@ namespace Sitko.Core.Xunit
             }
 
             return application;
+        }
+
+        protected virtual InMemoryDatabaseModuleConfig GetInMemoryDatabaseModuleConfig(string name)
+        {
+            return new InMemoryDatabaseModuleConfig(name);
         }
 
         public override void OnCreated()
@@ -77,10 +82,6 @@ namespace Sitko.Core.Xunit
         }
 
         protected virtual void InitDbContext(TDbContext dbContext)
-        {
-        }
-
-        protected virtual void ModifyDbOptions(DbContextOptions options, bool inMemory)
         {
         }
 
