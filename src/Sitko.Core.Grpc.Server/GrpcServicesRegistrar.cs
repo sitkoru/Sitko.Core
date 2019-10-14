@@ -11,15 +11,17 @@ namespace Sitko.Core.Grpc.Server
 {
     public class GrpcServicesRegistrar
     {
+        private readonly GrpcServerOptions _options;
         private readonly IConsulClient _consulClient;
         private readonly ILogger<GrpcServicesRegistrar> _logger;
-        private string _host;
-        private int _port;
-        private bool _inContainer;
+        private readonly string _host;
+        private readonly int _port;
+        private readonly bool _inContainer;
 
         public GrpcServicesRegistrar(GrpcServerOptions options, IConsulClient consulClient,
             IServer server, ILogger<GrpcServicesRegistrar> logger)
         {
+            _options = options;
             _consulClient = consulClient;
             _logger = logger;
 
@@ -55,7 +57,7 @@ namespace Sitko.Core.Grpc.Server
                     Interval = TimeSpan.FromSeconds(30),
                     GRPC = $"{_host}:{_port}"
                 },
-                Tags = new[] {"grpc"}
+                Tags = new[] {"grpc", $"version:{_options.Version}"}
             };
             _logger.LogInformation("Register grpc service {serviceName} on {address}:{port}", serviceName, _host,
                 _port);

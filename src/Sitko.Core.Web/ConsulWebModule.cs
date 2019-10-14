@@ -71,7 +71,7 @@ namespace Sitko.Core.Web
                 Address = uri.Host,
                 Port = uri.Port,
                 Check = new AgentServiceCheck {HTTP = healthUrl, Interval = TimeSpan.FromSeconds(30)},
-                Tags = new[] {"metrics", $"healthUrl:{healthUrl}"}
+                Tags = new[] {"metrics", $"healthUrl:{healthUrl}", $"version:{Config.Version}"}
             };
 
             logger.LogInformation("Registering with Consul");
@@ -121,5 +121,6 @@ namespace Sitko.Core.Web
     public class ConsulWebModuleConfig
     {
         public string IpAddress { get; set; }
+        public string Version { get; set; } = "dev";
     }
 }
