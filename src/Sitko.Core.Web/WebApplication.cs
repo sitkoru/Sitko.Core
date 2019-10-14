@@ -101,49 +101,57 @@ namespace Sitko.Core.Web
             }
         }
 
-        public void BeforeRoutingHook(IApplicationBuilder appBuilder)
+        public void BeforeRoutingHook(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
         {
             foreach (var webModule in GetWebModules())
             {
-                webModule.ConfigureBeforeUseRouting(appBuilder);
+                webModule.ConfigureBeforeUseRouting(configuration, environment, appBuilder);
             }
         }
 
-        public void AfterRoutingHook(IApplicationBuilder appBuilder)
+        public void AfterRoutingHook(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
         {
             foreach (var webModule in GetWebModules())
             {
-                webModule.ConfigureAfterUseRouting(appBuilder);
+                webModule.ConfigureAfterUseRouting(configuration, environment, appBuilder);
             }
         }
 
-        public void EndpointsHook(IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
+        public void EndpointsHook(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
         {
             foreach (var webModule in GetWebModules())
             {
-                webModule.ConfigureEndpoints(appBuilder, endpoints);
+                webModule.ConfigureEndpoints(configuration, environment, appBuilder, endpoints);
             }
         }
 
-        public void ApplicationStartedHook(IApplicationBuilder applicationBuilder)
+        public void ApplicationStartedHook(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder applicationBuilder)
         {
             foreach (var webModule in GetWebModules())
             {
-                webModule.ApplicationStarted(applicationBuilder);
+                webModule.ApplicationStarted(configuration, environment, applicationBuilder);
             }
         }
-        public void ApplicationStoppingHook(IApplicationBuilder applicationBuilder)
+
+        public void ApplicationStoppingHook(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder applicationBuilder)
         {
             foreach (var webModule in GetWebModules())
             {
-                webModule.ApplicationStopping(applicationBuilder);
+                webModule.ApplicationStopping(configuration, environment, applicationBuilder);
             }
         }
-        public void ApplicationStoppedHook(IApplicationBuilder applicationBuilder)
+
+        public void ApplicationStoppedHook(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder applicationBuilder)
         {
             foreach (var webModule in GetWebModules())
             {
-                webModule.ApplicationStarted(applicationBuilder);
+                webModule.ApplicationStarted(configuration, environment, applicationBuilder);
             }
         }
     }
