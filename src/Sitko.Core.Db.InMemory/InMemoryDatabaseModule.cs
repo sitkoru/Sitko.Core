@@ -28,6 +28,7 @@ namespace Sitko.Core.Db.InMemory
             {
                 options.ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
                     .UseInMemoryDatabase(Config.InMemoryDatabaseName).UseInternalServiceProvider(p);
+                    Config.Configure?.Invoke(options, configuration, environment);
             });
         }
     }
@@ -40,5 +41,6 @@ namespace Sitko.Core.Db.InMemory
         }
 
         public string InMemoryDatabaseName { get; }
+        public  Action<DbContextOptionsBuilder, IConfiguration, IHostEnvironment> Configure { get; set; }
     }
 }

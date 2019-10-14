@@ -69,20 +69,21 @@ namespace Sitko.Core.Db.Postgres
                 Pooling = Config.EnableNpgsqlPooling
             };
 
-            Config.DbConfigure?.Invoke(connBuilder, configuration);
             services.AddEntityFrameworkNpgsql();
             if (Config.EnableContextPooling)
             {
-                services.AddDbContextPool<TDbContext>((p, options) => ConfigureNpgsql(options, connBuilder, p));
+                services.AddDbContextPool<TDbContext>((p, options) =>
+                    ConfigureNpgsql(options, connBuilder, p, configuration, environment));
             }
             else
             {
-                services.AddDbContext<TDbContext>((p, options) => ConfigureNpgsql(options, connBuilder, p));
+                services.AddDbContext<TDbContext>((p, options) =>
+                    ConfigureNpgsql(options, connBuilder, p, configuration, environment));
             }
         }
 
         private void ConfigureNpgsql(DbContextOptionsBuilder options, NpgsqlConnectionStringBuilder connBuilder,
-            IServiceProvider p)
+            IServiceProvider p, IConfiguration configuration, IHostEnvironment environment)
         {
             options.UseNpgsql(connBuilder.ConnectionString,
                 builder => builder.MigrationsAssembly(Config.MigrationsAssembly != null
@@ -92,6 +93,8 @@ namespace Sitko.Core.Db.Postgres
             {
                 options.EnableSensitiveDataLogging();
             }
+
+            Config.Configure?.Invoke(options, configuration, environment);
         }
     }
 
@@ -111,7 +114,7 @@ namespace Sitko.Core.Db.Postgres
             get;
         }
 
-        public Action<NpgsqlConnectionStringBuilder, IConfiguration>? DbConfigure;
+        public Action<DbContextOptionsBuilder, IConfiguration, IHostEnvironment> Configure { get; set; }
 
         public PostgresDatabaseModuleConfig(string host, string username, string database,
             string password = "",
