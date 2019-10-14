@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.Consul;
+using Sitko.Core.Infrastructure.Helpers;
 using Sitko.Core.Metrics;
 using Sitko.Core.Web;
 
@@ -29,7 +30,8 @@ namespace Sitko.Core.Grpc.Server
             services.AddSingleton<GrpcServicesRegistrar>();
         }
 
-        public void ConfigureEndpoints(IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
+        public void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
         {
             endpoints.MapGrpcService<HealthService>();
         }
@@ -43,26 +45,31 @@ namespace Sitko.Core.Grpc.Server
             return new List<Type> {typeof(ConsulModule), typeof(MetricsModule)};
         }
 
-        public Task ApplicationStarted(IApplicationBuilder appBuilder)
+        public Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
         {
             return Task.CompletedTask;
         }
 
-        public Task ApplicationStopping(IApplicationBuilder appBuilder)
+        public Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
         {
             return Task.CompletedTask;
         }
 
-        public Task ApplicationStopped(IApplicationBuilder appBuilder)
+        public Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
         {
             return Task.CompletedTask;
         }
 
-        public void ConfigureBeforeUseRouting(IApplicationBuilder appBuilder)
+        public void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
         {
         }
 
-        public void ConfigureAfterUseRouting(IApplicationBuilder appBuilder)
+        public void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
         {
         }
 

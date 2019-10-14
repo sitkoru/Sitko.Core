@@ -38,30 +38,30 @@ namespace Sitko.Core.Web
             });
         }
 
-        public Task ApplicationStarted(IApplicationBuilder appBuilder)
+        public Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment, IApplicationBuilder appBuilder)
         {
             return Task.CompletedTask;
         }
 
-        public Task ApplicationStopping(IApplicationBuilder appBuilder)
+        public Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment, IApplicationBuilder appBuilder)
         {
             return Task.CompletedTask;
         }
 
-        public Task ApplicationStopped(IApplicationBuilder appBuilder)
+        public Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment, IApplicationBuilder appBuilder)
         {
             return Task.CompletedTask;
         }
 
-        public void ConfigureEndpoints(IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
+        public void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment, IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
         {
         }
 
-        public void ConfigureBeforeUseRouting(IApplicationBuilder appBuilder)
+        public void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment, IApplicationBuilder appBuilder)
         {
         }
 
-        public void ConfigureAfterUseRouting(IApplicationBuilder appBuilder)
+        public void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment, IApplicationBuilder appBuilder)
         {
             appBuilder.UseSwaggerAuthorized($"{Config.Title} ({Config.Version})", "v1/swagger.json");
         }
