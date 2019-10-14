@@ -37,7 +37,6 @@ namespace Sitko.Core.Xunit
                     {
                         Configure = (builder, provider, conf, env) =>
                         {
-                            builder.UseInternalServiceProvider(provider);
                             ConfigureInMemoryDatabaseModule(builder, conf, env);
                         }
                     });
