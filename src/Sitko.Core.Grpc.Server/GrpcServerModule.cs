@@ -81,11 +81,6 @@ namespace Sitko.Core.Grpc.Server
                 if (DockerHelper.IsRunningInDocker())
                 {
                     options.ListenAnyIP(80, listenOptions => listenOptions.Protocols = HttpProtocols.Http1);
-                    options.ListenAnyIP(443, listenOptions =>
-                    {
-                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                        listenOptions.UseHttps();
-                    });
                 }
                 else
                 {
