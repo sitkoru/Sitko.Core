@@ -5,6 +5,7 @@ using Consul;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Logging;
+using Sitko.Core.Infrastructure.Helpers;
 
 namespace Sitko.Core.Grpc.Server
 {

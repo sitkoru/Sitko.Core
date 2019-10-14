@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.Web;
 
@@ -13,7 +15,8 @@ namespace Sitko.Core.Metrics.Web
 {
     public class WebMetricsModule : BaseApplicationModule, IWebApplicationModule
     {
-        public void ConfigureBeforeUseRouting(IApplicationBuilder appBuilder)
+        public void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
         {
             appBuilder.Use((context, next) =>
             {
@@ -47,26 +50,31 @@ namespace Sitko.Core.Metrics.Web
             });
         }
 
-        public Task ApplicationStarted(IApplicationBuilder appBuilder)
+        public Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
         {
             return Task.CompletedTask;
         }
 
-        public Task ApplicationStopping(IApplicationBuilder appBuilder)
+        public Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
         {
             return Task.CompletedTask;
         }
 
-        public Task ApplicationStopped(IApplicationBuilder appBuilder)
+        public Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
         {
             return Task.CompletedTask;
         }
 
-        public void ConfigureEndpoints(IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
+        public void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
         {
         }
 
-        public void ConfigureAfterUseRouting(IApplicationBuilder appBuilder)
+        public void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
         {
         }
 

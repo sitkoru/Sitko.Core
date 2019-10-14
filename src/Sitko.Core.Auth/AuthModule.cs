@@ -76,38 +76,44 @@ namespace Sitko.Core.Auth
             });
         }
 
-        public void ConfigureBeforeUseRouting(IApplicationBuilder appBuilder)
+        public void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
         {
-            
         }
 
-        public Task ApplicationStarted(IApplicationBuilder appBuilder)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task ApplicationStopping(IApplicationBuilder appBuilder)
+        public Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
         {
             return Task.CompletedTask;
         }
 
-        public Task ApplicationStopped(IApplicationBuilder appBuilder)
+        public Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
         {
             return Task.CompletedTask;
         }
 
-        public void ConfigureEndpoints(IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
+        public Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
+        {
+            return Task.CompletedTask;
+        }
+
+        public void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
         {
         }
 
 
-        public void ConfigureAfterUseRouting(IApplicationBuilder appBuilder)
+        public void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
         {
             appBuilder.UseAuthentication()
                 .UseAuthorization()
                 .UseMiddleware<AuthorizationMiddleware>()
                 .UseMiddleware<UserMiddleware>();
         }
+
         public void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)
         {
         }
