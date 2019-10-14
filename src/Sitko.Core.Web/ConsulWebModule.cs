@@ -18,7 +18,7 @@ using Sitko.Core.Infrastructure.Helpers;
 
 namespace Sitko.Core.Web
 {
-    public class ConsulWebModule : BaseApplicationModule, IWebApplicationModule
+    public class ConsulWebModule : BaseApplicationModule<ConsulWebModuleConfig>, IWebApplicationModule
     {
         public override List<Type> GetRequiredModules()
         {
@@ -52,11 +52,14 @@ namespace Sitko.Core.Web
             }
             else
             {
+                var grpcServer = ApplicationStore.Get<bool>("grpcServer");
                 var addressesFeature = server.Features.Get<IServerAddressesFeature>();
-                var address = addressesFeature.Addresses.FirstOrDefault(a => !a.StartsWith("https"));
+                var address = grpcServer
+                    ? addressesFeature.Addresses.Skip(1).FirstOrDefault(a => !a.StartsWith("https"))
+                    : addressesFeature.Addresses.FirstOrDefault(a => !a.StartsWith("https"));
                 if (string.IsNullOrEmpty(address)) address = addressesFeature.Addresses.First();
-                uri = new Uri(address.Replace("localhost", configuration["CG_CONSUL_FALLBACK_IP"])
-                    .Replace("0.0.0.0", configuration["CG_CONSUL_FALLBACK_IP"]));
+                uri = new Uri(address.Replace("localhost", Config.IpAddress)
+                    .Replace("0.0.0.0", Config.IpAddress).Replace("[::]", Config.IpAddress));
             }
 
             // Register service with consul
@@ -113,5 +116,10 @@ namespace Sitko.Core.Web
         public void ConfigureWebHost(IWebHostBuilder webHostBuilder)
         {
         }
+    }
+
+    public class ConsulWebModuleConfig
+    {
+        public string IpAddress { get; set; }
     }
 }
