@@ -54,7 +54,7 @@ namespace Sitko.Core.Web
 
         public void AddMemoryCache(IServiceCollection services)
         {
-            services.AddDistributedMemoryCache();
+            services.AddMemoryCache();
         }
 
         public virtual void AddDataProtection(IServiceCollection services)

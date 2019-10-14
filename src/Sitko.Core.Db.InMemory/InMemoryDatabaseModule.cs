@@ -23,12 +23,11 @@ namespace Sitko.Core.Db.InMemory
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {
-            services.AddEntityFrameworkInMemoryDatabase();
             services.AddDbContext<TDbContext>((p, options) =>
             {
                 options.ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-                    .UseInMemoryDatabase(Config.InMemoryDatabaseName).UseInternalServiceProvider(p);
-                    Config.Configure?.Invoke(options, configuration, environment);
+                    .UseInMemoryDatabase(Config.InMemoryDatabaseName);
+                Config.Configure?.Invoke(options, p, configuration, environment);
             });
         }
     }
@@ -41,6 +40,6 @@ namespace Sitko.Core.Db.InMemory
         }
 
         public string InMemoryDatabaseName { get; }
-        public  Action<DbContextOptionsBuilder, IConfiguration, IHostEnvironment> Configure { get; set; }
+        public Action<DbContextOptionsBuilder, IServiceProvider, IConfiguration, IHostEnvironment> Configure { get; set; }
     }
 }

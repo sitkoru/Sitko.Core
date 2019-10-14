@@ -69,7 +69,7 @@ namespace Sitko.Core.Db.Postgres
                 Pooling = Config.EnableNpgsqlPooling
             };
 
-            services.AddEntityFrameworkNpgsql();
+            services.AddMemoryCache();
             if (Config.EnableContextPooling)
             {
                 services.AddDbContextPool<TDbContext>((p, options) =>
@@ -88,13 +88,13 @@ namespace Sitko.Core.Db.Postgres
             options.UseNpgsql(connBuilder.ConnectionString,
                 builder => builder.MigrationsAssembly(Config.MigrationsAssembly != null
                     ? Config.MigrationsAssembly.FullName
-                    : typeof(DbContext).Assembly.FullName)).UseInternalServiceProvider(p);
+                    : typeof(DbContext).Assembly.FullName));
             if (Config.EnableSensitiveLogging)
             {
                 options.EnableSensitiveDataLogging();
             }
 
-            Config.Configure?.Invoke(options, configuration, environment);
+            Config.Configure?.Invoke(options, p, configuration, environment);
         }
     }
 
@@ -114,7 +114,7 @@ namespace Sitko.Core.Db.Postgres
             get;
         }
 
-        public Action<DbContextOptionsBuilder, IConfiguration, IHostEnvironment> Configure { get; set; }
+        public Action<DbContextOptionsBuilder, IServiceProvider, IConfiguration, IHostEnvironment> Configure { get; set; }
 
         public PostgresDatabaseModuleConfig(string host, string username, string database,
             string password = "",
