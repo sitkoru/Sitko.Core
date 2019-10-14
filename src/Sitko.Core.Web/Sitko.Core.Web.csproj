@@ -13,6 +13,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.0.0-rc4" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0" />
+    <ProjectReference Include="..\Sitko.Core.Consul\Sitko.Core.Consul.csproj" />
     <ProjectReference Include="..\Sitko.Core.Infrastructure\Sitko.Core.Infrastructure.csproj" />
   </ItemGroup>
 </Project>
