@@ -7,6 +7,7 @@ using Consul;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
 using Grpc.Net.Client;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Nito.AsyncEx;
 using Sitko.Core.Metrics;
@@ -29,11 +30,12 @@ namespace Sitko.Core.Grpc.Client
         public GrpcClientProvider(
             ILogger<GrpcClientProvider<T>> logger,
             IConsulClient consulClient,
+            IHostEnvironment hostEnvironment,
             IMetricsCollector metricsCollector = null)
         {
             _logger = logger;
             _consulClient = consulClient;
-            _interceptor = new ServiceMetricsInterceptor(metricsCollector);
+            _interceptor = new ServiceMetricsInterceptor(metricsCollector, hostEnvironment);
             _refreshTask = StartRefreshTaskAsync();
         }
 
@@ -49,6 +51,7 @@ namespace Sitko.Core.Grpc.Client
                     {
                         return true;
                     }
+
                     AppContext.SetSwitch(
                         "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
                     _channel = GrpcChannel.ForAddress(_target);
