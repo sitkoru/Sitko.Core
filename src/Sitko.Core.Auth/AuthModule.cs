@@ -61,12 +61,11 @@ namespace Sitko.Core.Auth
                 services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
                 {
                     options.Authority = Config.OidcServerUrl;
-                    options.Audience = Config.OidcServerUrl + "/resources";
+                    options.Audience = Config.JwtAudience;
                     options.RequireHttpsMetadata = Config.RequireHttps;
                 });
             }
 
-            //ConfigureAuth(defaultPolicy, services);
             services.AddAuthorization(options =>
             {
                 foreach (var (name, policy) in Config.Policies)
