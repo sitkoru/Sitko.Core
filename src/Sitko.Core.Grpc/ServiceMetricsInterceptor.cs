@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.Metrics;
 
 namespace Sitko.Core.Grpc
@@ -8,17 +9,19 @@ namespace Sitko.Core.Grpc
     public class ServiceMetricsInterceptor : Interceptor
     {
         private readonly IMetricsCollector _metricsCollector;
+        private readonly IHostEnvironment _hostEnvironment;
 
-        public ServiceMetricsInterceptor(IMetricsCollector metricsCollector)
+        public ServiceMetricsInterceptor(IMetricsCollector metricsCollector, IHostEnvironment hostEnvironment)
         {
             _metricsCollector = metricsCollector;
+            _hostEnvironment = hostEnvironment;
         }
 
         public override async Task<TResponse> ClientStreamingServerHandler<TRequest, TResponse>(
             IAsyncStreamReader<TRequest> requestStream, ServerCallContext context,
             ClientStreamingServerMethod<TRequest, TResponse> continuation)
         {
-            var collector = GetMetricsCollector(context.Host, context.Method, CollectorMode.Server);
+            var collector = GetMetricsCollector(_hostEnvironment.ApplicationName, context.Method, CollectorMode.Server);
             try
             {
                 return await continuation(requestStream, context);
@@ -39,7 +42,7 @@ namespace Sitko.Core.Grpc
             IServerStreamWriter<TResponse> responseStream, ServerCallContext context,
             DuplexStreamingServerMethod<TRequest, TResponse> continuation)
         {
-            var collector = GetMetricsCollector(context.Host, context.Method, CollectorMode.Server);
+            var collector = GetMetricsCollector(_hostEnvironment.ApplicationName, context.Method, CollectorMode.Server);
             try
             {
                 await continuation(requestStream, responseStream, context);
@@ -59,7 +62,7 @@ namespace Sitko.Core.Grpc
             IServerStreamWriter<TResponse> responseStream,
             ServerCallContext context, ServerStreamingServerMethod<TRequest, TResponse> continuation)
         {
-            var collector = GetMetricsCollector(context.Host, context.Method, CollectorMode.Server);
+            var collector = GetMetricsCollector(_hostEnvironment.ApplicationName, context.Method, CollectorMode.Server);
             try
             {
                 await continuation(request, responseStream, context);
@@ -78,7 +81,7 @@ namespace Sitko.Core.Grpc
         public override async Task<TResponse> UnaryServerHandler<TRequest, TResponse>(TRequest request,
             ServerCallContext context, UnaryServerMethod<TRequest, TResponse> continuation)
         {
-            var collector = GetMetricsCollector(context.Host, context.Method, CollectorMode.Server);
+            var collector = GetMetricsCollector(_hostEnvironment.ApplicationName, context.Method, CollectorMode.Server);
             try
             {
                 return await continuation(request, context);
