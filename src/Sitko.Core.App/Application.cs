@@ -97,6 +97,7 @@ namespace Sitko.Core.App
             {
                 foreach (var module in Modules)
                 {
+                    CheckRequiredModules(module);
                     await module.InitAsync(scope.ServiceProvider,
                         scope.ServiceProvider.GetRequiredService<IConfiguration>(),
                         scope.ServiceProvider.GetRequiredService<IHostEnvironment>());
@@ -155,7 +156,7 @@ namespace Sitko.Core.App
         protected virtual void ConfigureModule(IApplicationModule module)
         {
             module.ApplicationStore = ApplicationStore;
-            CheckRequiredModules(module);
+
             _hostBuilder.ConfigureServices(
                 (context, collection) =>
                 {
@@ -168,7 +169,6 @@ namespace Sitko.Core.App
             Func<IConfiguration, IHostEnvironment, TModuleConfig> configure) where TModuleConfig : class
         {
             module.ApplicationStore = ApplicationStore;
-            CheckRequiredModules(module);
             _hostBuilder.ConfigureServices(
                 (context, collection) =>
                 {
