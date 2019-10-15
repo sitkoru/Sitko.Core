@@ -17,6 +17,8 @@ namespace Sitko.Core.Auth
         public string OidcClientSecret { get; set; }
         public readonly List<string> OidcScopes = new List<string>();
         public bool EnableJwt { get; set; }
+        
+        public string JwtAudience { get; set; }
         public bool RequireHttps { get; set; }
 
         public readonly Dictionary<string, AuthorizationPolicy>
