@@ -49,9 +49,9 @@ namespace Sitko.Core.Grpc.Client
                     {
                         return true;
                     }
-
-                    _channel = GrpcChannel.ForAddress(_target,
-                        new GrpcChannelOptions {Credentials = ChannelCredentials.Insecure});
+                    AppContext.SetSwitch(
+                        "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+                    _channel = GrpcChannel.ForAddress(_target);
                     try
                     {
                         _logger.LogInformation("Channel {type} connected to {target}", typeof(T), _target);
@@ -127,7 +127,7 @@ namespace Sitko.Core.Grpc.Client
                         if (serviceResponse.Response.Any())
                         {
                             var service = serviceResponse.Response.First();
-                            var target = $"{service.ServiceAddress}:{service.ServicePort}";
+                            var target = $"http://{service.ServiceAddress}:{service.ServicePort}";
 
                             if (target != _target)
                             {
