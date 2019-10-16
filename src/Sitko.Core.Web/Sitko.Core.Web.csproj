@@ -1,8 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <LangVersion>8.0</LangVersion>
+    <IsPackable>true</IsPackable>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="3.0.0" />
