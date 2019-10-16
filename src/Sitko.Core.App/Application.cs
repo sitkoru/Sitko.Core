@@ -28,15 +28,15 @@ namespace Sitko.Core.App
             });
         }
 
-        public Application ConfigureServices(Action<IServiceCollection> conifgure)
+        public Application ConfigureServices(Action<IServiceCollection> configure)
         {
-            _hostBuilder.ConfigureServices(conifgure);
+            _hostBuilder.ConfigureServices(configure);
             return this;
         }
 
-        public Application ConfigureServices(Action<HostBuilderContext, IServiceCollection> conifgure)
+        public Application ConfigureServices(Action<HostBuilderContext, IServiceCollection> configure)
         {
-            _hostBuilder.ConfigureServices(conifgure);
+            _hostBuilder.ConfigureServices(configure);
             return this;
         }
 
