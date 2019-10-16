@@ -1,5 +1,7 @@
 using System;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App;
 using Xunit.Abstractions;
@@ -12,10 +14,10 @@ namespace Sitko.Core.Xunit
         {
             var application = new Application(new string[0]);
 
-            application.ConfigureServices(collection =>
+            application.ConfigureServices((context, services) =>
             {
-                collection.AddLogging(o => o.AddProvider(new XunitLoggerProvider(testOutputHelper)));
-                ConfigureServices(collection, name);
+                services.AddLogging(o => o.AddProvider(new XunitLoggerProvider(testOutputHelper)));
+                ConfigureServices(context.Configuration, context.HostingEnvironment, services, name);
             });
 
 
@@ -28,7 +30,8 @@ namespace Sitko.Core.Xunit
             return application;
         }
 
-        protected virtual IServiceCollection ConfigureServices(IServiceCollection services, string name)
+        protected virtual IServiceCollection ConfigureServices(IConfiguration configuration,
+            IHostEnvironment environment, IServiceCollection services, string name)
         {
             return services;
         }
