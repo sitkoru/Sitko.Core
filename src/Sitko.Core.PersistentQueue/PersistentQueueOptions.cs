@@ -17,6 +17,5 @@ namespace Sitko.Core.PersistentQueue
         public TimeSpan ReconnectInterval = TimeSpan.FromSeconds(60);
         public TimeSpan IdleTime = TimeSpan.FromMinutes(5);
         public bool EmulationMode = false;
-        public bool PoolConnections = false;
     }
 }
