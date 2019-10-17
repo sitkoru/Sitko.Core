@@ -11,7 +11,7 @@ using Sitko.Core.PersistentQueue.Common;
 
 namespace Sitko.Core.PersistentQueue.Internal
 {
-    internal class SinglePersistentQueueConnectionFactory : IPersistentQueueConnectionFactory, IDisposable
+    public class SinglePersistentQueueConnectionFactory : IPersistentQueueConnectionFactory, IDisposable
     {
         private PersistentQueueConnection _connection;
         private readonly List<PersistentQueueConnector> _connectors = new List<PersistentQueueConnector>();
