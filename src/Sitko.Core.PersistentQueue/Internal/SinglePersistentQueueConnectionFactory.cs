@@ -44,12 +44,8 @@ namespace Sitko.Core.PersistentQueue.Internal
         public void Dispose()
         {
             _logger.LogInformation("PQ Connection factory closing");
+            _connectors.Clear();
             _connection?.Dispose();
-            foreach (var pqConnector in _connectors)
-            {
-                pqConnector?.Dispose();
-            }
-
             _logger.LogInformation("PQ Connection factory closed");
         }
 
