@@ -28,8 +28,8 @@ namespace Sitko.Core.PersistentQueue.Tests
                 ClientName = $"tests{Guid.NewGuid()}"
             };
             var loggerFactory = GetScope().Get<ILoggerFactory>();
-            var connectionsFactory = new PooledPersistentQueueConnectionFactory(options,
-                loggerFactory.CreateLogger<PooledPersistentQueueConnectionFactory>(), metricsCollector);
+            var connectionsFactory = new SinglePersistentQueueConnectionFactory(options,
+                loggerFactory.CreateLogger<SinglePersistentQueueConnectionFactory>());
             var consumerFactory = new PersistentQueueConsumerFactory(options, loggerFactory, metricsCollector,
                 connectionsFactory);
             var producerFactory =
