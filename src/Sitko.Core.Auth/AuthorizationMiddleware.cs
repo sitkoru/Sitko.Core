@@ -9,10 +9,10 @@ namespace Sitko.Core.Auth
     public class AuthorizationMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly AuthOptions _options;
+        private readonly OidcAuthOptions _options;
         private readonly IPolicyEvaluator _policyEvaluator;
 
-        public AuthorizationMiddleware(RequestDelegate next, AuthOptions options, IPolicyEvaluator policyEvaluator)
+        public AuthorizationMiddleware(RequestDelegate next, OidcAuthOptions options, IPolicyEvaluator policyEvaluator)
         {
             _next = next;
             _options = options;
