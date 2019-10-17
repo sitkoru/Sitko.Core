@@ -23,14 +23,7 @@ namespace Sitko.Core.PersistentQueue
         {
             base.ConfigureServices(services, configuration, environment);
             services.AddSingleton<PersistentQueueMetricsCollector>();
-            if (Config.PoolConnections)
-            {
-                services.AddSingleton<IPersistentQueueConnectionFactory, PooledPersistentQueueConnectionFactory>();
-            }
-            else
-            {
-                services.AddSingleton<IPersistentQueueConnectionFactory, SinglePersistentQueueConnectionFactory>();
-            }
+            services.AddSingleton<IPersistentQueueConnectionFactory, SinglePersistentQueueConnectionFactory>();
 
             services.AddSingleton<PersistentQueueConsumerFactory>();
             services.AddSingleton<PersistentQueueProducerFactory>();
