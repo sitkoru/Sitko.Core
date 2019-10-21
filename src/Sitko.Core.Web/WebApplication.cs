@@ -40,24 +40,6 @@ namespace Sitko.Core.Web
             return this;
         }
 
-        public async Task ExecuteAsync<TStartup>(Func<IServiceProvider, Task> command) where TStartup : class
-        {
-            var host = UseStartup<TStartup>().GetAppHost();
-
-            await InitAsync();
-
-            await host.StartAsync();
-
-            var serviceProvider = host.Services;
-
-            using (var scope = serviceProvider.CreateScope())
-            {
-                await command(scope.ServiceProvider);
-            }
-
-            await host.StopAsync();
-        }
-
         public async Task RunAsync<TStartup>() where TStartup : class
         {
             await UseStartup<TStartup>().RunAsync();

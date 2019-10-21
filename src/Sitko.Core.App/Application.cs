@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.App
 {
@@ -59,20 +60,23 @@ namespace Sitko.Core.App
 
         public async Task ExecuteAsync(Func<IServiceProvider, Task> command)
         {
+            GetHostBuilder().UseConsoleLifetime();
             var host = GetAppHost();
 
             await InitAsync();
 
-            await host.StartAsync();
-
             var serviceProvider = host.Services;
 
-            using (var scope = serviceProvider.CreateScope())
+            try
             {
+                using var scope = serviceProvider.CreateScope();
                 await command(scope.ServiceProvider);
             }
-
-            await host.StopAsync();
+            catch (Exception ex)
+            {
+                var logger = serviceProvider.GetService<ILogger<Application>>();
+                logger.LogError(ex, ex.ToString());
+            }
         }
 
         public IServiceProvider GetServices()
