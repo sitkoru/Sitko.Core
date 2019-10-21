@@ -7,11 +7,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
-using Sitko.Core.App;
+using Sitko.Core.Infrastructure.Db;
 
 namespace Sitko.Core.Db.Postgres
 {
-    public class PostgresModule<TDbContext> : BaseApplicationModule<PostgresDatabaseModuleConfig>
+    public class PostgresModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleConfig>
         where TDbContext : DbContext
     {
         protected override void CheckConfig()
@@ -98,13 +98,12 @@ namespace Sitko.Core.Db.Postgres
         }
     }
 
-    public class PostgresDatabaseModuleConfig
+    public class PostgresDatabaseModuleConfig : BaseDbModuleConfig
     {
         public string Host { get; set; }
         public int Port { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
-        public string Database { get; set; }
         public bool EnableNpgsqlPooling { get; set; } = true;
         public bool EnableContextPooling { get; set; } = true;
         public bool EnableSensitiveLogging { get; set; }
@@ -114,15 +113,12 @@ namespace Sitko.Core.Db.Postgres
             get;
         }
 
-        public Action<DbContextOptionsBuilder, IServiceProvider, IConfiguration, IHostEnvironment> Configure { get; set; }
-
         public PostgresDatabaseModuleConfig(string host, string username, string database,
             string password = "",
-            int port = 5432, Assembly? migrationsAssembly = null)
+            int port = 5432, Assembly? migrationsAssembly = null) : base(database)
         {
             Host = host;
             Username = username;
-            Database = database;
             MigrationsAssembly = migrationsAssembly;
             Password = password;
             Port = port;
