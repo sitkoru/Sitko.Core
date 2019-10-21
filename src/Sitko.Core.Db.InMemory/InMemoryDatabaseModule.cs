@@ -4,17 +4,17 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Sitko.Core.App;
+using Sitko.Core.Infrastructure.Db;
 
 namespace Sitko.Core.Db.InMemory
 {
-    public class InMemoryDatabaseModule<TDbContext> : BaseApplicationModule<InMemoryDatabaseModuleConfig>
+    public class InMemoryDatabaseModule<TDbContext> : BaseDbModule<TDbContext, InMemoryDatabaseModuleConfig>
         where TDbContext : DbContext
     {
         protected override void CheckConfig()
         {
             base.CheckConfig();
-            if (string.IsNullOrEmpty(Config.InMemoryDatabaseName))
+            if (string.IsNullOrEmpty(Config.Database))
             {
                 throw new ArgumentException("Empty inmemory database name");
             }
@@ -26,20 +26,16 @@ namespace Sitko.Core.Db.InMemory
             services.AddDbContext<TDbContext>((p, options) =>
             {
                 options.ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-                    .UseInMemoryDatabase(Config.InMemoryDatabaseName);
+                    .UseInMemoryDatabase(Config.Database);
                 Config.Configure?.Invoke(options, p, configuration, environment);
             });
         }
     }
 
-    public class InMemoryDatabaseModuleConfig
+    public class InMemoryDatabaseModuleConfig : BaseDbModuleConfig
     {
-        public InMemoryDatabaseModuleConfig(string inMemoryDatabaseName)
+        public InMemoryDatabaseModuleConfig(string databaseName) : base(databaseName)
         {
-            InMemoryDatabaseName = inMemoryDatabaseName;
         }
-
-        public string InMemoryDatabaseName { get; }
-        public Action<DbContextOptionsBuilder, IServiceProvider, IConfiguration, IHostEnvironment> Configure { get; set; }
     }
 }
