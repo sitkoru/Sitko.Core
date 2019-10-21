@@ -15,7 +15,7 @@
     <ProjectReference Include="..\Sitko.Core.Metrics\Sitko.Core.Metrics.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <Protobuf Include="Proto\Sitko\PersistentQueue\QueueMsg.proto" GrpcServices="None"/>
+    <Protobuf Include="Proto\Sitko\Core\PersistentQueue\QueueMsg.proto" GrpcServices="None"/>
   </ItemGroup>
 
 </Project>
