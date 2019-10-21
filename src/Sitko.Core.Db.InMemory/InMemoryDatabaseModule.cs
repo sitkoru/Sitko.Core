@@ -8,7 +8,7 @@ using Sitko.Core.Infrastructure.Db;
 
 namespace Sitko.Core.Db.InMemory
 {
-    public class InMemoryDatabaseModule<TDbContext> : BaseDbModule<TDbContext, InMemoryDatabaseModuleConfig>
+    public class InMemoryDatabaseModule<TDbContext> : BaseDbModule<TDbContext, InMemoryDatabaseModuleConfig<TDbContext>>
         where TDbContext : DbContext
     {
         protected override void CheckConfig()
@@ -27,12 +27,12 @@ namespace Sitko.Core.Db.InMemory
             {
                 options.ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
                     .UseInMemoryDatabase(Config.Database);
-                Config.Configure?.Invoke(options, p, configuration, environment);
+                Config.Configure?.Invoke(options as DbContextOptionsBuilder<TDbContext>, p, configuration, environment);
             });
         }
     }
 
-    public class InMemoryDatabaseModuleConfig : BaseDbModuleConfig
+    public class InMemoryDatabaseModuleConfig<TDbContext> : BaseDbModuleConfig<TDbContext> where TDbContext : DbContext
     {
         public InMemoryDatabaseModuleConfig(string databaseName) : base(databaseName)
         {

@@ -32,8 +32,8 @@ namespace Sitko.Core.Xunit
                 || !bool.TryParse(config["CG_TESTS_POSTGRES"], out var outBool) || !outBool;
             if (testInMemory)
             {
-                application.AddModule<InMemoryDatabaseModule<TDbContext>, InMemoryDatabaseModuleConfig>(
-                    (configuration, environment) => new InMemoryDatabaseModuleConfig(name)
+                application.AddModule<InMemoryDatabaseModule<TDbContext>, InMemoryDatabaseModuleConfig<TDbContext>>(
+                    (configuration, environment) => new InMemoryDatabaseModuleConfig<TDbContext>(name)
                     {
                         Configure = (builder, provider, conf, env) =>
                         {
@@ -43,7 +43,7 @@ namespace Sitko.Core.Xunit
             }
             else
             {
-                application.AddModule<PostgresModule<TDbContext>, PostgresDatabaseModuleConfig>((configuration,
+                application.AddModule<PostgresModule<TDbContext>, PostgresDatabaseModuleConfig<TDbContext>>((configuration,
                     environment) =>
                 {
                     var postgresConfig = GetPostgresConfig(configuration, environment, name);
@@ -91,7 +91,7 @@ namespace Sitko.Core.Xunit
         {
         }
 
-        protected virtual PostgresDatabaseModuleConfig GetPostgresConfig(IConfiguration configuration,
+        protected virtual PostgresDatabaseModuleConfig<TDbContext> GetPostgresConfig(IConfiguration configuration,
             IHostEnvironment environment, string dbName)
         {
             return null;

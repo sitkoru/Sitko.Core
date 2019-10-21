@@ -6,14 +6,13 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Infrastructure.Db
 {
-    // ReSharper disable once UnusedTypeParameter
     public abstract class BaseDbModule<TDbContext, TConfig> : BaseApplicationModule<TConfig>
         where TDbContext : DbContext
-        where TConfig : BaseDbModuleConfig
+        where TConfig : BaseDbModuleConfig<TDbContext>
     {
     }
 
-    public abstract class BaseDbModuleConfig
+    public abstract class BaseDbModuleConfig<TDbContext> where TDbContext : DbContext
     {
         public BaseDbModuleConfig(string database)
         {
@@ -22,7 +21,7 @@ namespace Sitko.Core.Infrastructure.Db
 
         public string Database { get; }
 
-        public Action<DbContextOptionsBuilder, IServiceProvider, IConfiguration, IHostEnvironment> Configure
+        public Action<DbContextOptionsBuilder<TDbContext>, IServiceProvider, IConfiguration, IHostEnvironment> Configure
         {
             get;
             set;
