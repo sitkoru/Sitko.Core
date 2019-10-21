@@ -11,7 +11,7 @@ using Sitko.Core.Infrastructure.Db;
 
 namespace Sitko.Core.Db.Postgres
 {
-    public class PostgresModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleConfig>
+    public class PostgresModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleConfig<TDbContext>>
         where TDbContext : DbContext
     {
         protected override void CheckConfig()
@@ -94,11 +94,11 @@ namespace Sitko.Core.Db.Postgres
                 options.EnableSensitiveDataLogging();
             }
 
-            Config.Configure?.Invoke(options, p, configuration, environment);
+            Config.Configure?.Invoke(options as DbContextOptionsBuilder<TDbContext>, p, configuration, environment);
         }
     }
 
-    public class PostgresDatabaseModuleConfig : BaseDbModuleConfig
+    public class PostgresDatabaseModuleConfig<TDbContext> : BaseDbModuleConfig<TDbContext> where TDbContext : DbContext
     {
         public string Host { get; set; }
         public int Port { get; set; }
