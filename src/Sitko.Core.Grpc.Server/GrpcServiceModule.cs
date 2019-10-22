@@ -23,12 +23,10 @@ namespace Sitko.Core.Grpc.Server
             await registrar.RegisterAsync<TService>();
         }
 
-        public async Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
+        public Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
-            var registrar =
-                appBuilder.ApplicationServices.GetRequiredService<GrpcServicesRegistrar>();
-            await registrar.StopAsync<TService>();
+            return Task.CompletedTask;
         }
 
         public Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
