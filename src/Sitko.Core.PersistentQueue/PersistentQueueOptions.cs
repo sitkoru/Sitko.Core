@@ -5,11 +5,11 @@ namespace Sitko.Core.PersistentQueue
 {
     public class PersistentQueueOptions
     {
-        public List<string> Servers { get; set; } = new List<string>();
+        public readonly List<(string host, int port)> Servers = new List<(string host, int port)>();
         public string ClusterName { get; set; }
         public string ClientName { get; set; }
         public string ConsumerGroupName { get; set; }
-        public int ConnectionTimeout { get; set; } = (int) TimeSpan.FromSeconds(10).TotalMilliseconds;
+        public int ConnectionTimeout { get; set; } = (int)TimeSpan.FromSeconds(10).TotalMilliseconds;
         public bool Verbose { get; set; } = false;
         public int PoolMinSize = 1;
         public int PoolMaxSize = 1024;

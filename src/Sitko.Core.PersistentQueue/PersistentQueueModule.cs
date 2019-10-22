@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 using Google.Protobuf;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -65,33 +63,6 @@ namespace Sitko.Core.PersistentQueue
         public override List<Type> GetRequiredModules()
         {
             return new List<Type> {typeof(MetricsModule)};
-        }
-        
-        public static List<string> GetNatsAddresses(string host, int port)
-        {
-            var list = new List<string>();
-
-            if (IPAddress.TryParse(host, out var ip))
-            {
-                list.Add($"nats://{ip}:{port}");
-            }
-            else
-            {
-                var entry = Dns.GetHostEntry(host);
-                if (entry.AddressList.Any())
-                {
-                    foreach (var ipAddress in entry.AddressList)
-                    {
-                        list.Add($"nats://{ipAddress}:{port}");
-                    }
-                }
-                else
-                {
-                    throw new Exception($"Can't resolve ip for host {host}");
-                }
-            }
-
-            return list;
         }
     }
 }
