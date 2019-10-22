@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NATS.Client;
@@ -83,7 +85,8 @@ namespace Sitko.Core.PersistentQueue.Common
             catch (Exception ex)
             {
                 _logger.LogCritical(ex,
-                    "Error while connecting to nats: {errorText}. Connection error: {connectionError} - {connectionInnerError}", ex.ToString(), natsConn.LastError?.ToString(), natsConn.LastError?.InnerException?.ToString());
+                    "Error while connecting to nats: {errorText}. Connection error: {connectionError} - {connectionInnerError}",
+                    ex.ToString(), natsConn.LastError?.ToString(), natsConn.LastError?.InnerException?.ToString());
                 throw;
             }
         }
@@ -98,7 +101,8 @@ namespace Sitko.Core.PersistentQueue.Common
                 (sender, args) =>
                 {
                     _logger.LogError(
-                        "NATS event error: {errorText}. Connection {connection}. Subs: {subscription}", args.Error, args.Conn, args.Subscription);
+                        "NATS event error: {errorText}. Connection {connection}. Subs: {subscription}", args.Error,
+                        args.Conn, args.Subscription);
                 };
             opts.ClosedEventHandler =
                 (sender, args) => { _logger.LogError("Stan connection closed: {conn}", args.Conn); };
@@ -112,9 +116,33 @@ namespace Sitko.Core.PersistentQueue.Common
                 };
             if (_options.Servers.Any())
             {
+                var servers = new List<string>();
+                foreach (var server in _options.Servers)
+                {
+                    if (IPAddress.TryParse(server.host, out var ip))
+                    {
+                        servers.Add($"nats://{ip}:{server.port}");
+                    }
+                    else
+                    {
+                        var entry = Dns.GetHostEntry(server.host);
+                        if (entry.AddressList.Any())
+                        {
+                            foreach (var ipAddress in entry.AddressList)
+                            {
+                                servers.Add($"nats://{ipAddress}:{server.port}");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception($"Can't resolve ip for host {server.host}");
+                        }
+                    }
+                }
+
                 if (_options.Verbose)
-                    _logger.LogInformation("Nats urls: {urls}", _options.Servers);
-                opts.Servers = _options.Servers.ToArray();
+                    _logger.LogInformation("Nats urls: {urls}", servers);
+                opts.Servers = servers.ToArray();
             }
 
             opts.Verbose = _options.Verbose;

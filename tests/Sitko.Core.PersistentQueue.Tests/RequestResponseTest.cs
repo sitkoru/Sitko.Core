@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Metrics;
@@ -23,9 +22,7 @@ namespace Sitko.Core.PersistentQueue.Tests
             var metricsCollector = new PersistentQueueMetricsCollector(new FakeMetricsCollector());
             var options = new PersistentQueueOptions
             {
-                ClusterName = "cg2",
-                Servers = new List<string> {"nats://localhost:4222"},
-                ClientName = $"tests{Guid.NewGuid()}"
+                ClusterName = "cg2", ClientName = $"tests{Guid.NewGuid()}", Servers = {("localhost", 4222)}
             };
             var loggerFactory = GetScope().Get<ILoggerFactory>();
             var connectionsFactory = new SinglePersistentQueueConnectionFactory(options,
