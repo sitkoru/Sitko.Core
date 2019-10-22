@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
@@ -43,24 +42,6 @@ namespace Sitko.Core.Grpc.Server
         public override List<Type> GetRequiredModules()
         {
             return new List<Type> {typeof(ConsulModule), typeof(MetricsModule)};
-        }
-
-        public Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-            return Task.CompletedTask;
         }
 
         public void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,

@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
@@ -25,24 +24,6 @@ namespace Sitko.Core.Auth
                 }
             });
             services.AddHealthChecks().AddIdentityServer(new Uri(Config.OidcServerUrl));
-        }
-
-        public virtual Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-            return Task.CompletedTask;
-        }
-
-        public virtual Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-            return Task.CompletedTask;
-        }
-
-        public virtual Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-            return Task.CompletedTask;
         }
 
         public virtual void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment,

@@ -26,6 +26,7 @@ namespace Sitko.Core.App
             _hostBuilder.ConfigureServices(collection =>
             {
                 collection.AddSingleton(typeof(Application), this);
+                collection.AddHostedService<ApplicationLifetimeService>();
             });
         }
 
@@ -191,6 +192,33 @@ namespace Sitko.Core.App
         {
             _hostBuilder.ConfigureAppConfiguration(action);
             return this;
+        }
+
+        public void OnStarted(IConfiguration configuration, IHostEnvironment environment,
+            IServiceProvider serviceProvider)
+        {
+            foreach (var module in Modules)
+            {
+                module.ApplicationStarted(configuration, environment, serviceProvider);
+            }
+        }
+
+        public void OnStopping(IConfiguration configuration, IHostEnvironment environment,
+            IServiceProvider serviceProvider)
+        {
+            foreach (var module in Modules)
+            {
+                module.ApplicationStopping(configuration, environment, serviceProvider);
+            }
+        }
+
+        public void OnStopped(IConfiguration configuration, IHostEnvironment environment,
+            IServiceProvider serviceProvider)
+        {
+            foreach (var module in Modules)
+            {
+                module.ApplicationStopped(configuration, environment, serviceProvider);
+            }
         }
     }
 }

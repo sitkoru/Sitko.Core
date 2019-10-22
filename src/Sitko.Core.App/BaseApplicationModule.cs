@@ -27,6 +27,24 @@ namespace Sitko.Core.App
             return new List<Type>();
         }
 
+        public virtual Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
+            IServiceProvider serviceProvider)
+        {
+            return Task.CompletedTask;
+        }
+
+        public virtual Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
+            IServiceProvider serviceProvider)
+        {
+            return Task.CompletedTask;
+        }
+
+        public virtual Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
+            IServiceProvider serviceProvider)
+        {
+            return Task.CompletedTask;
+        }
+
         protected virtual void CheckConfig()
         {
         }

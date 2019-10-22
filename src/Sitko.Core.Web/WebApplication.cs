@@ -109,32 +109,5 @@ namespace Sitko.Core.Web
                 webModule.ConfigureEndpoints(configuration, environment, appBuilder, endpoints);
             }
         }
-
-        public void ApplicationStartedHook(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder applicationBuilder)
-        {
-            foreach (var webModule in GetWebModules())
-            {
-                webModule.ApplicationStarted(configuration, environment, applicationBuilder);
-            }
-        }
-
-        public void ApplicationStoppingHook(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder applicationBuilder)
-        {
-            foreach (var webModule in GetWebModules())
-            {
-                webModule.ApplicationStopping(configuration, environment, applicationBuilder);
-            }
-        }
-
-        public void ApplicationStoppedHook(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder applicationBuilder)
-        {
-            foreach (var webModule in GetWebModules())
-            {
-                webModule.ApplicationStopped(configuration, environment, applicationBuilder);
-            }
-        }
     }
 }

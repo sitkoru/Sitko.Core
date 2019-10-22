@@ -114,9 +114,7 @@ namespace Sitko.Core.Web
                 appBuilder.UseDeveloperExceptionPage();
             }
 
-            applicationLifetime.ApplicationStarted.Register(() => application.ApplicationStartedHook(Configuration, Environment, appBuilder));
-            applicationLifetime.ApplicationStopping.Register(() => application.ApplicationStoppingHook(Configuration, Environment, appBuilder));
-            applicationLifetime.ApplicationStopped.Register(() => application.ApplicationStoppedHook(Configuration, Environment, appBuilder));
+            
             appBuilder.UseMiddleware<RequestIdMiddleware>();
             if (Environment.IsProduction())
             {
