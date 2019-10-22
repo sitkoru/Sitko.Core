@@ -2,7 +2,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Sitko.Core.Infrastructure.Json
+namespace Sitko.Core.App.Json
 {
     public static class HttpClientExtensions
     {

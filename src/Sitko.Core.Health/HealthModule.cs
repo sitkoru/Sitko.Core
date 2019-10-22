@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
-namespace Sitko.Core.Infrastructure.Health
+namespace Sitko.Core.Health
 {
     public class HealthModule:BaseApplicationModule
     {

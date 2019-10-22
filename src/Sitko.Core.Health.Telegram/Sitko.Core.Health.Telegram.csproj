@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sitko.Core.Health\Sitko.Core.Health.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Telegram.Bot" Version="15.0.0" />
+  </ItemGroup>
+</Project>

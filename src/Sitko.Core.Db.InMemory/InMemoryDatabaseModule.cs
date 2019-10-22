@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Sitko.Core.Infrastructure.Db;
 
 namespace Sitko.Core.Db.InMemory
 {
@@ -29,13 +28,6 @@ namespace Sitko.Core.Db.InMemory
                     .UseInMemoryDatabase(Config.Database);
                 Config.Configure?.Invoke(options as DbContextOptionsBuilder<TDbContext>, p, configuration, environment);
             });
-        }
-    }
-
-    public class InMemoryDatabaseModuleConfig<TDbContext> : BaseDbModuleConfig<TDbContext> where TDbContext : DbContext
-    {
-        public InMemoryDatabaseModuleConfig(string databaseName) : base(databaseName)
-        {
         }
     }
 }

@@ -1,6 +1,6 @@
 using System;
 
-namespace Sitko.Core.Infrastructure.Health
+namespace Sitko.Core.Health.Telegram
 {
     public class TelegramHealthCheckPublisherOptions
     {

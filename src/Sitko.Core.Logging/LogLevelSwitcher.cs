@@ -1,6 +1,6 @@
 using Serilog.Core;
 
-namespace Sitko.Core.Infrastructure.Logging
+namespace Sitko.Core.Logging
 {
     public class LogLevelSwitcher
     {

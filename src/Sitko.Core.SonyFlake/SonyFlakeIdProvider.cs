@@ -2,7 +2,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Sitko.Core.Infrastructure.Json;
+using Sitko.Core.App.Json;
 
 namespace Sitko.Core.SonyFlake
 {

@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 
-namespace Sitko.Core.Infrastructure.Collections
+namespace Sitko.Core.App.Collections
 {
     public class ConcurrentDictionaryWithTtl<TKey, TValue> : ConcurrentDictionary<TKey, TValue>, IDisposable
     {

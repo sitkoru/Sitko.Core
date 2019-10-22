@@ -3,7 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Sitko.Core.Infrastructure.Helpers
+namespace Sitko.Core.App.Helpers
 {
     public static class DockerHelper
     {

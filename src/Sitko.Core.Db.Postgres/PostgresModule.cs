@@ -1,13 +1,11 @@
 using System;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
-using Sitko.Core.Infrastructure.Db;
 
 namespace Sitko.Core.Db.Postgres
 {
@@ -95,33 +93,6 @@ namespace Sitko.Core.Db.Postgres
             }
 
             Config.Configure?.Invoke(options as DbContextOptionsBuilder<TDbContext>, p, configuration, environment);
-        }
-    }
-
-    public class PostgresDatabaseModuleConfig<TDbContext> : BaseDbModuleConfig<TDbContext> where TDbContext : DbContext
-    {
-        public string Host { get; set; }
-        public int Port { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
-        public bool EnableNpgsqlPooling { get; set; } = true;
-        public bool EnableContextPooling { get; set; } = true;
-        public bool EnableSensitiveLogging { get; set; }
-
-        public Assembly? MigrationsAssembly
-        {
-            get;
-        }
-
-        public PostgresDatabaseModuleConfig(string host, string username, string database,
-            string password = "",
-            int port = 5432, Assembly? migrationsAssembly = null) : base(database)
-        {
-            Host = host;
-            Username = username;
-            MigrationsAssembly = migrationsAssembly;
-            Password = password;
-            Port = port;
         }
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
-namespace Sitko.Core.Infrastructure.Health
+namespace Sitko.Core.Health.Telegram
 {
     public class TelegramHealthReporterModule : BaseApplicationModule<TelegramHealthCheckPublisherOptions>
     {
