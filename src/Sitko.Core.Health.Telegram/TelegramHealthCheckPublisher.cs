@@ -12,7 +12,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace Sitko.Core.Infrastructure.Health
+namespace Sitko.Core.Health.Telegram
 {
     public class TelegramHealthCheckPublisher : IHealthCheckPublisher
     {

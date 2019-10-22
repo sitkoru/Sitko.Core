@@ -9,7 +9,7 @@ using Serilog.Events;
 using Serilog.Extensions.Logging;
 using Sitko.Core.App;
 
-namespace Sitko.Core.Infrastructure.Logging
+namespace Sitko.Core.Logging
 {
     public class LoggingModule<T> : BaseApplicationModule<T> where T : LoggingOptions
     {

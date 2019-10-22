@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Sitko.Core.Infrastructure.Helpers
+namespace Sitko.Core.App.Helpers
 {
     public static class RandomGenerator
     {

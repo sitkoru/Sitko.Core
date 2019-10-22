@@ -6,7 +6,7 @@ using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Sinks.Graylog;
 
-namespace Sitko.Core.Infrastructure.Logging
+namespace Sitko.Core.Logging
 {
     public class GraylogModule : LoggingModule<GraylogLoggingOptions>
     {

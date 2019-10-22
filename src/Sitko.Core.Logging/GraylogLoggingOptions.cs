@@ -1,6 +1,6 @@
 using System;
 
-namespace Sitko.Core.Infrastructure.Logging
+namespace Sitko.Core.Logging
 {
     public class GraylogLoggingOptions : LoggingOptions
     {

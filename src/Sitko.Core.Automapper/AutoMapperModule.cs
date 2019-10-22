@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
-namespace Sitko.Core.Infrastructure
+namespace Sitko.Core.Automapper
 {
     public class AutoMapperModule : BaseApplicationModule<AutoMapperModuleConfig>
     {

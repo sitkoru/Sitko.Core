@@ -9,8 +9,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
+using Sitko.Core.App.Helpers;
 using Sitko.Core.Consul;
-using Sitko.Core.Infrastructure.Helpers;
 using Sitko.Core.Metrics;
 using Sitko.Core.Web;
 

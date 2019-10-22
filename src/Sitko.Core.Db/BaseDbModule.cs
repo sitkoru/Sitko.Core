@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
-namespace Sitko.Core.Infrastructure.Db
+namespace Sitko.Core.Db
 {
     public abstract class BaseDbModule<TDbContext, TConfig> : BaseApplicationModule<TConfig>
         where TDbContext : DbContext

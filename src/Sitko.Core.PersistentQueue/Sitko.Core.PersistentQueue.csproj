@@ -4,18 +4,19 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Grpc.Tools" Version="2.24.0" PrivateAssets="All"/>
-    <PackageReference Include="Google.Protobuf" Version="3.10.0"/>
-    <PackageReference Include="NATS.Client" Version="0.9.0"/>
-    <PackageReference Include="STAN.Client" Version="0.1.7"/>
-    <PackageReference Include="System.Threading.Channels" Version="4.6.0"/>
+    <PackageReference Include="Grpc.Tools" Version="2.24.0" PrivateAssets="All" />
+    <PackageReference Include="Google.Protobuf" Version="3.10.0" />
+    <PackageReference Include="NATS.Client" Version="0.9.0" />
+    <PackageReference Include="STAN.Client" Version="0.1.7" />
+    <PackageReference Include="System.Threading.Channels" Version="4.6.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Infrastructure\Sitko.Core.Infrastructure.csproj"/>
-    <ProjectReference Include="..\Sitko.Core.Metrics\Sitko.Core.Metrics.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Health\Sitko.Core.Health.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Metrics\Sitko.Core.Metrics.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Protobuf Include="Proto\Sitko\Core\PersistentQueue\QueueMsg.proto" GrpcServices="None"/>
+    <Protobuf Include="Proto\Sitko\Core\PersistentQueue\QueueMsg.proto" GrpcServices="None" />
   </ItemGroup>
-
+  
 </Project>

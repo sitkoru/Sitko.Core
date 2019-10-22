@@ -2,7 +2,7 @@ using System;
 using Serilog;
 using Serilog.Events;
 
-namespace Sitko.Core.Infrastructure.Logging
+namespace Sitko.Core.Logging
 {
     public class LoggingOptions
     {

@@ -10,5 +10,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Db.Postgres\Sitko.Core.Db.Postgres.csproj" />
   </ItemGroup>
-
+  
 </Project>
