@@ -22,6 +22,7 @@ namespace Sitko.Core.PersistentQueue.Common
         private bool _isBusy;
         internal DateTimeOffset LastReleaseDate;
         internal DateTimeOffset LastTakeDate;
+        private IConnection _natsConn;
         internal event ReconnectedEventHandler Reconnected;
 
         public PersistentQueueConnection(PersistentQueueOptions options, ILogger logger)
@@ -45,21 +46,21 @@ namespace Sitko.Core.PersistentQueue.Common
                 return Task.FromResult((IStanConnection)new PersistentQueueEmulatedConnection());
             }
 
-            IConnection natsConn = null;
+            _natsConn = null;
             var clientId = $"{_options.ClientName}_{Guid.NewGuid()}";
             try
             {
-                natsConn = GetNatsConnection(clientId);
+                _natsConn = GetNatsConnection(clientId);
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ex,
                     "Nats connection error ({exType}): {errorText}. Connection error: {connectionError} - {connectionInnerError}. Nats urls: {natsUrls}. Nats timeout: {natsTimeout}",
-                    ex.GetType(), ex.ToString(), natsConn?.LastError.ToString(),
-                    natsConn?.LastError?.InnerException?.ToString(), _options.Servers, _options.ConnectionTimeout);
+                    ex.GetType(), ex.ToString(), _natsConn?.LastError.ToString(),
+                    _natsConn?.LastError?.InnerException?.ToString(), _options.Servers, _options.ConnectionTimeout);
                 try
                 {
-                    natsConn?.Close();
+                    _natsConn?.Close();
                 }
                 catch (Exception)
                 {
@@ -69,12 +70,12 @@ namespace Sitko.Core.PersistentQueue.Common
                 throw;
             }
 
-            if (natsConn.State != ConnState.CONNECTED)
+            if (_natsConn.State != ConnState.CONNECTED)
                 throw new Exception("nats conn is not connected");
             try
             {
                 var options = StanOptions.GetDefaultOptions();
-                options.NatsConn = natsConn;
+                options.NatsConn = _natsConn;
                 options.ConnectTimeout = _options.ConnectionTimeout;
                 var cf = new StanConnectionFactory();
                 var connection = cf.CreateConnection(_options.ClusterName, clientId, options);
@@ -86,7 +87,7 @@ namespace Sitko.Core.PersistentQueue.Common
             {
                 _logger.LogCritical(ex,
                     "Error while connecting to nats: {errorText}. Connection error: {connectionError} - {connectionInnerError}",
-                    ex.ToString(), natsConn.LastError?.ToString(), natsConn.LastError?.InnerException?.ToString());
+                    ex.ToString(), _natsConn.LastError?.ToString(), _natsConn.LastError?.InnerException?.ToString());
                 throw;
             }
         }
@@ -105,13 +106,13 @@ namespace Sitko.Core.PersistentQueue.Common
                         args.Conn, args.Subscription);
                 };
             opts.ClosedEventHandler =
-                (sender, args) => { _logger.LogError("Stan connection closed: {conn}", args.Conn); };
+                (sender, args) => { _logger.LogInformation("Stan connection closed: {conn}", args.Conn); };
             opts.DisconnectedEventHandler =
-                (sender, args) => { _logger.LogError("NATS connection disconnected: {conn}", args.Conn); };
+                (sender, args) => { _logger.LogInformation("NATS connection disconnected: {conn}", args.Conn); };
             opts.ReconnectedEventHandler =
                 (sender, args) =>
                 {
-                    _logger.LogError("NATS connection reconnected: {conn}", args.Conn);
+                    _logger.LogInformation("NATS connection reconnected: {conn}", args.Conn);
                     Reconnected?.Invoke(this, new ReconnectedEventHandlerArgs());
                 };
             if (_options.Servers.Any())
@@ -166,6 +167,8 @@ namespace Sitko.Core.PersistentQueue.Common
         {
             Connection.Close();
             Connection.Dispose();
+            _natsConn.Close();
+            _natsConn.Dispose();
         }
 
         internal void Take()
