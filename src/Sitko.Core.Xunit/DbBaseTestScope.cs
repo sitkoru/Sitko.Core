@@ -12,7 +12,7 @@ namespace Sitko.Core.Xunit
     public abstract class DbBaseTestScope<TScope, TDbContext> : BaseTestScope
         where TScope : class where TDbContext : DbContext
     {
-        private TDbContext _dbContext;
+        private TDbContext? _dbContext;
 
         protected override Application ConfigureApplication(Application application, string name)
         {
@@ -91,7 +91,7 @@ namespace Sitko.Core.Xunit
         {
         }
 
-        protected virtual PostgresDatabaseModuleConfig<TDbContext> GetPostgresConfig(IConfiguration configuration,
+        protected virtual PostgresDatabaseModuleConfig<TDbContext>? GetPostgresConfig(IConfiguration configuration,
             IHostEnvironment environment, string dbName)
         {
             return null;
