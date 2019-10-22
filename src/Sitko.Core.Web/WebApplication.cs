@@ -133,7 +133,7 @@ namespace Sitko.Core.Web
         {
             foreach (var webModule in GetWebModules())
             {
-                webModule.ApplicationStarted(configuration, environment, applicationBuilder);
+                webModule.ApplicationStopped(configuration, environment, applicationBuilder);
             }
         }
     }
