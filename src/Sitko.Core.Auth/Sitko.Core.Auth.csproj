@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Infrastructure\Sitko.Core.Infrastructure.csproj" />
     <ProjectReference Include="..\Sitko.Core.Web\Sitko.Core.Web.csproj" />
   </ItemGroup>
   <ItemGroup>

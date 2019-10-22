@@ -51,7 +51,7 @@ namespace Sitko.Core.Xunit
             return scope;
         }
 
-        protected IServiceScope CreateServiceScope([CallerMemberName] string name = "")
+        protected IServiceScope? CreateServiceScope([CallerMemberName] string name = "")
         {
             if (!_scopes.ContainsKey(name))
             {
