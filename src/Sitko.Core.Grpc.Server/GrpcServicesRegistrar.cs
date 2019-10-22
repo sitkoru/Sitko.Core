@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Consul;
@@ -9,7 +10,7 @@ using Sitko.Core.App.Helpers;
 
 namespace Sitko.Core.Grpc.Server
 {
-    public class GrpcServicesRegistrar
+    public class GrpcServicesRegistrar : IAsyncDisposable
     {
         private readonly GrpcServerOptions _options;
         private readonly IConsulClient _consulClient;
@@ -17,6 +18,8 @@ namespace Sitko.Core.Grpc.Server
         private readonly string _host;
         private readonly int _port;
         private readonly bool _inContainer;
+
+        private readonly Dictionary<string, string> _registeredServices = new Dictionary<string, string>();
 
         public GrpcServicesRegistrar(GrpcServerOptions options, IConsulClient consulClient,
             IServer server, ILogger<GrpcServicesRegistrar> logger)
@@ -43,7 +46,7 @@ namespace Sitko.Core.Grpc.Server
 
         public async Task RegisterAsync<T>() where T : class
         {
-            var serviceName = typeof(T).BaseType?.DeclaringType.Name;
+            var serviceName = typeof(T).BaseType?.DeclaringType?.Name;
             var id = _inContainer ? $"{serviceName}_{_host}_{_port}" : serviceName;
             var registration = new AgentServiceRegistration
             {
@@ -63,13 +66,26 @@ namespace Sitko.Core.Grpc.Server
                 _port);
             await _consulClient.Agent.ServiceDeregister(id);
             await _consulClient.Agent.ServiceRegister(registration);
+            _registeredServices.Add(id, serviceName);
         }
 
-        public async Task StopAsync<T>()
+        private bool _disposed;
+
+        public async ValueTask DisposeAsync()
         {
-            var serviceName = typeof(T).BaseType?.DeclaringType.Name;
-            var id = _inContainer ? $"{serviceName}_{_host}_{_port}" : serviceName;
-            await _consulClient.Agent.ServiceDeregister(id);
+            if (!_disposed)
+            {
+                foreach (var registeredService in _registeredServices)
+                {
+                    _logger.LogInformation(
+                        "Application stopping. Deregister grpc service {serviceName} on {address}:{port}",
+                        registeredService.Value, _host,
+                        _port);
+                    await _consulClient.Agent.ServiceDeregister(registeredService.Key);
+                }
+
+                _disposed = true;
+            }
         }
     }
 }
