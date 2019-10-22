@@ -26,5 +26,14 @@ namespace Sitko.Core.App
             IHostEnvironment environment);
 
         List<Type> GetRequiredModules();
+
+        Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
+            IServiceProvider serviceProvider);
+
+        Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
+            IServiceProvider serviceProvider);
+
+        Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
+            IServiceProvider serviceProvider);
     }
 }

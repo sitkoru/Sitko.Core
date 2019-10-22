@@ -1,5 +1,4 @@
 using System.Linq;
-using System.Threading.Tasks;
 using App.Metrics.AspNetCore;
 using App.Metrics.Formatters.Prometheus;
 using Microsoft.AspNetCore.Builder;
@@ -48,24 +47,6 @@ namespace Sitko.Core.Metrics.Web
                         new MetricsPrometheusTextOutputFormatter();
                 };
             });
-        }
-
-        public Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-            return Task.CompletedTask;
         }
 
         public void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment,

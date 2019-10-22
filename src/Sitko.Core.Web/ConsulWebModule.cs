@@ -3,11 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Consul;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,19 +15,19 @@ using Sitko.Core.Consul;
 
 namespace Sitko.Core.Web
 {
-    public class ConsulWebModule : BaseApplicationModule<ConsulWebModuleConfig>, IWebApplicationModule
+    public class ConsulWebModule : BaseApplicationModule<ConsulWebModuleConfig>
     {
         public override List<Type> GetRequiredModules()
         {
             return new List<Type> {typeof(ConsulModule)};
         }
 
-        public async Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
+        public override async Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
+            IServiceProvider serviceProvider)
         {
-            var server = appBuilder.ApplicationServices.GetRequiredService<IServer>();
-            var consulClient = appBuilder.ApplicationServices.GetRequiredService<IConsulClient>();
-            var logger = appBuilder.ApplicationServices.GetRequiredService<ILogger<ConsulWebModule>>();
+            var server = serviceProvider.GetRequiredService<IServer>();
+            var consulClient = serviceProvider.GetRequiredService<IConsulClient>();
+            var logger = serviceProvider.GetRequiredService<ILogger<ConsulWebModule>>();
             Uri uri;
             if (DockerHelper.IsRunningInDocker())
             {
@@ -79,42 +76,13 @@ namespace Sitko.Core.Web
             await consulClient.Agent.ServiceRegister(registration);
         }
 
-        public async Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
+        public override async Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
+            IServiceProvider serviceProvider)
         {
-            var consulClient = appBuilder.ApplicationServices.GetRequiredService<IConsulClient>();
-            var logger = appBuilder.ApplicationServices.GetRequiredService<ILogger<ConsulWebModule>>();
+            var consulClient = serviceProvider.GetRequiredService<IConsulClient>();
+            var logger = serviceProvider.GetRequiredService<ILogger<ConsulWebModule>>();
             logger.LogInformation("Remove service from Consul");
             await consulClient.Agent.ServiceDeregister(environment.ApplicationName);
-        }
-
-        public Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-            return Task.CompletedTask;
-        }
-
-        public void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
-        {
-        }
-
-        public void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-        }
-
-        public void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-        }
-
-        public void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)
-        {
-        }
-
-        public void ConfigureWebHost(IWebHostBuilder webHostBuilder)
-        {
         }
     }
 

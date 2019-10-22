@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
@@ -38,30 +37,18 @@ namespace Sitko.Core.Web
             });
         }
 
-        public Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment, IApplicationBuilder appBuilder)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment, IApplicationBuilder appBuilder)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment, IApplicationBuilder appBuilder)
-        {
-            return Task.CompletedTask;
-        }
-
-        public void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment, IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
+        public void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
         {
         }
 
-        public void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment, IApplicationBuilder appBuilder)
+        public void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
         {
         }
 
-        public void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment, IApplicationBuilder appBuilder)
+        public void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
         {
             appBuilder.UseSwaggerAuthorized($"{Config.Title} ({Config.Version})", "v1/swagger.json");
         }

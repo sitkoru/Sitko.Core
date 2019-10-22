@@ -15,24 +15,11 @@ namespace Sitko.Core.Grpc.Server
     public class GrpcServiceModule<TService> : BaseApplicationModule<GrpcServerOptions>, IWebApplicationModule
         where TService : class
     {
-        public async Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
+        public override async Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
+            IServiceProvider serviceProvider)
         {
-            var registrar =
-                appBuilder.ApplicationServices.GetRequiredService<GrpcServicesRegistrar>();
+            var registrar = serviceProvider.GetRequiredService<GrpcServicesRegistrar>();
             await registrar.RegisterAsync<TService>();
-        }
-
-        public Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-            return Task.CompletedTask;
         }
 
         public void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment,
