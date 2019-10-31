@@ -12,7 +12,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.Web.Components;
-using StackExchange.Redis;
 
 namespace Sitko.Core.Web
 {
@@ -49,15 +48,7 @@ namespace Sitko.Core.Web
                 options => { options.Configuration = redisConnectionsString; });
         }
 
-        public void AddRedisDataProtection(IServiceCollection services, string redisConnectionsString)
-        {
-            services.AddDataProtection().PersistKeysToStackExchangeRedis(() =>
-                {
-                    var redis = ConnectionMultiplexer.Connect(redisConnectionsString);
-                    return redis.GetDatabase();
-                }, $"{Environment.ApplicationName}-DP").SetApplicationName(Environment.ApplicationName)
-                .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
-        }
+        
 
         public void AddMemoryCache(IServiceCollection services)
         {

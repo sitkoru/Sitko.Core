@@ -26,6 +26,15 @@ namespace Sitko.Core.Auth
             services.AddHealthChecks().AddIdentityServer(new Uri(Config.OidcServerUrl));
         }
 
+        protected override void CheckConfig()
+        {
+            base.CheckConfig();
+            if (string.IsNullOrEmpty(Config.OidcServerUrl))
+            {
+                throw new ArgumentException("Oidc servder url can't be empty");
+            }
+        }
+
         public virtual void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder,
             IEndpointRouteBuilder endpoints)
