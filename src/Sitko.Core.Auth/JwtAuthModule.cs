@@ -1,3 +1,4 @@
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
@@ -19,6 +20,16 @@ namespace Sitko.Core.Auth
                 options.Audience = Config.JwtAudience;
                 options.RequireHttpsMetadata = Config.RequireHttps;
             });
+        }
+
+        public override void Configure(Func<IConfiguration, IHostEnvironment, JwtAuthOptions> configure,
+            IConfiguration configuration, IHostEnvironment environment)
+        {
+            base.Configure(configure, configuration, environment);
+            if (string.IsNullOrEmpty(Config.JwtAudience))
+            {
+                throw new ArgumentException("Oidc jwt audience can't be empty");
+            }
         }
     }
 }
