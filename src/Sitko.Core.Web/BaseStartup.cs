@@ -34,7 +34,7 @@ namespace Sitko.Core.Web
             services.AddHttpContextAccessor();
             services.Configure<CookiePolicyOptions>(options =>
             {
-                options.MinimumSameSitePolicy = (SameSiteMode)(-1);
+                options.MinimumSameSitePolicy = SameSiteMode.None;
                 options.OnAppendCookie = cookieContext =>
                     CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
                 options.OnDeleteCookie = cookieContext =>
@@ -160,14 +160,13 @@ namespace Sitko.Core.Web
         // https://devblogs.microsoft.com/aspnet/upcoming-samesite-cookie-changes-in-asp-net-and-asp-net-core/
         private void CheckSameSite(HttpContext httpContext, CookieOptions options)
         {
-            if (options.SameSite > (SameSiteMode)(-1))
+            if (options.SameSite > SameSiteMode.None)
             {
                 var userAgent = httpContext.Request.Headers["User-Agent"].ToString();
                 if (DisallowsSameSiteNone(userAgent))
                 {
                     // TODO: Update on 3.1 to user SameSiteMode.Unspecified
-                    // For .NET Core < 3.1 set SameSite = -1
-                    options.SameSite = (SameSiteMode)(-1);
+                    options.SameSite = SameSiteMode.None;
                 }
             }
         }
