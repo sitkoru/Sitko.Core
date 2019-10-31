@@ -32,8 +32,6 @@ namespace Sitko.Core.Web
             ConfigureMvc(services.AddControllersWithViews())
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
             services.AddHttpContextAccessor();
-            services.AddScoped<Flasher>();
-            services.AddSession();
             services.Configure<CookiePolicyOptions>(options =>
             {
                 options.MinimumSameSitePolicy = (SameSiteMode)(-1);
@@ -144,7 +142,6 @@ namespace Sitko.Core.Web
             CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
             appBuilder.UseCookiePolicy();
             appBuilder.UseStaticFiles();
-            appBuilder.UseSession();
 
             application.BeforeRoutingHook(Configuration, Environment, appBuilder);
             ConfigureBeforeRouting(appBuilder);
