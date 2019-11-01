@@ -67,7 +67,12 @@ namespace Sitko.Core.Web
                 Name = environment.ApplicationName,
                 Address = uri.Host,
                 Port = uri.Port,
-                Check = new AgentServiceCheck {HTTP = healthUrl, Interval = TimeSpan.FromSeconds(30)},
+                Check = new AgentServiceCheck
+                {
+                    HTTP = healthUrl,
+                    DeregisterCriticalServiceAfter = Config.DeregisterTimeout,
+                    Interval = Config.ChecksInterval
+                },
                 Tags = new[] {"metrics", $"healthUrl:{healthUrl}", $"version:{Config.Version}"}
             };
 
@@ -90,5 +95,8 @@ namespace Sitko.Core.Web
     {
         public string IpAddress { get; set; }
         public string Version { get; set; } = "dev";
+
+        public TimeSpan ChecksInterval { get; set; } = TimeSpan.FromSeconds(60);
+        public TimeSpan DeregisterTimeout { get; set; } = TimeSpan.FromSeconds(60);
     }
 }
