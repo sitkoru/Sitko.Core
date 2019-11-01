@@ -47,6 +47,11 @@ namespace Sitko.Core.Grpc.Server
         public async Task RegisterAsync<T>() where T : class
         {
             var serviceName = typeof(T).BaseType?.DeclaringType?.Name;
+            if (string.IsNullOrEmpty(serviceName))
+            {
+                throw new Exception($"Can't find service name for {typeof(T)}");
+            }
+
             var id = _inContainer ? $"{serviceName}_{_host}_{_port}" : serviceName;
             var registration = new AgentServiceRegistration
             {
@@ -56,8 +61,8 @@ namespace Sitko.Core.Grpc.Server
                 Port = _port,
                 Check = new AgentServiceCheck
                 {
-                    DeregisterCriticalServiceAfter = TimeSpan.FromMinutes(1),
-                    Interval = TimeSpan.FromSeconds(30),
+                    DeregisterCriticalServiceAfter = _options.DeregisterTimeout,
+                    Interval = _options.ChecksInterval,
                     GRPC = $"{_host}:{_port}"
                 },
                 Tags = new[] {"grpc", $"version:{_options.Version}"}
