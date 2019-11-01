@@ -13,7 +13,8 @@ namespace Sitko.Core.Logging
 {
     public class LoggingModule<T> : BaseApplicationModule<T> where T : LoggingOptions
     {
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
+        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
+            IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
             Console.OutputEncoding = Encoding.UTF8;
@@ -30,11 +31,13 @@ namespace Sitko.Core.Logging
             if (environment.IsDevelopment())
             {
                 logLevelSwitcher.Switch.MinimumLevel = Config.DevLogLevel;
+                logLevelSwitcher.MsMessagesSwitch.MinimumLevel = Config.DevLogLevel;
             }
             else
             {
                 logLevelSwitcher.Switch.MinimumLevel = Config.ProdLogLevel;
-                loggerConfiguration.MinimumLevel.Override("Microsoft", LogEventLevel.Warning);
+                logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LogEventLevel.Warning;
+                loggerConfiguration.MinimumLevel.Override("Microsoft", logLevelSwitcher.MsMessagesSwitch);
             }
 
             if (Config.EnableConsoleLogging)
