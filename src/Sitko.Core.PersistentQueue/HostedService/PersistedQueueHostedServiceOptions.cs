@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Google.Protobuf;
 
 namespace Sitko.Core.PersistentQueue.HostedService
 {
-    // ReSharper disable once UnusedTypeParameter - need T for dependency injection
-    public class PersistedQueueHostedServiceOptions<T> where T : IMessage, new()
+    public abstract class PersistedQueueHostedServiceOptions
     {
         public TimeSpan? StartAt { get; set; }
         public bool All { get; set; }
@@ -12,6 +12,11 @@ namespace Sitko.Core.PersistentQueue.HostedService
         public bool Durable { get; set; } = true;
         public int MaxInFlight = 200;
         public bool ManualAck = true;
-        public int AckWait = (int) TimeSpan.FromSeconds(2).TotalMilliseconds;
+        public int AckWait = (int)TimeSpan.FromSeconds(2).TotalMilliseconds;
+    }
+
+    [SuppressMessage("ReSharper", "UnusedTypeParameter")]
+    public class PersistedQueueHostedServiceOptions<T> : PersistedQueueHostedServiceOptions where T : IMessage, new()
+    {
     }
 }

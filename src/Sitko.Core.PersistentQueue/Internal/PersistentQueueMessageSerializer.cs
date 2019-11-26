@@ -1,12 +1,11 @@
 ﻿using System;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
-using Sitko.Core.PersistentQueue.Common;
 using Sitko.Core.PersistentQueue.Queue;
 
 namespace Sitko.Core.PersistentQueue.Internal
 {
-    internal class PersistentQueueMessageSerializer
+    public class PersistentQueueMessageSerializer
     {
         public QueueMsg Deserialize(byte[] data)
         {

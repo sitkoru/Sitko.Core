@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Grpc.Tools" Version="2.25.0" PrivateAssets="All" />
     <PackageReference Include="Google.Protobuf" Version="3.10.1" />
-    <PackageReference Include="NATS.Client" Version="0.9.0" />
-    <PackageReference Include="STAN.Client" Version="0.1.7" />
     <PackageReference Include="System.Threading.Channels" Version="4.6.0" />
   </ItemGroup>
   <ItemGroup>
@@ -17,6 +17,9 @@
   </ItemGroup>
   <ItemGroup>
     <Protobuf Include="Proto\Sitko\Core\PersistentQueue\QueueMsg.proto" GrpcServices="None" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Common" />
   </ItemGroup>
   
 </Project>

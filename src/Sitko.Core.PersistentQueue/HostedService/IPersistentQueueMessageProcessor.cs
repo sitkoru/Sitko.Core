@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Google.Protobuf;
-using Sitko.Core.PersistentQueue.Common;
 
 namespace Sitko.Core.PersistentQueue.HostedService
 {

@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Sitko.Core.PersistentQueue\Sitko.Core.PersistentQueue.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NATS.Client" Version="0.10.0" />
+    <PackageReference Include="STAN.Client" Version="0.2.0" />
+  </ItemGroup>
+
+</Project>

@@ -1,35 +1,31 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Google.Protobuf;
 using Microsoft.Extensions.Logging;
-using NATS.Client;
-using Sitko.Core.PersistentQueue.Common;
 using Sitko.Core.PersistentQueue.Internal;
 using Sitko.Core.PersistentQueue.Queue;
 
 namespace Sitko.Core.PersistentQueue.Producer
 {
-    public class PersistentQueueProducer<T> : PersistentQueueChannel, IPersistentQueueProducer<T>, IDisposable
-        where T : IMessage
+    public abstract class PersistentQueueProducer<T, TConnection> : PersistentQueueChannel<TConnection>,
+        IPersistentQueueProducer<T>
+        where T : IMessage where TConnection : IPersistentQueueConnection
     {
-        private readonly ILogger<PersistentQueueProducer<T>> _logger;
+        private readonly ILogger<PersistentQueueProducer<T, TConnection>> _logger;
         private readonly PersistentQueueMetricsCollector _metricsCollector;
-        private readonly PersistentQueueMessageSerializer _serializer;
+        private readonly Task _sendTask;
 
         private readonly Channel<(T message, PersistentQueueMessageContext context)> _channel =
             Channel.CreateUnbounded<(T message, PersistentQueueMessageContext context)>();
 
-        public PersistentQueueProducer(
-            IPersistentQueueConnectionFactory connectionFactory,
-            ILogger<PersistentQueueProducer<T>> logger,
-            PersistentQueueMetricsCollector metricsCollector
-        ) : base(connectionFactory)
+        public PersistentQueueProducer(IPersistentQueueConnectionFactory<TConnection> connectionFactory,
+            ILogger<PersistentQueueProducer<T, TConnection>> logger,
+            PersistentQueueMetricsCollector metricsCollector) : base(connectionFactory)
         {
             _logger = logger;
             _metricsCollector = metricsCollector;
-            _serializer = new PersistentQueueMessageSerializer();
             _sendTask = DoProduceAsync();
         }
 
@@ -56,27 +52,6 @@ namespace Sitko.Core.PersistentQueue.Producer
             _logger.LogInformation("Stop background publisher for {type} messages", typeof(T));
         }
 
-        private PersistentQueueConnector _connector;
-        private Task _sendTask;
-
-        private async Task<PersistentQueueConnector> GetConnectorAsync()
-        {
-            if (_connector?.Connection?.NATSConnection == null)
-            {
-                _connector = await GetConnectorAsync<T>();
-            }
-            else
-            {
-                if (_connector.Connection.NATSConnection.State != ConnState.CONNECTED)
-                {
-                    _connector.Dispose();
-                    _connector = await GetConnectorAsync<T>();
-                }
-            }
-
-            return _connector;
-        }
-
         private async Task ProduceAsync(T message, PersistentQueueMessageContext context = null)
         {
             var queueMessage = GetMessage(message, context);
@@ -84,7 +59,8 @@ namespace Sitko.Core.PersistentQueue.Producer
             var payload = SerializeMessage(queueMessage);
             try
             {
-                await (await GetConnectorAsync()).Connection.PublishAsync(queue, payload);
+                var connection = await _connectionFactory.GetConnection();
+                await connection.PublishAsync(queue, payload);
                 _logger.LogDebug("Message {messageId} was sent to {queueName}", queueMessage.Id,
                     message.GetQueueName());
             }
@@ -96,7 +72,8 @@ namespace Sitko.Core.PersistentQueue.Producer
             }
         }
 
-        public async Task<(TResponse response, PersistentQueueMessageContext responseContext)> RequestAsync<TResponse>(T message,
+        public async Task<(TResponse response, PersistentQueueMessageContext responseContext)> RequestAsync<TResponse>(
+            T message,
             PersistentQueueMessageContext context = null, int offset = 5000) where TResponse : class, IMessage, new()
         {
             var queueMessage = GetMessage(message, context);
@@ -104,9 +81,9 @@ namespace Sitko.Core.PersistentQueue.Producer
             var payload = SerializeMessage(queueMessage);
             try
             {
-                var result =
-                    await (await GetConnectorAsync()).Connection.NATSConnection.RequestAsync(queue, payload, offset);
-                var stanMsg = _serializer.Deserialize(result.Data);
+                var connection = await _connectionFactory.GetConnection();
+                var result = await connection.RequestAsync(queue, payload, offset);
+                var stanMsg = _serializer.Deserialize(result);
                 var response = stanMsg.GetMessage<TResponse>();
                 _logger.LogDebug("Message {messageId} was sent to {queueName}", queueMessage.Id,
                     message.GetQueueName());
@@ -149,19 +126,11 @@ namespace Sitko.Core.PersistentQueue.Producer
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _channel.Writer.TryComplete();
             _sendTask.GetAwaiter().GetResult();
+            base.Dispose();
         }
-    }
-
-    public interface IPersistentQueueProducer<in T> where T : IMessage
-    {
-        void Produce(T message, PersistentQueueMessageContext context = null);
-
-        Task<(TResponse response, PersistentQueueMessageContext responseContext)> RequestAsync<TResponse>(T message,
-            PersistentQueueMessageContext context = null, int offset = 5000)
-            where TResponse : class, IMessage, new();
     }
 }
