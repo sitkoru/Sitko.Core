@@ -86,7 +86,7 @@ namespace Sitko.Core.Db.Postgres
             options.UseNpgsql(connBuilder.ConnectionString,
                 builder => builder.MigrationsAssembly(Config.MigrationsAssembly != null
                     ? Config.MigrationsAssembly.FullName
-                    : typeof(DbContext).Assembly.FullName));
+                    : typeof(TDbContext).Assembly.FullName));
             if (Config.EnableSensitiveLogging)
             {
                 options.EnableSensitiveDataLogging();
