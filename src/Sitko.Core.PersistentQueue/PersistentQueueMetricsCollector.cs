@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Google.Protobuf;
 using Sitko.Core.Metrics;
 
-namespace Sitko.Core.PersistentQueue.Common
+namespace Sitko.Core.PersistentQueue
 {
     public class PersistentQueueMetricsCollector
     {

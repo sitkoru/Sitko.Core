@@ -1,12 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using Sitko.Core.App;
 using Sitko.Core.Metrics;
 using Sitko.Core.PersistentQueue.Common;
-using Sitko.Core.PersistentQueue.Consumer;
-using Sitko.Core.PersistentQueue.HostedService;
-using Sitko.Core.PersistentQueue.Internal;
-using Sitko.Core.PersistentQueue.Producer;
+using Sitko.Core.PersistentQueue.InMemory;
 using Sitko.Core.PersistentQueue.Queue;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -19,24 +16,8 @@ namespace Sitko.Core.PersistentQueue.Tests
         [Fact]
         public async Task TestRequestResponseAsync()
         {
-            var metricsCollector = new PersistentQueueMetricsCollector(new FakeMetricsCollector());
-            var options = new PersistentQueueOptions
-            {
-                ClusterName = "cg2", ClientName = $"tests{Guid.NewGuid()}", Servers = {("localhost", 4222)}
-            };
-            var loggerFactory = GetScope().Get<ILoggerFactory>();
-            var connectionsFactory = new SinglePersistentQueueConnectionFactory(options,
-                loggerFactory.CreateLogger<SinglePersistentQueueConnectionFactory>());
-            var consumerFactory = new PersistentQueueConsumerFactory(options, loggerFactory, metricsCollector,
-                connectionsFactory);
-            var producerFactory =
-                new PersistentQueueProducerFactory(options, loggerFactory, metricsCollector,
-                    connectionsFactory);
-
-            var consumer =
-                consumerFactory.GetConsumer(
-                    new PersistedQueueHostedServiceOptions<QueueMsg>());
-            var producer = producerFactory.GetProducer<QueueMsg>();
+            var consumer = GetScope().Get<IPersistentQueueConsumer<QueueMsg>>();
+            var producer = GetScope().Get<IPersistentQueueProducer<QueueMsg>>();
 
             await consumer.RunWithResponseAsync((msg, context) =>
                 Task.FromResult((true, new QueueMsg {Id = msg.Id})));
@@ -54,5 +35,14 @@ namespace Sitko.Core.PersistentQueue.Tests
 
     public class PersistentQueueTestScope : BaseTestScope
     {
+        protected override Application ConfigureApplication(Application application, string name)
+        {
+            base.ConfigureApplication(application, name);
+            application.AddModule<MetricsModule>();
+            application.AddModule<InMemoryPersistentQueueModule<RequestResponseTest>, InMemoryPersistentQueueModuleOptions>((
+                configuration, environment) => new InMemoryPersistentQueueModuleOptions());
+
+            return application;
+        }
     }
 }

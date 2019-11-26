@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sitko.Core.PersistentQueue.Common
+namespace Sitko.Core.PersistentQueue
 {
     public class PersistentQueueMessageContext
     {

@@ -1,66 +1,70 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NATS.Client;
-using Sitko.Core.PersistentQueue.Internal;
+using Nito.AsyncEx;
 using STAN.Client;
 
-namespace Sitko.Core.PersistentQueue.Common
+namespace Sitko.Core.PersistentQueue.Nats
 {
-    public class PersistentQueueConnection : IDisposable
+    public class NatsConnectionFactory : IPersistentQueueConnectionFactory<NatsQueueConnection>
     {
-        private readonly PersistentQueueOptions _options;
-        private readonly ILogger _logger;
-        internal readonly DateTimeOffset CreationDate;
+        private readonly NatsPersistentQueueModuleOptions _options;
+        private readonly ILogger<NatsConnectionFactory> _logger;
+        private NatsQueueConnection _connection;
+        private readonly AsyncLock _locker = new AsyncLock();
         private static readonly ConnectionFactory Cf = new ConnectionFactory();
 
-        internal readonly Guid Id = Guid.NewGuid();
-        private bool _isBusy;
-        internal DateTimeOffset LastReleaseDate;
-        internal DateTimeOffset LastTakeDate;
-        private IConnection _natsConn;
-        internal event ReconnectedEventHandler Reconnected;
-
-        public PersistentQueueConnection(PersistentQueueOptions options, ILogger logger)
+        public NatsConnectionFactory(NatsPersistentQueueModuleOptions options,
+            ILogger<NatsConnectionFactory> logger)
         {
             _options = options;
             _logger = logger;
-            CreationDate = DateTimeOffset.UtcNow;
         }
 
-        public async Task ConnectAsync()
+        public async Task<NatsQueueConnection> GetConnection()
         {
-            Connection?.Dispose();
-            Connection = await GetConnectionAsync();
-        }
-
-        [SuppressMessage("ReSharper", "IDISP001")]
-        private Task<IStanConnection> GetConnectionAsync()
-        {
-            if (_options.EmulationMode)
+            if (_connection == null)
             {
-                return Task.FromResult((IStanConnection)new PersistentQueueEmulatedConnection());
+                _logger.LogInformation("No connection. Create new");
+                try
+                {
+                    using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+                    using (await _locker.LockAsync(cts.Token))
+                    {
+                        _connection = CreateConnection();
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    throw new Exception("Can't create connection: lock timeout");
+                }
             }
 
-            _natsConn = null;
+            return _connection;
+        }
+
+        private NatsQueueConnection CreateConnection()
+        {
+            IConnection natsConn = null;
             var clientId = $"{_options.ClientName}_{Guid.NewGuid()}";
             try
             {
-                _natsConn = GetNatsConnection(clientId);
+                natsConn = GetNatsConnection(clientId);
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ex,
                     "Nats connection error ({exType}): {errorText}. Connection error: {connectionError} - {connectionInnerError}. Nats urls: {natsUrls}. Nats timeout: {natsTimeout}",
-                    ex.GetType(), ex.ToString(), _natsConn?.LastError.ToString(),
-                    _natsConn?.LastError?.InnerException?.ToString(), _options.Servers, _options.ConnectionTimeout);
+                    ex.GetType(), ex.ToString(), natsConn?.LastError.ToString(),
+                    natsConn?.LastError?.InnerException?.ToString(), _options.Servers, _options.ConnectionTimeout);
                 try
                 {
-                    _natsConn?.Close();
+                    natsConn?.Close();
                 }
                 catch (Exception)
                 {
@@ -70,26 +74,37 @@ namespace Sitko.Core.PersistentQueue.Common
                 throw;
             }
 
-            if (_natsConn.State != ConnState.CONNECTED)
+            if (natsConn.State != ConnState.CONNECTED)
                 throw new Exception("nats conn is not connected");
             try
             {
                 var options = StanOptions.GetDefaultOptions();
-                options.NatsConn = _natsConn;
+                options.NatsConn = natsConn;
                 options.ConnectTimeout = _options.ConnectionTimeout;
                 var cf = new StanConnectionFactory();
-                var connection = cf.CreateConnection(_options.ClusterName, clientId, options);
-                if (connection.NATSConnection.State == ConnState.CONNECTED)
-                    return Task.FromResult(connection);
+                var stanConnection = cf.CreateConnection(_options.ClusterName, clientId, options);
+                if (stanConnection.NATSConnection.State == ConnState.CONNECTED)
+                {
+                    var connection = new NatsQueueConnection(stanConnection, natsConn, _options);
+                    return connection;
+                }
+
                 throw new Exception("nats conn is not connected");
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ex,
                     "Error while connecting to nats: {errorText}. Connection error: {connectionError} - {connectionInnerError}",
-                    ex.ToString(), _natsConn.LastError?.ToString(), _natsConn.LastError?.InnerException?.ToString());
+                    ex.ToString(), natsConn.LastError?.ToString(), natsConn.LastError?.InnerException?.ToString());
                 throw;
             }
+        }
+
+        private IConnection GetNatsConnection(string clientId)
+        {
+            var opts = GetOptions();
+            opts.Name = clientId;
+            return Cf.CreateConnection(opts);
         }
 
         private Options GetOptions()
@@ -113,7 +128,6 @@ namespace Sitko.Core.PersistentQueue.Common
                 (sender, args) =>
                 {
                     _logger.LogInformation("NATS connection reconnected: {conn}", args.Conn);
-                    Reconnected?.Invoke(this, new ReconnectedEventHandlerArgs());
                 };
             if (_options.Servers.Any())
             {
@@ -154,35 +168,22 @@ namespace Sitko.Core.PersistentQueue.Common
             return opts;
         }
 
-        private IConnection GetNatsConnection(string clientId)
+        public NatsQueueConnection GetCurrentConnection()
         {
-            var opts = GetOptions();
-            opts.Name = clientId;
-            return Cf.CreateConnection(opts);
+            return _connection;
         }
 
-        internal IStanConnection Connection { get; private set; }
+        private bool _disposed;
 
         public void Dispose()
         {
-            Connection.Close();
-            Connection.Dispose();
-            _natsConn.Close();
-            _natsConn.Dispose();
-        }
-
-        internal void Take()
-        {
-            if (_isBusy)
-                throw new Exception($"Try to take busy connection {Id}");
-            LastTakeDate = DateTimeOffset.UtcNow;
-            _isBusy = true;
-        }
-
-        internal void Release()
-        {
-            LastReleaseDate = DateTimeOffset.UtcNow;
-            _isBusy = false;
+            if (!_disposed)
+            {
+                _logger.LogInformation("PQ Connection factory closing");
+                _connection?.Dispose();
+                _logger.LogInformation("PQ Connection factory closed");
+                _disposed = true;
+            }
         }
     }
 }
