@@ -5,12 +5,12 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Grpc.Core.Api" Version="2.24.0" />
-    <PackageReference Include="Grpc.Tools" Version="2.24.0" PrivateAssets="All" />
+    <PackageReference Include="Grpc.Core.Api" Version="2.25.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.25.0" PrivateAssets="All" />
     <PackageReference Include="Google.Protobuf" Version="3.10.1" />
     <Protobuf Include="Proto\**\*.proto" GrpcServices="None" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Consul\Sitko.Core.Consul.csproj" />
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
