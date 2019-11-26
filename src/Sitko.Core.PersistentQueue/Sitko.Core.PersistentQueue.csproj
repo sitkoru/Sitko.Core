@@ -18,8 +18,5 @@
   <ItemGroup>
     <Protobuf Include="Proto\Sitko\Core\PersistentQueue\QueueMsg.proto" GrpcServices="None" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Common" />
-  </ItemGroup>
   
 </Project>

@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Sitko.Core.App;
 using Sitko.Core.Metrics;
-using Sitko.Core.PersistentQueue.Common;
 using Sitko.Core.PersistentQueue.InMemory;
 using Sitko.Core.PersistentQueue.Queue;
 using Sitko.Core.Xunit;

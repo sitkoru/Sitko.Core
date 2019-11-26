@@ -40,13 +40,14 @@ namespace Sitko.Core.PersistentQueue.Consumer
             }
         }
 
-        public async Task RunAsync(Func<TMessage, PersistentQueueMessageContext, Task<bool>> callback)
+        public async Task RunAsync(Func<TMessage, PersistentQueueMessageContext, Task<bool>> callback,
+            PersistedQueueHostedServiceOptions<TMessage> options = null)
         {
             var empty = Activator.CreateInstance<TMessage>();
             var connection = await _connectionFactory.GetConnection();
             _logger.LogInformation("Subscribe to {queueName}", empty.GetQueueName());
             _callback = callback;
-            await connection.SubscribeAsync(_queueOptions, empty.GetQueueName(), queueMessage =>
+            await connection.SubscribeAsync(options ?? _queueOptions, empty.GetQueueName(), queueMessage =>
             {
                 var message = _serializer.Deserialize(queueMessage.Data);
                 var queueResult = _processingQueue.TryAdd(message.Id, true);
@@ -68,49 +69,53 @@ namespace Sitko.Core.PersistentQueue.Consumer
         }
 
         public async Task RunWithResponseAsync<TResponse>(
-            Func<TMessage, PersistentQueueMessageContext, Task<(bool isSuccess, TResponse response)>> callback)
+            Func<TMessage, PersistentQueueMessageContext, Task<(bool isSuccess, TResponse response)>> callback,
+            PersistedQueueHostedServiceOptions<TMessage> options = null)
             where TResponse : IMessage, new()
         {
             var empty = Activator.CreateInstance<TMessage>();
             var connection = await _connectionFactory.GetConnection();
-            await connection.SubscribeWithResponseAsync(_queueOptions, empty.GetQueueName(), async queueMessage =>
-            {
-                var message = _serializer.Deserialize(queueMessage.Data);
-
-                var protoMessage = message.GetMessage<TMessage>();
-                if (protoMessage != null)
+            await connection.SubscribeWithResponseAsync(options ?? _queueOptions, empty.GetQueueName(),
+                async queueMessage =>
                 {
-                    _logger.LogDebug("New proto message {messageId} {protoMessage} ({type})", message.Id, protoMessage,
-                        protoMessage.GetType());
-                    try
+                    var message = _serializer.Deserialize(queueMessage.Data);
+
+                    var protoMessage = message.GetMessage<TMessage>();
+                    if (protoMessage != null)
                     {
-                        var (isSuccess, response) = await callback(protoMessage, message.GetContext());
-                        if (isSuccess)
+                        _logger.LogDebug("New proto message {messageId} {protoMessage} ({type})", message.Id,
+                            protoMessage,
+                            protoMessage.GetType());
+                        try
                         {
-                            _logger.LogDebug("Messages {messageId} processed", message.Id);
-
-                            if (!string.IsNullOrEmpty(queueMessage.ReplyTo) && response != null)
+                            var (isSuccess, response) = await callback(protoMessage, message.GetContext());
+                            if (isSuccess)
                             {
-                                var replayMessage = _serializer.Create(response, message.GetContext());
-                                var payload = _serializer.Serialize(replayMessage);
+                                _logger.LogDebug("Messages {messageId} processed", message.Id);
 
-                                connection.Publish(queueMessage.ReplyTo, payload);
+                                if (!string.IsNullOrEmpty(queueMessage.ReplyTo) && response != null)
+                                {
+                                    var replayMessage = _serializer.Create(response, message.GetContext());
+                                    var payload = _serializer.Serialize(replayMessage);
+
+                                    connection.Publish(queueMessage.ReplyTo, payload);
+                                }
                             }
-                        }
 
-                        _logger.LogDebug("Messages {messageId} done", message.Id);
+                            _logger.LogDebug("Messages {messageId} done", message.Id);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Exception while processing message {type} {messageId}",
+                                typeof(TMessage),
+                                message.Id);
+                        }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        _logger.LogError(ex, "Exception while processing message {type} {messageId}", typeof(TMessage),
-                            message.Id);
+                        _logger.LogError("Bad message received");
                     }
-                }
-                else
-                {
-                    _logger.LogError("Bad message received");
-                }
-            });
+                });
         }
 
         private async Task DoConsumeAsync()
