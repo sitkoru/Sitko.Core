@@ -5,7 +5,13 @@ using Sitko.Core.PersistentQueue.HostedService;
 
 namespace Sitko.Core.PersistentQueue
 {
-    public interface IPersistentQueueConsumer<TMessage> : IDisposable where TMessage : IMessage, new()
+    public interface IPersistentQueueConsumer
+    {
+        Task StopAsync();
+    }
+
+    public interface IPersistentQueueConsumer<TMessage> : IPersistentQueueConsumer, IDisposable
+        where TMessage : IMessage, new()
     {
         Task RunAsync(Func<TMessage, PersistentQueueMessageContext, Task<bool>> callback,
             PersistedQueueHostedServiceOptions<TMessage> options = null);
@@ -14,7 +20,5 @@ namespace Sitko.Core.PersistentQueue
             Func<TMessage, PersistentQueueMessageContext, Task<(bool isSuccess, TResponse response)>> callback,
             PersistedQueueHostedServiceOptions<TMessage> options = null)
             where TResponse : IMessage, new();
-
-        Task StopAsync();
     }
 }
