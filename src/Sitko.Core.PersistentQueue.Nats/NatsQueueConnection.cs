@@ -28,12 +28,31 @@ namespace Sitko.Core.PersistentQueue.Nats
             _options = options;
         }
 
+        private bool _disposed;
+
         public void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
+            foreach (var stanSubscription in _stanSubscriptions.Values)
+            {
+                stanSubscription.Unsubscribe();
+            }
+
+            foreach (var natsSubscription in _natsSubscriptions.Values)
+            {
+                natsSubscription.Unsubscribe();
+            }
+
             StanConnection.Close();
             StanConnection.Dispose();
             _natsConn.Close();
             _natsConn.Dispose();
+
+            _disposed = true;
         }
 
         public Task PublishAsync(string queue, byte[] payload)
@@ -113,6 +132,11 @@ namespace Sitko.Core.PersistentQueue.Nats
 
         public Task UnSubscribeAsync(string queue)
         {
+            if (_disposed)
+            {
+                return Task.CompletedTask;
+            }
+
             if (_stanSubscriptions.TryRemove(queue, out var stanSubscription))
             {
                 stanSubscription.Unsubscribe();
