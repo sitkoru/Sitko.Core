@@ -3,7 +3,11 @@ using Google.Protobuf;
 
 namespace Sitko.Core.PersistentQueue
 {
-    public interface IPersistentQueueProducer<in T> where T : IMessage
+    public interface IPersistentQueueProducer
+    {
+    }
+
+    public interface IPersistentQueueProducer<in T> : IPersistentQueueProducer where T : IMessage
     {
         void Produce(T message, PersistentQueueMessageContext context = null);
 

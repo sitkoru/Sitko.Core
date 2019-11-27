@@ -10,14 +10,36 @@ using Sitko.Core.PersistentQueue.HostedService;
 
 namespace Sitko.Core.PersistentQueue
 {
-    public abstract class PersistentQueueModule<T, TOptions> : BaseApplicationModule<TOptions>
+    public abstract class
+        PersistentQueueModule<T, TOptions, TConnection, TConnectionFactory> : BaseApplicationModule<TOptions>
         where TOptions : PersistentQueueModuleOptions
+        where TConnection : IPersistentQueueConnection
+        where TConnectionFactory : class, IPersistentQueueConnectionFactory<TConnection>
     {
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
             services.AddSingleton<PersistentQueueMetricsCollector>();
+
+            services.AddSingleton<IPersistentQueueConnectionFactory<TConnection>, TConnectionFactory>();
+
+            var consumerType = GetConsumerType();
+            if (!typeof(IPersistentQueueConsumer).IsAssignableFrom(consumerType))
+            {
+                throw new Exception("Consumer type must implement IPersistentQueueConsumer");
+            }
+
+            services.AddTransient(typeof(IPersistentQueueConsumer<>), consumerType);
+
+            var producerType = GetProducerType();
+            if (!typeof(IPersistentQueueProducer).IsAssignableFrom(producerType))
+            {
+                throw new Exception("Producer type must implement IPersistentQueueProducer");
+            }
+
+            services.AddTransient(typeof(IPersistentQueueProducer<>), producerType);
+
             var assembly = typeof(T).Assembly;
             foreach (var type in assembly.DefinedTypes)
             {
@@ -45,6 +67,9 @@ namespace Sitko.Core.PersistentQueue
                 }
             }
         }
+
+        protected abstract Type GetConsumerType();
+        protected abstract Type GetProducerType();
 
         public override List<Type> GetRequiredModules()
         {
