@@ -151,14 +151,16 @@ namespace Sitko.Core.PersistentQueue.Nats
             return Task.CompletedTask;
         }
 
-        public bool IsHealthy()
+        public ConnectionHealthStatus GetHealthStatus()
         {
-            return _natsConn.State == ConnState.CONNECTED;
+            return _natsConn.State == ConnState.CONNECTED
+                ? ConnectionHealthStatus.Healthy
+                : ConnectionHealthStatus.Unhealthy;
         }
 
-        public string? GetLastError()
+        public string GetHealthMessage()
         {
-            return StanConnection.NATSConnection?.LastError?.ToString();
+            return $"Status: {_natsConn?.State}. Last error: {_natsConn?.LastError}";
         }
 
         public class NatsPersistentQueueMessage : PersistentQueueMessage

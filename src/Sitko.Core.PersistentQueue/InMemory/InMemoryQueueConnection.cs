@@ -82,14 +82,14 @@ namespace Sitko.Core.PersistentQueue.InMemory
             return Task.CompletedTask;
         }
 
-        public bool IsHealthy()
+        public ConnectionHealthStatus GetHealthStatus()
         {
-            return true;
+            return ConnectionHealthStatus.Healthy;
         }
 
-        public string? GetLastError()
+        public string GetHealthMessage()
         {
-            return null;
+            return "Ok";
         }
     }
 }

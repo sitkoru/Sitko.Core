@@ -19,8 +19,8 @@ namespace Sitko.Core.PersistentQueue
 
         Task UnSubscribeAsync(string queue);
 
-        bool IsHealthy();
-        string? GetLastError();
+        ConnectionHealthStatus GetHealthStatus();
+        string GetHealthMessage();
     }
 
     public abstract class PersistentQueueMessage
@@ -34,5 +34,11 @@ namespace Sitko.Core.PersistentQueue
         public byte[] Data { get; }
         public string ReplyTo { get; }
         public abstract Task Ack();
+    }
+
+    public enum ConnectionHealthStatus
+    {
+        Healthy,
+        Unhealthy
     }
 }
