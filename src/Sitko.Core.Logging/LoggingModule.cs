@@ -25,9 +25,6 @@ namespace Sitko.Core.Logging
                     .Enrich.FromLogContext()
                     .Enrich.WithProperty("App", Config.Facility);
 
-
-            Config.ConfigureLogger?.Invoke(loggerConfiguration, logLevelSwitcher);
-
             if (environment.IsDevelopment())
             {
                 logLevelSwitcher.Switch.MinimumLevel = Config.DevLogLevel;
@@ -47,6 +44,7 @@ namespace Sitko.Core.Logging
             }
 
             loggerConfiguration.MinimumLevel.ControlledBy(logLevelSwitcher.Switch);
+            Config.ConfigureLogger?.Invoke(loggerConfiguration, logLevelSwitcher);
             Log.Logger = loggerConfiguration.CreateLogger();
             services.AddSingleton(logLevelSwitcher);
             services.AddSingleton(_ => (ILoggerFactory)new SerilogLoggerFactory());
