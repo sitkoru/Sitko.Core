@@ -50,7 +50,7 @@ release:
         - cd $CI_PROJECT_DIR
         - tar czf sitko.tgz -C src/Sitko.Core.Grpc/Proto .
         - mc config host add minio $S3_HOST $S3_ACCESS_KEY $S3_SECRET_KEY --api S3v4
-        - mc cp sitko.tgz minio/$S3_BUCKET
+        - mc cp sitko.tgz minio/$S3_BUCKET/proto
         # push pq php package
         - git clone ssh://git@gitlab.0xdev.ru:2224/Sitko/Core.PersistentQueue.Php.git /tmp/php/pq
         - mkdir -p /tmp/php/pq/src
