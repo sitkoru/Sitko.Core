@@ -25,7 +25,8 @@ release:
     when: manual
     allow_failure: false
     only:
-        - master
+        - "master"
+        - "3.1"
     script:
         # push packages
         - find nugets -name *.nupkg -exec dotnet nuget push {} -s $NUGET_HOST -k $NUGET_API_KEY \;
