@@ -11,7 +11,8 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Logging
 {
-    public class LoggingModule<T> : BaseApplicationModule<T> where T : LoggingOptions
+    public class
+        LoggingModule<T> : BaseApplicationModule<T> where T : LoggingOptions
     {
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
@@ -39,15 +40,23 @@ namespace Sitko.Core.Logging
 
             if (Config.EnableConsoleLogging)
             {
-                loggerConfiguration = loggerConfiguration
-                    .WriteTo.Console(outputTemplate:"[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}] {Message:lj}{NewLine}{Exception}",levelSwitch: logLevelSwitcher.Switch);
+                loggerConfiguration
+                    .WriteTo.Console(
+                        outputTemplate:
+                        "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}] {Message:lj}{NewLine}{Exception}",
+                        levelSwitch: logLevelSwitcher.Switch);
             }
 
             loggerConfiguration.MinimumLevel.ControlledBy(logLevelSwitcher.Switch);
+            ConfigureLogger(loggerConfiguration, logLevelSwitcher);
             Config.ConfigureLogger?.Invoke(loggerConfiguration, logLevelSwitcher);
             Log.Logger = loggerConfiguration.CreateLogger();
             services.AddSingleton(logLevelSwitcher);
             services.AddSingleton(_ => (ILoggerFactory)new SerilogLoggerFactory());
+        }
+
+        protected virtual void ConfigureLogger(LoggerConfiguration loggerConfiguration, LogLevelSwitcher logLevelSwitcher)
+        {
         }
     }
 }
