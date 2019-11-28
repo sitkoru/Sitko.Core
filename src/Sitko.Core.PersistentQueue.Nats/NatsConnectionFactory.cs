@@ -48,6 +48,11 @@ namespace Sitko.Core.PersistentQueue.Nats
             return _connection;
         }
 
+        public NatsQueueConnection[] GetCurrentConnections()
+        {
+            return new[] {_connection};
+        }
+
         private NatsQueueConnection CreateConnection()
         {
             IConnection natsConn = null;
