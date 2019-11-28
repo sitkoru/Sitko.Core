@@ -1,5 +1,4 @@
-﻿using System;
-using Sitko.Core.PersistentQueue.Internal;
+﻿using Sitko.Core.PersistentQueue.Internal;
 
 namespace Sitko.Core.PersistentQueue
 {
