@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageReference Include="Grpc.Tools" Version="2.25.0" PrivateAssets="All" />
     <PackageReference Include="Google.Protobuf" Version="3.10.1" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.0.0" />
     <PackageReference Include="System.Threading.Channels" Version="4.6.0" />
   </ItemGroup>
   <ItemGroup>
