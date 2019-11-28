@@ -11,6 +11,11 @@ namespace Sitko.Core.PersistentQueue.InMemory
             return Task.FromResult(_connection);
         }
 
+        public InMemoryQueueConnection[] GetCurrentConnections()
+        {
+            return new[] {_connection};
+        }
+
         public void Dispose()
         {
             _connection = null;

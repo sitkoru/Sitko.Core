@@ -6,6 +6,7 @@ namespace Sitko.Core.PersistentQueue
 {
     public interface IPersistentQueueConnection
     {
+        Guid Id { get; }
         Task PublishAsync(string queue, byte[] payload);
         void Publish(string queue, byte[] payload);
         Task<byte[]> RequestAsync(string queue, byte[] payload, int timeOut);
@@ -17,6 +18,9 @@ namespace Sitko.Core.PersistentQueue
             Func<PersistentQueueMessage, Task> callback);
 
         Task UnSubscribeAsync(string queue);
+
+        bool IsHealthy();
+        string? GetLastError();
     }
 
     public abstract class PersistentQueueMessage
