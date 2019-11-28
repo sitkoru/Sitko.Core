@@ -40,7 +40,7 @@ namespace Sitko.Core.Logging
             if (Config.EnableConsoleLogging)
             {
                 loggerConfiguration = loggerConfiguration
-                    .WriteTo.Console(levelSwitch: logLevelSwitcher.Switch);
+                    .WriteTo.Console(outputTemplate:"[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}] {Message:lj}{NewLine}{Exception}",levelSwitch: logLevelSwitcher.Switch);
             }
 
             loggerConfiguration.MinimumLevel.ControlledBy(logLevelSwitcher.Switch);
