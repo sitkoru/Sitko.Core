@@ -158,7 +158,7 @@ namespace Sitko.Core.PersistentQueue.Nats
 
         public string? GetLastError()
         {
-            return _natsConn.LastError.ToString();
+            return _natsConn?.LastError?.ToString();
         }
 
         public class NatsPersistentQueueMessage : PersistentQueueMessage
