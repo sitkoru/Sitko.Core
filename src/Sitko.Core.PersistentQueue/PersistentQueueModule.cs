@@ -67,7 +67,7 @@ namespace Sitko.Core.PersistentQueue
                 }
             }
             
-            services.AddHealthChecks().AddCheck<PersistentQueueHealthCheck<TConnection>>("Nats Persistent Queue Health check");
+            services.AddHealthChecks().AddCheck<PersistentQueueHealthCheck<TConnection>>("Persistent Queue Health check");
         }
 
         protected abstract Type GetConsumerType();
