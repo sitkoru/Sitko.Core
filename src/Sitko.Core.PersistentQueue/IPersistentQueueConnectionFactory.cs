@@ -7,5 +7,6 @@ namespace Sitko.Core.PersistentQueue
         where TConnection : IPersistentQueueConnection
     {
         Task<TConnection> GetConnection();
+        TConnection[] GetCurrentConnections();
     }
 }
