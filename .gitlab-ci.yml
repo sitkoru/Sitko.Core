@@ -3,11 +3,14 @@ stages:
     - release
 
 image: hub.0xdev.ru/infrastructure/dotnet-ci:3.0
+variables:
+    VERSION: 3.0.$CI_PIPELINE_ID-preview
+
 
 build:
     stage: build
     script:
-        - dotnet pack -c Release /p:Version=$BASE_VERSION.$CI_PIPELINE_ID -o $CI_PROJECT_DIR/nugets
+        - dotnet pack -c Release /p:Version=$VERSION -o $CI_PROJECT_DIR/nugets
         - mkdir -p Composer/Core
         - mkdir -p Composer/PQ
         - find $CI_PROJECT_DIR/src/Sitko.Core.Grpc/Proto -name "*.proto" | xargs /usr/local/bin/protoc --php_out=$CI_PROJECT_DIR/Composer/Core --grpc_out $CI_PROJECT_DIR/Composer/Core --proto_path=/opt/include --proto_path=$CI_PROJECT_DIR/src/Sitko.Core.Grpc/Proto --plugin=protoc-gen-grpc=/usr/local/bin/grpc_php_client_plugin
@@ -39,13 +42,13 @@ release:
         - mkdir -p /tmp/php/grpc/src
         - rm -rf /tmp/php/grpc/src/*
         - cp -a $CI_PROJECT_DIR/Composer/Core/* /tmp/php/grpc/src
-        - echo v$BASE_VERSION.$CI_PIPELINE_ID > /tmp/php/grpc/VERSION
+        - echo v$VERSION > /tmp/php/grpc/VERSION
         - cd /tmp/php/grpc
         - git add .
         - git commit -m "Release $CI_PIPELINE_ID"
-        - git tag -a v$BASE_VERSION.$CI_PIPELINE_ID -m "Release $CI_PIPELINE_ID"
+        - git tag -a v$VERSION -m "Release $CI_PIPELINE_ID"
         - git push
-        - git push origin v$BASE_VERSION.$CI_PIPELINE_ID
+        - git push origin v$VERSION
         # upload common proto files to server
         - cd $CI_PROJECT_DIR
         - tar czf sitko.tgz -C src/Sitko.Core.Grpc/Proto .
@@ -56,10 +59,10 @@ release:
         - mkdir -p /tmp/php/pq/src
         - rm -rf /tmp/php/pq/src/*
         - cp -a $CI_PROJECT_DIR/Composer/PQ/* /tmp/php/pq/src
-        - echo v$BASE_VERSION.$CI_PIPELINE_ID > /tmp/php/pq/VERSION
+        - echo v$VERSION > /tmp/php/pq/VERSION
         - cd /tmp/php/pq
         - git add .
         - git commit -m "Release $CI_PIPELINE_ID"
-        - git tag -a v$BASE_VERSION.$CI_PIPELINE_ID -m "Release $CI_PIPELINE_ID"
+        - git tag -a v$VERSION -m "Release $CI_PIPELINE_ID"
         - git push
-        - git push origin v$BASE_VERSION.$CI_PIPELINE_ID
+        - git push origin v$VERSION

@@ -8,8 +8,8 @@
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.0.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.0-preview3.19554.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.0-preview3.19554.8" />
   </ItemGroup>
 
 </Project>
