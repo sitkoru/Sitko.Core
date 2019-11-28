@@ -10,7 +10,7 @@ namespace Sitko.Core.PersistentQueue
         Task StopAsync();
     }
 
-    public interface IPersistentQueueConsumer<TMessage> : IPersistentQueueConsumer, IDisposable
+    public interface IPersistentQueueConsumer<TMessage> : IPersistentQueueConsumer
         where TMessage : IMessage, new()
     {
         Task RunAsync(Func<TMessage, PersistentQueueMessageContext, Task<bool>> callback,
