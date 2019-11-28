@@ -29,12 +29,12 @@ namespace Sitko.Core.PersistentQueue
             {
                 foreach (TConnection connection in connections)
                 {
-                    if (!connection.IsHealthy())
+                    if (connection.GetHealthStatus()!=ConnectionHealthStatus.Healthy)
                     {
                         hasErrors = true;
-                        _logger.LogError("Check pq connection: Fail {connectionId}. Last error: {errorText}",
+                        _logger.LogError("Check pq connection: Fail {connectionId}. Health status: {healthStatus}",
                             connection.Id,
-                            connection.GetLastError());
+                            connection.GetHealthStatus());
                     }
                 }
             }
