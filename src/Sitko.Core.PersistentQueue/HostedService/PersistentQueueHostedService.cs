@@ -39,13 +39,7 @@ namespace Sitko.Core.PersistentQueue.HostedService
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Stop consumer of {type}", typeof(T));
-            if (_consumer != null)
-            {
-                await _consumer.StopAsync();
-            }
-
-            _logger.LogInformation("Stopped consumer of {type}", typeof(T));
+            _logger.LogInformation("Stop hosted service of {type}", typeof(T));
             await Task.CompletedTask;
         }
     }

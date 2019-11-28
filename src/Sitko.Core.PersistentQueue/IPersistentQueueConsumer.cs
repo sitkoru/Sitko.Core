@@ -7,7 +7,6 @@ namespace Sitko.Core.PersistentQueue
 {
     public interface IPersistentQueueConsumer
     {
-        Task StopAsync();
     }
 
     public interface IPersistentQueueConsumer<TMessage> : IPersistentQueueConsumer

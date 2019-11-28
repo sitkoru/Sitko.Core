@@ -13,7 +13,7 @@ using Sitko.Core.PersistentQueue.Internal;
 namespace Sitko.Core.PersistentQueue.Consumer
 {
     public abstract class PersistentQueueConsumer<TMessage, TConnection> : PersistentQueueChannel<TConnection>,
-        IPersistentQueueConsumer<TMessage> where TConnection : IPersistentQueueConnection
+        IPersistentQueueConsumer<TMessage>, IAsyncDisposable where TConnection : IPersistentQueueConnection
         where TMessage : IMessage, new()
     {
         private readonly ILogger<PersistentQueueConsumer<TMessage, TConnection>> _logger;
@@ -23,6 +23,8 @@ namespace Sitko.Core.PersistentQueue.Consumer
         private readonly Channel<PersistentQueueMessage> _buffer = Channel.CreateBounded<PersistentQueueMessage>(2000);
         private readonly List<Task> _workers = new List<Task>();
         private readonly PersistentQueueMetricsCollector _metricsCollector;
+        private bool _isDisposed;
+        private string _queueName;
 
         public PersistentQueueConsumer(IPersistentQueueConnectionFactory<TConnection> connectionFactory,
             IOptions<PersistedQueueHostedServiceOptions<TMessage>> queueOptions,
@@ -33,6 +35,7 @@ namespace Sitko.Core.PersistentQueue.Consumer
             _queueOptions = queueOptions.Value;
             _metricsCollector = metricsCollector;
             _logger = logger;
+            _queueName = Activator.CreateInstance<TMessage>().GetQueueName();
             for (var i = 0; i < _queueOptions.Workers; i++)
             {
                 _logger.LogDebug("Start worker ({type}) #{number}", typeof(TMessage), i + 1);
@@ -43,11 +46,10 @@ namespace Sitko.Core.PersistentQueue.Consumer
         public async Task RunAsync(Func<TMessage, PersistentQueueMessageContext, Task<bool>> callback,
             PersistedQueueHostedServiceOptions<TMessage> options = null)
         {
-            var empty = Activator.CreateInstance<TMessage>();
             var connection = await _connectionFactory.GetConnection();
-            _logger.LogInformation("Subscribe to {queueName}", empty.GetQueueName());
+            _logger.LogInformation("Subscribe to {queueName}", _queueName);
             _callback = callback;
-            await connection.SubscribeAsync(options ?? _queueOptions, empty.GetQueueName(), queueMessage =>
+            await connection.SubscribeAsync(options ?? _queueOptions, _queueName, queueMessage =>
             {
                 var message = _serializer.Deserialize(queueMessage.Data);
                 var queueResult = _processingQueue.TryAdd(message.Id, true);
@@ -73,9 +75,8 @@ namespace Sitko.Core.PersistentQueue.Consumer
             PersistedQueueHostedServiceOptions<TMessage> options = null)
             where TResponse : IMessage, new()
         {
-            var empty = Activator.CreateInstance<TMessage>();
             var connection = await _connectionFactory.GetConnection();
-            await connection.SubscribeWithResponseAsync(options ?? _queueOptions, empty.GetQueueName(),
+            await connection.SubscribeWithResponseAsync(options ?? _queueOptions, _queueName,
                 async queueMessage =>
                 {
                     var message = _serializer.Deserialize(queueMessage.Data);
@@ -182,13 +183,18 @@ namespace Sitko.Core.PersistentQueue.Consumer
             }
         }
 
-        public async Task StopAsync()
+        public async ValueTask DisposeAsync()
         {
-            var empty = Activator.CreateInstance<TMessage>();
+            if (_isDisposed)
+            {
+                return;
+            }
+            
             var connection = await _connectionFactory.GetConnection();
-            await connection.UnSubscribeAsync(empty.GetQueueName());
+            await connection.UnSubscribeAsync(_queueName);
             _buffer.Writer.TryComplete();
             await Task.WhenAll(_workers);
+            _isDisposed = true;
         }
     }
 }
