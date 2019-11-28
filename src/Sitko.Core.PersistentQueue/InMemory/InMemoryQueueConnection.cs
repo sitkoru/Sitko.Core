@@ -17,6 +17,8 @@ namespace Sitko.Core.PersistentQueue.InMemory
             return _channels.GetOrAdd(queue, Channel.CreateUnbounded<InMemoryPersistentQueueMessage>());
         }
 
+        public Guid Id { get; } = Guid.NewGuid();
+
         public async Task PublishAsync(string queue, byte[] payload)
         {
             var channel = GetChannel(queue);
@@ -78,6 +80,16 @@ namespace Sitko.Core.PersistentQueue.InMemory
             }
 
             return Task.CompletedTask;
+        }
+
+        public bool IsHealthy()
+        {
+            return true;
+        }
+
+        public string? GetLastError()
+        {
+            return null;
         }
     }
 }

@@ -9,7 +9,6 @@ namespace Sitko.Core.PersistentQueue.Nats
 {
     public class NatsQueueConnection : IPersistentQueueConnection, IDisposable
     {
-        internal readonly Guid Id = Guid.NewGuid();
         private IConnection _natsConn;
         private readonly PersistentQueueModuleOptions _options;
         internal IStanConnection StanConnection { get; }
@@ -54,6 +53,8 @@ namespace Sitko.Core.PersistentQueue.Nats
 
             _disposed = true;
         }
+
+        public Guid Id { get; } = Guid.NewGuid();
 
         public Task PublishAsync(string queue, byte[] payload)
         {
@@ -148,6 +149,16 @@ namespace Sitko.Core.PersistentQueue.Nats
             }
 
             return Task.CompletedTask;
+        }
+
+        public bool IsHealthy()
+        {
+            return _natsConn.State == ConnState.CONNECTED;
+        }
+
+        public string? GetLastError()
+        {
+            return _natsConn.LastError.ToString();
         }
 
         public class NatsPersistentQueueMessage : PersistentQueueMessage
