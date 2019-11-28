@@ -10,7 +10,7 @@ using Sitko.Core.PersistentQueue.Queue;
 namespace Sitko.Core.PersistentQueue.Producer
 {
     public abstract class PersistentQueueProducer<T, TConnection> : PersistentQueueChannel<TConnection>,
-        IPersistentQueueProducer<T>
+        IPersistentQueueProducer<T>, IAsyncDisposable
         where T : IMessage where TConnection : IPersistentQueueConnection
     {
         private readonly ILogger<PersistentQueueProducer<T, TConnection>> _logger;
@@ -126,11 +126,10 @@ namespace Sitko.Core.PersistentQueue.Producer
             }
         }
 
-        public override void Dispose()
+        public async ValueTask DisposeAsync()
         {
             _channel.Writer.TryComplete();
-            _sendTask.GetAwaiter().GetResult();
-            base.Dispose();
+            await _sendTask;
         }
     }
 }
