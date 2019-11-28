@@ -7,13 +7,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.PersistentQueue.HostedService
 {
-    public class PersistentQueueHostedService<T> : IHostedService, System.IDisposable
+    public class PersistentQueueHostedService<T> : IHostedService
         where T : IMessage, new()
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<PersistentQueueHostedService<T>> _logger;
-        private IPersistentQueueConsumer<T> _consumer;
-        private bool _disposed;
+        private readonly IPersistentQueueConsumer<T> _consumer;
 
         public PersistentQueueHostedService(IPersistentQueueConsumer<T> consumer,
             IServiceScopeFactory scopeFactory, ILogger<PersistentQueueHostedService<T>> logger)
@@ -44,22 +43,10 @@ namespace Sitko.Core.PersistentQueue.HostedService
             if (_consumer != null)
             {
                 await _consumer.StopAsync();
-                _consumer.Dispose();
             }
 
             _logger.LogInformation("Stopped consumer of {type}", typeof(T));
             await Task.CompletedTask;
-        }
-
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _disposed = true;
-            _consumer?.Dispose();
         }
     }
 }
