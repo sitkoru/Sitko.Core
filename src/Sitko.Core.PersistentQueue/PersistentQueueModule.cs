@@ -38,7 +38,7 @@ namespace Sitko.Core.PersistentQueue
                 throw new Exception("Producer type must implement IPersistentQueueProducer");
             }
 
-            services.AddTransient(typeof(IPersistentQueueProducer<>), producerType);
+            services.AddSingleton(typeof(IPersistentQueueProducer<>), producerType);
 
             var assembly = typeof(T).Assembly;
             foreach (var type in assembly.DefinedTypes)
