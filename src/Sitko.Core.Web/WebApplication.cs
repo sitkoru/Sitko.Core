@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Web
@@ -43,6 +44,28 @@ namespace Sitko.Core.Web
         public async Task RunAsync<TStartup>() where TStartup : class
         {
             await UseStartup<TStartup>().RunAsync();
+        }
+        
+        public async Task ExecuteAsync<TStartup>(Func<IServiceProvider, Task> command) where TStartup : class
+        {
+            GetHostBuilder().UseConsoleLifetime();
+            using var host = UseStartup<TStartup>().GetAppHost();
+            await InitAsync();
+
+            var serviceProvider = host.Services;
+            await host.StartAsync();
+            try
+            {
+                using var scope = serviceProvider.CreateScope();
+                await command(scope.ServiceProvider);
+            }
+            catch (Exception ex)
+            {
+                var logger = serviceProvider.GetService<ILogger<WebApplication>>();
+                logger.LogError(ex, ex.ToString());
+            }
+
+            await host.StopAsync();
         }
 
         protected List<IWebApplicationModule> GetWebModules()
