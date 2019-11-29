@@ -16,7 +16,7 @@ namespace Sitko.Core.Search
             Logger = logger;
         }
 
-        private string IndexName => typeof(T).FullName;
+        private string IndexName => typeof(T).FullName?.ToLower().Replace(".", "_");
 
         public bool CanProcess(Type type)
         {
