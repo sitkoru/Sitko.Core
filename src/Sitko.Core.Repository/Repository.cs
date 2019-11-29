@@ -14,7 +14,7 @@ namespace Sitko.Core.Repository
     {
         internal readonly TDbContext DbContext;
         protected readonly List<IValidator<TEntity>> Validators;
-        protected readonly List<IRepositoryFilter> Filters;
+        protected readonly RepositoryFiltersManager FiltersManager;
         protected readonly List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers;
         protected readonly ILogger Logger;
 
@@ -22,7 +22,7 @@ namespace Sitko.Core.Repository
         {
             DbContext = repositoryContext.DbContext;
             Validators = repositoryContext.Validators ?? new List<IValidator<TEntity>>();
-            Filters = repositoryContext.Filters ?? new List<IRepositoryFilter>();
+            FiltersManager = repositoryContext.FiltersManager;
             AccessCheckers = repositoryContext.AccessCheckers ?? new List<IAccessChecker<TEntity, TEntityPk>>();
             Logger = repositoryContext.Logger;
 
@@ -367,21 +367,11 @@ namespace Sitko.Core.Repository
             return (!failures.Any(), failures);
         }
 
-        protected virtual async Task<bool> BeforeValidateAsync(TEntity item,
+        protected virtual Task<bool> BeforeValidateAsync(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult,
             PropertyChange[] changes = null)
         {
-            var result = true;
-            foreach (var repositoryFilter in Filters)
-            {
-                if (!repositoryFilter.CanProcess(item.GetType())) continue;
-                if (!await repositoryFilter.BeforeValidateAsync<TEntity, TEntityPk>(item, validationResult, changes))
-                {
-                    result = false;
-                }
-            }
-
-            return result;
+            return FiltersManager.BeforeValidateAsync<TEntity, TEntityPk>(item, validationResult, changes);
         }
 
         public IQueryable<TEntity> GetBaseQuery()
@@ -399,36 +389,16 @@ namespace Sitko.Core.Repository
             return new RepositoryQuery<TEntity>(GetBaseQuery());
         }
 
-        protected virtual async Task<bool> BeforeSaveAsync(TEntity item,
+        protected virtual Task<bool> BeforeSaveAsync(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult,
             PropertyChange[] changes = null)
         {
-            var result = true;
-            foreach (var repositoryFilter in Filters)
-            {
-                if (!repositoryFilter.CanProcess(item.GetType())) continue;
-                if (!await repositoryFilter.BeforeSaveAsync<TEntity, TEntityPk>(item, validationResult, changes))
-                {
-                    result = false;
-                }
-            }
-
-            return result;
+            return FiltersManager.BeforeSaveAsync<TEntity, TEntityPk>(item, validationResult, changes);
         }
 
-        protected virtual async Task<bool> AfterSaveAsync(TEntity item, PropertyChange[] changes = null)
+        protected virtual Task<bool> AfterSaveAsync(TEntity item, PropertyChange[] changes = null)
         {
-            var result = true;
-            foreach (var repositoryFilter in Filters)
-            {
-                if (!repositoryFilter.CanProcess(item.GetType())) continue;
-                if (!await repositoryFilter.AfterSaveAsync<TEntity, TEntityPk>(item, changes))
-                {
-                    result = false;
-                }
-            }
-
-            return result;
+            return FiltersManager.AfterSaveAsync<TEntity, TEntityPk>(item, changes);
         }
 
         protected virtual Task BeforeDeleteAsync(TEntity entity)

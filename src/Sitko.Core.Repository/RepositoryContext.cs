@@ -20,8 +20,7 @@ namespace Sitko.Core.Repository
             _scope = serviceScopeFactory.CreateScope();
             _loggerFactory = loggerFactory;
             DbContext = _scope.ServiceProvider.GetRequiredService<TDbContext>();
-            Filters = _scope.ServiceProvider.GetServices<IRepositoryFilter>()?.ToList() ??
-                      new List<IRepositoryFilter>();
+            FiltersManager = _scope.ServiceProvider.GetRequiredService<RepositoryFiltersManager>();
             Validators = _scope.ServiceProvider.GetServices<IValidator<TEntity>>()?.ToList() ??
                          new List<IValidator<TEntity>>();
             AccessCheckers = _scope.ServiceProvider.GetServices<IAccessChecker<TEntity, TEntityPk>>()?.ToList() ??
@@ -33,7 +32,7 @@ namespace Sitko.Core.Repository
         public ILogger<Repository<TEntity, TEntityPk, TDbContext>> Logger =>
             _loggerFactory.CreateLogger<Repository<TEntity, TEntityPk, TDbContext>>();
 
-        public List<IRepositoryFilter> Filters { get; }
+        public RepositoryFiltersManager FiltersManager { get; }
         public List<IValidator<TEntity>> Validators { get; }
         public List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers { get; }
 
