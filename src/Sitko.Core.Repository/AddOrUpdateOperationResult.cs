@@ -8,11 +8,13 @@ namespace Sitko.Core.Repository
     {
         public bool IsSuccess { get; }
         public T Entity { get; }
+        public PropertyChange[] Changes { get; }
         public ValidationFailure[] Errors { get; }
 
-        public AddOrUpdateOperationResult(T entity, IEnumerable<ValidationFailure> errors)
+        public AddOrUpdateOperationResult(T entity, IEnumerable<ValidationFailure> errors, PropertyChange[] changes)
         {
             Entity = entity;
+            Changes = changes;
             var validationFailures = errors as ValidationFailure[] ?? errors.ToArray();
             Errors = validationFailures.ToArray();
             IsSuccess = !validationFailures.Any();
