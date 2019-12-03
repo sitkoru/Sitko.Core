@@ -12,7 +12,7 @@ namespace Sitko.Core.Repository
     public abstract class Repository<TEntity, TEntityPk, TDbContext> : IRepository<TEntity, TEntityPk>
         where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext
     {
-        internal readonly TDbContext DbContext;
+        protected readonly TDbContext DbContext;
         protected readonly List<IValidator<TEntity>> Validators;
         protected readonly RepositoryFiltersManager FiltersManager;
         protected readonly List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers;
