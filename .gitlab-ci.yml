@@ -4,7 +4,7 @@ stages:
 
 image: hub.0xdev.ru/infrastructure/dotnet-ci:3.1
 variables:
-    VERSION: 3.1.$CI_PIPELINE_ID-preview
+    VERSION: 3.1.$CI_PIPELINE_ID
 
 
 build:
