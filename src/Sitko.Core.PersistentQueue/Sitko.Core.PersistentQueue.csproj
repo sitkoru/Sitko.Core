@@ -7,9 +7,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Grpc.Tools" Version="2.25.0" PrivateAssets="All" />
-    <PackageReference Include="Google.Protobuf" Version="3.10.1" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0-preview3.19551.4" />
-    <PackageReference Include="System.Threading.Channels" Version="4.7.0-preview3.19551.4" />
+    <PackageReference Include="Google.Protobuf" Version="3.11.1" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0" />
+    <PackageReference Include="System.Threading.Channels" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
