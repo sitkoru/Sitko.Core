@@ -23,7 +23,7 @@ namespace Sitko.Core.Web
             });
         }
 
-        public WebApplication Run<TStartup>(int port = 0) where TStartup : class
+        public WebApplication Run<TStartup>(int port = 0) where TStartup : BaseStartup
         {
             GetHostBuilder().ConfigureWebHostDefaults(builder =>
                 builder.UseStartup<TStartup>().UseUrls($"http://*:{port.ToString()}"));
@@ -32,7 +32,7 @@ namespace Sitko.Core.Web
             return this;
         }
 
-        public WebApplication UseStartup<TStartup>() where TStartup : class
+        public WebApplication UseStartup<TStartup>() where TStartup : BaseStartup
         {
             GetHostBuilder().ConfigureWebHostDefaults(webBuilder =>
             {
@@ -41,12 +41,12 @@ namespace Sitko.Core.Web
             return this;
         }
 
-        public async Task RunAsync<TStartup>() where TStartup : class
+        public async Task RunAsync<TStartup>() where TStartup : BaseStartup
         {
             await UseStartup<TStartup>().RunAsync();
         }
         
-        public async Task ExecuteAsync<TStartup>(Func<IServiceProvider, Task> command) where TStartup : class
+        public async Task ExecuteAsync<TStartup>(Func<IServiceProvider, Task> command) where TStartup : BaseStartup
         {
             GetHostBuilder().UseConsoleLifetime();
             using var host = UseStartup<TStartup>().GetAppHost();
