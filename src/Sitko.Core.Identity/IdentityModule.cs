@@ -1,6 +1,5 @@
 using System;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Routing;
@@ -19,22 +18,18 @@ namespace Sitko.Core.Identity
         where TDbContext : IdentityDbContext<TUser, TRole, TPk>
         where TPk : IEquatable<TPk>
     {
+        private IdentityBuilder _identityBuilder;
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
-            var identityBuilder = services
+            _identityBuilder = services
                 .AddIdentity<TUser, TRole>(options =>
                     options.SignIn.RequireConfirmedAccount = Config.RequireConfirmedAccount)
                 .AddEntityFrameworkStores<TDbContext>()
                 .AddErrorDescriber<RussianIdentityErrorDescriber>()
                 .AddDefaultTokenProviders();
-
-            if (Config.AddDefaultUi)
-            {
-                identityBuilder.AddDefaultUI();
-                services.AddRazorPages();
-            }
 
             services.ConfigureApplicationCookie(options =>
             {
@@ -55,11 +50,6 @@ namespace Sitko.Core.Identity
             }
         }
 
-        public void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-        }
-
         public void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
@@ -67,12 +57,14 @@ namespace Sitko.Core.Identity
             appBuilder.UseAuthorization();
         }
 
-        public void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)
+        public void ConfigureStartupServices(IServiceCollection services, IConfiguration configuration,
+            IHostEnvironment environment)
         {
-        }
-
-        public void ConfigureWebHost(IWebHostBuilder webHostBuilder)
-        {
+            if (Config.AddDefaultUi)
+            {
+                _identityBuilder.AddDefaultUI();
+                services.AddRazorPages();
+            }
         }
     }
 

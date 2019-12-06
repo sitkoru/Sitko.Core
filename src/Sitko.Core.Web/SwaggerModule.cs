@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -37,28 +35,10 @@ namespace Sitko.Core.Web
             });
         }
 
-        public void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
-        {
-        }
-
-        public void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-        }
-
         public void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
             appBuilder.UseSwaggerAuthorized($"{Config.Title} ({Config.Version})", "v1/swagger.json");
-        }
-
-        public void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)
-        {
-        }
-
-        public void ConfigureWebHost(IWebHostBuilder webHostBuilder)
-        {
         }
     }
 

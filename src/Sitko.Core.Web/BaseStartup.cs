@@ -39,7 +39,9 @@ namespace Sitko.Core.Web
                 options.OnDeleteCookie = cookieContext =>
                     CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
             });
+            WebApplication.GetInstance().ConfigureStartupServices(services, Configuration, Environment);
             ConfigureAppServices(services);
+            
         }
 
         public void AddRedisCache(IServiceCollection services, string redisConnectionsString)
@@ -47,8 +49,6 @@ namespace Sitko.Core.Web
             services.AddStackExchangeRedisCache(
                 options => { options.Configuration = redisConnectionsString; });
         }
-
-        
 
         public void AddMemoryCache(IServiceCollection services)
         {
@@ -104,14 +104,12 @@ namespace Sitko.Core.Web
                 });
         }
 
-        public void Configure(IApplicationBuilder appBuilder, WebApplication application,
-            IHostApplicationLifetime applicationLifetime)
+        public void Configure(IApplicationBuilder appBuilder, WebApplication application)
         {
             if (Environment.IsDevelopment())
             {
                 appBuilder.UseDeveloperExceptionPage();
             }
-
 
             appBuilder.UseMiddleware<RequestIdMiddleware>();
             if (Environment.IsProduction())
