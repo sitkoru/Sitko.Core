@@ -15,12 +15,20 @@ namespace Sitko.Core.Web
 {
     public class WebApplication : Application
     {
+        private static WebApplication _instance;
+
         public WebApplication(string[] args) : base(args)
         {
             GetHostBuilder().ConfigureServices(collection =>
             {
                 collection.AddSingleton(typeof(WebApplication), this);
             });
+            _instance = this;
+        }
+
+        public static WebApplication GetInstance()
+        {
+            return _instance;
         }
 
         public WebApplication Run<TStartup>(int port = 0) where TStartup : BaseStartup
@@ -45,7 +53,7 @@ namespace Sitko.Core.Web
         {
             await UseStartup<TStartup>().RunAsync();
         }
-        
+
         public async Task ExecuteAsync<TStartup>(Func<IServiceProvider, Task> command) where TStartup : BaseStartup
         {
             GetHostBuilder().UseConsoleLifetime();
@@ -130,6 +138,15 @@ namespace Sitko.Core.Web
             foreach (var webModule in GetWebModules())
             {
                 webModule.ConfigureEndpoints(configuration, environment, appBuilder, endpoints);
+            }
+        }
+
+        public void ConfigureStartupServices(IServiceCollection services, IConfiguration configuration,
+            IHostEnvironment environment)
+        {
+            foreach (var webModule in GetWebModules())
+            {
+                webModule.ConfigureStartupServices(services, configuration, environment);
             }
         }
     }
