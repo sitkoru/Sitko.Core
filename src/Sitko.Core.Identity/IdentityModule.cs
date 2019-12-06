@@ -49,6 +49,10 @@ namespace Sitko.Core.Identity
             IApplicationBuilder appBuilder,
             IEndpointRouteBuilder endpoints)
         {
+            if (Config.AddDefaultUi)
+            {
+                endpoints.MapRazorPages();
+            }
         }
 
         public void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,
