@@ -126,6 +126,7 @@ namespace Sitko.Core.Search.ElasticSearch
             var indexExists = await GetClient().IndexExistsAsync(indexName);
             if (indexExists.Exists)
             {
+                _logger.LogDebug("Update existing index {indexName}", indexName);
                 await GetClient().CloseIndexAsync(indexName);
                 var result = await GetClient().UpdateIndexSettingsAsync(indexName, c => c.IndexSettings(s =>
                     s.Analysis(BuildIndexDescriptor)));
@@ -138,6 +139,7 @@ namespace Sitko.Core.Search.ElasticSearch
             }
             else
             {
+                _logger.LogDebug("Create new index {indexName}", indexName);
                 var result = await GetClient()
                     .CreateIndexAsync(indexName,
                         c => c.Settings(s => s.Analysis(BuildIndexDescriptor)));
