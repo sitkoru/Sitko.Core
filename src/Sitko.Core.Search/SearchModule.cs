@@ -4,12 +4,14 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Sitko.Core.App;
 using Sitko.Core.Repository;
 
 namespace Sitko.Core.Search
 {
-    public abstract class SearchModule<TAssembly, TConfig> : BaseApplicationModule<TConfig> where TConfig : SearchModuleConfig
+    public abstract class SearchModule<TAssembly, TConfig> : BaseApplicationModule<TConfig>
+        where TConfig : SearchModuleConfig
     {
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
@@ -21,17 +23,30 @@ namespace Sitko.Core.Search
 
         protected abstract void ConfigureSearch(IServiceCollection services);
 
-        public override async Task InitAsync(IServiceProvider serviceProvider, IConfiguration configuration,
+        public override Task InitAsync(IServiceProvider serviceProvider, IConfiguration configuration,
             IHostEnvironment environment)
         {
             var searchProviders = serviceProvider.GetServices<ISearchProvider>();
+            var logger = serviceProvider.GetService<ILogger<SearchModule<TAssembly, TConfig>>>();
             if (searchProviders != null)
             {
-                foreach (var searchProvider in searchProviders)
+                Task.Run(async () =>
                 {
-                    await searchProvider.InitAsync();
-                }
+                    foreach (var searchProvider in searchProviders)
+                    {
+                        try
+                        {
+                            await searchProvider.InitAsync();
+                        }
+                        catch (Exception e)
+                        {
+                            logger.LogError(e, e.ToString());
+                        }
+                    }
+                });
             }
+
+            return Task.CompletedTask;
         }
 
         public override List<Type> GetRequiredModules()
