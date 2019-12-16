@@ -4,8 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Sitko.Core.App;
+using Sitko.Core.Web;
 
-namespace Sitko.Core.Web
+namespace Sitko.Core.Swagger
 {
     public class SwaggerModule : BaseApplicationModule<SwaggerModuleConfig>, IWebApplicationModule
     {
@@ -28,7 +29,7 @@ namespace Sitko.Core.Web
                         });
                     var security = new OpenApiSecurityRequirement
                     {
-                        {new OpenApiSecurityScheme() {Name = "Bearer"}, new string[] { }}
+                        {new OpenApiSecurityScheme {Name = "Bearer"}, new string[] { }}
                     };
                     c.AddSecurityRequirement(security);
                 }
