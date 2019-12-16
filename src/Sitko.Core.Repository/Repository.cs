@@ -41,7 +41,7 @@ namespace Sitko.Core.Repository
 
         public virtual async Task<(TEntity[] items, int itemsCount)> GetAllAsync()
         {
-            var query = CreateRepositoryQuery();
+            var query = await CreateRepositoryQueryAsync();
 
             (TEntity[] items, bool needCount) = await DoGetAllAsync(query);
 
@@ -56,7 +56,7 @@ namespace Sitko.Core.Repository
         public virtual async Task<(TEntity[] items, int itemsCount)> GetAllAsync(
             Action<RepositoryQuery<TEntity>> configureQuery)
         {
-            var query = CreateRepositoryQuery().Configure(configureQuery);
+            var query = (await CreateRepositoryQueryAsync()).Configure(configureQuery);
 
             (TEntity[] items, bool needCount) = await DoGetAllAsync(query);
 
@@ -90,7 +90,7 @@ namespace Sitko.Core.Repository
         public virtual async Task<(TEntity[] items, int itemsCount)> GetAllAsync(
             Func<RepositoryQuery<TEntity>, Task> configureQuery)
         {
-            var query = await CreateRepositoryQuery().ConfigureAsync(configureQuery);
+            var query = await (await CreateRepositoryQueryAsync()).ConfigureAsync(configureQuery);
             var (items, needCount) = await DoGetAllAsync(query);
 
             var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
@@ -113,22 +113,22 @@ namespace Sitko.Core.Repository
 
         public virtual async Task<int> CountAsync()
         {
-            return await CreateRepositoryQuery().BuildQuery().CountAsync();
+            return await (await CreateRepositoryQueryAsync()).BuildQuery().CountAsync();
         }
 
         public virtual async Task<int> CountAsync(Func<RepositoryQuery<TEntity>, Task> configureQuery)
         {
-            return await (await CreateRepositoryQuery().ConfigureAsync(configureQuery)).BuildQuery().CountAsync();
+            return await (await (await CreateRepositoryQueryAsync()).ConfigureAsync(configureQuery)).BuildQuery().CountAsync();
         }
 
         public virtual async Task<int> CountAsync(Action<RepositoryQuery<TEntity>> configureQuery)
         {
-            return await CreateRepositoryQuery().Configure(configureQuery).BuildQuery().CountAsync();
+            return await (await CreateRepositoryQueryAsync()).Configure(configureQuery).BuildQuery().CountAsync();
         }
 
         public virtual async Task<TEntity?> GetByIdAsync(TEntityPk id)
         {
-            var query = CreateRepositoryQuery().Where(i => i.Id.Equals(id)).BuildQuery();
+            var query = (await CreateRepositoryQueryAsync()).Where(i => i.Id.Equals(id)).BuildQuery();
 
             return await DoGetAsync(query);
         }
@@ -136,7 +136,7 @@ namespace Sitko.Core.Repository
         public virtual async Task<TEntity?> GetByIdAsync(TEntityPk id,
             Func<RepositoryQuery<TEntity>, Task> configureQuery)
         {
-            var query = (await CreateRepositoryQuery().Where(i => i.Id.Equals(id)).ConfigureAsync(configureQuery))
+            var query = (await (await CreateRepositoryQueryAsync()).Where(i => i.Id.Equals(id)).ConfigureAsync(configureQuery))
                 .BuildQuery();
 
             return await DoGetAsync(query);
@@ -144,28 +144,28 @@ namespace Sitko.Core.Repository
 
         public virtual async Task<TEntity?> GetByIdAsync(TEntityPk id, Action<RepositoryQuery<TEntity>> configureQuery)
         {
-            var query = CreateRepositoryQuery().Where(i => i.Id.Equals(id)).Configure(configureQuery)
+            var query = (await CreateRepositoryQueryAsync()).Where(i => i.Id.Equals(id)).Configure(configureQuery)
                 .BuildQuery();
 
             return await DoGetAsync(query);
         }
 
-        public virtual Task<TEntity?> GetAsync()
+        public virtual async Task<TEntity?> GetAsync()
         {
-            var query = CreateRepositoryQuery().BuildQuery();
-            return DoGetAsync(query);
+            var query = (await CreateRepositoryQueryAsync()).BuildQuery();
+            return await DoGetAsync(query);
         }
 
         public virtual async Task<TEntity?> GetAsync(Func<RepositoryQuery<TEntity>, Task> configureQuery)
         {
-            var query = (await CreateRepositoryQuery().ConfigureAsync(configureQuery)).BuildQuery();
+            var query = (await (await CreateRepositoryQueryAsync()).ConfigureAsync(configureQuery)).BuildQuery();
             return await DoGetAsync(query);
         }
 
-        public virtual Task<TEntity?> GetAsync(Action<RepositoryQuery<TEntity>> configureQuery)
+        public virtual async Task<TEntity?> GetAsync(Action<RepositoryQuery<TEntity>> configureQuery)
         {
-            var query = CreateRepositoryQuery().Configure(configureQuery).BuildQuery();
-            return DoGetAsync(query);
+            var query = (await CreateRepositoryQueryAsync()).Configure(configureQuery).BuildQuery();
+            return await DoGetAsync(query);
         }
 
         private async Task<TEntity?> DoGetAsync(IQueryable<TEntity> query)
@@ -188,7 +188,7 @@ namespace Sitko.Core.Repository
 
         public virtual async Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids)
         {
-            var query = CreateRepositoryQuery().Where(i => ids.Contains(i.Id));
+            var query = (await CreateRepositoryQueryAsync()).Where(i => ids.Contains(i.Id));
 
             (TEntity[] items, _) = await DoGetAllAsync(query);
 
@@ -198,7 +198,8 @@ namespace Sitko.Core.Repository
         public virtual async Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids,
             Func<RepositoryQuery<TEntity>, Task> configureQuery)
         {
-            var query = await CreateRepositoryQuery().Where(i => ids.Contains(i.Id)).ConfigureAsync(configureQuery);
+            var query = await (await CreateRepositoryQueryAsync()).Where(i => ids.Contains(i.Id))
+                .ConfigureAsync(configureQuery);
 
             (TEntity[] items, _) = await DoGetAllAsync(query);
 
@@ -208,7 +209,7 @@ namespace Sitko.Core.Repository
         public virtual async Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids,
             Action<RepositoryQuery<TEntity>> configureQuery)
         {
-            var query = CreateRepositoryQuery().Where(i => ids.Contains(i.Id)).Configure(configureQuery);
+            var query = (await CreateRepositoryQueryAsync()).Where(i => ids.Contains(i.Id)).Configure(configureQuery);
 
             (TEntity[] items, _) = await DoGetAllAsync(query);
 
@@ -384,9 +385,9 @@ namespace Sitko.Core.Repository
             return query;
         }
 
-        public virtual RepositoryQuery<TEntity> CreateRepositoryQuery()
+        protected virtual Task<RepositoryQuery<TEntity>> CreateRepositoryQueryAsync()
         {
-            return new RepositoryQuery<TEntity>(GetBaseQuery());
+            return Task.FromResult(new RepositoryQuery<TEntity>(GetBaseQuery()));
         }
 
         protected virtual Task<bool> BeforeSaveAsync(TEntity item,
