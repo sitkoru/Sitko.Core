@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
-namespace Sitko.Core.Web
+namespace Sitko.Core.Swagger
 {
     [UsedImplicitly]
     public class SwaggerAuthorizedMiddleware
