@@ -33,8 +33,8 @@ namespace Sitko.Core.Identity
 
             services.ConfigureApplicationCookie(options =>
             {
-                options.LoginPath = "/Identity/Account/Login";
-                options.LogoutPath = "/Identity/Account/Logout";
+                options.LoginPath = Config.LoginPath;
+                options.LogoutPath = Config.LogoutPath;
                 options.ExpireTimeSpan = Config.CookieExpireTimeSpan;
                 options.SlidingExpiration = Config.CookieSlidingExpiration;
             });
@@ -74,5 +74,9 @@ namespace Sitko.Core.Identity
         public TimeSpan CookieExpireTimeSpan { get; set; } = TimeSpan.FromDays(30);
         public bool CookieSlidingExpiration { get; set; } = true;
         public bool RequireConfirmedAccount { get; set; } = true;
+
+        public string LoginPath { get; set; } = "/Identity/Account/Login";
+        
+        public string LogoutPath { get; set; } = "/Identity/Account/Logout";
     }
 }
