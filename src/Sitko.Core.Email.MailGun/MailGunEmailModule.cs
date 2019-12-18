@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Sitko.Core.Email.MailGun
@@ -15,7 +16,18 @@ namespace Sitko.Core.Email.MailGun
         public MailGunEmailModuleConfig(string domain, string apiKey, string from, string host, string scheme) : base(
             from, host, scheme)
         {
+            if (string.IsNullOrEmpty(domain))
+            {
+                throw new ArgumentException("Provide domain registered in mailgun", nameof(domain));
+            }
+
             Domain = domain;
+
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                throw new ArgumentException("Provide mailgun apikey", nameof(apiKey));
+            }
+
             ApiKey = apiKey;
         }
 
