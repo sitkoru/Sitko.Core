@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
@@ -32,8 +33,25 @@ namespace Sitko.Core.Email
     {
         protected EmailModuleConfig(string from, string host, string scheme)
         {
+            if (string.IsNullOrEmpty(from))
+            {
+                throw new ArgumentException("Provide value for from address", nameof(from));
+            }
+
             From = from;
+
+            if (string.IsNullOrEmpty(host))
+            {
+                throw new ArgumentException("Provide value for host uri to generate absolute urls", nameof(host));
+            }
+
             Host = new HostString(host);
+
+            if (string.IsNullOrEmpty(scheme))
+            {
+                throw new ArgumentException("Provide value for uri scheme to generate absolute urls", nameof(scheme));
+            }
+
             Scheme = scheme;
         }
 
