@@ -1,4 +1,5 @@
 using System;
+using FluentEmail.Mailgun;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Sitko.Core.Email.MailGun
@@ -7,13 +8,14 @@ namespace Sitko.Core.Email.MailGun
     {
         protected override void ConfigureBuilder(FluentEmailServicesBuilder builder)
         {
-            builder.AddMailGunSender(Config.Domain, Config.ApiKey);
+            builder.AddMailGunSender(Config.Domain, Config.ApiKey, Config.Region);
         }
     }
 
     public class MailGunEmailModuleConfig : EmailModuleConfig
     {
-        public MailGunEmailModuleConfig(string domain, string apiKey, string from, string host, string scheme) : base(
+        public MailGunEmailModuleConfig(string domain, string apiKey, MailGunRegion region, string from, string host,
+            string scheme) : base(
             from, host, scheme)
         {
             if (string.IsNullOrEmpty(domain))
@@ -29,9 +31,11 @@ namespace Sitko.Core.Email.MailGun
             }
 
             ApiKey = apiKey;
+            Region = region;
         }
 
         public string Domain { get; }
         public string ApiKey { get; }
+        public MailGunRegion Region { get; }
     }
 }
