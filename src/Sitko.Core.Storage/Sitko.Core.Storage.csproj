@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.3.110" />
+    <PackageReference Include="AWSSDK.S3" Version="3.3.110.5" />
     <PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="3.0.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
   </ItemGroup>
