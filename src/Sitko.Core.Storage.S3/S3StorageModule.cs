@@ -6,14 +6,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
-namespace Sitko.Core.Storage
+namespace Sitko.Core.Storage.S3
 {
-    public class S3StorageModule : BaseApplicationModule<S3StorageOptions>
+    public class S3StorageModule<T> : BaseApplicationModule<T> where T : S3StorageOptions
     {
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
-            services.AddSingleton<IStorage, S3Storage>();
+            services.AddSingleton<IStorage<T>, S3Storage<T>>();
             services.AddSingleton<CdnHelper>();
             services.AddHealthChecks().AddS3(options =>
             {

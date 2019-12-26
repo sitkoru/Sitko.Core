@@ -4,6 +4,6 @@ namespace Sitko.Core.Storage
 {
     public interface IStorageOptions
     {
-        Uri PublicUri { get; set; }
+        Uri PublicUri { get; }
     }
 }
