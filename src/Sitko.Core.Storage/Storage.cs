@@ -72,7 +72,7 @@ namespace Sitko.Core.Storage
 
             var storageItem = CreateStorageItem(file, fileName, destinationPath);
 
-            await ProcessImageAsync(storageItem, file, destinationPath, sizes);
+            await ProcessImageAsync(storageItem, file, path, sizes);
 
             return await SaveStorageItemAsync(file, path, destinationPath, storageItem);
         }
@@ -89,7 +89,7 @@ namespace Sitko.Core.Storage
         }
 
         private async Task ProcessImageAsync(StorageItem storageItem, Stream file,
-            string destinationPath, List<StorageImageSize>? sizes = null)
+            string path, List<StorageImageSize>? sizes = null)
         {
             file.Seek(0, SeekOrigin.Begin);
             using var image = Image.Load<Rgba32>(file);
@@ -106,14 +106,14 @@ namespace Sitko.Core.Storage
                 storageItem.ImageInfo.Thumbnails = new List<StorageItemImageThumbnail>();
                 foreach (var size in sizes)
                 {
-                    var thumb = await CreateThumbnailAsync(image, size, destinationPath, storageItem.StorageFileName);
+                    var thumb = await CreateThumbnailAsync(image, size, path, storageItem.StorageFileName);
                     storageItem.ImageInfo.Thumbnails.Add(thumb);
                 }
             }
         }
 
         private async Task<StorageItemImageThumbnail> CreateThumbnailAsync(Image<Rgba32> image, StorageImageSize size,
-            string destinationPath, string fileName)
+            string path, string fileName)
         {
             var thumb = image.Clone();
             thumb.Mutate(i =>
@@ -132,7 +132,7 @@ namespace Sitko.Core.Storage
             };
 
             thumb.Save(thumbStream, format);
-            var thumbPath = Path.Combine(destinationPath, "thumb", thumbFileName).Replace("\\", "/");
+            var thumbPath = Path.Combine(path, "thumb", thumbFileName).Replace("\\", "/");
             if (thumbPath.StartsWith("/"))
             {
                 thumbPath = thumbPath.Substring(1);
