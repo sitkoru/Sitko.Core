@@ -48,7 +48,7 @@ namespace Sitko.Core.Storage
         private string GetDestinationPath(string fileName, string path)
         {
             var destinationName = GetStorageFileName(fileName);
-            var destinationPath = $"{path}/{destinationName}";
+            var destinationPath = $"{path}/{destinationName}".Replace("\\", "/").Replace("//", "/");
             return destinationPath;
         }
 
