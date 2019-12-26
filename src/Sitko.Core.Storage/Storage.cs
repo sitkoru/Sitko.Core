@@ -93,8 +93,8 @@ namespace Sitko.Core.Storage
         {
             file.Seek(0, SeekOrigin.Begin);
             using var image = Image.Load<Rgba32>(file);
-            storageItem.Type = StorageItemType.Picture;
-            storageItem.PictureInfo = new StorageItemPictureInfo
+            storageItem.Type = StorageItemType.Image;
+            storageItem.ImageInfo = new StorageItemImageInfo
             {
                 VerticalResolution = image.Height, HorizontalResolution = image.Width
             };
@@ -103,16 +103,16 @@ namespace Sitko.Core.Storage
 
             if (sizes != null && sizes.Any())
             {
-                storageItem.PictureInfo.Thumbnails = new List<StorageItemPictureThumbnail>();
+                storageItem.ImageInfo.Thumbnails = new List<StorageItemImageThumbnail>();
                 foreach (var size in sizes)
                 {
                     var thumb = await CreateThumbnailAsync(image, size, destinationPath, storageItem.StorageFileName);
-                    storageItem.PictureInfo.Thumbnails.Add(thumb);
+                    storageItem.ImageInfo.Thumbnails.Add(thumb);
                 }
             }
         }
 
-        private async Task<StorageItemPictureThumbnail> CreateThumbnailAsync(Image<Rgba32> image, StorageImageSize size,
+        private async Task<StorageItemImageThumbnail> CreateThumbnailAsync(Image<Rgba32> image, StorageImageSize size,
             string destinationPath, string fileName)
         {
             var thumb = image.Clone();
@@ -140,7 +140,7 @@ namespace Sitko.Core.Storage
 
             await DoSaveAsync(thumbPath, thumbStream);
 
-            return new StorageItemPictureThumbnail(new Uri($"{_options.PublicUri}/{thumbPath}"), thumbPath, thumb.Width,
+            return new StorageItemImageThumbnail(new Uri($"{_options.PublicUri}/{thumbPath}"), thumbPath, thumb.Width,
                 thumb.Height, size.Key);
         }
     }

@@ -13,7 +13,7 @@ namespace Sitko.Core.Storage
 
         public string Path { get; set; }
         public StorageItemType Type { get; set; } = StorageItemType.Other;
-        public StorageItemPictureInfo? PictureInfo { get; set; }
+        public StorageItemImageInfo? ImageInfo { get; set; }
 
         public string StorageFileName => FilePath.Substring(FilePath.LastIndexOf('/') + 1);
         private readonly string[] _units = {"bytes", "KB", "MB", "GB", "TB", "PB"};
@@ -40,20 +40,20 @@ namespace Sitko.Core.Storage
             }
         }
 
-        public StorageItemPictureThumbnail? GetThumbnail(string key)
+        public StorageItemImageThumbnail? GetThumbnailByKey(string key)
         {
-            return PictureInfo?.Thumbnails?.Where(t => t.Key == key).FirstOrDefault();
+            return ImageInfo?.Thumbnails?.Where(t => t.Key == key).FirstOrDefault();
         }
 
-        public Uri GetPictureByWidth(int width)
+        public Uri GetImageUriByWidth(int width)
         {
-            var thumbnail = PictureInfo?.Thumbnails.Where(t => t.Width >= width).OrderBy(t => t.Width).FirstOrDefault();
+            var thumbnail = ImageInfo?.Thumbnails.Where(t => t.Width >= width).OrderBy(t => t.Width).FirstOrDefault();
             return thumbnail != null ? thumbnail.PublicUri : PublicUri;
         }
 
-        public Uri GetPictureByHeight(int height)
+        public Uri GetImageUrlByHeight(int height)
         {
-            var thumbnail = PictureInfo?.Thumbnails.Where(t => t.Height >= height).OrderBy(t => t.Height)
+            var thumbnail = ImageInfo?.Thumbnails.Where(t => t.Height >= height).OrderBy(t => t.Height)
                 .FirstOrDefault();
             return thumbnail != null ? thumbnail.PublicUri : PublicUri;
         }
@@ -61,19 +61,19 @@ namespace Sitko.Core.Storage
 
     public enum StorageItemType
     {
-        Picture = 1,
+        Image = 1,
         Other = 2
     }
 
-    public class StorageItemPictureInfo
+    public class StorageItemImageInfo
     {
         public double VerticalResolution { get; set; }
         public double HorizontalResolution { get; set; }
 
-        public List<StorageItemPictureThumbnail> Thumbnails { get; set; }
+        public List<StorageItemImageThumbnail> Thumbnails { get; set; }
     }
 
-    public class StorageItemPictureThumbnail
+    public class StorageItemImageThumbnail
     {
         public Uri PublicUri { get; set; }
         public string FilePath { get; set; }
@@ -83,11 +83,11 @@ namespace Sitko.Core.Storage
 
         public string Key { get; set; }
 
-        public StorageItemPictureThumbnail()
+        public StorageItemImageThumbnail()
         {
         }
 
-        public StorageItemPictureThumbnail(Uri publicUri, string filePath, int width, int height, string key)
+        public StorageItemImageThumbnail(Uri publicUri, string filePath, int width, int height, string key)
         {
             PublicUri = publicUri;
             FilePath = filePath;
