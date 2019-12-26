@@ -14,7 +14,7 @@ namespace Sitko.Core.Storage.S3
         {
             base.ConfigureServices(services, configuration, environment);
             services.AddSingleton<IStorage<T>, S3Storage<T>>();
-            services.AddSingleton<CdnHelper>();
+            services.AddSingleton<CdnHelper<T>>();
             services.AddHealthChecks().AddS3(options =>
             {
                 options.AccessKey = Config.AccessKey;
