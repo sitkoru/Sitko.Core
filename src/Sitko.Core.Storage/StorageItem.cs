@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sitko.Core.Storage
 {
@@ -37,6 +39,24 @@ namespace Sitko.Core.Storage
                 return Math.Round(size, 2) + ' ' + _units[unit];
             }
         }
+
+        public StorageItemPictureThumbnail? GetThumbnail(string key)
+        {
+            return PictureInfo?.Thumbnails?.Where(t => t.Key == key).FirstOrDefault();
+        }
+
+        public Uri GetPictureByWidth(int width)
+        {
+            var thumbnail = PictureInfo?.Thumbnails.Where(t => t.Width >= width).OrderBy(t => t.Width).FirstOrDefault();
+            return thumbnail != null ? thumbnail.PublicUri : PublicUri;
+        }
+
+        public Uri GetPictureByHeight(int height)
+        {
+            var thumbnail = PictureInfo?.Thumbnails.Where(t => t.Height >= height).OrderBy(t => t.Height)
+                .FirstOrDefault();
+            return thumbnail != null ? thumbnail.PublicUri : PublicUri;
+        }
     }
 
     public enum StorageItemType
@@ -50,9 +70,7 @@ namespace Sitko.Core.Storage
         public double VerticalResolution { get; set; }
         public double HorizontalResolution { get; set; }
 
-        public StorageItemPictureThumbnail? LargeThumbnail { get; set; }
-        public StorageItemPictureThumbnail? MediumThumbnail { get; set; }
-        public StorageItemPictureThumbnail? SmallThumbnail { get; set; }
+        public List<StorageItemPictureThumbnail> Thumbnails { get; set; }
     }
 
     public class StorageItemPictureThumbnail
@@ -63,16 +81,19 @@ namespace Sitko.Core.Storage
         public int Width { get; set; }
         public int Height { get; set; }
 
+        public string Key { get; set; }
+
         public StorageItemPictureThumbnail()
         {
         }
 
-        public StorageItemPictureThumbnail(Uri publicUri, string filePath, int width, int height)
+        public StorageItemPictureThumbnail(Uri publicUri, string filePath, int width, int height, string key)
         {
             PublicUri = publicUri;
             FilePath = filePath;
             Width = width;
             Height = height;
+            Key = key;
         }
     }
 }

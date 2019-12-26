@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
@@ -10,15 +12,16 @@ using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using SixLabors.Primitives;
 
 namespace Sitko.Core.Storage
 {
-    public abstract class Storage : IStorage
+    public abstract class Storage<T> : IStorage<T> where T : IStorageOptions
     {
-        private readonly ILogger<Storage> _logger;
+        private readonly ILogger<Storage<T>> _logger;
         private readonly StorageOptions _options;
 
-        protected Storage(StorageOptions options, ILogger<Storage> logger)
+        protected Storage(StorageOptions options, ILogger<Storage<T>> logger)
         {
             _logger = logger;
             _options = options;
@@ -26,10 +29,31 @@ namespace Sitko.Core.Storage
 
         public async Task<StorageItem> SaveFileAsync(Stream file, string fileName, string path)
         {
+            string destinationPath = GetDestinationPath(fileName, path);
+
+            var storageItem = CreateStorageItem(file, fileName, destinationPath);
+
+            return await SaveStorageItemAsync(file, path, destinationPath, storageItem);
+        }
+
+        private async Task<StorageItem> SaveStorageItemAsync(Stream file, string path, string destinationPath,
+            StorageItem storageItem)
+        {
+            file.Seek(0, SeekOrigin.Begin);
+            await DoSaveAsync(destinationPath, file);
+            _logger.LogInformation("File saved to {path}", path);
+            return storageItem;
+        }
+
+        private string GetDestinationPath(string fileName, string path)
+        {
             var destinationName = GetStorageFileName(fileName);
             var destinationPath = $"{path}/{destinationName}";
+            return destinationPath;
+        }
 
-
+        private StorageItem CreateStorageItem(Stream file, string fileName, string destinationPath)
+        {
             var storageItem = new StorageItem
             {
                 FileName = fileName,
@@ -38,16 +62,19 @@ namespace Sitko.Core.Storage
                 Path = Path.GetDirectoryName(destinationPath)?.Replace("\\", "/"),
                 PublicUri = new Uri($"{_options.PublicUri}/{destinationPath}")
             };
-
-            if (_options.ProcessImages)
-            {
-                await TryProcessImageAsync(storageItem, file, path);
-            }
-
-            file.Seek(0, SeekOrigin.Begin);
-            await DoSaveAsync(destinationPath, file);
-            _logger.LogInformation("File saved to {path}", path);
             return storageItem;
+        }
+
+        public async Task<StorageItem> SaveImageAsync(Stream file, string fileName, string path,
+            List<StorageImageSize>? sizes = null)
+        {
+            string destinationPath = GetDestinationPath(fileName, path);
+
+            var storageItem = CreateStorageItem(file, fileName, destinationPath);
+
+            await ProcessImageAsync(storageItem, file, destinationPath, sizes);
+
+            return await SaveStorageItemAsync(file, path, destinationPath, storageItem);
         }
 
         protected abstract Task<bool> DoSaveAsync(string path, Stream file);
@@ -61,41 +88,36 @@ namespace Sitko.Core.Storage
             return Guid.NewGuid() + extension;
         }
 
-        private async Task TryProcessImageAsync(StorageItem storageItem, Stream file,
-            string destinationPath)
+        private async Task ProcessImageAsync(StorageItem storageItem, Stream file,
+            string destinationPath, List<StorageImageSize>? sizes = null)
         {
-            try
+            file.Seek(0, SeekOrigin.Begin);
+            using var image = Image.Load<Rgba32>(file);
+            storageItem.Type = StorageItemType.Picture;
+            storageItem.PictureInfo = new StorageItemPictureInfo
             {
-                file.Seek(0, SeekOrigin.Begin);
-                using var image = Image.Load<Rgba32>(file);
-                storageItem.Type = StorageItemType.Picture;
-                storageItem.PictureInfo = new StorageItemPictureInfo
+                VerticalResolution = image.Height, HorizontalResolution = image.Width
+            };
+
+            sizes ??= _options.Thumbnails;
+
+            if (sizes != null && sizes.Any())
+            {
+                storageItem.PictureInfo.Thumbnails = new List<StorageItemPictureThumbnail>();
+                foreach (var size in sizes)
                 {
-                    VerticalResolution = image.Height,
-                    HorizontalResolution = image.Width,
-                    LargeThumbnail = await CreateThumbnailAsync(image,
-                        _options.LargeThumbnailWidth,
-                        _options.LargeThumbnailHeight, destinationPath, storageItem.StorageFileName),
-                    MediumThumbnail = await CreateThumbnailAsync(image,
-                        _options.MediumThumbnailWidth,
-                        _options.MediumThumbnailHeight, destinationPath, storageItem.StorageFileName),
-                    SmallThumbnail = await CreateThumbnailAsync(image,
-                        _options.SmallThumbnailWidth,
-                        _options.SmallThumbnailHeight, destinationPath, storageItem.StorageFileName)
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogInformation("File is not image: {errorText}", ex.ToString());
+                    var thumb = await CreateThumbnailAsync(image, size, destinationPath, storageItem.StorageFileName);
+                    storageItem.PictureInfo.Thumbnails.Add(thumb);
+                }
             }
         }
 
-        private async Task<StorageItemPictureThumbnail> CreateThumbnailAsync(Image<Rgba32> image, int maxWidth,
-            int maxHeight, string destinationPath, string fileName)
+        private async Task<StorageItemPictureThumbnail> CreateThumbnailAsync(Image<Rgba32> image, StorageImageSize size,
+            string destinationPath, string fileName)
         {
             var thumb = image.Clone();
             thumb.Mutate(i =>
-                i.Resize(image.Width >= image.Height ? maxWidth : 0, image.Height > image.Width ? maxHeight : 0));
+                i.Resize(new ResizeOptions {Size = new Size(size.Width, size.Height), Mode = size.Mode}));
             var thumbFileName = $"{thumb.Width.ToString()}_{thumb.Height.ToString()}_{fileName}";
             var thumbStream = new MemoryStream();
             var ext = fileName.Substring(fileName.LastIndexOf('.')).ToLowerInvariant();
@@ -119,7 +141,7 @@ namespace Sitko.Core.Storage
             await DoSaveAsync(thumbPath, thumbStream);
 
             return new StorageItemPictureThumbnail(new Uri($"{_options.PublicUri}/{thumbPath}"), thumbPath, thumb.Width,
-                thumb.Height);
+                thumb.Height, size.Key);
         }
     }
 }

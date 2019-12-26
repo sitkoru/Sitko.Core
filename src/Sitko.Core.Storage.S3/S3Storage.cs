@@ -8,16 +8,16 @@ using Amazon.S3.Transfer;
 using Amazon.S3.Util;
 using Microsoft.Extensions.Logging;
 
-namespace Sitko.Core.Storage
+namespace Sitko.Core.Storage.S3
 {
-    public sealed class S3Storage : Storage, IDisposable
+    public sealed class S3Storage<T> : Storage<T>, IDisposable where T : S3StorageOptions
     {
-        private readonly ILogger<S3Storage> _logger;
-        private readonly S3StorageOptions _options;
+        private readonly ILogger<S3Storage<T>> _logger;
+        private readonly T _options;
         private readonly AmazonS3Client _client;
         private bool _disposed;
 
-        public S3Storage(S3StorageOptions options, ILogger<S3Storage> logger) : base(options, logger)
+        public S3Storage(T options, ILogger<S3Storage<T>> logger) : base(options, logger)
         {
             _logger = logger;
             _options = options;

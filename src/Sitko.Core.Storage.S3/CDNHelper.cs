@@ -1,7 +1,7 @@
 ﻿using System;
 using JetBrains.Annotations;
 
-namespace Sitko.Core.Storage
+namespace Sitko.Core.Storage.S3
 {
     [UsedImplicitly]
     public class CdnHelper
