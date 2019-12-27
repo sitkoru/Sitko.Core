@@ -8,7 +8,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.S3
 {
-    public class S3StorageModule<T> : BaseApplicationModule<T> where T : S3StorageOptions
+    public class S3StorageModule<T> : BaseApplicationModule<T> where T : class, IS3StorageOptions
     {
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
         {

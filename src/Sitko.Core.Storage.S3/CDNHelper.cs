@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 namespace Sitko.Core.Storage.S3
 {
     [UsedImplicitly]
-    public class CdnHelper<T> where T : S3StorageOptions
+    public class CdnHelper<T> where T : IS3StorageOptions
     {
         private readonly T _options;
 
