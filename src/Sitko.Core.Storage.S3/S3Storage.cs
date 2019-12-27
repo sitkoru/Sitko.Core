@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.Storage.S3
 {
-    public sealed class S3Storage<T> : Storage<T>, IDisposable where T : S3StorageOptions
+    public sealed class S3Storage<T> : Storage<T>, IDisposable where T : IS3StorageOptions
     {
         private readonly ILogger<S3Storage<T>> _logger;
         private readonly T _options;

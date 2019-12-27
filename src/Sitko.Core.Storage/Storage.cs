@@ -19,9 +19,9 @@ namespace Sitko.Core.Storage
     public abstract class Storage<T> : IStorage<T> where T : IStorageOptions
     {
         private readonly ILogger<Storage<T>> _logger;
-        private readonly StorageOptions _options;
+        private readonly IStorageOptions _options;
 
-        protected Storage(StorageOptions options, ILogger<Storage<T>> logger)
+        protected Storage(IStorageOptions options, ILogger<Storage<T>> logger)
         {
             _logger = logger;
             _options = options;
