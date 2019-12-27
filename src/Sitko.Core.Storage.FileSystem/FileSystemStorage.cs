@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.Storage.FileSystem
 {
-    public sealed class FileSystemStorage<T> : Storage<T>, IDisposable where T : IFileSystemStorageOptions
+    public sealed class FileSystemStorage<T> : Storage<T> where T : IFileSystemStorageOptions
     {
         private readonly string _storagePath;
 
@@ -32,11 +32,6 @@ namespace Sitko.Core.Storage.FileSystem
         {
             File.Delete(filePath);
             return Task.FromResult(true);
-        }
-
-        public void Dispose()
-        {
-            throw new NotImplementedException();
         }
     }
 
