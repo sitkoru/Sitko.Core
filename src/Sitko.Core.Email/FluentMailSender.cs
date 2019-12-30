@@ -58,6 +58,7 @@ namespace Sitko.Core.Email
             {
                 try
                 {
+                    message.Data.ToAddresses.Clear();
                     message.To(recipient);
                     var res = await message.SendAsync();
                     if (!res.Successful)
