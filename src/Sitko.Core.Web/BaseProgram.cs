@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
@@ -12,6 +13,6 @@ namespace Sitko.Core.Web
             {
                 builder.AddUserSecrets<TStartup>();
                 builder.AddEnvironmentVariables();
-            });
+            }).ConfigureWebHost(builder => builder.UseStartup<TStartup>());
     }
 }
