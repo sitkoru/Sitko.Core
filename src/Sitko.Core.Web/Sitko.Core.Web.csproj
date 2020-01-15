@@ -7,9 +7,9 @@
   
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="3.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="3.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="3.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.1" />
     <ProjectReference Include="..\Sitko.Core.Consul\Sitko.Core.Consul.csproj" />
     <ProjectReference Include="..\Sitko.Core.Logging\Sitko.Core.Logging.csproj" />
   </ItemGroup>
