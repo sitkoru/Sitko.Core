@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,21 +10,25 @@ using Xunit.Abstractions;
 
 namespace Sitko.Core.Xunit
 {
-    public abstract class BaseTestScope : IDisposable
+    public abstract class BaseTestScope : IAsyncDisposable
     {
+        protected IServiceProvider? ServiceProvider;
+        private Application _application;
+        private bool _isApplicationStarted;
+
         public void Configure(string name, ITestOutputHelper testOutputHelper)
         {
-            var application = new Application(new string[0]);
+            _application = new Application(new string[0]);
 
-            application.ConfigureServices((context, services) =>
+            _application.ConfigureServices((context, services) =>
             {
                 services.AddLogging(o => o.AddProvider(new XunitLoggerProvider(testOutputHelper)));
                 ConfigureServices(context.Configuration, context.HostingEnvironment, services, name);
             });
 
 
-            application = ConfigureApplication(application, name);
-            ServiceProvider = application.GetServices();
+            _application = ConfigureApplication(_application, name);
+            ServiceProvider = _application.GetServices();
         }
 
         protected virtual Application ConfigureApplication(Application application, string name)
@@ -37,12 +43,14 @@ namespace Sitko.Core.Xunit
         }
 
 
-        protected IServiceProvider? ServiceProvider;
-
-
         public T Get<T>()
         {
             return ServiceProvider.GetRequiredService<T>();
+        }
+
+        public IEnumerable<T> GetAll<T>()
+        {
+            return ServiceProvider.GetServices<T>();
         }
 
         public ILogger<T> GetLogger<T>()
@@ -54,8 +62,24 @@ namespace Sitko.Core.Xunit
         {
         }
 
-        public virtual void Dispose()
+
+        public virtual async ValueTask DisposeAsync()
         {
+            if (_isApplicationStarted)
+            {
+                await _application.StopAsync();
+            }
+
+            await _application.DisposeAsync();
+        }
+
+        public async Task StartApplicationAsync()
+        {
+            if (!_isApplicationStarted)
+            {
+                await _application.StartAsync();
+                _isApplicationStarted = true;
+            }
         }
     }
 }

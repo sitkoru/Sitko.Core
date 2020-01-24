@@ -1,30 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Sitko.Core.Xunit
 {
-    public abstract class BaseTest
+    public abstract class BaseTest : IAsyncDisposable, IAsyncLifetime
     {
         protected ITestOutputHelper TestOutputHelper { get; }
 
-        protected BaseTest(ITestOutputHelper testOutputHelper)
-        {
-            TestOutputHelper = testOutputHelper;
-        }
-    }
+        protected readonly Dictionary<string, BaseTestScope> _scopes = new Dictionary<string, BaseTestScope>();
 
-    public abstract class BaseTest<T> : BaseTest, IDisposable where T : BaseTestScope
-    {
-        protected BaseTest(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
-        {
-        }
-
-        private readonly Dictionary<string, BaseTestScope> _scopes = new Dictionary<string, BaseTestScope>();
-
-        protected T GetScope([CallerMemberName] string name = "")
+        protected T GetScope<T>([CallerMemberName] string name = "") where T : BaseTestScope
         {
             T scope;
 
@@ -51,7 +41,7 @@ namespace Sitko.Core.Xunit
             return scope;
         }
 
-        protected IServiceScope? CreateServiceScope([CallerMemberName] string name = "")
+        protected IServiceScope? CreateServiceScope<T>([CallerMemberName] string name = "") where T : BaseTestScope
         {
             if (!_scopes.ContainsKey(name))
             {
@@ -62,12 +52,46 @@ namespace Sitko.Core.Xunit
             return scope?.Get<IServiceScopeFactory>().CreateScope();
         }
 
-        public void Dispose()
+        protected BaseTest(ITestOutputHelper testOutputHelper)
+        {
+            TestOutputHelper = testOutputHelper;
+        }
+
+        async Task IAsyncLifetime.DisposeAsync()
+        {
+            await DisposeAsync();
+        }
+
+        public virtual async ValueTask DisposeAsync()
         {
             foreach (var testScope in _scopes)
             {
-                testScope.Value.Dispose();
+                await testScope.Value.DisposeAsync();
             }
+        }
+
+        public virtual Task InitializeAsync()
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    public abstract class BaseTest<T> : BaseTest where T : BaseTestScope
+    {
+        protected BaseTest(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+        }
+
+
+        protected T GetScope([CallerMemberName] string name = "")
+        {
+            return GetScope<T>(name);
+        }
+
+
+        protected IServiceScope? CreateServiceScope([CallerMemberName] string name = "")
+        {
+            return CreateServiceScope<T>(name);
         }
     }
 }
