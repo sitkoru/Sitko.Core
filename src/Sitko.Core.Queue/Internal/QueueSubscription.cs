@@ -8,7 +8,7 @@ namespace Sitko.Core.Queue.Internal
         public Guid Id { get; } = Guid.NewGuid();
     }
 
-    internal class QueueSubscription<T> : QueueSubscription where T : class, new()
+    internal class QueueSubscription<T> : QueueSubscription where T : class
     {
         public QueueSubscription(Func<QueuePayload<T>, Task<bool>> callback)
         {

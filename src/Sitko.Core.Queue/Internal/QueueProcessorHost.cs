@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.Queue.Internal
 {
-    internal class QueueProcessorHost<T> : IQueueProcessorHost where T : class, new()
+    internal class QueueProcessorHost<T> : IQueueProcessorHost where T : class
     {
         private readonly IQueue _queue;
         private readonly IServiceProvider _serviceProvider;
