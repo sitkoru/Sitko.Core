@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package Sitko.Core.Queue.Nats.Tests;
+
+message TestMsg {
+    string Data = 1;
+}
