@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,7 +44,8 @@ namespace Sitko.Core.Xunit
             }
             else
             {
-                application.AddModule<PostgresModule<TDbContext>, PostgresDatabaseModuleConfig<TDbContext>>((configuration,
+                application.AddModule<PostgresModule<TDbContext>, PostgresDatabaseModuleConfig<TDbContext>>((
+                    configuration,
                     environment) =>
                 {
                     var postgresConfig = GetPostgresConfig(configuration, environment, name);
@@ -97,10 +99,11 @@ namespace Sitko.Core.Xunit
             return null;
         }
 
-        public override void Dispose()
+        public override async ValueTask DisposeAsync()
         {
-            GetDbContext().Database.EnsureDeleted();
-            GetDbContext().Dispose();
+            await base.DisposeAsync();
+            await GetDbContext().Database.EnsureDeletedAsync();
+            await GetDbContext().DisposeAsync();
         }
     }
 }
