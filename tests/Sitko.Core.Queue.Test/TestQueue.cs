@@ -21,7 +21,8 @@ namespace Sitko.Core.Queue.Tests
         protected override Task<QueuePayload<TResponse>> DoRequestAsync<TMessage, TResponse>(
             QueuePayload<TMessage> queuePayload, TimeSpan timeout)
         {
-            return Task.FromResult(new QueuePayload<TResponse>(new TResponse(), new QueueMessageContext()));
+            return Task.FromResult(new QueuePayload<TResponse>(Activator.CreateInstance<TResponse>(),
+                new QueueMessageContext()));
         }
 
         protected override Task<QueueSubscribeResult> DoReplyAsync<TMessage, TResponse>(
@@ -45,7 +46,7 @@ namespace Sitko.Core.Queue.Tests
             return Task.CompletedTask;
         }
     }
-    
+
     public class TestQueueModule : QueueModule<TestQueue, TestQueueConfig>
     {
     }
