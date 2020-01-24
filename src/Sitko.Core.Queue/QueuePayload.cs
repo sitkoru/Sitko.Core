@@ -1,6 +1,6 @@
 namespace Sitko.Core.Queue
 {
-    public class QueuePayload<T> where T : class, new()
+    public class QueuePayload<T> where T : class
     {
         public T Message { get; }
         public QueueMessageContext MessageContext { get; }

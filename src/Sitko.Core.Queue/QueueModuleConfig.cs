@@ -17,7 +17,7 @@ namespace Sitko.Core.Queue
             MetricsEnabled = true;
         }
 
-        public void ConfigureMessage<T>(IQueueMessageOptions<T> options) where T : class, new()
+        public void ConfigureMessage<T>(IQueueMessageOptions<T> options) where T : class
         {
             if (Options.ContainsKey(typeof(T)))
             {
@@ -53,7 +53,7 @@ namespace Sitko.Core.Queue
         }
 
         public void RegisterProcessor<TProcessor, TMessage>()
-            where TProcessor : class, IQueueProcessor<TMessage> where TMessage : class, new()
+            where TProcessor : class, IQueueProcessor<TMessage> where TMessage : class
         {
             var entry = ProcessorEntries.FirstOrDefault(e => e.Type == typeof(TProcessor)) ??
                         new QueueProcessorEntry(typeof(TProcessor));

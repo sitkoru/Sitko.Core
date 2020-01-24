@@ -19,7 +19,7 @@ namespace Sitko.Core.Queue.InMemory
         {
         }
 
-        private InMemoryQueueChannel<T> GetOrCreateChannel<T>() where T : class, new()
+        private InMemoryQueueChannel<T> GetOrCreateChannel<T>() where T : class
         {
             return _channels.GetOrAdd(typeof(T), type =>
             {

@@ -28,7 +28,7 @@ namespace Sitko.Core.Queue
             _messageOptions = context.MessageOptions;
         }
 
-        private async Task<bool> OnBeforeReceiveMessageAsync<T>(QueuePayload<T> payload) where T : class, new()
+        private async Task<bool> OnBeforeReceiveMessageAsync<T>(QueuePayload<T> payload) where T : class
         {
             foreach (var queueMiddleware in _middlewares)
             {
@@ -43,7 +43,7 @@ namespace Sitko.Core.Queue
         }
 
         private async Task<QueuePublishResult> OnBeforePublishMessageAsync<T>(QueuePayload<T> payload)
-            where T : class, new()
+            where T : class
         {
             foreach (var queueMiddleware in _middlewares)
             {
@@ -57,7 +57,7 @@ namespace Sitko.Core.Queue
             return new QueuePublishResult();
         }
 
-        private async Task OnAfterReceiveMessageAsync<T>(QueuePayload<T> payload) where T : class, new()
+        private async Task OnAfterReceiveMessageAsync<T>(QueuePayload<T> payload) where T : class
         {
             foreach (var queueMiddleware in _middlewares)
             {
@@ -65,7 +65,7 @@ namespace Sitko.Core.Queue
             }
         }
 
-        private async Task OnAfterPublishMessageAsync<T>(QueuePayload<T> payload) where T : class, new()
+        private async Task OnAfterPublishMessageAsync<T>(QueuePayload<T> payload) where T : class
         {
             foreach (var queueMiddleware in _middlewares)
             {
@@ -73,7 +73,7 @@ namespace Sitko.Core.Queue
             }
         }
 
-        protected async Task<bool> ProcessMessageAsync<T>(QueuePayload<T> payload) where T : class, new()
+        protected async Task<bool> ProcessMessageAsync<T>(QueuePayload<T> payload) where T : class
         {
             var subscriptions = _subscriptions.Values.Where(s => s is QueueSubscription<T>).ToList();
 
@@ -123,28 +123,28 @@ namespace Sitko.Core.Queue
         }
 
         protected abstract Task<QueuePublishResult> DoPublishAsync<T>(QueuePayload<T> queuePayload)
-            where T : class, new();
+            where T : class;
 
         protected abstract Task<QueuePayload<TResponse>> DoRequestAsync<TMessage, TResponse>(
             QueuePayload<TMessage> queuePayload, TimeSpan timeout)
-            where TMessage : class, new()
-            where TResponse : class, new();
+            where TMessage : class
+            where TResponse : class;
 
         protected abstract Task<QueueSubscribeResult> DoReplyAsync<TMessage, TResponse>(
             Func<QueuePayload<TMessage>, Task<QueuePayload<TResponse>?>> callback)
-            where TMessage : class, new()
-            where TResponse : class, new();
+            where TMessage : class
+            where TResponse : class;
 
         protected abstract Task<bool> DoStopReplyAsync<TMessage, TResponse>(Guid id)
-            where TMessage : class, new()
-            where TResponse : class, new();
+            where TMessage : class
+            where TResponse : class;
 
         protected abstract Task<QueueSubscribeResult> DoSubscribeAsync<T>(IQueueMessageOptions<T>? options = null)
-            where T : class, new();
+            where T : class;
 
-        protected abstract Task DoUnsubscribeAsync<T>() where T : class, new();
+        protected abstract Task DoUnsubscribeAsync<T>() where T : class;
 
-        private IQueueMessageOptions<T>? GetOptions<T>() where T : class, new()
+        private IQueueMessageOptions<T>? GetOptions<T>() where T : class
         {
             return _messageOptions.FirstOrDefault(o => o is IQueueMessageOptions<T>) as IQueueMessageOptions<T>;
         }
@@ -170,7 +170,7 @@ namespace Sitko.Core.Queue
 
         public async Task<QueuePublishResult> PublishAsync<T>(T message,
             QueueMessageContext? parentMessageContext = null)
-            where T : class, new()
+            where T : class
         {
             await StartAsync();
             var messageContext = GetMessageContext<T>(parentMessageContext);
@@ -189,7 +189,7 @@ namespace Sitko.Core.Queue
 
         public async Task<QueueSubscribeResult> SubscribeAsync<T>(
             Func<T, QueueMessageContext, Task<bool>> callback)
-            where T : class, new()
+            where T : class
         {
             await StartAsync();
             var options = GetOptions<T>();
@@ -206,7 +206,7 @@ namespace Sitko.Core.Queue
             return result;
         }
 
-        public async Task UnsubscribeAsync<T>(Guid subscriptionId) where T : class, new()
+        public async Task UnsubscribeAsync<T>(Guid subscriptionId) where T : class
         {
             if (!(_subscriptions[subscriptionId] is QueueSubscription<T>))
             {
@@ -227,7 +227,7 @@ namespace Sitko.Core.Queue
 
         public async Task<QueueSubscribeResult> ReplyAsync<TMessage, TResponse>(
             Func<TMessage, QueueMessageContext, Task<TResponse>> callback)
-            where TMessage : class, new() where TResponse : class, new()
+            where TMessage : class where TResponse : class
         {
             await StartAsync();
             return await DoReplyAsync<TMessage, TResponse>(async request =>
@@ -249,8 +249,8 @@ namespace Sitko.Core.Queue
             });
         }
 
-        public Task<bool> StopReplyAsync<TMessage, TResponse>(Guid id)where TMessage : class, new()
-            where TResponse : class, new()
+        public Task<bool> StopReplyAsync<TMessage, TResponse>(Guid id)where TMessage : class
+            where TResponse : class
         {
             return DoStopReplyAsync<TMessage, TResponse>(id);
         }
@@ -258,8 +258,8 @@ namespace Sitko.Core.Queue
 
         public async Task<(TResponse message, QueueMessageContext messageContext)> RequestAsync<TMessage, TResponse>(
             TMessage message, QueueMessageContext? parentMessageContext = null, TimeSpan? timeout = null)
-            where TMessage : class, new()
-            where TResponse : class, new()
+            where TMessage : class
+            where TResponse : class
         {
             await StartAsync();
             timeout ??= TimeSpan.FromSeconds(5);

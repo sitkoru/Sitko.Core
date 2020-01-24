@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.Queue.InMemory
 {
-    public class InMemoryQueueChannel<T> : InMemoryQueueChannel where T : class, new()
+    public class InMemoryQueueChannel<T> : InMemoryQueueChannel where T : class
     {
         private readonly Channel<QueuePayload<T>> _channel = Channel.CreateUnbounded<QueuePayload<T>>();
         private readonly ILogger _logger;

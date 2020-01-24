@@ -46,7 +46,7 @@ namespace Sitko.Core.Queue.Nats
             return Task.CompletedTask;
         }
 
-        private string GetQueueName<T>(T message) where T : class, new()
+        private string GetQueueName<T>(T message) where T : class
         {
             string queueName = typeof(T).FullName;
             if (message is IMessage protoMessage)
@@ -62,7 +62,7 @@ namespace Sitko.Core.Queue.Nats
             return queueName;
         }
 
-        private string GetQueueName<T>() where T : class, new()
+        private string GetQueueName<T>() where T : class
         {
             return GetQueueName(Activator.CreateInstance<T>());
         }
@@ -130,7 +130,7 @@ namespace Sitko.Core.Queue.Nats
             return Task.FromResult(false);
         }
 
-        private byte[] SerializePayload<T>(QueuePayload<T> payload) where T : class, new()
+        private byte[] SerializePayload<T>(QueuePayload<T> payload) where T : class
         {
             var context = new QueueContextMsg
             {
@@ -230,7 +230,7 @@ namespace Sitko.Core.Queue.Nats
 
             if (queueOptions.ManualAck)
             {
-                stanOptions.AckWait = queueOptions.AckWait;
+                stanOptions.AckWait = (int) queueOptions.AckWait.TotalMilliseconds;
                 stanOptions.ManualAcks = true;
             }
 
@@ -268,7 +268,7 @@ namespace Sitko.Core.Queue.Nats
         }
 
         private async Task ProcessStanMessage<T>(Func<byte[], QueuePayload<T>> deserializer, StanMsg message,
-            bool manualAcks) where T : class, new()
+            bool manualAcks) where T : class
         {
             var payload = deserializer(message.Data);
             var processResult = await ProcessMessageAsync(payload);
@@ -278,7 +278,7 @@ namespace Sitko.Core.Queue.Nats
             }
         }
 
-        private Func<byte[], QueuePayload<T>> GetPayloadDeserializer<T>() where T : class, new()
+        private Func<byte[], QueuePayload<T>> GetPayloadDeserializer<T>() where T : class
         {
             var isBinary = typeof(IMessage).IsAssignableFrom(typeof(T));
             Func<byte[], QueuePayload<T>> deserializer;
@@ -295,7 +295,7 @@ namespace Sitko.Core.Queue.Nats
             return deserializer;
         }
 
-        private QueuePayload<T> DeserializeJsonPayload<T>(byte[] data) where T : class, new()
+        private QueuePayload<T> DeserializeJsonPayload<T>(byte[] data) where T : class
         {
             var jsonMsg = new QueueJsonMsg();
             jsonMsg.MergeFrom(data);
