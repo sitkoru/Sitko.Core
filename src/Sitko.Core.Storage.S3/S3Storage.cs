@@ -8,16 +8,16 @@ using Amazon.S3.Transfer;
 using Amazon.S3.Util;
 using Microsoft.Extensions.Logging;
 
-namespace Sitko.Core.Storage
+namespace Sitko.Core.Storage.S3
 {
-    public sealed class S3Storage : Storage, IDisposable
+    public sealed class S3Storage<T> : Storage<T>, IDisposable where T : IS3StorageOptions
     {
-        private readonly ILogger<S3Storage> _logger;
-        private readonly S3StorageOptions _options;
+        private readonly ILogger<S3Storage<T>> _logger;
+        private readonly T _options;
         private readonly AmazonS3Client _client;
         private bool _disposed;
 
-        public S3Storage(S3StorageOptions options, ILogger<S3Storage> logger) : base(options, logger)
+        public S3Storage(T options, ILogger<S3Storage<T>> logger) : base(options, logger)
         {
             _logger = logger;
             _options = options;
@@ -51,11 +51,7 @@ namespace Sitko.Core.Storage
                 var bucketExists = await AmazonS3Util.DoesS3BucketExistV2Async(_client, bucketName);
                 if (!bucketExists)
                 {
-                    var putBucketRequest = new PutBucketRequest
-                    {
-                        BucketName = bucketName,
-                        UseClientRegion = true
-                    };
+                    var putBucketRequest = new PutBucketRequest {BucketName = bucketName, UseClientRegion = true};
 
                     await _client.PutBucketAsync(putBucketRequest);
                 }
@@ -67,28 +63,20 @@ namespace Sitko.Core.Storage
             }
         }
 
-        protected override async Task<bool> DoSaveAsync(string path, string tmpPath)
+        protected override async Task<bool> DoSaveAsync(string path, Stream file)
         {
             await CreateBucketAsync(_options.Bucket);
-            using (var fileTransferUtility =
-                new TransferUtility(_client))
+            using var fileTransferUtility = new TransferUtility(_client);
+            try
             {
-                try
-                {
-                    using (var fileToUpload =
-                        new FileStream(tmpPath, FileMode.Open))
-                    {
-                        await fileTransferUtility.UploadAsync(fileToUpload,
-                            _options.Bucket, path);
-                        File.Delete(tmpPath);
-                        return true;
-                    }
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, e.Message);
-                    throw;
-                }
+                await fileTransferUtility.UploadAsync(file,
+                    _options.Bucket, path);
+                return true;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                throw;
             }
         }
 

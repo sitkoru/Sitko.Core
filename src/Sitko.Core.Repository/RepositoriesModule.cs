@@ -12,11 +12,10 @@ namespace Sitko.Core.Repository
             IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
+            services.AddScoped(typeof(RepositoryContext<,,>));
+            services.AddScoped<RepositoryFiltersManager>();
             services.Scan(s =>
                 s.FromAssemblyOf<T>().AddClasses(classes => classes.AssignableTo<IRepository>())
-                    .AsSelfWithInterfaces().WithScopedLifetime());
-            services.Scan(s =>
-                s.FromAssemblyOf<T>().AddClasses(classes => classes.AssignableTo(typeof(RepositoryContext<,,>)))
                     .AsSelfWithInterfaces().WithScopedLifetime());
             services.Scan(s =>
                 s.FromAssemblyOf<T>().AddClasses(classes => classes.AssignableTo(typeof(IValidator<>)))

@@ -8,21 +8,30 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Web
 {
     public class WebApplication : Application
     {
+        private static WebApplication _instance;
+
         public WebApplication(string[] args) : base(args)
         {
             GetHostBuilder().ConfigureServices(collection =>
             {
                 collection.AddSingleton(typeof(WebApplication), this);
             });
+            _instance = this;
         }
 
-        public WebApplication Run<TStartup>(int port = 0) where TStartup : class
+        public static WebApplication GetInstance()
+        {
+            return _instance;
+        }
+
+        public WebApplication Run<TStartup>(int port = 0) where TStartup : BaseStartup
         {
             GetHostBuilder().ConfigureWebHostDefaults(builder =>
                 builder.UseStartup<TStartup>().UseUrls($"http://*:{port.ToString()}"));
@@ -31,7 +40,7 @@ namespace Sitko.Core.Web
             return this;
         }
 
-        public WebApplication UseStartup<TStartup>() where TStartup : class
+        public WebApplication UseStartup<TStartup>() where TStartup : BaseStartup
         {
             GetHostBuilder().ConfigureWebHostDefaults(webBuilder =>
             {
@@ -40,9 +49,31 @@ namespace Sitko.Core.Web
             return this;
         }
 
-        public async Task RunAsync<TStartup>() where TStartup : class
+        public async Task RunAsync<TStartup>() where TStartup : BaseStartup
         {
             await UseStartup<TStartup>().RunAsync();
+        }
+
+        public async Task ExecuteAsync<TStartup>(Func<IServiceProvider, Task> command) where TStartup : BaseStartup
+        {
+            GetHostBuilder().UseConsoleLifetime();
+            using var host = UseStartup<TStartup>().GetAppHost();
+            await InitAsync();
+
+            var serviceProvider = host.Services;
+            await host.StartAsync();
+            try
+            {
+                using var scope = serviceProvider.CreateScope();
+                await command(scope.ServiceProvider);
+            }
+            catch (Exception ex)
+            {
+                var logger = serviceProvider.GetService<ILogger<WebApplication>>();
+                logger.LogError(ex, ex.ToString());
+            }
+
+            await host.StopAsync();
         }
 
         protected List<IWebApplicationModule> GetWebModules()
@@ -107,6 +138,15 @@ namespace Sitko.Core.Web
             foreach (var webModule in GetWebModules())
             {
                 webModule.ConfigureEndpoints(configuration, environment, appBuilder, endpoints);
+            }
+        }
+
+        public void ConfigureStartupServices(IServiceCollection services, IConfiguration configuration,
+            IHostEnvironment environment)
+        {
+            foreach (var webModule in GetWebModules())
+            {
+                webModule.ConfigureStartupServices(services, configuration, environment);
             }
         }
     }

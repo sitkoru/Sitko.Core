@@ -1,7 +1,5 @@
 using System;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -35,30 +33,11 @@ namespace Sitko.Core.Auth
             }
         }
 
-        public virtual void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder,
-            IEndpointRouteBuilder endpoints)
-        {
-        }
-
-        public virtual void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-        }
-
         public virtual void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
             appBuilder.UseAuthentication()
                 .UseAuthorization();
-        }
-
-        public virtual void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)
-        {
-        }
-
-        public virtual void ConfigureWebHost(IWebHostBuilder webHostBuilder)
-        {
         }
     }
 }
