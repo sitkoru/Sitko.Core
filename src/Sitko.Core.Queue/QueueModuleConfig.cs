@@ -1,12 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediatR;
+using Sitko.Core.Queue.MessageBus;
 
 namespace Sitko.Core.Queue
 {
     public class QueueModuleConfig
     {
         public HashSet<Type> Middlewares { get; } = new HashSet<Type>();
+
+        public List<(Type serviceType, Type implementationType)> TranslateMessageBusTypes { get; } =
+            new List<(Type serviceType, Type implementationType)>();
+
         public HashSet<QueueProcessorEntry> ProcessorEntries { get; } = new HashSet<QueueProcessorEntry>();
         public Dictionary<Type, IQueueMessageOptions> Options { get; } = new Dictionary<Type, IQueueMessageOptions>();
 
@@ -21,6 +27,12 @@ namespace Sitko.Core.Queue
         public void EnableHealthChecks()
         {
             HealthChecksEnabled = true;
+        }
+
+        public void TranslateMessageBusNotification<TNotification>() where TNotification : class, INotification
+        {
+            TranslateMessageBusTypes.Add((typeof(INotificationHandler<TNotification>),
+                typeof(MessageBusTranslator<TNotification>)));
         }
 
         public void ConfigureMessage<T>(IQueueMessageOptions<T> options) where T : class
