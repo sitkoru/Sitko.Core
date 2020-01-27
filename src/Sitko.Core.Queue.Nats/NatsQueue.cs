@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using NATS.Client;
 using Newtonsoft.Json;
@@ -230,7 +231,7 @@ namespace Sitko.Core.Queue.Nats
 
             if (queueOptions.ManualAck)
             {
-                stanOptions.AckWait = (int) queueOptions.AckWait.TotalMilliseconds;
+                stanOptions.AckWait = (int)queueOptions.AckWait.TotalMilliseconds;
                 stanOptions.ManualAcks = true;
             }
 
@@ -352,6 +353,54 @@ namespace Sitko.Core.Queue.Nats
             _natsConn.Dispose();
 
             _disposed = true;
+        }
+
+        public override Task<(HealthStatus status, string? errorMessage)> CheckHealthAsync()
+        {
+            HealthStatus status;
+            string? errorMessage = null;
+            if (_natsConn != null)
+            {
+                switch (_natsConn.State)
+                {
+                    case ConnState.DISCONNECTED:
+                        status = HealthStatus.Unhealthy;
+                        errorMessage = "Disconnected from nats";
+                        break;
+                    case ConnState.CONNECTED:
+                        status = HealthStatus.Healthy;
+                        break;
+                    case ConnState.CLOSED:
+                        status = HealthStatus.Unhealthy;
+                        errorMessage = "Connection to nats is closed";
+                        break;
+                    case ConnState.RECONNECTING:
+                        status = HealthStatus.Degraded;
+                        errorMessage = "Reconnecting to nats";
+                        break;
+                    case ConnState.CONNECTING:
+                        status = HealthStatus.Degraded;
+                        errorMessage = "Connecting to nats";
+                        break;
+                    case ConnState.DRAINING_SUBS:
+                        status = HealthStatus.Degraded;
+                        errorMessage = "Draining subs";
+                        break;
+                    case ConnState.DRAINING_PUBS:
+                        status = HealthStatus.Degraded;
+                        errorMessage = "Draining pubs";
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            else
+            {
+                status = HealthStatus.Unhealthy;
+                errorMessage = "Nats connection is null";
+            }
+
+            return Task.FromResult((status, errorMessage));
         }
 
         private IStanConnection CreateConnection()

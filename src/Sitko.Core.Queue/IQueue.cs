@@ -1,5 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Sitko.Core.Health;
 
 namespace Sitko.Core.Queue
 {
@@ -25,8 +27,10 @@ namespace Sitko.Core.Queue
             where TMessage : class
             where TResponse : class;
 
-        Task<bool> StopReplyAsync<TMessage, TResponse>(Guid id) 
+        Task<bool> StopReplyAsync<TMessage, TResponse>(Guid id)
             where TMessage : class
             where TResponse : class;
+
+        Task<(HealthStatus status, string? errorMessage)> CheckHealthAsync();
     }
 }

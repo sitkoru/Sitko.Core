@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Queue.Exceptions;
 using Sitko.Core.Queue.Internal;
@@ -140,6 +141,11 @@ namespace Sitko.Core.Queue.InMemory
             }
 
             _channels.Clear();
+        }
+
+        public override Task<(HealthStatus status, string? errorMessage)> CheckHealthAsync()
+        {
+            return Task.FromResult((HealthStatus.Healthy, ""));
         }
     }
 }

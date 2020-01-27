@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
+using Sitko.Core.Health;
 using Sitko.Core.Metrics;
 using Sitko.Core.Queue.Internal;
 using Sitko.Core.Queue.Middleware;
@@ -25,6 +26,11 @@ namespace Sitko.Core.Queue
             if (Config.MetricsEnabled)
             {
                 Config.Middlewares.Add(typeof(MetricsMiddleware));
+            }
+
+            if (Config.HealthChecksEnabled)
+            {
+                services.AddHealthChecks().AddCheck<QueueHealthCheck>("Queue health check");
             }
 
             if (Config.Middlewares.Any())
@@ -57,6 +63,11 @@ namespace Sitko.Core.Queue
             if (Config.MetricsEnabled)
             {
                 modules.Add(typeof(MetricsModule));
+            }
+
+            if (Config.HealthChecksEnabled)
+            {
+                modules.Add(typeof(HealthModule));
             }
 
             return modules;

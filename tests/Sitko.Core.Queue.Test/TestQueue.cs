@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Queue.Internal;
 
@@ -44,6 +45,11 @@ namespace Sitko.Core.Queue.Tests
         protected override Task DoUnsubscribeAsync<T>()
         {
             return Task.CompletedTask;
+        }
+
+        public override Task<(HealthStatus status, string? errorMessage)> CheckHealthAsync()
+        {
+            return Task.FromResult((HealthStatus.Healthy, ""));
         }
     }
 
