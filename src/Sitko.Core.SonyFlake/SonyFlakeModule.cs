@@ -5,13 +5,16 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.SonyFlake
 {
-    public class SonyFlakeModule: BaseApplicationModule<SonyFlakeModuleConfig>
+    public class SonyFlakeModule : BaseApplicationModule<SonyFlakeModuleConfig>
     {
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
+        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
+            IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
-            services.AddHttpClient()
-                .AddSingleton<IIdProvider, SonyFlakeIdProvider>();
+            services.AddHttpClient<IIdProvider, SonyFlakeIdProvider>(client =>
+            {
+                client.BaseAddress = Config.SonyflakeUri;
+            });
         }
     }
 }
