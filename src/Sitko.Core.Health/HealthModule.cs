@@ -13,4 +13,11 @@ namespace Sitko.Core.Health
             services.AddHealthChecks();
         }
     }
+
+    public enum HealthState
+    {
+        Healthy,
+        Unhealthy,
+        Degraded
+    }
 }

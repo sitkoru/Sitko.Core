@@ -11,10 +11,16 @@ namespace Sitko.Core.Queue
         public Dictionary<Type, IQueueMessageOptions> Options { get; } = new Dictionary<Type, IQueueMessageOptions>();
 
         public bool MetricsEnabled { get; private set; }
+        public bool HealthChecksEnabled { get; private set; }
 
         public void EnableMetrics()
         {
             MetricsEnabled = true;
+        }
+
+        public void EnableHealthChecks()
+        {
+            HealthChecksEnabled = true;
         }
 
         public void ConfigureMessage<T>(IQueueMessageOptions<T> options) where T : class

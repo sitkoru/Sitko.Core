@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Queue.Internal;
 
@@ -249,11 +250,13 @@ namespace Sitko.Core.Queue
             });
         }
 
-        public Task<bool> StopReplyAsync<TMessage, TResponse>(Guid id)where TMessage : class
+        public Task<bool> StopReplyAsync<TMessage, TResponse>(Guid id) where TMessage : class
             where TResponse : class
         {
             return DoStopReplyAsync<TMessage, TResponse>(id);
         }
+
+        public abstract Task<(HealthStatus status, string? errorMessage)> CheckHealthAsync();
 
 
         public async Task<(TResponse message, QueueMessageContext messageContext)> RequestAsync<TMessage, TResponse>(
