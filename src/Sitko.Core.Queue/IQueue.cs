@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Sitko.Core.Health;
 
 namespace Sitko.Core.Queue
 {
