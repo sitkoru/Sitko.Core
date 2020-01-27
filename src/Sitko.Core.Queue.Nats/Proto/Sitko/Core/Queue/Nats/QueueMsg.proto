@@ -1,0 +1,25 @@
+syntax = "proto3";
+import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
+
+package Sitko.Core.Queue.Nats;
+
+message QueueBinaryMsg {
+    QueueContextMsg Context = 1;
+    google.protobuf.Any Data = 2;
+}
+
+message QueueJsonMsg {
+    QueueContextMsg Context = 1;
+    string Data = 2;
+}
+
+message QueueContextMsg {
+    string Id = 1;
+    google.protobuf.Timestamp Date = 2;
+    string MessageType = 3;
+    string ParentMessageId = 4;
+    string RootMessageId = 5;
+    google.protobuf.Timestamp RootMessageDate = 6;
+    string RequestId = 7;
+}
