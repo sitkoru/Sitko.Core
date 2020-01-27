@@ -8,9 +8,9 @@ namespace Sitko.Core.MessageBus
     {
         public Assembly[] Assemblies { get; }
 
-        public MessageBusModuleConfig(IEnumerable<Assembly> assemblies)
+        public MessageBusModuleConfig(params Assembly[] assemblies)
         {
-            Assemblies = assemblies.ToArray();
+            Assemblies = assemblies;
         }
     }
 }
