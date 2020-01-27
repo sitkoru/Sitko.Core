@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,8 +12,7 @@ namespace Sitko.Core.MessageBus
             IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
-            services.AddSingleton<IMessageBus, MessageBus>();
-            services.AddHostedService<MessageBusService>();
+            services.AddMediatR(Config.Assemblies);
         }
     }
 }
