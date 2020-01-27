@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Grpc\Sitko.Core.Grpc.csproj" />
-    <PackageReference Include="Grpc.Tools" Version="2.25.0" PrivateAssets="All" />
+    <PackageReference Include="Grpc.Tools" Version="2.26.0" PrivateAssets="All" />
     <ProjectReference Include="..\Sitko.Core.Web\Sitko.Core.Web.csproj" />
     <Protobuf Include="health.proto" GrpcServices="Server" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grpc.AspNetCore" Version="2.25.0" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.26.0" />
   </ItemGroup>
 
 </Project>

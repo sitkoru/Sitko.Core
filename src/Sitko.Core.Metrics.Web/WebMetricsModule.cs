@@ -48,17 +48,7 @@ namespace Sitko.Core.Metrics.Web
                 };
             });
         }
-
-        public void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
-        {
-        }
-
-        public void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-        }
-
+        
         public void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)
         {
             // TODO: Remove when https://github.com/AppMetrics/AppMetrics/issues/396 is fixed

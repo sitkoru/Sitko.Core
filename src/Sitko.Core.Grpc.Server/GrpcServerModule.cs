@@ -35,23 +35,9 @@ namespace Sitko.Core.Grpc.Server
             endpoints.MapGrpcService<HealthService>();
         }
 
-        public void ConfigureWebHost(IWebHostBuilder webHostBuilder)
-        {
-        }
-
         public override List<Type> GetRequiredModules()
         {
             return new List<Type> {typeof(ConsulModule), typeof(MetricsModule)};
-        }
-
-        public void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-        }
-
-        public void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
         }
 
         public void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)

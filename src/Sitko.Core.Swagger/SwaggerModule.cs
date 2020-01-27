@@ -1,13 +1,12 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Sitko.Core.App;
+using Sitko.Core.Web;
 
-namespace Sitko.Core.Web
+namespace Sitko.Core.Swagger
 {
     public class SwaggerModule : BaseApplicationModule<SwaggerModuleConfig>, IWebApplicationModule
     {
@@ -30,35 +29,17 @@ namespace Sitko.Core.Web
                         });
                     var security = new OpenApiSecurityRequirement
                     {
-                        {new OpenApiSecurityScheme() {Name = "Bearer"}, new string[] { }}
+                        {new OpenApiSecurityScheme {Name = "Bearer"}, new string[] { }}
                     };
                     c.AddSecurityRequirement(security);
                 }
             });
         }
 
-        public void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
-        {
-        }
-
-        public void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-        }
-
         public void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
             appBuilder.UseSwaggerAuthorized($"{Config.Title} ({Config.Version})", "v1/swagger.json");
-        }
-
-        public void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)
-        {
-        }
-
-        public void ConfigureWebHost(IWebHostBuilder webHostBuilder)
-        {
         }
     }
 

@@ -9,28 +9,24 @@ namespace Sitko.Core.SonyFlake
     public class SonyFlakeIdProvider : IIdProvider
     {
         private readonly ILogger<SonyFlakeIdProvider> _logger;
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly SonyFlakeModuleConfig _config;
+        private readonly HttpClient _httpClient;
 
-        public SonyFlakeIdProvider(SonyFlakeModuleConfig config,
-            ILogger<SonyFlakeIdProvider> logger, IHttpClientFactory httpClientFactory)
+        public SonyFlakeIdProvider(HttpClient httpClient, ILogger<SonyFlakeIdProvider> logger)
         {
             _logger = logger;
-            _httpClientFactory = httpClientFactory;
-            _config = config;
+            _httpClient = httpClient;
         }
 
         public async Task<long> NextAsync()
         {
             try
             {
-                var client = _httpClientFactory.CreateClient();
-                var response = await client.GetJsonAsync<SonyFlakeResponse>(_config.SonyflakeUri.ToString());
+                var response = await _httpClient.GetJsonAsync<SonyFlakeResponse>("/");
                 return response.Id;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ex.Message);
+                _logger.LogError(ex, "Error while requesting SonyFlake: {ErrorText}", ex.ToString());
                 throw new IdGenerationException();
             }
         }

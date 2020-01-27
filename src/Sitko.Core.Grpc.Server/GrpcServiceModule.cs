@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,24 +25,6 @@ namespace Sitko.Core.Grpc.Server
             IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
         {
             endpoints.MapGrpcService<TService>();
-        }
-
-        public void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-        }
-
-        public void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-        }
-
-        public void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)
-        {
-        }
-
-        public void ConfigureWebHost(IWebHostBuilder webHostBuilder)
-        {
         }
 
         public override List<Type> GetRequiredModules()

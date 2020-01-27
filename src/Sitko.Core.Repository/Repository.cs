@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 using FluentValidation;
 using FluentValidation.Results;
@@ -13,18 +12,17 @@ namespace Sitko.Core.Repository
     public abstract class Repository<TEntity, TEntityPk, TDbContext> : IRepository<TEntity, TEntityPk>
         where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext
     {
-        internal readonly TDbContext DbContext;
+        protected readonly TDbContext DbContext;
         protected readonly List<IValidator<TEntity>> Validators;
-        protected readonly List<IRepositoryFilter> Filters;
+        protected readonly RepositoryFiltersManager FiltersManager;
         protected readonly List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers;
         protected readonly ILogger Logger;
-
 
         protected Repository(RepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext)
         {
             DbContext = repositoryContext.DbContext;
             Validators = repositoryContext.Validators ?? new List<IValidator<TEntity>>();
-            Filters = repositoryContext.Filters ?? new List<IRepositoryFilter>();
+            FiltersManager = repositoryContext.FiltersManager;
             AccessCheckers = repositoryContext.AccessCheckers ?? new List<IAccessChecker<TEntity, TEntityPk>>();
             Logger = repositoryContext.Logger;
 
@@ -41,102 +39,71 @@ namespace Sitko.Core.Repository
         {
         }
 
-        protected virtual Task<IQueryable<TEntity>> GetBaseQueryAsync(
-            QueryContext<TEntity, TEntityPk> queryContext = null)
+        public virtual async Task<(TEntity[] items, int itemsCount)> GetAllAsync()
         {
-            return Task.FromResult(ApplyContext(DbContext.Set<TEntity>(), queryContext));
-        }
+            var query = await CreateRepositoryQueryAsync();
 
-        protected virtual IQueryable<TEntity> ApplyContext(IQueryable<TEntity> query,
-            QueryContext<TEntity, TEntityPk> queryContext)
-        {
-            if (queryContext == null) return query;
+            (TEntity[] items, bool needCount) = await DoGetAllAsync(query);
 
+            var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
+                ? await CountAsync()
+                : items.Length;
+            await AfterLoadAsync(items);
 
-            if (queryContext.OrderBy != null)
-            {
-                query = !queryContext.OrderByDescending
-                    ? query.OrderBy(queryContext.OrderBy)
-                    : query.OrderByDescending(queryContext.OrderBy);
-            }
-
-            /*var method = typeof(EF).GetType().GetMethod("Property").MakeGenericMethod(typeof(int));
-            query = query.Where(e => (dynamic) method.Invoke(null, new object[] {e, "bla"}) > 1);*/
-            if (queryContext.SortQueries.Any())
-            {
-                foreach (var sortQuery in queryContext.SortQueries)
-                {
-                    query = sortQuery.isDescending
-                        ? query.OrderByDescending(e => EF.Property<TEntity>(e, sortQuery.propertyName))
-                        : query.OrderBy(e => EF.Property<TEntity>(e, sortQuery.propertyName));
-                }
-            }
-
-            if (queryContext.ConditionsGroups.Any())
-            {
-                //var method = GetType().GetMethod(nameof(AddWhereCondition));
-                var where = new List<string>();
-                var valueIndex = 0;
-                var values = new List<object>();
-                foreach (var conditionsGroup in queryContext.ConditionsGroups)
-                {
-                    var groupWhere = new List<string>();
-                    foreach (var condition in conditionsGroup.Conditions)
-                    {
-                        var expression = condition.GetExpression(valueIndex);
-                        if (!string.IsNullOrEmpty(expression))
-                        {
-                            groupWhere.Add(expression);
-                            values.Add(condition.Value);
-                            valueIndex++;
-                        }
-                    }
-
-                    where.Add($"({string.Join(" OR ", groupWhere)})");
-                }
-
-                var whereStr = string.Join(" AND ", where);
-                query = query.Where(whereStr, values.ToArray());
-            }
-
-            return query;
+            return (items, itemsCount);
         }
 
         public virtual async Task<(TEntity[] items, int itemsCount)> GetAllAsync(
-            QueryContext<TEntity, TEntityPk> queryContext = null,
-            Func<IQueryable<TEntity>, IQueryable<TEntity>> addConditionsCallback = null)
+            Action<RepositoryQuery<TEntity>> configureQuery)
         {
-            var itemsCount = await CountAsync(queryContext, addConditionsCallback);
+            var query = (await CreateRepositoryQueryAsync()).Configure(configureQuery);
 
-            var query = await GetBaseQueryAsync(queryContext);
-            if (addConditionsCallback != null)
-            {
-                query = addConditionsCallback(query);
-            }
+            (TEntity[] items, bool needCount) = await DoGetAllAsync(query);
 
-            if (queryContext != null)
-            {
-                if (queryContext.Offset.HasValue)
-                {
-                    query = query.Skip(queryContext.Offset.Value);
-                }
-
-                if (queryContext.Limit.HasValue)
-                {
-                    query = query.Take(queryContext.Limit.Value);
-                }
-            }
-
-            var items = await query.ToArrayAsync();
+            var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
+                ? await CountAsync(configureQuery)
+                : items.Length;
             await AfterLoadAsync(items);
-            await CheckAccessAsync(items);
+
+            return (items, itemsCount);
+        }
+
+        protected virtual async Task<(TEntity[] items, bool needCount)> DoGetAllAsync(RepositoryQuery<TEntity> query)
+        {
+            var dbQuery = query.BuildQuery();
+            var needCount = false;
+            if (query.Offset != null)
+            {
+                dbQuery = dbQuery.Skip(query.Offset.Value);
+                needCount = true;
+            }
+
+            if (query.Limit != null)
+            {
+                dbQuery = dbQuery.Take(query.Limit.Value);
+                needCount = true;
+            }
+
+            return (await AddIncludes(dbQuery).ToArrayAsync(), needCount);
+        }
+
+        public virtual async Task<(TEntity[] items, int itemsCount)> GetAllAsync(
+            Func<RepositoryQuery<TEntity>, Task> configureQuery)
+        {
+            var query = await (await CreateRepositoryQueryAsync()).ConfigureAsync(configureQuery);
+            var (items, needCount) = await DoGetAllAsync(query);
+
+            var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
+                ? await CountAsync(configureQuery)
+                : items.Length;
+            await AfterLoadAsync(items);
 
             return (items, itemsCount);
         }
 
         protected virtual Task AfterLoadAsync(TEntity entity)
         {
-            return AfterLoadAsync(new[] {entity});
+            return entity != null ? AfterLoadAsync(new[] {entity}) : Task.CompletedTask;
         }
 
         protected virtual Task AfterLoadAsync(TEntity[] entities)
@@ -144,25 +111,71 @@ namespace Sitko.Core.Repository
             return Task.CompletedTask;
         }
 
-        public virtual async Task<int> CountAsync(QueryContext<TEntity, TEntityPk> queryContext = null,
-            Func<IQueryable<TEntity>, IQueryable<TEntity>> addConditionsCallback = null)
+        public virtual async Task<int> CountAsync()
         {
-            var query = await GetBaseQueryAsync(queryContext);
-            if (addConditionsCallback != null)
-            {
-                query = addConditionsCallback(query);
-            }
-
-
-            return await query.CountAsync();
+            return await (await CreateRepositoryQueryAsync()).BuildQuery().CountAsync();
         }
 
-        public virtual async Task<TEntity> GetByIdAsync(TEntityPk id,
-            QueryContext<TEntity, TEntityPk> queryContext = null)
+        public virtual async Task<int> CountAsync(Func<RepositoryQuery<TEntity>, Task> configureQuery)
         {
-            var item = await (await GetBaseQueryAsync(queryContext)).FirstOrDefaultAsync(i => i.Id.Equals(id));
-            await AfterLoadAsync(item);
-            await CheckAccessAsync(item);
+            return await (await (await CreateRepositoryQueryAsync()).ConfigureAsync(configureQuery)).BuildQuery().CountAsync();
+        }
+
+        public virtual async Task<int> CountAsync(Action<RepositoryQuery<TEntity>> configureQuery)
+        {
+            return await (await CreateRepositoryQueryAsync()).Configure(configureQuery).BuildQuery().CountAsync();
+        }
+
+        public virtual async Task<TEntity?> GetByIdAsync(TEntityPk id)
+        {
+            var query = (await CreateRepositoryQueryAsync()).Where(i => i.Id.Equals(id)).BuildQuery();
+
+            return await DoGetAsync(query);
+        }
+
+        public virtual async Task<TEntity?> GetByIdAsync(TEntityPk id,
+            Func<RepositoryQuery<TEntity>, Task> configureQuery)
+        {
+            var query = (await (await CreateRepositoryQueryAsync()).Where(i => i.Id.Equals(id)).ConfigureAsync(configureQuery))
+                .BuildQuery();
+
+            return await DoGetAsync(query);
+        }
+
+        public virtual async Task<TEntity?> GetByIdAsync(TEntityPk id, Action<RepositoryQuery<TEntity>> configureQuery)
+        {
+            var query = (await CreateRepositoryQueryAsync()).Where(i => i.Id.Equals(id)).Configure(configureQuery)
+                .BuildQuery();
+
+            return await DoGetAsync(query);
+        }
+
+        public virtual async Task<TEntity?> GetAsync()
+        {
+            var query = (await CreateRepositoryQueryAsync()).BuildQuery();
+            return await DoGetAsync(query);
+        }
+
+        public virtual async Task<TEntity?> GetAsync(Func<RepositoryQuery<TEntity>, Task> configureQuery)
+        {
+            var query = (await (await CreateRepositoryQueryAsync()).ConfigureAsync(configureQuery)).BuildQuery();
+            return await DoGetAsync(query);
+        }
+
+        public virtual async Task<TEntity?> GetAsync(Action<RepositoryQuery<TEntity>> configureQuery)
+        {
+            var query = (await CreateRepositoryQueryAsync()).Configure(configureQuery).BuildQuery();
+            return await DoGetAsync(query);
+        }
+
+        private async Task<TEntity?> DoGetAsync(IQueryable<TEntity> query)
+        {
+            var item = await AddIncludes(query).FirstOrDefaultAsync();
+            if (item != null)
+            {
+                await AfterLoadAsync(item);
+            }
+
             return item;
         }
 
@@ -173,55 +186,146 @@ namespace Sitko.Core.Repository
             return item;
         }
 
-        public virtual async Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids,
-            QueryContext<TEntity, TEntityPk> queryContext = null)
+        public virtual async Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids)
         {
-            var items = await (await GetBaseQueryAsync(queryContext)).Where(i => ids.Contains(i.Id)).ToArrayAsync();
-            await AfterLoadAsync(items);
-            await CheckAccessAsync(items);
+            var query = (await CreateRepositoryQueryAsync()).Where(i => ids.Contains(i.Id));
+
+            (TEntity[] items, _) = await DoGetAllAsync(query);
 
             return items;
         }
 
-        public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddAsync(TEntity entity)
+        public virtual async Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids,
+            Func<RepositoryQuery<TEntity>, Task> configureQuery)
         {
-            (bool isValid, IList<ValidationFailure> errors) validationResult = (false, new List<ValidationFailure>());
-            if (await BeforeValidateAsync(entity, validationResult))
-            {
-                validationResult = await ValidateAsync(entity);
-                if (validationResult.isValid)
-                {
-                    if (await BeforeSaveAsync(entity, validationResult))
-                    {
-                        DbContext.Add(entity);
-                        await DbContext.SaveChangesAsync();
-                        await AfterSaveAsync(entity);
-                    }
-                }
-            }
+            var query = await (await CreateRepositoryQueryAsync()).Where(i => ids.Contains(i.Id))
+                .ConfigureAsync(configureQuery);
 
-            return new AddOrUpdateOperationResult<TEntity, TEntityPk>(entity, validationResult.errors);
+            (TEntity[] items, _) = await DoGetAllAsync(query);
+
+            return items;
         }
 
-        public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity entity)
+        public virtual async Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids,
+            Action<RepositoryQuery<TEntity>> configureQuery)
         {
-            var changes = GetChanges(entity);
-            (bool isValid, IList<ValidationFailure> errors) validationResult = (false, new List<ValidationFailure>());
-            if (await BeforeValidateAsync(entity, validationResult, changes))
+            var query = (await CreateRepositoryQueryAsync()).Where(i => ids.Contains(i.Id)).Configure(configureQuery);
+
+            (TEntity[] items, _) = await DoGetAllAsync(query);
+
+            return items;
+        }
+
+        public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddAsync(TEntity item)
+        {
+            var validationResult = await DoAddAsync(item);
+            if (validationResult.isValid)
             {
-                validationResult = await ValidateAsync(entity, changes);
+                await DoSaveAsync(item);
+            }
+
+            return new AddOrUpdateOperationResult<TEntity, TEntityPk>(item, validationResult.errors,
+                new PropertyChange[0]);
+        }
+
+        protected async Task DoSaveAsync(TEntity item, PropertyChange[]? changes = null,
+            TEntity? oldItem = null)
+        {
+            await SaveChangesAsync();
+            await AfterSaveAsync(item);
+        }
+
+        protected virtual async Task SaveChangesAsync()
+        {
+            await DbContext.SaveChangesAsync();
+        }
+
+        protected async Task<(bool isValid, IList<ValidationFailure> errors)> DoAddAsync(TEntity item)
+        {
+            (bool isValid, IList<ValidationFailure> errors) validationResult = (false, new List<ValidationFailure>());
+            if (await BeforeValidateAsync(item, validationResult))
+            {
+                validationResult = await ValidateAsync(item);
                 if (validationResult.isValid)
                 {
-                    if (await BeforeSaveAsync(entity, validationResult, changes))
+                    if (await BeforeSaveAsync(item, validationResult))
                     {
-                        DbContext.Update(entity);
-                        await DbContext.SaveChangesAsync();
-                        await AfterSaveAsync(entity, changes);
+                        DbContext.Add(item);
                     }
                 }
             }
 
-            return new AddOrUpdateOperationResult<TEntity, TEntityPk>(entity, validationResult.errors);
+            return validationResult;
+        }
+
+        public PropertyChange[] GetChanges(TEntity item, TEntity oldEntity)
+        {
+            var changes = new List<PropertyChange>();
+            foreach (var propertyEntry in DbContext.Entry(item).Properties)
+            {
+                if (propertyEntry.IsModified)
+                {
+                    var name = propertyEntry.Metadata.Name;
+                    var originalValue = propertyEntry.OriginalValue;
+                    var value = propertyEntry.CurrentValue;
+                    changes.Add(new PropertyChange(name, originalValue, value));
+                }
+            }
+
+            foreach (var navigationEntry in DbContext.Entry(item).Navigations)
+            {
+                var property = item.GetType().GetProperty(navigationEntry.Metadata.Name);
+                if (property != null)
+                {
+                    var value = property.GetValue(item);
+                    var originalValue = property.GetValue(oldEntity);
+                    if (value == null && originalValue != null || value != null && !value.Equals(originalValue))
+                    {
+                        var name = navigationEntry.Metadata.Name;
+                        changes.Add(new PropertyChange(name, originalValue, value));
+                    }
+                }
+            }
+
+            return changes.ToArray();
+        }
+
+        public DbSet<T> Set<T>() where T : class
+        {
+            return DbContext.Set<T>();
+        }
+
+        public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity item)
+        {
+            var (validationResult, changes, oldItem) = await DoUpdateAsync(item);
+            if (validationResult.isValid)
+            {
+                await DoSaveAsync(item, changes, oldItem);
+            }
+
+            return new AddOrUpdateOperationResult<TEntity, TEntityPk>(item, validationResult.errors, changes);
+        }
+
+        protected async
+            Task<((bool isValid, IList<ValidationFailure> errors) validationResult, PropertyChange[] changes, TEntity
+                oldItem)> DoUpdateAsync(TEntity item)
+        {
+            var oldItem = GetBaseQuery().Where(e => e.Id.Equals(item.Id)).AsNoTracking().First();
+            var changes = GetChanges(item, oldItem);
+            (bool isValid, IList<ValidationFailure> errors) validationResult = (false, new List<ValidationFailure>());
+            if (await BeforeValidateAsync(item, validationResult, changes))
+            {
+                validationResult = await ValidateAsync(item, changes);
+                if (validationResult.isValid)
+                {
+                    if (await BeforeSaveAsync(item, validationResult, changes))
+                    {
+                        DbContext.Update(item);
+                    }
+                }
+            }
+
+            return (validationResult, changes, oldItem);
         }
 
         public virtual async Task<bool> DeleteAsync(TEntityPk id)
@@ -245,16 +349,6 @@ namespace Sitko.Core.Repository
         }
 
 
-        public PropertyChange[] GetChanges(TEntity entity)
-        {
-            return (from propertyEntry in DbContext.Entry(entity).Properties
-                where propertyEntry.IsModified
-                let name = propertyEntry.Metadata.Name
-                let originalValue = propertyEntry.OriginalValue
-                let value = propertyEntry.CurrentValue
-                select new PropertyChange(name, originalValue, value)).ToArray();
-        }
-
         protected virtual async Task<(bool isValid, IList<ValidationFailure> errors)> ValidateAsync(TEntity entity,
             PropertyChange[] changes = null)
         {
@@ -274,53 +368,38 @@ namespace Sitko.Core.Repository
             return (!failures.Any(), failures);
         }
 
-        protected virtual async Task<bool> BeforeValidateAsync(TEntity item,
+        protected virtual Task<bool> BeforeValidateAsync(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult,
             PropertyChange[] changes = null)
         {
-            var result = true;
-            foreach (var repositoryFilter in Filters)
-            {
-                if (!repositoryFilter.CanProcess(item.GetType())) continue;
-                if (!await repositoryFilter.BeforeValidateAsync<TEntity, TEntityPk>(item, validationResult, changes))
-                {
-                    result = false;
-                }
-            }
-
-            return result;
+            return FiltersManager.BeforeValidateAsync<TEntity, TEntityPk>(item, validationResult, changes);
         }
 
-        protected virtual async Task<bool> BeforeSaveAsync(TEntity item,
+        public IQueryable<TEntity> GetBaseQuery()
+        {
+            return DbContext.Set<TEntity>().AsQueryable();
+        }
+
+        protected virtual IQueryable<TEntity> AddIncludes(IQueryable<TEntity> query)
+        {
+            return query;
+        }
+
+        protected virtual Task<RepositoryQuery<TEntity>> CreateRepositoryQueryAsync()
+        {
+            return Task.FromResult(new RepositoryQuery<TEntity>(GetBaseQuery()));
+        }
+
+        protected virtual Task<bool> BeforeSaveAsync(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult,
             PropertyChange[] changes = null)
         {
-            var result = true;
-            foreach (var repositoryFilter in Filters)
-            {
-                if (!repositoryFilter.CanProcess(item.GetType())) continue;
-                if (!await repositoryFilter.BeforeSaveAsync<TEntity, TEntityPk>(item, validationResult, changes))
-                {
-                    result = false;
-                }
-            }
-
-            return result;
+            return FiltersManager.BeforeSaveAsync<TEntity, TEntityPk>(item, validationResult, changes);
         }
 
-        protected virtual async Task<bool> AfterSaveAsync(TEntity item, PropertyChange[] changes = null)
+        protected virtual Task<bool> AfterSaveAsync(TEntity item, PropertyChange[] changes = null)
         {
-            var result = true;
-            foreach (var repositoryFilter in Filters)
-            {
-                if (!repositoryFilter.CanProcess(item.GetType())) continue;
-                if (!await repositoryFilter.AfterSaveAsync<TEntity, TEntityPk>(item, changes))
-                {
-                    result = false;
-                }
-            }
-
-            return result;
+            return FiltersManager.AfterSaveAsync<TEntity, TEntityPk>(item, changes);
         }
 
         protected virtual Task BeforeDeleteAsync(TEntity entity)
