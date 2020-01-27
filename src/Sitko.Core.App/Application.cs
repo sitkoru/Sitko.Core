@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.App
 {
-    public class Application
+    public class Application : IAsyncDisposable
     {
         private readonly string[] _args;
         protected readonly List<IApplicationModule> Modules = new List<IApplicationModule>();
@@ -57,6 +57,18 @@ namespace Sitko.Core.App
             await InitAsync();
 
             await GetAppHost().RunAsync();
+        }
+        
+        public async Task StartAsync()
+        {
+            await InitAsync();
+
+            await GetAppHost().StartAsync();
+        }
+
+        public async Task StopAsync()
+        {
+            await GetAppHost().StopAsync();
         }
 
         public async Task ExecuteAsync(Func<IServiceProvider, Task> command)
@@ -219,6 +231,12 @@ namespace Sitko.Core.App
             {
                 module.ApplicationStopped(configuration, environment, serviceProvider);
             }
+        }
+
+        public virtual ValueTask DisposeAsync()
+        {
+            _appHost.Dispose();
+            return new ValueTask();
         }
     }
 }

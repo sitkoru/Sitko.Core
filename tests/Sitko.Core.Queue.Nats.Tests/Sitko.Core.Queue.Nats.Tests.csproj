@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Sitko.Core.Queue.Nats\Sitko.Core.Queue.Nats.csproj" />
+    <ProjectReference Include="..\..\src\Sitko.Core.Xunit\Sitko.Core.Xunit.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Queue.Test\Sitko.Core.Queue.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+    <PackageReference Include="Grpc.Tools" Version="2.26.0" PrivateAssets="All" />
+    <PackageReference Include="Google.Protobuf" Version="3.11.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="TestMsg.proto" GrpcServices="None" />
+  </ItemGroup>
+
+</Project>

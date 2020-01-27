@@ -10,11 +10,13 @@ variables:
 build:
     stage: build
     script:
+        - dotnet test $CI_PROJECT_DIR/tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
+        - dotnet test $CI_PROJECT_DIR/tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj
         - dotnet pack -c Release /p:Version=$VERSION -o $CI_PROJECT_DIR/nugets
         - mkdir -p Composer/Core
-        - mkdir -p Composer/PQ
+        - mkdir -p Composer/Queue
         - find $CI_PROJECT_DIR/src/Sitko.Core.Grpc/Proto -name "*.proto" | xargs /usr/local/bin/protoc --php_out=$CI_PROJECT_DIR/Composer/Core --grpc_out $CI_PROJECT_DIR/Composer/Core --proto_path=/opt/include --proto_path=$CI_PROJECT_DIR/src/Sitko.Core.Grpc/Proto --plugin=protoc-gen-grpc=/usr/local/bin/grpc_php_client_plugin
-        - find $CI_PROJECT_DIR/src/Sitko.Core.PersistentQueue/Proto -name "*.proto" | xargs /usr/local/bin/protoc --php_out=$CI_PROJECT_DIR/Composer/PQ --proto_path=/opt/include --proto_path=$CI_PROJECT_DIR/src/Sitko.Core.PersistentQueue/Proto
+        - find $CI_PROJECT_DIR/src/Sitko.Core.Queue.Nats/Proto -name "*.proto" | xargs /usr/local/bin/protoc --php_out=$CI_PROJECT_DIR/Composer/Queue --proto_path=/opt/include --proto_path=$CI_PROJECT_DIR/src/Sitko.Core.Queue.Nats/Proto
     artifacts:
         paths:
             - $CI_PROJECT_DIR/nugets
@@ -56,10 +58,10 @@ release:
         - mc config host add minio $S3_HOST $S3_ACCESS_KEY $S3_SECRET_KEY --api S3v4
         - mc cp sitko.tgz minio/$S3_BUCKET/proto/sitko.tgz
         # push pq php package
-        - git clone ssh://git@gitlab.0xdev.ru:2224/Sitko/Core.PersistentQueue.Php.git /tmp/php/pq
+        - git clone ssh://git@gitlab.0xdev.ru:2224/Sitko/Core.Queue.Php.git /tmp/php/pq
         - mkdir -p /tmp/php/pq/src
         - rm -rf /tmp/php/pq/src/*
-        - cp -a $CI_PROJECT_DIR/Composer/PQ/* /tmp/php/pq/src
+        - cp -a $CI_PROJECT_DIR/Composer/Queue/* /tmp/php/pq/src
         - echo v$VERSION > /tmp/php/pq/VERSION
         - cd /tmp/php/pq
         - git add .
