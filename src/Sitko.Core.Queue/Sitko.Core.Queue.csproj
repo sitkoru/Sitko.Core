@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
     <ProjectReference Include="..\Sitko.Core.Health\Sitko.Core.Health.csproj" />
+    <ProjectReference Include="..\Sitko.Core.MessageBus\Sitko.Core.MessageBus.csproj" />
     <ProjectReference Include="..\Sitko.Core.Metrics\Sitko.Core.Metrics.csproj" />
   </ItemGroup>
 </Project>

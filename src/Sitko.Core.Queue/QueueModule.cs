@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.Health;
+using Sitko.Core.MessageBus;
 using Sitko.Core.Metrics;
 using Sitko.Core.Queue.Internal;
 using Sitko.Core.Queue.Middleware;
@@ -55,6 +56,11 @@ namespace Sitko.Core.Queue
                     services.AddSingleton(typeof(IQueueProcessorHost), host);
                 }
             }
+
+            foreach ((Type serviceType, Type implementationType) in Config.TranslateMessageBusTypes)
+            {
+                services.AddTransient(serviceType, implementationType);
+            }
         }
 
         public override List<Type> GetRequiredModules()
@@ -68,6 +74,11 @@ namespace Sitko.Core.Queue
             if (Config.HealthChecksEnabled)
             {
                 modules.Add(typeof(HealthModule));
+            }
+
+            if (Config.TranslateMessageBusTypes.Any())
+            {
+                modules.Add(typeof(MessageBusModule));
             }
 
             return modules;
