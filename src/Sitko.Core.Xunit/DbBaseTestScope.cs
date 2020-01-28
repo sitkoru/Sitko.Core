@@ -101,9 +101,12 @@ namespace Sitko.Core.Xunit
 
         public override async ValueTask DisposeAsync()
         {
+            if (_dbContext != null)
+            {
+                await _dbContext.Database.EnsureDeletedAsync();
+            }
+
             await base.DisposeAsync();
-            await GetDbContext().Database.EnsureDeletedAsync();
-            await GetDbContext().DisposeAsync();
         }
     }
 }
