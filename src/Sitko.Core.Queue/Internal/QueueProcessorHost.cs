@@ -1,11 +1,13 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.Queue.Internal
 {
-    internal class QueueProcessorHost<T> : IQueueProcessorHost where T : class
+    internal class QueueProcessorHost<T> : IHostedService where T : class
     {
         private readonly IQueue _queue;
         private readonly IServiceProvider _serviceProvider;
@@ -19,7 +21,7 @@ namespace Sitko.Core.Queue.Internal
             _logger = logger;
         }
 
-        public async Task StartAsync()
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Start processing messages of type {Type}", typeof(T));
             var result = await _queue.SubscribeAsync<T>(async (message, context) =>
@@ -52,7 +54,7 @@ namespace Sitko.Core.Queue.Internal
             }
         }
 
-        public async Task StopAsync()
+        public async Task StopAsync(CancellationToken cancellationToken)
         {
             if (_subscriptionResult != null)
             {

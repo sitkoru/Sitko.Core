@@ -23,7 +23,6 @@ namespace Sitko.Core.Queue
             base.ConfigureServices(services, configuration, environment);
             services.AddSingleton<IQueue, TQueue>();
             services.AddSingleton<QueueContext>();
-            services.AddHostedService<QueueService>();
             if (Config.MetricsEnabled)
             {
                 Config.Middlewares.Add(typeof(MetricsMiddleware));
@@ -53,7 +52,7 @@ namespace Sitko.Core.Queue
                 foreach (var messageType in messageTypes)
                 {
                     var host = typeof(QueueProcessorHost<>).MakeGenericType(messageType);
-                    services.AddSingleton(typeof(IQueueProcessorHost), host);
+                    services.AddSingleton(typeof(IHostedService), host);
                 }
             }
 
