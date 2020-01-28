@@ -10,10 +10,4 @@ namespace Sitko.Core.Queue
     public interface IQueueProcessor
     {
     }
-
-    public interface IQueueProcessorHost
-    {
-        Task StartAsync();
-        Task StopAsync();
-    }
 }
