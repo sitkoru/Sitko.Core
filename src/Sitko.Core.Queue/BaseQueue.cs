@@ -16,7 +16,7 @@ namespace Sitko.Core.Queue
         private readonly List<IQueueMessageOptions> _messageOptions;
 
         protected readonly ILogger<BaseQueue<TConfig>> _logger;
-        private bool _isStarted;
+        protected bool IsStarted { get; private set; }
 
         private readonly ConcurrentDictionary<Guid, QueueSubscription> _subscriptions =
             new ConcurrentDictionary<Guid, QueueSubscription>();
@@ -162,10 +162,10 @@ namespace Sitko.Core.Queue
 
         protected async Task StartAsync()
         {
-            if (!_isStarted)
+            if (!IsStarted)
             {
                 await DoStartAsync();
-                _isStarted = true;
+                IsStarted = true;
             }
         }
 
