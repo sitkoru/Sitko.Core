@@ -357,7 +357,7 @@ namespace Sitko.Core.Queue.Nats
 
         public override Task<(HealthStatus status, string? errorMessage)> CheckHealthAsync()
         {
-            HealthStatus status;
+            HealthStatus status = HealthStatus.Healthy;
             string? errorMessage = null;
             if (_natsConn != null)
             {
@@ -396,8 +396,11 @@ namespace Sitko.Core.Queue.Nats
             }
             else
             {
-                status = HealthStatus.Unhealthy;
-                errorMessage = "Nats connection is null";
+                if (IsStarted)
+                {
+                    status = HealthStatus.Unhealthy;
+                    errorMessage = "Nats connection is null";
+                }
             }
 
             return Task.FromResult((status, errorMessage));
