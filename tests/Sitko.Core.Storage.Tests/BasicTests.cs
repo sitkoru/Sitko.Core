@@ -139,14 +139,24 @@ namespace Sitko.Core.Storage.Tests
             await using (var file = File.Open("Data/img.jpg", FileMode.Open))
             {
                 uploaded = await storage.SaveImageAsync(file, fileName, "upload",
-                    new List<StorageImageSize> {new StorageImageSize(100, 100)});
+                    new List<StorageImageSize> {new StorageImageSize(100, 100, key: "test")});
             }
 
             Assert.NotNull(uploaded);
             Assert.NotNull(uploaded.ImageInfo);
             Assert.NotEmpty(uploaded.ImageInfo.Thumbnails);
-            var thumb = uploaded.GetImageUriByWidth(100);
-            Assert.NotNull(thumb);
+            var thumbByWidth = uploaded.GetThumbnailByWidth(100);
+            Assert.NotNull(thumbByWidth);
+            var thumbUriByWidth = uploaded.GetImageUriByWidth(100);
+            Assert.NotNull(thumbUriByWidth);
+            Assert.NotEqual(uploaded.PublicUri, thumbUriByWidth);
+            var thumbByHeight = uploaded.GetThumbnailByHeight(100);
+            Assert.Null(thumbByHeight);
+            var thumbUriByHeight = uploaded.GetImageUriByHeight(100);
+            Assert.NotNull(thumbUriByHeight);
+            Assert.Equal(uploaded.PublicUri, thumbUriByHeight);
+            var thumbByKey = uploaded.GetThumbnailByKey("test");
+            Assert.NotNull(thumbByKey);
         }
     }
 }

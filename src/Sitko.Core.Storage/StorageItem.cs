@@ -45,16 +45,26 @@ namespace Sitko.Core.Storage
             return ImageInfo?.Thumbnails?.Where(t => t.Key == key).FirstOrDefault();
         }
 
+        public StorageItemImageThumbnail? GetThumbnailByWidth(int width)
+        {
+            return ImageInfo?.Thumbnails.Where(t => t.Width >= width).OrderBy(t => t.Width).FirstOrDefault();
+        }
+
+        public StorageItemImageThumbnail? GetThumbnailByHeight(int height)
+        {
+            return ImageInfo?.Thumbnails.Where(t => t.Height >= height).OrderBy(t => t.Height)
+                .FirstOrDefault();
+        }
+
         public Uri GetImageUriByWidth(int width)
         {
-            var thumbnail = ImageInfo?.Thumbnails.Where(t => t.Width >= width).OrderBy(t => t.Width).FirstOrDefault();
+            var thumbnail = GetThumbnailByWidth(width);
             return thumbnail != null ? thumbnail.PublicUri : PublicUri;
         }
 
-        public Uri GetImageUrlByHeight(int height)
+        public Uri GetImageUriByHeight(int height)
         {
-            var thumbnail = ImageInfo?.Thumbnails.Where(t => t.Height >= height).OrderBy(t => t.Height)
-                .FirstOrDefault();
+            var thumbnail = GetThumbnailByHeight(height);
             return thumbnail != null ? thumbnail.PublicUri : PublicUri;
         }
     }
