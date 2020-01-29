@@ -19,10 +19,16 @@ namespace Sitko.Core.Storage.FileSystem
 
         protected override async Task<bool> DoSaveAsync(string path, Stream file)
         {
-            var dirPath = Path.Combine(_storagePath, Path.GetDirectoryName(path));
+            var dirName = Path.GetDirectoryName(path);
+            if (string.IsNullOrEmpty(dirName))
+            {
+                return false;
+            }
+
+            var dirPath = Path.Combine(_storagePath, dirName);
             if (!Directory.Exists(dirPath))
             {
-                Directory.CreateDirectory(dirPath ?? throw new Exception($"Empty dir path in {path}"));
+                Directory.CreateDirectory(dirPath);
             }
 
             using var fileStream = File.Create(Path.Combine(_storagePath, path));
