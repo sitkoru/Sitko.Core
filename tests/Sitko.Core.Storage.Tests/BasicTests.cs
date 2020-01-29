@@ -24,7 +24,7 @@ namespace Sitko.Core.Storage.Tests
 
             Assert.NotNull(storage);
 
-            StorageItem uploaded = null;
+            StorageItem uploaded;
             const string fileName = "file.txt";
             await using (var file = File.Open("Data/file.txt", FileMode.Open))
             {
@@ -47,8 +47,8 @@ namespace Sitko.Core.Storage.Tests
 
             Assert.NotNull(storage);
 
-            StorageItem uploaded = null;
-            long fileLength = 0;
+            StorageItem uploaded;
+            long fileLength;
             const string fileName = "file.txt";
             await using (var file = File.Open("Data/file.txt", FileMode.Open))
             {
@@ -73,7 +73,7 @@ namespace Sitko.Core.Storage.Tests
 
             Assert.NotNull(storage);
 
-            StorageItem uploaded = null;
+            StorageItem uploaded;
             const string fileName = "file.txt";
             await using (var file = File.Open("Data/file.txt", FileMode.Open))
             {
@@ -110,7 +110,7 @@ namespace Sitko.Core.Storage.Tests
 
             Assert.NotNull(storage);
 
-            StorageItem uploaded = null;
+            StorageItem uploaded;
             const string fileName = "img.jpg";
             await using (var file = File.Open("Data/img.jpg", FileMode.Open))
             {
@@ -134,7 +134,7 @@ namespace Sitko.Core.Storage.Tests
 
             Assert.NotNull(storage);
 
-            StorageItem uploaded = null;
+            StorageItem uploaded;
             const string fileName = "img.jpg";
             await using (var file = File.Open("Data/img.jpg", FileMode.Open))
             {
