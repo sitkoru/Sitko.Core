@@ -1,0 +1,15 @@
+version: "2.1"
+services:
+    nats:
+        image: nats-streaming:0.16.2
+        command: -cid cg2
+        ports:
+        - 4222:4222
+    minio:
+        image: minio/minio
+        command: server /data
+        ports:
+            - 9000:9000
+        environment:
+            - MINIO_ACCESS_KEY=A8eENTqgEE7uYL7R
+            - MINIO_SECRET_KEY=82bmVoDRkZgwy4B3PXkLzpXiuqGVZMug
