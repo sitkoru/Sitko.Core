@@ -16,7 +16,6 @@ namespace Sitko.Core.Storage.S3
     {
         private readonly T _options;
         private readonly AmazonS3Client _client;
-        private bool _disposed;
         private readonly List<FileStream> _openedStreams = new List<FileStream>();
 
         public S3Storage(T options, ILogger<S3Storage<T>> logger) : base(options, logger)

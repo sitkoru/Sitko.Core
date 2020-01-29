@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Storage.S3.Tests
 {

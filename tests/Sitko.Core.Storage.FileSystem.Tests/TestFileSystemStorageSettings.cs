@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sitko.Core.Storage.FileSystem;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Storage.FileSystem.Tests
 {
