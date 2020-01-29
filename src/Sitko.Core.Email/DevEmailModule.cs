@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.Email
 {
-    public class DevEmailModule : EmailModule<DevEmailModuleConfig>
+    public class DevEmailModule : FluentEmailModule<DevEmailModuleConfig>
     {
         protected override void ConfigureBuilder(FluentEmailServicesBuilder builder)
         {
@@ -19,7 +19,7 @@ namespace Sitko.Core.Email
         }
     }
 
-    public class DevEmailModuleConfig : EmailModuleConfig
+    public class DevEmailModuleConfig : FluentEmailModuleConfig
     {
         public DevEmailModuleConfig() : base("dev@localhost", "localhost", "http")
         {
