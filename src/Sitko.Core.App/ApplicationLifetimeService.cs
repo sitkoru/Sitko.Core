@@ -6,16 +6,16 @@ using Microsoft.Extensions.Hosting;
 
 namespace Sitko.Core.App
 {
-    public class ApplicationLifetimeService : BackgroundService
+    public class ApplicationLifetimeService<T> : BackgroundService where T : Application<T>
     {
         private readonly IHostApplicationLifetime _hostApplicationLifetime;
         private readonly IServiceProvider _serviceProvider;
-        private readonly Application _application;
+        private readonly Application<T> _application;
         private readonly IConfiguration _configuration;
         private readonly IHostEnvironment _environment;
 
         public ApplicationLifetimeService(IHostApplicationLifetime hostApplicationLifetime,
-            IServiceProvider serviceProvider, Application application, IConfiguration configuration,
+            IServiceProvider serviceProvider, Application<T> application, IConfiguration configuration,
             IHostEnvironment environment)
         {
             _hostApplicationLifetime = hostApplicationLifetime;

@@ -13,48 +13,48 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Web
 {
-    public class WebApplication : Application
+    public abstract class WebApplication<T> : Application<T> where T : WebApplication<T>
     {
-        private static WebApplication _instance;
+        private static T _instance;
 
-        public WebApplication(string[] args) : base(args)
+        protected WebApplication(string[] args) : base(args)
         {
             GetHostBuilder().ConfigureServices(collection =>
             {
-                collection.AddSingleton(typeof(WebApplication), this);
+                collection.AddSingleton(typeof(WebApplication<T>), this);
             });
-            _instance = this;
+            _instance = (T)this;
         }
 
-        public static WebApplication GetInstance()
+        public static T GetInstance()
         {
             return _instance;
         }
 
-        public WebApplication Run<TStartup>(int port = 0) where TStartup : BaseStartup
+        public T Run<TStartup>(int port = 0) where TStartup : BaseStartup<T>
         {
             GetHostBuilder().ConfigureWebHostDefaults(builder =>
                 builder.UseStartup<TStartup>().UseUrls($"http://*:{port.ToString()}"));
 
             GetAppHost().Start();
-            return this;
+            return (T)this;
         }
 
-        public WebApplication UseStartup<TStartup>() where TStartup : BaseStartup
+        public T UseStartup<TStartup>() where TStartup : BaseStartup<T>
         {
             GetHostBuilder().ConfigureWebHostDefaults(webBuilder =>
             {
                 webBuilder.UseStartup<TStartup>();
             });
-            return this;
+            return (T)this;
         }
 
-        public async Task RunAsync<TStartup>() where TStartup : BaseStartup
+        public async Task RunAsync<TStartup>() where TStartup : BaseStartup<T>
         {
             await UseStartup<TStartup>().RunAsync();
         }
 
-        public async Task ExecuteAsync<TStartup>(Func<IServiceProvider, Task> command) where TStartup : BaseStartup
+        public async Task ExecuteAsync<TStartup>(Func<IServiceProvider, Task> command) where TStartup : BaseStartup<T>
         {
             GetHostBuilder().UseConsoleLifetime();
             using var host = UseStartup<TStartup>().GetAppHost();
@@ -69,7 +69,7 @@ namespace Sitko.Core.Web
             }
             catch (Exception ex)
             {
-                var logger = serviceProvider.GetService<ILogger<WebApplication>>();
+                var logger = serviceProvider.GetService<ILogger<WebApplication<T>>>();
                 logger.LogError(ex, ex.ToString());
             }
 
@@ -148,6 +148,16 @@ namespace Sitko.Core.Web
             {
                 webModule.ConfigureStartupServices(services, configuration, environment);
             }
+        }
+
+        public IHostBuilder CreateBasicHostBuilder<TStartup>()
+            where TStartup : BaseStartup<T>
+        {
+            return GetHostBuilder().ConfigureAppConfiguration(builder =>
+            {
+                builder.AddUserSecrets<TStartup>();
+                builder.AddEnvironmentVariables();
+            }).ConfigureWebHost(builder => builder.UseStartup<TStartup>());
         }
     }
 }

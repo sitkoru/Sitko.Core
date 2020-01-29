@@ -15,7 +15,7 @@ using Sitko.Core.Web.Components;
 
 namespace Sitko.Core.Web
 {
-    public abstract class BaseStartup
+    public abstract class BaseStartup<T> where T : WebApplication<T>
     {
         protected IConfiguration Configuration { get; }
         protected IHostEnvironment Environment { get; }
@@ -39,9 +39,8 @@ namespace Sitko.Core.Web
                 options.OnDeleteCookie = cookieContext =>
                     CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
             });
-            WebApplication.GetInstance().ConfigureStartupServices(services, Configuration, Environment);
+            WebApplication<T>.GetInstance().ConfigureStartupServices(services, Configuration, Environment);
             ConfigureAppServices(services);
-            
         }
 
         public void AddRedisCache(IServiceCollection services, string redisConnectionsString)
@@ -104,7 +103,7 @@ namespace Sitko.Core.Web
                 });
         }
 
-        public void Configure(IApplicationBuilder appBuilder, WebApplication application)
+        public void Configure(IApplicationBuilder appBuilder, WebApplication<T> application)
         {
             if (Environment.IsDevelopment())
             {

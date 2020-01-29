@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Sitko.Core.App;
 using Sitko.Core.Xunit;
 
 namespace Sitko.Core.Storage.S3.Tests
@@ -9,7 +8,7 @@ namespace Sitko.Core.Storage.S3.Tests
     {
         private Guid _bucketName = Guid.NewGuid();
 
-        protected override Application ConfigureApplication(Application application, string name)
+        protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name)
                 .AddModule<S3StorageModule<TestS3StorageSettings>, TestS3StorageSettings>(

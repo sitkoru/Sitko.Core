@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.App
 {
-    public class Application : IAsyncDisposable
+    public class Application<T> : IAsyncDisposable where T : Application<T>
     {
         private readonly string[] _args;
         protected readonly List<IApplicationModule> Modules = new List<IApplicationModule>();
@@ -25,21 +25,22 @@ namespace Sitko.Core.App
             _hostBuilder = Host.CreateDefaultBuilder(args);
             _hostBuilder.ConfigureServices(collection =>
             {
-                collection.AddSingleton(typeof(Application), this);
-                collection.AddHostedService<ApplicationLifetimeService>();
+                collection.AddSingleton(typeof(Application<T>), this);
+                collection.AddSingleton(typeof(T), this);
+                collection.AddHostedService<ApplicationLifetimeService<T>>();
             });
         }
 
-        public Application ConfigureServices(Action<IServiceCollection> configure)
+        public T ConfigureServices(Action<IServiceCollection> configure)
         {
             _hostBuilder.ConfigureServices(configure);
-            return this;
+            return (T)this;
         }
 
-        public Application ConfigureServices(Action<HostBuilderContext, IServiceCollection> configure)
+        public T ConfigureServices(Action<HostBuilderContext, IServiceCollection> configure)
         {
             _hostBuilder.ConfigureServices(configure);
-            return this;
+            return (T)this;
         }
 
         protected IConfiguration GetConfiguration()
@@ -58,7 +59,7 @@ namespace Sitko.Core.App
 
             await GetAppHost().RunAsync();
         }
-        
+
         public async Task StartAsync()
         {
             await InitAsync();
@@ -87,7 +88,7 @@ namespace Sitko.Core.App
             }
             catch (Exception ex)
             {
-                var logger = serviceProvider.GetService<ILogger<Application>>();
+                var logger = serviceProvider.GetService<ILogger<Application<T>>>();
                 logger.LogError(ex, ex.ToString());
             }
         }
@@ -122,33 +123,33 @@ namespace Sitko.Core.App
             }
         }
 
-        public Application AddModule<TModule, TModuleConfig>(
+        public T AddModule<TModule, TModuleConfig>(
             Func<IConfiguration, IHostEnvironment, TModuleConfig> configure)
             where TModule : IApplicationModule<TModuleConfig>, new() where TModuleConfig : class
         {
             if (Modules.OfType<TModule>().Any())
             {
-                return this;
+                return (T)this;
             }
 
             var module = new TModule();
             ConfigureModule(module, configure);
             Modules.Add(module);
-            return this;
+            return (T)this;
         }
 
-        public Application AddModule<TModule>()
+        public T AddModule<TModule>()
             where TModule : IApplicationModule, new()
         {
             if (Modules.OfType<TModule>().Any())
             {
-                return this;
+                return (T)this;
             }
 
             var module = new TModule();
             ConfigureModule(module);
             Modules.Add(module);
-            return this;
+            return (T)this;
         }
 
         private void CheckRequiredModules(IApplicationModule module)
@@ -200,10 +201,10 @@ namespace Sitko.Core.App
             );
         }
 
-        public Application ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> action)
+        public T ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> action)
         {
             _hostBuilder.ConfigureAppConfiguration(action);
-            return this;
+            return (T)this;
         }
 
         public void OnStarted(IConfiguration configuration, IHostEnvironment environment,

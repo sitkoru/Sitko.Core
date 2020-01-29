@@ -13,12 +13,12 @@ namespace Sitko.Core.Xunit
     public abstract class BaseTestScope : IAsyncDisposable
     {
         protected IServiceProvider? ServiceProvider;
-        private Application _application;
+        private TestApplication _application;
         private bool _isApplicationStarted;
 
         public void Configure(string name, ITestOutputHelper testOutputHelper)
         {
-            _application = new Application(new string[0]);
+            _application = new TestApplication(new string[0]);
 
             _application.ConfigureServices((context, services) =>
             {
@@ -31,7 +31,7 @@ namespace Sitko.Core.Xunit
             ServiceProvider = _application.GetServices();
         }
 
-        protected virtual Application ConfigureApplication(Application application, string name)
+        protected virtual TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return application;
         }
@@ -80,6 +80,13 @@ namespace Sitko.Core.Xunit
                 await _application.StartAsync();
                 _isApplicationStarted = true;
             }
+        }
+    }
+
+    public class TestApplication : Application<TestApplication>
+    {
+        public TestApplication(string[] args) : base(args)
+        {
         }
     }
 }

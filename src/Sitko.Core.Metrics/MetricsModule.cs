@@ -38,4 +38,12 @@ namespace Sitko.Core.Metrics
             services.AddSingleton<IMetricsCollector, MetricsCollector>();
         }
     }
+    
+    public static class MetricsModuleExtensions
+    {
+        public static T AddMetrics<T>(this T application) where T : Application<T>
+        {
+            return application.AddModule<MetricsModule>();
+        }
+    }
 }

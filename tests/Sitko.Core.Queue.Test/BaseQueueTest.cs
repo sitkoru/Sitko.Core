@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Sitko.Core.App;
 using Sitko.Core.Xunit;
 using Xunit.Abstractions;
 
@@ -22,7 +21,7 @@ namespace Sitko.Core.Queue.Tests
         where TQueue : class, IQueue
         where TConfig : QueueModuleConfig
     {
-        protected override Application ConfigureApplication(Application application, string name)
+        protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             base.ConfigureApplication(application, name);
             application.AddModule<TQueueModule, TConfig>((

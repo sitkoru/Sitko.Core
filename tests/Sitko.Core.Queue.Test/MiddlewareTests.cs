@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Sitko.Core.App;
 using Sitko.Core.Metrics;
 using Sitko.Core.Queue.Middleware;
 using Sitko.Core.Xunit;
@@ -120,7 +119,7 @@ namespace Sitko.Core.Queue.Tests
 
     public class MetricsMiddlewareQueueTestScope : BaseTestQueueTestScope
     {
-        protected override Application ConfigureApplication(Application application, string name)
+        protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name).AddModule<MetricsModule>();
         }

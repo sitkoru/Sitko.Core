@@ -22,4 +22,12 @@ namespace Sitko.Core.Grpc.Client
             return new List<Type> {typeof(ConsulModule)};
         }
     }
+
+    public static class GrpcClientModuleExtensions
+    {
+        public static T AddGrpcClient<T>(this T application) where T : Application<T>
+        {
+            return application.AddModule<GrpcClientModule>();
+        }
+    }
 }
