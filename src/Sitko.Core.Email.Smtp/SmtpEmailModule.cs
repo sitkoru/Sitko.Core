@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Sitko.Core.Email.Smtp
 {
-    public class SmtpEmailModule : EmailModule<SmtpEmailModuleConfig>
+    public class SmtpEmailModule : FluentEmailModule<SmtpEmailModuleConfig>
     {
         protected override void ConfigureBuilder(FluentEmailServicesBuilder builder)
         {
@@ -19,7 +19,7 @@ namespace Sitko.Core.Email.Smtp
         }
     }
 
-    public class SmtpEmailModuleConfig : EmailModuleConfig
+    public class SmtpEmailModuleConfig : FluentEmailModuleConfig
     {
         public SmtpEmailModuleConfig(string server, int port, string userName, string password, bool useSsl,
             string from,

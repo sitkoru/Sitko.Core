@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Sitko.Core.Email.MailGun
 {
-    public class MailGunEmailModule : EmailModule<MailGunEmailModuleConfig>
+    public class MailGunEmailModule : FluentEmailModule<MailGunEmailModuleConfig>
     {
         protected override void ConfigureBuilder(FluentEmailServicesBuilder builder)
         {
@@ -12,7 +12,7 @@ namespace Sitko.Core.Email.MailGun
         }
     }
 
-    public class MailGunEmailModuleConfig : EmailModuleConfig
+    public class MailGunEmailModuleConfig : FluentEmailModuleConfig
     {
         public MailGunEmailModuleConfig(string domain, string apiKey, MailGunRegion region, string from, string host,
             string scheme) : base(
