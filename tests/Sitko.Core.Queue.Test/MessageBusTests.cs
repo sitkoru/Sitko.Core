@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Sitko.Core.App;
 using Sitko.Core.MessageBus;
+using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -51,7 +51,7 @@ namespace Sitko.Core.Queue.Tests
             config.TranslateMessageBusNotification<TestRequest>();
         }
 
-        protected override Application ConfigureApplication(Application application, string name)
+        protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name)
                 .AddModule<MessageBusModule, MessageBusModuleConfig>((configuration, environment) =>

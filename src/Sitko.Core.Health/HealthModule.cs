@@ -13,6 +13,14 @@ namespace Sitko.Core.Health
             services.AddHealthChecks();
         }
     }
+    
+    public static class HealthModuleExtensions
+    {
+        public static T AddHealth<T>(this T application) where T : Application<T>
+        {
+            return application.AddModule<HealthModule>();
+        }
+    }
 
     public enum HealthState
     {

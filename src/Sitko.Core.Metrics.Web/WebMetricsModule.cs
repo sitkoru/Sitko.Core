@@ -58,4 +58,12 @@ namespace Sitko.Core.Metrics.Web
             });
         }
     }
+    
+    public static class WebMetricsModuleExtensions
+    {
+        public static T AddWebMetrics<T>(this T application) where T : Application<T>
+        {
+            return application.AddModule<WebMetricsModule>();
+        }
+    }
 }

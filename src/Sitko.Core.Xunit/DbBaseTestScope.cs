@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Sitko.Core.App;
 using Sitko.Core.Db.InMemory;
 using Sitko.Core.Db.Postgres;
 
@@ -15,7 +14,7 @@ namespace Sitko.Core.Xunit
     {
         private TDbContext? _dbContext;
 
-        protected override Application ConfigureApplication(Application application, string name)
+        protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             base.ConfigureApplication(application, name);
             application.ConfigureAppConfiguration((context, builder) =>
