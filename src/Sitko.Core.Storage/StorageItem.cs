@@ -70,7 +70,7 @@ namespace Sitko.Core.Storage
         public double VerticalResolution { get; set; }
         public double HorizontalResolution { get; set; }
 
-        public List<StorageItemImageThumbnail> Thumbnails { get; set; }
+        public List<StorageItemImageThumbnail> Thumbnails { get; set; } = new List<StorageItemImageThumbnail>();
     }
 
     public class StorageItemImageThumbnail

@@ -13,5 +13,9 @@ namespace Sitko.Core.Storage
             List<StorageImageSize>? sizes = null);
 
         Task<bool> DeleteFileAsync(string filePath);
+
+        Task<Stream> DownloadFileAsync(StorageItem item);
+
+        Task DeleteAllAsync();
     }
 }

@@ -16,14 +16,14 @@ using SixLabors.Primitives;
 
 namespace Sitko.Core.Storage
 {
-    public abstract class Storage<T> : IStorage<T> where T : IStorageOptions
+    public abstract class Storage<T> : IStorage<T>, IAsyncDisposable where T : IStorageOptions
     {
-        private readonly ILogger<Storage<T>> _logger;
+        protected readonly ILogger<Storage<T>> Logger;
         private readonly IStorageOptions _options;
 
         protected Storage(IStorageOptions options, ILogger<Storage<T>> logger)
         {
-            _logger = logger;
+            Logger = logger;
             _options = options;
         }
 
@@ -41,7 +41,7 @@ namespace Sitko.Core.Storage
         {
             file.Seek(0, SeekOrigin.Begin);
             await DoSaveAsync(destinationPath, file);
-            _logger.LogInformation("File saved to {path}", path);
+            Logger.LogInformation("File saved to {Path}", path);
             return storageItem;
         }
 
@@ -81,6 +81,8 @@ namespace Sitko.Core.Storage
 
 
         public abstract Task<bool> DeleteFileAsync(string filePath);
+        public abstract Task<Stream> DownloadFileAsync(StorageItem item);
+        public abstract Task DeleteAllAsync();
 
         protected string GetStorageFileName(string fileName)
         {
@@ -142,6 +144,11 @@ namespace Sitko.Core.Storage
 
             return new StorageItemImageThumbnail(new Uri($"{_options.PublicUri}/{thumbPath}"), thumbPath, thumb.Width,
                 thumb.Height, size.Key);
+        }
+
+        public virtual ValueTask DisposeAsync()
+        {
+            return new ValueTask();
         }
     }
 }
