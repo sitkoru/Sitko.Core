@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Npgsql;
 using Sitko.Core.App;
 using Sitko.Core.HangFire.Components;
 using Sitko.Core.Health;
@@ -27,7 +26,7 @@ namespace Sitko.Core.HangFire
             {
                 Config.Configure(config);
             });
-            if (Config.ConfigureHealthChecks != null)
+            if (Config.IsHealthChecksEnabled)
             {
                 services.AddHealthChecks().AddHangfire(options =>
                 {
@@ -39,7 +38,7 @@ namespace Sitko.Core.HangFire
         public virtual void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
-            if (Config.DashboardAuthorizationCheck != null)
+            if (Config.IsDashboardEnabled)
             {
                 var authFilters = new List<IDashboardAuthorizationFilter>();
                 if (Config.DashboardAuthorizationCheck != null)
@@ -58,7 +57,7 @@ namespace Sitko.Core.HangFire
                 .UseFilter(new UseQueueFromScheduledFilter())
                 .UseFilter(new PreserveOriginalQueueAttribute());
 
-            if (Config.EnableWorker)
+            if (Config.IsWorkersEnabled)
             {
                 appBuilder.UseHangfireServer(new BackgroundJobServerOptions
                 {
@@ -79,7 +78,7 @@ namespace Sitko.Core.HangFire
         public override List<Type> GetRequiredModules()
         {
             var list = new List<Type>();
-            if (Config.ConfigureHealthChecks != null)
+            if (Config.IsHealthChecksEnabled)
             {
                 list.Add(typeof(HealthModule));
             }
@@ -97,24 +96,36 @@ namespace Sitko.Core.HangFire
 
         public Action<IGlobalConfiguration> Configure { get; }
 
+        public bool IsWorkersEnabled { get; private set; }
+        public int Workers { get; private set; }
+        public string[] Queues { get; private set; } = {"default"};
 
-        public int Workers { get; set; } = 10;
-        public string[] Queues { get; set; } = {"default"};
+        public void EnableWorker(int workersCount = 10, string[]? queues = null)
+        {
+            IsWorkersEnabled = true;
+            Workers = workersCount;
+            if (queues != null && queues.Any())
+            {
+                Queues = queues;
+            }
+        }
 
-        public bool EnableWorker { get; set; }
-
+        public bool IsDashboardEnabled { get; private set; }
         public Func<DashboardContext, bool>? DashboardAuthorizationCheck { get; private set; }
 
         public void EnableDashboard(Func<DashboardContext, bool>? configureAuthorizationCheck = null)
         {
+            IsDashboardEnabled = true;
             DashboardAuthorizationCheck = context =>
                 configureAuthorizationCheck == null || configureAuthorizationCheck.Invoke(context);
         }
 
+        public bool IsHealthChecksEnabled { get; private set; }
         public Action<HangfireOptions>? ConfigureHealthChecks { get; private set; }
 
         public void EnableHealthChecks(Action<HangfireOptions>? configure = null)
         {
+            IsHealthChecksEnabled = true;
             ConfigureHealthChecks = options =>
             {
                 configure?.Invoke(options);
@@ -124,20 +135,12 @@ namespace Sitko.Core.HangFire
 
     public class HangfirePostgresModuleConfig : HangfireModuleConfig
     {
-        public HangfirePostgresModuleConfig(string host, int port, string database, string username, string password,
+        public HangfirePostgresModuleConfig(string connectionString,
             TimeSpan? invisibilityTimeout = null, TimeSpan? distributedLockTimeout = null) : base(configuration =>
         {
-            var builder = new NpgsqlConnectionStringBuilder
-            {
-                Host = host,
-                Database = database,
-                Port = port,
-                Username = username,
-                Password = password
-            };
             invisibilityTimeout ??= TimeSpan.FromHours(5);
             distributedLockTimeout ??= TimeSpan.FromHours(5);
-            configuration.UsePostgreSqlStorage(builder.ConnectionString,
+            configuration.UsePostgreSqlStorage(connectionString,
                 new PostgreSqlStorageOptions
                 {
                     InvisibilityTimeout = invisibilityTimeout.Value,
