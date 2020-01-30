@@ -92,8 +92,8 @@ namespace Sitko.Core.Queue.Tests
             Assert.True(subResult.IsSuccess);
 
             var response = await queue.RequestAsync<TestMessage, TestResponse>(msg);
-
-            Assert.Equal(msg.Id, response.message.Id);
+            Assert.NotNull(response);
+            Assert.Equal(msg.Id, response.Value.message.Id);
 
             var unsubResult = await queue.StopReplyAsync<TestMessage, TestResponse>(subResult.SubscriptionId);
             Assert.True(unsubResult);
