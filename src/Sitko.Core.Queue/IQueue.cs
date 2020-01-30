@@ -15,7 +15,7 @@ namespace Sitko.Core.Queue
 
         Task UnsubscribeAsync<T>(Guid subscriptionId) where T : class;
 
-        Task<(TResponse message, QueueMessageContext messageContext)> RequestAsync<TMessage, TResponse>(
+        Task<(TResponse message, QueueMessageContext messageContext)?> RequestAsync<TMessage, TResponse>(
             TMessage message,
             QueueMessageContext? parentMessageContext = null, TimeSpan? timeout = null)
             where TMessage : class

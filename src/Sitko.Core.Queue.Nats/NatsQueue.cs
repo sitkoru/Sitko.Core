@@ -83,7 +83,7 @@ namespace Sitko.Core.Queue.Nats
             return result;
         }
 
-        protected override async Task<QueuePayload<TResponse>> DoRequestAsync<TMessage, TResponse>(
+        protected override async Task<QueuePayload<TResponse>?> DoRequestAsync<TMessage, TResponse>(
             QueuePayload<TMessage> queuePayload, TimeSpan timeout)
         {
             try
@@ -92,7 +92,16 @@ namespace Sitko.Core.Queue.Nats
                 var result =
                     await _natsConn.RequestAsync(GetQueueName(queuePayload.Message), SerializePayload(queuePayload),
                         (int)timeout.TotalMilliseconds);
-                return deserializer(result.Data);
+                try
+                {
+                    return deserializer(result.Data);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error while deserializing response of type {Type}: {ErrorText}",
+                        typeof(TResponse), ex.ToString());
+                    return null;
+                }
             }
             catch (NATSTimeoutException)
             {
@@ -271,11 +280,19 @@ namespace Sitko.Core.Queue.Nats
         private async Task ProcessStanMessage<T>(Func<byte[], QueuePayload<T>> deserializer, StanMsg message,
             bool manualAcks) where T : class
         {
-            var payload = deserializer(message.Data);
-            var processResult = await ProcessMessageAsync(payload);
-            if (processResult && manualAcks)
+            try
             {
-                message.Ack();
+                var payload = deserializer(message.Data);
+                var processResult = await ProcessMessageAsync(payload);
+                if (processResult && manualAcks)
+                {
+                    message.Ack();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while processing message of type {Type}: {ErrorText}", typeof(T),
+                    ex.ToString());
             }
         }
 
