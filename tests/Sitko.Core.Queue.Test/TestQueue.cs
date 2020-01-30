@@ -19,7 +19,7 @@ namespace Sitko.Core.Queue.Tests
             return Task.FromResult(new QueuePublishResult());
         }
 
-        protected override Task<QueuePayload<TResponse>> DoRequestAsync<TMessage, TResponse>(
+        protected override Task<QueuePayload<TResponse>?> DoRequestAsync<TMessage, TResponse>(
             QueuePayload<TMessage> queuePayload, TimeSpan timeout)
         {
             return Task.FromResult(new QueuePayload<TResponse>(Activator.CreateInstance<TResponse>(),
