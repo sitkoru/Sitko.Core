@@ -46,7 +46,7 @@ namespace Sitko.Core.Queue.InMemory
             return Task.FromResult(result);
         }
 
-        protected override async Task<QueuePayload<TResponse>> DoRequestAsync<TMessage, TResponse>(
+        protected override async Task<QueuePayload<TResponse>?> DoRequestAsync<TMessage, TResponse>(
             QueuePayload<TMessage> queuePayload, TimeSpan timeout)
         {
             var replyTo = Guid.NewGuid();

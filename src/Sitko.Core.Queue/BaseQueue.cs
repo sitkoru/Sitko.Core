@@ -126,7 +126,7 @@ namespace Sitko.Core.Queue
         protected abstract Task<QueuePublishResult> DoPublishAsync<T>(QueuePayload<T> queuePayload)
             where T : class;
 
-        protected abstract Task<QueuePayload<TResponse>> DoRequestAsync<TMessage, TResponse>(
+        protected abstract Task<QueuePayload<TResponse>?> DoRequestAsync<TMessage, TResponse>(
             QueuePayload<TMessage> queuePayload, TimeSpan timeout)
             where TMessage : class
             where TResponse : class;
@@ -259,7 +259,7 @@ namespace Sitko.Core.Queue
         public abstract Task<(HealthStatus status, string? errorMessage)> CheckHealthAsync();
 
 
-        public async Task<(TResponse message, QueueMessageContext messageContext)> RequestAsync<TMessage, TResponse>(
+        public async Task<(TResponse message, QueueMessageContext messageContext)?> RequestAsync<TMessage, TResponse>(
             TMessage message, QueueMessageContext? parentMessageContext = null, TimeSpan? timeout = null)
             where TMessage : class
             where TResponse : class
@@ -282,10 +282,17 @@ namespace Sitko.Core.Queue
 
             var response = await DoRequestAsync<TMessage, TResponse>(payload, timeout.Value);
             await OnAfterPublishMessageAsync(payload);
-            if (await OnBeforeReceiveMessageAsync(response))
+            if (response != null)
             {
-                await OnAfterReceiveMessageAsync(response);
-                return (response.Message, response.MessageContext);
+                if (await OnBeforeReceiveMessageAsync(response))
+                {
+                    await OnAfterReceiveMessageAsync(response);
+                    return (response.Message, response.MessageContext);
+                }
+            }
+            else
+            {
+                return null;
             }
 
             throw new Exception("Processing error");
