@@ -114,7 +114,7 @@ namespace Sitko.Core.Web
             }
         }
 
-        public void BeforeRoutingHook(IConfiguration configuration, IHostEnvironment environment,
+        public virtual void BeforeRoutingHook(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
             foreach (var webModule in GetWebModules())
@@ -123,7 +123,7 @@ namespace Sitko.Core.Web
             }
         }
 
-        public void AfterRoutingHook(IConfiguration configuration, IHostEnvironment environment,
+        public virtual void AfterRoutingHook(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
             foreach (var webModule in GetWebModules())
@@ -132,7 +132,7 @@ namespace Sitko.Core.Web
             }
         }
 
-        public void EndpointsHook(IConfiguration configuration, IHostEnvironment environment,
+        public virtual void EndpointsHook(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
         {
             foreach (var webModule in GetWebModules())
@@ -141,7 +141,7 @@ namespace Sitko.Core.Web
             }
         }
 
-        public void ConfigureStartupServices(IServiceCollection services, IConfiguration configuration,
+        public virtual void ConfigureStartupServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {
             foreach (var webModule in GetWebModules())
