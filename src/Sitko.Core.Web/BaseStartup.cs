@@ -20,6 +20,8 @@ namespace Sitko.Core.Web
         protected IConfiguration Configuration { get; }
         protected IHostEnvironment Environment { get; }
 
+        private string _defaultCulture;
+
         protected BaseStartup(IConfiguration configuration, IHostEnvironment environment)
         {
             Configuration = configuration;
@@ -124,10 +126,14 @@ namespace Sitko.Core.Web
                 appBuilder.UseExceptionHandler("/Error");
             }
 
-            var cultureInfo = new CultureInfo("ru-RU");
+            if (!string.IsNullOrEmpty(_defaultCulture))
+            {
+                var cultureInfo = new CultureInfo(_defaultCulture);
 
-            CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
-            CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+                CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+                CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+            }
+
             appBuilder.UseCookiePolicy();
             appBuilder.UseStaticFiles();
 
@@ -143,6 +149,11 @@ namespace Sitko.Core.Web
                 application.EndpointsHook(Configuration, Environment, appBuilder, endpoints);
                 ConfigureEndpoints(appBuilder, endpoints);
             });
+        }
+
+        protected void SetDefaultCulture(string culture)
+        {
+            _defaultCulture = culture;
         }
 
         // https://devblogs.microsoft.com/aspnet/upcoming-samesite-cookie-changes-in-asp-net-and-asp-net-core/
