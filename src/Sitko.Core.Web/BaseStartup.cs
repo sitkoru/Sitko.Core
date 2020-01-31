@@ -164,8 +164,7 @@ namespace Sitko.Core.Web
                 var userAgent = httpContext.Request.Headers["User-Agent"].ToString();
                 if (DisallowsSameSiteNone(userAgent))
                 {
-                    // TODO: Update on 3.1 to user SameSiteMode.Unspecified
-                    options.SameSite = SameSiteMode.None;
+                    options.SameSite = SameSiteMode.Unspecified;
                 }
             }
         }
