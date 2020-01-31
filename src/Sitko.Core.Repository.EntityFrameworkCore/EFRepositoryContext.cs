@@ -6,16 +6,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Sitko.Core.Repository
+namespace Sitko.Core.Repository.EntityFrameworkCore
 {
-    public class RepositoryContext<TEntity, TEntityPk, TDbContext> : IDisposable
+    public class EFRepositoryContext<TEntity, TEntityPk, TDbContext> : IRepositoryContext<TEntity, TEntityPk>, IDisposable
         where TEntity : class, IEntity<TEntityPk>
         where TDbContext : DbContext
     {
         private readonly ILoggerFactory _loggerFactory;
         private readonly IServiceScope _scope;
 
-        public RepositoryContext(IServiceScopeFactory serviceScopeFactory, ILoggerFactory loggerFactory)
+        public EFRepositoryContext(IServiceScopeFactory serviceScopeFactory, ILoggerFactory loggerFactory)
         {
             _scope = serviceScopeFactory.CreateScope();
             _loggerFactory = loggerFactory;
@@ -29,8 +29,8 @@ namespace Sitko.Core.Repository
 
         internal TDbContext DbContext { get; }
 
-        public ILogger<Repository<TEntity, TEntityPk, TDbContext>> Logger =>
-            _loggerFactory.CreateLogger<Repository<TEntity, TEntityPk, TDbContext>>();
+        public ILogger<IRepository<TEntity, TEntityPk>> Logger =>
+            _loggerFactory.CreateLogger<EFRepository<TEntity, TEntityPk, TDbContext>>();
 
         public RepositoryFiltersManager FiltersManager { get; }
         public List<IValidator<TEntity>> Validators { get; }
