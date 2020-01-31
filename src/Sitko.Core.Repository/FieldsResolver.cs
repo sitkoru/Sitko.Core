@@ -5,12 +5,12 @@ using System.Linq;
 
 namespace Sitko.Core.Repository
 {
-    internal static class FieldsResolver
+    public static class FieldsResolver
     {
         private static readonly ConcurrentDictionary<string, Dictionary<string, (string name, Type type)>> Properties =
             new ConcurrentDictionary<string, Dictionary<string, (string name, Type type)>>();
 
-        internal static (string name, Type type)? GetPropertyInfo<T>(string name)
+        public static (string name, Type type)? GetPropertyInfo<T>(string name)
         {
             var typeName = typeof(T).Name;
             Properties.GetOrAdd(typeName, typeof(T).GetProperties()

@@ -2,132 +2,42 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Sitko.Core.Repository
 {
-    public class RepositoryQuery<TEntity> where TEntity : class
+    public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> where TEntity : class
     {
-        private IQueryable<TEntity> _query;
+        public int? Limit { get; protected set; }
+        public int? Offset { get; protected set; }
 
-        private readonly List<Func<IQueryable<TEntity>, IQueryable<TEntity>>> _where =
-            new List<Func<IQueryable<TEntity>, IQueryable<TEntity>>>();
-
-        private readonly List<(Expression<Func<TEntity, object>> expression, bool desc)> _orderBy =
-            new List<(Expression<Func<TEntity, object>> expression, bool desc)>();
-
-        public int? Limit { get; private set; }
-        public int? Offset { get; private set; }
-
-        public RepositoryQuery(IQueryable<TEntity> query)
-        {
-            _query = query;
-        }
-
-        public IQueryable<TEntity> BuildQuery()
-        {
-            foreach (var func in _where)
-            {
-                _query = func.Invoke(_query);
-            }
-
-            foreach (var orderBy in _orderBy)
-            {
-                _query = orderBy.desc
-                    ? _query.OrderByDescending(orderBy.expression)
-                    : _query.OrderBy(orderBy.expression);
-            }
-
-            return _query;
-        }
-
-        public RepositoryQuery<TEntity> Take(int take)
+        public virtual IRepositoryQuery<TEntity> Take(int take)
         {
             Limit = take;
             return this;
         }
 
-        public RepositoryQuery<TEntity> Skip(int skip)
+        public virtual IRepositoryQuery<TEntity> Skip(int skip)
         {
             Offset = skip;
             return this;
         }
 
-        public RepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> where)
-        {
-            _where.Add(query => query.Where(where));
-            return this;
-        }
+        public abstract IRepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> @where);
+        public abstract IRepositoryQuery<TEntity> Where(string whereStr, object[] values);
+        public abstract IRepositoryQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> orderBy);
+        public abstract IRepositoryQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> orderBy);
+        public abstract IRepositoryQuery<TEntity> Configure(Action<IRepositoryQuery<TEntity>>? configureQuery = null);
 
-        public RepositoryQuery<TEntity> Where(string whereStr, object[] values)
-        {
-            _where.Add(query => query.Where(whereStr, values));
-            return this;
-        }
+        public abstract Task<IRepositoryQuery<TEntity>> ConfigureAsync(
+            Func<IRepositoryQuery<TEntity>, Task>? configureQuery = null);
 
-        public RepositoryQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> orderBy)
-        {
-            _orderBy.Add((orderBy, true));
-            return this;
-        }
+        public abstract IRepositoryQuery<TEntity> OrderByString(string orderBy);
 
-        public RepositoryQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> orderBy)
-        {
-            _orderBy.Add((orderBy, false));
-            return this;
-        }
-
-        public RepositoryQuery<TEntity> Configure(Func<IQueryable<TEntity>, IQueryable<TEntity>> configureQuery)
-        {
-            _query = configureQuery(_query);
-            return this;
-        }
-
-        public RepositoryQuery<TEntity> Configure(Action<RepositoryQuery<TEntity>>? configureQuery = null)
-        {
-            configureQuery?.Invoke(this);
-
-            return this;
-        }
-
-        public async Task<RepositoryQuery<TEntity>> ConfigureAsync(
-            Func<RepositoryQuery<TEntity>, Task>? configureQuery = null)
-        {
-            if (configureQuery != null)
-            {
-                await configureQuery(this);
-            }
-
-            return this;
-        }
-
-        public RepositoryQuery<TEntity> OrderByString(string orderBy)
-        {
-            var sortQueries = GetSortParameters<TEntity>(orderBy);
-            if (sortQueries.Any())
-            {
-                foreach (var sortQuery in sortQueries)
-                {
-                    if (sortQuery.isDescending)
-                    {
-                        OrderByDescending(e => EF.Property<TEntity>(e, sortQuery.propertyName));
-                    }
-                    else
-                    {
-                        OrderBy(e => EF.Property<TEntity>(e, sortQuery.propertyName));
-                    }
-                }
-            }
-
-            return this;
-        }
-
-        public RepositoryQuery<TEntity> WhereByString(string whereJson)
+        public virtual IRepositoryQuery<TEntity> WhereByString(string whereJson)
         {
             var where = JsonConvert.DeserializeObject<List<QueryContextConditionsGroup>>(whereJson);
             if (where != null)
@@ -185,6 +95,19 @@ namespace Sitko.Core.Repository
                 }
             }
 
+            return this;
+        }
+
+        public virtual IRepositoryQuery<TEntity> Paginate(int page, int itemsPerPage)
+        {
+            var offset = 0;
+            if (page > 0)
+            {
+                offset = (page - 1) * itemsPerPage;
+            }
+
+            Offset = offset;
+            Limit = itemsPerPage;
             return this;
         }
 
@@ -258,7 +181,7 @@ namespace Sitko.Core.Repository
             return parsedValue;
         }
 
-        private static List<(string propertyName, bool isDescending)> GetSortParameters<T>(string orderBy)
+        protected static List<(string propertyName, bool isDescending)> GetSortParameters<T>(string orderBy)
         {
             var sortParameters = new List<(string propertyName, bool isDescending)>();
             if (!string.IsNullOrEmpty(orderBy))
@@ -281,47 +204,6 @@ namespace Sitko.Core.Repository
             }
 
             return sortParameters;
-        }
-
-        public RepositoryQuery<TEntity> Paginate(int page, int itemsPerPage)
-        {
-            var offset = 0;
-            if (page > 0)
-            {
-                offset = (page - 1) * itemsPerPage;
-            }
-
-            Offset = offset;
-            Limit = itemsPerPage;
-            return this;
-        }
-    }
-
-    public static class RepositoryQueryExtensions
-    {
-        public static async Task<(T[] items, int itemsCount)> GetAllAsync<T>(this RepositoryQuery<T> query)
-            where T : class
-        {
-            var dbQuery = query.BuildQuery();
-            var needCount = false;
-            if (query.Offset != null)
-            {
-                dbQuery = dbQuery.Skip(query.Offset.Value);
-                needCount = true;
-            }
-
-            if (query.Limit != null)
-            {
-                dbQuery = dbQuery.Take(query.Limit.Value);
-                needCount = true;
-            }
-
-            var items = await dbQuery.ToArrayAsync();
-            var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
-                ? await query.BuildQuery().CountAsync()
-                : items.Length;
-
-            return (items, itemsCount);
         }
     }
 }
