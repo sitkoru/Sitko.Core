@@ -66,8 +66,7 @@ namespace Sitko.Core.Auth
             IApplicationBuilder appBuilder)
         {
             base.ConfigureAfterUseRouting(configuration, environment, appBuilder);
-            appBuilder.UseMiddleware<AuthorizationMiddleware>()
-                .UseMiddleware<UserMiddleware>();
+            appBuilder.UseMiddleware<AuthorizationMiddleware>();
         }
 
         protected override void CheckConfig()
