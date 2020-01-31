@@ -86,11 +86,19 @@ namespace Sitko.Core.Web
             return healthChecksBuilder;
         }
 
-        protected virtual void ConfigureBeforeRouting(IApplicationBuilder app)
+        protected virtual void ConfigureBeforeRoutingMiddleware(IApplicationBuilder app)
         {
         }
 
-        protected virtual void ConfigureAfterRouting(IApplicationBuilder app)
+        protected virtual void ConfigureBeforeRoutingModulesHook(IApplicationBuilder app)
+        {
+        }
+
+        protected virtual void ConfigureAfterRoutingMiddleware(IApplicationBuilder app)
+        {
+        }
+
+        protected virtual void ConfigureAfterRoutingModulesHook(IApplicationBuilder app)
         {
         }
 
@@ -137,12 +145,13 @@ namespace Sitko.Core.Web
             appBuilder.UseCookiePolicy();
             appBuilder.UseStaticFiles();
 
+            ConfigureBeforeRoutingModulesHook(appBuilder);
             application.BeforeRoutingHook(Configuration, Environment, appBuilder);
-            ConfigureBeforeRouting(appBuilder);
+            ConfigureBeforeRoutingMiddleware(appBuilder);
             appBuilder.UseRouting();
-
+            ConfigureAfterRoutingMiddleware(appBuilder);
             application.AfterRoutingHook(Configuration, Environment, appBuilder);
-            ConfigureAfterRouting(appBuilder);
+            ConfigureAfterRoutingModulesHook(appBuilder);
 
             appBuilder.UseEndpoints(endpoints =>
             {
