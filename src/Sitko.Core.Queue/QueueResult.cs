@@ -20,6 +20,11 @@ namespace Sitko.Core.Queue
             IsSuccess = false;
             ErrorMessage = error;
         }
+
+        public string GetErrorText()
+        {
+            return Exception?.ToString() ?? ErrorMessage;
+        }
     }
 
     public class QueueSubscribeResult : QueueResult
@@ -27,8 +32,8 @@ namespace Sitko.Core.Queue
         public Guid SubscriptionId { get; set; }
         public IQueueMessageOptions? Options { get; set; }
     }
-    
-    public class QueuePublishResult:QueueResult
+
+    public class QueuePublishResult : QueueResult
     {
     }
 }
