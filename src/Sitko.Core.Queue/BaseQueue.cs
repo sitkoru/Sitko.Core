@@ -120,6 +120,18 @@ namespace Sitko.Core.Queue
                 ReplyTo = parentMessageContext?.ReplyTo
             };
 
+            if (parentMessageContext?.RootMessageId != null)
+            {
+                messageContext.RootMessageId = parentMessageContext.RootMessageId;
+                messageContext.RootMessageDate = parentMessageContext.RootMessageDate;
+            }
+            else
+            {
+                messageContext.RootMessageId = messageContext.Id;
+                messageContext.RootMessageDate = messageContext.Date;
+            }
+
+
             return messageContext;
         }
 
