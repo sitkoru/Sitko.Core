@@ -11,7 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.HangFire.Components;
-using Sitko.Core.Health;
 using Sitko.Core.Web;
 
 namespace Sitko.Core.HangFire
@@ -73,17 +72,6 @@ namespace Sitko.Core.HangFire
             }
 
             GlobalStateHandlers.Handlers.Add(new StateHandler());
-        }
-
-        public override List<Type> GetRequiredModules()
-        {
-            var list = new List<Type>();
-            if (Config.IsHealthChecksEnabled)
-            {
-                list.Add(typeof(HealthModule));
-            }
-
-            return list;
         }
     }
 
