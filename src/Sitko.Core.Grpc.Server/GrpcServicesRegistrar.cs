@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Consul;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -44,7 +45,7 @@ namespace Sitko.Core.Grpc.Server
             _port = address.Port;
         }
 
-        public async Task RegisterAsync<T>() where T : class
+        private string GetServiceName<T>()
         {
             var serviceName = typeof(T).BaseType?.DeclaringType?.Name;
             if (string.IsNullOrEmpty(serviceName))
@@ -52,7 +53,19 @@ namespace Sitko.Core.Grpc.Server
                 throw new Exception($"Can't find service name for {typeof(T)}");
             }
 
-            var id = _inContainer ? $"{serviceName}_{_host}_{_port}" : serviceName;
+            return serviceName;
+        }
+
+        private string GetServiceId<T>()
+        {
+            var serviceName = GetServiceName<T>();
+            return _inContainer ? $"{serviceName}_{_host}_{_port}" : serviceName;
+        }
+
+        public async Task RegisterAsync<T>() where T : class
+        {
+            var serviceName = GetServiceName<T>();
+            var id = GetServiceId<T>();
             var registration = new AgentServiceRegistration
             {
                 ID = id,
@@ -91,6 +104,22 @@ namespace Sitko.Core.Grpc.Server
 
                 _disposed = true;
             }
+        }
+
+        public async Task<bool> IsRegistered<T>() where T : class
+        {
+            var id = GetServiceId<T>();
+            var serviceName = GetServiceName<T>();
+            var serviceResponse = await _consulClient.Catalog.Service(serviceName, "grpc");
+            if (serviceResponse.StatusCode == HttpStatusCode.OK)
+            {
+                if (serviceResponse.Response.Any())
+                {
+                    return serviceResponse.Response.Any(service => service.ServiceID == id);
+                }
+            }
+
+            return false;
         }
     }
 }
