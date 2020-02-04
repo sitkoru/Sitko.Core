@@ -9,13 +9,22 @@ namespace Sitko.Core.Email.Smtp
     {
         protected override void ConfigureBuilder(FluentEmailServicesBuilder builder)
         {
-            var client = new SmtpClient(Config.Server, Config.Port) {EnableSsl = Config.UseSsl};
+            NetworkCredential? credential = null;
             if (!string.IsNullOrEmpty(Config.UserName))
             {
-                client.Credentials = new NetworkCredential(Config.UserName, Config.Password);
+                credential = new NetworkCredential(Config.UserName, Config.Password);
             }
 
-            builder.AddSmtpSender(client);
+            builder.AddSmtpSender(() =>
+            {
+                var client = new SmtpClient(Config.Server, Config.Port) {EnableSsl = Config.UseSsl};
+                if (credential != null)
+                {
+                    client.Credentials = credential;
+                }
+
+                return client;
+            });
         }
     }
 
