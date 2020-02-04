@@ -20,6 +20,11 @@ namespace Sitko.Core.Web
         protected IConfiguration Configuration { get; }
         protected IHostEnvironment Environment { get; }
 
+        protected virtual bool EnableMvc { get; } = true;
+        protected virtual bool AddHttpContextAccessor { get; } = true;
+        protected virtual bool EnableSameSiteCookiePolicy { get; } = true;
+        protected virtual bool EnableStaticFiles { get; } = true;
+
         private string _defaultCulture;
 
         protected BaseStartup(IConfiguration configuration, IHostEnvironment environment)
@@ -30,28 +35,40 @@ namespace Sitko.Core.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            ConfigureMvc(services.AddControllersWithViews())
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
-            services.AddHttpContextAccessor();
-            services.Configure<CookiePolicyOptions>(options =>
+            if (EnableMvc)
             {
-                options.MinimumSameSitePolicy = SameSiteMode.None;
-                options.OnAppendCookie = cookieContext =>
-                    CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
-                options.OnDeleteCookie = cookieContext =>
-                    CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
-            });
+                ConfigureMvc(services.AddControllersWithViews())
+                    .SetCompatibilityVersion(CompatibilityVersion.Latest);
+            }
+
+            if (AddHttpContextAccessor)
+            {
+                services.AddHttpContextAccessor();
+            }
+
+            if (EnableSameSiteCookiePolicy)
+            {
+                services.Configure<CookiePolicyOptions>(options =>
+                {
+                    options.MinimumSameSitePolicy = SameSiteMode.None;
+                    options.OnAppendCookie = cookieContext =>
+                        CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
+                    options.OnDeleteCookie = cookieContext =>
+                        CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
+                });
+            }
+
             WebApplication<T>.GetInstance().ConfigureStartupServices(services, Configuration, Environment);
             ConfigureAppServices(services);
         }
 
-        public void AddRedisCache(IServiceCollection services, string redisConnectionsString)
+        public virtual void AddRedisCache(IServiceCollection services, string redisConnectionsString)
         {
             services.AddStackExchangeRedisCache(
                 options => { options.Configuration = redisConnectionsString; });
         }
 
-        public void AddMemoryCache(IServiceCollection services)
+        public virtual void AddMemoryCache(IServiceCollection services)
         {
             services.AddMemoryCache();
         }
@@ -105,7 +122,11 @@ namespace Sitko.Core.Web
         protected virtual void ConfigureEndpoints(IApplicationBuilder app,
             IEndpointRouteBuilder endpoints)
         {
-            endpoints.MapControllers();
+            if (EnableMvc)
+            {
+                endpoints.MapControllers();
+            }
+
             endpoints.MapHealthChecks("/health",
                 new HealthCheckOptions
                 {
@@ -142,8 +163,15 @@ namespace Sitko.Core.Web
                 CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
             }
 
-            appBuilder.UseCookiePolicy();
-            appBuilder.UseStaticFiles();
+            if (EnableSameSiteCookiePolicy)
+            {
+                appBuilder.UseCookiePolicy();
+            }
+
+            if (EnableStaticFiles)
+            {
+                UseStaticFiles(appBuilder);
+            }
 
             ConfigureBeforeRoutingModulesHook(appBuilder);
             application.BeforeRoutingHook(Configuration, Environment, appBuilder);
@@ -158,6 +186,11 @@ namespace Sitko.Core.Web
                 application.EndpointsHook(Configuration, Environment, appBuilder, endpoints);
                 ConfigureEndpoints(appBuilder, endpoints);
             });
+        }
+
+        protected virtual void UseStaticFiles(IApplicationBuilder appBuilder)
+        {
+            appBuilder.UseStaticFiles();
         }
 
         protected void SetDefaultCulture(string culture)
