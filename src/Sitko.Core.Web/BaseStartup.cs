@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
@@ -24,6 +27,9 @@ namespace Sitko.Core.Web
         protected virtual bool AddHttpContextAccessor { get; } = true;
         protected virtual bool EnableSameSiteCookiePolicy { get; } = true;
         protected virtual bool EnableStaticFiles { get; } = true;
+
+        private readonly Dictionary<string, (CorsPolicy policy, bool isDefault)> _corsPolicies =
+            new Dictionary<string, (CorsPolicy policy, bool isDefault)>();
 
         private string _defaultCulture;
 
@@ -55,6 +61,17 @@ namespace Sitko.Core.Web
                         CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
                     options.OnDeleteCookie = cookieContext =>
                         CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
+                });
+            }
+
+            if (_corsPolicies.Any())
+            {
+                services.AddCors(options =>
+                {
+                    foreach ((string name, (CorsPolicy policy, _)) in _corsPolicies)
+                    {
+                        options.AddPolicy(name, policy);
+                    }
                 });
             }
 
@@ -177,6 +194,16 @@ namespace Sitko.Core.Web
             application.BeforeRoutingHook(Configuration, Environment, appBuilder);
             ConfigureBeforeRoutingMiddleware(appBuilder);
             appBuilder.UseRouting();
+            if (_corsPolicies.Any())
+            {
+                var defaultPolicy = _corsPolicies.Where(item => item.Value.isDefault).Select(item => item.Key)
+                    .FirstOrDefault();
+                if (!string.IsNullOrEmpty(defaultPolicy))
+                {
+                    appBuilder.UseCors(defaultPolicy);
+                }
+            }
+
             ConfigureAfterRoutingMiddleware(appBuilder);
             application.AfterRoutingHook(Configuration, Environment, appBuilder);
             ConfigureAfterRoutingModulesHook(appBuilder);
@@ -191,6 +218,28 @@ namespace Sitko.Core.Web
         protected virtual void UseStaticFiles(IApplicationBuilder appBuilder)
         {
             appBuilder.UseStaticFiles();
+        }
+
+        protected void AddCorsPolicy(string name, CorsPolicy policy, bool isDefault = false)
+        {
+            if (_corsPolicies.ContainsKey(name))
+            {
+                throw new ArgumentException($"Cors policy with name {name} already registered", nameof(name));
+            }
+
+            if (isDefault && _corsPolicies.Any(c => c.Value.isDefault))
+            {
+                throw new ArgumentException("Default policy already registered", nameof(isDefault));
+            }
+
+            _corsPolicies.Add(name, (policy, isDefault));
+        }
+
+        protected void AddCorsPolicy(string name, Action<CorsPolicyBuilder> buildPolicy, bool isDefault = false)
+        {
+            var builder = new CorsPolicyBuilder();
+            buildPolicy(builder);
+            AddCorsPolicy(name, builder.Build(), isDefault);
         }
 
         protected void SetDefaultCulture(string culture)
