@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
-using Sitko.Core.Health;
 using Sitko.Core.MessageBus;
 using Sitko.Core.Metrics;
 using Sitko.Core.Queue.Internal;
@@ -68,11 +67,6 @@ namespace Sitko.Core.Queue
             if (Config.MetricsEnabled)
             {
                 modules.Add(typeof(MetricsModule));
-            }
-
-            if (Config.HealthChecksEnabled)
-            {
-                modules.Add(typeof(HealthModule));
             }
 
             if (Config.TranslateMessageBusTypes.Any())

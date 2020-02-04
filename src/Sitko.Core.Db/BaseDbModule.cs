@@ -1,11 +1,9 @@
 using System;
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
-using Sitko.Core.Health;
 
 namespace Sitko.Core.Db
 {
@@ -18,11 +16,6 @@ namespace Sitko.Core.Db
         {
             base.ConfigureServices(services, configuration, environment);
             services.AddHealthChecks().AddDbContextCheck<TDbContext>($"DB {typeof(TDbContext)} check");
-        }
-
-        public override List<Type> GetRequiredModules()
-        {
-            return new List<Type> {typeof(HealthModule)};
         }
     }
 
