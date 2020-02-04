@@ -14,6 +14,15 @@ namespace Sitko.Core.Grpc.Server
     public class GrpcServiceModule<TService> : BaseApplicationModule<GrpcServerOptions>, IWebApplicationModule
         where TService : class
     {
+        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
+            IHostEnvironment environment)
+        {
+            base.ConfigureServices(services, configuration, environment);
+            services.AddHealthChecks()
+                .AddCheck<GrpcServiceHealthCheck<TService>>(
+                    $"Grpc service {typeof(TService).BaseType?.DeclaringType?.Name}");
+        }
+
         public override async Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider)
         {
