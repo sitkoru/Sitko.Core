@@ -24,6 +24,8 @@ namespace Sitko.Core.HangFire
             services.AddHangfire(config =>
             {
                 Config.Configure(config);
+                config.UseFilter(new UseQueueFromScheduledFilter());
+                config.UseFilter(new PreserveOriginalQueueAttribute());
             });
             if (Config.IsHealthChecksEnabled)
             {
@@ -52,15 +54,13 @@ namespace Sitko.Core.HangFire
         public virtual void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
-            GlobalConfiguration.Configuration.UseActivator(new HangfireActivator(appBuilder.ApplicationServices))
-                .UseFilter(new UseQueueFromScheduledFilter())
-                .UseFilter(new PreserveOriginalQueueAttribute());
-
             if (Config.IsWorkersEnabled)
             {
                 appBuilder.UseHangfireServer(new BackgroundJobServerOptions
                 {
-                    WorkerCount = Config.Workers, Queues = Config.Queues
+                    WorkerCount = Config.Workers,
+                    Queues = Config.Queues,
+                    Activator = new HangfireActivator(appBuilder.ApplicationServices)
                 });
             }
 
