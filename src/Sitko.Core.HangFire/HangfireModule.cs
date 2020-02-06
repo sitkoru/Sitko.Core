@@ -59,8 +59,7 @@ namespace Sitko.Core.HangFire
                 appBuilder.UseHangfireServer(new BackgroundJobServerOptions
                 {
                     WorkerCount = Config.Workers,
-                    Queues = Config.Queues,
-                    Activator = new HangfireActivator(appBuilder.ApplicationServices)
+                    Queues = Config.Queues
                 });
             }
 
