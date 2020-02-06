@@ -8,13 +8,13 @@ using Nest;
 
 namespace Sitko.Core.Search.ElasticSearch
 {
-    public class ElasticSearcher : ISearcher
+    public class ElasticSearcher<TSearchModel> : ISearcher<TSearchModel> where TSearchModel : BaseSearchModel
     {
-        private readonly ILogger<ElasticSearcher> _logger;
+        private readonly ILogger<ElasticSearcher<TSearchModel>> _logger;
         private readonly ElasticSearchModuleConfig _options;
         private ElasticClient? _client;
 
-        public ElasticSearcher(ElasticSearchModuleConfig options, ILogger<ElasticSearcher> logger)
+        public ElasticSearcher(ElasticSearchModuleConfig options, ILogger<ElasticSearcher<TSearchModel>> logger)
         {
             _logger = logger;
             _options = options;
@@ -54,7 +54,7 @@ namespace Sitko.Core.Search.ElasticSearch
             return _client;
         }
 
-        private SearchDescriptor<SearchModel> GetSearchRequest(SearchDescriptor<SearchModel> descriptor,
+        private SearchDescriptor<TSearchModel> GetSearchRequest(SearchDescriptor<TSearchModel> descriptor,
             string indexName, string term,
             int limit = 0)
         {
@@ -78,14 +78,14 @@ namespace Sitko.Core.Search.ElasticSearch
             return names;
         }
 
-        public async Task<bool> AddOrUpdateAsync(string indexName, IEnumerable<SearchModel> searchModels)
+        public async Task<bool> AddOrUpdateAsync(string indexName, IEnumerable<TSearchModel> searchModels)
         {
             indexName = $"{_options.Prefix}_{indexName}";
             var result = await GetClient().IndexManyAsync(searchModels, indexName.ToLowerInvariant());
             return result.ApiCall.Success;
         }
 
-        public async Task<bool> DeleteAsync(string indexName, IEnumerable<SearchModel> searchModels)
+        public async Task<bool> DeleteAsync(string indexName, IEnumerable<TSearchModel> searchModels)
         {
             indexName = $"{_options.Prefix}_{indexName}";
             var result = await GetClient().DeleteManyAsync(searchModels, indexName.ToLowerInvariant());
@@ -104,18 +104,18 @@ namespace Sitko.Core.Search.ElasticSearch
         {
             indexName = $"{_options.Prefix}_{indexName}";
             var names = GetSearchText(term);
-            var resultsCount = await GetClient().CountAsync<SearchModel>(x =>
+            var resultsCount = await GetClient().CountAsync<TSearchModel>(x =>
                 x.Query(q =>
                         q.QueryString(qs => qs.Query(names)))
                     .Index(indexName.ToLowerInvariant()));
             return resultsCount.Count;
         }
 
-        public async Task<SearchModel[]> SearchAsync(string indexName, string term, int limit)
+        public async Task<TSearchModel[]> SearchAsync(string indexName, string term, int limit)
         {
             indexName = $"{_options.Prefix}_{indexName}";
             var results = await GetClient()
-                .SearchAsync<SearchModel>(x => GetSearchRequest(x, indexName, term, limit));
+                .SearchAsync<TSearchModel>(x => GetSearchRequest(x, indexName, term, limit));
 
             return results.Documents.ToArray();
         }
