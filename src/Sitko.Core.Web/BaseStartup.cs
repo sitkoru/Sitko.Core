@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Sitko.Core.Web.Components;
 
 namespace Sitko.Core.Web
 {
@@ -107,11 +106,7 @@ namespace Sitko.Core.Web
             {
                 mvcBuilder.AddRazorRuntimeCompilation();
             }
-
-            mvcBuilder.AddMvcOptions(options =>
-            {
-                options.Filters.Add<ExceptionsFilter>();
-            });
+            
             return mvcBuilder;
         }
 
