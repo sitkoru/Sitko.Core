@@ -5,12 +5,14 @@ using Sitko.Core.Repository;
 
 namespace Sitko.Core.Search
 {
-    public abstract class BaseSearchProvider<T> : ISearchProvider<T> where T : IEntity
+    public abstract class BaseSearchProvider<T, TSearchModel> : ISearchProvider<T>
+        where T : IEntity where TSearchModel : BaseSearchModel
     {
-        private readonly ISearcher _searcher;
-        protected readonly ILogger<BaseSearchProvider<T>> Logger;
+        private readonly ISearcher<TSearchModel> _searcher;
+        protected readonly ILogger<BaseSearchProvider<T, TSearchModel>> Logger;
 
-        protected BaseSearchProvider(ILogger<BaseSearchProvider<T>> logger, ISearcher searcher = null)
+        protected BaseSearchProvider(ILogger<BaseSearchProvider<T, TSearchModel>> logger,
+            ISearcher<TSearchModel> searcher = null)
         {
             _searcher = searcher ?? throw new Exception($"No searcher for provider {this}");
             Logger = logger;
@@ -64,7 +66,7 @@ namespace Sitko.Core.Search
             return await _searcher.DeleteAsync(IndexName, await GetSearchModelsAsync(entities));
         }
 
-        protected abstract Task<SearchModel[]> GetSearchModelsAsync(T[] entities);
-        protected abstract Task<T[]> GetEntitiesAsync(SearchModel[] searchModels);
+        protected abstract Task<TSearchModel[]> GetSearchModelsAsync(T[] entities);
+        protected abstract Task<T[]> GetEntitiesAsync(TSearchModel[] searchModels);
     }
 }

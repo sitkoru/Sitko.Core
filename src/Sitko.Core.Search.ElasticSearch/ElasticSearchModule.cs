@@ -15,7 +15,7 @@ namespace Sitko.Core.Search.ElasticSearch
 
         protected override void ConfigureSearch(IServiceCollection services)
         {
-            services.AddScoped<ISearcher, ElasticSearcher>();
+            services.AddScoped(typeof(ISearcher<>), typeof(ElasticSearcher<>));
         }
     }
 }
