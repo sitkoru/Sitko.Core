@@ -10,6 +10,7 @@ namespace Sitko.Core.Search
         Task<bool> DeleteAsync(string indexName);
         Task<long> CountAsync(string indexName, string term);
         Task<SearchModel[]> SearchAsync(string indexName, string term, int limit);
+        Task<SearchModel[]> GetSimilarAsync(string indexName, string id, int limit);
         Task InitAsync(string indexName);
     }
 }
