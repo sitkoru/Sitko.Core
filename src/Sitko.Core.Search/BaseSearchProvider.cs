@@ -1,12 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Sitko.Core.Repository;
 
 namespace Sitko.Core.Search
 {
     public abstract class BaseSearchProvider<T, TSearchModel> : ISearchProvider<T>
-        where T : IEntity where TSearchModel : BaseSearchModel
+        where T : class where TSearchModel : BaseSearchModel
     {
         private readonly ISearcher<TSearchModel> _searcher;
         protected readonly ILogger<BaseSearchProvider<T, TSearchModel>> Logger;
@@ -46,9 +45,9 @@ namespace Sitko.Core.Search
             return await GetEntitiesAsync(result);
         }
 
-        public async Task<T[]> GetSimilarAsync(T enity, int limit)
+        public async Task<T[]> GetSimilarAsync(string id, int limit)
         {
-            var result = await _searcher.GetSimilarAsync(IndexName, enity.GetId().ToString(), limit);
+            var result = await _searcher.GetSimilarAsync(IndexName, id, limit);
             return await GetEntitiesAsync(result);
         }
 

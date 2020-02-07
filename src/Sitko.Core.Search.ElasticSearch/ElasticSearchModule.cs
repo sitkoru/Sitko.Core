@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Sitko.Core.Search.ElasticSearch
 {
-    public class ElasticSearchModule<TAssembly> : SearchModule<TAssembly, ElasticSearchModuleConfig>
+    public class ElasticSearchModule : SearchModule<ElasticSearchModuleConfig>
     {
         protected override void CheckConfig()
         {

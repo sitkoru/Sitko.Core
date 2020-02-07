@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentValidation.Results;
-using Sitko.Core.Repository;
+using Sitko.Core.Search;
 
-namespace Sitko.Core.Search
+namespace Sitko.Core.Repository.Search
 {
     public class SearchRepositoryFilter : IRepositoryFilter
     {
@@ -16,7 +16,7 @@ namespace Sitko.Core.Search
             _searchProviders = searchProviders;
         }
 
-        private ISearchProvider<T> GetSearchProvider<T>() where T : IEntity
+        private ISearchProvider<T> GetSearchProvider<T>() where T : class
         {
             var provider = _searchProviders.FirstOrDefault(s => s.CanProcess(typeof(T)));
             return provider as ISearchProvider<T>;
