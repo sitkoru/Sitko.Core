@@ -5,7 +5,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Repository\Sitko.Core.Repository.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Repository\Sitko.Core.App.csproj" />
   </ItemGroup>
 
 </Project>
