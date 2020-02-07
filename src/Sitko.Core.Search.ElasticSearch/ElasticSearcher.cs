@@ -120,6 +120,22 @@ namespace Sitko.Core.Search.ElasticSearch
             return results.Documents.ToArray();
         }
 
+        public async Task<SearchModel[]> GetSimilarAsync(string indexName, string id, int limit)
+        {
+            indexName = $"{_options.Prefix}_{indexName}";
+            var results = await GetClient()
+                .SearchAsync<SearchModel>(x => x.Query(q =>
+                        q.MoreLikeThis(qs => qs.Like(descriptor =>
+                                descriptor.Document(documentDescriptor => documentDescriptor.Index(indexName).Id(id)))
+                            .MinDocumentFrequency(1)
+                            .MinTermFrequency(1)
+                            .MaxQueryTerms(12)))
+                    .Sort(s => s.Descending("_score").Descending("date")).Size(limit > 0 ? limit : 20)
+                    .Index(indexName.ToLowerInvariant()));
+
+            return results.Documents.ToArray();
+        }
+
         public async Task InitAsync(string indexName)
         {
             indexName = $"{_options.Prefix}_{indexName}";

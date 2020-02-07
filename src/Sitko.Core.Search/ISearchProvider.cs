@@ -15,6 +15,7 @@ namespace Sitko.Core.Search
     public interface ISearchProvider<T> : ISearchProvider where T : IEntity
     {
         Task<T[]> SearchAsync(string term, int limit);
+        Task<T[]> GetSimilarAsync(T enity, int limit);
         Task AddOrUpdateEntityAsync(T entity);
         Task<bool> AddOrUpdateEntitiesAsync(T[] entities);
         Task<bool> DeleteEntityAsync(T entity);

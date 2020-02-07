@@ -44,6 +44,12 @@ namespace Sitko.Core.Search
             return await GetEntitiesAsync(result);
         }
 
+        public async Task<T[]> GetSimilarAsync(T enity, int limit)
+        {
+            var result = await _searcher.GetSimilarAsync(IndexName, enity.GetId().ToString(), limit);
+            return await GetEntitiesAsync(result);
+        }
+
         public Task AddOrUpdateEntityAsync(T entity)
         {
             return AddOrUpdateEntitiesAsync(new[] {entity});
