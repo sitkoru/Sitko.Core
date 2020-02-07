@@ -120,11 +120,11 @@ namespace Sitko.Core.Search.ElasticSearch
             return results.Documents.ToArray();
         }
 
-        public async Task<SearchModel[]> GetSimilarAsync(string indexName, string id, int limit)
+        public async Task<TSearchModel[]> GetSimilarAsync(string indexName, string id, int limit)
         {
             indexName = $"{_options.Prefix}_{indexName}";
             var results = await GetClient()
-                .SearchAsync<SearchModel>(x => x.Query(q =>
+                .SearchAsync<TSearchModel>(x => x.Query(q =>
                         q.MoreLikeThis(qs => qs.Like(descriptor =>
                                 descriptor.Document(documentDescriptor => documentDescriptor.Index(indexName).Id(id)))
                             .MinDocumentFrequency(1)
