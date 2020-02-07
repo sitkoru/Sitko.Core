@@ -3,14 +3,14 @@ using System.Threading.Tasks;
 
 namespace Sitko.Core.Search
 {
-    public interface ISearcher
+    public interface ISearcher<T> where T: BaseSearchModel
     {
-        Task<bool> AddOrUpdateAsync(string indexName, IEnumerable<SearchModel> searchModels);
-        Task<bool> DeleteAsync(string indexName, IEnumerable<SearchModel> searchModels);
+        Task<bool> AddOrUpdateAsync(string indexName, IEnumerable<T> searchModels);
+        Task<bool> DeleteAsync(string indexName, IEnumerable<T> searchModels);
         Task<bool> DeleteAsync(string indexName);
         Task<long> CountAsync(string indexName, string term);
-        Task<SearchModel[]> SearchAsync(string indexName, string term, int limit);
-        Task<SearchModel[]> GetSimilarAsync(string indexName, string id, int limit);
+        Task<T[]> SearchAsync(string indexName, string term, int limit);
+        Task<T[]> GetSimilarAsync(string indexName, string id, int limit);
         Task InitAsync(string indexName);
     }
 }

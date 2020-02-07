@@ -2,7 +2,7 @@ using System;
 
 namespace Sitko.Core.Search
 {
-    public class SearchModel
+    public class BaseSearchModel
     {
         public string Id { get; set; }
         public string Title { get; set; }
@@ -10,7 +10,7 @@ namespace Sitko.Core.Search
         public DateTimeOffset Date { get; set; }
         public string Content { get; set; }
 
-        public SearchModel(string id, string title, string url, string content, DateTimeOffset date)
+        public BaseSearchModel(string id, string title, string url, string content, DateTimeOffset date)
         {
             Id = id;
             Title = title;
