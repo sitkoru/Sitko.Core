@@ -226,6 +226,7 @@ namespace Sitko.Core.Queue.Nats
 
             if (queueOptions.All)
             {
+                _logger.LogInformation("{QueueName}: Load all messages", queueName);
                 stanOptions.DeliverAllAvailable();
                 queueOptions.Durable = false;
             }
@@ -233,6 +234,8 @@ namespace Sitko.Core.Queue.Nats
             {
                 if (queueOptions.StartAt.HasValue)
                 {
+                    _logger.LogInformation("{QueueName}: Load all messages starts from {Date}", queueName,
+                        queueOptions.StartAt.Value);
                     stanOptions.StartAt(queueOptions.StartAt.Value);
                     queueOptions.Durable = false;
                 }
@@ -240,17 +243,22 @@ namespace Sitko.Core.Queue.Nats
 
             if (queueOptions.ManualAck)
             {
+                _logger.LogInformation("{QueueName}: Manual acks with {Timeout} timeoit", queueName,
+                    queueOptions.AckWait);
                 stanOptions.AckWait = (int)queueOptions.AckWait.TotalMilliseconds;
                 stanOptions.ManualAcks = true;
             }
 
             if (queueOptions.MaxInFlight > 0)
             {
+                _logger.LogInformation("{QueueName}: {MaxInFlight} max in flight", queueName, queueOptions.MaxInFlight);
                 stanOptions.MaxInflight = queueOptions.MaxInFlight;
             }
 
             if (queueOptions.Durable && !string.IsNullOrEmpty(_config.ConsumerGroupName))
             {
+                _logger.LogInformation("{QueueName}: Durable name - {DurableName}", queueName,
+                    _config.ConsumerGroupName);
                 stanOptions.DurableName = _config.ConsumerGroupName;
             }
 
@@ -271,6 +279,7 @@ namespace Sitko.Core.Queue.Nats
                         await ProcessStanMessage(deserializer, args.Message, stanOptions.ManualAcks));
             }
 
+            _logger.LogInformation("{QueueName}: Subscribed", queueName);
 
             _stanSubscriptions.TryAdd(queueName, sub);
 
