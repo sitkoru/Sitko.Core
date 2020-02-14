@@ -11,6 +11,5 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
-    <ProjectReference Include="..\Sitko.Core.Search\Sitko.Core.Search.csproj" />
   </ItemGroup>
 </Project>
