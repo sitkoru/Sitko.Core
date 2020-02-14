@@ -35,6 +35,7 @@ namespace Sitko.Core.Repository.Search
 
         public Task<bool> BeforeValidateAsync<TEntity, TEntityPk>(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult,
+            bool isNew,
             PropertyChange[] changes = null) where TEntity : class, IEntity<TEntityPk>
         {
             return Task.FromResult(true);
@@ -42,12 +43,14 @@ namespace Sitko.Core.Repository.Search
 
         public Task<bool> BeforeSaveAsync<TEntity, TEntityPk>(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult,
+            bool isNew,
             PropertyChange[] changes = null) where TEntity : class, IEntity<TEntityPk>
         {
             return Task.FromResult(true);
         }
 
-        public async Task<bool> AfterSaveAsync<TEntity, TEntityPk>(TEntity item, PropertyChange[] changes = null)
+        public async Task<bool> AfterSaveAsync<TEntity, TEntityPk>(TEntity item, bool isNew,
+            PropertyChange[] changes = null)
             where TEntity : class, IEntity<TEntityPk>
         {
             var provider = GetSearchProvider<TEntity>();

@@ -38,5 +38,8 @@ namespace Sitko.Core.Repository
         Task<bool> DeleteAsync(TEntityPk id);
         Task<bool> DeleteAsync(TEntity entity);
         PropertyChange[] GetChanges(TEntity entity, TEntity oldEntity);
+
+        Task<bool> BeginTransactionAsync();
+        Task<bool> CommitTransactionAsync();
     }
 }

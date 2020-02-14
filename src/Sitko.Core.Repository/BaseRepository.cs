@@ -48,10 +48,14 @@ namespace Sitko.Core.Repository
         protected abstract Task<int> DoCountAsync(TQuery query);
         protected abstract Task<TEntity?> DoGetAsync(TQuery query);
 
-        protected abstract Task DoSaveAsync(TEntity item, PropertyChange[]? changes = null,
+        protected abstract Task DoSaveAsync(TEntity item, bool isNew, PropertyChange[]? changes = null,
             TEntity? oldItem = null);
 
         public abstract PropertyChange[] GetChanges(TEntity item, TEntity oldEntity);
+
+        public abstract Task<bool> BeginTransactionAsync();
+
+        public abstract Task<bool> CommitTransactionAsync();
 
         protected abstract Task DoAddAsync(TEntity item);
         protected abstract Task DoUpdateAsync(TEntity item);
@@ -68,12 +72,12 @@ namespace Sitko.Core.Repository
         public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddAsync(TEntity item)
         {
             (bool isValid, IList<ValidationFailure> errors) validationResult = (false, new List<ValidationFailure>());
-            if (await BeforeValidateAsync(item, validationResult))
+            if (await BeforeValidateAsync(item, validationResult, true))
             {
-                validationResult = await ValidateAsync(item);
+                validationResult = await ValidateAsync(item, true);
                 if (validationResult.isValid)
                 {
-                    if (await BeforeSaveAsync(item, validationResult))
+                    if (await BeforeSaveAsync(item, validationResult, true))
                     {
                         await DoAddAsync(item);
                     }
@@ -82,7 +86,7 @@ namespace Sitko.Core.Repository
 
             if (validationResult.isValid)
             {
-                await DoSaveAsync(item);
+                await DoSaveAsync(item, true);
             }
 
             return new AddOrUpdateOperationResult<TEntity, TEntityPk>(item, validationResult.errors,
@@ -94,12 +98,12 @@ namespace Sitko.Core.Repository
             var oldItem = await GetOldItem(item.Id);
             var changes = GetChanges(item, oldItem);
             (bool isValid, IList<ValidationFailure> errors) validationResult = (false, new List<ValidationFailure>());
-            if (await BeforeValidateAsync(item, validationResult, changes))
+            if (await BeforeValidateAsync(item, validationResult, false, changes))
             {
-                validationResult = await ValidateAsync(item, changes);
+                validationResult = await ValidateAsync(item, false, changes);
                 if (validationResult.isValid)
                 {
-                    if (await BeforeSaveAsync(item, validationResult, changes))
+                    if (await BeforeSaveAsync(item, validationResult, false, changes))
                     {
                         await DoUpdateAsync(item);
                     }
@@ -108,7 +112,7 @@ namespace Sitko.Core.Repository
 
             if (validationResult.isValid)
             {
-                await DoSaveAsync(item, changes, oldItem);
+                await DoSaveAsync(item, false, changes, oldItem);
             }
 
             return new AddOrUpdateOperationResult<TEntity, TEntityPk>(item, validationResult.errors, changes);
@@ -132,7 +136,7 @@ namespace Sitko.Core.Repository
 
             return false;
         }
-        
+
         public virtual async Task<TEntity?> GetAsync()
         {
             return await DoGetAsync(await CreateRepositoryQueryAsync());
@@ -287,15 +291,15 @@ namespace Sitko.Core.Repository
         }
 
         protected virtual Task<bool> BeforeSaveAsync(TEntity item,
-            (bool isValid, IList<ValidationFailure> errors) validationResult,
+            (bool isValid, IList<ValidationFailure> errors) validationResult, bool isNew,
             PropertyChange[] changes = null)
         {
-            return FiltersManager.BeforeSaveAsync<TEntity, TEntityPk>(item, validationResult, changes);
+            return FiltersManager.BeforeSaveAsync<TEntity, TEntityPk>(item, validationResult, isNew, changes);
         }
 
-        protected virtual Task<bool> AfterSaveAsync(TEntity item, PropertyChange[] changes = null)
+        protected virtual Task<bool> AfterSaveAsync(TEntity item, bool isNew, PropertyChange[] changes = null)
         {
-            return FiltersManager.AfterSaveAsync<TEntity, TEntityPk>(item, changes);
+            return FiltersManager.AfterSaveAsync<TEntity, TEntityPk>(item, isNew, changes);
         }
 
         protected virtual Task BeforeDeleteAsync(TEntity entity)
@@ -315,8 +319,9 @@ namespace Sitko.Core.Repository
                 await accessChecker.CheckAccessAsync(entities);
             }
         }
-        
+
         protected virtual async Task<(bool isValid, IList<ValidationFailure> errors)> ValidateAsync(TEntity entity,
+            bool isNew,
             PropertyChange[] changes = null)
         {
             var failures = new List<ValidationFailure>();
@@ -337,9 +342,10 @@ namespace Sitko.Core.Repository
 
         protected virtual Task<bool> BeforeValidateAsync(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult,
+            bool isNew,
             PropertyChange[] changes = null)
         {
-            return FiltersManager.BeforeValidateAsync<TEntity, TEntityPk>(item, validationResult, changes);
+            return FiltersManager.BeforeValidateAsync<TEntity, TEntityPk>(item, validationResult, isNew, changes);
         }
     }
 }
