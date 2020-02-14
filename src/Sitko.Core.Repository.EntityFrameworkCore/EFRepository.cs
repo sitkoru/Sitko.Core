@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore
 {
@@ -10,6 +13,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext
     {
         protected readonly TDbContext DbContext;
+        private IDbContextTransaction? _transaction;
 
         protected EFRepository(EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext) : base(
             repositoryContext)
@@ -53,11 +57,11 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return query.BuildQuery().CountAsync();
         }
 
-        protected override async Task DoSaveAsync(TEntity item, PropertyChange[]? changes = null,
+        protected override async Task DoSaveAsync(TEntity item, bool isNew, PropertyChange[]? changes = null,
             TEntity? oldItem = null)
         {
             await SaveChangesAsync();
-            await AfterSaveAsync(item);
+            await AfterSaveAsync(item, isNew);
         }
 
         protected virtual async Task SaveChangesAsync()
@@ -138,6 +142,43 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         protected override Task<EFRepositoryQuery<TEntity>> CreateRepositoryQueryAsync()
         {
             return Task.FromResult(new EFRepositoryQuery<TEntity>(GetBaseQuery()));
+        }
+
+        public override async Task<bool> BeginTransactionAsync()
+        {
+            try
+            {
+                _transaction = await DbContext.Database.BeginTransactionAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error while starting transaction in {Repository}: {ErrorText}", GetType(),
+                    ex.ToString());
+                return false;
+            }
+
+            return true;
+        }
+
+        public override async Task<bool> CommitTransactionAsync()
+        {
+            if (_transaction != null)
+            {
+                try
+                {
+                    await _transaction.CommitAsync();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error while commiting transaction {Id} in {Repository}: {ErrorText}",
+                        _transaction.TransactionId, GetType(),
+                        ex.ToString());
+                    return false;
+                }
+            }
+
+            return false;
         }
     }
 }

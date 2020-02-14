@@ -19,6 +19,7 @@ namespace Sitko.Core.Repository
 
         public async Task<bool> BeforeValidateAsync<T, TEntityPk>(T item,
             (bool isValid, IList<ValidationFailure> errors) validationResult,
+            bool isNew,
             PropertyChange[]? changes = null)
             where T : class, IEntity<TEntityPk>
         {
@@ -29,7 +30,7 @@ namespace Sitko.Core.Repository
                 foreach (var filter in filters)
                 {
                     if (!filter.CanProcess(typeof(T))) continue;
-                    result = await filter.BeforeValidateAsync<T, TEntityPk>(item, validationResult, changes);
+                    result = await filter.BeforeValidateAsync<T, TEntityPk>(item, validationResult, isNew, changes);
                 }
             }
 
@@ -38,6 +39,7 @@ namespace Sitko.Core.Repository
 
         public async Task<bool> BeforeSaveAsync<T, TEntityPk>(T item,
             (bool isValid, IList<ValidationFailure> errors) validationResult,
+            bool isNew,
             PropertyChange[]? changes = null)
             where T : class, IEntity<TEntityPk>
         {
@@ -48,14 +50,14 @@ namespace Sitko.Core.Repository
                 foreach (var filter in filters)
                 {
                     if (!filter.CanProcess(typeof(T))) continue;
-                    result = await filter.BeforeSaveAsync<T, TEntityPk>(item, validationResult, changes);
+                    result = await filter.BeforeSaveAsync<T, TEntityPk>(item, validationResult, isNew, changes);
                 }
             }
 
             return result;
         }
 
-        public async Task<bool> AfterSaveAsync<T, TEntityPk>(T item, PropertyChange[]? changes = null)
+        public async Task<bool> AfterSaveAsync<T, TEntityPk>(T item, bool isNew, PropertyChange[]? changes = null)
             where T : class, IEntity<TEntityPk>
         {
             var result = true;
@@ -65,7 +67,7 @@ namespace Sitko.Core.Repository
                 foreach (var filter in filters)
                 {
                     if (!filter.CanProcess(typeof(T))) continue;
-                    result = await filter.AfterSaveAsync<T, TEntityPk>(item, changes);
+                    result = await filter.AfterSaveAsync<T, TEntityPk>(item, isNew, changes);
                 }
             }
 
