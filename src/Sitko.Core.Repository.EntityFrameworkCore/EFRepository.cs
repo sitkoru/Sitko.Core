@@ -118,7 +118,6 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         protected override Task DoUpdateAsync(TEntity item)
         {
-            DbContext.Update(item);
             return Task.CompletedTask;
         }
 
