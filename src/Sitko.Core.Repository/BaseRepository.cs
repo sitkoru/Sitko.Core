@@ -23,7 +23,7 @@ namespace Sitko.Core.Repository
         protected readonly RepositoryFiltersManager FiltersManager;
         protected readonly List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers;
         protected readonly ILogger Logger;
-        private List<(TEntity item, bool isNew, PropertyChange[]? changes, TEntity? oldItem)> _batch;
+        private List<RepositoryRecord<TEntity, TEntityPk>> _batch;
 
         protected BaseRepository(IRepositoryContext<TEntity, TEntityPk> repositoryContext)
         {
@@ -66,7 +66,7 @@ namespace Sitko.Core.Repository
                 return Task.FromResult(false);
             }
 
-            _batch = new List<(TEntity item, bool isNew, PropertyChange[]? changes, TEntity? oldItem)>();
+            _batch = new List<RepositoryRecord<TEntity, TEntityPk>>();
 
             return Task.FromResult(true);
         }
@@ -79,10 +79,7 @@ namespace Sitko.Core.Repository
             }
 
             await DoSaveAsync();
-            foreach ((TEntity item, bool isNew, PropertyChange[]? changes, _) in _batch)
-            {
-                await AfterSaveAsync(item, isNew, changes);
-            }
+            await AfterSaveAsync(_batch);
 
             _batch = null;
             return true;
@@ -128,24 +125,23 @@ namespace Sitko.Core.Repository
 
             if (validationResult.isValid)
             {
-                await SaveAsync(item, true);
+                await SaveAsync(new RepositoryRecord<TEntity, TEntityPk>(item));
             }
 
             return new AddOrUpdateOperationResult<TEntity, TEntityPk>(item, validationResult.errors,
                 new PropertyChange[0]);
         }
 
-        private async Task SaveAsync(TEntity item, bool isNew, PropertyChange[]? changes = null,
-            TEntity? oldItem = null)
+        private async Task SaveAsync(RepositoryRecord<TEntity, TEntityPk> record)
         {
             if (_batch == null)
             {
                 await DoSaveAsync();
-                await AfterSaveAsync(item, isNew);
+                await AfterSaveAsync(new[] {record});
             }
             else
             {
-                _batch.Add((item, isNew, changes, oldItem));
+                _batch.Add(record);
             }
         }
 
@@ -168,7 +164,7 @@ namespace Sitko.Core.Repository
 
             if (validationResult.isValid)
             {
-                await SaveAsync(item, false, changes, oldItem);
+                await SaveAsync(new RepositoryRecord<TEntity, TEntityPk>(item, false, changes, oldItem));
             }
 
             return new AddOrUpdateOperationResult<TEntity, TEntityPk>(item, validationResult.errors, changes);
@@ -358,9 +354,14 @@ namespace Sitko.Core.Repository
             return FiltersManager.BeforeSaveAsync<TEntity, TEntityPk>(item, validationResult, isNew, changes);
         }
 
-        protected virtual Task<bool> AfterSaveAsync(TEntity item, bool isNew, PropertyChange[] changes = null)
+        protected virtual async Task<bool> AfterSaveAsync(IEnumerable<RepositoryRecord<TEntity, TEntityPk>> items)
         {
-            return FiltersManager.AfterSaveAsync<TEntity, TEntityPk>(item, isNew, changes);
+            foreach (var item in items)
+            {
+                await FiltersManager.AfterSaveAsync<TEntity, TEntityPk>(item.Item, item.IsNew, item.Changes);
+            }
+
+            return true;
         }
 
         protected virtual Task BeforeDeleteAsync(TEntity entity)
