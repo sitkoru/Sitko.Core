@@ -57,14 +57,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return query.BuildQuery().CountAsync();
         }
 
-        protected override async Task DoSaveAsync(TEntity item, bool isNew, PropertyChange[]? changes = null,
-            TEntity? oldItem = null)
-        {
-            await SaveChangesAsync();
-            await AfterSaveAsync(item, isNew);
-        }
-
-        protected virtual async Task SaveChangesAsync()
+        protected override async Task DoSaveAsync()
         {
             await DbContext.SaveChangesAsync();
         }
@@ -124,7 +117,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         protected override Task DoDeleteAsync(TEntity item)
         {
             DbContext.Remove(item);
-            return DbContext.SaveChangesAsync();
+            return Task.CompletedTask;
         }
 
 
@@ -171,6 +164,27 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 catch (Exception ex)
                 {
                     Logger.LogError(ex, "Error while commiting transaction {Id} in {Repository}: {ErrorText}",
+                        _transaction.TransactionId, GetType(),
+                        ex.ToString());
+                    return false;
+                }
+            }
+
+            return false;
+        }
+        
+        public override async Task<bool> RollbackTransactionAsync()
+        {
+            if (_transaction != null)
+            {
+                try
+                {
+                    await _transaction.RollbackAsync();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error while rollback transaction {Id} in {Repository}: {ErrorText}",
                         _transaction.TransactionId, GetType(),
                         ex.ToString());
                     return false;

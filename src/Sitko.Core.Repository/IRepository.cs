@@ -41,5 +41,10 @@ namespace Sitko.Core.Repository
 
         Task<bool> BeginTransactionAsync();
         Task<bool> CommitTransactionAsync();
+        Task<bool> RollbackTransactionAsync();
+        
+        Task<bool> BeginBatchAsync();
+        Task<bool> CommitBatchAsync();
+        Task<bool> RollbackBatchAsync();
     }
 }
