@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,26 +8,25 @@ using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Amazon.S3.Util;
 using Microsoft.Extensions.Logging;
+using Sitko.Core.Storage.Cache;
 
 namespace Sitko.Core.Storage.S3
 {
-    public sealed class S3Storage<T> : Storage<T> where T : IS3StorageOptions
+    public sealed class S3Storage<T> : Storage<T> where T : StorageOptions, IS3StorageOptions
     {
         private readonly T _options;
         private readonly AmazonS3Client _client;
-        private readonly List<FileStream> _openedStreams = new List<FileStream>();
 
-        public S3Storage(T options, ILogger<S3Storage<T>> logger) : base(options, logger)
+        public S3Storage(T options, ILogger<S3Storage<T>> logger, IStorageCache? cache = null) : base(options, logger,
+            cache)
         {
             _options = options;
 
             var config = new AmazonS3Config
             {
-                RegionEndpoint =
-                    RegionEndpoint
-                        .USEast1, // MUST set this before setting ServiceURL and it should match the `MINIO_REGION` enviroment variable.
-                ServiceURL = _options.Server.ToString(), // replace http://localhost:9000 with URL of your minio server
-                ForcePathStyle = true // MUST be true to work correctly with Minio server
+                RegionEndpoint = RegionEndpoint.USEast1,
+                ServiceURL = _options.Server.ToString(),
+                ForcePathStyle = true
             };
             _client = new AmazonS3Client(_options.AccessKey, _options.SecretKey, config);
         }
@@ -83,7 +81,7 @@ namespace Sitko.Core.Storage.S3
             }
         }
 
-        public override async Task<bool> DeleteFileAsync(string filePath)
+        protected override async Task<bool> DoDeleteAsync(string filePath)
         {
             if (await IsBucketExists(_options.Bucket))
             {
@@ -104,20 +102,36 @@ namespace Sitko.Core.Storage.S3
             return false;
         }
 
-        public override async Task<Stream> DownloadFileAsync(StorageItem item)
+        private Task<GetObjectMetadataResponse> GetFileMetadata(StorageItem item)
         {
-            var path = Path.GetTempFileName();
-            using (var utility = new TransferUtility(_client))
-            {
-                await utility.DownloadAsync(path, _options.Bucket, item.FilePath);
-            }
-
-            var stream = File.OpenRead(path);
-            _openedStreams.Add(stream);
-            return stream;
+            var request = new GetObjectMetadataRequest {BucketName = _options.Bucket, Key = item.FilePath};
+            return _client.GetObjectMetadataAsync(request);
         }
 
-        public override async Task DeleteAllAsync()
+        protected override async Task<bool> DoIsFileExistsAsync(StorageItem item)
+        {
+            try
+            {
+                await GetFileMetadata(item);
+                return true;
+            }
+            catch (AmazonS3Exception e)
+            {
+                if (string.Equals(e.ErrorCode, "NoSuchBucket"))
+                {
+                    return false;
+                }
+
+                if (string.Equals(e.ErrorCode, "NotFound"))
+                {
+                    return false;
+                }
+
+                throw;
+            }
+        }
+
+        protected override async Task DoDeleteAllAsync()
         {
             if (await IsBucketExists(_options.Bucket))
             {
@@ -125,23 +139,45 @@ namespace Sitko.Core.Storage.S3
             }
         }
 
-        private void ClearStreams()
+        protected override async Task<StorageItem> DoGetFileInfoAsync(StorageItem item)
         {
-            if (_openedStreams.Any())
-            {
-                foreach (FileStream stream in _openedStreams)
-                {
-                    stream.Close();
-                }
+            var request = new GetObjectRequest {BucketName = _options.Bucket, Key = item.FilePath};
 
-                _openedStreams.Clear();
-            }
+            var response = await _client.GetObjectAsync(request);
+
+            item = new StorageItem
+            {
+                Path = Path.GetDirectoryName(item.FilePath),
+                FileName = Path.GetFileName(item.FilePath),
+                FilePath = item.FilePath,
+                FileSize = response.ContentLength,
+                LastModified = response.LastModified
+            };
+            item.SetStream(response.ResponseStream);
+            return item;
+        }
+
+        public override async Task<StorageItemCollection> GetDirectoryContentsAsync(string path)
+        {
+            var request = new ListObjectsRequest {BucketName = _options.Bucket, Prefix = path};
+
+            var response = await _client.ListObjectsAsync(request);
+
+            var files = response.S3Objects.Select(entry => new StorageItem
+            {
+                FileSize = entry.Size,
+                FileName = Path.GetFileName(entry.Key),
+                LastModified = entry.LastModified,
+                FilePath = entry.Key,
+                Path = Path.GetDirectoryName(entry.Key)
+            }).ToList();
+
+            return new StorageItemCollection(files);
         }
 
         public override ValueTask DisposeAsync()
         {
             _client.Dispose();
-            ClearStreams();
             return base.DisposeAsync();
         }
     }

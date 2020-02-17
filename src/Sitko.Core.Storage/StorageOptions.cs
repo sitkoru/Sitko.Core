@@ -1,20 +1,28 @@
-using SixLabors.ImageSharp.Processing;
+using System;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Sitko.Core.Storage.Cache;
 
 namespace Sitko.Core.Storage
 {
-    public class StorageImageSize
+    public abstract class StorageOptions
     {
-        public StorageImageSize(int width, int height, ResizeMode mode = ResizeMode.Max, string? key = null)
-        {
-            Width = width;
-            Height = height;
-            Mode = mode;
-            Key = key;
-        }
+        public Uri PublicUri { get; set; }
 
-        public int Width { get; }
-        public int Height { get; }
-        public ResizeMode Mode { get; }
-        public string? Key { get; }
+        public Action<IHostEnvironment, IConfiguration, IServiceCollection>? ConfigureCache { get; protected set; }
+
+        public StorageOptions EnableCache<TCache, TCacheOptions>(Action<TCacheOptions>? configure = null)
+            where TCache : class, IStorageCache<TCacheOptions> where TCacheOptions : StorageCacheOptions
+        {
+            ConfigureCache = (environment, configuration, services) =>
+            {
+                var options = Activator.CreateInstance<TCacheOptions>();
+                configure?.Invoke(options);
+                services.AddSingleton(options);
+                services.AddSingleton<IStorageCache, TCache>();
+            };
+            return this;
+        }
     }
 }

@@ -8,13 +8,12 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.S3
 {
-    public class S3StorageModule<T> : BaseApplicationModule<T> where T : class, IS3StorageOptions
+    public class S3StorageModule<T> : BaseApplicationModule<T> where T : StorageOptions, IS3StorageOptions
     {
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
             services.AddSingleton<IStorage<T>, S3Storage<T>>();
-            services.AddSingleton<CdnHelper<T>>();
             services.AddHealthChecks().AddS3(options =>
             {
                 options.AccessKey = Config.AccessKey;

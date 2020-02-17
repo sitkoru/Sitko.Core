@@ -1,20 +1,15 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using Microsoft.Extensions.FileProviders;
 
 namespace Sitko.Core.Storage
 {
-    public class StorageItem
+    public class StorageItem : IFileInfo, IDisposable
     {
         public string FileName { get; set; }
         public long FileSize { get; set; }
-        public Uri PublicUri { get; set; }
         public string FilePath { get; set; }
-
         public string Path { get; set; }
-        public StorageItemType Type { get; set; } = StorageItemType.Other;
-        public StorageItemImageInfo? ImageInfo { get; set; }
-
         public string StorageFileName => FilePath.Substring(FilePath.LastIndexOf('/') + 1);
         private readonly string[] _units = {"bytes", "KB", "MB", "GB", "TB", "PB"};
 
@@ -40,70 +35,32 @@ namespace Sitko.Core.Storage
             }
         }
 
-        public StorageItemImageThumbnail? GetThumbnailByKey(string key)
+        public void SetStream(Stream sourceStream)
         {
-            return ImageInfo?.Thumbnails?.Where(t => t.Key == key).FirstOrDefault();
+            _stream = sourceStream;
         }
 
-        public StorageItemImageThumbnail? GetThumbnailByWidth(int width)
+        public Stream CreateReadStream()
         {
-            return ImageInfo?.Thumbnails.Where(t => t.Width >= width).OrderBy(t => t.Width).FirstOrDefault();
+            if (_stream != null)
+            {
+                return _stream;
+            }
+
+            throw new Exception("No stream set for file");
         }
 
-        public StorageItemImageThumbnail? GetThumbnailByHeight(int height)
+        public bool Exists => true;
+        public long Length => FileSize;
+        public string PhysicalPath => null;
+        public string Name => FileName;
+        public DateTimeOffset LastModified { get; set; } = DateTimeOffset.UtcNow;
+        public bool IsDirectory => false;
+        private Stream? _stream;
+
+        public void Dispose()
         {
-            return ImageInfo?.Thumbnails.Where(t => t.Height >= height).OrderBy(t => t.Height)
-                .FirstOrDefault();
-        }
-
-        public Uri GetImageUriByWidth(int width)
-        {
-            var thumbnail = GetThumbnailByWidth(width);
-            return thumbnail != null ? thumbnail.PublicUri : PublicUri;
-        }
-
-        public Uri GetImageUriByHeight(int height)
-        {
-            var thumbnail = GetThumbnailByHeight(height);
-            return thumbnail != null ? thumbnail.PublicUri : PublicUri;
-        }
-    }
-
-    public enum StorageItemType
-    {
-        Image = 1,
-        Other = 2
-    }
-
-    public class StorageItemImageInfo
-    {
-        public double VerticalResolution { get; set; }
-        public double HorizontalResolution { get; set; }
-
-        public List<StorageItemImageThumbnail> Thumbnails { get; set; } = new List<StorageItemImageThumbnail>();
-    }
-
-    public class StorageItemImageThumbnail
-    {
-        public Uri PublicUri { get; set; }
-        public string FilePath { get; set; }
-
-        public int Width { get; set; }
-        public int Height { get; set; }
-
-        public string Key { get; set; }
-
-        public StorageItemImageThumbnail()
-        {
-        }
-
-        public StorageItemImageThumbnail(Uri publicUri, string filePath, int width, int height, string key)
-        {
-            PublicUri = publicUri;
-            FilePath = filePath;
-            Width = width;
-            Height = height;
-            Key = key;
+            _stream?.Dispose();
         }
     }
 }
