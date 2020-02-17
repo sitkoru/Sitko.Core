@@ -1,29 +1,21 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.Formats.Bmp;
-using SixLabors.ImageSharp.Formats.Gif;
-using SixLabors.ImageSharp.Formats.Jpeg;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.Primitives;
+using Sitko.Core.Storage.Cache;
 
 namespace Sitko.Core.Storage
 {
-    public abstract class Storage<T> : IStorage<T>, IAsyncDisposable where T : IStorageOptions
+    public abstract class Storage<T> : IStorage<T>, IAsyncDisposable where T : StorageOptions
     {
         protected readonly ILogger<Storage<T>> Logger;
-        private readonly IStorageOptions _options;
+        private readonly IStorageCache? _cache;
+        private readonly T _options;
 
-        protected Storage(IStorageOptions options, ILogger<Storage<T>> logger)
+        protected Storage(T options, ILogger<Storage<T>> logger, IStorageCache? cache)
         {
             Logger = logger;
+            _cache = cache;
             _options = options;
         }
 
@@ -42,6 +34,11 @@ namespace Sitko.Core.Storage
             file.Seek(0, SeekOrigin.Begin);
             await DoSaveAsync(destinationPath, file);
             Logger.LogInformation("File saved to {Path}", path);
+            if (_cache != null)
+            {
+                await _cache.RemoveItemAsync(storageItem.FilePath);
+            }
+
             return storageItem;
         }
 
@@ -60,90 +57,82 @@ namespace Sitko.Core.Storage
                 FileSize = file.Length,
                 FilePath = destinationPath,
                 Path = Path.GetDirectoryName(destinationPath)?.Replace("\\", "/"),
-                PublicUri = new Uri($"{_options.PublicUri}/{destinationPath}")
             };
             return storageItem;
         }
 
-        public async Task<StorageItem> SaveImageAsync(Stream file, string fileName, string path,
-            List<StorageImageSize>? sizes = null)
+        protected abstract Task<bool> DoSaveAsync(string path, Stream file);
+        protected abstract Task<bool> DoDeleteAsync(string filePath);
+
+        protected abstract Task<bool> DoIsFileExistsAsync(StorageItem item);
+        protected abstract Task DoDeleteAllAsync();
+        protected abstract Task<StorageItem> DoGetFileInfoAsync(StorageItem item);
+
+        public async Task<bool> DeleteFileAsync(string filePath)
         {
-            string destinationPath = GetDestinationPath(fileName, path);
+            if (_cache != null)
+            {
+                await _cache.RemoveItemAsync(filePath);
+            }
 
-            var storageItem = CreateStorageItem(file, fileName, destinationPath);
-
-            await ProcessImageAsync(storageItem, file, path, sizes);
-
-            return await SaveStorageItemAsync(file, path, destinationPath, storageItem);
+            return await DoDeleteAsync(filePath);
         }
 
-        protected abstract Task<bool> DoSaveAsync(string path, Stream file);
+        public async Task<Stream> DownloadFileAsync(StorageItem item)
+        {
+            var info = await GetFileInfoAsync(item);
+            return info.CreateReadStream();
+        }
+
+        public async Task<bool> IsFileExistsAsync(StorageItem item)
+        {
+            if (_cache != null && await _cache.IsKeyExistsAsync(item.FilePath))
+            {
+                return true;
+            }
+
+            return await DoIsFileExistsAsync(item);
+        }
 
 
-        public abstract Task<bool> DeleteFileAsync(string filePath);
-        public abstract Task<Stream> DownloadFileAsync(StorageItem item);
-        public abstract Task DeleteAllAsync();
+        public async Task DeleteAllAsync()
+        {
+            if (_cache != null)
+            {
+                await _cache.ClearAsync();
+            }
+
+            await DoDeleteAllAsync();
+        }
+
+        public async Task<StorageItem> GetFileInfoAsync(StorageItem item)
+        {
+            if (_cache != null && await _cache.IsKeyExistsAsync(item.FilePath))
+            {
+                return await _cache.GetItemAsync(item.FilePath);
+            }
+
+            var file = await DoGetFileInfoAsync(item);
+
+            if (_cache != null)
+            {
+                await _cache.AddItemAsync(item.FilePath, file);
+            }
+
+            return file;
+        }
+
+        public abstract Task<StorageItemCollection> GetDirectoryContentsAsync(string path);
+
+        public Uri PublicUri(StorageItem item)
+        {
+            return new Uri($"{_options.PublicUri}/{item.FilePath}");
+        }
 
         protected string GetStorageFileName(string fileName)
         {
             var extension = fileName.Substring(fileName.LastIndexOf('.'));
             return Guid.NewGuid() + extension;
-        }
-
-        private async Task ProcessImageAsync(StorageItem storageItem, Stream file,
-            string path, List<StorageImageSize>? sizes = null)
-        {
-            file.Seek(0, SeekOrigin.Begin);
-            using var image = Image.Load<Rgba32>(file);
-            storageItem.Type = StorageItemType.Image;
-            storageItem.ImageInfo = new StorageItemImageInfo
-            {
-                VerticalResolution = image.Height, HorizontalResolution = image.Width
-            };
-
-            sizes ??= _options.Thumbnails;
-
-            if (sizes != null && sizes.Any())
-            {
-                storageItem.ImageInfo.Thumbnails = new List<StorageItemImageThumbnail>();
-                foreach (var size in sizes)
-                {
-                    var thumb = await CreateThumbnailAsync(image, size, path, storageItem.StorageFileName);
-                    storageItem.ImageInfo.Thumbnails.Add(thumb);
-                }
-            }
-        }
-
-        private async Task<StorageItemImageThumbnail> CreateThumbnailAsync(Image<Rgba32> image, StorageImageSize size,
-            string path, string fileName)
-        {
-            var thumb = image.Clone();
-            thumb.Mutate(i =>
-                i.Resize(new ResizeOptions {Size = new Size(size.Width, size.Height), Mode = size.Mode}));
-            var thumbFileName = $"{thumb.Width.ToString()}_{thumb.Height.ToString()}_{fileName}";
-            var thumbStream = new MemoryStream();
-            var ext = fileName.Substring(fileName.LastIndexOf('.')).ToLowerInvariant();
-            IImageFormat format = ext switch
-            {
-                ".png" => PngFormat.Instance,
-                ".jpg" => JpegFormat.Instance,
-                ".jpeg" => JpegFormat.Instance,
-                ".gif" => GifFormat.Instance,
-                ".bmp" => BmpFormat.Instance,
-                _ => throw new Exception($"Unknown image format: {ext}")
-            };
-
-            thumb.Save(thumbStream, format);
-            var thumbPath = Path.Combine(path, "thumb", thumbFileName).Replace("\\", "/");
-            if (thumbPath.StartsWith("/"))
-            {
-                thumbPath = thumbPath.Substring(1);
-            }
-
-            await DoSaveAsync(thumbPath, thumbStream);
-
-            return new StorageItemImageThumbnail(new Uri($"{_options.PublicUri}/{thumbPath}"), thumbPath, thumb.Width,
-                thumb.Height, size.Key);
         }
 
         public virtual ValueTask DisposeAsync()

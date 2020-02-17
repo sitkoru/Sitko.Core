@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Sitko.Core.Xunit;
@@ -9,7 +8,7 @@ using Xunit.Abstractions;
 namespace Sitko.Core.Storage.Tests
 {
     public abstract class BasicTests<T, TSettings> : BaseTest<T>
-        where T : BaseTestScope where TSettings : IStorageOptions
+        where T : BaseTestScope where TSettings : StorageOptions
     {
         protected BasicTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
@@ -34,8 +33,6 @@ namespace Sitko.Core.Storage.Tests
             Assert.NotNull(uploaded);
             Assert.NotEqual(0, uploaded.FileSize);
             Assert.Equal(fileName, uploaded.FileName);
-            Assert.NotNull(uploaded.PublicUri);
-            Assert.Null(uploaded.ImageInfo);
         }
 
         [Fact]
@@ -99,64 +96,6 @@ namespace Sitko.Core.Storage.Tests
             var result = await storage.DeleteFileAsync(Guid.NewGuid().ToString());
 
             Assert.False(result);
-        }
-
-        [Fact]
-        public async Task UploadImage()
-        {
-            var scope = GetScope();
-
-            var storage = scope.Get<IStorage<TSettings>>();
-
-            Assert.NotNull(storage);
-
-            StorageItem uploaded;
-            const string fileName = "img.jpg";
-            await using (var file = File.Open("Data/img.jpg", FileMode.Open))
-            {
-                uploaded = await storage.SaveImageAsync(file, fileName, "upload");
-            }
-
-            Assert.NotNull(uploaded);
-            Assert.NotEqual(0, uploaded.FileSize);
-            Assert.Equal(fileName, uploaded.FileName);
-            Assert.NotNull(uploaded.PublicUri);
-            Assert.NotNull(uploaded.ImageInfo);
-            Assert.Empty(uploaded.ImageInfo.Thumbnails);
-        }
-
-        [Fact]
-        public async Task UploadImageWithThumbnail()
-        {
-            var scope = GetScope();
-
-            var storage = scope.Get<IStorage<TSettings>>();
-
-            Assert.NotNull(storage);
-
-            StorageItem uploaded;
-            const string fileName = "img.jpg";
-            await using (var file = File.Open("Data/img.jpg", FileMode.Open))
-            {
-                uploaded = await storage.SaveImageAsync(file, fileName, "upload",
-                    new List<StorageImageSize> {new StorageImageSize(100, 100, key: "test")});
-            }
-
-            Assert.NotNull(uploaded);
-            Assert.NotNull(uploaded.ImageInfo);
-            Assert.NotEmpty(uploaded.ImageInfo.Thumbnails);
-            var thumbByWidth = uploaded.GetThumbnailByWidth(100);
-            Assert.NotNull(thumbByWidth);
-            var thumbUriByWidth = uploaded.GetImageUriByWidth(100);
-            Assert.NotNull(thumbUriByWidth);
-            Assert.NotEqual(uploaded.PublicUri, thumbUriByWidth);
-            var thumbByHeight = uploaded.GetThumbnailByHeight(100);
-            Assert.Null(thumbByHeight);
-            var thumbUriByHeight = uploaded.GetImageUriByHeight(100);
-            Assert.NotNull(thumbUriByHeight);
-            Assert.Equal(uploaded.PublicUri, thumbUriByHeight);
-            var thumbByKey = uploaded.GetThumbnailByKey("test");
-            Assert.NotNull(thumbByKey);
         }
     }
 }
