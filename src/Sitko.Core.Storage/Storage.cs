@@ -86,9 +86,13 @@ namespace Sitko.Core.Storage
 
         public async Task<bool> IsFileExistsAsync(StorageItem item)
         {
-            if (_cache != null && await _cache.IsKeyExistsAsync(item.FilePath))
+            if (_cache != null)
             {
-                return true;
+                var file = await _cache.GetItemAsync(item.FilePath);
+                if (file != null)
+                {
+                    return true;
+                }
             }
 
             return await DoIsFileExistsAsync(item);
@@ -105,21 +109,14 @@ namespace Sitko.Core.Storage
             await DoDeleteAllAsync();
         }
 
-        public async Task<StorageItem> GetFileInfoAsync(StorageItem item)
+        public Task<StorageItem> GetFileInfoAsync(StorageItem item)
         {
-            if (_cache != null && await _cache.IsKeyExistsAsync(item.FilePath))
-            {
-                return await _cache.GetItemAsync(item.FilePath);
-            }
-
-            var file = await DoGetFileInfoAsync(item);
-
             if (_cache != null)
             {
-                await _cache.AddItemAsync(item.FilePath, file);
+                return _cache.GetOrAddItemAsync(item.FilePath, () => DoGetFileInfoAsync(item));
             }
 
-            return file;
+            return DoGetFileInfoAsync(item);
         }
 
         public abstract Task<StorageItemCollection> GetDirectoryContentsAsync(string path);

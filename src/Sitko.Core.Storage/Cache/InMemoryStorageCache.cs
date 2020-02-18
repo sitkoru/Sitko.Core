@@ -1,7 +1,9 @@
 using System;
-using System.Collections.Concurrent;
+using System.Buffers;
 using System.IO;
 using System.Threading.Tasks;
+using LazyCache;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Sitko.Core.Storage.Cache
 {
@@ -9,37 +11,56 @@ namespace Sitko.Core.Storage.Cache
     {
         private readonly InMemoryStorageCacheOptions _options;
 
-        private readonly ConcurrentDictionary<string, InMemoryStorageCacheRecord> _cache =
-            new ConcurrentDictionary<string, InMemoryStorageCacheRecord>();
+        private IAppCache _cache;
+        private MemoryPool<byte> _memoryPool = MemoryPool<byte>.Shared;
 
         public InMemoryStorageCache(InMemoryStorageCacheOptions options)
         {
             _options = options;
+            InitCache();
         }
 
-        public Task<StorageItem?> GetItemAsync(string path)
+        private void InitCache()
         {
-            if (_cache.TryGetValue(path, out var record))
-            {
-                record.DateAccess = DateTimeOffset.UtcNow;
-                var item = record.Item;
-                item.SetStream(new MemoryStream(record.Data));
-                return Task.FromResult(item);
-            }
-
-            return Task.FromResult((StorageItem)null);
+            _cache = new CachingService();
         }
 
-        public Task<bool> AddItemAsync(string path, StorageItem item)
+        public async Task<StorageItem?> GetItemAsync(string path)
         {
-            if (item.FileSize > _options.MaxFileSizeToStore)
-            {
-                return Task.FromResult(false);
-            }
+            var record = await _cache.GetAsync<InMemoryStorageCacheRecord>(path);
+            return record?.GetItem();
+        }
 
-            var stream = item.CreateReadStream();
-            var record = new InMemoryStorageCacheRecord(item, ReadToEnd(stream));
-            return Task.FromResult(_cache.TryAdd(path, record));
+        public async Task<StorageItem?> GetOrAddItemAsync(string path, Func<Task<StorageItem>> addItem)
+        {
+            var options = new MemoryCacheEntryOptions {SlidingExpiration = _options.Ttl};
+            options.RegisterPostEvictionCallback((key, value, reason, state) =>
+            {
+                if (value is InMemoryStorageCacheRecord deletedRecord)
+                {
+                    deletedRecord.Data.Dispose();
+                }
+            });
+            var record = await _cache.GetOrAddAsync(path, async () =>
+            {
+                var item = await addItem();
+                if (item.FileSize > _options.MaxFileSizeToStore)
+                {
+                    return null;
+                }
+
+                var memoryOwner = _memoryPool.Rent((int)item.FileSize);
+                var stream = item.CreateReadStream();
+                var bytes = ReadToEnd(stream);
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    memoryOwner.Memory.Span[i] = bytes[i];
+                }
+
+                return new InMemoryStorageCacheRecord(item, memoryOwner);
+            }, options);
+
+            return record.GetItem();
         }
 
         public static byte[] ReadToEnd(Stream stream)
@@ -95,20 +116,15 @@ namespace Sitko.Core.Storage.Cache
             }
         }
 
-        public Task<bool> IsKeyExistsAsync(string path)
-        {
-            return Task.FromResult(_cache.ContainsKey(path));
-        }
-
         public Task RemoveItemAsync(string path)
         {
-            _cache.TryRemove(path, out _);
+            _cache.Remove(path);
             return Task.CompletedTask;
         }
 
         public Task ClearAsync()
         {
-            _cache.Clear();
+            InitCache();
             return Task.CompletedTask;
         }
     }
@@ -121,17 +137,23 @@ namespace Sitko.Core.Storage.Cache
         }
 
         public StorageItem Item { get; }
-        public DateTimeOffset DateAdd { get; } = DateTimeOffset.UtcNow;
-        public DateTimeOffset DateAccess { get; set; } = DateTimeOffset.UtcNow;
     }
 
     public class InMemoryStorageCacheRecord : StorageCacheRecord
     {
-        public InMemoryStorageCacheRecord(StorageItem item, byte[] data) : base(item)
+        public InMemoryStorageCacheRecord(StorageItem item, IMemoryOwner<byte> data) : base(item)
         {
             Data = data;
         }
 
-        public byte[] Data { get; }
+        public IMemoryOwner<byte> Data { get; }
+
+        public StorageItem GetItem()
+        {
+            var item = Item;
+            var stream = new MemoryStream(Data.Memory.ToArray());
+            item.SetStream(stream);
+            return item;
+        }
     }
 }

@@ -6,8 +6,7 @@ namespace Sitko.Core.Storage.Cache
     public interface IStorageCache
     {
         Task<StorageItem?> GetItemAsync(string path);
-        Task<bool> AddItemAsync(string path, StorageItem item);
-        Task<bool> IsKeyExistsAsync(string path);
+        Task<StorageItem?> GetOrAddItemAsync(string path, Func<Task<StorageItem>> addItem);
         Task RemoveItemAsync(string path);
         Task ClearAsync();
     }
