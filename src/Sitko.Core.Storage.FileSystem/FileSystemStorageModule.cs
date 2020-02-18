@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.FileSystem
 {
-    public class FileSystemStorageModule<T> : BaseApplicationModule<T> where T : StorageOptions, IFileSystemStorageOptions
+    public class FileSystemStorageModule<T> : StorageModule<FileSystemStorage<T>, T>
+        where T : StorageOptions, IFileSystemStorageOptions
     {
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
