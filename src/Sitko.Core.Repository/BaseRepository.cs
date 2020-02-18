@@ -148,24 +148,26 @@ namespace Sitko.Core.Repository
         public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity item)
         {
             var oldItem = await GetOldItem(item.Id);
-            var changes = GetChanges(item, oldItem);
+            PropertyChange[] changes = new PropertyChange[0];
             (bool isValid, IList<ValidationFailure> errors) validationResult = (false, new List<ValidationFailure>());
-            if (await BeforeValidateAsync(item, validationResult, false, changes))
+            if (await BeforeValidateAsync(item, validationResult, false))
             {
-                validationResult = await ValidateAsync(item, false, changes);
-                if (validationResult.isValid)
+                changes = GetChanges(item, oldItem);
+                if (changes.Any())
                 {
-                    if (await BeforeSaveAsync(item, validationResult, false, changes))
+                    validationResult = await ValidateAsync(item, false, changes);
+                    if (validationResult.isValid)
                     {
-                        await DoUpdateAsync(item);
+                        if (await BeforeSaveAsync(item, validationResult, false, changes))
+                        {
+                            await DoUpdateAsync(item);
+
+                            await SaveAsync(new RepositoryRecord<TEntity, TEntityPk>(item, false, changes, oldItem));
+                        }
                     }
                 }
             }
 
-            if (validationResult.isValid)
-            {
-                await SaveAsync(new RepositoryRecord<TEntity, TEntityPk>(item, false, changes, oldItem));
-            }
 
             return new AddOrUpdateOperationResult<TEntity, TEntityPk>(item, validationResult.errors, changes);
         }
@@ -404,10 +406,9 @@ namespace Sitko.Core.Repository
 
         protected virtual Task<bool> BeforeValidateAsync(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult,
-            bool isNew,
-            PropertyChange[] changes = null)
+            bool isNew)
         {
-            return FiltersManager.BeforeValidateAsync<TEntity, TEntityPk>(item, validationResult, isNew, changes);
+            return FiltersManager.BeforeValidateAsync<TEntity, TEntityPk>(item, validationResult, isNew);
         }
     }
 }
