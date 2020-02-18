@@ -11,8 +11,8 @@ namespace Sitko.Core.Repository
     public interface IRepositoryContext<TEntity, TEntityPk> where TEntity : class, IEntity<TEntityPk>
     {
         RepositoryFiltersManager FiltersManager { get; }
-        List<IValidator<TEntity>> Validators { get; }
-        List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers { get; }
+        List<IValidator<TEntity>>? Validators { get; }
+        List<IAccessChecker<TEntity, TEntityPk>>? AccessCheckers { get; }
         ILogger<IRepository<TEntity, TEntityPk>> Logger { get; }
     }
 
@@ -23,7 +23,7 @@ namespace Sitko.Core.Repository
         protected readonly RepositoryFiltersManager FiltersManager;
         protected readonly List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers;
         protected readonly ILogger Logger;
-        private List<RepositoryRecord<TEntity, TEntityPk>> _batch;
+        private List<RepositoryRecord<TEntity, TEntityPk>>? _batch;
 
         protected BaseRepository(IRepositoryContext<TEntity, TEntityPk> repositoryContext)
         {
