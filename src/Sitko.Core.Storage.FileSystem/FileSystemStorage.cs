@@ -4,15 +4,16 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Sitko.Core.Storage.Cache;
 
 namespace Sitko.Core.Storage.FileSystem
 {
-    public sealed class FileSystemStorage<T> : Storage<T> where T : IFileSystemStorageOptions
+    public sealed class FileSystemStorage<T> : Storage<T> where T : StorageOptions, IFileSystemStorageOptions
     {
         private readonly string _storagePath;
-        private readonly List<FileStream> _openedStreams = new List<FileStream>();
 
-        public FileSystemStorage(T options, ILogger<FileSystemStorage<T>> logger) : base(options, logger)
+        public FileSystemStorage(T options, ILogger<FileSystemStorage<T>> logger, IStorageCache? cache = null) : base(
+            options, logger, cache)
         {
             _storagePath = options.StoragePath;
         }
@@ -37,7 +38,7 @@ namespace Sitko.Core.Storage.FileSystem
             return true;
         }
 
-        public override Task<bool> DeleteFileAsync(string filePath)
+        protected override Task<bool> DoDeleteAsync(string filePath)
         {
             var path = Path.Combine(_storagePath, filePath);
             if (File.Exists(path))
@@ -56,46 +57,57 @@ namespace Sitko.Core.Storage.FileSystem
             return Task.FromResult(false);
         }
 
-        public override Task<Stream> DownloadFileAsync(StorageItem item)
+        protected override Task<bool> DoIsFileExistsAsync(StorageItem item)
         {
-            var stream = File.OpenRead(Path.Combine(_storagePath, item.FilePath));
-            _openedStreams.Add(stream);
-            return Task.FromResult((Stream)stream);
+            var fullPath = Path.Combine(_storagePath, item.FilePath);
+            return Task.FromResult(File.Exists(fullPath));
         }
 
-        public override Task DeleteAllAsync()
+        protected override Task DoDeleteAllAsync()
         {
             if (Directory.Exists(_storagePath))
             {
-                ClearStreams();
                 Directory.Delete(_storagePath, true);
             }
 
             return Task.CompletedTask;
         }
 
-        private void ClearStreams()
+        protected override Task<StorageItem> DoGetFileInfoAsync(StorageItem item)
         {
-            if (_openedStreams.Any())
-            {
-                foreach (FileStream stream in _openedStreams)
+            var fullPath = Path.Combine(_storagePath, item.FilePath);
+            var fileInfo = new FileInfo(fullPath);
+            item.LastModified = fileInfo.LastWriteTimeUtc;
+            item.SetStream(fileInfo.OpenRead());
+            return Task.FromResult(item);
+        }
+
+        public override Task<StorageItemCollection> GetDirectoryContentsAsync(string path)
+        {
+            var fullPath = Path.Combine(_storagePath, path);
+            return Task.FromResult(new StorageItemCollection(GetFiles(fullPath)));
+        }
+
+        private List<StorageItem> GetFiles(string path)
+        {
+            return new DirectoryInfo(path)
+                .EnumerateFileSystemInfos()
+                .Select(info =>
                 {
-                    stream.Close();
-                }
+                    if (info is FileInfo file)
+                    {
+                        return new StorageItem
+                        {
+                            FileName = file.Name,
+                            FileSize = file.Length,
+                            LastModified = file.LastWriteTimeUtc,
+                            Path = Path.GetDirectoryName(file.FullName),
+                            FilePath = file.FullName
+                        };
+                    }
 
-                _openedStreams.Clear();
-            }
+                    throw new InvalidOperationException("Unexpected type of FileSystemInfo");
+                }).ToList();
         }
-
-        public override ValueTask DisposeAsync()
-        {
-            ClearStreams();
-            return base.DisposeAsync();
-        }
-    }
-
-    public interface IFileSystemStorageOptions : IStorageOptions
-    {
-        string StoragePath { get; }
     }
 }
