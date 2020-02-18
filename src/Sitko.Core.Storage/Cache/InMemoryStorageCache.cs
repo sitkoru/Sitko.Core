@@ -4,19 +4,22 @@ using System.IO;
 using System.Threading.Tasks;
 using LazyCache;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.Storage.Cache
 {
     public class InMemoryStorageCache : IStorageCache<InMemoryStorageCacheOptions>
     {
         private readonly InMemoryStorageCacheOptions _options;
+        private readonly ILogger<InMemoryStorageCache> _logger;
 
         private IAppCache _cache;
         private MemoryPool<byte> _memoryPool = MemoryPool<byte>.Shared;
 
-        public InMemoryStorageCache(InMemoryStorageCacheOptions options)
+        public InMemoryStorageCache(InMemoryStorageCacheOptions options, ILogger<InMemoryStorageCache> logger)
         {
             _options = options;
+            _logger = logger;
             InitCache();
         }
 
@@ -40,11 +43,12 @@ namespace Sitko.Core.Storage.Cache
                 {
                     deletedRecord.Data.Dispose();
                 }
+                _logger.LogDebug("Remove file {Key} from cache", key);
             });
             var record = await _cache.GetOrAddAsync(path, async () =>
             {
                 var item = await addItem();
-                if (item.FileSize > _options.MaxFileSizeToStore)
+                if (_options.MaxFileSizeToStore > 0 && item.FileSize > _options.MaxFileSizeToStore)
                 {
                     return null;
                 }
@@ -56,11 +60,11 @@ namespace Sitko.Core.Storage.Cache
                 {
                     memoryOwner.Memory.Span[i] = bytes[i];
                 }
-
+                _logger.LogDebug("Add file {Key} to cache", path);
                 return new InMemoryStorageCacheRecord(item, memoryOwner);
             }, options);
 
-            return record.GetItem();
+            return record?.GetItem();
         }
 
         public static byte[] ReadToEnd(Stream stream)
@@ -125,6 +129,7 @@ namespace Sitko.Core.Storage.Cache
         public Task ClearAsync()
         {
             InitCache();
+            _logger.LogDebug("Cache cleared");
             return Task.CompletedTask;
         }
     }
