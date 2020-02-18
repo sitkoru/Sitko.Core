@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sitko.Core.Storage\Sitko.Core.Storage.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Web\Sitko.Core.Web.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="SixLabors.ImageSharp.Web" Version="1.0.0-beta0009" />
+  </ItemGroup>
+</Project>
