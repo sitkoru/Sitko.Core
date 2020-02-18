@@ -72,12 +72,26 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             var changes = new List<PropertyChange>();
             foreach (var propertyEntry in DbContext.Entry(item).Properties)
             {
+                var name = propertyEntry.Metadata.Name;
                 if (propertyEntry.IsModified)
                 {
-                    var name = propertyEntry.Metadata.Name;
                     var originalValue = propertyEntry.OriginalValue;
                     var value = propertyEntry.CurrentValue;
                     changes.Add(new PropertyChange(name, originalValue, value));
+                }
+                else
+                {
+                    var property = item.GetType().GetProperty(propertyEntry.Metadata.Name);
+                    if (property != null)
+                    {
+                        var value = property.GetValue(item);
+                        var originalValue = property.GetValue(oldEntity);
+                        if (value == null && originalValue != null || value != null && !value.Equals(originalValue))
+                        {
+                            propertyEntry.IsModified = true;
+                            changes.Add(new PropertyChange(name, originalValue, value));
+                        }
+                    }
                 }
             }
 
@@ -172,7 +186,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
             return false;
         }
-        
+
         public override async Task<bool> RollbackTransactionAsync()
         {
             if (_transaction != null)
