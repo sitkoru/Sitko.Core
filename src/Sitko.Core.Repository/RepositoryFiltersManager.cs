@@ -19,8 +19,7 @@ namespace Sitko.Core.Repository
 
         public async Task<bool> BeforeValidateAsync<T, TEntityPk>(T item,
             (bool isValid, IList<ValidationFailure> errors) validationResult,
-            bool isNew,
-            PropertyChange[]? changes = null)
+            bool isNew)
             where T : class, IEntity<TEntityPk>
         {
             var result = true;
@@ -30,7 +29,7 @@ namespace Sitko.Core.Repository
                 foreach (var filter in filters)
                 {
                     if (!filter.CanProcess(typeof(T))) continue;
-                    result = await filter.BeforeValidateAsync<T, TEntityPk>(item, validationResult, isNew, changes);
+                    result = await filter.BeforeValidateAsync<T, TEntityPk>(item, validationResult, isNew);
                 }
             }
 
