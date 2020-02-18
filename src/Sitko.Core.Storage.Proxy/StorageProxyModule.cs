@@ -26,8 +26,8 @@ namespace Sitko.Core.Storage.Proxy
             services.AddImageSharpCore(options =>
                 {
                     options.Configuration = SixLabors.ImageSharp.Configuration.Default;
-                    options.MaxBrowserCacheDays = -1;
-                    options.MaxCacheDays = -1;
+                    options.MaxBrowserCacheDays = 1;
+                    options.MaxCacheDays = 1;
                     options.CachedNameLength = 12;
                     options.OnParseCommands = _ => { };
                     options.OnBeforeSave = _ => { };
