@@ -1,5 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,6 +20,8 @@ namespace Sitko.Core.Storage.Proxy
     public class StorageProxyModule<TStorageOptions> : BaseApplicationModule<StorageProxyModuleConfig>,
         IWebApplicationModule where TStorageOptions : StorageOptions
     {
+        private FileExtensionContentTypeProvider _mimeTypeProvider;
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {
@@ -58,14 +61,30 @@ namespace Sitko.Core.Storage.Proxy
             IApplicationBuilder appBuilder)
         {
             appBuilder.UseImageSharp();
+            _mimeTypeProvider = new FileExtensionContentTypeProvider();
             appBuilder.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = appBuilder.ApplicationServices
                     .GetRequiredService<StorageFileProvider<TStorageOptions>>(),
                 OnPrepareResponse = ctx =>
                 {
-                    ctx.Context.Response.Headers[HeaderNames.CacheControl] =
-                        "public,max-age=" + Config.MaxAgeHeader.TotalSeconds;
+                    var headers = ctx.Context.Response.Headers;
+                    var contentType = headers["Content-Type"];
+
+                    if (contentType != "application/x-gzip" && !ctx.File.Name.EndsWith(".gz"))
+                    {
+                        return;
+                    }
+
+                    var fileNameToTry = ctx.File.Name.Substring(0, ctx.File.Name.Length - 3);
+
+                    if (_mimeTypeProvider.TryGetContentType(fileNameToTry, out var mimeType))
+                    {
+                        headers.Add("Content-Encoding", "gzip");
+                        headers["Content-Type"] = mimeType;
+                    }
+
+                    headers[HeaderNames.CacheControl] = "public,max-age=" + Config.MaxAgeHeader.TotalSeconds;
                 }
             });
         }
