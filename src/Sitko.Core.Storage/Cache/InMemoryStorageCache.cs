@@ -30,7 +30,7 @@ namespace Sitko.Core.Storage.Cache
 
         private string NormalizePath(string path)
         {
-            return new Uri(path, UriKind.Relative).AbsolutePath;
+            return new Uri(path, UriKind.Relative).LocalPath;
         }
 
         public async Task<StorageItem?> GetItemAsync(string path)
