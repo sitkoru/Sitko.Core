@@ -14,7 +14,7 @@ namespace Sitko.Core.Storage.Cache
         private readonly ILogger<InMemoryStorageCache> _logger;
 
         private IAppCache _cache;
-        private MemoryPool<byte> _memoryPool = MemoryPool<byte>.Shared;
+        private readonly MemoryPool<byte> _memoryPool = MemoryPool<byte>.Shared;
 
         public InMemoryStorageCache(InMemoryStorageCacheOptions options, ILogger<InMemoryStorageCache> logger)
         {
@@ -28,15 +28,20 @@ namespace Sitko.Core.Storage.Cache
             _cache = new CachingService();
         }
 
+        private string NormalizePath(string path)
+        {
+            return new Uri(path, UriKind.Relative).AbsolutePath;
+        }
+
         public async Task<StorageItem?> GetItemAsync(string path)
         {
-            var record = await _cache.GetAsync<InMemoryStorageCacheRecord>(path);
+            var record = await _cache.GetAsync<InMemoryStorageCacheRecord>(NormalizePath(path));
             return record?.Item;
         }
 
         public async Task<Stream?> GetItemStreamAsync(string path)
         {
-            var record = await _cache.GetAsync<InMemoryStorageCacheRecord>(path);
+            var record = await _cache.GetAsync<InMemoryStorageCacheRecord>(NormalizePath(path));
             return record?.GetStream();
         }
 
@@ -60,7 +65,7 @@ namespace Sitko.Core.Storage.Cache
 
                 _logger.LogDebug("Remove file {Key} from cache", key);
             });
-            var record = await _cache.GetOrAddAsync(path, async () =>
+            var record = await _cache.GetOrAddAsync(NormalizePath(path), async () =>
             {
                 var item = await addItem();
                 if (_options.MaxFileSizeToStore > 0 && item.FileSize > _options.MaxFileSizeToStore)
@@ -103,6 +108,7 @@ namespace Sitko.Core.Storage.Cache
                 {
                     return null;
                 }
+
                 var memoryOwner = _memoryPool.Rent((int)record.Item.FileSize);
                 var bytes = ReadToEnd(stream);
                 for (int i = 0; i < bytes.Length; i++)
@@ -171,7 +177,7 @@ namespace Sitko.Core.Storage.Cache
 
         public Task RemoveItemAsync(string path)
         {
-            _cache.Remove(path);
+            _cache.Remove(NormalizePath(path));
             return Task.CompletedTask;
         }
 
