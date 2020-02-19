@@ -54,29 +54,19 @@ namespace Sitko.Core.Storage.Proxy
                 .AddProcessor<BackgroundColorWebProcessor>()
                 .AddProcessor<FormatWebProcessor>();
 
-            services.AddSingleton<StorageFileProvider<TStorageOptions>>();
-        }
-
-        public void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
-            appBuilder.UseImageSharp();
-            _mimeTypeProvider = new FileExtensionContentTypeProvider();
-            appBuilder.UseStaticFiles(new StaticFileOptions
+            services.Configure<StorageFileOptions>(options =>
             {
-                FileProvider = appBuilder.ApplicationServices
-                    .GetRequiredService<StorageFileProvider<TStorageOptions>>(),
-                OnPrepareResponse = ctx =>
+                options.OnPrepareResponse = ctx =>
                 {
                     var headers = ctx.Context.Response.Headers;
                     var contentType = headers["Content-Type"];
 
-                    if (contentType != "application/x-gzip" && !ctx.File.Name.EndsWith(".gz"))
+                    if (contentType != "application/x-gzip" && !ctx.File.FilePath.EndsWith(".gz"))
                     {
                         return;
                     }
 
-                    var fileNameToTry = ctx.File.Name.Substring(0, ctx.File.Name.Length - 3);
+                    var fileNameToTry = ctx.File.FilePath.Substring(0, ctx.File.FilePath.Length - 3);
 
                     if (_mimeTypeProvider.TryGetContentType(fileNameToTry, out var mimeType))
                     {
@@ -85,8 +75,16 @@ namespace Sitko.Core.Storage.Proxy
                     }
 
                     headers[HeaderNames.CacheControl] = "public,max-age=" + Config.MaxAgeHeader.TotalSeconds;
-                }
+                };
             });
+        }
+
+        public void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
+        {
+            appBuilder.UseImageSharp();
+            _mimeTypeProvider = new FileExtensionContentTypeProvider();
+            appBuilder.UseMiddleware<StorageMiddleware<TStorageOptions>>();
         }
     }
 

@@ -10,12 +10,12 @@ namespace Sitko.Core.Storage
         Task<StorageItem> SaveFileAsync(Stream file, string fileName, string path);
         Task<bool> DeleteFileAsync(string filePath);
 
-        Task<Stream> DownloadFileAsync(StorageItem item);
+        Task<Stream?> DownloadFileAsync(StorageItem item);
         Task<bool> IsFileExistsAsync(StorageItem item);
 
         Task DeleteAllAsync();
 
-        Task<StorageItem> GetFileInfoAsync(StorageItem item);
+        Task<StorageItem?> GetFileInfoAsync(StorageItem item);
         Task<StorageItemCollection> GetDirectoryContentsAsync(string path);
 
         Uri PublicUri(StorageItem item);

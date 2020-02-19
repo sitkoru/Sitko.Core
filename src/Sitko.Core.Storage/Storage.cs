@@ -66,7 +66,8 @@ namespace Sitko.Core.Storage
 
         protected abstract Task<bool> DoIsFileExistsAsync(StorageItem item);
         protected abstract Task DoDeleteAllAsync();
-        protected abstract Task<StorageItem> DoGetFileInfoAsync(StorageItem item);
+        protected abstract Task<StorageItem?> DoGetFileInfoAsync(StorageItem item);
+        protected abstract Task<(StorageItem item, Stream stream)?> DoDownloadFileAsync(StorageItem item);
 
         public async Task<bool> DeleteFileAsync(string filePath)
         {
@@ -78,10 +79,14 @@ namespace Sitko.Core.Storage
             return await DoDeleteAsync(filePath);
         }
 
-        public async Task<Stream> DownloadFileAsync(StorageItem item)
+        public async Task<Stream?> DownloadFileAsync(StorageItem item)
         {
-            var info = await GetFileInfoAsync(item);
-            return info.CreateReadStream();
+            if (_cache != null)
+            {
+                return await _cache.GetOrAddItemStreamAsync(item.FilePath, () => DoDownloadFileAsync(item));
+            }
+
+            return (await DoDownloadFileAsync(item))?.stream;
         }
 
         public async Task<bool> IsFileExistsAsync(StorageItem item)
@@ -98,7 +103,6 @@ namespace Sitko.Core.Storage
             return await DoIsFileExistsAsync(item);
         }
 
-
         public async Task DeleteAllAsync()
         {
             if (_cache != null)
@@ -109,7 +113,7 @@ namespace Sitko.Core.Storage
             await DoDeleteAllAsync();
         }
 
-        public Task<StorageItem> GetFileInfoAsync(StorageItem item)
+        public Task<StorageItem?> GetFileInfoAsync(StorageItem item)
         {
             if (_cache != null)
             {
@@ -126,7 +130,7 @@ namespace Sitko.Core.Storage
             return new Uri($"{_options.PublicUri}/{item.FilePath}");
         }
 
-        protected string GetStorageFileName(string fileName)
+        private string GetStorageFileName(string fileName)
         {
             var extension = fileName.Substring(fileName.LastIndexOf('.'));
             return Guid.NewGuid() + extension;

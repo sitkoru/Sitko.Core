@@ -73,13 +73,31 @@ namespace Sitko.Core.Storage.FileSystem
             return Task.CompletedTask;
         }
 
-        protected override Task<StorageItem> DoGetFileInfoAsync(StorageItem item)
+        protected override Task<StorageItem?> DoGetFileInfoAsync(StorageItem item)
         {
             var fullPath = Path.Combine(_storagePath, item.FilePath);
             var fileInfo = new FileInfo(fullPath);
+            if (!fileInfo.Exists)
+            {
+                return null;
+            }
+
             item.LastModified = fileInfo.LastWriteTimeUtc;
-            item.SetStream(fileInfo.OpenRead());
             return Task.FromResult(item);
+        }
+
+        protected override Task<(StorageItem item, Stream stream)?> DoDownloadFileAsync(StorageItem item)
+        {
+            (StorageItem item, Stream stream)? result = null;
+            var fullPath = Path.Combine(_storagePath, item.FilePath);
+            var fileInfo = new FileInfo(fullPath);
+            if (fileInfo.Exists)
+            {
+                item.LastModified = fileInfo.LastWriteTimeUtc;
+                result = (item, fileInfo.OpenRead() as Stream);
+            }
+
+            return Task.FromResult(result);
         }
 
         public override Task<StorageItemCollection> GetDirectoryContentsAsync(string path)

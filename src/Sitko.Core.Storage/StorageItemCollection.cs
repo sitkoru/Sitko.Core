@@ -1,10 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.Extensions.FileProviders;
 
 namespace Sitko.Core.Storage
 {
-    public class StorageItemCollection : IDirectoryContents
+    public class StorageItemCollection : IEnumerable<StorageItem>
     {
         private readonly List<StorageItem> _files;
 
@@ -12,8 +11,8 @@ namespace Sitko.Core.Storage
         {
             _files = files;
         }
-        
-        public IEnumerator<IFileInfo> GetEnumerator()
+
+        public IEnumerator<StorageItem> GetEnumerator()
         {
             return _files.GetEnumerator();
         }
@@ -22,7 +21,5 @@ namespace Sitko.Core.Storage
         {
             return GetEnumerator();
         }
-
-        public bool Exists => true;
     }
 }

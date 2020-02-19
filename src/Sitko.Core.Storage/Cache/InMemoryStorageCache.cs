@@ -31,10 +31,24 @@ namespace Sitko.Core.Storage.Cache
         public async Task<StorageItem?> GetItemAsync(string path)
         {
             var record = await _cache.GetAsync<InMemoryStorageCacheRecord>(path);
-            return record?.GetItem();
+            return record?.Item;
+        }
+
+        public async Task<Stream?> GetItemStreamAsync(string path)
+        {
+            var record = await _cache.GetAsync<InMemoryStorageCacheRecord>(path);
+            return record?.GetStream();
         }
 
         public async Task<StorageItem?> GetOrAddItemAsync(string path, Func<Task<StorageItem>> addItem)
+        {
+            var record = await GetOrAddRecordAsync(path, addItem);
+
+            return record?.Item;
+        }
+
+        private async Task<InMemoryStorageCacheRecord?> GetOrAddRecordAsync(string path,
+            Func<Task<StorageItem>> addItem)
         {
             var options = new MemoryCacheEntryOptions {SlidingExpiration = _options.Ttl};
             options.RegisterPostEvictionCallback((key, value, reason, state) =>
@@ -43,6 +57,7 @@ namespace Sitko.Core.Storage.Cache
                 {
                     deletedRecord.Data.Dispose();
                 }
+
                 _logger.LogDebug("Remove file {Key} from cache", key);
             });
             var record = await _cache.GetOrAddAsync(path, async () =>
@@ -53,18 +68,52 @@ namespace Sitko.Core.Storage.Cache
                     return null;
                 }
 
-                var memoryOwner = _memoryPool.Rent((int)item.FileSize);
-                var stream = item.CreateReadStream();
+                _logger.LogDebug("Add file {Key} to cache", path);
+                return new InMemoryStorageCacheRecord(item);
+            }, options);
+
+            return record;
+        }
+
+        public async Task<Stream?> GetOrAddItemStreamAsync(string path,
+            Func<Task<(StorageItem item, Stream stream)?>> addItem)
+        {
+            Stream stream = null;
+            var record = await GetOrAddRecordAsync(path, async () =>
+            {
+                var result = await addItem();
+                if (result == null)
+                {
+                    return null;
+                }
+
+                stream = result.Value.stream;
+                return result.Value.item;
+            });
+            if (record == null)
+            {
+                return null;
+            }
+
+            if (record.Data == null)
+            {
+                _logger.LogDebug("Download file {File}", path);
+                stream ??= (await addItem())?.stream;
+                if (stream == null)
+                {
+                    return null;
+                }
+                var memoryOwner = _memoryPool.Rent((int)record.Item.FileSize);
                 var bytes = ReadToEnd(stream);
                 for (int i = 0; i < bytes.Length; i++)
                 {
                     memoryOwner.Memory.Span[i] = bytes[i];
                 }
-                _logger.LogDebug("Add file {Key} to cache", path);
-                return new InMemoryStorageCacheRecord(item, memoryOwner);
-            }, options);
 
-            return record?.GetItem();
+                record.SetData(memoryOwner);
+            }
+
+            return record.GetStream();
         }
 
         public static byte[] ReadToEnd(Stream stream)
@@ -146,19 +195,21 @@ namespace Sitko.Core.Storage.Cache
 
     public class InMemoryStorageCacheRecord : StorageCacheRecord
     {
-        public InMemoryStorageCacheRecord(StorageItem item, IMemoryOwner<byte> data) : base(item)
+        public InMemoryStorageCacheRecord(StorageItem item, IMemoryOwner<byte>? data = null) : base(item)
         {
             Data = data;
         }
 
-        public IMemoryOwner<byte> Data { get; }
-
-        public StorageItem GetItem()
+        public void SetData(IMemoryOwner<byte> data)
         {
-            var item = Item;
-            var stream = new MemoryStream(Data.Memory.ToArray());
-            item.SetStream(stream);
-            return item;
+            Data = data;
+        }
+
+        public IMemoryOwner<byte>? Data { get; private set; }
+
+        public Stream GetStream()
+        {
+            return new MemoryStream(Data.Memory.ToArray());
         }
     }
 }
