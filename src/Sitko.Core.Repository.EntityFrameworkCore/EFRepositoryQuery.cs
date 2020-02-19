@@ -89,25 +89,22 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return this;
         }
 
-        public override IRepositoryQuery<TEntity> OrderByString(string orderBy)
+        protected override void ApplySort((string propertyName, bool isDescending) sortQuery)
         {
-            var sortQueries = GetSortParameters<TEntity>(orderBy);
-            if (sortQueries.Any())
+            var property = typeof(TEntity).GetProperty(sortQuery.propertyName);
+            if (property == null || !property.CanWrite)
             {
-                foreach (var sortQuery in sortQueries)
-                {
-                    if (sortQuery.isDescending)
-                    {
-                        OrderByDescending(e => EF.Property<TEntity>(e, sortQuery.propertyName));
-                    }
-                    else
-                    {
-                        OrderBy(e => EF.Property<TEntity>(e, sortQuery.propertyName));
-                    }
-                }
+                return;
             }
 
-            return this;
+            if (sortQuery.isDescending)
+            {
+                OrderByDescending(e => EF.Property<TEntity>(e, sortQuery.propertyName));
+            }
+            else
+            {
+                OrderBy(e => EF.Property<TEntity>(e, sortQuery.propertyName));
+            }
         }
     }
 }

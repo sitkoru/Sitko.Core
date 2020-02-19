@@ -29,24 +29,39 @@ namespace Sitko.Core.Repository
                 case QueryContextOperator.Contains:
                     if (ValueType == typeof(string) || typeof(IEnumerable).IsAssignableFrom(ValueType))
                     {
+                        return $"{Property}.Contains(@{valueIndex})";
+                    }
+                    return $"{Property}.ToString().Contains(@{valueIndex})";
+                case QueryContextOperator.StartsWith:
+                    if (ValueType == typeof(string))
+                    {
+                        return $"{Property}.StartsWith(@{valueIndex})";
+                    }
+                    return $"{Property}.ToString().StartsWith(@{valueIndex})";
+                case QueryContextOperator.EndsWith:
+                    if (ValueType == typeof(string))
+                    {
+                        return $"{Property}.EndsWith(@{valueIndex})";
+                    }
+                    return $"{Property}.ToString().EndsWith(@{valueIndex})";
+                case QueryContextOperator.ContainsCaseInsensitive:
+                    if (ValueType == typeof(string) || typeof(IEnumerable).IsAssignableFrom(ValueType))
+                    {
                         return $"{Property}.ToLower().Contains(@{valueIndex})";
                     }
-
-                    break;
-                case QueryContextOperator.StartsWith:
+                    return $"{Property}.ToString().ToLower().Contains(@{valueIndex})";
+                case QueryContextOperator.StartsWithCaseInsensitive:
                     if (ValueType == typeof(string))
                     {
                         return $"{Property}.ToLower().StartsWith(@{valueIndex})";
                     }
-
-                    break;
-                case QueryContextOperator.EndsWith:
+                    return $"{Property}.ToString().ToLower().StartsWith(@{valueIndex})";
+                case QueryContextOperator.EndsWithCaseInsensitive:
                     if (ValueType == typeof(string))
                     {
                         return $"{Property}.ToLower().EndsWith(@{valueIndex})";
                     }
-
-                    break;
+                    return $"{Property}.ToString().ToLower().EndsWith(@{valueIndex})";
                 case QueryContextOperator.In:
                     return $"@{valueIndex}.Contains({Property})";
                 default:

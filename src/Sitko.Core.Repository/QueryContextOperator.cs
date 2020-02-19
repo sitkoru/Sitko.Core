@@ -11,6 +11,9 @@ namespace Sitko.Core.Repository
         Contains = 7,
         StartsWith = 8,
         EndsWith = 9,
-        In = 10
+        In = 10,
+        ContainsCaseInsensitive = 11,
+        StartsWithCaseInsensitive = 12,
+        EndsWithCaseInsensitive = 13
     }
 }

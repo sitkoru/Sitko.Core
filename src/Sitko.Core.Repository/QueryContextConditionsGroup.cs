@@ -9,6 +9,11 @@ namespace Sitko.Core.Repository
             Conditions = conditions;
         }
 
+        public QueryContextConditionsGroup(QueryContextCondition condition)
+        {
+            Conditions = new List<QueryContextCondition> {condition};
+        }
+
         public List<QueryContextCondition> Conditions { get; }
     }
 }
