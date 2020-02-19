@@ -67,8 +67,6 @@ namespace Sitko.Core.Repository
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-
-            return null;
         }
     }
 }
