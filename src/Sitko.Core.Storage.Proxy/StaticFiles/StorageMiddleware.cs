@@ -57,13 +57,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
         private bool ValidatePath(HttpContext context, out string path)
         {
             path = context.Request.Path.ToString().TrimStart(_slashChars);
-
-            if (path.StartsWith("/"))
-            {
-                return true;
-            }
-
-            return false;
+            return true;
         }
 
         // Return true because we only want to run if there is no endpoint.
