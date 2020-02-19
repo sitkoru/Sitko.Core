@@ -1,10 +1,8 @@
 using System;
-using System.IO;
-using Microsoft.Extensions.FileProviders;
 
 namespace Sitko.Core.Storage
 {
-    public class StorageItem : IFileInfo, IDisposable
+    public class StorageItem
     {
         public string FileName { get; set; }
         public long FileSize { get; set; }
@@ -35,32 +33,6 @@ namespace Sitko.Core.Storage
             }
         }
 
-        public void SetStream(Stream sourceStream)
-        {
-            _stream = sourceStream;
-        }
-
-        public Stream CreateReadStream()
-        {
-            if (_stream != null)
-            {
-                return _stream;
-            }
-
-            throw new Exception("No stream set for file");
-        }
-
-        public bool Exists => true;
-        public long Length => FileSize;
-        public string PhysicalPath => null;
-        public string Name => FileName;
         public DateTimeOffset LastModified { get; set; } = DateTimeOffset.UtcNow;
-        public bool IsDirectory => false;
-        private Stream? _stream;
-
-        public void Dispose()
-        {
-            _stream?.Dispose();
-        }
     }
 }

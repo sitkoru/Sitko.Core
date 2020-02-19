@@ -139,22 +139,35 @@ namespace Sitko.Core.Storage.S3
             }
         }
 
-        protected override async Task<StorageItem> DoGetFileInfoAsync(StorageItem item)
+        protected override async Task<StorageItem?> DoGetFileInfoAsync(StorageItem item)
+        {
+            return (await DoDownloadFileAsync(item))?.item;
+        }
+
+        protected override async Task<(StorageItem item, Stream stream)?> DoDownloadFileAsync(StorageItem item)
         {
             var request = new GetObjectRequest {BucketName = _options.Bucket, Key = item.FilePath};
 
-            var response = await _client.GetObjectAsync(request);
-
-            item = new StorageItem
+            try
             {
-                Path = Path.GetDirectoryName(item.FilePath),
-                FileName = Path.GetFileName(item.FilePath),
-                FilePath = item.FilePath,
-                FileSize = response.ContentLength,
-                LastModified = response.LastModified
-            };
-            item.SetStream(response.ResponseStream);
-            return item;
+                var response = await _client.GetObjectAsync(request);
+
+                item = new StorageItem
+                {
+                    Path = Path.GetDirectoryName(item.FilePath),
+                    FileName = Path.GetFileName(item.FilePath),
+                    FilePath = item.FilePath,
+                    FileSize = response.ContentLength,
+                    LastModified = response.LastModified
+                };
+                return (item, response.ResponseStream);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Can't download file {File}", item.FilePath);
+            }
+
+            return null;
         }
 
         public override async Task<StorageItemCollection> GetDirectoryContentsAsync(string path)
