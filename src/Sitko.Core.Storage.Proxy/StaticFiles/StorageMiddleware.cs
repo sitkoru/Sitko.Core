@@ -30,19 +30,19 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
         {
             if (!ValidateNoEndpoint(context))
             {
-                _logger.LogError("No endpoint");
+                _logger.LogInformation("No endpoint");
             }
             else if (!ValidateMethod(context))
             {
-                _logger.LogError("Method {Method} is not supported", context.Request.Method);
+                _logger.LogInformation("Method {Method} is not supported", context.Request.Method);
             }
             else if (!ValidatePath(context, out var subPath))
             {
-                _logger.LogError("Path mismatch");
+                _logger.LogInformation("Path mismatch");
             }
             else if (!LookupContentType(_contentTypeProvider, subPath, out var contentType))
             {
-                _logger.LogError("File type is not supported");
+                _logger.LogInformation("File type is not supported");
             }
             else
             {
