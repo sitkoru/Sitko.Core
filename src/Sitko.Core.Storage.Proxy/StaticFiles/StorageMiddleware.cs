@@ -9,6 +9,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
 {
     public class StorageMiddleware<TStorageOptions> where TStorageOptions : StorageOptions
     {
+        protected readonly char[] _slashChars = {'\\', '/'};
         private readonly RequestDelegate _next;
         private readonly IStorage<TStorageOptions> _storage;
         private readonly ILogger _logger;
@@ -55,7 +56,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
 
         private bool ValidatePath(HttpContext context, out string path)
         {
-            path = context.Request.Path;
+            path = context.Request.Path.ToString().TrimStart(_slashChars);
 
             if (path.StartsWith("/"))
             {
