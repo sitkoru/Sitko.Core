@@ -13,8 +13,8 @@
 
   <ItemGroup>
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
-    <PackageReference Include="Grpc.Tools" Version="2.26.0" PrivateAssets="All" />
-    <PackageReference Include="Google.Protobuf" Version="3.11.2" />
+    <PackageReference Include="Grpc.Tools" Version="2.27.0" PrivateAssets="All" />
+    <PackageReference Include="Google.Protobuf" Version="3.11.4" />
   </ItemGroup>
 
   <ItemGroup>
