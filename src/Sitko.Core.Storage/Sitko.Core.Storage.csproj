@@ -8,8 +8,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="LazyCache" Version="2.0.4" />
-  </ItemGroup>
 
 </Project>

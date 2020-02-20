@@ -2,7 +2,6 @@ using System;
 using System.Buffers;
 using System.IO;
 using System.Threading.Tasks;
-using LazyCache;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
@@ -13,7 +12,7 @@ namespace Sitko.Core.Storage.Cache
         private readonly InMemoryStorageCacheOptions _options;
         private readonly ILogger<InMemoryStorageCache> _logger;
 
-        private IAppCache _cache;
+        private IMemoryCache _cache;
         private readonly MemoryPool<byte> _memoryPool = MemoryPool<byte>.Shared;
 
         public InMemoryStorageCache(InMemoryStorageCacheOptions options, ILogger<InMemoryStorageCache> logger)
@@ -25,7 +24,7 @@ namespace Sitko.Core.Storage.Cache
 
         private void InitCache()
         {
-            _cache = new CachingService();
+            _cache = new MemoryCache(new MemoryCacheOptions {SizeLimit = _options.MaxCacheSize});
         }
 
         private string NormalizePath(string path)
@@ -39,16 +38,16 @@ namespace Sitko.Core.Storage.Cache
             return path;
         }
 
-        public async Task<StorageItem?> GetItemAsync(string path)
+        public Task<StorageItem?> GetItemAsync(string path)
         {
-            var record = await _cache.GetAsync<InMemoryStorageCacheRecord>(NormalizePath(path));
-            return record?.Item;
+            var record = _cache.Get<InMemoryStorageCacheRecord>(NormalizePath(path));
+            return Task.FromResult(record.Item);
         }
 
-        public async Task<Stream?> GetItemStreamAsync(string path)
+        public Task<Stream?> GetItemStreamAsync(string path)
         {
-            var record = await _cache.GetAsync<InMemoryStorageCacheRecord>(NormalizePath(path));
-            return record?.GetStream();
+            var record = _cache.Get<InMemoryStorageCacheRecord>(NormalizePath(path));
+            return Task.FromResult(record.GetStream());
         }
 
         public async Task<StorageItem?> GetOrAddItemAsync(string path, Func<Task<StorageItem>> addItem)
@@ -61,27 +60,32 @@ namespace Sitko.Core.Storage.Cache
         private async Task<InMemoryStorageCacheRecord?> GetOrAddRecordAsync(string path,
             Func<Task<StorageItem>> addItem)
         {
-            var options = new MemoryCacheEntryOptions {SlidingExpiration = _options.Ttl};
-            options.RegisterPostEvictionCallback((key, value, reason, state) =>
+            var record = await _cache.GetOrCreateAsync(NormalizePath(path), async entry =>
             {
-                if (value is InMemoryStorageCacheRecord deletedRecord)
+                entry.SlidingExpiration = _options.Ttl;
+                entry.RegisterPostEvictionCallback((key, value, reason, state) =>
                 {
-                    deletedRecord.Data.Dispose();
-                }
+                    if (value is InMemoryStorageCacheRecord deletedRecord)
+                    {
+                        deletedRecord.Data?.Dispose();
+                    }
 
-                _logger.LogDebug("Remove file {Key} from cache", key);
-            });
-            var record = await _cache.GetOrAddAsync(NormalizePath(path), async () =>
-            {
+                    _logger.LogDebug("Remove file {Key} from cache", key);
+                });
                 var item = await addItem();
                 if (_options.MaxFileSizeToStore > 0 && item.FileSize > _options.MaxFileSizeToStore)
                 {
                     return null;
                 }
 
+                if (_options.MaxCacheSize > 0)
+                {
+                    entry.Size = item.FileSize;
+                }
+
                 _logger.LogDebug("Add file {Key} to cache", path);
                 return new InMemoryStorageCacheRecord(item);
-            }, options);
+            });
 
             return record;
         }
