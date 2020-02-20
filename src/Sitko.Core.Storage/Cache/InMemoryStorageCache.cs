@@ -44,10 +44,15 @@ namespace Sitko.Core.Storage.Cache
             return Task.FromResult(record?.Item);
         }
 
-        public Task<Stream?> GetItemStreamAsync(string path)
+        public async Task<Stream?> GetItemStreamAsync(string path)
         {
             var record = _cache.Get<InMemoryStorageCacheRecord?>(NormalizePath(path));
-            return Task.FromResult(record?.GetStream());
+            if (record == null)
+            {
+                return null;
+            }
+
+            return await record.GetStreamAsync();
         }
 
         public async Task<StorageItem?> GetOrAddItemAsync(string path, Func<Task<StorageItem>> addItem)
@@ -141,7 +146,7 @@ namespace Sitko.Core.Storage.Cache
                 record.SetData(memoryOwner);
             }
 
-            return record.GetStream();
+            return await record.GetStreamAsync();
         }
 
         public static byte[] ReadToEnd(Stream stream)
@@ -208,36 +213,6 @@ namespace Sitko.Core.Storage.Cache
             InitCache();
             _logger.LogDebug("Cache cleared");
             return Task.CompletedTask;
-        }
-    }
-
-    public class StorageCacheRecord
-    {
-        protected StorageCacheRecord(StorageItem item)
-        {
-            Item = item;
-        }
-
-        public StorageItem Item { get; }
-    }
-
-    public class InMemoryStorageCacheRecord : StorageCacheRecord
-    {
-        public InMemoryStorageCacheRecord(StorageItem item, IMemoryOwner<byte>? data = null) : base(item)
-        {
-            Data = data;
-        }
-
-        public void SetData(IMemoryOwner<byte> data)
-        {
-            Data = data;
-        }
-
-        public IMemoryOwner<byte>? Data { get; private set; }
-
-        public Stream GetStream()
-        {
-            return new MemoryStream(Data.Memory.ToArray());
         }
     }
 }
