@@ -40,14 +40,14 @@ namespace Sitko.Core.Storage.Cache
 
         public Task<StorageItem?> GetItemAsync(string path)
         {
-            var record = _cache.Get<InMemoryStorageCacheRecord>(NormalizePath(path));
-            return Task.FromResult(record.Item);
+            var record = _cache.Get<InMemoryStorageCacheRecord?>(NormalizePath(path));
+            return Task.FromResult(record?.Item);
         }
 
         public Task<Stream?> GetItemStreamAsync(string path)
         {
-            var record = _cache.Get<InMemoryStorageCacheRecord>(NormalizePath(path));
-            return Task.FromResult(record.GetStream());
+            var record = _cache.Get<InMemoryStorageCacheRecord?>(NormalizePath(path));
+            return Task.FromResult(record?.GetStream());
         }
 
         public async Task<StorageItem?> GetOrAddItemAsync(string path, Func<Task<StorageItem>> addItem)
@@ -60,34 +60,46 @@ namespace Sitko.Core.Storage.Cache
         private async Task<InMemoryStorageCacheRecord?> GetOrAddRecordAsync(string path,
             Func<Task<StorageItem>> addItem)
         {
-            var record = await _cache.GetOrCreateAsync(NormalizePath(path), async entry =>
+            try
             {
-                entry.SlidingExpiration = _options.Ttl;
-                entry.RegisterPostEvictionCallback((key, value, reason, state) =>
+                var record = await _cache.GetOrCreateAsync(NormalizePath(path), async entry =>
                 {
-                    if (value is InMemoryStorageCacheRecord deletedRecord)
+                    entry.SlidingExpiration = _options.Ttl;
+                    entry.RegisterPostEvictionCallback((key, value, reason, state) =>
                     {
-                        deletedRecord.Data?.Dispose();
+                        if (value is InMemoryStorageCacheRecord deletedRecord)
+                        {
+                            deletedRecord.Data?.Dispose();
+                        }
+
+                        _logger.LogDebug("Remove file {Key} from cache", key);
+                    });
+                    var item = await addItem();
+
+                    if (item == null)
+                    {
+                        throw new Exception($"File {path} not found");
                     }
 
-                    _logger.LogDebug("Remove file {Key} from cache", key);
+                    if (_options.MaxFileSizeToStore > 0 && item.FileSize > _options.MaxFileSizeToStore)
+                    {
+                        return null;
+                    }
+
+                    if (_options.MaxCacheSize > 0)
+                    {
+                        entry.Size = item.FileSize;
+                    }
+
+                    _logger.LogDebug("Add file {Key} to cache", path);
+                    return new InMemoryStorageCacheRecord(item);
                 });
-                var item = await addItem();
-                if (_options.MaxFileSizeToStore > 0 && item.FileSize > _options.MaxFileSizeToStore)
-                {
-                    return null;
-                }
-
-                if (_options.MaxCacheSize > 0)
-                {
-                    entry.Size = item.FileSize;
-                }
-
-                _logger.LogDebug("Add file {Key} to cache", path);
-                return new InMemoryStorageCacheRecord(item);
-            });
-
-            return record;
+                return record;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public async Task<Stream?> GetOrAddItemStreamAsync(string path,
