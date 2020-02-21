@@ -1,10 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace Sitko.Core.Storage.Cache
 {
-    public interface IStorageCache
+    public interface IStorageCache: IEnumerable<StorageItem>
     {
         Task<StorageItem?> GetItemAsync(string path);
         Task<Stream?> GetItemStreamAsync(string path);
