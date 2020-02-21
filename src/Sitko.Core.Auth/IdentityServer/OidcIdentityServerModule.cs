@@ -7,9 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using StackExchange.Redis;
 
-namespace Sitko.Core.Auth
+namespace Sitko.Core.Auth.IdentityServer
 {
-    public class OidcAuthModule : AuthModule<OidcAuthOptions>
+    public class OidcIdentityServerModule : IdentityServerModule<OidcAuthOptions>
     {
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
