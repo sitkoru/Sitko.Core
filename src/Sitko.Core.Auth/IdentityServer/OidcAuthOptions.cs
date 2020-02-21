@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sitko.Core.Auth
+namespace Sitko.Core.Auth.IdentityServer
 {
-    public class OidcAuthOptions : AuthOptions
+    public class OidcAuthOptions : IdentityServerAuthOptions
     {
         public OidcAuthOptions(string oidcServerUrl, string oidcClientId, string oidcClientSecret) : base(oidcServerUrl)
         {
@@ -14,7 +14,6 @@ namespace Sitko.Core.Auth
         public string OidcClientId { get; set; }
         public string OidcClientSecret { get; set; }
         public readonly List<string> OidcScopes = new List<string>();
-        public readonly List<string> IgnoreUrls = new List<string> {"/health", "/metrics"};
         
         public bool EnableRedisDataProtection { get; set; }
         public string RedisHost { get; set; }

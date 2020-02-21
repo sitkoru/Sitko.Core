@@ -1,6 +1,6 @@
-namespace Sitko.Core.Auth
+namespace Sitko.Core.Auth.IdentityServer
 {
-    public class JwtAuthOptions : AuthOptions
+    public class JwtAuthOptions : IdentityServerAuthOptions
     {
         public string JwtAudience { get; }
 
