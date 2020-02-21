@@ -1,5 +1,7 @@
 using System;
 using System.Buffers;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
@@ -11,6 +13,7 @@ namespace Sitko.Core.Storage.Cache
     {
         private readonly InMemoryStorageCacheOptions _options;
         private readonly ILogger<InMemoryStorageCache> _logger;
+        private readonly Dictionary<string, StorageItem> _items = new Dictionary<string, StorageItem>();
 
         private IMemoryCache _cache;
         private readonly MemoryPool<byte> _memoryPool = MemoryPool<byte>.Shared;
@@ -77,13 +80,14 @@ namespace Sitko.Core.Storage.Cache
                             deletedRecord.Data?.Dispose();
                         }
 
+                        _items.Remove(key.ToString());
                         _logger.LogDebug("Remove file {Key} from cache", key);
                     });
                     var item = await addItem();
 
                     if (item == null)
                     {
-                        throw new Exception($"File {path} not found");
+                        throw new Exception($"File {entry.Key} not found");
                     }
 
                     if (_options.MaxFileSizeToStore > 0 && item.FileSize > _options.MaxFileSizeToStore)
@@ -96,7 +100,8 @@ namespace Sitko.Core.Storage.Cache
                         entry.Size = item.FileSize;
                     }
 
-                    _logger.LogDebug("Add file {Key} to cache", path);
+                    _logger.LogDebug("Add file {Key} to cache", entry.Key);
+                    _items.Add(entry.Key.ToString(), item);
                     return new InMemoryStorageCacheRecord(item);
                 });
                 return record;
@@ -213,6 +218,16 @@ namespace Sitko.Core.Storage.Cache
             InitCache();
             _logger.LogDebug("Cache cleared");
             return Task.CompletedTask;
+        }
+
+        public IEnumerator<StorageItem> GetEnumerator()
+        {
+            return _items.Values.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }
