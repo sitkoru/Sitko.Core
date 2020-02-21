@@ -29,7 +29,7 @@ namespace Sitko.Core.Storage
                     unit++;
                 }
 
-                return Math.Round(size, 2) + ' ' + _units[unit];
+                return $"{Math.Round(size, 2):N}{_units[unit]}";
             }
         }
 
