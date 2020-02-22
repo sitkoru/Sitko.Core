@@ -5,13 +5,12 @@ using System.Threading.Tasks;
 
 namespace Sitko.Core.Storage.Cache
 {
-    public interface IStorageCache: IEnumerable<StorageItem>
+    public interface IStorageCache : IEnumerable<StorageItem>
     {
         Task<StorageItem?> GetItemAsync(string path);
-        Task<Stream?> GetItemStreamAsync(string path);
-        Task<StorageItem?> GetOrAddItemAsync(string path, Func<Task<StorageItem>> addItem);
 
-        Task<Stream?> GetOrAddItemStreamAsync(string path, Func<Task<(StorageItem item, Stream stream)?>> addItem);
+        Task<(StorageItem item, Stream stream)?> GetOrAddItemAsync(string path,
+            Func<Task<(StorageItem item, Stream stream)?>> addItem);
 
         Task RemoveItemAsync(string path);
         Task ClearAsync();

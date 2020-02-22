@@ -55,7 +55,7 @@ namespace Sitko.Core.Storage.Tests
 
             Assert.NotNull(uploaded);
 
-            var downloaded = await storage.DownloadFileAsync(uploaded);
+            var downloaded = await storage.DownloadFileAsync(uploaded.FilePath);
 
             Assert.NotNull(downloaded);
             Assert.Equal(fileLength, downloaded.Length);
