@@ -83,7 +83,17 @@ namespace Sitko.Core.Storage.Proxy.ImageSharp
         public async Task<Stream> OpenReadAsync()
         {
             var file = await _storage.GetFileAsync(_imagePath);
-            return file?.Stream;
+            if (file != null)
+            {
+                if (!string.IsNullOrEmpty(file.Value.Path))
+                {
+                    return File.OpenRead(file.Value.Path);
+                }
+
+                return file.Value.Stream;
+            }
+
+            return null;
         }
     }
 }
