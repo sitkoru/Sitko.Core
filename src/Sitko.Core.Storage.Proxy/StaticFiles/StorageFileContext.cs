@@ -109,7 +109,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
 
         public async Task<bool> LookupFileInfo()
         {
-            _fileInfo = await _storage.GetFileInfoAsync(new StorageItem {FilePath = _subPath.Value});
+            _fileInfo = await _storage.GetFileAsync(_subPath.Value);
             if (_fileInfo != null)
             {
                 _length = _fileInfo.FileSize;
@@ -348,7 +348,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
 
             try
             {
-                await using var readStream = await _storage.DownloadFileAsync(_fileInfo);
+                await using var readStream = await _storage.DownloadFileAsync(_fileInfo.FilePath);
                 // Larger StreamCopyBufferSize is required because in case of FileStream readStream isn't going to be buffering
                 await StreamCopyOperation.CopyToAsync(readStream, _response.Body, _length, StreamCopyBufferSize,
                     _context.RequestAborted);
@@ -384,7 +384,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
 
             try
             {
-                await using var readStream = await _storage.DownloadFileAsync(_fileInfo);
+                await using var readStream = await _storage.DownloadFileAsync(_fileInfo.FilePath);
                 readStream.Seek(start, SeekOrigin.Begin);
                 _logger.LogDebug("Copying file range {Range} for file {File}",
                     _response.Headers[HeaderNames.ContentRange], SubPath);

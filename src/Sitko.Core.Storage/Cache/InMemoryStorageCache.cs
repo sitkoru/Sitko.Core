@@ -1,8 +1,10 @@
 using System;
 using System.Buffers;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -17,6 +19,7 @@ namespace Sitko.Core.Storage.Cache
 
         private IMemoryCache _cache;
         private readonly MemoryPool<byte> _memoryPool = MemoryPool<byte>.Shared;
+        private ConcurrentDictionary<object, SemaphoreSlim> _locks = new ConcurrentDictionary<object, SemaphoreSlim>();
 
         public InMemoryStorageCache(InMemoryStorageCacheOptions options, ILogger<InMemoryStorageCache> logger)
         {
@@ -47,64 +50,83 @@ namespace Sitko.Core.Storage.Cache
             return Task.FromResult(record?.Item);
         }
 
-        public async Task<Stream?> GetItemStreamAsync(string path)
-        {
-            var record = _cache.Get<InMemoryStorageCacheRecord?>(NormalizePath(path));
-            if (record == null)
-            {
-                return null;
-            }
-
-            return await record.GetStreamAsync();
-        }
-
-        public async Task<StorageItem?> GetOrAddItemAsync(string path, Func<Task<StorageItem>> addItem)
-        {
-            var record = await GetOrAddRecordAsync(path, addItem);
-
-            return record?.Item;
-        }
-
-        private async Task<InMemoryStorageCacheRecord?> GetOrAddRecordAsync(string path,
-            Func<Task<StorageItem>> addItem)
+        public async Task<(StorageItem item, Stream stream)?> GetOrAddItemAsync(string path,
+            Func<Task<(StorageItem item, Stream stream)?>> addItem)
         {
             try
             {
-                var record = await _cache.GetOrCreateAsync(NormalizePath(path), async entry =>
+                var key = NormalizePath(path);
+                if (!_cache.TryGetValue(key, out InMemoryStorageCacheRecord? cacheEntry)) // Look for cache key.
                 {
-                    entry.SlidingExpiration = _options.Ttl;
-                    entry.RegisterPostEvictionCallback((key, value, reason, state) =>
+                    var itemLock = _locks.GetOrAdd(key, k => new SemaphoreSlim(1, 1));
+
+                    await itemLock.WaitAsync();
+                    try
                     {
-                        if (value is InMemoryStorageCacheRecord deletedRecord)
+                        if (!_cache.TryGetValue(key, out cacheEntry))
                         {
-                            deletedRecord.Data?.Dispose();
+                            var result = await addItem();
+                            if (result == null)
+                            {
+                                throw new Exception($"File {key} not found");
+                            }
+
+                            var (item, stream) = result.Value;
+
+                            if (_options.MaxFileSizeToStore > 0 && item.FileSize > _options.MaxFileSizeToStore)
+                            {
+                                return null;
+                            }
+
+                            cacheEntry = new InMemoryStorageCacheRecord(item);
+
+                            if (stream != null)
+                            {
+#if NETSTANDARD2_1
+                                await using (stream)
+#else
+                                using (stream)
+#endif
+                                {
+                                    var memoryOwner = _memoryPool.Rent((int)item.FileSize);
+                                    var bytes = ReadToEnd(stream);
+                                    for (int i = 0; i < bytes.Length; i++)
+                                    {
+                                        memoryOwner.Memory.Span[i] = bytes[i];
+                                    }
+
+                                    cacheEntry.SetData(memoryOwner);
+                                }
+                            }
+
+                            var options = new MemoryCacheEntryOptions {SlidingExpiration = _options.Ttl};
+                            options.RegisterPostEvictionCallback((objKey, value, reason, state) =>
+                            {
+                                if (value is InMemoryStorageCacheRecord deletedRecord)
+                                {
+                                    deletedRecord.Data?.Dispose();
+                                }
+
+                                _items.Remove(objKey.ToString());
+                                _logger.LogDebug("Remove file {objKey} from cache", key);
+                            });
+                            if (_options.MaxCacheSize > 0)
+                            {
+                                options.Size = item.FileSize;
+                            }
+
+                            _logger.LogDebug("Add file {Key} to cache", key);
+                            _cache.Set(key, cacheEntry, options);
+                            _items.Add(key, item);
                         }
-
-                        _items.Remove(key.ToString());
-                        _logger.LogDebug("Remove file {Key} from cache", key);
-                    });
-                    var item = await addItem();
-
-                    if (item == null)
-                    {
-                        throw new Exception($"File {entry.Key} not found");
                     }
-
-                    if (_options.MaxFileSizeToStore > 0 && item.FileSize > _options.MaxFileSizeToStore)
+                    finally
                     {
-                        return null;
+                        itemLock.Release();
                     }
+                }
 
-                    if (_options.MaxCacheSize > 0)
-                    {
-                        entry.Size = item.FileSize;
-                    }
-
-                    _logger.LogDebug("Add file {Key} to cache", entry.Key);
-                    _items.Add(entry.Key.ToString(), item);
-                    return new InMemoryStorageCacheRecord(item);
-                });
-                return record;
+                return (cacheEntry.Item, await cacheEntry.GetStreamAsync());
             }
             catch
             {
@@ -112,49 +134,7 @@ namespace Sitko.Core.Storage.Cache
             }
         }
 
-        public async Task<Stream?> GetOrAddItemStreamAsync(string path,
-            Func<Task<(StorageItem item, Stream stream)?>> addItem)
-        {
-            Stream stream = null;
-            var record = await GetOrAddRecordAsync(path, async () =>
-            {
-                var result = await addItem();
-                if (result == null)
-                {
-                    return null;
-                }
-
-                stream = result.Value.stream;
-                return result.Value.item;
-            });
-            if (record == null)
-            {
-                return null;
-            }
-
-            if (record.Data == null)
-            {
-                _logger.LogDebug("Download file {File}", path);
-                stream ??= (await addItem())?.stream;
-                if (stream == null)
-                {
-                    return null;
-                }
-
-                var memoryOwner = _memoryPool.Rent((int)record.Item.FileSize);
-                var bytes = ReadToEnd(stream);
-                for (int i = 0; i < bytes.Length; i++)
-                {
-                    memoryOwner.Memory.Span[i] = bytes[i];
-                }
-
-                record.SetData(memoryOwner);
-            }
-
-            return await record.GetStreamAsync();
-        }
-
-        public static byte[] ReadToEnd(Stream stream)
+        private static byte[] ReadToEnd(Stream stream)
         {
             long originalPosition = 0;
 

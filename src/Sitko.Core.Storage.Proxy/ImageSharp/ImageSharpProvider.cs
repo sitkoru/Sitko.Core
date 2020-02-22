@@ -52,7 +52,7 @@ namespace Sitko.Core.Storage.Proxy.ImageSharp
         {
             var key = context.Request.Path.Value.TrimStart(_slashChars);
 
-            bool imageExists = await _storage.IsFileExistsAsync(new StorageItem {FilePath = key});
+            bool imageExists = await _storage.IsFileExistsAsync(key);
 
             return !imageExists ? null : new ImageSharpStorageResolver<TStorageOptions>(_storage, key);
         }
@@ -71,13 +71,13 @@ namespace Sitko.Core.Storage.Proxy.ImageSharp
 
         public async Task<ImageMetadata> GetMetaDataAsync()
         {
-            var fileInfo = await _storage.GetFileInfoAsync(new StorageItem {FilePath = _imagePath});
+            var fileInfo = await _storage.GetFileAsync(_imagePath);
             return new ImageMetadata(fileInfo.LastModified.DateTime);
         }
 
         public async Task<Stream> OpenReadAsync()
         {
-            var file = await _storage.DownloadFileAsync(new StorageItem {FilePath = _imagePath});
+            var file = await _storage.DownloadFileAsync(_imagePath);
             return file;
         }
     }
