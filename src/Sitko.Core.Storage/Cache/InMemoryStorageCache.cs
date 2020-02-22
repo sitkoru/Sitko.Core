@@ -73,10 +73,14 @@ namespace Sitko.Core.Storage.Cache
 
                         if (_options.MaxFileSizeToStore > 0 && item.FileSize > _options.MaxFileSizeToStore)
                         {
-                            return null;
+                            _logger.LogWarning(
+                                "File {Key} exceed maximum cache file size. File size: {FleSize}. Maximum size: {MaximumSize}",
+                                key, item.HumanSize, Helpers.HumanSize(_options.MaxFileSizeToStore));
+                            return result.Value;
                         }
 
                         cacheEntry = new InMemoryStorageCacheRecord(item);
+
 
                         if (stream != null)
                         {
@@ -119,8 +123,9 @@ namespace Sitko.Core.Storage.Cache
                         _items.Add(key, item);
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _logger.LogError(ex, ex.ToString());
                     return null;
                 }
                 finally
