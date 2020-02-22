@@ -73,9 +73,9 @@ namespace Sitko.Core.Storage.FileSystem
             return Task.CompletedTask;
         }
 
-        protected override Task<(StorageItem item, Stream stream)?> DoGetFileAsync(string path)
+        protected override Task<StorageRecord?> DoGetFileAsync(string path)
         {
-            (StorageItem item, Stream stream)? result = null;
+            StorageRecord? result = null;
             var fullPath = Path.Combine(_storagePath, path);
             var fileInfo = new FileInfo(fullPath);
             if (fileInfo.Exists)
@@ -88,7 +88,7 @@ namespace Sitko.Core.Storage.FileSystem
                     Path = Path.GetDirectoryName(fileInfo.FullName),
                     FilePath = fileInfo.FullName
                 };
-                result = (item, fileInfo.OpenRead());
+                result = new StorageRecord(item, fileInfo.OpenRead());
             }
 
 

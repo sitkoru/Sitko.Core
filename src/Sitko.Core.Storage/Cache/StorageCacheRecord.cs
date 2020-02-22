@@ -1,6 +1,6 @@
 namespace Sitko.Core.Storage.Cache
 {
-    public class StorageCacheRecord
+    public abstract class StorageCacheRecord
     {
         protected StorageCacheRecord(StorageItem item)
         {

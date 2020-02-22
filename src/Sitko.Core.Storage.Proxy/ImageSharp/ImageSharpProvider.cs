@@ -72,13 +72,18 @@ namespace Sitko.Core.Storage.Proxy.ImageSharp
         public async Task<ImageMetadata> GetMetaDataAsync()
         {
             var fileInfo = await _storage.GetFileAsync(_imagePath);
-            return new ImageMetadata(fileInfo.LastModified.DateTime);
+            if (fileInfo == null)
+            {
+                return new ImageMetadata(DateTime.UtcNow);
+            }
+
+            return new ImageMetadata(fileInfo.Value.LastModified.DateTime);
         }
 
         public async Task<Stream> OpenReadAsync()
         {
-            var file = await _storage.DownloadFileAsync(_imagePath);
-            return file;
+            var file = await _storage.GetFileAsync(_imagePath);
+            return file?.Stream;
         }
     }
 }

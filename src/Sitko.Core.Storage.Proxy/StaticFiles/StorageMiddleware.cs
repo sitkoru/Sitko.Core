@@ -81,19 +81,20 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
 
         private async Task TryServeStaticFile(HttpContext context, string contentType, PathString subPath)
         {
-            var fileContext =
-                new StorageFileContext<TStorageOptions>(context, _options, _logger, _storage, contentType, subPath);
-            var fileExists = await fileContext.LookupFileInfo();
-            if (!fileExists)
+            var file = await _storage.GetFileAsync(subPath);
+            if (file == null)
             {
-                _logger.LogError("File {File} not found", fileContext.SubPath);
+                _logger.LogError("File {File} not found", subPath);
             }
             else
             {
+                var fileContext =
+                    new StorageFileContext(context, _options, _logger, file.Value, contentType, subPath);
                 // If we get here, we can try to serve the file
                 await fileContext.ServeStaticFile(context, _next);
                 return;
             }
+
 
             await _next(context);
         }
