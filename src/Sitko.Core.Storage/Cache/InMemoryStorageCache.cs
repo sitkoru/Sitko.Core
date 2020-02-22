@@ -53,85 +53,83 @@ namespace Sitko.Core.Storage.Cache
         public async Task<(StorageItem item, Stream stream)?> GetOrAddItemAsync(string path,
             Func<Task<(StorageItem item, Stream stream)?>> addItem)
         {
-            try
+            var key = NormalizePath(path);
+            if (!_cache.TryGetValue(key, out InMemoryStorageCacheRecord? cacheEntry)) // Look for cache key.
             {
-                var key = NormalizePath(path);
-                if (!_cache.TryGetValue(key, out InMemoryStorageCacheRecord? cacheEntry)) // Look for cache key.
+                var itemLock = _locks.GetOrAdd(key, k => new SemaphoreSlim(1, 1));
+
+                await itemLock.WaitAsync();
+                try
                 {
-                    var itemLock = _locks.GetOrAdd(key, k => new SemaphoreSlim(1, 1));
-
-                    await itemLock.WaitAsync();
-                    try
+                    if (!_cache.TryGetValue(key, out cacheEntry))
                     {
-                        if (!_cache.TryGetValue(key, out cacheEntry))
+                        var result = await addItem();
+                        if (result == null)
                         {
-                            var result = await addItem();
-                            if (result == null)
-                            {
-                                throw new Exception($"File {key} not found");
-                            }
+                            throw new Exception($"File {key} not found");
+                        }
 
-                            var (item, stream) = result.Value;
+                        (StorageItem item, Stream stream) = result.Value;
 
-                            if (_options.MaxFileSizeToStore > 0 && item.FileSize > _options.MaxFileSizeToStore)
-                            {
-                                return null;
-                            }
+                        if (_options.MaxFileSizeToStore > 0 && item.FileSize > _options.MaxFileSizeToStore)
+                        {
+                            return null;
+                        }
 
-                            cacheEntry = new InMemoryStorageCacheRecord(item);
+                        cacheEntry = new InMemoryStorageCacheRecord(item);
 
-                            if (stream != null)
-                            {
+                        if (stream != null)
+                        {
 #if NETSTANDARD2_1
-                                await using (stream)
+                            await using (stream)
 #else
                                 using (stream)
 #endif
-                                {
-                                    var memoryOwner = _memoryPool.Rent((int)item.FileSize);
-                                    var bytes = ReadToEnd(stream);
-                                    for (int i = 0; i < bytes.Length; i++)
-                                    {
-                                        memoryOwner.Memory.Span[i] = bytes[i];
-                                    }
-
-                                    cacheEntry.SetData(memoryOwner);
-                                }
-                            }
-
-                            var options = new MemoryCacheEntryOptions {SlidingExpiration = _options.Ttl};
-                            options.RegisterPostEvictionCallback((objKey, value, reason, state) =>
                             {
-                                if (value is InMemoryStorageCacheRecord deletedRecord)
+                                _logger.LogDebug("Download file {Key}", key);
+                                var memoryOwner = _memoryPool.Rent((int)item.FileSize);
+                                var bytes = ReadToEnd(stream);
+                                for (int i = 0; i < bytes.Length; i++)
                                 {
-                                    deletedRecord.Data?.Dispose();
+                                    memoryOwner.Memory.Span[i] = bytes[i];
                                 }
 
-                                _items.Remove(objKey.ToString());
-                                _logger.LogDebug("Remove file {objKey} from cache", key);
-                            });
-                            if (_options.MaxCacheSize > 0)
-                            {
-                                options.Size = item.FileSize;
+                                cacheEntry.SetData(memoryOwner);
                             }
-
-                            _logger.LogDebug("Add file {Key} to cache", key);
-                            _cache.Set(key, cacheEntry, options);
-                            _items.Add(key, item);
                         }
-                    }
-                    finally
-                    {
-                        itemLock.Release();
+
+                        var options = new MemoryCacheEntryOptions {SlidingExpiration = _options.Ttl};
+                        options.RegisterPostEvictionCallback((objKey, value, reason, state) =>
+                        {
+                            if (value is InMemoryStorageCacheRecord deletedRecord)
+                            {
+                                deletedRecord.Data?.Dispose();
+                            }
+
+                            _items.Remove(objKey.ToString());
+                            _logger.LogDebug("Remove file {ObjKey} from cache", key);
+                        });
+                        if (_options.MaxCacheSize > 0)
+                        {
+                            options.Size = item.FileSize;
+                        }
+
+                        _logger.LogDebug("Add file {Key} to cache", key);
+                        _cache.Set(key, cacheEntry, options);
+                        _items.Add(key, item);
                     }
                 }
+                catch
+                {
+                    return null;
+                }
+                finally
+                {
+                    itemLock.Release();
+                }
+            }
 
-                return (cacheEntry.Item, await cacheEntry.GetStreamAsync());
-            }
-            catch
-            {
-                return null;
-            }
+            return (cacheEntry.Item, await cacheEntry.GetStreamAsync());
         }
 
         private static byte[] ReadToEnd(Stream stream)
