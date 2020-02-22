@@ -67,7 +67,7 @@ namespace Sitko.Core.Storage
 
         protected abstract Task<bool> DoIsFileExistsAsync(StorageItem item);
         protected abstract Task DoDeleteAllAsync();
-        protected abstract Task<(StorageItem item, Stream stream)?> DoGetFileAsync(string path);
+        protected abstract Task<StorageRecord?> DoGetFileAsync(string path);
 
         public async Task<bool> DeleteFileAsync(string filePath)
         {
@@ -79,13 +79,12 @@ namespace Sitko.Core.Storage
             return await DoDeleteAsync(filePath);
         }
 
-        public async Task<StorageItem?> GetFileAsync(string path)
+        public Task<StorageRecord?> GetFileAsync(string path)
         {
-            var result = await GetFileInternalAsync(path);
-            return result?.item;
+            return GetFileInternalAsync(path);
         }
 
-        protected virtual Task<(StorageItem item, Stream stream)?> GetFileInternalAsync(string path)
+        protected virtual Task<StorageRecord?> GetFileInternalAsync(string path)
         {
             if (_cache != null)
             {
@@ -100,12 +99,6 @@ namespace Sitko.Core.Storage
         {
             var result = await GetFileInternalAsync(path);
             return result != null;
-        }
-
-        public async Task<Stream?> DownloadFileAsync(string path)
-        {
-            var result = await GetFileInternalAsync(path);
-            return result?.stream;
         }
 
         public async Task DeleteAllAsync()

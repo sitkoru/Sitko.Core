@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -12,7 +13,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Sitko.Core.Storage.Proxy.StaticFiles
 {
-    internal class StorageFileContext<TStorageOptions> where TStorageOptions : StorageOptions
+    public struct StorageFileContext
     {
         private const int StreamCopyBufferSize = 64 * 1024;
 
@@ -21,10 +22,9 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
         private readonly HttpRequest _request;
         private readonly HttpResponse _response;
         private readonly ILogger _logger;
-        private readonly IStorage<TStorageOptions> _storage;
+        private readonly StorageRecord _record;
         private readonly string _contentType;
 
-        private StorageItem _fileInfo;
         private EntityTagHeaderValue _etag;
         private RequestHeaders? _requestHeaders;
         private ResponseHeaders? _responseHeaders;
@@ -42,7 +42,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
         private RequestType _requestType;
 
         public StorageFileContext(HttpContext context, StorageFileOptions options, ILogger logger,
-            IStorage<TStorageOptions> storage,
+            StorageRecord record,
             string contentType, PathString subPath)
         {
             _context = context;
@@ -50,16 +50,15 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
             _request = context.Request;
             _response = context.Response;
             _logger = logger;
-            _storage = storage;
+            _record = record;
             string method = _request.Method;
             _contentType = contentType;
-            _fileInfo = null;
             _etag = null;
             _requestHeaders = null;
             _responseHeaders = null;
             _range = null;
 
-            _length = 0;
+            _length = record.StorageItem.FileSize;
             _subPath = subPath;
             _lastModified = new DateTimeOffset();
             _ifMatchState = PreconditionState.Unspecified;
@@ -107,24 +106,19 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
 
         public string SubPath => _subPath.Value;
 
-        public async Task<bool> LookupFileInfo()
+        public bool LookupFileInfo()
         {
-            _fileInfo = await _storage.GetFileAsync(_subPath.Value);
-            if (_fileInfo != null)
-            {
-                _length = _fileInfo.FileSize;
+            _length = _record.StorageItem.FileSize;
 
-                DateTimeOffset last = _fileInfo.LastModified;
-                // Truncate to the second.
-                _lastModified =
-                    new DateTimeOffset(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second,
-                        last.Offset).ToUniversalTime();
+            DateTimeOffset last = _record.LastModified;
+            // Truncate to the second.
+            _lastModified =
+                new DateTimeOffset(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second,
+                    last.Offset).ToUniversalTime();
 
-                long etagHash = _lastModified.ToFileTime() ^ _length;
-                _etag = new EntityTagHeaderValue('\"' + Convert.ToString(etagHash, 16) + '\"');
-            }
-
-            return _fileInfo != null;
+            long etagHash = _lastModified.ToFileTime() ^ _length;
+            _etag = new EntityTagHeaderValue('\"' + Convert.ToString(etagHash, 16) + '\"');
+            return true;
         }
 
         public void ComprehendRequestHeaders()
@@ -266,7 +260,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
                 _response.ContentLength = _length;
             }
 
-            _options.OnPrepareResponse(new StorageFileResponseContext(_context, _fileInfo));
+            _options.OnPrepareResponse(new StorageFileResponseContext(_context, _record));
         }
 
         public PreconditionState GetPreconditionState()
@@ -346,9 +340,17 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
             SetCompressionMode();
             ApplyResponseHeaders(StatusCodes.Status200OK);
 
+            var sendFile = _context.Features.Get<IHttpResponseBodyFeature>();
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+            if (sendFile != null && !string.IsNullOrEmpty(_record.Path))
+            {
+                await sendFile.SendFileAsync(_record.Path, 0, _length, CancellationToken.None);
+                return;
+            }
+
             try
             {
-                await using var readStream = await _storage.DownloadFileAsync(_fileInfo.FilePath);
+                await using var readStream = _record.Stream;
                 // Larger StreamCopyBufferSize is required because in case of FileStream readStream isn't going to be buffering
                 await StreamCopyOperation.CopyToAsync(readStream, _response.Body, _length, StreamCopyBufferSize,
                     _context.RequestAborted);
@@ -382,9 +384,17 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
             SetCompressionMode();
             ApplyResponseHeaders(StatusCodes.Status206PartialContent);
 
+            var sendFile = _context.Features.Get<IHttpResponseBodyFeature>();
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+            if (sendFile != null && !string.IsNullOrEmpty(_record.Path))
+            {
+                await sendFile.SendFileAsync(_record.Path, start, _length, CancellationToken.None);
+                return;
+            }
+
             try
             {
-                await using var readStream = await _storage.DownloadFileAsync(_fileInfo.FilePath);
+                await using var readStream = _record.Stream;
                 readStream.Seek(start, SeekOrigin.Begin);
                 _logger.LogDebug("Copying file range {Range} for file {File}",
                     _response.Headers[HeaderNames.ContentRange], SubPath);
@@ -421,7 +431,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
             }
         }
 
-        internal enum PreconditionState : byte
+        public enum PreconditionState : byte
         {
             Unspecified,
             NotModified,

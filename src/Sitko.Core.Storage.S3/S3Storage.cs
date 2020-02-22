@@ -139,7 +139,7 @@ namespace Sitko.Core.Storage.S3
             }
         }
 
-        protected override async Task<(StorageItem item, Stream stream)?> DoGetFileAsync(string path)
+        protected override async Task<StorageRecord?> DoGetFileAsync(string path)
         {
             var request = new GetObjectRequest {BucketName = _options.Bucket, Key = path};
 
@@ -155,7 +155,7 @@ namespace Sitko.Core.Storage.S3
                     FileSize = response.ContentLength,
                     LastModified = response.LastModified
                 };
-                return (item, response.ResponseStream);
+                return new StorageRecord(item, response.ResponseStream);
             }
             catch (Exception ex)
             {

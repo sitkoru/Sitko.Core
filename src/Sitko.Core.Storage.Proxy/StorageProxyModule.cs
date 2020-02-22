@@ -61,12 +61,13 @@ namespace Sitko.Core.Storage.Proxy
                     var headers = ctx.Context.Response.Headers;
                     var contentType = headers["Content-Type"];
 
-                    if (contentType != "application/x-gzip" && !ctx.File.FilePath.EndsWith(".gz"))
+                    if (contentType != "application/x-gzip" && !ctx.File.StorageItem.FilePath.EndsWith(".gz"))
                     {
                         return;
                     }
 
-                    var fileNameToTry = ctx.File.FilePath.Substring(0, ctx.File.FilePath.Length - 3);
+                    var fileNameToTry =
+                        ctx.File.StorageItem.FilePath.Substring(0, ctx.File.StorageItem.FilePath.Length - 3);
 
                     if (_mimeTypeProvider.TryGetContentType(fileNameToTry, out var mimeType))
                     {
