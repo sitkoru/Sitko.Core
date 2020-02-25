@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Sitko.Core.Storage.Cache
 {
-    public interface IStorageCache : IEnumerable<StorageCacheRecord>, IAsyncDisposable
+    public interface IStorageCache : IEnumerable<StorageRecord>, IAsyncDisposable
     {
         Task<StorageRecord?> GetItemAsync(string path);
 

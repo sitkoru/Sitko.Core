@@ -108,11 +108,6 @@ namespace Sitko.Core.Storage.Cache
             return new FileStorageCacheRecord(item, filePath);
         }
 
-        protected override Task<StorageRecord> GetStorageRecord(FileStorageCacheRecord record)
-        {
-            return Task.FromResult(new StorageRecord(record.Item, record.FilePath));
-        }
-
         public override async ValueTask DisposeAsync()
         {
             _cts.Cancel();
@@ -130,13 +125,19 @@ namespace Sitko.Core.Storage.Cache
         public TimeSpan CleanupInterval { get; set; } = TimeSpan.FromHours(1);
     }
 
-    public class FileStorageCacheRecord : StorageCacheRecord
+    public class FileStorageCacheRecord : StorageRecord
     {
         public FileStorageCacheRecord(StorageItem item, string filePath) : base(item)
         {
-            FilePath = filePath;
+            PhysicalPath = filePath;
         }
 
-        public string FilePath { get; }
+        public override string? PhysicalPath { get; }
+
+        public override Stream? OpenRead()
+        {
+            var fileInfo = new FileInfo(PhysicalPath);
+            return fileInfo.Exists ? fileInfo.OpenRead() : null;
+        }
     }
 }

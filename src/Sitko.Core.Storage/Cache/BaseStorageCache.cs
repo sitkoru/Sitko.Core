@@ -14,7 +14,7 @@ using MemoryCacheOptions = Sitko.Core.Caching.MemoryCacheOptions;
 namespace Sitko.Core.Storage.Cache
 {
     public abstract class BaseStorageCache<TOptions, TRecord> : IStorageCache<TOptions>
-        where TOptions : StorageCacheOptions where TRecord : StorageCacheRecord
+        where TOptions : StorageCacheOptions where TRecord : StorageRecord
     {
         protected readonly TOptions Options;
         protected readonly ILogger<BaseStorageCache<TOptions, TRecord>> Logger;
@@ -36,9 +36,9 @@ namespace Sitko.Core.Storage.Cache
             _cache.Expire();
         }
 
-        public IEnumerator<StorageCacheRecord> GetEnumerator()
+        public IEnumerator<StorageRecord> GetEnumerator()
         {
-            return _cache.Values<StorageCacheRecord>().GetEnumerator();
+            return _cache.Values<StorageRecord>().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -65,31 +65,30 @@ namespace Sitko.Core.Storage.Cache
                             throw new Exception($"File {key} not found");
                         }
 
-                        var storageRecord = result.Value;
-
                         if (Options.MaxFileSizeToStore > 0 &&
-                            storageRecord.StorageItem.FileSize > Options.MaxFileSizeToStore)
+                            result.FileSize > Options.MaxFileSizeToStore)
                         {
                             Logger.LogWarning(
                                 "File {Key} exceed maximum cache file size. File size: {FleSize}. Maximum size: {MaximumSize}",
-                                key, storageRecord.StorageItem.HumanSize,
+                                key, result.HumanSize,
                                 Helpers.HumanSize(Options.MaxFileSizeToStore));
-                            return result.Value;
+                            return result;
                         }
 
-                        if (storageRecord.Stream == null)
+                        var stream = result.OpenRead();
+                        if (stream == null)
                         {
                             throw new Exception($"Stream for file {key} is empty!");
                         }
 
 #if NETSTANDARD2_1
-                        await using (storageRecord.Stream)
+                        await using (stream)
 #else
-                                using (storageRecord.Stream)
+                                using (stream)
 #endif
                         {
                             Logger.LogDebug("Download file {Key}", key);
-                            cacheEntry = await GetEntryAsync(storageRecord.StorageItem, storageRecord.Stream);
+                            cacheEntry = await GetEntryAsync(result, stream);
 
                             var options = new MemoryCacheEntryOptions {SlidingExpiration = Options.Ttl};
                             options.RegisterPostEvictionCallback((objKey, value, reason, state) =>
@@ -103,7 +102,7 @@ namespace Sitko.Core.Storage.Cache
                             });
                             if (Options.MaxCacheSize > 0)
                             {
-                                options.Size = storageRecord.StorageItem.FileSize;
+                                options.Size = result.FileSize;
                             }
 
                             Logger.LogDebug("Add file {Key} to cache", key);
@@ -122,7 +121,7 @@ namespace Sitko.Core.Storage.Cache
                 }
             }
 
-            return await GetStorageRecord(cacheEntry);
+            return cacheEntry;
         }
 
 
@@ -141,17 +140,11 @@ namespace Sitko.Core.Storage.Cache
             return path;
         }
 
-        protected abstract Task<StorageRecord> GetStorageRecord(TRecord record);
-
-        public async Task<StorageRecord?> GetItemAsync(string path)
+        public Task<StorageRecord?> GetItemAsync(string path)
         {
             var record = CacheExtensions.Get<TRecord?>(_cache, NormalizePath(path));
-            if (record == null)
-            {
-                return null;
-            }
 
-            return await GetStorageRecord(record);
+            return Task.FromResult<StorageRecord>(record);
         }
 
         public Task RemoveItemAsync(string path)

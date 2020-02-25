@@ -58,7 +58,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
             _responseHeaders = null;
             _range = null;
 
-            _length = record.StorageItem.FileSize;
+            _length = record.FileSize;
             _subPath = subPath;
             _lastModified = new DateTimeOffset();
             _ifMatchState = PreconditionState.Unspecified;
@@ -108,7 +108,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
 
         public bool LookupFileInfo()
         {
-            _length = _record.StorageItem.FileSize;
+            _length = _record.FileSize;
 
             DateTimeOffset last = _record.LastModified;
             // Truncate to the second.
@@ -342,15 +342,15 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
 
             var sendFile = _context.Features.Get<IHttpResponseBodyFeature>();
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if (sendFile != null && !string.IsNullOrEmpty(_record.Path))
+            if (sendFile != null && !string.IsNullOrEmpty(_record.PhysicalPath))
             {
-                await sendFile.SendFileAsync(_record.Path, 0, _length, CancellationToken.None);
+                await sendFile.SendFileAsync(_record.PhysicalPath, 0, _length, CancellationToken.None);
                 return;
             }
 
             try
             {
-                await using var readStream = _record.Stream;
+                await using var readStream = _record.OpenRead();
                 // Larger StreamCopyBufferSize is required because in case of FileStream readStream isn't going to be buffering
                 await StreamCopyOperation.CopyToAsync(readStream, _response.Body, _length, StreamCopyBufferSize,
                     _context.RequestAborted);
@@ -386,15 +386,15 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
 
             var sendFile = _context.Features.Get<IHttpResponseBodyFeature>();
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if (sendFile != null && !string.IsNullOrEmpty(_record.Path))
+            if (sendFile != null && !string.IsNullOrEmpty(_record.PhysicalPath))
             {
-                await sendFile.SendFileAsync(_record.Path, start, _length, CancellationToken.None);
+                await sendFile.SendFileAsync(_record.PhysicalPath, start, _length, CancellationToken.None);
                 return;
             }
 
             try
             {
-                await using var readStream = _record.Stream;
+                await using var readStream = _record.OpenRead();
                 readStream.Seek(start, SeekOrigin.Begin);
                 _logger.LogDebug("Copying file range {Range} for file {File}",
                     _response.Headers[HeaderNames.ContentRange], SubPath);

@@ -84,11 +84,10 @@ namespace Sitko.Core.Storage.FileSystem
                 {
                     FileName = fileInfo.Name,
                     FileSize = fileInfo.Length,
-                    LastModified = fileInfo.LastWriteTimeUtc,
                     Path = Path.GetDirectoryName(fileInfo.FullName),
                     FilePath = fileInfo.FullName
                 };
-                result = new StorageRecord(item, fileInfo.OpenRead());
+                result = new StorageRecord(item, fileInfo.OpenRead()) {LastModified = fileInfo.LastWriteTimeUtc,};
             }
 
 
@@ -109,14 +108,14 @@ namespace Sitko.Core.Storage.FileSystem
                 {
                     if (info is FileInfo file)
                     {
-                        return new StorageItem
+                        return new StorageRecord
                         {
                             FileName = file.Name,
                             FileSize = file.Length,
                             LastModified = file.LastWriteTimeUtc,
                             Path = Path.GetDirectoryName(file.FullName),
                             FilePath = file.FullName
-                        };
+                        } as StorageItem;
                     }
 
                     throw new InvalidOperationException("Unexpected type of FileSystemInfo");

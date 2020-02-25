@@ -77,23 +77,13 @@ namespace Sitko.Core.Storage.Proxy.ImageSharp
                 return new ImageMetadata(DateTime.UtcNow);
             }
 
-            return new ImageMetadata(fileInfo.Value.LastModified.DateTime);
+            return new ImageMetadata(fileInfo.LastModified.DateTime);
         }
 
         public async Task<Stream> OpenReadAsync()
         {
             var file = await _storage.GetFileAsync(_imagePath);
-            if (file != null)
-            {
-                if (!string.IsNullOrEmpty(file.Value.Path))
-                {
-                    return File.OpenRead(file.Value.Path);
-                }
-
-                return file.Value.Stream;
-            }
-
-            return null;
+            return file?.OpenRead();
         }
     }
 }
