@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -9,16 +10,54 @@ namespace Sitko.Core.Storage.Cache
 {
     public class FileStorageCache : BaseStorageCache<FileStorageCacheOptions, FileStorageCacheRecord>
     {
+        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        private readonly Task _cleanupTask;
+
         public FileStorageCache(FileStorageCacheOptions options, ILogger<FileStorageCache> logger) : base(options,
             logger)
         {
+            _cleanupTask = Task.Run(async () =>
+            {
+                while (!_cts.IsCancellationRequested)
+                {
+                    await Task.Delay(Options.CleanupInterval);
+                    Logger.LogInformation("Start deleting obsolete files");
+                    Expire();
+                    var files = Directory.GetFiles(options.CacheDirectoryPath, "*.*", SearchOption.AllDirectories);
+                    var items = this.Select(i => i as FileStorageCacheRecord).ToList();
+                    foreach (string file in files)
+                    {
+                        if (items.Any(i => i.FilePath == file))
+                        {
+                            continue;
+                        }
+
+                        DeleteFile(file);
+                    }
+
+                    Logger.LogInformation("Done deleting obsolete files");
+                }
+            }, _cts.Token);
         }
 
         protected override void DisposeItem(FileStorageCacheRecord deletedRecord)
         {
             if (!string.IsNullOrEmpty(deletedRecord.FilePath))
             {
-                File.Delete(deletedRecord.FilePath);
+                DeleteFile(deletedRecord.FilePath);
+            }
+        }
+
+        private void DeleteFile(string path)
+        {
+            Logger.LogInformation("Delete file {File}", path);
+            try
+            {
+                File.Delete(path);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Can't delete file {File}", path);
             }
         }
 
@@ -74,20 +113,21 @@ namespace Sitko.Core.Storage.Cache
             return Task.FromResult(new StorageRecord(record.Item, record.FilePath));
         }
 
-        public override ValueTask DisposeAsync()
+        public override async ValueTask DisposeAsync()
         {
+            _cts.Cancel();
+            await _cleanupTask;
             if (Directory.Exists(Options.CacheDirectoryPath))
             {
                 Directory.Delete(Options.CacheDirectoryPath, true);
             }
-
-            return new ValueTask();
         }
     }
 
     public class FileStorageCacheOptions : StorageCacheOptions
     {
         public string CacheDirectoryPath { get; set; }
+        public TimeSpan CleanupInterval { get; set; } = TimeSpan.FromHours(1);
     }
 
     public class FileStorageCacheRecord : StorageCacheRecord
