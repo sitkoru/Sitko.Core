@@ -44,7 +44,7 @@ namespace Sitko.Core.Storage.Cache
         {
             if (!string.IsNullOrEmpty(deletedRecord.FilePath))
             {
-                DeleteFile(deletedRecord.FilePath);
+                DeleteFile(deletedRecord.PhysicalPath);
             }
         }
 
