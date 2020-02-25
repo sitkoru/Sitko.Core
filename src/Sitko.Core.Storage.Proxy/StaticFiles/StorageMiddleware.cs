@@ -90,7 +90,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
             else
             {
                 var fileContext =
-                    new StorageFileContext(context, _options, _logger, file.Value, contentType, subPath);
+                    new StorageFileContext(context, _options, _logger, file, contentType, subPath);
                 // If we get here, we can try to serve the file
                 await fileContext.ServeStaticFile(context, _next);
                 return;

@@ -152,10 +152,9 @@ namespace Sitko.Core.Storage.S3
                     Path = Path.GetDirectoryName(path),
                     FileName = Path.GetFileName(path),
                     FilePath = path,
-                    FileSize = response.ContentLength,
-                    LastModified = response.LastModified
+                    FileSize = response.ContentLength
                 };
-                return new StorageRecord(item, response.ResponseStream);
+                return new StorageRecord(item, response.ResponseStream) {LastModified = response.LastModified};
             }
             catch (Exception ex)
             {
@@ -171,14 +170,14 @@ namespace Sitko.Core.Storage.S3
 
             var response = await _client.ListObjectsAsync(request);
 
-            var files = response.S3Objects.Select(entry => new StorageItem
+            var files = response.S3Objects.Select(entry => new StorageRecord
             {
                 FileSize = entry.Size,
                 FileName = Path.GetFileName(entry.Key),
                 LastModified = entry.LastModified,
                 FilePath = entry.Key,
                 Path = Path.GetDirectoryName(entry.Key)
-            }).ToList();
+            } as StorageItem).ToList();
 
             return new StorageItemCollection(files);
         }

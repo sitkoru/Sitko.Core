@@ -22,11 +22,6 @@ namespace Sitko.Core.Storage.Cache
             return Task.FromResult(new InMemoryStorageCacheRecord(item, memoryStream.ToArray()));
         }
 
-        protected override Task<StorageRecord> GetStorageRecord(InMemoryStorageCacheRecord record)
-        {
-            return Task.FromResult(new StorageRecord(record.Item, record.GetStream()));
-        }
-
         public override ValueTask DisposeAsync()
         {
             return new ValueTask();
@@ -37,7 +32,7 @@ namespace Sitko.Core.Storage.Cache
     {
     }
 
-    public class InMemoryStorageCacheRecord : StorageCacheRecord
+    public class InMemoryStorageCacheRecord : StorageRecord
     {
         public InMemoryStorageCacheRecord(StorageItem item, byte[] data) : base(item)
         {
@@ -46,7 +41,7 @@ namespace Sitko.Core.Storage.Cache
 
         public byte[] Data { get; }
 
-        public Stream GetStream()
+        public override Stream? OpenRead()
         {
             return new MemoryStream(Data);
         }
