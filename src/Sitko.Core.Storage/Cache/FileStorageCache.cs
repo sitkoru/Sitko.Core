@@ -27,7 +27,7 @@ namespace Sitko.Core.Storage.Cache
                     var items = this.Select(i => i as FileStorageCacheRecord).ToList();
                     foreach (string file in files)
                     {
-                        if (items.Any(i => i.FilePath == file))
+                        if (items.Any(i => i.PhysicalPath == file))
                         {
                             continue;
                         }
