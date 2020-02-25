@@ -7,6 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using CacheExtensions = Sitko.Core.Caching.CacheExtensions;
+using MemoryCache = Sitko.Core.Caching.MemoryCache;
+using MemoryCacheOptions = Sitko.Core.Caching.MemoryCacheOptions;
 
 namespace Sitko.Core.Storage.Cache
 {
@@ -15,10 +18,11 @@ namespace Sitko.Core.Storage.Cache
     {
         protected readonly TOptions Options;
         protected readonly ILogger<BaseStorageCache<TOptions, TRecord>> Logger;
-        private readonly ConcurrentDictionary<string, StorageItem> _items = new ConcurrentDictionary<string, StorageItem>();
 
-        private IMemoryCache? _cache;
-        private readonly ConcurrentDictionary<object, SemaphoreSlim> _locks = new ConcurrentDictionary<object, SemaphoreSlim>();
+        private MemoryCache? _cache;
+
+        private readonly ConcurrentDictionary<object, SemaphoreSlim> _locks =
+            new ConcurrentDictionary<object, SemaphoreSlim>();
 
         protected BaseStorageCache(TOptions options, ILogger<BaseStorageCache<TOptions, TRecord>> logger)
         {
@@ -27,9 +31,14 @@ namespace Sitko.Core.Storage.Cache
             _cache = new MemoryCache(new MemoryCacheOptions {SizeLimit = Options.MaxCacheSize});
         }
 
-        public IEnumerator<StorageItem> GetEnumerator()
+        protected void Expire()
         {
-            return _items.Values.GetEnumerator();
+            _cache.Expire();
+        }
+
+        public IEnumerator<StorageCacheRecord> GetEnumerator()
+        {
+            return _cache.Values<StorageCacheRecord>().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -41,14 +50,14 @@ namespace Sitko.Core.Storage.Cache
             Func<Task<StorageRecord?>> addItem)
         {
             var key = NormalizePath(path);
-            if (!_cache.TryGetValue(key, out TRecord? cacheEntry)) // Look for cache key.
+            if (!CacheExtensions.TryGetValue(_cache, key, out TRecord? cacheEntry)) // Look for cache key.
             {
                 var itemLock = _locks.GetOrAdd(key, k => new SemaphoreSlim(1, 1));
 
                 await itemLock.WaitAsync();
                 try
                 {
-                    if (!_cache.TryGetValue(key, out cacheEntry))
+                    if (!CacheExtensions.TryGetValue(_cache, key, out cacheEntry))
                     {
                         var result = await addItem();
                         if (result == null)
@@ -90,15 +99,7 @@ namespace Sitko.Core.Storage.Cache
                                     DisposeItem(deletedRecord);
                                 }
 
-
-                                if (_items.TryRemove(objKey.ToString(), out _))
-                                {
-                                    Logger.LogDebug("Remove file {ObjKey} from cache", key);
-                                }
-                                else
-                                {
-                                    Logger.LogWarning("Error while removing {ObjKey} from cache", key);
-                                }
+                                Logger.LogDebug("Remove file {ObjKey} from cache", key);
                             });
                             if (Options.MaxCacheSize > 0)
                             {
@@ -107,7 +108,6 @@ namespace Sitko.Core.Storage.Cache
 
                             Logger.LogDebug("Add file {Key} to cache", key);
                             _cache.Set(key, cacheEntry, options);
-                            _items.TryAdd(key, storageRecord.StorageItem);
                         }
                     }
                 }
@@ -145,7 +145,7 @@ namespace Sitko.Core.Storage.Cache
 
         public async Task<StorageRecord?> GetItemAsync(string path)
         {
-            var record = _cache.Get<TRecord?>(NormalizePath(path));
+            var record = CacheExtensions.Get<TRecord?>(_cache, NormalizePath(path));
             if (record == null)
             {
                 return null;
