@@ -15,10 +15,10 @@ namespace Sitko.Core.Storage.Cache
     {
         protected readonly TOptions Options;
         protected readonly ILogger<BaseStorageCache<TOptions, TRecord>> Logger;
-        private readonly Dictionary<string, StorageItem> _items = new Dictionary<string, StorageItem>();
+        private readonly ConcurrentDictionary<string, StorageItem> _items = new ConcurrentDictionary<string, StorageItem>();
 
         private IMemoryCache? _cache;
-        private ConcurrentDictionary<object, SemaphoreSlim> _locks = new ConcurrentDictionary<object, SemaphoreSlim>();
+        private readonly ConcurrentDictionary<object, SemaphoreSlim> _locks = new ConcurrentDictionary<object, SemaphoreSlim>();
 
         protected BaseStorageCache(TOptions options, ILogger<BaseStorageCache<TOptions, TRecord>> logger)
         {
@@ -91,8 +91,14 @@ namespace Sitko.Core.Storage.Cache
                                 }
 
 
-                                _items.Remove(objKey.ToString());
-                                Logger.LogDebug("Remove file {ObjKey} from cache", key);
+                                if (_items.TryRemove(objKey.ToString(), out _))
+                                {
+                                    Logger.LogDebug("Remove file {ObjKey} from cache", key);
+                                }
+                                else
+                                {
+                                    Logger.LogWarning("Error while removing {ObjKey} from cache", key);
+                                }
                             });
                             if (Options.MaxCacheSize > 0)
                             {
@@ -101,7 +107,7 @@ namespace Sitko.Core.Storage.Cache
 
                             Logger.LogDebug("Add file {Key} to cache", key);
                             _cache.Set(key, cacheEntry, options);
-                            _items.Add(key, storageRecord.StorageItem);
+                            _items.TryAdd(key, storageRecord.StorageItem);
                         }
                     }
                 }
