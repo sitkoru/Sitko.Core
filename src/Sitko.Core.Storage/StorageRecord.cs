@@ -22,7 +22,7 @@ namespace Sitko.Core.Storage
 
         public DateTimeOffset LastModified { get; set; }
 
-        public virtual string? PhysicalPath { get; }
+        public string? PhysicalPath { get; protected set; }
 
         public virtual Stream? OpenRead()
         {
