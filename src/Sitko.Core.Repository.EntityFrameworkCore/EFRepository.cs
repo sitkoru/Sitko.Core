@@ -152,9 +152,15 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         public override async Task<bool> BeginTransactionAsync()
         {
+            if (_transaction != null)
+            {
+                return true;
+            }
+
             try
             {
-                _transaction = await DbContext.Database.BeginTransactionAsync();
+                _transaction = DbContext.Database.CurrentTransaction ??
+                               await DbContext.Database.BeginTransactionAsync();
             }
             catch (Exception ex)
             {
