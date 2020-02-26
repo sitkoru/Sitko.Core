@@ -132,8 +132,6 @@ namespace Sitko.Core.Storage.Cache
             PhysicalPath = filePath;
         }
 
-        public override string? PhysicalPath { get; }
-
         public override Stream? OpenRead()
         {
             var fileInfo = new FileInfo(PhysicalPath);
