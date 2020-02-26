@@ -203,17 +203,10 @@ namespace Sitko.Core.App
             return (T)this;
         }
 
-        public T AddModule<TModule>()
-            where TModule : IApplicationModule, new()
+        public T AddModule<TModule>() where TModule : BaseApplicationModule, new()
         {
-            if (Modules.OfType<TModule>().Any())
-            {
-                return (T)this;
-            }
-
-            var module = new TModule();
-            ConfigureModule(module);
-            Modules.Add(module);
+            AddModule<TModule, BaseApplicationModuleConfig>((configuration, environment) =>
+                new BaseApplicationModuleConfig());
             return (T)this;
         }
 
@@ -229,27 +222,6 @@ namespace Sitko.Core.App
             }
         }
 
-
-        private void ConfigureModule(IApplicationModule module, IServiceCollection collection,
-            IHostEnvironment environment, IConfiguration configuration)
-        {
-            module.ConfigureLogging(_loggerConfiguration, _logLevelSwitcher, LoggingFacility, configuration,
-                environment);
-            module.ConfigureServices(collection, configuration, environment);
-        }
-
-        protected virtual void ConfigureModule(IApplicationModule module)
-        {
-            module.ApplicationStore = ApplicationStore;
-
-            _hostBuilder.ConfigureServices(
-                (context, collection) =>
-                {
-                    ConfigureModule(module, collection, context.HostingEnvironment, context.Configuration);
-                }
-            );
-        }
-
         protected virtual void ConfigureModule<TModuleConfig>(IApplicationModule<TModuleConfig> module,
             Func<IConfiguration, IHostEnvironment, TModuleConfig> configure) where TModuleConfig : class
         {
@@ -263,7 +235,8 @@ namespace Sitko.Core.App
                     }
 
                     collection.AddSingleton(module.GetConfig());
-                    ConfigureModule(module, collection, context.HostingEnvironment, context.Configuration);
+                    module.ConfigureLogging(_loggerConfiguration, _logLevelSwitcher, LoggingFacility, context.Configuration, context.HostingEnvironment);
+                    module.ConfigureServices(collection, context.Configuration, context.HostingEnvironment);
                 }
             );
         }
