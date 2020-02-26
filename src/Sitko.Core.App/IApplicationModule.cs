@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
+using Sitko.Core.App.Logging;
 
 namespace Sitko.Core.App
 {
@@ -20,6 +22,10 @@ namespace Sitko.Core.App
         ApplicationStore ApplicationStore { get; set; }
 
         void ConfigureServices(IServiceCollection services, IConfiguration configuration,
+            IHostEnvironment environment);
+
+        void ConfigureLogging(LoggerConfiguration loggerConfiguration, LogLevelSwitcher logLevelSwitcher,
+            string facility, IConfiguration configuration,
             IHostEnvironment environment);
 
         Task InitAsync(IServiceProvider serviceProvider, IConfiguration configuration,

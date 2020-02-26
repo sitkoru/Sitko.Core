@@ -1,13 +1,13 @@
 using System;
 
-namespace Sitko.Core.Logging
+namespace Sitko.Core.Graylog
 {
-    public class GraylogLoggingOptions : LoggingOptions
+    public class GraylogLoggingOptions
     {
         public string Host { get; }
         public int Port { get; }
 
-        public GraylogLoggingOptions(string host, int port, string facility) : base(facility)
+        public GraylogLoggingOptions(string host, int port)
         {
             if (string.IsNullOrEmpty(host))
             {

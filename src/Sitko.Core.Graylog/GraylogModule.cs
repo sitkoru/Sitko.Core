@@ -1,22 +1,28 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Sinks.Graylog;
+using Sitko.Core.App;
+using Sitko.Core.App.Logging;
 
-namespace Sitko.Core.Logging
+namespace Sitko.Core.Graylog
 {
-    public class GraylogModule : LoggingModule<GraylogLoggingOptions>
+    public class GraylogModule : BaseApplicationModule<GraylogLoggingOptions>
     {
-        protected override void ConfigureLogger(LoggerConfiguration loggerConfiguration,
-            LogLevelSwitcher logLevelSwitcher)
+        public override void ConfigureLogging(LoggerConfiguration loggerConfiguration,
+            LogLevelSwitcher logLevelSwitcher,
+            string facility, IConfiguration configuration,
+            IHostEnvironment environment)
         {
-            base.ConfigureLogger(loggerConfiguration, logLevelSwitcher);
+            base.ConfigureLogging(loggerConfiguration, logLevelSwitcher, facility, configuration, environment);
             loggerConfiguration.WriteTo.Async(to => to.Graylog(
                 new GraylogSinkOptions
                 {
                     HostnameOrAddress = Config.Host,
                     Port = Config.Port,
-                    Facility = Config.Facility,
+                    Facility = facility,
                     MinimumLogEventLevel = logLevelSwitcher.Switch.MinimumLevel
                 }, logLevelSwitcher.Switch));
         }

@@ -1,11 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Events;
+using Serilog.Extensions.Logging;
+using Sitko.Core.App.Logging;
 
 namespace Sitko.Core.App
 {
@@ -14,20 +19,48 @@ namespace Sitko.Core.App
         private readonly string[] _args;
         protected readonly List<IApplicationModule> Modules = new List<IApplicationModule>();
         protected readonly ApplicationStore ApplicationStore = new ApplicationStore();
-        private IHost _appHost;
+        private IHost? _appHost;
         private IConfiguration _configuration;
 
         private readonly IHostBuilder _hostBuilder;
+        private readonly LoggerConfiguration _loggerConfiguration = new LoggerConfiguration();
+        private readonly LogLevelSwitcher _logLevelSwitcher = new LogLevelSwitcher();
+
+        protected virtual LogEventLevel LoggingProductionLevel { get; } = LogEventLevel.Information;
+        protected virtual LogEventLevel LoggingDevelopmentLevel { get; } = LogEventLevel.Debug;
+        protected bool LoggingEnableConsole { get; set; } = false;
+        protected virtual string? LoggingFacility { get; set; }
+        protected virtual Action<LoggerConfiguration, LogLevelSwitcher>? LoggingConfigure { get; set; }
+
+        private readonly Dictionary<string, LogEventLevel> _logEventLevels = new Dictionary<string, LogEventLevel>();
 
         public Application(string[] args)
         {
+            Console.OutputEncoding = Encoding.UTF8;
             _args = args;
             _hostBuilder = Host.CreateDefaultBuilder(args);
-            _hostBuilder.ConfigureServices(collection =>
+            _hostBuilder.ConfigureServices((context, services) =>
             {
-                collection.AddSingleton(typeof(Application<T>), this);
-                collection.AddSingleton(typeof(T), this);
-                collection.AddHostedService<ApplicationLifetimeService<T>>();
+                services.AddSingleton(typeof(Application<T>), this);
+                services.AddSingleton(typeof(T), this);
+                services.AddHostedService<ApplicationLifetimeService<T>>();
+
+
+                LoggingFacility ??= context.HostingEnvironment.ApplicationName;
+                _loggerConfiguration.Enrich.FromLogContext()
+                    .Enrich.WithProperty("App", LoggingFacility);
+
+                if (context.HostingEnvironment.IsDevelopment())
+                {
+                    _logLevelSwitcher.Switch.MinimumLevel = LoggingDevelopmentLevel;
+                    _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LoggingDevelopmentLevel;
+                }
+                else
+                {
+                    _logLevelSwitcher.Switch.MinimumLevel = LoggingProductionLevel;
+                    _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LogEventLevel.Warning;
+                    _loggerConfiguration.MinimumLevel.Override("Microsoft", _logLevelSwitcher.MsMessagesSwitch);
+                }
             });
         }
 
@@ -108,18 +141,50 @@ namespace Sitko.Core.App
             return _hostBuilder;
         }
 
+        public T ConfigureLogLevel(string source, LogEventLevel level)
+        {
+            _logEventLevels.Add(source, level);
+            return (T)this;
+        }
+
+        protected virtual void ConfigureLogging()
+        {
+            if (LoggingEnableConsole)
+            {
+                _loggerConfiguration
+                    .WriteTo.Console(
+                        outputTemplate:
+                        "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}] {Message:lj}{NewLine}{Exception}",
+                        levelSwitch: _logLevelSwitcher.Switch);
+            }
+
+            _loggerConfiguration.MinimumLevel.ControlledBy(_logLevelSwitcher.Switch);
+            LoggingConfigure?.Invoke(_loggerConfiguration, _logLevelSwitcher);
+            foreach (var entry in _logEventLevels)
+            {
+                _loggerConfiguration.MinimumLevel.Override(entry.Key, entry.Value);
+            }
+
+            Log.Logger = _loggerConfiguration.CreateLogger();
+            ConfigureServices(services =>
+            {
+                services.AddSingleton(_logLevelSwitcher);
+                services.AddSingleton(_ => (ILoggerFactory)new SerilogLoggerFactory());
+            });
+        }
+
         public async Task InitAsync()
         {
+            ConfigureLogging();
+
             var host = GetAppHost();
-            using (var scope = host.Services.CreateScope())
+            using var scope = host.Services.CreateScope();
+            foreach (var module in Modules)
             {
-                foreach (var module in Modules)
-                {
-                    CheckRequiredModules(module);
-                    await module.InitAsync(scope.ServiceProvider,
-                        scope.ServiceProvider.GetRequiredService<IConfiguration>(),
-                        scope.ServiceProvider.GetRequiredService<IHostEnvironment>());
-                }
+                CheckRequiredModules(module);
+                await module.InitAsync(scope.ServiceProvider,
+                    scope.ServiceProvider.GetRequiredService<IConfiguration>(),
+                    scope.ServiceProvider.GetRequiredService<IHostEnvironment>());
             }
         }
 
@@ -168,6 +233,8 @@ namespace Sitko.Core.App
         private void ConfigureModule(IApplicationModule module, IServiceCollection collection,
             IHostEnvironment environment, IConfiguration configuration)
         {
+            module.ConfigureLogging(_loggerConfiguration, _logLevelSwitcher, LoggingFacility, configuration,
+                environment);
             module.ConfigureServices(collection, configuration, environment);
         }
 
