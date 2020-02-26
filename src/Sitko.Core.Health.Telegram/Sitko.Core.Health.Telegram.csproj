@@ -9,6 +9,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Telegram.Bot" Version="15.3.0" />
+    <PackageReference Include="Telegram.Bot" Version="15.4.0" />
   </ItemGroup>
 </Project>
