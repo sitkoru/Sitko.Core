@@ -9,8 +9,18 @@ using Sitko.Core.App.Logging;
 
 namespace Sitko.Core.App
 {
-    public abstract class BaseApplicationModule : IApplicationModule
+    public abstract class BaseApplicationModule : BaseApplicationModule<BaseApplicationModuleConfig>
     {
+    }
+
+    public class BaseApplicationModuleConfig
+    {
+    }
+
+    public abstract class BaseApplicationModule<TConfig> : IApplicationModule<TConfig> where TConfig : class
+    {
+        protected TConfig Config { get; private set; }
+
         public ApplicationStore ApplicationStore { get; set; }
 
         public virtual void ConfigureServices(IServiceCollection services, IConfiguration configuration,
@@ -57,12 +67,6 @@ namespace Sitko.Core.App
         protected virtual void CheckConfig()
         {
         }
-    }
-
-    public abstract class BaseApplicationModule<TConfig> : BaseApplicationModule, IApplicationModule<TConfig>
-        where TConfig : class
-    {
-        protected TConfig Config { get; private set; }
 
         public virtual void Configure(Func<IConfiguration, IHostEnvironment, TConfig> configure,
             IConfiguration configuration, IHostEnvironment environment)
