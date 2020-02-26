@@ -44,10 +44,7 @@ namespace Sitko.Core.Search.ElasticSearch
                     settings.BasicAuthentication(_options.Login, _options.Password);
                 }
 
-                settings.ServerCertificateValidationCallback((o, certificate, arg3, arg4) =>
-                {
-                    return true;
-                });
+                settings.ServerCertificateValidationCallback((o, certificate, arg3, arg4) => true);
                 _client = new ElasticClient(settings);
             }
 
