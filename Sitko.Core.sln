@@ -49,7 +49,7 @@ EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Db", "src\Sitko.Core.Db\Sitko.Core.Db.csproj", "{0CA239FF-3A6F-4C39-9A1A-A573E61A9A63}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Logging", "src\Sitko.Core.Logging\Sitko.Core.Logging.csproj", "{ADF152D4-C7A5-4FA6-B0C6-70B3EAE26D86}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Graylog", "src\Sitko.Core.Graylog\Sitko.Core.Graylog.csproj", "{ADF152D4-C7A5-4FA6-B0C6-70B3EAE26D86}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Health.Telegram", "src\Sitko.Core.Health.Telegram\Sitko.Core.Health.Telegram.csproj", "{61EE14D9-CAED-4E3F-AFA3-96359BD3359D}"
 EndProject
