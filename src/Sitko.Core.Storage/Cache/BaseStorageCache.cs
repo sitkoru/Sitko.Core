@@ -81,11 +81,7 @@ namespace Sitko.Core.Storage.Cache
                             throw new Exception($"Stream for file {key} is empty!");
                         }
 
-#if NETSTANDARD2_1
                         await using (stream)
-#else
-                                using (stream)
-#endif
                         {
                             Logger.LogDebug("Download file {Key}", key);
                             cacheEntry = await GetEntryAsync(result, stream);
