@@ -84,8 +84,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
             var file = await _storage.GetFileAsync(subPath);
             if (file == null)
             {
-                _logger.LogError("File {File} not found. Referer: {Referer}", subPath,
-                    context.Request.GetTypedHeaders().Referer);
+                _logger.LogDebug("File {File} not found", subPath);
             }
             else
             {
