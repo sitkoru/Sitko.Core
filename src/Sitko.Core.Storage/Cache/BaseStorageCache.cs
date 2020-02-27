@@ -62,7 +62,8 @@ namespace Sitko.Core.Storage.Cache
                         var result = await addItem();
                         if (result == null)
                         {
-                            throw new Exception($"File {key} not found");
+                            Logger.LogDebug("File {File} not found", key);
+                            return null;
                         }
 
                         if (Options.MaxFileSizeToStore > 0 &&

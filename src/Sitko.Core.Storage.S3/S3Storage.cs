@@ -156,9 +156,18 @@ namespace Sitko.Core.Storage.S3
                 };
                 return new StorageRecord(item, response.ResponseStream) {LastModified = response.LastModified};
             }
-            catch (Exception ex)
+            catch (AmazonS3Exception ex)
             {
-                Logger.LogError(ex, "Can't download file {File}", path);
+                if (string.Equals(ex.ErrorCode, "NoSuchBucket"))
+                {
+                    throw;
+                }
+
+                if (string.Equals(ex.ErrorCode, "NotFound"))
+                {
+                    Logger.LogDebug(ex, "File {File} not found", path);
+                }
+                
             }
 
             return null;
