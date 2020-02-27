@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -69,48 +68,12 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         public override PropertyChange[] GetChanges(TEntity item, TEntity oldEntity)
         {
-            var changes = new List<PropertyChange>();
-            foreach (var propertyEntry in DbContext.Entry(item).Properties)
-            {
-                var name = propertyEntry.Metadata.Name;
-                if (propertyEntry.IsModified)
-                {
-                    var originalValue = propertyEntry.OriginalValue;
-                    var value = propertyEntry.CurrentValue;
-                    changes.Add(new PropertyChange(name, originalValue, value));
-                }
-                else
-                {
-                    var property = item.GetType().GetProperty(propertyEntry.Metadata.Name);
-                    if (property != null)
-                    {
-                        var value = property.GetValue(item);
-                        var originalValue = property.GetValue(oldEntity);
-                        if (value == null && originalValue != null || value != null && !value.Equals(originalValue))
-                        {
-                            propertyEntry.IsModified = true;
-                            changes.Add(new PropertyChange(name, originalValue, value));
-                        }
-                    }
-                }
-            }
-
-            foreach (var navigationEntry in DbContext.Entry(item).Navigations)
-            {
-                var property = item.GetType().GetProperty(navigationEntry.Metadata.Name);
-                if (property != null)
-                {
-                    var value = property.GetValue(item);
-                    var originalValue = property.GetValue(oldEntity);
-                    if (value == null && originalValue != null || value != null && !value.Equals(originalValue))
-                    {
-                        var name = navigationEntry.Metadata.Name;
-                        changes.Add(new PropertyChange(name, originalValue, value));
-                    }
-                }
-            }
-
-            return changes.ToArray();
+            return DbContext
+                .Entry(item)
+                .Properties
+                .Where(p => p.IsModified)
+                .Select(p => new PropertyChange(p.Metadata.Name, p.OriginalValue, p.CurrentValue))
+                .ToArray();
         }
 
         public DbSet<T> Set<T>() where T : class
