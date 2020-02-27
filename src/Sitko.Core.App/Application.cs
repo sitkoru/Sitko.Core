@@ -44,23 +44,8 @@ namespace Sitko.Core.App
                 services.AddSingleton(typeof(Application<T>), this);
                 services.AddSingleton(typeof(T), this);
                 services.AddHostedService<ApplicationLifetimeService<T>>();
-
-
+                
                 LoggingFacility ??= context.HostingEnvironment.ApplicationName;
-                _loggerConfiguration.Enrich.FromLogContext()
-                    .Enrich.WithProperty("App", LoggingFacility);
-
-                if (context.HostingEnvironment.IsDevelopment())
-                {
-                    _logLevelSwitcher.Switch.MinimumLevel = LoggingDevelopmentLevel;
-                    _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LoggingDevelopmentLevel;
-                }
-                else
-                {
-                    _logLevelSwitcher.Switch.MinimumLevel = LoggingProductionLevel;
-                    _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LogEventLevel.Warning;
-                    _loggerConfiguration.MinimumLevel.Override("Microsoft", _logLevelSwitcher.MsMessagesSwitch);
-                }
             });
         }
 
@@ -165,9 +150,23 @@ namespace Sitko.Core.App
                 _loggerConfiguration.MinimumLevel.Override(entry.Key, entry.Value);
             }
 
-            Log.Logger = _loggerConfiguration.CreateLogger();
-            ConfigureServices(services =>
+            ConfigureServices((context, services) =>
             {
+                _loggerConfiguration.Enrich.FromLogContext()
+                    .Enrich.WithProperty("App", LoggingFacility);
+
+                if (context.HostingEnvironment.IsDevelopment())
+                {
+                    _logLevelSwitcher.Switch.MinimumLevel = LoggingDevelopmentLevel;
+                    _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LoggingDevelopmentLevel;
+                }
+                else
+                {
+                    _logLevelSwitcher.Switch.MinimumLevel = LoggingProductionLevel;
+                    _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LogEventLevel.Warning;
+                    _loggerConfiguration.MinimumLevel.Override("Microsoft", _logLevelSwitcher.MsMessagesSwitch);
+                }
+
                 services.AddSingleton(_logLevelSwitcher);
                 services.AddSingleton(_ => (ILoggerFactory)new SerilogLoggerFactory());
             });
@@ -178,6 +177,9 @@ namespace Sitko.Core.App
             ConfigureLogging();
 
             var host = GetAppHost();
+
+            Log.Logger = _loggerConfiguration.CreateLogger();
+
             using var scope = host.Services.CreateScope();
             foreach (var module in Modules)
             {
@@ -235,7 +237,8 @@ namespace Sitko.Core.App
                     }
 
                     collection.AddSingleton(module.GetConfig());
-                    module.ConfigureLogging(_loggerConfiguration, _logLevelSwitcher, LoggingFacility, context.Configuration, context.HostingEnvironment);
+                    module.ConfigureLogging(_loggerConfiguration, _logLevelSwitcher, LoggingFacility,
+                        context.Configuration, context.HostingEnvironment);
                     module.ConfigureServices(collection, context.Configuration, context.HostingEnvironment);
                 }
             );
