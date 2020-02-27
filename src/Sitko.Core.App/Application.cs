@@ -16,11 +16,11 @@ namespace Sitko.Core.App
 {
     public class Application<T> : IAsyncDisposable where T : Application<T>
     {
-        private readonly string[] _args;
         protected readonly List<IApplicationModule> Modules = new List<IApplicationModule>();
         protected readonly ApplicationStore ApplicationStore = new ApplicationStore();
         private IHost? _appHost;
-        private IConfiguration _configuration;
+        public readonly IConfiguration Configuration;
+        public readonly IHostEnvironment Environment;
 
         private readonly IHostBuilder _hostBuilder;
         private readonly LoggerConfiguration _loggerConfiguration = new LoggerConfiguration();
@@ -37,16 +37,19 @@ namespace Sitko.Core.App
         public Application(string[] args)
         {
             Console.OutputEncoding = Encoding.UTF8;
-            _args = args;
             _hostBuilder = Host.CreateDefaultBuilder(args);
             _hostBuilder.ConfigureServices((context, services) =>
             {
                 services.AddSingleton(typeof(Application<T>), this);
                 services.AddSingleton(typeof(T), this);
                 services.AddHostedService<ApplicationLifetimeService<T>>();
-                
+
                 LoggingFacility ??= context.HostingEnvironment.ApplicationName;
             });
+
+            using var tmpHost = Host.CreateDefaultBuilder(args).Build();
+            Configuration = tmpHost.Services.GetService<IConfiguration>();
+            Environment = tmpHost.Services.GetService<IHostEnvironment>();
         }
 
         public T ConfigureServices(Action<IServiceCollection> configure)
@@ -59,16 +62,6 @@ namespace Sitko.Core.App
         {
             _hostBuilder.ConfigureServices(configure);
             return (T)this;
-        }
-
-        protected IConfiguration GetConfiguration()
-        {
-            if (_configuration == null)
-            {
-                _configuration = Host.CreateDefaultBuilder(_args).Build().Services.GetService<IConfiguration>();
-            }
-
-            return _configuration;
         }
 
         public async Task RunAsync()
@@ -174,10 +167,8 @@ namespace Sitko.Core.App
 
         public async Task InitAsync()
         {
-            ConfigureLogging();
-
             var host = GetAppHost();
-
+            ConfigureLogging();
             Log.Logger = _loggerConfiguration.CreateLogger();
 
             using var scope = host.Services.CreateScope();
