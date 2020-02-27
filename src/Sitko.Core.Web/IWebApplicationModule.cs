@@ -15,6 +15,11 @@ namespace Sitko.Core.Web
         {
         }
 
+        void ConfigureAppBuilder(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
+        {
+        }
+        
         void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {

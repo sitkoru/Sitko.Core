@@ -148,6 +148,8 @@ namespace Sitko.Core.Web
 
         public void Configure(IApplicationBuilder appBuilder, WebApplication<T> application)
         {
+            ConfigureHook(appBuilder);
+            application.AppBuilderHook(Configuration, Environment, appBuilder);
             if (Environment.IsDevelopment())
             {
                 appBuilder.UseDeveloperExceptionPage();
@@ -209,6 +211,8 @@ namespace Sitko.Core.Web
                 ConfigureEndpoints(appBuilder, endpoints);
             });
         }
+
+        protected virtual void ConfigureHook(IApplicationBuilder appBuilder) { }
 
         protected virtual void UseStaticFiles(IApplicationBuilder appBuilder)
         {
