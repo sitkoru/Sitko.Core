@@ -98,6 +98,15 @@ namespace Sitko.Core.Web
             }
         }
 
+        public virtual void AppBuilderHook(IConfiguration configuration, IHostEnvironment environment,
+            IApplicationBuilder appBuilder)
+        {
+            foreach (var webModule in GetWebModules())
+            {
+                webModule.ConfigureAppBuilder(configuration, environment, appBuilder);
+            }
+        }
+        
         public virtual void BeforeRoutingHook(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
