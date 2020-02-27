@@ -45,9 +45,15 @@ namespace Sitko.Core.App
                 services.AddHostedService<ApplicationLifetimeService<T>>();
 
                 LoggingFacility ??= context.HostingEnvironment.ApplicationName;
+                services.AddSingleton(_logLevelSwitcher);
+                services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
             });
 
-            using var tmpHost = Host.CreateDefaultBuilder(args).Build();
+            var tmpHost = Host.CreateDefaultBuilder(args).ConfigureHostConfiguration(builder =>
+            {
+                builder.AddEnvironmentVariables("ASPNETCORE_");
+            }).Build();
+
             Configuration = tmpHost.Services.GetService<IConfiguration>();
             Environment = tmpHost.Services.GetService<IHostEnvironment>();
         }
@@ -159,9 +165,6 @@ namespace Sitko.Core.App
                     _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LogEventLevel.Warning;
                     _loggerConfiguration.MinimumLevel.Override("Microsoft", _logLevelSwitcher.MsMessagesSwitch);
                 }
-
-                services.AddSingleton(_logLevelSwitcher);
-                services.AddSingleton(_ => (ILoggerFactory)new SerilogLoggerFactory());
             });
         }
 
