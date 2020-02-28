@@ -36,21 +36,11 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
             {
                 _logger.LogInformation("Method {Method} is not supported", context.Request.Method);
             }
-            else if (!ValidatePath(context, out var subPath))
-            {
-                _logger.LogInformation("Path mismatch");
-            }
-            else if (!LookupContentType(_contentTypeProvider, subPath, out var contentType))
-            {
-                _logger.LogInformation("File type is not supported");
-            }
-            else
-            {
-                // If we get here, we can try to serve the file
-                return TryServeStaticFile(context, contentType, subPath);
-            }
 
-            return _next(context);
+            var subPath = context.Request.Path;
+            _contentTypeProvider.TryGetContentType(subPath.Value, out var contentType);
+
+            return TryServeStaticFile(context, contentType, subPath);
         }
 
         private bool ValidatePath(HttpContext context, out string path)
@@ -65,18 +55,6 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
         private static bool ValidateMethod(HttpContext context)
         {
             return context.Request.Method == "GET" || context.Request.Method == "HEAD";
-        }
-
-
-        private static bool LookupContentType(IContentTypeProvider contentTypeProvider,
-            PathString subPath, out string contentType)
-        {
-            if (contentTypeProvider.TryGetContentType(subPath.Value, out contentType))
-            {
-                return true;
-            }
-
-            return false;
         }
 
         private async Task TryServeStaticFile(HttpContext context, string contentType, PathString subPath)
