@@ -33,7 +33,7 @@ namespace Sitko.Core.ElasticStack
                         AutoRegisterTemplate = true,
                         AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv7,
                         IndexFormat = Config.LoggingIndexFormat,
-                        MinimumLogEventLevel = logLevelSwitcher.Switch.MinimumLevel
+                        LevelSwitch = logLevelSwitcher.Switch
                     }).Enrich.WithProperty("ApplicationName", facility);
             }
 
