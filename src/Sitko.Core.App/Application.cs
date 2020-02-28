@@ -29,7 +29,7 @@ namespace Sitko.Core.App
         protected virtual LogEventLevel LoggingProductionLevel { get; } = LogEventLevel.Information;
         protected virtual LogEventLevel LoggingDevelopmentLevel { get; } = LogEventLevel.Debug;
         protected bool LoggingEnableConsole { get; set; } = false;
-        protected virtual string? LoggingFacility { get; set; }
+        protected string LoggingFacility { get; set; }
         protected virtual Action<LoggerConfiguration, LogLevelSwitcher>? LoggingConfigure { get; set; }
 
         private readonly Dictionary<string, LogEventLevel> _logEventLevels = new Dictionary<string, LogEventLevel>();
@@ -37,18 +37,7 @@ namespace Sitko.Core.App
         public Application(string[] args)
         {
             Console.OutputEncoding = Encoding.UTF8;
-            _hostBuilder = Host.CreateDefaultBuilder(args);
-            _hostBuilder.ConfigureServices((context, services) =>
-            {
-                services.AddSingleton(typeof(Application<T>), this);
-                services.AddSingleton(typeof(T), this);
-                services.AddHostedService<ApplicationLifetimeService<T>>();
-
-                LoggingFacility ??= context.HostingEnvironment.ApplicationName;
-                services.AddSingleton(_logLevelSwitcher);
-                services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
-            });
-
+            
             var tmpHost = Host.CreateDefaultBuilder(args).ConfigureHostConfiguration(builder =>
             {
                 builder.AddEnvironmentVariables("ASPNETCORE_");
@@ -56,6 +45,18 @@ namespace Sitko.Core.App
 
             Configuration = tmpHost.Services.GetService<IConfiguration>();
             Environment = tmpHost.Services.GetService<IHostEnvironment>();
+            LoggingFacility ??= Environment.ApplicationName;
+            LoggingEnableConsole = Environment.IsDevelopment();
+            
+            _hostBuilder = Host.CreateDefaultBuilder(args);
+            _hostBuilder.ConfigureServices((context, services) =>
+            {
+                services.AddSingleton(typeof(Application<T>), this);
+                services.AddSingleton(typeof(T), this);
+                services.AddHostedService<ApplicationLifetimeService<T>>();
+                services.AddSingleton(_logLevelSwitcher);
+                services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
+            });
         }
 
         public T ConfigureServices(Action<IServiceCollection> configure)
