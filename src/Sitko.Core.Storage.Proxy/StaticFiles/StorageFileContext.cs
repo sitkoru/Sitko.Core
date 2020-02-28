@@ -260,7 +260,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
                 _response.ContentLength = _length;
             }
 
-            _options.OnPrepareResponse(new StorageFileResponseContext(_context, _record));
+            _options?.OnPrepareResponse(new StorageFileResponseContext(_context, _record));
         }
 
         public PreconditionState GetPreconditionState()
