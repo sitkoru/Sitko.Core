@@ -388,7 +388,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (sendFile != null && !string.IsNullOrEmpty(_record.PhysicalPath))
             {
-                await sendFile.SendFileAsync(_record.PhysicalPath, start, _length, CancellationToken.None);
+                await sendFile.SendFileAsync(_record.PhysicalPath, start, length, CancellationToken.None);
                 return;
             }
 
