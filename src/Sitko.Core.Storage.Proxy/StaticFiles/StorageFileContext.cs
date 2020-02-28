@@ -395,10 +395,22 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
             try
             {
                 await using var readStream = _record.OpenRead();
-                readStream.Seek(start, SeekOrigin.Begin);
-                _logger.LogDebug("Copying file range {Range} for file {File}",
-                    _response.Headers[HeaderNames.ContentRange], SubPath);
-                await StreamCopyOperation.CopyToAsync(readStream, _response.Body, length, _context.RequestAborted);
+                if (readStream == null)
+                {
+                    throw new Exception("Empty strem");
+                }
+
+                if (!readStream.CanSeek)
+                {
+                    await using var memoryStream = new MemoryStream();
+                    await StreamCopyOperation.CopyToAsync(readStream, memoryStream, readStream.Length,
+                        _context.RequestAborted);
+                    await SendRangeAsync(memoryStream, start, length);
+                }
+                else
+                {
+                    await SendRangeAsync(readStream, start, length);
+                }
             }
             catch (OperationCanceledException ex)
             {
@@ -407,6 +419,14 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
                 // However, if it was cancelled for any other reason we need to prevent empty responses.
                 _context.Abort();
             }
+        }
+
+        private Task SendRangeAsync(Stream stream, long start, long length)
+        {
+            stream.Seek(start, SeekOrigin.Begin);
+            _logger.LogDebug("Copying file range {Range} for file {File}",
+                _response.Headers[HeaderNames.ContentRange], SubPath);
+            return StreamCopyOperation.CopyToAsync(stream, _response.Body, length, _context.RequestAborted);
         }
 
         // Note: This assumes ranges have been normalized to absolute byte offsets.
