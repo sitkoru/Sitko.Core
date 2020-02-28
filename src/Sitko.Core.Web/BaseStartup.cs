@@ -74,6 +74,16 @@ namespace Sitko.Core.Web
                 });
             }
 
+            if (Environment.IsProduction())
+            {
+                services.Configure<ForwardedHeadersOptions>(options =>
+                {
+                    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                    options.KnownProxies.Clear();
+                    options.KnownNetworks.Clear();
+                });
+            }
+
             WebApplication<T>.GetInstance().ConfigureStartupServices(services, Configuration, Environment);
             ConfigureAppServices(services);
         }
@@ -106,7 +116,7 @@ namespace Sitko.Core.Web
             {
                 mvcBuilder.AddRazorRuntimeCompilation();
             }
-            
+
             return mvcBuilder;
         }
 
@@ -148,33 +158,31 @@ namespace Sitko.Core.Web
 
         public void Configure(IApplicationBuilder appBuilder, WebApplication<T> application)
         {
-            ConfigureHook(appBuilder);
-            application.AppBuilderHook(Configuration, Environment, appBuilder);
-            if (Environment.IsDevelopment())
-            {
-                appBuilder.UseDeveloperExceptionPage();
-            }
-
-            appBuilder.UseMiddleware<RequestIdMiddleware>();
-            if (Environment.IsProduction())
-            {
-                var options = new ForwardedHeadersOptions
-                {
-                    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-                };
-                options.KnownProxies.Clear();
-                options.KnownNetworks.Clear();
-                options.RequireHeaderSymmetry = false;
-                appBuilder.UseForwardedHeaders(options);
-                appBuilder.UseExceptionHandler("/Error");
-            }
-
             if (!string.IsNullOrEmpty(_defaultCulture))
             {
                 var cultureInfo = new CultureInfo(_defaultCulture);
 
                 CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
                 CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+            }
+
+            if (Environment.IsProduction())
+            {
+                appBuilder.UseForwardedHeaders();
+            }
+
+            appBuilder.UseMiddleware<RequestIdMiddleware>();
+
+            ConfigureHook(appBuilder);
+            application.AppBuilderHook(Configuration, Environment, appBuilder);
+
+            if (Environment.IsDevelopment())
+            {
+                appBuilder.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                appBuilder.UseExceptionHandler("/Error");
             }
 
             if (EnableSameSiteCookiePolicy)
