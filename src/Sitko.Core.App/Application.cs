@@ -26,18 +26,18 @@ namespace Sitko.Core.App
         private readonly LoggerConfiguration _loggerConfiguration = new LoggerConfiguration();
         private readonly LogLevelSwitcher _logLevelSwitcher = new LogLevelSwitcher();
 
-        protected virtual LogEventLevel LoggingProductionLevel { get; } = LogEventLevel.Information;
-        protected virtual LogEventLevel LoggingDevelopmentLevel { get; } = LogEventLevel.Debug;
+        protected LogEventLevel LoggingProductionLevel { get; set; } = LogEventLevel.Information;
+        protected LogEventLevel LoggingDevelopmentLevel { get; set; } = LogEventLevel.Debug;
         protected bool LoggingEnableConsole { get; set; } = false;
         protected string LoggingFacility { get; set; }
-        protected virtual Action<LoggerConfiguration, LogLevelSwitcher>? LoggingConfigure { get; set; }
+        protected Action<LoggerConfiguration, LogLevelSwitcher>? LoggingConfigure { get; set; }
 
         private readonly Dictionary<string, LogEventLevel> _logEventLevels = new Dictionary<string, LogEventLevel>();
 
         public Application(string[] args)
         {
             Console.OutputEncoding = Encoding.UTF8;
-            
+
             var tmpHost = Host.CreateDefaultBuilder(args).ConfigureHostConfiguration(builder =>
             {
                 builder.AddEnvironmentVariables("ASPNETCORE_");
@@ -47,7 +47,23 @@ namespace Sitko.Core.App
             Environment = tmpHost.Services.GetService<IHostEnvironment>();
             LoggingFacility ??= Environment.ApplicationName;
             LoggingEnableConsole = Environment.IsDevelopment();
-            
+
+            _loggerConfiguration.MinimumLevel.ControlledBy(_logLevelSwitcher.Switch);
+            _loggerConfiguration.Enrich.FromLogContext()
+                .Enrich.WithProperty("App", LoggingFacility);
+
+            if (Environment.IsDevelopment())
+            {
+                _logLevelSwitcher.Switch.MinimumLevel = LoggingDevelopmentLevel;
+                _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LoggingDevelopmentLevel;
+            }
+            else
+            {
+                _logLevelSwitcher.Switch.MinimumLevel = LoggingProductionLevel;
+                _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LogEventLevel.Warning;
+                _loggerConfiguration.MinimumLevel.Override("Microsoft", _logLevelSwitcher.MsMessagesSwitch);
+            }
+
             _hostBuilder = Host.CreateDefaultBuilder(args);
             _hostBuilder.ConfigureServices((context, services) =>
             {
@@ -143,30 +159,11 @@ namespace Sitko.Core.App
                         levelSwitch: _logLevelSwitcher.Switch);
             }
 
-            _loggerConfiguration.MinimumLevel.ControlledBy(_logLevelSwitcher.Switch);
             LoggingConfigure?.Invoke(_loggerConfiguration, _logLevelSwitcher);
             foreach (var entry in _logEventLevels)
             {
                 _loggerConfiguration.MinimumLevel.Override(entry.Key, entry.Value);
             }
-
-            ConfigureServices((context, services) =>
-            {
-                _loggerConfiguration.Enrich.FromLogContext()
-                    .Enrich.WithProperty("App", LoggingFacility);
-
-                if (context.HostingEnvironment.IsDevelopment())
-                {
-                    _logLevelSwitcher.Switch.MinimumLevel = LoggingDevelopmentLevel;
-                    _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LoggingDevelopmentLevel;
-                }
-                else
-                {
-                    _logLevelSwitcher.Switch.MinimumLevel = LoggingProductionLevel;
-                    _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LogEventLevel.Warning;
-                    _loggerConfiguration.MinimumLevel.Override("Microsoft", _logLevelSwitcher.MsMessagesSwitch);
-                }
-            });
         }
 
         public async Task InitAsync()
