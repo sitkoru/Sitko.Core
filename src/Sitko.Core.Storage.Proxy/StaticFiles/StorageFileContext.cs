@@ -234,7 +234,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
             IsRangeRequest = isRangeRequest;
         }
 
-        public void ApplyResponseHeaders(int statusCode)
+        public void ApplyRespStorageFileContextonseHeaders(int statusCode)
         {
             _response.StatusCode = statusCode;
             if (statusCode < 400)
@@ -403,8 +403,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
                 if (!readStream.CanSeek)
                 {
                     await using var memoryStream = new MemoryStream();
-                    await StreamCopyOperation.CopyToAsync(readStream, memoryStream, readStream.Length,
-                        _context.RequestAborted);
+                    await StreamCopyOperation.CopyToAsync(readStream, memoryStream, _length, _context.RequestAborted);
                     await SendRangeAsync(memoryStream, start, length);
                 }
                 else
