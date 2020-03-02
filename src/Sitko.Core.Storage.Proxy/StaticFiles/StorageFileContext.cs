@@ -234,7 +234,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
             IsRangeRequest = isRangeRequest;
         }
 
-        public void ApplyRespStorageFileContextonseHeaders(int statusCode)
+        public void ApplyResponseHeaders(int statusCode)
         {
             _response.StatusCode = statusCode;
             if (statusCode < 400)
