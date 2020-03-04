@@ -11,7 +11,7 @@ using Sitko.Core.Web;
 
 namespace Sitko.Core.Grpc.Server
 {
-    public class GrpcServiceModule<TService> : BaseApplicationModule<GrpcServerOptions>, IWebApplicationModule
+    public class GrpcServiceModule<TService> : BaseApplicationModule, IWebApplicationModule
         where TService : class
     {
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
