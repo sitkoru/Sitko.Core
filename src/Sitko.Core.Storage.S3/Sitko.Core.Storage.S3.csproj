@@ -5,7 +5,7 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.3.110.26" />
+    <PackageReference Include="AWSSDK.S3" Version="3.3.110.30" />
     <PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="3.0.0" />
   </ItemGroup>
   <ItemGroup>
