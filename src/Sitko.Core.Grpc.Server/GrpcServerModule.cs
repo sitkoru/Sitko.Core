@@ -10,7 +10,6 @@ using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.App.Helpers;
 using Sitko.Core.Consul;
-using Sitko.Core.Metrics;
 using Sitko.Core.Web;
 
 namespace Sitko.Core.Grpc.Server
@@ -32,11 +31,6 @@ namespace Sitko.Core.Grpc.Server
             IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
         {
             endpoints.MapGrpcService<HealthService>();
-        }
-
-        public override List<Type> GetRequiredModules()
-        {
-            return new List<Type> {typeof(ConsulModule), typeof(MetricsModule)};
         }
 
         public void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)
