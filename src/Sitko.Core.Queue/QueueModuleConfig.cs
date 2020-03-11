@@ -16,13 +16,7 @@ namespace Sitko.Core.Queue
         public HashSet<QueueProcessorEntry> ProcessorEntries { get; } = new HashSet<QueueProcessorEntry>();
         public Dictionary<Type, IQueueMessageOptions> Options { get; } = new Dictionary<Type, IQueueMessageOptions>();
 
-        public bool MetricsEnabled { get; private set; }
         public bool HealthChecksEnabled { get; private set; }
-
-        public void EnableMetrics()
-        {
-            MetricsEnabled = true;
-        }
 
         public void EnableHealthChecks()
         {

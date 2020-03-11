@@ -5,12 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Consul;
 using Grpc.Core;
-using Grpc.Core.Interceptors;
 using Grpc.Net.Client;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Nito.AsyncEx;
-using Sitko.Core.Metrics;
 
 namespace Sitko.Core.Grpc.Client
 {
@@ -25,17 +22,13 @@ namespace Sitko.Core.Grpc.Client
         private readonly string _serviceName = typeof(T).BaseType?.GenericTypeArguments?.First().DeclaringType?.Name;
         private readonly Task _refreshTask;
         private GrpcChannel _channel;
-        private readonly ServiceMetricsInterceptor _interceptor;
 
         public GrpcClientProvider(
             ILogger<GrpcClientProvider<T>> logger,
-            IConsulClient consulClient,
-            IHostEnvironment hostEnvironment,
-            IMetricsCollector metricsCollector = null)
+            IConsulClient consulClient)
         {
             _logger = logger;
             _consulClient = consulClient;
-            _interceptor = new ServiceMetricsInterceptor(metricsCollector, hostEnvironment);
             _refreshTask = StartRefreshTaskAsync();
         }
 
@@ -110,7 +103,7 @@ namespace Sitko.Core.Grpc.Client
                 return;
             }
 
-            _client.CurrentInstance = (T)Activator.CreateInstance(typeof(T), _channel.Intercept(_interceptor));
+            _client.CurrentInstance = Activator.CreateInstance<T>();
             _client.IsReady = true;
         }
 

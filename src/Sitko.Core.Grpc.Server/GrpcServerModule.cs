@@ -23,8 +23,7 @@ namespace Sitko.Core.Grpc.Server
             base.ConfigureServices(services, configuration, environment);
             services.AddGrpc(options =>
             {
-                options.Interceptors.Add<ServiceMetricsInterceptor>();
-                options.EnableDetailedErrors = environment.IsDevelopment();
+               options.EnableDetailedErrors = environment.IsDevelopment();
             });
             services.AddSingleton<GrpcServicesRegistrar>();
         }

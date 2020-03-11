@@ -1,10 +1,7 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Sitko.Core.Metrics;
-using Sitko.Core.Queue.Middleware;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -69,42 +66,42 @@ namespace Sitko.Core.Queue.Tests
             Assert.Equal(2, mws.Count());
         }
 
-        [Fact]
-        public async Task Metrics()
-        {
-            var scope = GetScope<MetricsMiddlewareQueueTestScope>();
-
-            var mw = scope.Get<MetricsMiddleware>();
-
-            Assert.NotNull(mw);
-            Assert.Equal(0, mw.SentCount);
-            Assert.Equal(0, mw.ReceivedCount);
-            Assert.Equal(0, mw.AvgProcessTime);
-            Assert.Equal(0, mw.AvgLatency);
-
-            var queue = scope.Get<IQueue>();
-            var subResult = await queue.SubscribeAsync<TestMessage>(async (message, context) =>
-            {
-                await Task.Delay(TimeSpan.FromSeconds(1));
-                return true;
-            });
-            Assert.True(subResult.IsSuccess);
-
-            var msg = new TestMessage();
-            var result = await queue.PublishAsync(msg,
-                new QueueMessageContext
-                {
-                    RootMessageId = Guid.NewGuid(), RootMessageDate = DateTimeOffset.UtcNow.AddMinutes(-1)
-                });
-            Assert.True(result.IsSuccess);
-
-            await Task.Delay(TimeSpan.FromSeconds(1));
-
-            Assert.Equal(1, mw.SentCount);
-            Assert.Equal(1, mw.ReceivedCount);
-            Assert.NotEqual(0, mw.AvgProcessTime);
-            Assert.NotEqual(0, mw.AvgLatency);
-        }
+        // [Fact]
+        // public async Task Metrics()
+        // {
+        //     var scope = GetScope<MetricsMiddlewareQueueTestScope>();
+        //
+        //     var mw = scope.Get<MetricsMiddleware>();
+        //
+        //     Assert.NotNull(mw);
+        //     Assert.Equal(0, mw.SentCount);
+        //     Assert.Equal(0, mw.ReceivedCount);
+        //     Assert.Equal(0, mw.AvgProcessTime);
+        //     Assert.Equal(0, mw.AvgLatency);
+        //
+        //     var queue = scope.Get<IQueue>();
+        //     var subResult = await queue.SubscribeAsync<TestMessage>(async (message, context) =>
+        //     {
+        //         await Task.Delay(TimeSpan.FromSeconds(1));
+        //         return true;
+        //     });
+        //     Assert.True(subResult.IsSuccess);
+        //
+        //     var msg = new TestMessage();
+        //     var result = await queue.PublishAsync(msg,
+        //         new QueueMessageContext
+        //         {
+        //             RootMessageId = Guid.NewGuid(), RootMessageDate = DateTimeOffset.UtcNow.AddMinutes(-1)
+        //         });
+        //     Assert.True(result.IsSuccess);
+        //
+        //     await Task.Delay(TimeSpan.FromSeconds(1));
+        //
+        //     Assert.Equal(1, mw.SentCount);
+        //     Assert.Equal(1, mw.ReceivedCount);
+        //     Assert.NotEqual(0, mw.AvgProcessTime);
+        //     Assert.NotEqual(0, mw.AvgLatency);
+        // }
     }
 
     public class MiddlewareQueueTestScope : BaseTestQueueTestScope
@@ -114,21 +111,6 @@ namespace Sitko.Core.Queue.Tests
         {
             base.ConfigureQueue(config, configuration, environment, name);
             config.RegisterMiddleware<CountMiddleware>();
-        }
-    }
-
-    public class MetricsMiddlewareQueueTestScope : BaseTestQueueTestScope
-    {
-        protected override TestApplication ConfigureApplication(TestApplication application, string name)
-        {
-            return base.ConfigureApplication(application, name).AddModule<MetricsModule>();
-        }
-
-        protected override void ConfigureQueue(TestQueueConfig config, IConfiguration configuration,
-            IHostEnvironment environment, string name)
-        {
-            base.ConfigureQueue(config, configuration, environment, name);
-            config.EnableMetrics();
         }
     }
 
