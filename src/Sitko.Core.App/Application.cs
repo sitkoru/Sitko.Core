@@ -17,7 +17,7 @@ namespace Sitko.Core.App
     public abstract class Application : IAsyncDisposable
     {
         protected readonly List<IApplicationModule> Modules = new List<IApplicationModule>();
-        protected readonly List<IModuleRegistration> _moduleRegistrations = new List<IModuleRegistration>();
+        protected readonly List<IApplicationModuleRegistration> _moduleRegistrations = new List<IApplicationModuleRegistration>();
         private IHost? _appHost;
         public readonly IConfiguration Configuration;
         public readonly IHostEnvironment Environment;
@@ -288,7 +288,7 @@ namespace Sitko.Core.App
             Func<IConfiguration, IHostEnvironment, TModuleConfig> configure)
             where TModule : IApplicationModule<TModuleConfig> where TModuleConfig : class
         {
-            _moduleRegistrations.Add(new ModuleRegistration<TModule, TModuleConfig>(configure));
+            _moduleRegistrations.Add(new ApplicationModuleRegistration<TModule, TModuleConfig>(configure));
             return (T)this;
         }
 
@@ -304,32 +304,6 @@ namespace Sitko.Core.App
         {
             _hostBuilder.ConfigureAppConfiguration(action);
             return (T)this;
-        }
-    }
-
-    public interface IModuleRegistration
-    {
-        IApplicationModule CreateModule(IHostEnvironment environment, IConfiguration configuration,
-            Application application);
-    }
-
-    public class ModuleRegistration<TModule, TModuleConfig> : IModuleRegistration
-        where TModule : IApplicationModule<TModuleConfig>
-        where TModuleConfig : class
-    {
-        private readonly Func<IConfiguration, IHostEnvironment, TModuleConfig> _configure;
-
-        public ModuleRegistration(Func<IConfiguration, IHostEnvironment, TModuleConfig> configure)
-        {
-            _configure = configure;
-        }
-
-        public IApplicationModule CreateModule(IHostEnvironment environment, IConfiguration configuration,
-            Application application)
-        {
-            var config = _configure(configuration, environment);
-            var module = (TModule)Activator.CreateInstance(typeof(TModule), config, application);
-            return module;
         }
     }
 }
