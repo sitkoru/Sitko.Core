@@ -119,7 +119,18 @@ namespace Sitko.Core.App
 
         protected IHost GetAppHost()
         {
-            return _appHost ??= _hostBuilder.Build();
+            if (_appHost == null)
+            {
+                foreach (var module in _moduleRegistrations.Select(registration => registration.CreateModule(
+                    Environment, Configuration, this)))
+                {
+                    RegisterModule(module);
+                }
+
+                _appHost = _hostBuilder.Build();
+            }
+
+            return _appHost;
         }
 
         public IHostBuilder GetHostBuilder()
@@ -159,16 +170,6 @@ namespace Sitko.Core.App
 
         public async Task InitAsync()
         {
-            foreach (var module in _moduleRegistrations.Select(registration => registration.CreateModule(
-                Environment, Configuration, this)))
-            {
-                RegisterModule(module);
-            }
-
-            _hostBuilder.ConfigureServices((context, services) =>
-            {
-            });
-
             var host = GetAppHost();
             ConfigureLogging();
             Log.Logger = _loggerConfiguration.CreateLogger();
