@@ -25,10 +25,10 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
         private readonly StorageRecord _record;
         private readonly string _contentType;
 
-        private EntityTagHeaderValue _etag;
+        private EntityTagHeaderValue? _etag;
         private RequestHeaders? _requestHeaders;
         private ResponseHeaders? _responseHeaders;
-        private RangeItemHeaderValue _range;
+        private RangeItemHeaderValue? _range;
 
         private long _length;
         private readonly PathString _subPath;
@@ -432,9 +432,9 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
         private ContentRangeHeaderValue ComputeContentRange(RangeItemHeaderValue range, out long start, out long length)
         {
             // ReSharper disable once PossibleInvalidOperationException
-            start = range.From.Value;
+            start = range!.From!.Value;
             // ReSharper disable once PossibleInvalidOperationException
-            long end = range.To.Value;
+            long end = range!.To!.Value;
             length = end - start + 1;
             return new ContentRangeHeaderValue(start, end, _length);
         }

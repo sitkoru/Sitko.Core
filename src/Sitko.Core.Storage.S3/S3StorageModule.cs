@@ -4,11 +4,16 @@ using Amazon.S3;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.S3
 {
     public class S3StorageModule<T> : StorageModule<S3Storage<T>, T> where T : StorageOptions, IS3StorageOptions
     {
+        public S3StorageModule(T config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

@@ -28,7 +28,7 @@ namespace Sitko.Core.HangFire.Components
         private DateTime ScheduledAt { get; }
         private string Queue { get; }
         public string Name => StateName;
-        public string Reason { get; set; }
+        public string? Reason { get; set; }
         public bool IsFinal => false;
         public bool IgnoreJobLoadException => false;
 

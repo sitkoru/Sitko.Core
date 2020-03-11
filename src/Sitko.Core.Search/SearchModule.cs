@@ -11,6 +11,10 @@ namespace Sitko.Core.Search
     public abstract class SearchModule<TConfig> : BaseApplicationModule<TConfig>
         where TConfig : SearchModuleConfig
     {
+        protected SearchModule(TConfig config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

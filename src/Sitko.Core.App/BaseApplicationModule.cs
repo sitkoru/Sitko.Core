@@ -11,6 +11,10 @@ namespace Sitko.Core.App
 {
     public abstract class BaseApplicationModule : BaseApplicationModule<BaseApplicationModuleConfig>
     {
+        protected BaseApplicationModule(BaseApplicationModuleConfig config, Application application) : base(
+            config, application)
+        {
+        }
     }
 
     public class BaseApplicationModuleConfig
@@ -19,13 +23,20 @@ namespace Sitko.Core.App
 
     public abstract class BaseApplicationModule<TConfig> : IApplicationModule<TConfig> where TConfig : class
     {
-        protected TConfig Config { get; private set; }
+        protected TConfig Config { get; }
+        protected Application Application { get; }
 
-        public ApplicationStore ApplicationStore { get; set; }
+        protected BaseApplicationModule(TConfig config, Application application)
+        {
+            Config = config;
+            Application = application;
+        }
+
 
         public virtual void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {
+            services.AddSingleton(Config);
         }
 
         public virtual void ConfigureLogging(LoggerConfiguration loggerConfiguration,
@@ -68,14 +79,7 @@ namespace Sitko.Core.App
         {
         }
 
-        public virtual void Configure(Func<IConfiguration, IHostEnvironment, TConfig> configure,
-            IConfiguration configuration, IHostEnvironment environment)
-        {
-            Config = configure(configuration, environment);
-            CheckConfig();
-        }
-
-        public TConfig GetConfig()
+        public TConfig? GetConfig()
         {
             return Config;
         }

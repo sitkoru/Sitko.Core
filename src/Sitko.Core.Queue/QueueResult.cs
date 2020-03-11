@@ -5,8 +5,8 @@ namespace Sitko.Core.Queue
     public abstract class QueueResult
     {
         public bool IsSuccess { get; protected set; } = true;
-        public string ErrorMessage { get; protected set; }
-        public Exception Exception { get; protected set; }
+        public string? ErrorMessage { get; protected set; }
+        public Exception? Exception { get; protected set; }
 
         public void SetException(Exception ex)
         {
@@ -23,7 +23,7 @@ namespace Sitko.Core.Queue
 
         public string GetErrorText()
         {
-            return Exception?.ToString() ?? ErrorMessage;
+            return Exception?.ToString() ?? (ErrorMessage ?? string.Empty);
         }
     }
 

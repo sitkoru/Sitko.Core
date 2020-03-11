@@ -6,7 +6,7 @@ namespace Sitko.Core.Queue
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public DateTimeOffset Date { get; set; } = DateTimeOffset.UtcNow;
-        public string MessageType { get; set; }
+        public string? MessageType { get; set; }
         public Guid? ParentMessageId { get; set; }
         public Guid? RootMessageId { get; set; }
         public DateTimeOffset? RootMessageDate { get; set; }

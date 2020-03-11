@@ -4,6 +4,7 @@
 using System;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
+// ReSharper disable All
 
 namespace Sitko.Core.Caching
 {

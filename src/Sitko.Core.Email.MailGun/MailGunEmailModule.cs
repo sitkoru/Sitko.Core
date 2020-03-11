@@ -1,11 +1,16 @@
 using System;
 using FluentEmail.Mailgun;
 using Microsoft.Extensions.DependencyInjection;
+using Sitko.Core.App;
 
 namespace Sitko.Core.Email.MailGun
 {
     public class MailGunEmailModule : FluentEmailModule<MailGunEmailModuleConfig>
     {
+        public MailGunEmailModule(MailGunEmailModuleConfig config, Application application) : base(config, application)
+        {
+        }
+
         protected override void ConfigureBuilder(FluentEmailServicesBuilder builder)
         {
             builder.AddMailGunSender(Config.Domain, Config.ApiKey, Config.Region);

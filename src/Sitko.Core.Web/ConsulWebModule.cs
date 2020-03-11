@@ -17,6 +17,10 @@ namespace Sitko.Core.Web
 {
     public class ConsulWebModule : BaseApplicationModule<ConsulWebModuleConfig>
     {
+        public ConsulWebModule(ConsulWebModuleConfig config, Application application) : base(config, application)
+        {
+        }
+
         public override List<Type> GetRequiredModules()
         {
             return new List<Type> {typeof(ConsulModule)};
@@ -49,7 +53,7 @@ namespace Sitko.Core.Web
             }
             else
             {
-                var grpcServer = ApplicationStore.Get<bool>("grpcServer");
+                var grpcServer = Application.Get<bool>("grpcServer");
                 var addressesFeature = server.Features.Get<IServerAddressesFeature>();
                 var address = grpcServer
                     ? addressesFeature.Addresses.Skip(1).FirstOrDefault(a => !a.StartsWith("https"))

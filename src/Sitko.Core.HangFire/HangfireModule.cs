@@ -17,6 +17,10 @@ namespace Sitko.Core.HangFire
 {
     public class HangfireModule<T> : BaseApplicationModule<T>, IWebApplicationModule where T : HangfireModuleConfig
     {
+        public HangfireModule(T config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {
@@ -31,7 +35,7 @@ namespace Sitko.Core.HangFire
             {
                 services.AddHealthChecks().AddHangfire(options =>
                 {
-                    Config.ConfigureHealthChecks(options);
+                    Config.ConfigureHealthChecks?.Invoke(options);
                 });
             }
         }

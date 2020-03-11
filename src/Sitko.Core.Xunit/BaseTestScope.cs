@@ -13,7 +13,7 @@ namespace Sitko.Core.Xunit
     public abstract class BaseTestScope : IAsyncDisposable
     {
         protected IServiceProvider? ServiceProvider;
-        private TestApplication _application;
+        private TestApplication? _application;
         private bool _isApplicationStarted;
 
         public void Configure(string name, ITestOutputHelper testOutputHelper)
@@ -65,17 +65,20 @@ namespace Sitko.Core.Xunit
 
         public virtual async ValueTask DisposeAsync()
         {
-            if (_isApplicationStarted)
+            if (_application != null)
             {
-                await _application.StopAsync();
-            }
+                if (_isApplicationStarted)
+                {
+                    await _application.StopAsync();
+                }
 
-            await _application.DisposeAsync();
+                await _application.DisposeAsync();
+            }
         }
 
         public async Task StartApplicationAsync()
         {
-            if (!_isApplicationStarted)
+            if (_application != null && !_isApplicationStarted)
             {
                 await _application.StartAsync();
                 _isApplicationStarted = true;

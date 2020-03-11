@@ -8,6 +8,10 @@ namespace Sitko.Core.Repository
 {
     public abstract class RepositoriesModule<T> : BaseApplicationModule
     {
+        protected RepositoriesModule(BaseApplicationModuleConfig config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

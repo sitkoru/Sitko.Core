@@ -175,6 +175,10 @@ namespace Sitko.Core.Repository
         public virtual async Task<bool> DeleteAsync(TEntityPk id)
         {
             var item = await GetByIdAsync(id);
+            if (item == null)
+            {
+                return false;
+            }
 
             return await DeleteAsync(item);
         }
@@ -282,7 +286,7 @@ namespace Sitko.Core.Repository
         public virtual async Task<TEntity?> GetByIdAsync(TEntityPk id)
         {
             var query = await CreateRepositoryQueryAsync();
-            query.Where(i => i.Id.Equals(id));
+            query.Where(i => i.Id != null && i.Id.Equals(id));
 
             return await DoGetAsync(query);
         }
@@ -291,7 +295,7 @@ namespace Sitko.Core.Repository
             Func<IRepositoryQuery<TEntity>, Task> configureQuery)
         {
             var query = await CreateRepositoryQueryAsync();
-            query.Where(i => i.Id.Equals(id));
+            query.Where(i => i.Id != null && i.Id.Equals(id));
             await query.ConfigureAsync(configureQuery);
 
             return await DoGetAsync(query);
@@ -300,7 +304,7 @@ namespace Sitko.Core.Repository
         public virtual async Task<TEntity?> GetByIdAsync(TEntityPk id, Action<IRepositoryQuery<TEntity>> configureQuery)
         {
             var query = await CreateRepositoryQueryAsync();
-            query.Where(i => i.Id.Equals(id));
+            query.Where(i => i.Id != null && i.Id.Equals(id));
             query.Configure(configureQuery);
 
             return await DoGetAsync(query);
@@ -351,7 +355,7 @@ namespace Sitko.Core.Repository
 
         protected virtual Task<bool> BeforeSaveAsync(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult, bool isNew,
-            PropertyChange[] changes = null)
+            PropertyChange[]? changes = null)
         {
             return FiltersManager.BeforeSaveAsync<TEntity, TEntityPk>(item, validationResult, isNew, changes);
         }
@@ -386,7 +390,7 @@ namespace Sitko.Core.Repository
 
         protected virtual async Task<(bool isValid, IList<ValidationFailure> errors)> ValidateAsync(TEntity entity,
             bool isNew,
-            PropertyChange[] changes = null)
+            PropertyChange[]? changes = null)
         {
             var failures = new List<ValidationFailure>();
             if (Validators != null)

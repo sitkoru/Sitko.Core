@@ -10,6 +10,11 @@ namespace Sitko.Core.Queue.Apm
 {
     public class QueueElasticApmModule : BaseApplicationModule
     {
+        public QueueElasticApmModule(BaseApplicationModuleConfig config, Application application) : base(config,
+            application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

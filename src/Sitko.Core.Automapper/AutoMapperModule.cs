@@ -11,6 +11,10 @@ namespace Sitko.Core.Automapper
 {
     public class AutoMapperModule : BaseApplicationModule<AutoMapperModuleConfig>
     {
+        public AutoMapperModule(AutoMapperModuleConfig config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

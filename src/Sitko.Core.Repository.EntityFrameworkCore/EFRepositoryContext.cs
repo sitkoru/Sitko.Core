@@ -27,7 +27,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             _loggerFactory.CreateLogger<EFRepository<TEntity, TEntityPk, TDbContext>>();
 
         public RepositoryFiltersManager FiltersManager { get; }
-        public List<IValidator<TEntity>> Validators { get; }
-        public List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers { get; }
+        public List<IValidator<TEntity>>? Validators { get; }
+        public List<IAccessChecker<TEntity, TEntityPk>>? AccessCheckers { get; }
     }
 }

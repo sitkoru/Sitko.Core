@@ -24,7 +24,7 @@ namespace Sitko.Core.Storage.Cache
                     Logger.LogInformation("Start deleting obsolete files");
                     Expire();
                     var files = Directory.GetFiles(options.CacheDirectoryPath, "*.*", SearchOption.AllDirectories);
-                    var items = this.Select(i => i as FileStorageCacheRecord).ToList();
+                    var items = this.Select(i => (FileStorageCacheRecord) i).ToList();
                     foreach (string file in files)
                     {
                         if (items.Any(i => i.PhysicalPath == file))
@@ -42,7 +42,7 @@ namespace Sitko.Core.Storage.Cache
 
         protected override void DisposeItem(FileStorageCacheRecord deletedRecord)
         {
-            if (!string.IsNullOrEmpty(deletedRecord.FilePath))
+            if (!string.IsNullOrEmpty(deletedRecord.PhysicalPath))
             {
                 DeleteFile(deletedRecord.PhysicalPath);
             }
@@ -82,7 +82,7 @@ namespace Sitko.Core.Storage.Cache
 
         protected override async Task<FileStorageCacheRecord> GetEntryAsync(StorageItem item, Stream stream)
         {
-            var tempFileName = CreateMD5(item.FilePath);
+            var tempFileName = CreateMD5(item.FilePath!);
             var split = tempFileName.Select((c, index) => new {c, index})
                 .GroupBy(x => x.index / 2)
                 .Select(group => group.Select(elem => elem.c))
@@ -121,7 +121,7 @@ namespace Sitko.Core.Storage.Cache
 
     public class FileStorageCacheOptions : StorageCacheOptions
     {
-        public string CacheDirectoryPath { get; set; }
+        public string? CacheDirectoryPath { get; set; }
         public TimeSpan CleanupInterval { get; set; } = TimeSpan.FromHours(1);
     }
 

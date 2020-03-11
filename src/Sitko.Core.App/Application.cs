@@ -14,27 +14,27 @@ using Sitko.Core.App.Logging;
 
 namespace Sitko.Core.App
 {
-    public class Application<T> : IAsyncDisposable where T : Application<T>
+    public abstract class Application : IAsyncDisposable
     {
         protected readonly List<IApplicationModule> Modules = new List<IApplicationModule>();
-        protected readonly ApplicationStore ApplicationStore = new ApplicationStore();
+        protected readonly List<IModuleRegistration> _moduleRegistrations = new List<IModuleRegistration>();
         private IHost? _appHost;
         public readonly IConfiguration Configuration;
         public readonly IHostEnvironment Environment;
 
-        private readonly IHostBuilder _hostBuilder;
+        protected readonly IHostBuilder _hostBuilder;
         private readonly LoggerConfiguration _loggerConfiguration = new LoggerConfiguration();
         private readonly LogLevelSwitcher _logLevelSwitcher = new LogLevelSwitcher();
 
         protected LogEventLevel LoggingProductionLevel { get; set; } = LogEventLevel.Information;
         protected LogEventLevel LoggingDevelopmentLevel { get; set; } = LogEventLevel.Debug;
-        protected bool LoggingEnableConsole { get; set; } = false;
-        protected string LoggingFacility { get; set; }
+        protected bool LoggingEnableConsole { get; set; }
+        protected string? LoggingFacility { get; set; }
         protected Action<LoggerConfiguration, LogLevelSwitcher>? LoggingConfigure { get; set; }
 
-        private readonly Dictionary<string, LogEventLevel> _logEventLevels = new Dictionary<string, LogEventLevel>();
+        protected readonly Dictionary<string, LogEventLevel> _logEventLevels = new Dictionary<string, LogEventLevel>();
 
-        public Application(string[] args)
+        protected Application(string[] args)
         {
             Console.OutputEncoding = Encoding.UTF8;
 
@@ -65,26 +65,11 @@ namespace Sitko.Core.App
             }
 
             _hostBuilder = Host.CreateDefaultBuilder(args);
-            _hostBuilder.ConfigureServices((context, services) =>
+            _hostBuilder.ConfigureServices(services =>
             {
-                services.AddSingleton(typeof(Application<T>), this);
-                services.AddSingleton(typeof(T), this);
-                services.AddHostedService<ApplicationLifetimeService<T>>();
                 services.AddSingleton(_logLevelSwitcher);
                 services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
             });
-        }
-
-        public T ConfigureServices(Action<IServiceCollection> configure)
-        {
-            _hostBuilder.ConfigureServices(configure);
-            return (T)this;
-        }
-
-        public T ConfigureServices(Action<HostBuilderContext, IServiceCollection> configure)
-        {
-            _hostBuilder.ConfigureServices(configure);
-            return (T)this;
         }
 
         public async Task RunAsync()
@@ -122,7 +107,7 @@ namespace Sitko.Core.App
             }
             catch (Exception ex)
             {
-                var logger = serviceProvider.GetService<ILogger<Application<T>>>();
+                var logger = serviceProvider.GetService<ILogger<Application>>();
                 logger.LogError(ex, ex.ToString());
             }
         }
@@ -140,12 +125,6 @@ namespace Sitko.Core.App
         public IHostBuilder GetHostBuilder()
         {
             return _hostBuilder;
-        }
-
-        public T ConfigureLogLevel(string source, LogEventLevel level)
-        {
-            _logEventLevels.Add(source, level);
-            return (T)this;
         }
 
         protected virtual void ConfigureLogging()
@@ -166,8 +145,30 @@ namespace Sitko.Core.App
             }
         }
 
+        protected virtual void RegisterModule(IApplicationModule module)
+        {
+            Modules.Add(module);
+            _hostBuilder.ConfigureServices((context, services) =>
+            {
+                module.ConfigureLogging(_loggerConfiguration, _logLevelSwitcher,
+                    LoggingFacility ?? Environment.ApplicationName,
+                    context.Configuration, context.HostingEnvironment);
+                module.ConfigureServices(services, context.Configuration, context.HostingEnvironment);
+            });
+        }
+
         public async Task InitAsync()
         {
+            foreach (var module in _moduleRegistrations.Select(registration => registration.CreateModule(
+                Environment, Configuration, this)))
+            {
+                RegisterModule(module);
+            }
+
+            _hostBuilder.ConfigureServices((context, services) =>
+            {
+            });
+
             var host = GetAppHost();
             ConfigureLogging();
             Log.Logger = _loggerConfiguration.CreateLogger();
@@ -182,28 +183,6 @@ namespace Sitko.Core.App
             }
         }
 
-        public T AddModule<TModule, TModuleConfig>(
-            Func<IConfiguration, IHostEnvironment, TModuleConfig> configure)
-            where TModule : IApplicationModule<TModuleConfig>, new() where TModuleConfig : class
-        {
-            if (Modules.OfType<TModule>().Any())
-            {
-                return (T)this;
-            }
-
-            var module = new TModule();
-            ConfigureModule(module, configure);
-            Modules.Add(module);
-            return (T)this;
-        }
-
-        public T AddModule<TModule>() where TModule : BaseApplicationModule, new()
-        {
-            AddModule<TModule, BaseApplicationModuleConfig>((configuration, environment) =>
-                new BaseApplicationModuleConfig());
-            return (T)this;
-        }
-
         private void CheckRequiredModules(IApplicationModule module)
         {
             var requiredModules = module.GetRequiredModules();
@@ -214,32 +193,6 @@ namespace Sitko.Core.App
                     throw new Exception($"Module {module} require module {requiredModule} to be included");
                 }
             }
-        }
-
-        protected virtual void ConfigureModule<TModuleConfig>(IApplicationModule<TModuleConfig> module,
-            Func<IConfiguration, IHostEnvironment, TModuleConfig> configure) where TModuleConfig : class
-        {
-            module.ApplicationStore = ApplicationStore;
-            _hostBuilder.ConfigureServices(
-                (context, collection) =>
-                {
-                    if (configure != null)
-                    {
-                        module.Configure(configure, context.Configuration, context.HostingEnvironment);
-                    }
-
-                    collection.AddSingleton(module.GetConfig());
-                    module.ConfigureLogging(_loggerConfiguration, _logLevelSwitcher, LoggingFacility,
-                        context.Configuration, context.HostingEnvironment);
-                    module.ConfigureServices(collection, context.Configuration, context.HostingEnvironment);
-                }
-            );
-        }
-
-        public T ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> action)
-        {
-            _hostBuilder.ConfigureAppConfiguration(action);
-            return (T)this;
         }
 
         public void OnStarted(IConfiguration configuration, IHostEnvironment environment,
@@ -271,8 +224,111 @@ namespace Sitko.Core.App
 
         public virtual ValueTask DisposeAsync()
         {
-            _appHost.Dispose();
+            _appHost?.Dispose();
             return new ValueTask();
+        }
+
+        public bool HasModule<TModule>() where TModule : IApplicationModule
+        {
+            return Modules.OfType<TModule>().Any();
+        }
+
+        private readonly Dictionary<string, object> _store = new Dictionary<string, object>();
+
+        public void Set(string key, object value)
+        {
+            _store[key] = value;
+        }
+
+        public T Get<T>(string key)
+        {
+            if (_store.ContainsKey(key))
+            {
+                return (T)_store[key];
+            }
+
+#pragma warning disable 8603
+            return default;
+#pragma warning restore 8603
+        }
+    }
+
+    public class Application<T> : Application where T : Application<T>
+    {
+        public Application(string[] args) : base(args)
+        {
+            ConfigureServices((context, services) =>
+            {
+                services.AddSingleton(typeof(Application<T>), this);
+                services.AddSingleton(typeof(T), this);
+                services.AddHostedService<ApplicationLifetimeService<T>>();
+            });
+        }
+
+        public T ConfigureServices(Action<IServiceCollection> configure)
+        {
+            _hostBuilder.ConfigureServices(configure);
+            return (T)this;
+        }
+
+        public T ConfigureServices(Action<HostBuilderContext, IServiceCollection> configure)
+        {
+            _hostBuilder.ConfigureServices(configure);
+            return (T)this;
+        }
+
+        public T ConfigureLogLevel(string source, LogEventLevel level)
+        {
+            _logEventLevels.Add(source, level);
+            return (T)this;
+        }
+
+        public T AddModule<TModule, TModuleConfig>(
+            Func<IConfiguration, IHostEnvironment, TModuleConfig> configure)
+            where TModule : IApplicationModule<TModuleConfig> where TModuleConfig : class
+        {
+            _moduleRegistrations.Add(new ModuleRegistration<TModule, TModuleConfig>(configure));
+            return (T)this;
+        }
+
+        public T AddModule<TModule>() where TModule : BaseApplicationModule
+        {
+            AddModule<TModule, BaseApplicationModuleConfig>((configuration, environment) =>
+                new BaseApplicationModuleConfig());
+            return (T)this;
+        }
+
+
+        public T ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> action)
+        {
+            _hostBuilder.ConfigureAppConfiguration(action);
+            return (T)this;
+        }
+    }
+
+    public interface IModuleRegistration
+    {
+        IApplicationModule CreateModule(IHostEnvironment environment, IConfiguration configuration,
+            Application application);
+    }
+
+    public class ModuleRegistration<TModule, TModuleConfig> : IModuleRegistration
+        where TModule : IApplicationModule<TModuleConfig>
+        where TModuleConfig : class
+    {
+        private readonly Func<IConfiguration, IHostEnvironment, TModuleConfig> _configure;
+
+        public ModuleRegistration(Func<IConfiguration, IHostEnvironment, TModuleConfig> configure)
+        {
+            _configure = configure;
+        }
+
+        public IApplicationModule CreateModule(IHostEnvironment environment, IConfiguration configuration,
+            Application application)
+        {
+            var config = _configure(configuration, environment);
+            var module = (TModule)Activator.CreateInstance(typeof(TModule), config, application);
+            return module;
         }
     }
 }

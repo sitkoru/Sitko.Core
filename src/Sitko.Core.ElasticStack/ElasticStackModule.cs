@@ -19,6 +19,10 @@ namespace Sitko.Core.ElasticStack
 {
     public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleConfig>, IWebApplicationModule
     {
+        public ElasticStackModule(ElasticStackModuleConfig config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureLogging(LoggerConfiguration loggerConfiguration,
             LogLevelSwitcher logLevelSwitcher, string facility,
             IConfiguration configuration, IHostEnvironment environment)
@@ -47,7 +51,7 @@ namespace Sitko.Core.ElasticStack
             IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
-            if (Config.ApmEnabled)
+            if (Config != null && Config.ApmEnabled)
             {
                 configuration["ElasticApm:ServiceName"] = Config.ApmServiceName ?? environment.ApplicationName;
                 configuration["ElasticApm:ServiceVersion"] = Config.ApmServiceVersion;
@@ -67,7 +71,11 @@ namespace Sitko.Core.ElasticStack
                         string.Join(",", Config.ApmGlobalLabels.Select(kv => $"{kv.Key}={kv.Value}"));
                 }
 
-                configuration["ElasticApm:ServerUrls"] = string.Join(",", Config.ApmServerUrls);
+                if (Config.ApmServerUrls != null && Config.ApmServerUrls.Any())
+                {
+                    configuration["ElasticApm:ServerUrls"] = string.Join(",", Config.ApmServerUrls);
+                }
+
                 configuration["ElasticApm:SecretToken"] = Config.ApmSecretToken;
                 configuration["ElasticApm:VerifyServerCert"] = Config.ApmVerifyServerCert.ToString();
                 configuration["ElasticApm:FlushInterval"] = $"{Config.ApmFlushInterval.TotalSeconds}s";

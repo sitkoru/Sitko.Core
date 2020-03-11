@@ -6,12 +6,17 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
+using Sitko.Core.App;
 
 namespace Sitko.Core.Db.Postgres
 {
     public class PostgresModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleConfig<TDbContext>>
         where TDbContext : DbContext
     {
+        public PostgresModule(PostgresDatabaseModuleConfig<TDbContext> config, Application application) : base(config, application)
+        {
+        }
+
         protected override void CheckConfig()
         {
             base.CheckConfig();

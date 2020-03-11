@@ -14,6 +14,10 @@ namespace Sitko.Core.Queue
         where TQueue : class, IQueue
         where TConfig : QueueModuleConfig
     {
+        protected QueueModule(TConfig config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

@@ -8,7 +8,7 @@ namespace Sitko.Core.Queue.Tests
     public abstract class
         BasicQueueTests<T, TQueueModule, TQueue, TConfig> : BaseQueueTest<T, TQueueModule, TQueue, TConfig>
         where T : BaseQueueTestScope<TQueueModule, TQueue, TConfig>
-        where TQueueModule : QueueModule<TQueue, TConfig>, new()
+        where TQueueModule : QueueModule<TQueue, TConfig>
         where TQueue : class, IQueue
         where TConfig : QueueModuleConfig
     {
@@ -93,7 +93,7 @@ namespace Sitko.Core.Queue.Tests
 
             var response = await queue.RequestAsync<TestMessage, TestResponse>(msg);
             Assert.NotNull(response);
-            Assert.Equal(msg.Id, response.Value.message.Id);
+            Assert.Equal(msg.Id, response?.message.Id);
 
             var unsubResult = await queue.StopReplyAsync<TestMessage, TestResponse>(subResult.SubscriptionId);
             Assert.True(unsubResult);
@@ -150,7 +150,7 @@ namespace Sitko.Core.Queue.Tests
                 ParentMessageId = Guid.NewGuid(),
                 Date = DateTimeOffset.UtcNow
             };
-            QueueMessageContext receivedContext = null;
+            QueueMessageContext? receivedContext = null;
             var subResult = await queue.SubscribeAsync<TestMessage>((message, context) =>
             {
                 receivedContext = context;
@@ -166,11 +166,11 @@ namespace Sitko.Core.Queue.Tests
             await Task.Delay(TimeSpan.FromSeconds(1));
 
             Assert.NotNull(receivedContext);
-            Assert.Equal(sentContext.Id, receivedContext.ParentMessageId);
-            Assert.Equal(sentContext.RootMessageId, receivedContext.RootMessageId);
-            Assert.Equal(sentContext.RootMessageDate, receivedContext.RootMessageDate);
-            Assert.Equal(sentContext.RequestId, receivedContext.RequestId);
-            Assert.Equal(typeof(TestMessage).FullName, receivedContext.MessageType);
+            Assert.Equal(sentContext.Id, receivedContext?.ParentMessageId);
+            Assert.Equal(sentContext.RootMessageId, receivedContext?.RootMessageId);
+            Assert.Equal(sentContext.RootMessageDate, receivedContext?.RootMessageDate);
+            Assert.Equal(sentContext.RequestId, receivedContext?.RequestId);
+            Assert.Equal(typeof(TestMessage).FullName, receivedContext?.MessageType);
         }
     }
 }

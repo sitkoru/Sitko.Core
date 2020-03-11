@@ -9,6 +9,10 @@ namespace Sitko.Core.Storage
     public class StorageModule<TStorage, TStorageOptions> : BaseApplicationModule<TStorageOptions>
         where TStorage : Storage<TStorageOptions> where TStorageOptions : StorageOptions
     {
+        public StorageModule(TStorageOptions config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

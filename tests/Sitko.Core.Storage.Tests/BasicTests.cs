@@ -54,11 +54,12 @@ namespace Sitko.Core.Storage.Tests
             }
 
             Assert.NotNull(uploaded);
+            Assert.NotNull(uploaded.FilePath);
 
-            var downloaded = await storage.GetFileAsync(uploaded.FilePath);
+            var downloaded = await storage.GetFileAsync(uploaded!.FilePath!);
 
             Assert.NotNull(downloaded);
-            Assert.Equal(fileLength, downloaded.OpenRead().Length);
+            Assert.Equal(fileLength, downloaded?.OpenRead()?.Length);
         }
 
         [Fact]
@@ -79,7 +80,7 @@ namespace Sitko.Core.Storage.Tests
 
             Assert.NotNull(uploaded);
 
-            var result = await storage.DeleteFileAsync(uploaded.FilePath);
+            var result = await storage.DeleteFileAsync(uploaded.FilePath!);
 
             Assert.True(result);
         }

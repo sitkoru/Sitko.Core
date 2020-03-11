@@ -10,6 +10,10 @@ namespace Sitko.Core.Swagger
 {
     public class SwaggerModule : BaseApplicationModule<SwaggerModuleConfig>, IWebApplicationModule
     {
+        public SwaggerModule(SwaggerModuleConfig config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

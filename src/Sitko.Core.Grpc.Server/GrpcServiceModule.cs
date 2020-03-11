@@ -14,6 +14,10 @@ namespace Sitko.Core.Grpc.Server
     public class GrpcServiceModule<TService> : BaseApplicationModule, IWebApplicationModule
         where TService : class
     {
+        public GrpcServiceModule(BaseApplicationModuleConfig config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

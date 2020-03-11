@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+#pragma warning disable 8629
+#pragma warning disable 8603
+#pragma warning disable 8619
 
 namespace Sitko.Core.Storage.Proxy.StaticFiles
 {

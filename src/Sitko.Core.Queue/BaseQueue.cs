@@ -33,7 +33,7 @@ namespace Sitko.Core.Queue
         {
             foreach (var queueMiddleware in _middlewares)
             {
-                var result = await queueMiddleware.OnBeforeReceiveAsync(payload.Message, payload.MessageContext);
+                var result = await queueMiddleware.OnBeforeReceiveAsync(payload.Message, payload.MessageContext!);
                 if (!result)
                 {
                     return false;
@@ -48,7 +48,7 @@ namespace Sitko.Core.Queue
         {
             foreach (var queueMiddleware in _middlewares)
             {
-                var result = await queueMiddleware.OnBeforePublishAsync(payload.Message, payload.MessageContext);
+                var result = await queueMiddleware.OnBeforePublishAsync(payload.Message, payload.MessageContext!);
                 if (!result.IsSuccess)
                 {
                     return result;
@@ -62,7 +62,7 @@ namespace Sitko.Core.Queue
         {
             foreach (var queueMiddleware in _middlewares)
             {
-                await queueMiddleware.OnAfterReceiveAsync(payload.Message, payload.MessageContext);
+                await queueMiddleware.OnAfterReceiveAsync(payload.Message, payload.MessageContext!);
             }
         }
 
@@ -70,7 +70,7 @@ namespace Sitko.Core.Queue
         {
             foreach (var queueMiddleware in _middlewares)
             {
-                await queueMiddleware.OnAfterPublishAsync(payload.Message, payload.MessageContext);
+                await queueMiddleware.OnAfterPublishAsync(payload.Message, payload.MessageContext!);
             }
         }
 
@@ -210,7 +210,7 @@ namespace Sitko.Core.Queue
             if (result.IsSuccess)
             {
                 var subscription = new QueueSubscription<T>(async payload =>
-                    await callback(payload.Message, payload.MessageContext));
+                    await callback(payload.Message, payload.MessageContext!));
                 _subscriptions[subscription.Id] = subscription;
                 result.SubscriptionId = subscription.Id;
                 result.Options = options;
@@ -247,7 +247,7 @@ namespace Sitko.Core.Queue
             {
                 if (await OnBeforeReceiveMessageAsync(request))
                 {
-                    var response = await callback(request.Message, request.MessageContext);
+                    var response = await callback(request.Message, request.MessageContext!);
                     var responsePayload = new QueuePayload<TResponse>(response, request.MessageContext);
                     if ((await OnBeforePublishMessageAsync(responsePayload)).IsSuccess)
                     {
@@ -294,20 +294,21 @@ namespace Sitko.Core.Queue
 
             var response = await DoRequestAsync<TMessage, TResponse>(payload, timeout.Value);
             await OnAfterPublishMessageAsync(payload);
+            (TResponse message, QueueMessageContext messageContext)? result = null;
             if (response != null)
             {
                 if (await OnBeforeReceiveMessageAsync(response))
                 {
                     await OnAfterReceiveMessageAsync(response);
-                    return (response.Message, response.MessageContext);
+                    result = (response.Message, response.MessageContext!);
+                }
+                else
+                {
+                    throw new Exception("Processing error");
                 }
             }
-            else
-            {
-                return null;
-            }
 
-            throw new Exception("Processing error");
+            return result;
         }
 
         public async ValueTask DisposeAsync()

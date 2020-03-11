@@ -12,7 +12,7 @@ namespace Sitko.Core.Queue.Internal
         private readonly IQueue _queue;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<QueueProcessorHost<T>> _logger;
-        private QueueSubscribeResult _subscriptionResult;
+        private QueueSubscribeResult? _subscriptionResult;
 
         public QueueProcessorHost(IQueue queue, IServiceProvider serviceProvider, ILogger<QueueProcessorHost<T>> logger)
         {
