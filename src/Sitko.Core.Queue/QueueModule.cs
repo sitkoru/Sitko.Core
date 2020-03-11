@@ -6,9 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.MessageBus;
-using Sitko.Core.Metrics;
 using Sitko.Core.Queue.Internal;
-using Sitko.Core.Queue.Middleware;
 
 namespace Sitko.Core.Queue
 {
@@ -22,10 +20,6 @@ namespace Sitko.Core.Queue
             base.ConfigureServices(services, configuration, environment);
             services.AddSingleton<IQueue, TQueue>();
             services.AddSingleton<QueueContext>();
-            if (Config.MetricsEnabled)
-            {
-                Config.Middlewares.Add(typeof(MetricsMiddleware));
-            }
 
             if (Config.HealthChecksEnabled)
             {
@@ -64,10 +58,6 @@ namespace Sitko.Core.Queue
         public override List<Type> GetRequiredModules()
         {
             var modules = new List<Type>();
-            if (Config.MetricsEnabled)
-            {
-                modules.Add(typeof(MetricsModule));
-            }
 
             if (Config.TranslateMessageBusTypes.Any())
             {
