@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Sitko.Core.ElasticStack\Sitko.Core.ElasticStack.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Queue\Sitko.Core.Queue.csproj" />
+  </ItemGroup>
+
+</Project>
