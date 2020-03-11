@@ -17,13 +17,13 @@ namespace Sitko.Core.Queue.Apm
             var transaction = Elastic.Apm.Agent.Tracer.CurrentTransaction;
             if (transaction == null)
             {
-                transaction = Elastic.Apm.Agent.Tracer.StartTransaction("QueuePublish", ApiConstants.TypeExternal);
-                transaction.Labels.Add("MessageType", message.GetType().FullName);
+                transaction = Elastic.Apm.Agent.Tracer.StartTransaction($"Publish {message.GetType().FullName}",
+                    ApiConstants.TypeExternal);
                 _transactions.TryAdd(messageContext.Id, transaction);
             }
 
-            var span = transaction.StartSpan("PublishMessage", ApiConstants.TypeExternal, "Queue");
-            span.Labels.Add("MessageType", message.GetType().FullName);
+            var span = transaction.StartSpan($"Publish {message.GetType().FullName}", ApiConstants.TypeExternal,
+                "Queue");
             _messageSpans.TryAdd(messageContext.Id, span);
             return Task.FromResult(new QueuePublishResult());
         }
@@ -38,15 +38,15 @@ namespace Sitko.Core.Queue.Apm
         {
             if (Elastic.Apm.Agent.Tracer.CurrentTransaction == null)
             {
-                var transaction = Elastic.Apm.Agent.Tracer.StartTransaction("QueueRequest", ApiConstants.TypeRequest);
-                transaction.Labels.Add("MessageType", message.GetType().FullName);
+                var transaction = Elastic.Apm.Agent.Tracer.StartTransaction($"Process {message.GetType().FullName}",
+                    ApiConstants.TypeRequest);
                 _transactions.TryAdd(messageContext.Id, transaction);
             }
             else
             {
-                var span = Elastic.Apm.Agent.Tracer.CurrentTransaction.StartSpan("ProcessMessage",
+                var span = Elastic.Apm.Agent.Tracer.CurrentTransaction.StartSpan(
+                    $"Process {message.GetType().FullName}",
                     ApiConstants.TypeExternal, "Queue");
-                span.Labels.Add("MessageType", message.GetType().FullName);
                 _messageSpans.TryAdd(messageContext.Id, span);
             }
 
