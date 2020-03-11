@@ -26,6 +26,10 @@ namespace Sitko.Core.Graylog
                     MinimumLogEventLevel = logLevelSwitcher.Switch.MinimumLevel
                 }, logLevelSwitcher.Switch));
         }
+
+        public GraylogModule(GraylogLoggingOptions config, Application application) : base(config, application)
+        {
+        }
     }
 
     public static class GraylogExtensions

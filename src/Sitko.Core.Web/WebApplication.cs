@@ -81,10 +81,9 @@ namespace Sitko.Core.Web
             return Modules.OfType<IWebApplicationModule>().ToList();
         }
 
-        protected override void ConfigureModule<TModuleConfig>(IApplicationModule<TModuleConfig> module,
-            Func<IConfiguration, IHostEnvironment, TModuleConfig> configure)
+        protected override void RegisterModule(IApplicationModule module)
         {
-            base.ConfigureModule(module, configure);
+            base.RegisterModule(module);
             if (module is IWebApplicationModule webApplicationModule)
             {
                 GetHostBuilder().ConfigureWebHostDefaults(builder =>
@@ -106,7 +105,7 @@ namespace Sitko.Core.Web
                 webModule.ConfigureAppBuilder(configuration, environment, appBuilder);
             }
         }
-        
+
         public virtual void BeforeRoutingHook(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {

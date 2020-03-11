@@ -22,12 +22,12 @@ namespace Sitko.Core.Queue.InMemory
 
         private InMemoryQueueChannel<T> GetOrCreateChannel<T>() where T : class
         {
-            return _channels.GetOrAdd(typeof(T), type =>
+            return (InMemoryQueueChannel<T>)_channels.GetOrAdd(typeof(T), type =>
             {
                 var channel = new InMemoryQueueChannel<T>(_logger);
                 channel.Run();
                 return channel;
-            }) as InMemoryQueueChannel<T>;
+            });
         }
 
         protected override Task<QueuePublishResult> DoPublishAsync<T>(QueuePayload<T> queuePayload)
@@ -54,7 +54,7 @@ namespace Sitko.Core.Queue.InMemory
             var resultSource = new TaskCompletionSource<QueuePayload<TResponse>>();
             var subscriptionId = channel.Subscribe(response =>
             {
-                if (response.MessageContext.ReplyTo == replyTo)
+                if (response.MessageContext?.ReplyTo == replyTo)
                 {
                     resultSource.SetResult(response);
                 }
@@ -64,7 +64,7 @@ namespace Sitko.Core.Queue.InMemory
             var tasks = new List<Task> {Task.Delay(timeout), resultSource.Task};
 
             var sendChannel = GetOrCreateChannel<TMessage>();
-            queuePayload.MessageContext.ReplyTo = replyTo;
+            queuePayload.MessageContext!.ReplyTo = replyTo;
             sendChannel.Publish(queuePayload);
 
             await Task.WhenAny(tasks);
@@ -83,7 +83,7 @@ namespace Sitko.Core.Queue.InMemory
                 var channel = GetOrCreateChannel<TMessage>();
                 result.SubscriptionId = channel.Subscribe(async request =>
                 {
-                    if (request.MessageContext.ReplyTo != null)
+                    if (request.MessageContext?.ReplyTo != null)
                     {
                         var response = await callback(request);
                         if (response != null)
@@ -114,7 +114,7 @@ namespace Sitko.Core.Queue.InMemory
             {
                 var channel = GetOrCreateChannel<T>();
                 channel.Subscribe(payload =>
-                    payload.MessageContext.ReplyTo == null ? ProcessMessageAsync(payload) : Task.CompletedTask);
+                    payload.MessageContext?.ReplyTo == null ? ProcessMessageAsync(payload) : Task.CompletedTask);
             }
             catch (Exception ex)
             {
@@ -145,7 +145,7 @@ namespace Sitko.Core.Queue.InMemory
 
         public override Task<(HealthStatus status, string? errorMessage)> CheckHealthAsync()
         {
-            return Task.FromResult((HealthStatus.Healthy, ""));
+            return Task.FromResult((HealthStatus.Healthy, (string?) null));
         }
     }
 }

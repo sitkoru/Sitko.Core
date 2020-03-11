@@ -33,11 +33,16 @@ namespace Sitko.Core.Storage.Cache
 
         protected void Expire()
         {
-            _cache.Expire();
+            _cache?.Expire();
         }
 
         public IEnumerator<StorageRecord> GetEnumerator()
         {
+            if (_cache == null)
+            {
+                throw new Exception("Cache is not initialized");
+            }
+
             return _cache.Values<StorageRecord>().GetEnumerator();
         }
 
@@ -49,6 +54,11 @@ namespace Sitko.Core.Storage.Cache
         public async Task<StorageRecord?> GetOrAddItemAsync(string path,
             Func<Task<StorageRecord?>> addItem)
         {
+            if (_cache == null)
+            {
+                throw new Exception("Cache is not initialized");
+            }
+
             var key = NormalizePath(path);
             if (!CacheExtensions.TryGetValue(_cache, key, out TRecord? cacheEntry)) // Look for cache key.
             {
@@ -139,13 +149,23 @@ namespace Sitko.Core.Storage.Cache
 
         public Task<StorageRecord?> GetItemAsync(string path)
         {
+            if (_cache == null)
+            {
+                throw new Exception("Cache is not initialized");
+            }
+
             var record = CacheExtensions.Get<TRecord?>(_cache, NormalizePath(path));
 
-            return Task.FromResult<StorageRecord>(record);
+            return Task.FromResult<StorageRecord?>(record);
         }
 
         public Task RemoveItemAsync(string path)
         {
+            if (_cache == null)
+            {
+                throw new Exception("Cache is not initialized");
+            }
+
             _cache.Remove(NormalizePath(path));
             return Task.CompletedTask;
         }

@@ -43,12 +43,6 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
             return TryServeStaticFile(context, contentType, subPath);
         }
 
-        private bool ValidatePath(HttpContext context, out string path)
-        {
-            path = context.Request.Path;
-            return true;
-        }
-
         // Return true because we only want to run if there is no endpoint.
         private static bool ValidateNoEndpoint(HttpContext context) => context.GetEndpoint() == null;
 

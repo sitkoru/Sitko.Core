@@ -9,6 +9,11 @@ namespace Sitko.Core.Consul
 {
     public class ConsulModule : BaseApplicationModule<ConsulModuleConfig>
     {
+        public ConsulModule(ConsulModuleConfig config, Application application) : base(config,
+            application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

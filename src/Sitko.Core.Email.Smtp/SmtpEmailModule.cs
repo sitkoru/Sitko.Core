@@ -2,11 +2,16 @@ using System;
 using System.Net;
 using System.Net.Mail;
 using Microsoft.Extensions.DependencyInjection;
+using Sitko.Core.App;
 
 namespace Sitko.Core.Email.Smtp
 {
     public class SmtpEmailModule : FluentEmailModule<SmtpEmailModuleConfig>
     {
+        public SmtpEmailModule(SmtpEmailModuleConfig config, Application application) : base(config, application)
+        {
+        }
+
         protected override void ConfigureBuilder(FluentEmailServicesBuilder builder)
         {
             NetworkCredential? credential = null;

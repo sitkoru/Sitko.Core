@@ -14,6 +14,10 @@ namespace Sitko.Core.Grpc.Server
 {
     public class GrpcServerModule : BaseApplicationModule<GrpcServerOptions>, IWebApplicationModule
     {
+        public GrpcServerModule(GrpcServerOptions config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {
@@ -59,7 +63,7 @@ namespace Sitko.Core.Grpc.Server
                     }
                 }
 
-                ApplicationStore.Set("grpcServer", true);
+                Application.Set("grpcServer", true);
             });
         }
     }

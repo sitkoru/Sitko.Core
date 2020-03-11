@@ -10,7 +10,7 @@ namespace Sitko.Core.Storage.FileSystem
 {
     public class PhysicalDirectoryContents : IDirectoryContents
     {
-        private IEnumerable<IFileInfo> _entries;
+        private IEnumerable<IFileInfo> _entries = new List<IFileInfo>();
         private readonly string _directory;
 
         /// <summary>

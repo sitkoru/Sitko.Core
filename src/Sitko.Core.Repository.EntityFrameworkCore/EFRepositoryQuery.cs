@@ -47,7 +47,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return this;
         }
 
-        public override IRepositoryQuery<TEntity> Where(string whereStr, object[] values)
+        public override IRepositoryQuery<TEntity> Where(string whereStr, object?[] values)
         {
             _where.Add(query => query.Where(whereStr, values));
             return this;

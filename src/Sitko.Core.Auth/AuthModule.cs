@@ -10,6 +10,10 @@ namespace Sitko.Core.Auth
 {
     public abstract class AuthModule<T> : BaseApplicationModule<T>, IWebApplicationModule where T : AuthOptions
     {
+        protected AuthModule(T config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

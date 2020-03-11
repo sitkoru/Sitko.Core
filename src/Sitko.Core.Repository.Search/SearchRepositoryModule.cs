@@ -7,6 +7,11 @@ namespace Sitko.Core.Repository.Search
 {
     public class SearchRepositoryModule : BaseApplicationModule
     {
+        public SearchRepositoryModule(BaseApplicationModuleConfig config, Application application) : base(config,
+            application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

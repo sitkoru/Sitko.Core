@@ -11,6 +11,10 @@ namespace Sitko.Core.Db
         where TDbContext : DbContext
         where TConfig : BaseDbModuleConfig<TDbContext>
     {
+        protected BaseDbModule(TConfig config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

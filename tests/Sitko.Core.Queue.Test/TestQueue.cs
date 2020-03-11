@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
+using Sitko.Core.App;
 using Sitko.Core.Queue.Internal;
 
 namespace Sitko.Core.Queue.Tests
@@ -22,8 +23,10 @@ namespace Sitko.Core.Queue.Tests
         protected override Task<QueuePayload<TResponse>?> DoRequestAsync<TMessage, TResponse>(
             QueuePayload<TMessage> queuePayload, TimeSpan timeout)
         {
+#pragma warning disable 8619
             return Task.FromResult(new QueuePayload<TResponse>(Activator.CreateInstance<TResponse>(),
                 new QueueMessageContext()));
+#pragma warning restore 8619
         }
 
         protected override Task<QueueSubscribeResult> DoReplyAsync<TMessage, TResponse>(
@@ -49,12 +52,15 @@ namespace Sitko.Core.Queue.Tests
 
         public override Task<(HealthStatus status, string? errorMessage)> CheckHealthAsync()
         {
-            return Task.FromResult((HealthStatus.Healthy, ""));
+            return Task.FromResult((HealthStatus.Healthy, (string?)null));
         }
     }
 
     public class TestQueueModule : QueueModule<TestQueue, TestQueueConfig>
     {
+        public TestQueueModule(TestQueueConfig config, Application application) : base(config, application)
+        {
+        }
     }
 
     public class TestQueueConfig : QueueModuleConfig

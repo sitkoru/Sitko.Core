@@ -27,7 +27,7 @@ namespace Sitko.Core.Repository
         }
 
         public abstract IRepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> @where);
-        public abstract IRepositoryQuery<TEntity> Where(string whereStr, object[] values);
+        public abstract IRepositoryQuery<TEntity> Where(string whereStr, object?[] values);
         public abstract IRepositoryQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> orderBy);
         public abstract IRepositoryQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> orderBy);
 
@@ -122,10 +122,12 @@ namespace Sitko.Core.Repository
                 {
                     var group = new QueryContextConditionsGroup(new List<QueryContextCondition>());
                     foreach (var parsedCondition in conditionsGroup.Conditions
-                        .Select(condition => CreateCondition(condition.Property, condition.Operator, condition.Value))
-                        .Where(parsedCondition => parsedCondition != null))
+                        .Select(condition => CreateCondition(condition.Property, condition.Operator, condition.Value)))
                     {
-                        group.Conditions.Add(parsedCondition);
+                        if (parsedCondition != null)
+                        {
+                            group.Conditions.Add(parsedCondition);
+                        }
                     }
 
                     if (group.Conditions.Any())
@@ -143,16 +145,13 @@ namespace Sitko.Core.Repository
             return this;
         }
 
-        protected QueryContextCondition? CreateCondition(string property, QueryContextOperator @operator, object value)
+        protected QueryContextCondition? CreateCondition(string property, QueryContextOperator @operator, object? value)
         {
             var propertyInfo = FieldsResolver.GetPropertyInfo<TEntity>(property);
             if (propertyInfo != null)
             {
-                var condition = new QueryContextCondition
-                {
-                    Property = propertyInfo.Value.name, Operator = @operator
-                };
-                if (value != null)
+                var condition = new QueryContextCondition(propertyInfo.Value.name) {Operator = @operator};
+                if (value != null && condition.ValueType != null)
                 {
                     condition.Value = ParsePropertyValue(condition.ValueType, condition.Value);
                 }

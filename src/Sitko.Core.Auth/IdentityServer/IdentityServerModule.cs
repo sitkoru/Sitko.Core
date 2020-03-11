@@ -2,11 +2,16 @@ using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
 
 namespace Sitko.Core.Auth.IdentityServer
 {
     public abstract class IdentityServerModule<T> : AuthModule<T> where T : IdentityServerAuthOptions
     {
+        protected IdentityServerModule(T config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

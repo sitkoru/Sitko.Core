@@ -7,7 +7,7 @@ namespace Sitko.Core.Queue.Tests
 {
     public abstract class BaseQueueTest<T, TQueueModule, TQueue, TConfig> : BaseTest<T>
         where T : BaseQueueTestScope<TQueueModule, TQueue, TConfig>
-        where TQueueModule : QueueModule<TQueue, TConfig>, new()
+        where TQueueModule : QueueModule<TQueue, TConfig>
         where TQueue : class, IQueue
         where TConfig : QueueModuleConfig
     {
@@ -17,7 +17,7 @@ namespace Sitko.Core.Queue.Tests
     }
 
     public abstract class BaseQueueTestScope<TQueueModule, TQueue, TConfig> : BaseTestScope
-        where TQueueModule : QueueModule<TQueue, TConfig>, new()
+        where TQueueModule : QueueModule<TQueue, TConfig>
         where TQueue : class, IQueue
         where TConfig : QueueModuleConfig
     {

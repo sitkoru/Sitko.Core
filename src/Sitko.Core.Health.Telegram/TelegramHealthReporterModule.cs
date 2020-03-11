@@ -8,6 +8,11 @@ namespace Sitko.Core.Health.Telegram
 {
     public class TelegramHealthReporterModule : BaseApplicationModule<TelegramHealthCheckPublisherOptions>
     {
+        public TelegramHealthReporterModule(TelegramHealthCheckPublisherOptions config,
+            Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

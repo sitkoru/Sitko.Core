@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
 
 namespace Sitko.Core.Queue.Nats
 {
     public class NatsQueueModule : QueueModule<NatsQueue, NatsQueueModuleConfig>
     {
+        public NatsQueueModule(NatsQueueModuleConfig config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {
@@ -32,8 +37,8 @@ namespace Sitko.Core.Queue.Nats
         }
 
         public string ClusterName { get; }
-        public string ClientName { get; set; }
-        public string ConsumerGroupName { get; set; }
+        public string? ClientName { get; set; }
+        public string? ConsumerGroupName { get; set; }
         public TimeSpan ConnectionTimeout { get; set; } = TimeSpan.FromSeconds(10);
         public bool Verbose { get; set; }
 

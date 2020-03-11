@@ -18,13 +18,13 @@ namespace Sitko.Core.Repository
 
         public virtual Task<bool> BeforeSaveAsync<TEntity, TEntityPk>(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult, bool isNew,
-            PropertyChange[] changes = null) where TEntity : class, IEntity<TEntityPk>
+            PropertyChange[]? changes = null) where TEntity : class, IEntity<TEntityPk>
         {
             return Task.FromResult(true);
         }
 
         public virtual Task<bool> AfterSaveAsync<TEntity, TEntityPk>(TEntity item, bool isNew,
-            PropertyChange[] changes = null) where TEntity : class, IEntity<TEntityPk>
+            PropertyChange[]? changes = null) where TEntity : class, IEntity<TEntityPk>
         {
             return Task.FromResult(true);
         }

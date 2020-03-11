@@ -19,7 +19,7 @@ namespace Sitko.Core.Queue.Nats
 {
     public class NatsQueue : BaseQueue<NatsQueueModuleConfig>
     {
-        private IStanConnection _connection;
+        private IStanConnection? _connection;
         private static readonly ConnectionFactory Cf = new ConnectionFactory();
 
         private readonly ConcurrentDictionary<Guid, IAsyncSubscription> _natsSubscriptions =
@@ -33,7 +33,7 @@ namespace Sitko.Core.Queue.Nats
             new ConcurrentDictionary<string, IStanSubscription>();
 
         private bool _disposed;
-        private IConnection _natsConn;
+        private IConnection? _natsConn;
 
 
         public NatsQueue(NatsQueueModuleConfig config, QueueContext context, ILogger<NatsQueue> logger) : base(config,
@@ -70,6 +70,11 @@ namespace Sitko.Core.Queue.Nats
 
         protected override async Task<QueuePublishResult> DoPublishAsync<T>(QueuePayload<T> queuePayload)
         {
+            if (_connection == null)
+            {
+                throw new Exception("Connection to nats not etablished");
+            }
+
             var result = new QueuePublishResult();
             try
             {
@@ -86,6 +91,11 @@ namespace Sitko.Core.Queue.Nats
         protected override async Task<QueuePayload<TResponse>?> DoRequestAsync<TMessage, TResponse>(
             QueuePayload<TMessage> queuePayload, TimeSpan timeout)
         {
+            if (_natsConn == null)
+            {
+                throw new Exception("Connection to nats not etablished");
+            }
+
             try
             {
                 var deserializer = GetPayloadDeserializer<TResponse>();
@@ -112,7 +122,17 @@ namespace Sitko.Core.Queue.Nats
         protected override Task<QueueSubscribeResult> DoReplyAsync<TMessage, TResponse>(
             Func<QueuePayload<TMessage>, Task<QueuePayload<TResponse>?>> callback)
         {
+            if (_natsConn == null)
+            {
+                throw new Exception("Connection to nats not established");
+            }
+
             var deserializer = GetPayloadDeserializer<TMessage>();
+            if (deserializer == null)
+            {
+                throw new Exception($"Empty deserialize method for {typeof(TMessage)}");
+            }
+
             var queue = GetQueueName<TMessage>();
             var id = Guid.NewGuid();
             var sub = _natsConn.SubscribeAsync(queue,
@@ -142,28 +162,30 @@ namespace Sitko.Core.Queue.Nats
 
         private byte[] SerializePayload<T>(QueuePayload<T> payload) where T : class
         {
-            var context = new QueueContextMsg
-            {
-                Id = payload.MessageContext.Id.ToString(),
-                Date = payload.MessageContext.Date.ToTimestamp(),
-                MessageType = payload.MessageContext.MessageType
-            };
-            if (!string.IsNullOrEmpty(payload.MessageContext.RequestId))
+            var context = payload.MessageContext != null
+                ? new QueueContextMsg
+                {
+                    Id = payload.MessageContext.Id.ToString(),
+                    Date = payload.MessageContext.Date.ToTimestamp(),
+                    MessageType = payload.MessageContext.MessageType ?? string.Empty
+                }
+                : new QueueContextMsg();
+            if (!string.IsNullOrEmpty(payload.MessageContext?.RequestId))
             {
                 context.RequestId = payload.MessageContext.RequestId;
             }
 
-            if (payload.MessageContext.ParentMessageId != null)
+            if (payload.MessageContext?.ParentMessageId != null)
             {
                 context.ParentMessageId = payload.MessageContext.ParentMessageId.ToString();
             }
 
-            if (payload.MessageContext.RootMessageId != null)
+            if (payload.MessageContext?.RootMessageId != null)
             {
                 context.RootMessageId = payload.MessageContext.RootMessageId.ToString();
             }
 
-            if (payload.MessageContext.RootMessageDate != null)
+            if (payload.MessageContext?.RootMessageDate != null)
             {
                 context.RootMessageDate = payload.MessageContext.RootMessageDate.Value.ToTimestamp();
             }
@@ -211,6 +233,11 @@ namespace Sitko.Core.Queue.Nats
 
         protected override Task<QueueSubscribeResult> DoSubscribeAsync<T>(IQueueMessageOptions<T>? options = null)
         {
+            if (_connection == null)
+            {
+                throw new Exception("Connection to nats not established");
+            }
+
             var result = new QueueSubscribeResult();
             var queueName = GetQueueName<T>();
             if (_stanSubscriptions.ContainsKey(queueName))
@@ -264,6 +291,11 @@ namespace Sitko.Core.Queue.Nats
 
 
             var deserializer = GetPayloadDeserializer<T>();
+            if (deserializer == null)
+            {
+                throw new Exception($"Empty deserialize method for {typeof(T)}");
+            }
+
             IStanSubscription sub;
             if (!string.IsNullOrEmpty(stanOptions.DurableName))
             {
@@ -312,7 +344,12 @@ namespace Sitko.Core.Queue.Nats
             if (isBinary)
             {
                 var processMethod = _deserializeBinaryMethod.MakeGenericMethod(typeof(T));
-                deserializer = bytes => processMethod.Invoke(this, new object[] {bytes}) as QueuePayload<T>;
+                if (processMethod == null)
+                {
+                    throw new Exception($"Can't create generic deserialize method for {typeof(T)}");
+                }
+
+                deserializer = bytes => (QueuePayload<T>)processMethod.Invoke(this, new object[] {bytes});
             }
             else
             {
@@ -373,10 +410,10 @@ namespace Sitko.Core.Queue.Nats
                 natsSubscription.Unsubscribe();
             }
 
-            _connection.Close();
-            _connection.Dispose();
-            _natsConn.Close();
-            _natsConn.Dispose();
+            _connection?.Close();
+            _connection?.Dispose();
+            _natsConn?.Close();
+            _natsConn?.Dispose();
 
             _disposed = true;
         }
@@ -434,7 +471,7 @@ namespace Sitko.Core.Queue.Nats
 
         private IStanConnection CreateConnection()
         {
-            IConnection natsConn = null;
+            IConnection? natsConn = null;
             var clientId = $"{_config.ClientName}_{Guid.NewGuid()}";
             try
             {

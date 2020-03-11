@@ -8,7 +8,7 @@ namespace Sitko.Core.Storage
 {
     public abstract class StorageOptions
     {
-        public Uri PublicUri { get; set; }
+        public Uri? PublicUri { get; set; }
 
         public Action<IHostEnvironment, IConfiguration, IServiceCollection>? ConfigureCache { get; protected set; }
 

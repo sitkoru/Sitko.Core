@@ -7,6 +7,10 @@ namespace Sitko.Core.SonyFlake
 {
     public class SonyFlakeModule : BaseApplicationModule<SonyFlakeModuleConfig>
     {
+        public SonyFlakeModule(SonyFlakeModuleConfig config, Application application) : base(config,application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

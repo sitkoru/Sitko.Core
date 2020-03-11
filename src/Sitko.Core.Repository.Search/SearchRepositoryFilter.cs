@@ -33,7 +33,7 @@ namespace Sitko.Core.Repository.Search
         }
 
         public override async Task<bool> AfterSaveAsync<TEntity, TEntityPk>(TEntity item, bool isNew,
-            PropertyChange[] changes = null)
+            PropertyChange[]? changes = null)
         {
             var provider = GetSearchProvider<TEntity>();
             if (provider != null)

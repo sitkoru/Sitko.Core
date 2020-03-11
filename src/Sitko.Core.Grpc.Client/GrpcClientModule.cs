@@ -10,6 +10,10 @@ namespace Sitko.Core.Grpc.Client
 {
     public class GrpcClientModule : BaseApplicationModule
     {
+        public GrpcClientModule(BaseApplicationModuleConfig config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

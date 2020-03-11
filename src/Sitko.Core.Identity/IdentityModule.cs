@@ -20,6 +20,10 @@ namespace Sitko.Core.Identity
     {
         private IdentityBuilder _identityBuilder;
 
+        public IdentityModule(IdentityModuleOptions config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {
@@ -76,7 +80,7 @@ namespace Sitko.Core.Identity
         public bool RequireConfirmedAccount { get; set; } = true;
 
         public string LoginPath { get; set; } = "/Identity/Account/Login";
-        
+
         public string LogoutPath { get; set; } = "/Identity/Account/Logout";
     }
 }

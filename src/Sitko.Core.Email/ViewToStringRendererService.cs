@@ -167,7 +167,7 @@ namespace Sitko.Core.Email
 
         private const string ActionNameKey = "action";
 
-        private static string GetActionName(ActionContext context)
+        private static string? GetActionName(ActionContext context)
         {
             if (context == null)
             {
@@ -180,7 +180,7 @@ namespace Sitko.Core.Email
             }
 
             var actionDescriptor = context.ActionDescriptor;
-            string normalizedValue = null;
+            string? normalizedValue = null;
             if (actionDescriptor.RouteValues.TryGetValue(ActionNameKey, out var value) &&
                 !string.IsNullOrEmpty(value))
             {

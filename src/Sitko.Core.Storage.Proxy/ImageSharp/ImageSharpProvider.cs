@@ -54,7 +54,9 @@ namespace Sitko.Core.Storage.Proxy.ImageSharp
 
             bool imageExists = await _storage.IsFileExistsAsync(key);
 
+#pragma warning disable 8603
             return !imageExists ? null : new ImageSharpStorageResolver<TStorageOptions>(_storage, key);
+#pragma warning restore 8603
         }
     }
 
@@ -83,7 +85,9 @@ namespace Sitko.Core.Storage.Proxy.ImageSharp
         public async Task<Stream> OpenReadAsync()
         {
             var file = await _storage.GetFileAsync(_imagePath);
+#pragma warning disable 8603
             return file?.OpenRead();
+#pragma warning restore 8603
         }
     }
 }

@@ -35,7 +35,7 @@ namespace Sitko.Core.Storage
             file.Seek(0, SeekOrigin.Begin);
             await DoSaveAsync(destinationPath, file);
             Logger.LogInformation("File saved to {Path}", path);
-            if (_cache != null)
+            if (_cache != null && storageItem.FilePath != null)
             {
                 await _cache.RemoveItemAsync(storageItem.FilePath);
             }

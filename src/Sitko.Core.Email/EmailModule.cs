@@ -9,6 +9,10 @@ namespace Sitko.Core.Email
 {
     public class EmailModule<T> : BaseApplicationModule<T> where T : EmailModuleConfig
     {
+        public EmailModule(T config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

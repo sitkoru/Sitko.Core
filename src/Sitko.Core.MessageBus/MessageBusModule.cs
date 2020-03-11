@@ -8,6 +8,10 @@ namespace Sitko.Core.MessageBus
 {
     public class MessageBusModule : BaseApplicationModule<MessageBusModuleConfig>
     {
+        public MessageBusModule(MessageBusModuleConfig config, Application application) : base(config, application)
+        {
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

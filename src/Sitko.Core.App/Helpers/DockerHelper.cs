@@ -13,7 +13,7 @@ namespace Sitko.Core.App.Helpers
             return inContainer;
         }
 
-        public static string GetContainerAddress()
+        public static string? GetContainerAddress()
         {
             if (IsRunningInDocker())
             {

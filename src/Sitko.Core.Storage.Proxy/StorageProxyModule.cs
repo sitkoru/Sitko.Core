@@ -20,7 +20,11 @@ namespace Sitko.Core.Storage.Proxy
     public class StorageProxyModule<TStorageOptions> : BaseApplicationModule<StorageProxyModuleConfig>,
         IWebApplicationModule where TStorageOptions : StorageOptions
     {
-        private FileExtensionContentTypeProvider _mimeTypeProvider;
+        private FileExtensionContentTypeProvider? _mimeTypeProvider;
+
+        public StorageProxyModule(StorageProxyModuleConfig config, Application application) : base(config, application)
+        {
+        }
 
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
@@ -61,15 +65,16 @@ namespace Sitko.Core.Storage.Proxy
                     var headers = ctx.Context.Response.Headers;
                     var contentType = headers["Content-Type"];
 
-                    if (contentType != "application/x-gzip" && !ctx.File.FilePath.EndsWith(".gz"))
+                    if (contentType != "application/x-gzip" && ctx.File.FilePath != null &&
+                        !ctx.File.FilePath.EndsWith(".gz"))
                     {
                         return;
                     }
 
-                    var fileNameToTry =
-                        ctx.File.FilePath.Substring(0, ctx.File.FilePath.Length - 3);
+                    var fileNameToTry = ctx.File.FilePath?.Substring(0, ctx.File.FilePath.Length - 3);
 
-                    if (_mimeTypeProvider.TryGetContentType(fileNameToTry, out var mimeType))
+                    if (_mimeTypeProvider != null &&
+                        _mimeTypeProvider.TryGetContentType(fileNameToTry, out var mimeType))
                     {
                         headers.Add("Content-Encoding", "gzip");
                         headers["Content-Type"] = mimeType;
