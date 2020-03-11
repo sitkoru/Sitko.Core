@@ -14,43 +14,62 @@ namespace Sitko.Core.Queue.Apm
 
         public Task<QueuePublishResult> OnBeforePublishAsync(object message, QueueMessageContext messageContext)
         {
-            var transaction = Elastic.Apm.Agent.Tracer.CurrentTransaction ??
-                              Elastic.Apm.Agent.Tracer.StartTransaction("QueuePublish", ApiConstants.TypeExternal);
+            var transaction = Elastic.Apm.Agent.Tracer.CurrentTransaction;
+            if (transaction == null)
+            {
+                transaction = Elastic.Apm.Agent.Tracer.StartTransaction("QueuePublish", ApiConstants.TypeExternal);
+                transaction.Labels.Add("MessageType", message.GetType().FullName);
+                _transactions.TryAdd(messageContext.Id, transaction);
+            }
 
             var span = transaction.StartSpan("PublishMessage", ApiConstants.TypeExternal, "Queue");
+            span.Labels.Add("MessageType", message.GetType().FullName);
             _messageSpans.TryAdd(messageContext.Id, span);
             return Task.FromResult(new QueuePublishResult());
         }
 
         public Task OnAfterPublishAsync(object message, QueueMessageContext messageContext)
         {
-            if (_messageSpans.TryRemove(messageContext.Id, out var span))
-            {
-                span.End();
-                if (Elastic.Apm.Agent.Tracer.CurrentTransaction != null &&
-                    Elastic.Apm.Agent.Tracer.CurrentTransaction.Name == "QueuePublish")
-                {
-                    Elastic.Apm.Agent.Tracer.CurrentTransaction.End();
-                }
-            }
-
+            EndOperation(messageContext.Id);
             return Task.FromResult(new QueuePublishResult());
         }
 
         public Task<bool> OnBeforeReceiveAsync(object message, QueueMessageContext messageContext)
         {
-            var transaction = Elastic.Apm.Agent.Tracer.CurrentTransaction ??
-                              Elastic.Apm.Agent.Tracer.StartTransaction("QueueRequest", ApiConstants.TypeRequest);
-            _transactions.TryAdd(messageContext.Id, transaction);
+            if (Elastic.Apm.Agent.Tracer.CurrentTransaction == null)
+            {
+                var transaction = Elastic.Apm.Agent.Tracer.StartTransaction("QueueRequest", ApiConstants.TypeRequest);
+                transaction.Labels.Add("MessageType", message.GetType().FullName);
+                _transactions.TryAdd(messageContext.Id, transaction);
+            }
+            else
+            {
+                var span = Elastic.Apm.Agent.Tracer.CurrentTransaction.StartSpan("ProcessMessage",
+                    ApiConstants.TypeExternal, "Queue");
+                span.Labels.Add("MessageType", message.GetType().FullName);
+                _messageSpans.TryAdd(messageContext.Id, span);
+            }
+
+
             return Task.FromResult(true);
+        }
+
+        private void EndOperation(Guid id)
+        {
+            if (_transactions.TryRemove(id, out var transaction))
+            {
+                transaction.End();
+            }
+
+            if (_messageSpans.TryRemove(id, out var span))
+            {
+                span.End();
+            }
         }
 
         public Task OnAfterReceiveAsync(object message, QueueMessageContext messageContext)
         {
-            if (_transactions.TryRemove(messageContext.Id, out var transaction))
-            {
-                transaction.End();
-            }
+            EndOperation(messageContext.Id);
             return Task.FromResult(true);
         }
     }
