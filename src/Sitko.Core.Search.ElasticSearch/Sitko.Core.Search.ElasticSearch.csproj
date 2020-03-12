@@ -6,7 +6,7 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NEST" Version="7.6.0" />
+    <PackageReference Include="NEST" Version="7.6.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Search\Sitko.Core.Search.csproj" />
