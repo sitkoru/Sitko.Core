@@ -25,56 +25,11 @@ namespace Sitko.Core.Queue
         {
             _config = config;
             _logger = logger;
-            _middlewares = context.Middlewares;
+            _middlewares = context.Middleware;
             _messageOptions = context.MessageOptions;
         }
 
-        private async Task<bool> OnBeforeReceiveMessageAsync<T>(QueuePayload<T> payload) where T : class
-        {
-            foreach (var queueMiddleware in _middlewares)
-            {
-                var result = await queueMiddleware.OnBeforeReceiveAsync(payload.Message, payload.MessageContext!);
-                if (!result)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private async Task<QueuePublishResult> OnBeforePublishMessageAsync<T>(QueuePayload<T> payload)
-            where T : class
-        {
-            foreach (var queueMiddleware in _middlewares)
-            {
-                var result = await queueMiddleware.OnBeforePublishAsync(payload.Message, payload.MessageContext!);
-                if (!result.IsSuccess)
-                {
-                    return result;
-                }
-            }
-
-            return new QueuePublishResult();
-        }
-
-        private async Task OnAfterReceiveMessageAsync<T>(QueuePayload<T> payload) where T : class
-        {
-            foreach (var queueMiddleware in _middlewares)
-            {
-                await queueMiddleware.OnAfterReceiveAsync(payload.Message, payload.MessageContext!);
-            }
-        }
-
-        private async Task OnAfterPublishMessageAsync<T>(QueuePayload<T> payload) where T : class
-        {
-            foreach (var queueMiddleware in _middlewares)
-            {
-                await queueMiddleware.OnAfterPublishAsync(payload.Message, payload.MessageContext!);
-            }
-        }
-
-        protected async Task<bool> ProcessMessageAsync<T>(QueuePayload<T> payload) where T : class
+        private async Task<bool> ReceiveAsync<T>(QueuePayload<T> payload) where T : class
         {
             var subscriptions = _subscriptions.Values.Where(s => s is QueueSubscription<T>).ToList();
 
@@ -83,29 +38,38 @@ namespace Sitko.Core.Queue
                 return true;
             }
 
-            if (!await OnBeforeReceiveMessageAsync(payload))
-            {
-                return false;
-            }
-
             foreach (var subscription in subscriptions)
             {
-                if (!(subscription is QueueSubscription<T> messageSubscription)) continue;
-
-                try
+                if (subscription is QueueSubscription<T> payloadSubscription)
                 {
-                    await messageSubscription.ProcessAsync(payload);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error while processing message {MessageType}: {ErrorText}", typeof(T),
-                        ex.ToString());
+                    try
+                    {
+                        await payloadSubscription.ProcessAsync(payload);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error while processing message {MessageType}: {ErrorText}",
+                            payload.Message.GetType(),
+                            ex.ToString());
+                    }
                 }
             }
 
-            await OnAfterReceiveMessageAsync(payload);
-
             return true;
+        }
+
+        protected Task<bool> ProcessMessageAsync<T>(QueuePayload<T> payload,
+            Func<QueuePayload<T>, Task<bool>>? callback = null) where T : class
+        {
+            callback ??= ReceiveAsync;
+            Func<QueuePayload<T>, Task<bool>> pipeLine = callback;
+            foreach (var middleware in _middlewares)
+            {
+                callback = pipeLine;
+                pipeLine = queuePayload => middleware.ReceiveAsync(queuePayload, callback);
+            }
+
+            return pipeLine(payload);
         }
 
         private QueueMessageContext GetMessageContext<T>(QueueMessageContext? parentMessageContext = null)
@@ -181,6 +145,20 @@ namespace Sitko.Core.Queue
             }
         }
 
+        private Task<QueuePublishResult> PublishAsync<T>(QueuePayload<T> payload,
+            Func<QueuePayload<T>, Task<QueuePublishResult>>? callback = null) where T : class
+        {
+            callback ??= DoPublishAsync;
+            Func<QueuePayload<T>, Task<QueuePublishResult>> pipeLine = callback;
+            foreach (var middleware in _middlewares)
+            {
+                callback = pipeLine;
+                pipeLine = queuePayload => middleware.PublishAsync(queuePayload, callback);
+            }
+
+            return pipeLine(payload);
+        }
+
         public async Task<QueuePublishResult> PublishAsync<T>(T message,
             QueueMessageContext? parentMessageContext = null)
             where T : class
@@ -189,16 +167,12 @@ namespace Sitko.Core.Queue
             var messageContext = GetMessageContext<T>(parentMessageContext);
 
             var payload = new QueuePayload<T>(message, messageContext);
-            var result = await OnBeforePublishMessageAsync(payload);
-            if (!result.IsSuccess)
-            {
-                return result;
-            }
 
-            result = await DoPublishAsync(payload);
-            await OnAfterPublishMessageAsync(payload);
+            var result = await PublishAsync(payload);
+
             return result;
         }
+
 
         public async Task<QueueSubscribeResult> SubscribeAsync<T>(
             Func<T, QueueMessageContext, Task<bool>> callback)
@@ -245,17 +219,19 @@ namespace Sitko.Core.Queue
             await StartAsync();
             return await DoReplyAsync<TMessage, TResponse>(async request =>
             {
-                if (await OnBeforeReceiveMessageAsync(request))
+                QueuePayload<TResponse>? responsePayload = null;
+                if (await ProcessMessageAsync(request, async payload =>
                 {
                     var response = await callback(request.Message, request.MessageContext!);
-                    var responsePayload = new QueuePayload<TResponse>(response, request.MessageContext);
-                    if ((await OnBeforePublishMessageAsync(responsePayload)).IsSuccess)
-                    {
-                        return responsePayload;
-                    }
-
-                    await OnAfterPublishMessageAsync(responsePayload);
-                    await OnAfterReceiveMessageAsync(request);
+                    var rPayload = new QueuePayload<TResponse>(response, request.MessageContext);
+                    var result = await PublishAsync(rPayload,
+                        queuePayload => Task.FromResult(new QueuePublishResult()));
+                    if (!result.IsSuccess) return false;
+                    responsePayload = rPayload;
+                    return true;
+                }))
+                {
+                    return responsePayload;
                 }
 
                 return null;
@@ -281,25 +257,17 @@ namespace Sitko.Core.Queue
 
             var messageContext = GetMessageContext<TMessage>(parentMessageContext);
             var payload = new QueuePayload<TMessage>(message, messageContext);
-            var beforeResult = await OnBeforePublishMessageAsync(payload);
-            if (!beforeResult.IsSuccess)
-            {
-                if (beforeResult.Exception != null)
-                {
-                    throw beforeResult.Exception;
-                }
-
-                throw new Exception(beforeResult.ErrorMessage);
-            }
-
-            var response = await DoRequestAsync<TMessage, TResponse>(payload, timeout.Value);
-            await OnAfterPublishMessageAsync(payload);
+            QueuePayload<TResponse>? response = null;
             (TResponse message, QueueMessageContext messageContext)? result = null;
-            if (response != null)
+            var publishResult = await PublishAsync(payload, async queuePayload =>
             {
-                if (await OnBeforeReceiveMessageAsync(response))
+                response = await DoRequestAsync<TMessage, TResponse>(payload, timeout.Value);
+                return new QueuePublishResult();
+            });
+            if (publishResult.IsSuccess && response != null)
+            {
+                if (await ProcessMessageAsync(response, queuePayload => Task.FromResult(true)))
                 {
-                    await OnAfterReceiveMessageAsync(response);
                     result = (response.Message, response.MessageContext!);
                 }
                 else

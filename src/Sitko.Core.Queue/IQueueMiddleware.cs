@@ -1,27 +1,19 @@
+using System;
 using System.Threading.Tasks;
 
 namespace Sitko.Core.Queue
 {
     public interface IQueueMiddleware
     {
-        Task<QueuePublishResult> OnBeforePublishAsync(object message, QueueMessageContext messageContext)
+        Task<QueuePublishResult> PublishAsync<T>(QueuePayload<T> payload,
+            Func<QueuePayload<T>, Task<QueuePublishResult>> next) where T : class
         {
-            return Task.FromResult(new QueuePublishResult());
+            return next(payload);
         }
 
-        Task OnAfterPublishAsync(object message, QueueMessageContext messageContext)
+        Task<bool> ReceiveAsync<T>(QueuePayload<T> payload, Func<QueuePayload<T>, Task<bool>> next) where T : class
         {
-            return Task.CompletedTask;
-        }
-
-        Task<bool> OnBeforeReceiveAsync(object message, QueueMessageContext messageContext)
-        {
-            return Task.FromResult(true);
-        }
-
-        Task OnAfterReceiveAsync(object message, QueueMessageContext messageContext)
-        {
-            return Task.CompletedTask;
+            return next(payload);
         }
     }
 }
