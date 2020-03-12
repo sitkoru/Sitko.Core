@@ -14,10 +14,10 @@ namespace Sitko.Core.Queue.Tests
         {
         }
 
-        protected override Task<QueuePublishResult> DoPublishAsync<T>(QueuePayload<T> queuePayload)
+        protected override async Task<QueuePublishResult> DoPublishAsync<T>(QueuePayload<T> queuePayload)
         {
-            ProcessMessageAsync(queuePayload);
-            return Task.FromResult(new QueuePublishResult());
+            await ProcessMessageAsync(queuePayload);
+            return new QueuePublishResult();
         }
 
         protected override Task<QueuePayload<TResponse>?> DoRequestAsync<TMessage, TResponse>(
