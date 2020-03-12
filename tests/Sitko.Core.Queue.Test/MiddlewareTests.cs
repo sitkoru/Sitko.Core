@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -129,16 +130,23 @@ namespace Sitko.Core.Queue.Tests
         public int Published { get; private set; }
         public int Received { get; private set; }
 
-        public Task OnAfterPublishAsync(object message, QueueMessageContext messageContext)
+        public Task<QueuePublishResult> PublishAsync<T>(QueuePayload<T> payload,
+            Func<QueuePayload<T>, Task<QueuePublishResult>> next) where T : class
         {
             Published++;
-            return Task.CompletedTask;
+            return next(payload);
         }
 
-        public Task OnAfterReceiveAsync(object message, QueueMessageContext messageContext)
+        public async Task<bool> ReceiveAsync<T>(QueuePayload<T> payload, Func<QueuePayload<T>, Task<bool>> next)
+            where T : class
         {
-            Received++;
-            return Task.CompletedTask;
+            var result = await next(payload);
+            if (result)
+            {
+                Received++;
+            }
+
+            return result;
         }
     }
 }
