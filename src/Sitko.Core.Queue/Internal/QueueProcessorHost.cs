@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,12 +27,15 @@ namespace Sitko.Core.Queue.Internal
             _logger.LogInformation("Start processing messages of type {Type}", typeof(T));
             var result = await _queue.SubscribeAsync<T>(async (message, context) =>
             {
+                _logger.LogDebug("New message of {Type}", typeof(T));
                 using var scope = _serviceProvider.CreateScope();
-                var processors = scope.ServiceProvider.GetServices<IQueueProcessor<T>>();
+                var processors = scope.ServiceProvider.GetServices<IQueueProcessor<T>>().ToArray();
+                _logger.LogDebug("Processors of type {Type}: {Count}", typeof(T), processors.Length);
                 foreach (IQueueProcessor<T> processor in processors)
                 {
                     try
                     {
+                        _logger.LogDebug("Run processor {Processor}", processor.GetType());
                         await processor.ProcessAsync(message, context);
                     }
                     catch (Exception e)
