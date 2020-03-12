@@ -35,7 +35,7 @@ namespace Sitko.Core.Queue
 
             if (!subscriptions.Any())
             {
-                return true;
+                return false;
             }
 
             foreach (var subscription in subscriptions)
