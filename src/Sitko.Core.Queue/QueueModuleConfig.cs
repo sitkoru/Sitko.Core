@@ -98,6 +98,11 @@ namespace Sitko.Core.Queue
                     if (typeof(IQueueProcessor).IsAssignableFrom(implementedInterface) &&
                         implementedInterface.IsGenericType)
                     {
+                        if (!type.IsPublic)
+                        {
+                            throw new Exception($"Processor class {type.FullName} must be public");
+                        }
+
                         var typeParam = implementedInterface.GetGenericArguments()[0];
                         if (typeParam.IsClass && !typeParam.IsAbstract)
                         {
