@@ -4,15 +4,15 @@ namespace Sitko.Core.Queue.Internal
 {
     public class QueueContext
     {
-        public readonly List<IQueueMiddleware> Middlewares = new List<IQueueMiddleware>();
+        public readonly List<IQueueMiddleware> Middleware = new List<IQueueMiddleware>();
         public readonly List<IQueueMessageOptions> MessageOptions = new List<IQueueMessageOptions>();
 
-        public QueueContext(IEnumerable<IQueueMiddleware>? middlewares = default,
+        public QueueContext(IEnumerable<IQueueMiddleware>? middleware = default,
             IEnumerable<IQueueMessageOptions>? messageOptions = default)
         {
-            if (middlewares != null)
+            if (middleware != null)
             {
-                Middlewares.AddRange(middlewares);
+                Middleware.AddRange(middleware);
             }
 
             if (messageOptions != null)
