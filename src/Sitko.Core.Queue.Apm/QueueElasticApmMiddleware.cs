@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Elastic.Apm.Api;
 
@@ -7,70 +6,39 @@ namespace Sitko.Core.Queue.Apm
 {
     public class QueueElasticApmMiddleware : IQueueMiddleware
     {
-        private readonly ConcurrentDictionary<Guid, ISpan> _messageSpans = new ConcurrentDictionary<Guid, ISpan>();
+        private ITracer? _tracer;
 
-        private readonly ConcurrentDictionary<Guid, ITransaction> _transactions =
-            new ConcurrentDictionary<Guid, ITransaction>();
-
-        public Task<QueuePublishResult> OnBeforePublishAsync(object message, QueueMessageContext messageContext)
+        private ITracer GetTracer()
         {
-            var transaction = Elastic.Apm.Agent.Tracer.CurrentTransaction;
+            return _tracer ??= Elastic.Apm.Agent.Tracer;
+        }
+
+        public Task<QueuePublishResult> PublishAsync<T>(QueuePayload<T> payload,
+            Func<QueuePayload<T>, Task<QueuePublishResult>> next) where T : class
+        {
+            var transaction = GetTracer().CurrentTransaction;
             if (transaction == null)
             {
-                transaction = Elastic.Apm.Agent.Tracer.StartTransaction($"Publish {message.GetType().FullName}",
-                    ApiConstants.TypeExternal);
-                _transactions.TryAdd(messageContext.Id, transaction);
+                return GetTracer().CaptureTransaction($"Publish {payload.Message.GetType().FullName}",
+                    ApiConstants.TypeExternal, async () => await next(payload));
             }
 
-            var span = transaction.StartSpan($"Publish {message.GetType().FullName}", ApiConstants.TypeExternal,
-                "Queue");
-            _messageSpans.TryAdd(messageContext.Id, span);
-            return Task.FromResult(new QueuePublishResult());
+            return transaction.CaptureSpan($"Publish {payload.Message.GetType().FullName}", ApiConstants.TypeExternal,
+                async () => await next(payload), "Queue");
         }
 
-        public Task OnAfterPublishAsync(object message, QueueMessageContext messageContext)
+        public Task<bool> ReceiveAsync<T>(QueuePayload<T> payload, Func<QueuePayload<T>, Task<bool>> next)
+            where T : class
         {
-            EndOperation(messageContext.Id);
-            return Task.FromResult(new QueuePublishResult());
-        }
-
-        public Task<bool> OnBeforeReceiveAsync(object message, QueueMessageContext messageContext)
-        {
-            if (Elastic.Apm.Agent.Tracer.CurrentTransaction == null)
+            var transaction = GetTracer().CurrentTransaction;
+            if (transaction == null)
             {
-                var transaction = Elastic.Apm.Agent.Tracer.StartTransaction($"Process {message.GetType().FullName}",
-                    ApiConstants.TypeRequest);
-                _transactions.TryAdd(messageContext.Id, transaction);
-            }
-            else
-            {
-                var span = Elastic.Apm.Agent.Tracer.CurrentTransaction.StartSpan(
-                    $"Process {message.GetType().FullName}",
-                    ApiConstants.TypeExternal, "Queue");
-                _messageSpans.TryAdd(messageContext.Id, span);
+                return GetTracer().CaptureTransaction($"Process {payload.Message.GetType().FullName}",
+                    ApiConstants.TypeRequest, async () => await next(payload));
             }
 
-
-            return Task.FromResult(true);
-        }
-
-        private void EndOperation(Guid id)
-        {
-            if (_transactions.TryRemove(id, out var transaction))
-            {
-                transaction.End();
-            }
-
-            if (_messageSpans.TryRemove(id, out var span))
-            {
-                span.End();
-            }
-        }
-
-        public Task OnAfterReceiveAsync(object message, QueueMessageContext messageContext)
-        {
-            EndOperation(messageContext.Id);
-            return Task.FromResult(true);
+            return transaction.CaptureSpan($"Process {payload.Message.GetType().FullName}", ApiConstants.TypeExternal,
+                async () => await next(payload), "Queue");
         }
     }
 }
