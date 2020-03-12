@@ -103,7 +103,7 @@ namespace Sitko.Core.Grpc.Client
                 return;
             }
 
-            _client.CurrentInstance = Activator.CreateInstance<T>();
+            _client.CurrentInstance = (T)Activator.CreateInstance(typeof(T), _channel);
             _client.IsReady = true;
         }
 
