@@ -270,7 +270,7 @@ namespace Sitko.Core.Queue.Nats
 
             if (queueOptions.ManualAck)
             {
-                _logger.LogInformation("{QueueName}: Manual acks with {Timeout} timeoit", queueName,
+                _logger.LogInformation("{QueueName}: Manual acks with {Timeout} timeout", queueName,
                     queueOptions.AckWait);
                 stanOptions.AckWait = (int)queueOptions.AckWait.TotalMilliseconds;
                 stanOptions.ManualAcks = true;
