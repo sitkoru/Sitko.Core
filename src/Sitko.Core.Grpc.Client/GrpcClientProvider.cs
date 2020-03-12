@@ -11,7 +11,7 @@ using Nito.AsyncEx;
 
 namespace Sitko.Core.Grpc.Client
 {
-    public class GrpcClientProvider<T> : IGrpcClientProvider<T>, IDisposable where T : ClientBase<T>
+    public class GrpcClientProvider<T> : IGrpcClientProvider<T>, IAsyncDisposable where T : ClientBase<T>
     {
         private readonly ILogger<GrpcClientProvider<T>> _logger;
         private readonly IConsulClient _consulClient;
@@ -116,7 +116,7 @@ namespace Sitko.Core.Grpc.Client
                     _logger.LogDebug("Wait for configuration load");
                     var serviceResponse =
                         await _consulClient.Catalog.Service(_serviceName, "grpc",
-                            new QueryOptions {WaitIndex = _lastIndex});
+                            new QueryOptions {WaitIndex = _lastIndex}, _cts.Token);
                     if (serviceResponse.StatusCode == HttpStatusCode.OK)
                     {
                         _lastIndex = serviceResponse.LastIndex;
@@ -157,11 +157,15 @@ namespace Sitko.Core.Grpc.Client
             _logger.LogDebug("Stop waiting for configuration");
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             _cts.Cancel();
             _cts.Dispose();
-            _refreshTask?.Dispose();
+            if (_refreshTask != null)
+            {
+                await _refreshTask;
+                _refreshTask.Dispose();
+            }
         }
     }
 
