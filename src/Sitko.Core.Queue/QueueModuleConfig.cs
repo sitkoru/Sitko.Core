@@ -47,14 +47,14 @@ namespace Sitko.Core.Queue
         public void RegisterMiddlewares<TAssembly>()
         {
             var assembly = typeof(TAssembly).Assembly;
-            foreach (var type in assembly.DefinedTypes)
+            foreach (var type in assembly.ExportedTypes)
             {
                 if (type.IsAbstract)
                 {
                     continue;
                 }
 
-                foreach (var implementedInterface in type.ImplementedInterfaces)
+                foreach (var implementedInterface in type.GetInterfaces())
                 {
                     if (typeof(IQueueMiddleware).IsAssignableFrom(implementedInterface))
                     {
@@ -80,7 +80,7 @@ namespace Sitko.Core.Queue
         public void RegisterProcessors<TAssembly>()
         {
             var assembly = typeof(TAssembly).Assembly;
-            foreach (var type in assembly.DefinedTypes)
+            foreach (var type in assembly.ExportedTypes)
             {
                 if (type.IsAbstract)
                 {
@@ -93,7 +93,7 @@ namespace Sitko.Core.Queue
                     throw new Exception("Can't find method RegisterProcessor");
                 }
 
-                foreach (var implementedInterface in type.ImplementedInterfaces)
+                foreach (var implementedInterface in type.GetInterfaces())
                 {
                     if (typeof(IQueueProcessor).IsAssignableFrom(implementedInterface) &&
                         implementedInterface.IsGenericType)

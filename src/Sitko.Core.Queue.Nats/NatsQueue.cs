@@ -68,7 +68,7 @@ namespace Sitko.Core.Queue.Nats
             return GetQueueName(Activator.CreateInstance<T>());
         }
 
-        protected override async Task<QueuePublishResult> DoPublishAsync<T>(QueuePayload<T> queuePayload)
+        protected override async Task<QueuePublishResult> DoPublishAsync<T>(T message, QueueMessageContext context)
         {
             if (_connection == null)
             {
@@ -78,7 +78,7 @@ namespace Sitko.Core.Queue.Nats
             var result = new QueuePublishResult();
             try
             {
-                await _connection.PublishAsync(GetQueueName(queuePayload.Message), SerializePayload(queuePayload));
+                await _connection.PublishAsync(GetQueueName(message), SerializePayload(message, context));
             }
             catch (Exception e)
             {
@@ -88,8 +88,9 @@ namespace Sitko.Core.Queue.Nats
             return result;
         }
 
-        protected override async Task<QueuePayload<TResponse>?> DoRequestAsync<TMessage, TResponse>(
-            QueuePayload<TMessage> queuePayload, TimeSpan timeout)
+        protected override async Task<(TResponse message, QueueMessageContext context)?> DoRequestAsync<TMessage,
+            TResponse>(
+            TMessage message, QueueMessageContext context, TimeSpan timeout)
         {
             if (_natsConn == null)
             {
@@ -100,7 +101,7 @@ namespace Sitko.Core.Queue.Nats
             {
                 var deserializer = GetPayloadDeserializer<TResponse>();
                 var result =
-                    await _natsConn.RequestAsync(GetQueueName(queuePayload.Message), SerializePayload(queuePayload),
+                    await _natsConn.RequestAsync(GetQueueName(message), SerializePayload(message, context),
                         (int)timeout.TotalMilliseconds);
                 try
                 {
@@ -120,7 +121,7 @@ namespace Sitko.Core.Queue.Nats
         }
 
         protected override Task<QueueSubscribeResult> DoReplyAsync<TMessage, TResponse>(
-            Func<QueuePayload<TMessage>, Task<QueuePayload<TResponse>?>> callback)
+            Func<TMessage, QueueMessageContext, PublishAsyncDelegate<TResponse>, Task<bool>> callback)
         {
             if (_natsConn == null)
             {
@@ -139,11 +140,12 @@ namespace Sitko.Core.Queue.Nats
                 async (sender, args) =>
                 {
                     var request = deserializer(args.Message.Data);
-                    var response = await callback(request);
-                    if (response != null)
+                    await callback(request.message, request.messageContext, (message, context) =>
                     {
-                        args.Message.Respond(SerializePayload(response));
-                    }
+                        var data = SerializePayload(message, context);
+                        args.Message.Respond(data);
+                        return Task.FromResult(new QueuePublishResult());
+                    });
                 });
             _natsSubscriptions.TryAdd(id, sub);
             return Task.FromResult(new QueueSubscribeResult() {SubscriptionId = id});
@@ -160,44 +162,42 @@ namespace Sitko.Core.Queue.Nats
             return Task.FromResult(false);
         }
 
-        private byte[] SerializePayload<T>(QueuePayload<T> payload) where T : class
+        private byte[] SerializePayload<T>(T message, QueueMessageContext context) where T : class
         {
-            var context = payload.MessageContext != null
-                ? new QueueContextMsg
-                {
-                    Id = payload.MessageContext.Id.ToString(),
-                    Date = payload.MessageContext.Date.ToTimestamp(),
-                    MessageType = payload.MessageContext.MessageType ?? string.Empty
-                }
-                : new QueueContextMsg();
-            if (!string.IsNullOrEmpty(payload.MessageContext?.RequestId))
+            var contextMsg = new QueueContextMsg
             {
-                context.RequestId = payload.MessageContext.RequestId;
+                Id = context.Id.ToString(),
+                Date = context.Date.ToTimestamp(),
+                MessageType = context.MessageType ?? string.Empty
+            };
+            if (!string.IsNullOrEmpty(context.RequestId))
+            {
+                contextMsg.RequestId = context.RequestId;
             }
 
-            if (payload.MessageContext?.ParentMessageId != null)
+            if (context.ParentMessageId != null)
             {
-                context.ParentMessageId = payload.MessageContext.ParentMessageId.ToString();
+                contextMsg.ParentMessageId = context.ParentMessageId.ToString();
             }
 
-            if (payload.MessageContext?.RootMessageId != null)
+            if (context.RootMessageId != null)
             {
-                context.RootMessageId = payload.MessageContext.RootMessageId.ToString();
+                contextMsg.RootMessageId = context.RootMessageId.ToString();
             }
 
-            if (payload.MessageContext?.RootMessageDate != null)
+            if (context.RootMessageDate != null)
             {
-                context.RootMessageDate = payload.MessageContext.RootMessageDate.Value.ToTimestamp();
+                contextMsg.RootMessageDate = context.RootMessageDate.Value.ToTimestamp();
             }
 
             IMessage msg;
-            if (payload.Message is IMessage protoMessage)
+            if (message is IMessage protoMessage)
             {
-                msg = new QueueBinaryMsg {Context = context, Data = Any.Pack(protoMessage)};
+                msg = new QueueBinaryMsg {Context = contextMsg, Data = Any.Pack(protoMessage)};
             }
             else
             {
-                msg = new QueueJsonMsg {Context = context, Data = JsonConvert.SerializeObject(payload.Message)};
+                msg = new QueueJsonMsg {Context = contextMsg, Data = JsonConvert.SerializeObject(message)};
             }
 
             return msg.ToByteArray();
@@ -318,13 +318,14 @@ namespace Sitko.Core.Queue.Nats
             return Task.FromResult(result);
         }
 
-        private async Task ProcessStanMessage<T>(Func<byte[], QueuePayload<T>> deserializer, StanMsg message,
+        private async Task ProcessStanMessage<T>(
+            Func<byte[], (T message, QueueMessageContext messageContext)> deserializer, StanMsg message,
             bool manualAcks) where T : class
         {
             try
             {
                 var payload = deserializer(message.Data);
-                var processResult = await ProcessMessageAsync(payload);
+                var processResult = await ProcessMessageAsync(payload.message, payload.messageContext);
                 if (processResult && manualAcks)
                 {
                     message.Ack();
@@ -337,10 +338,11 @@ namespace Sitko.Core.Queue.Nats
             }
         }
 
-        private Func<byte[], QueuePayload<T>> GetPayloadDeserializer<T>() where T : class
+        private Func<byte[], (T message, QueueMessageContext messageContext)> GetPayloadDeserializer<T>()
+            where T : class
         {
             var isBinary = typeof(IMessage).IsAssignableFrom(typeof(T));
-            Func<byte[], QueuePayload<T>> deserializer;
+            Func<byte[], (T message, QueueMessageContext messageContext)> deserializer;
             if (isBinary)
             {
                 var processMethod = _deserializeBinaryMethod.MakeGenericMethod(typeof(T));
@@ -349,7 +351,8 @@ namespace Sitko.Core.Queue.Nats
                     throw new Exception($"Can't create generic deserialize method for {typeof(T)}");
                 }
 
-                deserializer = bytes => (QueuePayload<T>)processMethod.Invoke(this, new object[] {bytes});
+                deserializer = bytes =>
+                    ((T message, QueueMessageContext messageContext))processMethod.Invoke(this, new object[] {bytes});
             }
             else
             {
@@ -359,20 +362,19 @@ namespace Sitko.Core.Queue.Nats
             return deserializer;
         }
 
-        private QueuePayload<T> DeserializeJsonPayload<T>(byte[] data) where T : class
+        private (T message, QueueMessageContext messageContext) DeserializeJsonPayload<T>(byte[] data) where T : class
         {
             var jsonMsg = new QueueJsonMsg();
             jsonMsg.MergeFrom(data);
-            return new QueuePayload<T>(JsonConvert.DeserializeObject<T>(jsonMsg.Data),
-                DeserializeContext(jsonMsg.Context));
+            return (JsonConvert.DeserializeObject<T>(jsonMsg.Data), DeserializeContext(jsonMsg.Context));
         }
 
-        private QueuePayload<T> DeserializeBinaryPayload<T>(byte[] data) where T : class, IMessage, new()
+        private (T message, QueueMessageContext messageContext) DeserializeBinaryPayload<T>(byte[] data)
+            where T : class, IMessage, new()
         {
             var binaryMsg = new QueueBinaryMsg();
             binaryMsg.MergeFrom(data);
-            return new QueuePayload<T>(binaryMsg.Data.Unpack<T>(),
-                DeserializeContext(binaryMsg.Context));
+            return (binaryMsg.Data.Unpack<T>(), DeserializeContext(binaryMsg.Context));
         }
 
         protected override Task DoUnsubscribeAsync<T>()

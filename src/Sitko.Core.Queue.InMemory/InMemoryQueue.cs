@@ -30,13 +30,13 @@ namespace Sitko.Core.Queue.InMemory
             });
         }
 
-        protected override Task<QueuePublishResult> DoPublishAsync<T>(QueuePayload<T> queuePayload)
+        protected override Task<QueuePublishResult> DoPublishAsync<T>(T message, QueueMessageContext messageContext)
         {
             var result = new QueuePublishResult();
             try
             {
                 var channel = GetOrCreateChannel<T>();
-                channel.Publish(queuePayload);
+                channel.Publish(message, messageContext);
             }
             catch (Exception ex)
             {
@@ -46,17 +46,18 @@ namespace Sitko.Core.Queue.InMemory
             return Task.FromResult(result);
         }
 
-        protected override async Task<QueuePayload<TResponse>?> DoRequestAsync<TMessage, TResponse>(
-            QueuePayload<TMessage> queuePayload, TimeSpan timeout)
+        protected override async Task<(TResponse message, QueueMessageContext context)?> DoRequestAsync<TMessage,
+            TResponse>(
+            TMessage message, QueueMessageContext context, TimeSpan timeout)
         {
             var replyTo = Guid.NewGuid();
             var channel = GetOrCreateChannel<TResponse>();
-            var resultSource = new TaskCompletionSource<QueuePayload<TResponse>>();
-            var subscriptionId = channel.Subscribe(response =>
+            var resultSource = new TaskCompletionSource<(TResponse message, QueueMessageContext context)>();
+            var subscriptionId = channel.Subscribe((response, responseContext) =>
             {
-                if (response.MessageContext?.ReplyTo == replyTo)
+                if (responseContext.ReplyTo == replyTo)
                 {
-                    resultSource.SetResult(response);
+                    resultSource.SetResult((response, responseContext));
                 }
 
                 return Task.CompletedTask;
@@ -64,8 +65,8 @@ namespace Sitko.Core.Queue.InMemory
             var tasks = new List<Task> {Task.Delay(timeout), resultSource.Task};
 
             var sendChannel = GetOrCreateChannel<TMessage>();
-            queuePayload.MessageContext!.ReplyTo = replyTo;
-            sendChannel.Publish(queuePayload);
+            context.ReplyTo = replyTo;
+            sendChannel.Publish(message, context);
 
             await Task.WhenAny(tasks);
             channel.UnSubscribe(subscriptionId);
@@ -75,21 +76,17 @@ namespace Sitko.Core.Queue.InMemory
         }
 
         protected override Task<QueueSubscribeResult> DoReplyAsync<TMessage, TResponse>(
-            Func<QueuePayload<TMessage>, Task<QueuePayload<TResponse>?>> callback)
+            Func<TMessage, QueueMessageContext, PublishAsyncDelegate<TResponse>, Task<bool>> callback)
         {
             var result = new QueueSubscribeResult();
             try
             {
                 var channel = GetOrCreateChannel<TMessage>();
-                result.SubscriptionId = channel.Subscribe(async request =>
+                result.SubscriptionId = channel.Subscribe(async (request, context) =>
                 {
-                    if (request.MessageContext?.ReplyTo != null)
+                    if (context.ReplyTo != null)
                     {
-                        var response = await callback(request);
-                        if (response != null)
-                        {
-                            await DoPublishAsync(response);
-                        }
+                        await callback(request, context, DoPublishAsync);
                     }
                 });
             }
@@ -113,8 +110,8 @@ namespace Sitko.Core.Queue.InMemory
             try
             {
                 var channel = GetOrCreateChannel<T>();
-                channel.Subscribe(payload =>
-                    payload.MessageContext?.ReplyTo == null ? ProcessMessageAsync(payload) : Task.CompletedTask);
+                channel.Subscribe((message, context) =>
+                    context.ReplyTo == null ? ProcessMessageAsync(message, context) : Task.CompletedTask);
             }
             catch (Exception ex)
             {
@@ -145,7 +142,7 @@ namespace Sitko.Core.Queue.InMemory
 
         public override Task<(HealthStatus status, string? errorMessage)> CheckHealthAsync()
         {
-            return Task.FromResult((HealthStatus.Healthy, (string?) null));
+            return Task.FromResult((HealthStatus.Healthy, (string?)null));
         }
     }
 }

@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -64,24 +63,24 @@ namespace Sitko.Core.Queue.Tests
         }
     }
 
-    public class FailingMiddleware : IQueueMiddleware
+    public class FailingMiddleware : BaseQueueMiddleware
     {
         public bool FailOnPublish { get; set; } = true;
         public bool FailOnReceive { get; set; } = true;
 
-        public Task<QueuePublishResult> PublishAsync<T>(QueuePayload<T> payload,
-            Func<QueuePayload<T>, Task<QueuePublishResult>> next) where T : class
+        public override Task<QueuePublishResult> PublishAsync<T>(T message, QueueMessageContext messageContext,
+            PublishAsyncDelegate<T>? callback = null)
         {
-            if (!FailOnPublish) return next(payload);
+            if (!FailOnPublish) return base.PublishAsync(message, messageContext, callback);
             var result = new QueuePublishResult();
             result.SetError("Middleware failed publish");
             return Task.FromResult(result);
         }
 
-        public Task<bool> ReceiveAsync<T>(QueuePayload<T> payload, Func<QueuePayload<T>, Task<bool>> next)
-            where T : class
+        public override Task<bool> ReceiveAsync<T>(T message, QueueMessageContext messageContext,
+            ReceiveAsyncDelegate<T>? callback = null)
         {
-            return FailOnReceive ? Task.FromResult(false) : next(payload);
+            return FailOnReceive ? Task.FromResult(false) : base.ReceiveAsync(message, messageContext, callback);
         }
     }
 }
