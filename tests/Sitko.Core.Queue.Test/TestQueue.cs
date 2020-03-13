@@ -14,23 +14,22 @@ namespace Sitko.Core.Queue.Tests
         {
         }
 
-        protected override async Task<QueuePublishResult> DoPublishAsync<T>(QueuePayload<T> queuePayload)
+        protected override async Task<QueuePublishResult> DoPublishAsync<T>(T message, QueueMessageContext context)
         {
-            await ProcessMessageAsync(queuePayload);
+            await ProcessMessageAsync(message, context);
             return new QueuePublishResult();
         }
 
-        protected override Task<QueuePayload<TResponse>?> DoRequestAsync<TMessage, TResponse>(
-            QueuePayload<TMessage> queuePayload, TimeSpan timeout)
+        protected override Task<(TResponse message, QueueMessageContext context)?> DoRequestAsync<TMessage, TResponse>(
+            TMessage message, QueueMessageContext context, TimeSpan timeout)
         {
-#pragma warning disable 8619
-            return Task.FromResult(new QueuePayload<TResponse>(Activator.CreateInstance<TResponse>(),
-                new QueueMessageContext()));
-#pragma warning restore 8619
+            (TResponse message, QueueMessageContext context)? result = (Activator.CreateInstance<TResponse>(),
+                new QueueMessageContext());
+            return Task.FromResult(result);
         }
 
         protected override Task<QueueSubscribeResult> DoReplyAsync<TMessage, TResponse>(
-            Func<QueuePayload<TMessage>, Task<QueuePayload<TResponse>?>> callback)
+            Func<TMessage, QueueMessageContext, PublishAsyncDelegate<TResponse>, Task<bool>> callback)
         {
             return Task.FromResult(new QueueSubscribeResult());
         }

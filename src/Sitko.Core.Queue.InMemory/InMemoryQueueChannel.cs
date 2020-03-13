@@ -9,11 +9,11 @@ namespace Sitko.Core.Queue.InMemory
 {
     public class InMemoryQueueChannel<T> : InMemoryQueueChannel where T : class
     {
-        private readonly Channel<QueuePayload<T>> _channel = Channel.CreateUnbounded<QueuePayload<T>>();
+        private readonly Channel<(T message, QueueMessageContext messageContext)> _channel = Channel.CreateUnbounded<(T message, QueueMessageContext messageContext)>();
         private readonly ILogger _logger;
 
-        private readonly ConcurrentDictionary<Guid, Func<QueuePayload<T>, Task>> _callbacks =
-            new ConcurrentDictionary<Guid, Func<QueuePayload<T>, Task>>();
+        private readonly ConcurrentDictionary<Guid, Func<T, QueueMessageContext, Task>> _callbacks =
+            new ConcurrentDictionary<Guid, Func<T, QueueMessageContext, Task>>();
 
         private readonly Guid _id = Guid.NewGuid();
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
@@ -23,12 +23,12 @@ namespace Sitko.Core.Queue.InMemory
             _logger = logger;
         }
 
-        public void Publish(QueuePayload<T> payload)
+        public void Publish(T message, QueueMessageContext context)
         {
-            _channel.Writer.TryWrite(payload);
+            _channel.Writer.TryWrite((message, context));
         }
 
-        public Guid Subscribe(Func<QueuePayload<T>, Task> callback)
+        public Guid Subscribe(Func<T, QueueMessageContext, Task> callback)
         {
             var id = Guid.NewGuid();
             _callbacks.TryAdd(id, callback);
@@ -53,7 +53,7 @@ namespace Sitko.Core.Queue.InMemory
                     {
                         try
                         {
-                            await callback(entry);
+                            await callback(entry.message, entry.messageContext);
                         }
                         catch (Exception ex)
                         {

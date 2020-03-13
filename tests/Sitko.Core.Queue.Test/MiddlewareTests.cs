@@ -1,7 +1,7 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -62,47 +62,30 @@ namespace Sitko.Core.Queue.Tests
         {
             var scope = GetScope<MultipleMiddlewareQueueTestScope>();
 
+            var classes =
+                typeof(MiddlewareTests).Assembly.ExportedTypes.Where(t => typeof(IQueueMiddleware).IsAssignableFrom(t));
+            
             var mws = scope.GetAll<IQueueMiddleware>();
 
-            Assert.Equal(2, mws.Count());
+            Assert.Equal(classes.Count(), mws.Count());
         }
 
-        // [Fact]
-        // public async Task Metrics()
-        // {
-        //     var scope = GetScope<MetricsMiddlewareQueueTestScope>();
-        //
-        //     var mw = scope.Get<MetricsMiddleware>();
-        //
-        //     Assert.NotNull(mw);
-        //     Assert.Equal(0, mw.SentCount);
-        //     Assert.Equal(0, mw.ReceivedCount);
-        //     Assert.Equal(0, mw.AvgProcessTime);
-        //     Assert.Equal(0, mw.AvgLatency);
-        //
-        //     var queue = scope.Get<IQueue>();
-        //     var subResult = await queue.SubscribeAsync<TestMessage>(async (message, context) =>
-        //     {
-        //         await Task.Delay(TimeSpan.FromSeconds(1));
-        //         return true;
-        //     });
-        //     Assert.True(subResult.IsSuccess);
-        //
-        //     var msg = new TestMessage();
-        //     var result = await queue.PublishAsync(msg,
-        //         new QueueMessageContext
-        //         {
-        //             RootMessageId = Guid.NewGuid(), RootMessageDate = DateTimeOffset.UtcNow.AddMinutes(-1)
-        //         });
-        //     Assert.True(result.IsSuccess);
-        //
-        //     await Task.Delay(TimeSpan.FromSeconds(1));
-        //
-        //     Assert.Equal(1, mw.SentCount);
-        //     Assert.Equal(1, mw.ReceivedCount);
-        //     Assert.NotEqual(0, mw.AvgProcessTime);
-        //     Assert.NotEqual(0, mw.AvgLatency);
-        // }
+        [Fact]
+        public async Task Chain()
+        {
+            var scope = GetScope<ChainMiddlewareQueueTestScope>();
+
+            var state = scope.Get<ChainState>();
+
+            Assert.Null(state.State);
+
+            var queue = scope.Get<IQueue>();
+
+            var publishResult = await queue.PublishAsync(new TestMessage());
+            Assert.True(publishResult.IsSuccess);
+
+            Assert.Equal("foobar", state.State);
+        }
     }
 
     public class MiddlewareQueueTestScope : BaseTestQueueTestScope
@@ -117,6 +100,13 @@ namespace Sitko.Core.Queue.Tests
 
     public class MultipleMiddlewareQueueTestScope : BaseTestQueueTestScope
     {
+        protected override IServiceCollection ConfigureServices(IConfiguration configuration,
+            IHostEnvironment environment,
+            IServiceCollection services, string name)
+        {
+            return base.ConfigureServices(configuration, environment, services, name).AddSingleton<ChainState>();
+        }
+        
         protected override void ConfigureQueue(TestQueueConfig config, IConfiguration configuration,
             IHostEnvironment environment, string name)
         {
@@ -125,22 +115,84 @@ namespace Sitko.Core.Queue.Tests
         }
     }
 
-    public class CountMiddleware : IQueueMiddleware
+    public class ChainMiddlewareQueueTestScope : BaseTestQueueTestScope
+    {
+        protected override IServiceCollection ConfigureServices(IConfiguration configuration,
+            IHostEnvironment environment,
+            IServiceCollection services, string name)
+        {
+            return base.ConfigureServices(configuration, environment, services, name).AddSingleton<ChainState>();
+        }
+
+        protected override void ConfigureQueue(TestQueueConfig config, IConfiguration configuration,
+            IHostEnvironment environment, string name)
+        {
+            base.ConfigureQueue(config, configuration, environment, name);
+            config.RegisterMiddleware<ChainFooMiddleware>();
+            config.RegisterMiddleware<ChainBarMiddleware>();
+        }
+    }
+
+    public class ChainState
+    {
+        public string? State { get; private set; }
+
+        public void AppendState(string state)
+        {
+            State += state;
+        }
+    }
+
+    public class ChainFooMiddleware : BaseQueueMiddleware
+    {
+        private readonly ChainState _state;
+
+        public ChainFooMiddleware(ChainState state)
+        {
+            _state = state;
+        }
+
+        public override Task<QueuePublishResult> PublishAsync<T>(T message, QueueMessageContext messageContext,
+            PublishAsyncDelegate<T>? callback = null)
+        {
+            _state.AppendState("foo");
+            return base.PublishAsync(message, messageContext, callback);
+        }
+    }
+
+    public class ChainBarMiddleware : BaseQueueMiddleware
+    {
+        private readonly ChainState _state;
+
+        public ChainBarMiddleware(ChainState state)
+        {
+            _state = state;
+        }
+
+        public override Task<QueuePublishResult> PublishAsync<T>(T message, QueueMessageContext messageContext,
+            PublishAsyncDelegate<T>? callback = null)
+        {
+            _state.AppendState("bar");
+            return base.PublishAsync(message, messageContext, callback);
+        }
+    }
+
+    public class CountMiddleware : BaseQueueMiddleware
     {
         public int Published { get; private set; }
         public int Received { get; private set; }
 
-        public Task<QueuePublishResult> PublishAsync<T>(QueuePayload<T> payload,
-            Func<QueuePayload<T>, Task<QueuePublishResult>> next) where T : class
+        public override Task<QueuePublishResult> PublishAsync<T>(T message, QueueMessageContext messageContext,
+            PublishAsyncDelegate<T>? callback = null)
         {
             Published++;
-            return next(payload);
+            return base.PublishAsync(message, messageContext, callback);
         }
 
-        public async Task<bool> ReceiveAsync<T>(QueuePayload<T> payload, Func<QueuePayload<T>, Task<bool>> next)
-            where T : class
+        public override async Task<bool> ReceiveAsync<T>(T message, QueueMessageContext messageContext,
+            ReceiveAsyncDelegate<T>? callback = null)
         {
-            var result = await next(payload);
+            var result = await base.ReceiveAsync(message, messageContext, callback);
             if (result)
             {
                 Received++;
