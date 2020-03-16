@@ -281,6 +281,11 @@ namespace Sitko.Core.App
             return default;
 #pragma warning restore 8603
         }
+
+        protected void LogModuleRegistrationFailed<T>() where T : IApplicationModule
+        {
+            Logger.LogError("Can't register module {Module}: empty configuration", typeof(T));
+        }
     }
 
     public class Application<T> : Application where T : Application<T>
