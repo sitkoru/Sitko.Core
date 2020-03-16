@@ -26,9 +26,6 @@ namespace Sitko.Core.Email
 
     public class DevEmailModuleConfig : FluentEmailModuleConfig
     {
-        public DevEmailModuleConfig() : base("dev@localhost", "localhost", "http")
-        {
-        }
     }
 
     public class DevEmailSender : ISender

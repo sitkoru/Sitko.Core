@@ -9,9 +9,10 @@ using Sitko.Core.App.Logging;
 
 namespace Sitko.Core.App
 {
-    public interface IApplicationModule<TConfig> : IApplicationModule where TConfig : class
+    public interface IApplicationModule<TConfig> : IApplicationModule where TConfig : class, new()
     {
         TConfig? GetConfig();
+        void CheckConfig();
     }
 
     public interface IApplicationModule

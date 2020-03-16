@@ -6,7 +6,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Auth.IdentityServer
 {
-    public abstract class IdentityServerModule<T> : AuthModule<T> where T : IdentityServerAuthOptions
+    public abstract class IdentityServerModule<T> : AuthModule<T> where T : IdentityServerAuthOptions, new()
     {
         protected IdentityServerModule(T config, Application application) : base(config, application)
         {
@@ -22,7 +22,7 @@ namespace Sitko.Core.Auth.IdentityServer
             }
         }
 
-        protected override void CheckConfig()
+        public override void CheckConfig()
         {
             base.CheckConfig();
             if (string.IsNullOrEmpty(Config.OidcServerUrl))

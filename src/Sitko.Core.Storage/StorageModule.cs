@@ -7,7 +7,7 @@ using Sitko.Core.App;
 namespace Sitko.Core.Storage
 {
     public class StorageModule<TStorage, TStorageOptions> : BaseApplicationModule<TStorageOptions>
-        where TStorage : Storage<TStorageOptions> where TStorageOptions : StorageOptions
+        where TStorage : Storage<TStorageOptions> where TStorageOptions : StorageOptions, new()
     {
         public StorageModule(TStorageOptions config, Application application) : base(config, application)
         {
@@ -21,7 +21,7 @@ namespace Sitko.Core.Storage
             Config.ConfigureCache?.Invoke(environment, configuration, services);
         }
 
-        protected override void CheckConfig()
+        public override void CheckConfig()
         {
             base.CheckConfig();
             if (Config.PublicUri is null)

@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,7 +8,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Email
 {
-    public class EmailModule<T> : BaseApplicationModule<T> where T : EmailModuleConfig
+    public class EmailModule<T> : BaseApplicationModule<T> where T : EmailModuleConfig, new()
     {
         public EmailModule(T config, Application application) : base(config, application)
         {
@@ -22,6 +23,22 @@ namespace Sitko.Core.Email
             services.AddSingleton(new ViewToStringRendererServiceOptions(Config.Host,
                 Config.Scheme));
             services.AddScoped<ViewToStringRendererService>();
+        }
+
+        public override void CheckConfig()
+        {
+            base.CheckConfig();
+            if (Config.Host == null)
+            {
+                throw new ArgumentException("Provide value for host uri to generate absolute urls",
+                    nameof(Config.Host));
+            }
+
+            if (string.IsNullOrEmpty(Config.Scheme))
+            {
+                throw new ArgumentException("Provide value for uri scheme to generate absolute urls",
+                    nameof(Config.Scheme));
+            }
         }
     }
 }

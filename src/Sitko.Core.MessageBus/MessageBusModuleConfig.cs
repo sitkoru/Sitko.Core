@@ -4,9 +4,9 @@ namespace Sitko.Core.MessageBus
 {
     public class MessageBusModuleConfig
     {
-        public Assembly[] Assemblies { get; }
+        public Assembly[] Assemblies { get; private set; } = new Assembly[0];
 
-        public MessageBusModuleConfig(params Assembly[] assemblies)
+        public void SetAssemblies(params Assembly[] assemblies)
         {
             Assemblies = assemblies;
         }

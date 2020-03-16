@@ -9,7 +9,7 @@ using Sitko.Core.App;
 namespace Sitko.Core.Search
 {
     public abstract class SearchModule<TConfig> : BaseApplicationModule<TConfig>
-        where TConfig : SearchModuleConfig
+        where TConfig : SearchModuleConfig, new()
     {
         protected SearchModule(TConfig config, Application application) : base(config, application)
         {

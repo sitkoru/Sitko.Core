@@ -40,7 +40,7 @@ namespace Sitko.Core.Queue.Tests
 
             Assert.Equal(1, counter.Count);
         }
-        
+
         [Fact]
         public async Task MultipleProcessors()
         {
@@ -102,37 +102,35 @@ namespace Sitko.Core.Queue.Tests
 
     public class ProcessorQueueTestScope : BaseTestQueueTestScope
     {
-        protected override void ConfigureQueue(TestQueueConfig config, IConfiguration configuration,
-            IHostEnvironment environment, string name)
-        {
-            base.ConfigureQueue(config, configuration, environment, name);
-            config.RegisterProcessor<FooTestMessageProcessor, TestMessage>();
-        }
-
         protected override IServiceCollection ConfigureServices(IConfiguration configuration,
             IHostEnvironment environment,
             IServiceCollection services, string name)
         {
             return base.ConfigureServices(configuration, environment, services, name)
                 .AddSingleton<TestQueueProcessorCounter>();
+        }
+
+        protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
+            TestQueueConfig config, string name)
+        {
+            config.RegisterProcessor<FooTestMessageProcessor, TestMessage>();
         }
     }
 
     public class MultipleProcessorQueueTestScope : BaseTestQueueTestScope
     {
-        protected override void ConfigureQueue(TestQueueConfig config, IConfiguration configuration,
-            IHostEnvironment environment, string name)
-        {
-            base.ConfigureQueue(config, configuration, environment, name);
-            config.RegisterProcessors<ProcessorTests>();
-        }
-        
         protected override IServiceCollection ConfigureServices(IConfiguration configuration,
             IHostEnvironment environment,
             IServiceCollection services, string name)
         {
             return base.ConfigureServices(configuration, environment, services, name)
                 .AddSingleton<TestQueueProcessorCounter>();
+        }
+
+        protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
+            TestQueueConfig config, string name)
+        {
+            config.RegisterProcessors<ProcessorTests>();
         }
     }
 }

@@ -33,27 +33,22 @@ namespace Sitko.Core.Xunit
             if (testInMemory)
             {
                 application.AddModule<InMemoryDatabaseModule<TDbContext>, InMemoryDatabaseModuleConfig<TDbContext>>(
-                    (configuration, environment) => new InMemoryDatabaseModuleConfig<TDbContext>(name)
+                    (configuration, environment, moduleConfig) =>
                     {
-                        Configure = (builder, provider, conf, env) =>
+                        moduleConfig.Database = name;
+                        moduleConfig.Configure = (builder, provider, conf, env) =>
                         {
                             ConfigureInMemoryDatabaseModule(builder, conf, env);
-                        }
+                        };
                     });
             }
             else
             {
                 application.AddModule<PostgresModule<TDbContext>, PostgresDatabaseModuleConfig<TDbContext>>((
                     configuration,
-                    environment) =>
+                    environment, moduleConfig) =>
                 {
-                    var postgresConfig = GetPostgresConfig(configuration, environment, name);
-                    if (postgresConfig == null)
-                    {
-                        throw new Exception("Empty postgres config");
-                    }
-
-                    return postgresConfig;
+                    GetPostgresConfig(configuration, environment, moduleConfig, name);
                 });
             }
 
@@ -92,10 +87,10 @@ namespace Sitko.Core.Xunit
         {
         }
 
-        protected virtual PostgresDatabaseModuleConfig<TDbContext>? GetPostgresConfig(IConfiguration configuration,
-            IHostEnvironment environment, string dbName)
+        protected virtual void GetPostgresConfig(IConfiguration configuration,
+            IHostEnvironment environment, PostgresDatabaseModuleConfig<TDbContext> moduleConfig, string dbName)
         {
-            return null;
+            throw new NotImplementedException("You need to implement postgres configuration in your scope");
         }
 
         public override async ValueTask DisposeAsync()

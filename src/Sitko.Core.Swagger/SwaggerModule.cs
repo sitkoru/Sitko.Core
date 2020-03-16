@@ -49,14 +49,8 @@ namespace Sitko.Core.Swagger
 
     public class SwaggerModuleConfig
     {
-        public SwaggerModuleConfig(string title, string version)
-        {
-            Title = title;
-            Version = version;
-        }
-
-        public string Title { get; }
-        public string Version { get; }
+        public string Title { get; set; } = "App";
+        public string Version { get; set; } = "v1";
 
         public bool EnableTokenAuth { get; set; } = true;
     }

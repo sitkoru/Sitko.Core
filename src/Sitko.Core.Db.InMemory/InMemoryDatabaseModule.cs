@@ -16,7 +16,7 @@ namespace Sitko.Core.Db.InMemory
         {
         }
 
-        protected override void CheckConfig()
+        public override void CheckConfig()
         {
             base.CheckConfig();
             if (string.IsNullOrEmpty(Config.Database))
