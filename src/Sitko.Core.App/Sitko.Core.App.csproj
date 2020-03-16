@@ -21,7 +21,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <None Pack="true" PackagePath="build\" Include="Build\**\*.xml; Build\**\*.props; Build\**\*.targets;" />
+    <None Pack="true" PackagePath="buildTransitive\" Include="Build\**\*.xml; Build\**\*.props; Build\**\*.targets;" />
   </ItemGroup>
   
 </Project>
