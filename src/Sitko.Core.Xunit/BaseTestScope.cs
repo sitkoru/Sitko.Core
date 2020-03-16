@@ -28,7 +28,7 @@ namespace Sitko.Core.Xunit
 
 
             _application = ConfigureApplication(_application, name);
-            ServiceProvider = _application.GetServices();
+            ServiceProvider = _application.GetServices().CreateScope().ServiceProvider;
         }
 
         protected virtual TestApplication ConfigureApplication(TestApplication application, string name)
