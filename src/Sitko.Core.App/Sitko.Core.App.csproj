@@ -20,4 +20,8 @@
     <PackageReference Include="Scrutor" Version="3.2.0" />
   </ItemGroup>
   
+  <ItemGroup>
+    <None Pack="true" PackagePath="build\" Include="Build\**\*.xml; Build\**\*.props; Build\**\*.targets;" />
+  </ItemGroup>
+  
 </Project>
