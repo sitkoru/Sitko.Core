@@ -13,8 +13,11 @@ namespace Sitko.Core.Storage.FileSystem.Tests
         {
             return base.ConfigureApplication(application, name)
                 .AddModule<FileSystemStorageModule<TestFileSystemStorageSettings>, TestFileSystemStorageSettings>(
-                    (configuration, environment) => new TestFileSystemStorageSettings(
-                        new Uri(_folder), _folder));
+                    (configuration, environment, moduleConfig) =>
+                    {
+                        moduleConfig.PublicUri = new Uri(_folder);
+                        moduleConfig.StoragePath = _folder;
+                    });
         }
 
         public override async ValueTask DisposeAsync()

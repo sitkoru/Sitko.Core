@@ -35,11 +35,6 @@ namespace Sitko.Core.Consul
 
     public class ConsulModuleConfig
     {
-        public string ConsulUri { get; }
-
-        public ConsulModuleConfig(string consulUri)
-        {
-            ConsulUri = consulUri;
-        }
+        public string ConsulUri { get; set; } = "http://localhost:8500";
     }
 }

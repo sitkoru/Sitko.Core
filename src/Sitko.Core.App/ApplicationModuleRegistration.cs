@@ -6,20 +6,29 @@ namespace Sitko.Core.App
 {
     public class ApplicationModuleRegistration<TModule, TModuleConfig> : IApplicationModuleRegistration
         where TModule : IApplicationModule<TModuleConfig>
-        where TModuleConfig : class
+        where TModuleConfig : class, new()
     {
-        private readonly Func<IConfiguration, IHostEnvironment, TModuleConfig> _configure;
+        private readonly Action<IConfiguration, IHostEnvironment, TModuleConfig>? _configure;
 
-        public ApplicationModuleRegistration(Func<IConfiguration, IHostEnvironment, TModuleConfig> configure)
+        public ApplicationModuleRegistration(Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null)
         {
             _configure = configure;
         }
 
         public IApplicationModule CreateModule(IHostEnvironment environment, IConfiguration configuration,
-            Application application)
+            Application application, bool configure = true)
         {
-            var config = _configure(configuration, environment);
+            var config = new TModuleConfig();
+            if (configure)
+            {
+                _configure?.Invoke(configuration, environment, config);
+            }
+
             var module = (TModule)Activator.CreateInstance(typeof(TModule), config, application);
+            if (configure)
+            {
+                module.CheckConfig();
+            }
             return module;
         }
     }

@@ -44,18 +44,17 @@ namespace Sitko.Core.Queue.Tests
 
     public class MessageBusTestScope : BaseTestQueueTestScope
     {
-        protected override void ConfigureQueue(TestQueueConfig config, IConfiguration configuration,
-            IHostEnvironment environment, string name)
-        {
-            base.ConfigureQueue(config, configuration, environment, name);
-            config.TranslateMessageBusNotification<TestRequest>();
-        }
-
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name)
-                .AddModule<MessageBusModule, MessageBusModuleConfig>((configuration, environment) =>
-                    new MessageBusModuleConfig(typeof(MessageBusTests).Assembly));
+                .AddModule<MessageBusModule, MessageBusModuleConfig>((configuration, environment, moduleConfig) =>
+                    moduleConfig.SetAssemblies(typeof(MessageBusTests).Assembly));
+        }
+
+        protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
+            TestQueueConfig config, string name)
+        {
+            config.TranslateMessageBusNotification<TestRequest>();
         }
     }
 

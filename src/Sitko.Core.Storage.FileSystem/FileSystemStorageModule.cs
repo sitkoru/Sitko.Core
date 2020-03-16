@@ -6,7 +6,7 @@ using Sitko.Core.App;
 namespace Sitko.Core.Storage.FileSystem
 {
     public class FileSystemStorageModule<T> : StorageModule<FileSystemStorage<T>, T>
-        where T : StorageOptions, IFileSystemStorageOptions
+        where T : StorageOptions, IFileSystemStorageOptions, new()
     {
         public FileSystemStorageModule(T config, Application application) : base(config, application)
         {

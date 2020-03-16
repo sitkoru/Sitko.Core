@@ -7,10 +7,10 @@ namespace Sitko.Core.Queue.InMemory.Tests
     public class
         InMemoryQueueTestScope : BaseQueueTestScope<InMemoryQueueModule, InMemoryQueue, InMemoryQueueModuleConfig>
     {
-        protected override InMemoryQueueModuleConfig CreateConfig(IConfiguration configuration,
-            IHostEnvironment environment, string name)
+        protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
+            InMemoryQueueModuleConfig config,
+            string name)
         {
-            return new InMemoryQueueModuleConfig();
         }
     }
 }

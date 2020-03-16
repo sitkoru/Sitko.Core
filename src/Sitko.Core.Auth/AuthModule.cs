@@ -8,7 +8,7 @@ using Sitko.Core.Web;
 
 namespace Sitko.Core.Auth
 {
-    public abstract class AuthModule<T> : BaseApplicationModule<T>, IWebApplicationModule where T : AuthOptions
+    public abstract class AuthModule<T> : BaseApplicationModule<T>, IWebApplicationModule where T : AuthOptions, new()
     {
         protected AuthModule(T config, Application application) : base(config, application)
         {

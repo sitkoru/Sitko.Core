@@ -64,7 +64,7 @@ namespace Sitko.Core.Queue.Tests
 
             var classes =
                 typeof(MiddlewareTests).Assembly.ExportedTypes.Where(t => typeof(IQueueMiddleware).IsAssignableFrom(t));
-            
+
             var mws = scope.GetAll<IQueueMiddleware>();
 
             Assert.Equal(classes.Count(), mws.Count());
@@ -90,10 +90,9 @@ namespace Sitko.Core.Queue.Tests
 
     public class MiddlewareQueueTestScope : BaseTestQueueTestScope
     {
-        protected override void ConfigureQueue(TestQueueConfig config, IConfiguration configuration,
-            IHostEnvironment environment, string name)
+        protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
+            TestQueueConfig config, string name)
         {
-            base.ConfigureQueue(config, configuration, environment, name);
             config.RegisterMiddleware<CountMiddleware>();
         }
     }
@@ -106,11 +105,10 @@ namespace Sitko.Core.Queue.Tests
         {
             return base.ConfigureServices(configuration, environment, services, name).AddSingleton<ChainState>();
         }
-        
-        protected override void ConfigureQueue(TestQueueConfig config, IConfiguration configuration,
-            IHostEnvironment environment, string name)
+
+        protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
+            TestQueueConfig config, string name)
         {
-            base.ConfigureQueue(config, configuration, environment, name);
             config.RegisterMiddlewares<MiddlewareTests>();
         }
     }
@@ -124,10 +122,9 @@ namespace Sitko.Core.Queue.Tests
             return base.ConfigureServices(configuration, environment, services, name).AddSingleton<ChainState>();
         }
 
-        protected override void ConfigureQueue(TestQueueConfig config, IConfiguration configuration,
-            IHostEnvironment environment, string name)
+        protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
+            TestQueueConfig config, string name)
         {
-            base.ConfigureQueue(config, configuration, environment, name);
             config.RegisterMiddleware<ChainFooMiddleware>();
             config.RegisterMiddleware<ChainBarMiddleware>();
         }

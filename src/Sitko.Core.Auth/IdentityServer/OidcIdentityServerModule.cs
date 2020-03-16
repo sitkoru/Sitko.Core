@@ -74,7 +74,7 @@ namespace Sitko.Core.Auth.IdentityServer
             appBuilder.UseMiddleware<AuthorizationMiddleware>();
         }
 
-        protected override void CheckConfig()
+        public override void CheckConfig()
         {
             base.CheckConfig();
 

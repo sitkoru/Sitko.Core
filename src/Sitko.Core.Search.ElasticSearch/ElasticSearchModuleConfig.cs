@@ -2,20 +2,10 @@ namespace Sitko.Core.Search.ElasticSearch
 {
     public class ElasticSearchModuleConfig : SearchModuleConfig
     {
-        public ElasticSearchModuleConfig(string prefix, string url, string login = "", string password = "",
-            bool enableClientLogging = false)
-        {
-            Prefix = prefix;
-            Url = url;
-            Login = login;
-            Password = password;
-            EnableClientLogging = enableClientLogging;
-        }
-
-        public string Prefix { get; }
-        public string Url { get; }
-        public string Login { get; }
-        public string Password { get; }
-        public bool EnableClientLogging { get; }
+        public string Prefix { get; set; } = string.Empty;
+        public string Url { get; set; } = "http://localhost:9200";
+        public string Login { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public bool EnableClientLogging { get; set; } = false;
     }
 }

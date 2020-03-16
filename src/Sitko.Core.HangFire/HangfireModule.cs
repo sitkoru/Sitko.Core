@@ -15,7 +15,7 @@ using Sitko.Core.Web;
 
 namespace Sitko.Core.HangFire
 {
-    public class HangfireModule<T> : BaseApplicationModule<T>, IWebApplicationModule where T : HangfireModuleConfig
+    public class HangfireModule<T> : BaseApplicationModule<T>, IWebApplicationModule where T : HangfireModuleConfig, new()
     {
         public HangfireModule(T config, Application application) : base(config, application)
         {
