@@ -42,7 +42,7 @@ namespace Sitko.Core.Web
         {
             if (EnableMvc)
             {
-                ConfigureMvc(services.AddControllersWithViews())
+                ConfigureMvc(services.AddControllersWithViews().AddControllersAsServices())
                     .SetCompatibilityVersion(CompatibilityVersion.Latest);
             }
 
