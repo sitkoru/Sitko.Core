@@ -4,7 +4,7 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <Target Name="CheckApp" AfterTargets="Build" Condition="'$(Configuration)' == 'Release' And '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <Target Name="CheckApp" AfterTargets="Build" Condition="'$(Configuration)' == 'Release' And '$(OutputType)' == 'exe' ">
     <Exec Command="dotnet $(OutDir)$(TargetName).dll check"/>
   </Target>
 </Project>
