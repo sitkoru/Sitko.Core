@@ -17,7 +17,10 @@ namespace Sitko.Core.App
     public abstract class Application : IAsyncDisposable
     {
         protected readonly List<IApplicationModule> Modules = new List<IApplicationModule>();
-        protected readonly List<IApplicationModuleRegistration> _moduleRegistrations = new List<IApplicationModuleRegistration>();
+
+        protected readonly List<IApplicationModuleRegistration> _moduleRegistrations =
+            new List<IApplicationModuleRegistration>();
+
         private IHost? _appHost;
         public readonly IConfiguration Configuration;
         public readonly IHostEnvironment Environment;
@@ -37,14 +40,20 @@ namespace Sitko.Core.App
         protected Application(string[] args)
         {
             Console.OutputEncoding = Encoding.UTF8;
-
-            var tmpHost = Host.CreateDefaultBuilder(args).ConfigureHostConfiguration(builder =>
+            if (args.Length > 0 && args[0] == "check")
             {
-                builder.AddEnvironmentVariables("ASPNETCORE_");
-            }).Build();
+                _check = true;
+            }
+
+            var tmpHost = Host.CreateDefaultBuilder(args)
+                .ConfigureHostConfiguration(builder =>
+                {
+                    builder.AddEnvironmentVariables("ASPNETCORE_");
+                }).Build();
 
             Configuration = tmpHost.Services.GetService<IConfiguration>();
             Environment = tmpHost.Services.GetService<IHostEnvironment>();
+            Logger = tmpHost.Services.GetService<ILogger<Application>>();
             LoggingFacility ??= Environment.ApplicationName;
             LoggingEnableConsole = Environment.IsDevelopment();
 
@@ -64,7 +73,12 @@ namespace Sitko.Core.App
                 _loggerConfiguration.MinimumLevel.Override("Microsoft", _logLevelSwitcher.MsMessagesSwitch);
             }
 
-            _hostBuilder = Host.CreateDefaultBuilder(args);
+            _hostBuilder = Host.CreateDefaultBuilder(args)
+                .UseDefaultServiceProvider(options =>
+                {
+                    options.ValidateOnBuild = true;
+                    options.ValidateScopes = true;
+                });
             _hostBuilder.ConfigureServices(services =>
             {
                 services.AddSingleton(_logLevelSwitcher);
@@ -127,10 +141,23 @@ namespace Sitko.Core.App
                     RegisterModule(module);
                 }
 
-                _appHost = _hostBuilder.Build();
+
+                try
+                {
+                    _appHost = _hostBuilder.Build();
+                    if (_check)
+                    {
+                        System.Environment.Exit(0);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError($"Host build error: {e}");
+                    System.Environment.Exit(255);
+                }
             }
 
-            return _appHost;
+            return _appHost!;
         }
 
         public IHostBuilder GetHostBuilder()
@@ -235,6 +262,8 @@ namespace Sitko.Core.App
         }
 
         private readonly Dictionary<string, object> _store = new Dictionary<string, object>();
+        private bool _check;
+        protected ILogger<Application> Logger;
 
         public void Set(string key, object value)
         {
