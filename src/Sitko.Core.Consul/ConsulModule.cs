@@ -21,12 +21,13 @@ namespace Sitko.Core.Consul
             services.AddSingleton<IConsulClient, ConsulClient>(p =>
             {
                 var options = p.GetRequiredService<ConsulModuleConfig>();
-                return new ConsulClient(config => { config.Address = options.ConsulUri; });
+                return new ConsulClient(config => { config.Address = new Uri(options.ConsulUri); });
             });
             services.AddHealthChecks().AddConsul(options =>
             {
-                options.HostName = Config.ConsulUri.Host;
-                options.Port = Config.ConsulUri.Port;
+                var uri = new Uri(Config.ConsulUri);
+                options.HostName = uri.Host;
+                options.Port = uri.Port;
                 options.RequireHttps = false;
             });
         }
@@ -34,9 +35,9 @@ namespace Sitko.Core.Consul
 
     public class ConsulModuleConfig
     {
-        public Uri ConsulUri { get; }
+        public string ConsulUri { get; }
 
-        public ConsulModuleConfig(Uri consulUri)
+        public ConsulModuleConfig(string consulUri)
         {
             ConsulUri = consulUri;
         }

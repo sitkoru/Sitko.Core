@@ -16,7 +16,10 @@ namespace Sitko.Core.Auth.IdentityServer
             IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
-            services.AddHealthChecks().AddIdentityServer(new Uri(Config.OidcServerUrl));
+            if (Uri.TryCreate(Config.OidcServerUrl, UriKind.Absolute, out var oidcUri))
+            {
+                services.AddHealthChecks().AddIdentityServer(oidcUri);
+            }
         }
 
         protected override void CheckConfig()
