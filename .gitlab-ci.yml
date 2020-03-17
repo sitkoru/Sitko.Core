@@ -13,7 +13,7 @@ build:
         - dotnet restore --locked-mode
         - dotnet test $CI_PROJECT_DIR/tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
         - dotnet test $CI_PROJECT_DIR/tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj
-        - dotnet pack -c Release /p:Version=$VERSION -o $CI_PROJECT_DIR/nugets
+        - dotnet pack --no-restore -c Release /p:Version=$VERSION -o $CI_PROJECT_DIR/nugets
         - mkdir -p Composer/Core
         - mkdir -p Composer/Queue
         - find $CI_PROJECT_DIR/src/Sitko.Core.Grpc/Proto -name "*.proto" | xargs /usr/local/bin/protoc --php_out=$CI_PROJECT_DIR/Composer/Core --grpc_out $CI_PROJECT_DIR/Composer/Core --proto_path=/opt/include --proto_path=$CI_PROJECT_DIR/src/Sitko.Core.Grpc/Proto --plugin=protoc-gen-grpc=/usr/local/bin/grpc_php_client_plugin
