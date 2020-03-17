@@ -104,7 +104,7 @@ namespace Sitko.Core.ElasticStack
             }
         }
 
-        protected override void CheckConfig()
+        public override void CheckConfig()
         {
             base.CheckConfig();
             if (Config.ApmEnabled)

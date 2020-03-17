@@ -31,38 +31,28 @@ namespace Sitko.Core.Email.Smtp
                 return client;
             });
         }
+
+        public override void CheckConfig()
+        {
+            base.CheckConfig();
+            if (string.IsNullOrEmpty(Config.Server))
+            {
+                throw new ArgumentException("Provide smtp server", nameof(Config.Server));
+            }
+
+            if (Config.Port == 0)
+            {
+                throw new ArgumentException("Provide smtp port", nameof(Config.Port));
+            }
+        }
     }
 
     public class SmtpEmailModuleConfig : FluentEmailModuleConfig
     {
-        public SmtpEmailModuleConfig(string server, int port, string userName, string password, bool useSsl,
-            string from,
-            string host,
-            string scheme) : base(
-            from, host, scheme)
-        {
-            if (string.IsNullOrEmpty(server))
-            {
-                throw new ArgumentException("Provide smtp server", nameof(server));
-            }
-
-            Server = server;
-
-            if (port == 0)
-            {
-                throw new ArgumentException("Provide smtp port", nameof(port));
-            }
-
-            Port = port;
-            UserName = userName;
-            Password = password;
-            UseSsl = useSsl;
-        }
-
-        public int Port { get; }
-        public string UserName { get; }
-        public string Password { get; }
-        public bool UseSsl { get; }
-        public string Server { get; }
+        public int Port { get; set; } = 25;
+        public string UserName { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public bool UseSsl { get; set; } = false;
+        public string Server { get; set; } = "localhost";
     }
 }

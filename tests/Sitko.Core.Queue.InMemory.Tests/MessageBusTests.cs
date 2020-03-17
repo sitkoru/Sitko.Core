@@ -45,19 +45,21 @@ namespace Sitko.Core.Queue.InMemory.Tests
 
     public class InMemoryMessageBusTestScope : InMemoryQueueTestScope
     {
-        protected override InMemoryQueueModuleConfig CreateConfig(IConfiguration configuration,
-            IHostEnvironment environment, string name)
+        protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
+            InMemoryQueueModuleConfig config,
+            string name)
         {
-            var config = base.CreateConfig(configuration, environment, name);
+            base.Configure(configuration, environment, config, name);
             config.TranslateMessageBusNotification<TestRequest>();
-            return config;
         }
 
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name)
-                .AddModule<MessageBusModule, MessageBusModuleConfig>((configuration, environment) =>
-                    new MessageBusModuleConfig(typeof(MessageBusTests).Assembly));
+                .AddModule<MessageBusModule, MessageBusModuleConfig>((configuration, environment, moduleConfig) =>
+                {
+                    moduleConfig.SetAssemblies(typeof(MessageBusTests).Assembly);
+                });
         }
     }
 

@@ -12,11 +12,14 @@ namespace Sitko.Core.Storage.S3.Tests
         {
             return base.ConfigureApplication(application, name)
                 .AddModule<S3StorageModule<TestS3StorageSettings>, TestS3StorageSettings>(
-                    (configuration, environment) => new TestS3StorageSettings(
-                        new Uri(configuration["STORAGE_SERVER_URI"] + "/" + _bucketName),
-                        new Uri(configuration["STORAGE_SERVER_URI"]),
-                        _bucketName.ToString(), configuration["STORAGE_ACCESS_KEY"],
-                        configuration["STORAGE_SECRET_KEY"]));
+                    (configuration, environment, moduleConfig) =>
+                    {
+                        moduleConfig.PublicUri = new Uri(configuration["STORAGE_SERVER_URI"] + "/" + _bucketName);
+                        moduleConfig.Server = new Uri(configuration["STORAGE_SERVER_URI"]);
+                        moduleConfig.Bucket = _bucketName.ToString();
+                        moduleConfig.AccessKey = configuration["STORAGE_ACCESS_KEY"];
+                        moduleConfig.SecretKey = configuration["STORAGE_SECRET_KEY"];
+                    });
         }
 
         public override async ValueTask DisposeAsync()

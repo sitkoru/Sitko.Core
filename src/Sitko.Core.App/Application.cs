@@ -136,7 +136,7 @@ namespace Sitko.Core.App
             if (_appHost == null)
             {
                 foreach (var module in _moduleRegistrations.Select(registration => registration.CreateModule(
-                    Environment, Configuration, this)))
+                    Environment, Configuration, this, _check != true)))
                 {
                     RegisterModule(module);
                 }
@@ -319,8 +319,8 @@ namespace Sitko.Core.App
         }
 
         public T AddModule<TModule, TModuleConfig>(
-            Func<IConfiguration, IHostEnvironment, TModuleConfig> configure)
-            where TModule : IApplicationModule<TModuleConfig> where TModuleConfig : class
+            Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null)
+            where TModule : IApplicationModule<TModuleConfig> where TModuleConfig : class, new()
         {
             _moduleRegistrations.Add(new ApplicationModuleRegistration<TModule, TModuleConfig>(configure));
             return (T)this;
@@ -328,8 +328,7 @@ namespace Sitko.Core.App
 
         public T AddModule<TModule>() where TModule : BaseApplicationModule
         {
-            AddModule<TModule, BaseApplicationModuleConfig>((configuration, environment) =>
-                new BaseApplicationModuleConfig());
+            AddModule<TModule, BaseApplicationModuleConfig>();
             return (T)this;
         }
 

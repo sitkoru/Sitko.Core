@@ -15,32 +15,26 @@ namespace Sitko.Core.Email.MailGun
         {
             builder.AddMailGunSender(Config.Domain, Config.ApiKey, Config.Region);
         }
+
+        public override void CheckConfig()
+        {
+            base.CheckConfig();
+            if (string.IsNullOrEmpty(Config.Domain))
+            {
+                throw new ArgumentException("Provide domain registered in mailgun", nameof(Config.Domain));
+            }
+
+            if (string.IsNullOrEmpty(Config.ApiKey))
+            {
+                throw new ArgumentException("Provide mailgun apikey", nameof(Config.ApiKey));
+            }
+        }
     }
 
     public class MailGunEmailModuleConfig : FluentEmailModuleConfig
     {
-        public MailGunEmailModuleConfig(string domain, string apiKey, MailGunRegion region, string from, string host,
-            string scheme) : base(
-            from, host, scheme)
-        {
-            if (string.IsNullOrEmpty(domain))
-            {
-                throw new ArgumentException("Provide domain registered in mailgun", nameof(domain));
-            }
-
-            Domain = domain;
-
-            if (string.IsNullOrEmpty(apiKey))
-            {
-                throw new ArgumentException("Provide mailgun apikey", nameof(apiKey));
-            }
-
-            ApiKey = apiKey;
-            Region = region;
-        }
-
-        public string Domain { get; }
-        public string ApiKey { get; }
-        public MailGunRegion Region { get; }
+        public string Domain { get; set; } = "mg.localhost";
+        public string ApiKey { get; set; } = string.Empty;
+        public MailGunRegion Region { get; set; } = MailGunRegion.USA;
     }
 }
