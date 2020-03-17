@@ -49,6 +49,9 @@ namespace Sitko.Core.App
                 .ConfigureHostConfiguration(builder =>
                 {
                     builder.AddEnvironmentVariables("ASPNETCORE_");
+                }).ConfigureLogging(builder =>
+                {
+                    builder.SetMinimumLevel(LogLevel.Information);
                 }).Build();
 
             Configuration = tmpHost.Services.GetService<IConfiguration>();
@@ -147,6 +150,7 @@ namespace Sitko.Core.App
                     _appHost = _hostBuilder.Build();
                     if (_check)
                     {
+                        Console.WriteLine("Check run is successful");
                         System.Environment.Exit(0);
                     }
                 }
