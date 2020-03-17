@@ -47,8 +47,7 @@ namespace Sitko.Core.Queue.Tests
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name)
-                .AddModule<MessageBusModule, MessageBusModuleConfig>((configuration, environment, moduleConfig) =>
-                    moduleConfig.SetAssemblies(typeof(MessageBusTests).Assembly));
+                .AddModule<MessageBusModule<MessageBusTests>, MessageBusModuleConfig<MessageBusTests>>();
         }
 
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,

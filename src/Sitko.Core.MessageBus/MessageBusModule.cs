@@ -6,9 +6,9 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.MessageBus
 {
-    public class MessageBusModule : BaseApplicationModule<MessageBusModuleConfig>
+    public class MessageBusModule<TAssembly> : BaseApplicationModule<MessageBusModuleConfig<TAssembly>>
     {
-        public MessageBusModule(MessageBusModuleConfig config, Application application) : base(config, application)
+        public MessageBusModule(MessageBusModuleConfig<TAssembly> config, Application application) : base(config, application)
         {
         }
 
@@ -16,7 +16,7 @@ namespace Sitko.Core.MessageBus
             IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
-            services.AddMediatR(Config.Assemblies);
+            services.AddMediatR(Config.Assemblies.ToArray());
         }
     }
 }
