@@ -4,10 +4,11 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
-    <ProjectReference Include="..\Sitko.Core.MessageBus\Sitko.Core.MessageBus.csproj" />
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.MessageBus\Sitko.Core.MessageBus.csproj"/>
   </ItemGroup>
 </Project>

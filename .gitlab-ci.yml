@@ -10,6 +10,7 @@ variables:
 build:
     stage: build
     script:
+        - dotnet restore --locked-mode
         - dotnet test $CI_PROJECT_DIR/tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
         - dotnet test $CI_PROJECT_DIR/tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj
         - dotnet pack -c Release /p:Version=$VERSION -o $CI_PROJECT_DIR/nugets

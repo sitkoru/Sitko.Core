@@ -1,23 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  
+
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Queue\Sitko.Core.Queue.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Queue\Sitko.Core.Queue.csproj"/>
   </ItemGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="STAN.Client" Version="0.2.1" />
-    <PackageReference Include="Grpc.Tools" Version="2.27.0" PrivateAssets="None" />
-    <PackageReference Include="Google.Protobuf" Version="3.11.4" />
+    <PackageReference Include="STAN.Client" Version="0.2.1"/>
+    <PackageReference Include="Grpc.Tools" Version="2.27.0" PrivateAssets="None"/>
+    <PackageReference Include="Google.Protobuf" Version="3.11.4"/>
   </ItemGroup>
-  
+
   <ItemGroup>
-    <Protobuf Include="Proto\Sitko\Core\Queue\Nats\QueueMsg.proto" GrpcServices="None" />
+    <Protobuf Include="Proto\Sitko\Core\Queue\Nats\QueueMsg.proto" GrpcServices="None"/>
   </ItemGroup>
 
 </Project>

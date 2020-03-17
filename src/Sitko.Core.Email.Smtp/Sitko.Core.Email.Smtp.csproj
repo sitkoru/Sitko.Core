@@ -4,12 +4,13 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Email\Sitko.Core.Email.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Email\Sitko.Core.Email.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentEmail.Smtp" Version="2.7.1" />
+    <PackageReference Include="FluentEmail.Smtp" Version="2.7.1"/>
   </ItemGroup>
 
 </Project>

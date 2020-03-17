@@ -1,17 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  
+
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Queue\Sitko.Core.Queue.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Queue\Sitko.Core.Queue.csproj"/>
   </ItemGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="System.Threading.Channels" Version="4.7.0" />
+    <PackageReference Include="System.Threading.Channels" Version="4.7.0"/>
   </ItemGroup>
 
 </Project>
