@@ -9,7 +9,7 @@ namespace Sitko.Core.Queue.Tests
         where T : BaseQueueTestScope<TQueueModule, TQueue, TConfig>
         where TQueueModule : QueueModule<TQueue, TConfig>
         where TQueue : class, IQueue
-        where TConfig : QueueModuleConfig
+        where TConfig : QueueModuleConfig, new()
     {
         protected BaseQueueTest(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
@@ -19,22 +19,19 @@ namespace Sitko.Core.Queue.Tests
     public abstract class BaseQueueTestScope<TQueueModule, TQueue, TConfig> : BaseTestScope
         where TQueueModule : QueueModule<TQueue, TConfig>
         where TQueue : class, IQueue
-        where TConfig : QueueModuleConfig
+        where TConfig : QueueModuleConfig, new()
     {
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             base.ConfigureApplication(application, name);
             application.AddModule<TQueueModule, TConfig>((
-                configuration, environment) =>
-            {
-                var config = CreateConfig(configuration, environment, name);
-                return config;
-            });
+                configuration, environment, moduleConfig) => Configure(configuration, environment, moduleConfig, name));
 
             return application;
         }
 
-        protected abstract TConfig CreateConfig(IConfiguration configuration, IHostEnvironment environment, string name);
+        protected abstract void Configure(IConfiguration configuration, IHostEnvironment environment, TConfig config,
+            string name);
     }
 
     public abstract class
@@ -46,18 +43,7 @@ namespace Sitko.Core.Queue.Tests
         }
     }
 
-    public class BaseTestQueueTestScope : BaseQueueTestScope<TestQueueModule, TestQueue, TestQueueConfig>
+    public abstract class BaseTestQueueTestScope : BaseQueueTestScope<TestQueueModule, TestQueue, TestQueueConfig>
     {
-        protected override TestQueueConfig CreateConfig(IConfiguration configuration, IHostEnvironment environment, string name)
-        {
-            var config = new TestQueueConfig();
-            ConfigureQueue(config, configuration, environment, name);
-            return config;
-        }
-
-        protected virtual void ConfigureQueue(TestQueueConfig config, IConfiguration configuration,
-            IHostEnvironment environment, string name)
-        {
-        }
     }
 }

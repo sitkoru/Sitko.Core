@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -29,6 +30,20 @@ namespace Sitko.Core.Graylog
 
         public GraylogModule(GraylogLoggingOptions config, Application application) : base(config, application)
         {
+        }
+
+        public override void CheckConfig()
+        {
+            base.CheckConfig();
+            if (string.IsNullOrEmpty(Config.Host))
+            {
+                throw new ArgumentException("Host can't be empty", nameof(Config.Host));
+            }
+
+            if (Config.Port == 0)
+            {
+                throw new ArgumentException("Port must be greater than 0", nameof(Config.Port));
+            }
         }
     }
 

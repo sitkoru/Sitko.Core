@@ -12,7 +12,7 @@ namespace Sitko.Core.Queue
 {
     public abstract class QueueModule<TQueue, TConfig> : BaseApplicationModule<TConfig>
         where TQueue : class, IQueue
-        where TConfig : QueueModuleConfig
+        where TConfig : QueueModuleConfig, new()
     {
         protected QueueModule(TConfig config, Application application) : base(config, application)
         {

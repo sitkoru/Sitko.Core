@@ -21,7 +21,7 @@ namespace Sitko.Core.App
     {
     }
 
-    public abstract class BaseApplicationModule<TConfig> : IApplicationModule<TConfig> where TConfig : class
+    public abstract class BaseApplicationModule<TConfig> : IApplicationModule<TConfig> where TConfig : class, new()
     {
         protected TConfig Config { get; }
         protected Application Application { get; }
@@ -75,7 +75,7 @@ namespace Sitko.Core.App
             return Task.CompletedTask;
         }
 
-        protected virtual void CheckConfig()
+        public virtual void CheckConfig()
         {
         }
 

@@ -17,7 +17,7 @@ namespace Sitko.Core.Db.Postgres
         {
         }
 
-        protected override void CheckConfig()
+        public override void CheckConfig()
         {
             base.CheckConfig();
 

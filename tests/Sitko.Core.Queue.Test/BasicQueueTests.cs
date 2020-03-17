@@ -10,7 +10,7 @@ namespace Sitko.Core.Queue.Tests
         where T : BaseQueueTestScope<TQueueModule, TQueue, TConfig>
         where TQueueModule : QueueModule<TQueue, TConfig>
         where TQueue : class, IQueue
-        where TConfig : QueueModuleConfig
+        where TConfig : QueueModuleConfig, new()
     {
         protected BasicQueueTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {

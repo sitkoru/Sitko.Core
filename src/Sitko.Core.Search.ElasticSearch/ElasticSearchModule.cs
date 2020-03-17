@@ -6,11 +6,12 @@ namespace Sitko.Core.Search.ElasticSearch
 {
     public class ElasticSearchModule : SearchModule<ElasticSearchModuleConfig>
     {
-        public ElasticSearchModule(ElasticSearchModuleConfig config, Application application) : base(config, application)
+        public ElasticSearchModule(ElasticSearchModuleConfig config, Application application) : base(config,
+            application)
         {
         }
 
-        protected override void CheckConfig()
+        public override void CheckConfig()
         {
             if (string.IsNullOrEmpty(Config.Url))
             {
