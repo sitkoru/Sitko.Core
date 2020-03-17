@@ -18,18 +18,21 @@ namespace Sitko.Core.Storage.S3
             IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
-            services.AddHealthChecks().AddS3(options =>
+            if (Config.Server != null)
             {
-                options.AccessKey = Config.AccessKey;
-                options.BucketName = Config.Bucket;
-                options.SecretKey = Config.SecretKey;
-                options.S3Config = new AmazonS3Config
+                services.AddHealthChecks().AddS3(options =>
                 {
-                    RegionEndpoint = RegionEndpoint.USEast1,
-                    ServiceURL = Config.Server.ToString(),
-                    ForcePathStyle = true
-                };
-            });
+                    options.AccessKey = Config.AccessKey;
+                    options.BucketName = Config.Bucket;
+                    options.SecretKey = Config.SecretKey;
+                    options.S3Config = new AmazonS3Config
+                    {
+                        RegionEndpoint = RegionEndpoint.USEast1,
+                        ServiceURL = Config.Server.ToString(),
+                        ForcePathStyle = true
+                    };
+                });
+            }
         }
 
         public override void CheckConfig()
