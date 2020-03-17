@@ -2,15 +2,18 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
   </ItemGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="AspNetCore.HealthChecks.Consul" Version="3.0.0" />
-    <PackageReference Include="Consul.Temporary" Version="0.7.2.6" />
+    <PackageReference Include="AspNetCore.HealthChecks.Consul" Version="3.0.0"/>
+    <PackageReference Include="Consul.Temporary" Version="0.7.2.6"/>
   </ItemGroup>
 
 </Project>
