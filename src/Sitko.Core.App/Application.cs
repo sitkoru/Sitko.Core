@@ -18,9 +18,6 @@ namespace Sitko.Core.App
     {
         protected readonly List<IApplicationModule> Modules = new List<IApplicationModule>();
 
-        protected readonly List<IApplicationModuleRegistration> _moduleRegistrations =
-            new List<IApplicationModuleRegistration>();
-
         private IHost? _appHost;
         public readonly IConfiguration Configuration;
         public readonly IHostEnvironment Environment;
@@ -138,13 +135,6 @@ namespace Sitko.Core.App
         {
             if (_appHost == null)
             {
-                foreach (var module in _moduleRegistrations.Select(registration => registration.CreateModule(
-                    Environment, Configuration, this, _check != true)))
-                {
-                    RegisterModule(module);
-                }
-
-
                 try
                 {
                     _appHost = _hostBuilder.Build();
@@ -266,8 +256,8 @@ namespace Sitko.Core.App
         }
 
         private readonly Dictionary<string, object> _store = new Dictionary<string, object>();
-        private bool _check;
-        protected ILogger<Application> Logger;
+        protected readonly bool _check;
+        protected readonly ILogger<Application> Logger;
 
         public void Set(string key, object value)
         {
@@ -326,7 +316,19 @@ namespace Sitko.Core.App
             Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null)
             where TModule : IApplicationModule<TModuleConfig> where TModuleConfig : class, new()
         {
-            _moduleRegistrations.Add(new ApplicationModuleRegistration<TModule, TModuleConfig>(configure));
+            var config = new TModuleConfig();
+            if (!_check)
+            {
+                configure?.Invoke(Configuration, Environment, config);
+            }
+
+            var module = (TModule)Activator.CreateInstance(typeof(TModule), config, this);
+            if (!_check)
+            {
+                module.CheckConfig();
+            }
+
+            RegisterModule(module);
             return (T)this;
         }
 
