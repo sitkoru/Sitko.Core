@@ -1,14 +1,15 @@
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace Sitko.Core.MessageBus
 {
-    public class MessageBusModuleConfig
+    public class MessageBusModuleConfig<TAssembly>
     {
-        public Assembly[] Assemblies { get; private set; } = new Assembly[0];
+        public List<Assembly> Assemblies { get; } = new List<Assembly> {typeof(TAssembly).Assembly};
 
-        public void SetAssemblies(params Assembly[] assemblies)
+        public void AddAssemblies(params Assembly[] assemblies)
         {
-            Assemblies = assemblies;
+            Assemblies.AddRange(assemblies);
         }
     }
 }
