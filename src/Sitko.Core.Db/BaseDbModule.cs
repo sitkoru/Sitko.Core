@@ -27,10 +27,7 @@ namespace Sitko.Core.Db
     {
         public string Database { get; set; } = "dbname";
 
-        public Action<DbContextOptionsBuilder<TDbContext>, IServiceProvider, IConfiguration, IHostEnvironment> Configure
-        {
-            get;
-            set;
-        }
+        public Action<DbContextOptionsBuilder<TDbContext>, IServiceProvider, IConfiguration, IHostEnvironment>?
+            Configure { get; set; }
     }
 }

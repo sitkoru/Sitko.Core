@@ -30,7 +30,7 @@ namespace Sitko.Core.Web
         private readonly Dictionary<string, (CorsPolicy policy, bool isDefault)> _corsPolicies =
             new Dictionary<string, (CorsPolicy policy, bool isDefault)>();
 
-        private string _defaultCulture;
+        private string? _defaultCulture;
 
         protected BaseStartup(IConfiguration configuration, IHostEnvironment environment)
         {

@@ -18,7 +18,7 @@ namespace Sitko.Core.Identity
         where TDbContext : IdentityDbContext<TUser, TRole, TPk>
         where TPk : IEquatable<TPk>
     {
-        private IdentityBuilder _identityBuilder;
+        private IdentityBuilder? _identityBuilder;
 
         public IdentityModule(IdentityModuleOptions config, Application application) : base(config, application)
         {

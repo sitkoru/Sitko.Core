@@ -16,7 +16,7 @@ namespace Sitko.Core.Grpc.Server
         private readonly GrpcServerOptions _options;
         private readonly IConsulClient _consulClient;
         private readonly ILogger<GrpcServicesRegistrar> _logger;
-        private readonly string _host;
+        private readonly string? _host;
         private readonly int _port;
         private readonly bool _inContainer;
 
@@ -36,7 +36,7 @@ namespace Sitko.Core.Grpc.Server
                 _host = DockerHelper.GetContainerAddress();
                 if (string.IsNullOrEmpty(_host))
                 {
-                    throw new Exception($"Can't find host ip for grpc");
+                    throw new Exception("Can't find host ip for grpc");
                 }
             }
 

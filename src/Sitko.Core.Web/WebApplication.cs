@@ -15,7 +15,7 @@ namespace Sitko.Core.Web
 {
     public abstract class WebApplication<T> : Application<T> where T : WebApplication<T>
     {
-        private static T _instance;
+        private static T? _instance;
 
         protected WebApplication(string[] args) : base(args)
         {
@@ -28,7 +28,7 @@ namespace Sitko.Core.Web
 
         public static T GetInstance()
         {
-            return _instance;
+            return _instance!;
         }
 
         public T Run<TStartup>(int port = 0) where TStartup : BaseStartup<T>
