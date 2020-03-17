@@ -55,7 +55,7 @@ namespace Sitko.Core.Web
 
     public static class HttpContextExtension
     {
-        public static string RequestId(this HttpContext context)
+        public static string? RequestId(this HttpContext context)
         {
             var requestIdFeature = context.Features.Get<IRequestIdFeature>();
             return requestIdFeature?.RequestId;

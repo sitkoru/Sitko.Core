@@ -97,7 +97,7 @@ namespace Sitko.Core.Web
 
     public class ConsulWebModuleConfig
     {
-        public string IpAddress { get; set; }
+        public string? IpAddress { get; set; }
         public string Version { get; set; } = "dev";
 
         public TimeSpan ChecksInterval { get; set; } = TimeSpan.FromSeconds(60);

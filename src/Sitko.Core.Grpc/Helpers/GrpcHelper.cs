@@ -7,7 +7,7 @@ namespace Sitko.Core.Grpc.Helpers
     public static class GrpcHelper
     {
         public static ApiRequestInfo GetRequestInfo(int? projectId = null, int? userId = null, bool userIsAdmin = false,
-            IEnumerable<string> userFlags = null)
+            IEnumerable<string>? userFlags = null)
         {
             var requestInfo = new ApiRequestInfo
             {

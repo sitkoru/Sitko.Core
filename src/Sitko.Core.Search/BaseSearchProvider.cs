@@ -11,13 +11,13 @@ namespace Sitko.Core.Search
         protected readonly ILogger<BaseSearchProvider<T, TSearchModel>> Logger;
 
         protected BaseSearchProvider(ILogger<BaseSearchProvider<T, TSearchModel>> logger,
-            ISearcher<TSearchModel> searcher = null)
+            ISearcher<TSearchModel>? searcher = null)
         {
             _searcher = searcher ?? throw new Exception($"No searcher for provider {this}");
             Logger = logger;
         }
 
-        private string IndexName => typeof(T).FullName?.ToLower().Replace(".", "_");
+        private string IndexName => typeof(T).FullName!.ToLower().Replace(".", "_");
 
         public bool CanProcess(Type type)
         {

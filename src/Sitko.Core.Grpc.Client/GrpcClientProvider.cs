@@ -17,11 +17,12 @@ namespace Sitko.Core.Grpc.Client
         private readonly IConsulClient _consulClient;
         private readonly AsyncLock _locker = new AsyncLock();
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
-        private string _target;
+        private string? _target;
         private ulong _lastIndex;
-        private readonly string _serviceName = typeof(T).BaseType?.GenericTypeArguments?.First().DeclaringType?.Name;
+        private readonly string _serviceName = typeof(T).BaseType!.GenericTypeArguments!.First().DeclaringType!.Name;
         private readonly Task _refreshTask;
-        private GrpcChannel _channel;
+        private GrpcChannel? _channel;
+        private GrpcClient<T>? _client;
 
         public GrpcClientProvider(
             ILogger<GrpcClientProvider<T>> logger,
@@ -37,7 +38,7 @@ namespace Sitko.Core.Grpc.Client
         {
             try
             {
-                using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
                 using (await _locker.LockAsync(cts.Token))
                 {
                     if (_channel != null)
@@ -47,7 +48,7 @@ namespace Sitko.Core.Grpc.Client
 
                     AppContext.SetSwitch(
                         "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
-                    _channel = GrpcChannel.ForAddress(_target);
+                    _channel = GrpcChannel.ForAddress(_target!);
                     try
                     {
                         _logger.LogInformation("Channel {type} connected to {target}", typeof(T), _target);
@@ -72,7 +73,7 @@ namespace Sitko.Core.Grpc.Client
             }
         }
 
-        private GrpcClient<T> _client;
+        
 
         public async Task<GrpcClient<T>> GetClientAsync()
         {
@@ -171,7 +172,7 @@ namespace Sitko.Core.Grpc.Client
 
     public class GrpcClient<T> where T : ClientBase<T>
     {
-        internal T CurrentInstance;
+        internal T? CurrentInstance;
 
         public T Instance
         {
