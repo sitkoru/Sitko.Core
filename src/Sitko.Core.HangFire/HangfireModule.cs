@@ -15,7 +15,8 @@ using Sitko.Core.Web;
 
 namespace Sitko.Core.HangFire
 {
-    public class HangfireModule<T> : BaseApplicationModule<T>, IWebApplicationModule where T : HangfireModuleConfig, new()
+    public class HangfireModule<T> : BaseApplicationModule<T>, IWebApplicationModule
+        where T : HangfireModuleConfig, new()
     {
         public HangfireModule(T config, Application application) : base(config, application)
         {
@@ -27,7 +28,7 @@ namespace Sitko.Core.HangFire
             base.ConfigureServices(services, configuration, environment);
             services.AddHangfire(config =>
             {
-                Config.Configure(config);
+                Config.Configure?.Invoke(config);
                 config.UseFilter(new UseQueueFromScheduledFilter());
                 config.UseFilter(new PreserveOriginalQueueAttribute());
             });
@@ -62,8 +63,7 @@ namespace Sitko.Core.HangFire
             {
                 appBuilder.UseHangfireServer(new BackgroundJobServerOptions
                 {
-                    WorkerCount = Config.Workers,
-                    Queues = Config.Queues
+                    WorkerCount = Config.Workers, Queues = Config.Queues
                 });
             }
 
@@ -80,12 +80,7 @@ namespace Sitko.Core.HangFire
 
     public abstract class HangfireModuleConfig
     {
-        protected HangfireModuleConfig(Action<IGlobalConfiguration> configure)
-        {
-            Configure = configure;
-        }
-
-        public Action<IGlobalConfiguration> Configure { get; }
+        public Action<IGlobalConfiguration>? Configure { get; set; }
 
         public bool IsWorkersEnabled { get; private set; }
         public int Workers { get; private set; }
@@ -126,19 +121,20 @@ namespace Sitko.Core.HangFire
 
     public class HangfirePostgresModuleConfig : HangfireModuleConfig
     {
-        public HangfirePostgresModuleConfig(string connectionString,
-            TimeSpan? invisibilityTimeout = null, TimeSpan? distributedLockTimeout = null) : base(configuration =>
+        public string ConnectionString { get; set; } = string.Empty;
+        public TimeSpan InvisibilityTimeout { get; set; } = TimeSpan.FromHours(5);
+        public TimeSpan DistributedLockTimeout { get; set; } = TimeSpan.FromHours(5);
+
+        public HangfirePostgresModuleConfig()
         {
-            invisibilityTimeout ??= TimeSpan.FromHours(5);
-            distributedLockTimeout ??= TimeSpan.FromHours(5);
-            configuration.UsePostgreSqlStorage(connectionString,
-                new PostgreSqlStorageOptions
-                {
-                    InvisibilityTimeout = invisibilityTimeout.Value,
-                    DistributedLockTimeout = distributedLockTimeout.Value
-                });
-        })
-        {
+            Configure = configuration =>
+            {
+                configuration.UsePostgreSqlStorage(ConnectionString,
+                    new PostgreSqlStorageOptions
+                    {
+                        InvisibilityTimeout = InvisibilityTimeout, DistributedLockTimeout = DistributedLockTimeout
+                    });
+            };
         }
     }
 }
