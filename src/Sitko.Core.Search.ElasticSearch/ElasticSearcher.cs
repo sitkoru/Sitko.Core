@@ -79,6 +79,15 @@ namespace Sitko.Core.Search.ElasticSearch
         {
             indexName = $"{_options.Prefix}_{indexName}";
             var result = await GetClient().IndexManyAsync(searchModels, indexName.ToLowerInvariant());
+            if (result.Errors)
+            {
+                foreach (var item in result.ItemsWithErrors)
+                {
+                    _logger.LogError("Error while indexing document {IndexName} {Id}: {ErrorText}", indexName, item.Id,
+                        item.Error);
+                }
+            }
+
             return result.ApiCall.Success;
         }
 
@@ -86,6 +95,16 @@ namespace Sitko.Core.Search.ElasticSearch
         {
             indexName = $"{_options.Prefix}_{indexName}";
             var result = await GetClient().DeleteManyAsync(searchModels, indexName.ToLowerInvariant());
+            if (result.Errors)
+            {
+                foreach (var item in result.ItemsWithErrors)
+                {
+                    _logger.LogError("Error while deleting document {Id} from {IndexName}: {ErrorText}", item.Id,
+                        indexName,
+                        item.Error);
+                }
+            }
+
             return !result.Errors;
         }
 
