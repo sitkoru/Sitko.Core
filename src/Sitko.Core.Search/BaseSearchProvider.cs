@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -42,13 +43,19 @@ namespace Sitko.Core.Search
         public async Task<T[]> SearchAsync(string term, int limit)
         {
             var result = await _searcher.SearchAsync(IndexName, term, limit);
-            return await GetEntitiesAsync(result);
+            return await LoadEntities(result);
         }
 
         public async Task<T[]> GetSimilarAsync(string id, int limit)
         {
             var result = await _searcher.GetSimilarAsync(IndexName, id, limit);
-            return await GetEntitiesAsync(result);
+            return await LoadEntities(result);
+        }
+
+        protected virtual async Task<T[]> LoadEntities(TSearchModel[] searchModels)
+        {
+            var entities = await GetEntitiesAsync(searchModels);
+            return entities.OrderBy(e => Array.FindIndex(searchModels, model => model.Id == GetId(e))).ToArray();
         }
 
         public Task AddOrUpdateEntityAsync(T entity)
@@ -73,5 +80,7 @@ namespace Sitko.Core.Search
 
         protected abstract Task<TSearchModel[]> GetSearchModelsAsync(T[] entities);
         protected abstract Task<T[]> GetEntitiesAsync(TSearchModel[] searchModels);
+
+        protected abstract string GetId(T entity);
     }
 }
