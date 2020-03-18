@@ -88,6 +88,12 @@ namespace Sitko.Core.Search.ElasticSearch
                 }
             }
 
+            if (result.ServerError != null)
+            {
+                _logger.LogError("Error while indexing {IndexName} documents: {ErrorText}", indexName,
+                    result.ServerError);
+            }
+
             return result.ApiCall.Success;
         }
 
@@ -105,6 +111,12 @@ namespace Sitko.Core.Search.ElasticSearch
                 }
             }
 
+            if (result.ServerError != null)
+            {
+                _logger.LogError("Error while deleting documents from {IndexName}: {ErrorText}", indexName,
+                    result.ServerError);
+            }
+
             return !result.Errors;
         }
 
@@ -113,6 +125,12 @@ namespace Sitko.Core.Search.ElasticSearch
             indexName = $"{_options.Prefix}_{indexName}";
             var result = await GetClient()
                 .Indices.DeleteAsync(Indices.All, descriptor => descriptor.Index(indexName.ToLowerInvariant()));
+            if (result.ServerError != null)
+            {
+                _logger.LogError("Error while deleting documents from {IndexName}: {ErrorText}", indexName,
+                    result.ServerError);
+            }
+
             return result.Acknowledged;
         }
 
@@ -124,6 +142,12 @@ namespace Sitko.Core.Search.ElasticSearch
                 x.Query(q =>
                         q.QueryString(qs => qs.Query(names)))
                     .Index(indexName.ToLowerInvariant()));
+            if (resultsCount.ServerError != null)
+            {
+                _logger.LogError("Error while counting documents in {IndexName}: {ErrorText}", indexName,
+                    resultsCount.ServerError);
+            }
+
             return resultsCount.Count;
         }
 
@@ -132,6 +156,10 @@ namespace Sitko.Core.Search.ElasticSearch
             indexName = $"{_options.Prefix}_{indexName}";
             var results = await GetClient()
                 .SearchAsync<TSearchModel>(x => GetSearchRequest(x, indexName, term, limit));
+            if (results.ServerError != null)
+            {
+                _logger.LogError("Error while searching in {IndexName}: {ErrorText}", indexName, results.ServerError);
+            }
 
             return results.Documents.ToArray();
         }
@@ -148,6 +176,11 @@ namespace Sitko.Core.Search.ElasticSearch
                             .MaxQueryTerms(12)))
                     .Sort(s => s.Descending("_score").Descending("date")).Size(limit > 0 ? limit : 20)
                     .Index(indexName.ToLowerInvariant()));
+            if (results.ServerError != null)
+            {
+                _logger.LogError("Error while looking for similar documents in {IndexName}: {ErrorText}", indexName,
+                    results.ServerError);
+            }
 
             return results.Documents.ToArray();
         }
