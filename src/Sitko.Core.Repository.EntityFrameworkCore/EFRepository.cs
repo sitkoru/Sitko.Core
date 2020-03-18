@@ -83,7 +83,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         protected override Task<TEntity> GetOldItem(TEntityPk id)
         {
-            return GetBaseQuery().Where(e => e.Id != null && e.Id.Equals(id)).AsNoTracking().FirstAsync();
+            return GetBaseQuery().Where(e => e.Id!.Equals(id)).AsNoTracking().FirstAsync();
         }
 
         protected override Task DoUpdateAsync(TEntity item)
