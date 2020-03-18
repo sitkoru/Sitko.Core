@@ -59,7 +59,7 @@ namespace Sitko.Core.Search.ElasticSearch
 
             return descriptor.Query(q =>
                     q.QueryString(qs => qs.Query(names)))
-                .Sort(s => s.Descending("_score").Descending("date")).Size(limit > 0 ? limit : 20)
+                .Sort(s => s.Descending(SortSpecialField.Score).Descending("date")).Size(limit > 0 ? limit : 20)
                 .Index(indexName.ToLowerInvariant());
         }
 
@@ -174,7 +174,7 @@ namespace Sitko.Core.Search.ElasticSearch
                             .MinDocumentFrequency(1)
                             .MinTermFrequency(1)
                             .MaxQueryTerms(12)))
-                    .Sort(s => s.Descending("_score").Descending("date")).Size(limit > 0 ? limit : 20)
+                    .Sort(s => s.Descending(SortSpecialField.Score).Descending("date")).Size(limit > 0 ? limit : 20)
                     .Index(indexName.ToLowerInvariant()));
             if (results.ServerError != null)
             {
