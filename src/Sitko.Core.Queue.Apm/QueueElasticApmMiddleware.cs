@@ -27,11 +27,19 @@ namespace Sitko.Core.Queue.Apm
                 if (transaction == null)
                 {
                     return tracer.CaptureTransaction($"Publish {message.GetType().FullName}",
-                        ApiConstants.TypeExternal, () => base.PublishAsync(message, messageContext, callback));
+                        ApiConstants.TypeExternal, () =>
+                        {
+                            messageContext.RequestId = tracer.CurrentTransaction.OutgoingDistributedTracingData.SerializeToString();
+                            return base.PublishAsync(message, messageContext, callback);
+                        });
                 }
 
                 return transaction.CaptureSpan($"Publish {message.GetType().FullName}", ApiConstants.TypeExternal,
-                    () => base.PublishAsync(message, messageContext, callback), "Queue");
+                    () =>
+                    {
+                        messageContext.RequestId = tracer.CurrentTransaction.OutgoingDistributedTracingData.SerializeToString();
+                        return base.PublishAsync(message, messageContext, callback);
+                    }, "Queue");
             }
 
             return base.PublishAsync(message, messageContext, callback);
@@ -47,7 +55,7 @@ namespace Sitko.Core.Queue.Apm
                 if (transaction == null)
                 {
                     return tracer.CaptureTransaction($"Process {message.GetType().FullName}",
-                        ApiConstants.TypeRequest, () => base.ReceiveAsync(message, messageContext, callback));
+                        ApiConstants.TypeRequest, () => base.ReceiveAsync(message, messageContext, callback), DistributedTracingData.TryDeserializeFromString(messageContext.RequestId));
                 }
 
                 return transaction.CaptureSpan($"Process {message.GetType().FullName}", ApiConstants.TypeExternal,
