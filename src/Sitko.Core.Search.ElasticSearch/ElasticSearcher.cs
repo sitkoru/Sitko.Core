@@ -195,12 +195,11 @@ namespace Sitko.Core.Search.ElasticSearch
                 await GetClient().Indices.CloseAsync(indexName);
                 var result = await GetClient().Indices.UpdateSettingsAsync(indexName, c => c.IndexSettings(s =>
                     s.Analysis(BuildIndexDescriptor)));
+                await GetClient().Indices.OpenAsync(indexName);
                 if (!result.IsValid)
                 {
                     throw result.OriginalException;
                 }
-
-                await GetClient().Indices.OpenAsync(indexName);
             }
             else
             {
