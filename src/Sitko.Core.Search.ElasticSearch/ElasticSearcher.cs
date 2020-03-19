@@ -70,10 +70,9 @@ namespace Sitko.Core.Search.ElasticSearch
             var names = "";
             if (term != null)
             {
-                names = term.Replace("+", " OR *");
+                names = term.Replace("+", " OR ");
             }
 
-            names = names + "*";
             return names;
         }
 
