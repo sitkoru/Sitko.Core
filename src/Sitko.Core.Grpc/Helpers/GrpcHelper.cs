@@ -38,6 +38,18 @@ namespace Sitko.Core.Grpc.Helpers
             return s ?? string.Empty;
         }
 
+        public static void SetError(this ApiResponseInfo responseInfo, string error, int code = 500)
+        {
+            responseInfo.IsSuccess = false;
+            responseInfo.Error = new ApiResponseError {Code = code, Errors = {error}};
+        }
+
+        public static void SetErrors(this ApiResponseInfo responseInfo, IEnumerable<string> errors, int code = 500)
+        {
+            responseInfo.IsSuccess = false;
+            responseInfo.Error = new ApiResponseError {Code = code, Errors = {errors}};
+        }
+
         public static void SetException(this ApiResponseInfo responseInfo, Exception ex, int code = 500)
         {
             responseInfo.IsSuccess = false;
