@@ -177,16 +177,35 @@ namespace Sitko.Core.App
             }
         }
 
-        protected virtual void RegisterModule(IApplicationModule module)
+        protected void RegisterModule<TModule, TModuleConfig>(
+            Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null)
+            where TModule : IApplicationModule<TModuleConfig> where TModuleConfig : class, new()
         {
-            Modules.Add(module);
             _hostBuilder.ConfigureServices((context, services) =>
             {
+                var config = new TModuleConfig();
+                if (!_check)
+                {
+                    configure?.Invoke(context.Configuration, context.HostingEnvironment, config);
+                }
+
+                var module = (TModule)Activator.CreateInstance(typeof(TModule), config, this);
+                if (!_check)
+                {
+                    module.CheckConfig();
+                }
+
                 module.ConfigureLogging(_loggerConfiguration, _logLevelSwitcher,
                     LoggingFacility ?? Environment.ApplicationName,
                     context.Configuration, context.HostingEnvironment);
                 module.ConfigureServices(services, context.Configuration, context.HostingEnvironment);
+                AddModule(module);
             });
+        }
+
+        protected virtual void AddModule(IApplicationModule module)
+        {
+            Modules.Add(module);
         }
 
         public async Task InitAsync()
@@ -316,19 +335,7 @@ namespace Sitko.Core.App
             Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null)
             where TModule : IApplicationModule<TModuleConfig> where TModuleConfig : class, new()
         {
-            var config = new TModuleConfig();
-            if (!_check)
-            {
-                configure?.Invoke(Configuration, Environment, config);
-            }
-
-            var module = (TModule)Activator.CreateInstance(typeof(TModule), config, this);
-            if (!_check)
-            {
-                module.CheckConfig();
-            }
-
-            RegisterModule(module);
+            RegisterModule<TModule, TModuleConfig>(configure);
             return (T)this;
         }
 
