@@ -33,37 +33,19 @@ namespace Sitko.Core.Web
             var consulClient = serviceProvider.GetRequiredService<IConsulClient>();
             var logger = serviceProvider.GetRequiredService<ILogger<ConsulWebModule>>();
             Uri uri;
-            if (DockerHelper.IsRunningInDocker())
+            if (Config.ServiceUri != null)
             {
-                var host = DockerHelper.GetContainerAddress();
-                if (!string.IsNullOrEmpty(configuration["VIRTUAL_HOST"]))
-                {
-                    host = configuration["VIRTUAL_HOST"];
-                }
-
-                var port = environment.IsProduction() ? 443 : 80;
-                if (!string.IsNullOrEmpty(configuration["VIRTUAL_PORT"]))
-                {
-                    int.TryParse(configuration["VIRTUAL_PORT"], out port);
-                }
-
-                var proto = environment.IsProduction() ? "https" : "http";
-
-                uri = new Uri($"{proto}://" + host + $":{port}");
+                uri = Config.ServiceUri;
             }
             else
             {
-                var grpcServer = Application.Get<bool>("grpcServer");
                 var addressesFeature = server.Features.Get<IServerAddressesFeature>();
-                var address = grpcServer
-                    ? addressesFeature.Addresses.Skip(1).FirstOrDefault(a => !a.StartsWith("https"))
-                    : addressesFeature.Addresses.FirstOrDefault(a => !a.StartsWith("https"));
+                var address = addressesFeature.Addresses.FirstOrDefault(a => !a.StartsWith("https"));
                 if (string.IsNullOrEmpty(address)) address = addressesFeature.Addresses.First();
                 uri = new Uri(address.Replace("localhost", Config.IpAddress)
                     .Replace("0.0.0.0", Config.IpAddress).Replace("[::]", Config.IpAddress));
             }
 
-            // Register service with consul
             var healthUrl = $"{uri.Scheme}://{uri.Host}:{uri.Port}/health";
             var registration = new AgentServiceRegistration
             {
@@ -80,7 +62,8 @@ namespace Sitko.Core.Web
                 Tags = new[] {"metrics", $"healthUrl:{healthUrl}", $"version:{Config.Version}"}
             };
 
-            logger.LogInformation("Registering with Consul");
+            logger.LogInformation("Registering in Consul as {Name} on {Host}:{Port}", environment.ApplicationName,
+                uri.Host, uri.Port);
             await consulClient.Agent.ServiceDeregister(registration.ID);
             await consulClient.Agent.ServiceRegister(registration);
         }
@@ -99,6 +82,8 @@ namespace Sitko.Core.Web
     {
         public string? IpAddress { get; set; }
         public string Version { get; set; } = "dev";
+
+        public Uri? ServiceUri { get; set; }
 
         public TimeSpan ChecksInterval { get; set; } = TimeSpan.FromSeconds(60);
         public TimeSpan DeregisterTimeout { get; set; } = TimeSpan.FromSeconds(60);
