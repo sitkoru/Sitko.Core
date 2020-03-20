@@ -200,7 +200,7 @@ namespace Sitko.Core.App
                     configure?.Invoke(context.Configuration, context.HostingEnvironment, config);
                 }
 
-                var module = (TModule)Activator.CreateInstance(typeof(TModule), config, this);
+                var module = (TModule) Activator.CreateInstance(typeof(TModule), config, this);
                 if (!_check)
                 {
                     module.CheckConfig();
@@ -226,9 +226,15 @@ namespace Sitko.Core.App
             Log.Logger = _loggerConfiguration.CreateLogger();
 
             using var scope = host.Services.CreateScope();
+            Logger.LogInformation("Check required modules");
             foreach (var module in Modules)
             {
                 CheckRequiredModules(module);
+            }
+
+            Logger.LogInformation("Init modules");
+            foreach (var module in Modules)
+            {
                 await module.InitAsync(scope.ServiceProvider,
                     scope.ServiceProvider.GetRequiredService<IConfiguration>(),
                     scope.ServiceProvider.GetRequiredService<IHostEnvironment>());
@@ -238,12 +244,10 @@ namespace Sitko.Core.App
         private void CheckRequiredModules(IApplicationModule module)
         {
             var requiredModules = module.GetRequiredModules();
-            foreach (Type requiredModule in requiredModules)
+            foreach (var requiredModule in requiredModules.Where(requiredModule =>
+                Modules.All(m => !requiredModule.IsInstanceOfType(m))))
             {
-                if (Modules.All(m => !requiredModule.IsAssignableFrom(m.GetType())))
-                {
-                    throw new Exception($"Module {module} require module {requiredModule} to be included");
-                }
+                throw new Exception($"Module {module} require module {requiredModule} to be included");
             }
         }
 
@@ -289,7 +293,7 @@ namespace Sitko.Core.App
         {
             if (_store.ContainsKey(key))
             {
-                return (T)_store[key];
+                return (T) _store[key];
             }
 
 #pragma warning disable 8603
@@ -318,19 +322,19 @@ namespace Sitko.Core.App
         public T ConfigureServices(Action<IServiceCollection> configure)
         {
             HostBuilder.ConfigureServices(configure);
-            return (T)this;
+            return (T) this;
         }
 
         public T ConfigureServices(Action<HostBuilderContext, IServiceCollection> configure)
         {
             HostBuilder.ConfigureServices(configure);
-            return (T)this;
+            return (T) this;
         }
 
         public T ConfigureLogLevel(string source, LogEventLevel level)
         {
             LogEventLevels.Add(source, level);
-            return (T)this;
+            return (T) this;
         }
 
         public T AddModule<TModule, TModuleConfig>(
@@ -338,20 +342,20 @@ namespace Sitko.Core.App
             where TModule : IApplicationModule<TModuleConfig> where TModuleConfig : class, new()
         {
             RegisterModule<TModule, TModuleConfig>(configure);
-            return (T)this;
+            return (T) this;
         }
 
         public T AddModule<TModule>() where TModule : BaseApplicationModule
         {
             AddModule<TModule, BaseApplicationModuleConfig>();
-            return (T)this;
+            return (T) this;
         }
 
 
         public T ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> action)
         {
             HostBuilder.ConfigureAppConfiguration(action);
-            return (T)this;
+            return (T) this;
         }
     }
 }
