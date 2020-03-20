@@ -32,6 +32,11 @@ namespace Sitko.Core.Xunit
         {
             _application = (TApplication)Activator.CreateInstance(typeof(TApplication), new object[] {new string[0]});
 
+            _application.ConfigureServices((context, services) =>
+            {
+                ConfigureServices(context.Configuration, context.HostingEnvironment, services, name);
+            });
+            
             _application.AddModule<TestModule, TestModuleConfig>((configuration, environment, moduleConfig) =>
             {
                 moduleConfig.TestOutputHelper = testOutputHelper;
