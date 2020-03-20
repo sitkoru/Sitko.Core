@@ -13,7 +13,8 @@
 
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.Consul" Version="3.0.0"/>
-    <PackageReference Include="Consul.Temporary" Version="0.7.2.6"/>
+    <!-- https://github.com/SonicGD/consuldotnet cause original lib is dead -->
+    <PackageReference Include="Consul.GRPC" Version="0.7.2.6"/>
   </ItemGroup>
 
 </Project>
