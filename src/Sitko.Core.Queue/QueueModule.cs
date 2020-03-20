@@ -10,7 +10,11 @@ using Sitko.Core.Queue.Internal;
 
 namespace Sitko.Core.Queue
 {
-    public abstract class QueueModule<TQueue, TConfig> : BaseApplicationModule<TConfig>
+    public interface IQueueModule : IApplicationModule
+    {
+    }
+
+    public abstract class QueueModule<TQueue, TConfig> : BaseApplicationModule<TConfig>, IQueueModule
         where TQueue : class, IQueue
         where TConfig : QueueModuleConfig, new()
     {

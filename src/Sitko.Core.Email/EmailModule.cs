@@ -8,9 +8,13 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Email
 {
-    public class EmailModule<T> : BaseApplicationModule<T> where T : EmailModuleConfig, new()
+    public interface IEmailModule : IApplicationModule
     {
-        public EmailModule(T config, Application application) : base(config, application)
+    }
+
+    public abstract class EmailModule<T> : BaseApplicationModule<T>, IEmailModule where T : EmailModuleConfig, new()
+    {
+        protected EmailModule(T config, Application application) : base(config, application)
         {
         }
 

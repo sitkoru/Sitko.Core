@@ -7,7 +7,11 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Db
 {
-    public abstract class BaseDbModule<TDbContext, TConfig> : BaseApplicationModule<TConfig>
+    public interface IDbModule : IApplicationModule
+    {
+    }
+
+    public abstract class BaseDbModule<TDbContext, TConfig> : BaseApplicationModule<TConfig>, IDbModule
         where TDbContext : DbContext
         where TConfig : BaseDbModuleConfig<TDbContext>, new()
     {
