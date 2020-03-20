@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Sitko.Core.App;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -12,9 +13,10 @@ namespace Sitko.Core.Xunit
     {
         protected ITestOutputHelper TestOutputHelper { get; }
 
-        protected readonly Dictionary<string, BaseTestScope> _scopes = new Dictionary<string, BaseTestScope>();
+        protected readonly Dictionary<string, IBaseTestScope> _scopes =
+            new Dictionary<string, IBaseTestScope>();
 
-        protected T GetScope<T>([CallerMemberName] string name = "") where T : BaseTestScope
+        protected T GetScope<T>([CallerMemberName] string name = "") where T : IBaseTestScope
         {
             T scope;
 
@@ -41,14 +43,15 @@ namespace Sitko.Core.Xunit
             return scope;
         }
 
-        protected IServiceScope? CreateServiceScope<T>([CallerMemberName] string name = "") where T : BaseTestScope
+        protected IServiceScope? CreateServiceScope<T>([CallerMemberName] string name = "")
+            where T : IBaseTestScope
         {
             if (!_scopes.ContainsKey(name))
             {
                 throw new Exception("No scope exists");
             }
 
-            var scope = _scopes[name] as T;
+            var scope = (T)_scopes[name];
             return scope?.Get<IServiceScopeFactory>().CreateScope();
         }
 
@@ -76,7 +79,7 @@ namespace Sitko.Core.Xunit
         }
     }
 
-    public abstract class BaseTest<T> : BaseTest where T : BaseTestScope
+    public abstract class BaseTest<T> : BaseTest where T : IBaseTestScope
     {
         protected BaseTest(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {

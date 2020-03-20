@@ -4,17 +4,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
 using Sitko.Core.Db.InMemory;
 using Sitko.Core.Db.Postgres;
 
 namespace Sitko.Core.Xunit
 {
-    public abstract class DbBaseTestScope<TScope, TDbContext> : BaseTestScope
-        where TScope : class where TDbContext : DbContext
+    public abstract class DbBaseTestScope<TApplication, TScope, TDbContext> : BaseTestScope<TApplication>
+        where TScope : class where TDbContext : DbContext where TApplication : Application<TApplication>
     {
         private TDbContext? _dbContext;
 
-        protected override TestApplication ConfigureApplication(TestApplication application, string name)
+        protected override TApplication ConfigureApplication(TApplication application, string name)
         {
             base.ConfigureApplication(application, name);
             application.ConfigureAppConfiguration((context, builder) =>
@@ -102,5 +103,10 @@ namespace Sitko.Core.Xunit
 
             await base.DisposeAsync();
         }
+    }
+
+    public abstract class DbBaseTestScope<TScope, TDbContext> : DbBaseTestScope<TestApplication, TScope, TDbContext>
+        where TScope : class where TDbContext : DbContext
+    {
     }
 }
