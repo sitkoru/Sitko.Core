@@ -8,9 +8,9 @@ using Sitko.Core.Consul;
 
 namespace Sitko.Core.Grpc.Client
 {
-    public class GrpcClientModule : BaseApplicationModule
+    public class GrpcClientModule : BaseApplicationModule<GrpcClientModuleConfig>
     {
-        public GrpcClientModule(BaseApplicationModuleConfig config, Application application) : base(config, application)
+        public GrpcClientModule(GrpcClientModuleConfig config, Application application) : base(config, application)
         {
         }
 
@@ -27,11 +27,9 @@ namespace Sitko.Core.Grpc.Client
         }
     }
 
-    public static class GrpcClientModuleExtensions
+    public class GrpcClientModuleConfig
     {
-        public static T AddGrpcClient<T>(this T application) where T : Application<T>
-        {
-            return application.AddModule<GrpcClientModule>();
-        }
+        public bool EnableHttp2UnencryptedSupport { get; set; }
+        public bool DisableCertificatesValidation { get; set; }
     }
 }
