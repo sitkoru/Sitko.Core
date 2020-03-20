@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Sitko.Core.App;
 using Xunit;
 using Xunit.Abstractions;
 
