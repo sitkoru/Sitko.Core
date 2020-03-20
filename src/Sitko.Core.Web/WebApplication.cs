@@ -81,22 +81,6 @@ namespace Sitko.Core.Web
             return Modules.OfType<IWebApplicationModule>().ToList();
         }
 
-        protected override void AddModule(IApplicationModule module)
-        {
-            base.AddModule(module);
-            if (module is IWebApplicationModule webApplicationModule)
-            {
-                GetHostBuilder().ConfigureWebHostDefaults(builder =>
-                {
-                    webApplicationModule.ConfigureWebHostDefaults(builder);
-                });
-                GetHostBuilder().ConfigureWebHost(builder =>
-                {
-                    webApplicationModule.ConfigureWebHost(builder);
-                });
-            }
-        }
-
         public virtual void AppBuilderHook(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
