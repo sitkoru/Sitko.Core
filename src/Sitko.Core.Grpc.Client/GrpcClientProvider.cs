@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Consul;
@@ -15,6 +16,7 @@ namespace Sitko.Core.Grpc.Client
     {
         private readonly ILogger<GrpcClientProvider<T>> _logger;
         private readonly IConsulClient _consulClient;
+        private readonly GrpcClientModuleConfig _config;
         private readonly AsyncLock _locker = new AsyncLock();
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private string? _target;
@@ -26,10 +28,11 @@ namespace Sitko.Core.Grpc.Client
 
         public GrpcClientProvider(
             ILogger<GrpcClientProvider<T>> logger,
-            IConsulClient consulClient)
+            IConsulClient consulClient, GrpcClientModuleConfig config)
         {
             _logger = logger;
             _consulClient = consulClient;
+            _config = config;
             _refreshTask = StartRefreshTaskAsync();
         }
 
@@ -46,9 +49,22 @@ namespace Sitko.Core.Grpc.Client
                         return true;
                     }
 
-                    AppContext.SetSwitch(
-                        "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
-                    _channel = GrpcChannel.ForAddress(_target!);
+                    var handler = new HttpClientHandler();
+
+
+                    if (_config.DisableCertificatesValidation)
+                    {
+                        handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+                    }
+
+                    var client = new HttpClient(handler) {BaseAddress = new Uri(_target)};
+                    if (_config.EnableHttp2UnencryptedSupport)
+                    {
+                        AppContext.SetSwitch(
+                            "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+                    }
+
+                    _channel = GrpcChannel.ForAddress(_target!, new GrpcChannelOptions {HttpClient = client});
                     try
                     {
                         _logger.LogInformation("Channel {type} connected to {target}", typeof(T), _target);
@@ -72,8 +88,6 @@ namespace Sitko.Core.Grpc.Client
                 throw new Exception($"Can't lock for channel of {typeof(T)} creation!");
             }
         }
-
-        
 
         public async Task<GrpcClient<T>> GetClientAsync()
         {
@@ -124,7 +138,8 @@ namespace Sitko.Core.Grpc.Client
                         if (serviceResponse.Response.Any())
                         {
                             var service = serviceResponse.Response.First();
-                            var target = $"http://{service.ServiceAddress}:{service.ServicePort}";
+                            var target =
+                                $"{(_config.EnableHttp2UnencryptedSupport ? "http" : "https")}://{service.ServiceAddress}:{service.ServicePort}";
 
                             if (target != _target)
                             {
