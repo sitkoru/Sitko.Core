@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App;
-using Sitko.Core.App.Helpers;
 using Sitko.Core.Consul;
 
 namespace Sitko.Core.Web
