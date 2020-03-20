@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Sitko.Core.App;
-using Sitko.Core.Web;
+using Sitko.Core.App.Web;
 
 namespace Sitko.Core.Swagger
 {

@@ -8,7 +8,7 @@ using Microsoft.Net.Http.Headers;
 using Sitko.Core.App;
 using Sitko.Core.Storage.Proxy.ImageSharp;
 using Sitko.Core.Storage.Proxy.StaticFiles;
-using Sitko.Core.Web;
+using Sitko.Core.App.Web;
 using SixLabors.ImageSharp.Web.Caching;
 using SixLabors.ImageSharp.Web.Commands;
 using SixLabors.ImageSharp.Web.DependencyInjection;

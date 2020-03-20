@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
@@ -6,12 +6,11 @@
     <Nullable>enable</Nullable>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Grpc\Sitko.Core.Grpc.csproj" />
+    <PackageReference Include="Nito.AsyncEx" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Grpc.Net.Client" Version="2.27.0" />
+    <ProjectReference Include="..\Sitko.Core.Consul\Sitko.Core.Consul.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Grpc.Client\Sitko.Core.Grpc.Client.csproj" />
   </ItemGroup>
-
 </Project>

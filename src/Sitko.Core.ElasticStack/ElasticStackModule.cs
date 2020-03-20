@@ -13,7 +13,7 @@ using Serilog.Events;
 using Serilog.Sinks.Elasticsearch;
 using Sitko.Core.App;
 using Sitko.Core.App.Logging;
-using Sitko.Core.Web;
+using Sitko.Core.App.Web;
 
 namespace Sitko.Core.ElasticStack
 {

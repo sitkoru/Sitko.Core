@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
-namespace Sitko.Core.Web
+namespace Sitko.Core.App.Web
 {
     public interface IWebApplicationModule : IApplicationModule
     {

@@ -7,7 +7,7 @@ using Grpc.Net.Client;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Sitko.Core.Web;
+using Sitko.Core.App.Web;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;

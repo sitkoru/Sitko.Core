@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
-using Sitko.Core.Web;
+using Sitko.Core.App.Web;
 
 namespace Sitko.Core.Grpc.Server
 {
@@ -30,7 +30,7 @@ namespace Sitko.Core.Grpc.Server
         public override async Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider)
         {
-            var registrar = serviceProvider.GetRequiredService<GrpcServicesRegistrar>();
+            var registrar = serviceProvider.GetRequiredService<IGrpcServicesRegistrar>();
             await registrar.RegisterAsync<TService>();
         }
 
