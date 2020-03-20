@@ -30,14 +30,17 @@ namespace Sitko.Core.Grpc.Server.Consul
             _logger = logger;
             if (!string.IsNullOrEmpty(_options.Host))
             {
+                _logger.LogInformation("Use grpc host from config");
                 _host = _options.Host;
             }
             else if (!string.IsNullOrEmpty(_options.IpAddress))
             {
+                _logger.LogInformation("Use grpc ip address from config");
                 _host = options.IpAddress;
             }
             else if (_inContainer)
             {
+                _logger.LogInformation("Use docker ip as grpc host");
                 _host = DockerHelper.GetContainerAddress();
                 if (string.IsNullOrEmpty(_host))
                 {
@@ -45,6 +48,7 @@ namespace Sitko.Core.Grpc.Server.Consul
                 }
             }
 
+            _logger.LogInformation("GRPC Host: {Host}", _host);
             var serverAddressesFeature = server.Features.Get<IServerAddressesFeature>();
             var address = serverAddressesFeature.Addresses.Select(a => new Uri(a))
                 .FirstOrDefault(u => u.Scheme == "https");
@@ -54,6 +58,7 @@ namespace Sitko.Core.Grpc.Server.Consul
             }
 
             _port = address.Port > 0 ? address.Port : 443;
+            _logger.LogInformation("GRPC Port: {Port}", _port);
         }
 
         private string GetServiceName<T>()
