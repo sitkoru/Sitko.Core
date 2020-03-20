@@ -30,9 +30,6 @@ namespace Sitko.Core.Web
         {
         }
 
-        void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder) { }
-        void ConfigureWebHost(IWebHostBuilder webHostBuilder) { }
-
         void ConfigureStartupServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {
