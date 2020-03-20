@@ -16,9 +16,9 @@ namespace Sitko.Core.Grpc.Server.Consul
         private readonly GrpcServerOptions _options;
         private readonly IConsulClient? _consulClient;
         private readonly ILogger<GrpcServicesRegistrar> _logger;
-        private readonly string? _host;
+        private readonly string _host = "127.0.0.1";
         private readonly int _port;
-        private readonly bool _inContainer;
+        private readonly bool _inContainer = DockerHelper.IsRunningInDocker();
 
         private readonly Dictionary<string, string> _registeredServices = new Dictionary<string, string>();
 
@@ -28,10 +28,15 @@ namespace Sitko.Core.Grpc.Server.Consul
             _options = options;
             _consulClient = consulClient;
             _logger = logger;
-
-            _host = options.IpAddress ?? "127.0.0.1"; // windows machine
-            _inContainer = DockerHelper.IsRunningInDocker();
-            if (_inContainer)
+            if (!string.IsNullOrEmpty(_options.Host))
+            {
+                _host = _options.Host;
+            }
+            else if (!string.IsNullOrEmpty(_options.IpAddress))
+            {
+                _host = options.IpAddress;
+            }
+            else if (_inContainer)
             {
                 _host = DockerHelper.GetContainerAddress();
                 if (string.IsNullOrEmpty(_host))
