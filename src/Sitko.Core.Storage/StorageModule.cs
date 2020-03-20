@@ -6,10 +6,14 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Storage
 {
-    public class StorageModule<TStorage, TStorageOptions> : BaseApplicationModule<TStorageOptions>
+    public interface IStorageModule : IApplicationModule
+    {
+    }
+
+    public abstract class StorageModule<TStorage, TStorageOptions> : BaseApplicationModule<TStorageOptions>, IStorageModule
         where TStorage : Storage<TStorageOptions> where TStorageOptions : StorageOptions, new()
     {
-        public StorageModule(TStorageOptions config, Application application) : base(config, application)
+        protected StorageModule(TStorageOptions config, Application application) : base(config, application)
         {
         }
 
