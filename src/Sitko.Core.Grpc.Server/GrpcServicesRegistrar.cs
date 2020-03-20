@@ -14,7 +14,7 @@ namespace Sitko.Core.Grpc.Server
     public class GrpcServicesRegistrar : IAsyncDisposable
     {
         private readonly GrpcServerOptions _options;
-        private readonly IConsulClient _consulClient;
+        private readonly IConsulClient? _consulClient;
         private readonly ILogger<GrpcServicesRegistrar> _logger;
         private readonly string? _host;
         private readonly int _port;
@@ -22,8 +22,8 @@ namespace Sitko.Core.Grpc.Server
 
         private readonly Dictionary<string, string> _registeredServices = new Dictionary<string, string>();
 
-        public GrpcServicesRegistrar(GrpcServerOptions options, IConsulClient consulClient,
-            IServer server, ILogger<GrpcServicesRegistrar> logger)
+        public GrpcServicesRegistrar(GrpcServerOptions options,
+            IServer server, ILogger<GrpcServicesRegistrar> logger, IConsulClient? consulClient = null)
         {
             _options = options;
             _consulClient = consulClient;
@@ -40,9 +40,15 @@ namespace Sitko.Core.Grpc.Server
                 }
             }
 
-            IServerAddressesFeature serverAddressesFeature = server.Features.Get<IServerAddressesFeature>();
-            var address = new Uri(serverAddressesFeature.Addresses.First());
-            _port = address.Port;
+            var serverAddressesFeature = server.Features.Get<IServerAddressesFeature>();
+            var address = serverAddressesFeature.Addresses.Select(a => new Uri(a))
+                .FirstOrDefault(u => u.Scheme == "https");
+            if (address == null)
+            {
+                throw new Exception("Can't find https address for grpc service");
+            }
+
+            _port = address.Port > 0 ? address.Port : 443;
         }
 
         private string GetServiceName<T>()
@@ -66,24 +72,31 @@ namespace Sitko.Core.Grpc.Server
         {
             var serviceName = GetServiceName<T>();
             var id = GetServiceId<T>();
-            var registration = new AgentServiceRegistration
+            if (_consulClient != null)
             {
-                ID = id,
-                Name = serviceName,
-                Address = _host,
-                Port = _port,
-                Check = new AgentServiceCheck
+                var registration = new AgentServiceRegistration
                 {
-                    DeregisterCriticalServiceAfter = _options.DeregisterTimeout,
-                    Interval = _options.ChecksInterval,
-                    GRPC = $"{_host}:{_port}"
-                },
-                Tags = new[] {"grpc", $"version:{_options.Version}"}
-            };
-            _logger.LogInformation("Register grpc service {serviceName} on {address}:{port}", serviceName, _host,
-                _port);
-            await _consulClient.Agent.ServiceDeregister(id);
-            await _consulClient.Agent.ServiceRegister(registration);
+                    ID = id,
+                    Name = serviceName,
+                    Address = _host,
+                    Port = _port,
+                    Check = new AgentServiceCheck
+                    {
+                        DeregisterCriticalServiceAfter = _options.DeregisterTimeout,
+                        Interval = _options.ChecksInterval,
+                        GRPC = $"{_host}:{_port}",
+                        TLSSkipVerify = true,
+                        GRPCUseTLS = true
+                    },
+                    Tags = new[] {"grpc", $"version:{_options.Version}"}
+                };
+                _logger.LogInformation("Register grpc service {serviceName} on {address}:{port}", serviceName, _host,
+                    _port);
+                await _consulClient.Agent.ServiceDeregister(id);
+                var result = await _consulClient.Agent.ServiceRegister(registration);
+                _logger.LogInformation("Consul response code: {Code}", result.StatusCode);
+            }
+
             _registeredServices.Add(id, serviceName);
         }
 
@@ -91,7 +104,7 @@ namespace Sitko.Core.Grpc.Server
 
         public async ValueTask DisposeAsync()
         {
-            if (!_disposed)
+            if (!_disposed && _consulClient != null)
             {
                 foreach (var registeredService in _registeredServices)
                 {
@@ -108,14 +121,17 @@ namespace Sitko.Core.Grpc.Server
 
         public async Task<bool> IsRegistered<T>() where T : class
         {
-            var id = GetServiceId<T>();
-            var serviceName = GetServiceName<T>();
-            var serviceResponse = await _consulClient.Catalog.Service(serviceName, "grpc");
-            if (serviceResponse.StatusCode == HttpStatusCode.OK)
+            if (_consulClient != null)
             {
-                if (serviceResponse.Response.Any())
+                var id = GetServiceId<T>();
+                var serviceName = GetServiceName<T>();
+                var serviceResponse = await _consulClient.Catalog.Service(serviceName, "grpc");
+                if (serviceResponse.StatusCode == HttpStatusCode.OK)
                 {
-                    return serviceResponse.Response.Any(service => service.ServiceID == id);
+                    if (serviceResponse.Response.Any())
+                    {
+                        return serviceResponse.Response.Any(service => service.ServiceID == id);
+                    }
                 }
             }
 
