@@ -132,7 +132,7 @@ namespace Sitko.Core.App.Web
             {
                 builder.AddUserSecrets<TStartup>();
                 builder.AddEnvironmentVariables();
-            }).ConfigureWebHost(builder => builder.UseStartup<TStartup>());
+            }).ConfigureWebHostDefaults(builder => builder.UseStartup<TStartup>());
         }
     }
 }
