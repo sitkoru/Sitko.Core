@@ -15,7 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Sitko.Core.Web
+namespace Sitko.Core.App.Web
 {
     public abstract class BaseStartup<T> where T : WebApplication<T>
     {
@@ -170,8 +170,6 @@ namespace Sitko.Core.Web
             {
                 appBuilder.UseForwardedHeaders();
             }
-
-            appBuilder.UseMiddleware<RequestIdMiddleware>();
 
             ConfigureHook(appBuilder);
             application.AppBuilderHook(Configuration, Environment, appBuilder);

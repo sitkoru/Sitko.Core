@@ -6,9 +6,9 @@ namespace Sitko.Core.Grpc.Server
 {
     public class GrpcServiceHealthCheck<TService> : IHealthCheck where TService : class
     {
-        private readonly GrpcServicesRegistrar _registrar;
+        private readonly IGrpcServicesRegistrar _registrar;
 
-        public GrpcServiceHealthCheck(GrpcServicesRegistrar registrar)
+        public GrpcServiceHealthCheck(IGrpcServicesRegistrar registrar)
         {
             _registrar = registrar;
         }

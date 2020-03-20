@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Helpers;
 
-namespace Sitko.Core.Grpc.Server
+namespace Sitko.Core.Grpc.Server.Consul
 {
-    public class GrpcServicesRegistrar : IAsyncDisposable
+    public class GrpcServicesRegistrar : IGrpcServicesRegistrar, IAsyncDisposable
     {
         private readonly GrpcServerOptions _options;
         private readonly IConsulClient? _consulClient;

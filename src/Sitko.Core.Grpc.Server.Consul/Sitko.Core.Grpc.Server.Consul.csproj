@@ -1,4 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>latest</LangVersion>
@@ -6,9 +7,8 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.1.0" />
+    <ProjectReference Include="..\Sitko.Core.Consul\Sitko.Core.Consul.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Grpc.Server\Sitko.Core.Grpc.Server.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj" />
-  </ItemGroup>
+
 </Project>

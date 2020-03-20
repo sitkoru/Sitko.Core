@@ -11,7 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App;
 
-namespace Sitko.Core.Web
+namespace Sitko.Core.App.Web
 {
     public abstract class WebApplication<T> : Application<T> where T : WebApplication<T>
     {

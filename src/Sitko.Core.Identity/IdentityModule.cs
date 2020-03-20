@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
-using Sitko.Core.Web;
+using Sitko.Core.App.Web;
 
 namespace Sitko.Core.Identity
 {

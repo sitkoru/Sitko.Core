@@ -7,8 +7,8 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj" />
     <ProjectReference Include="..\Sitko.Core.Grpc\Sitko.Core.Grpc.csproj" />
-    <ProjectReference Include="..\Sitko.Core.Web\Sitko.Core.Web.csproj" />
     <Protobuf Include="health.proto" GrpcServices="Server" />
   </ItemGroup>
 
