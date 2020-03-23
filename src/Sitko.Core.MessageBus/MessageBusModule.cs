@@ -6,9 +6,15 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.MessageBus
 {
-    public class MessageBusModule<TAssembly> : BaseApplicationModule<MessageBusModuleConfig<TAssembly>>
+    public interface IMessageBusModule
     {
-        public MessageBusModule(MessageBusModuleConfig<TAssembly> config, Application application) : base(config, application)
+    }
+
+    public class MessageBusModule<TAssembly> : BaseApplicationModule<MessageBusModuleConfig<TAssembly>>,
+        IMessageBusModule
+    {
+        public MessageBusModule(MessageBusModuleConfig<TAssembly> config, Application application) : base(config,
+            application)
         {
         }
 
