@@ -4,9 +4,9 @@ namespace Sitko.Core.Email
 {
     public interface IMailSender
     {
-        Task SendHtmlMailAsync<T>(MailEntry<T> mailEntry, string template);
-        Task SendHtmlMailAsync(MailEntry mailEntry, string template);
-        Task SendMailAsync(MailEntry mailEntry, string body);
+        Task<bool> SendHtmlMailAsync<T>(MailEntry<T> mailEntry, string template);
+        Task<bool> SendHtmlMailAsync(MailEntry mailEntry, string template);
+        Task<bool> SendMailAsync(MailEntry mailEntry, string body);
         void SendInBackground<T>(MailEntry<T> mailEntry, string template);
     }
 }
