@@ -18,6 +18,7 @@ namespace Sitko.Core.ElasticStack
         public readonly Dictionary<string, string> ApmGlobalLabels = new Dictionary<string, string>();
         public List<Uri>? ApmServerUrls { get; protected set; }
         public string? ApmSecretToken { get; set; }
+        public string? ApmApiKey { get; set; }
         public bool ApmVerifyServerCert { get; set; } = true;
         public TimeSpan ApmFlushInterval { get; set; } = TimeSpan.FromSeconds(10);
         public int ApmMaxBatchEventCount { get; set; } = 10;

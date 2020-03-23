@@ -77,6 +77,7 @@ namespace Sitko.Core.ElasticStack
                 }
 
                 configuration["ElasticApm:SecretToken"] = Config.ApmSecretToken;
+                configuration["ElasticApm:ApiKey"] = Config.ApmApiKey;
                 configuration["ElasticApm:VerifyServerCert"] = Config.ApmVerifyServerCert.ToString();
                 configuration["ElasticApm:FlushInterval"] = $"{Config.ApmFlushInterval.TotalSeconds}s";
                 configuration["ElasticApm:MaxBatchEventCount"] = Config.ApmMaxBatchEventCount.ToString();
