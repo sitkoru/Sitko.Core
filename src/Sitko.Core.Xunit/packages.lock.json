@@ -4,9 +4,9 @@
     ".NETStandard,Version=v2.1": {
       "AutoBogus": {
         "type": "Direct",
-        "requested": "[2.8.0, )",
-        "resolved": "2.8.0",
-        "contentHash": "x/SowB2ZQUigduL3Okg0ioV1/skTZz6a8ew9gpjf0kdNY/RgfbEg//6oBcxwaarWRg4TLcVjnJUIQcSGx+jpKA==",
+        "requested": "[2.8.1, )",
+        "resolved": "2.8.1",
+        "contentHash": "E2ZT88KkPiKfKRxGo96hwxYLklbzj/Cy/SIEpy54j6qZXNac+Ps2iQHDSqeJ5UXmsEcbx6c/TQJJUNLbiD6FJg==",
         "dependencies": {
           "Bogus": "28.4.4"
         }

@@ -45,8 +45,8 @@
       },
       "HtmlAgilityPack": {
         "type": "Transitive",
-        "resolved": "1.11.22",
-        "contentHash": "CYhoygZimrUHyLVb18ws5bN6Zt2Bcd8s6YXIynFrx53ZodgE+OUt6wTA05t8q8bfia2zPJPE/e4CKcqxUdZhBw==",
+        "resolved": "1.11.23",
+        "contentHash": "+cgMfM0ks6njN1HjeH157wcF9n9CksuLk4yzKZ3j5/dhC+t1xZ6SZVnksGZZ+6H22Y2RQ6gUEpue4E912271Hg==",
         "dependencies": {
           "System.Net.Http": "4.3.2",
           "System.Xml.XPath": "4.3.0",
@@ -1254,7 +1254,7 @@
         "dependencies": {
           "FluentEmail.Core": "2.7.0",
           "Hangfire.Core": "1.7.9",
-          "HtmlAgilityPack": "1.11.22",
+          "HtmlAgilityPack": "1.11.23",
           "Sitko.Core.App": "1.0.0"
         }
       }
