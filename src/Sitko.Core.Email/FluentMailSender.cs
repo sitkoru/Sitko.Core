@@ -24,19 +24,19 @@ namespace Sitko.Core.Email
             _backgroundJobClient = backgroundJobClient;
         }
 
-        public Task SendHtmlMailAsync<T>(MailEntry<T> mailEntry, string template)
+        public Task<bool> SendHtmlMailAsync<T>(MailEntry<T> mailEntry, string template)
         {
             var html = _renderer.RenderViewToStringAsync(template, mailEntry).GetAwaiter().GetResult();
             return SendMailAsync(mailEntry, html);
         }
 
-        public async Task SendHtmlMailAsync(MailEntry mailEntry, string template)
+        public async Task<bool> SendHtmlMailAsync(MailEntry mailEntry, string template)
         {
             var html = await _renderer.RenderViewToStringAsync(template, mailEntry);
-            await SendMailAsync(mailEntry, html);
+            return await SendMailAsync(mailEntry, html);
         }
 
-        public async Task SendMailAsync(MailEntry mailEntry, string body)
+        public async Task<bool> SendMailAsync(MailEntry mailEntry, string body)
         {
             var message = _emailFactory.Create().Subject(mailEntry.Subject);
 
@@ -54,6 +54,7 @@ namespace Sitko.Core.Email
                 });
             }
 
+            var success = true;
             foreach (var recipient in mailEntry.Recipients)
             {
                 try
@@ -68,6 +69,8 @@ namespace Sitko.Core.Email
                             _logger.LogError("Error while sending email {subject} to {recipient}: {errorText}",
                                 mailEntry.Subject, recipient, errorMessage);
                         }
+
+                        success = false;
                     }
                 }
                 catch (Exception ex)
@@ -76,6 +79,8 @@ namespace Sitko.Core.Email
                     throw;
                 }
             }
+
+            return success;
         }
 
         public void SendInBackground<T>(MailEntry<T> mailEntry, string template)
