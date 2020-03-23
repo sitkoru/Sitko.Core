@@ -143,6 +143,11 @@ namespace Sitko.Core.App
                 try
                 {
                     _appHost = HostBuilder.Build();
+                    Logger.LogInformation("Check required modules");
+                    foreach (var module in Modules)
+                    {
+                        CheckRequiredModules(module);
+                    }
                     if (_check)
                     {
                         Console.WriteLine("Check run is successful");
@@ -226,12 +231,6 @@ namespace Sitko.Core.App
             Log.Logger = _loggerConfiguration.CreateLogger();
 
             using var scope = host.Services.CreateScope();
-            Logger.LogInformation("Check required modules");
-            foreach (var module in Modules)
-            {
-                CheckRequiredModules(module);
-            }
-
             Logger.LogInformation("Init modules");
             foreach (var module in Modules)
             {
