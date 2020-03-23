@@ -36,11 +36,13 @@ namespace Sitko.Core.Grpc.Server.Consul
             else if (_inContainer)
             {
                 _logger.LogInformation("Use docker ip as grpc host");
-                _host = DockerHelper.GetContainerAddress();
-                if (string.IsNullOrEmpty(_host))
+                var dockerIp = DockerHelper.GetContainerAddress();
+                if (string.IsNullOrEmpty(dockerIp))
                 {
                     throw new Exception("Can't find host ip for grpc");
                 }
+
+                _host = dockerIp;
             }
 
             _logger.LogInformation("GRPC Host: {Host}", _host);
