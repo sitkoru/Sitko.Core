@@ -33,11 +33,6 @@ namespace Sitko.Core.Grpc.Server.Consul
                 _logger.LogInformation("Use grpc host from config");
                 _host = _options.Host;
             }
-            else if (!string.IsNullOrEmpty(_options.IpAddress))
-            {
-                _logger.LogInformation("Use grpc ip address from config");
-                _host = options.IpAddress;
-            }
             else if (_inContainer)
             {
                 _logger.LogInformation("Use docker ip as grpc host");
