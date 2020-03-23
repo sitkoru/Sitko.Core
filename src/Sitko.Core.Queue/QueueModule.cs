@@ -69,7 +69,7 @@ namespace Sitko.Core.Queue
 
             if (Config.TranslateMessageBusTypes.Any())
             {
-                modules.Add(typeof(MessageBusModule<>));
+                modules.Add(typeof(IMessageBusModule));
             }
 
             return modules;

@@ -6,9 +6,14 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Repository
 {
-    public abstract class RepositoriesModule<T> : BaseApplicationModule
+    public interface IRepositoriesModule
     {
-        protected RepositoriesModule(BaseApplicationModuleConfig config, Application application) : base(config, application)
+    }
+
+    public abstract class RepositoriesModule<T> : BaseApplicationModule, IRepositoriesModule
+    {
+        protected RepositoriesModule(BaseApplicationModuleConfig config, Application application) : base(config,
+            application)
         {
         }
 
