@@ -101,9 +101,11 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         public override IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(
             Expression<Func<TEntity, TProperty>> navigationPropertyPath)
         {
-            return new IncludableRepositoryQuery<TEntity, TProperty>(Query.Include(navigationPropertyPath),
+            var query = new IncludableRepositoryQuery<TEntity, TProperty>(Query.Include(navigationPropertyPath),
                 WhereExpressions,
                 OrderByExpressions);
+            Query = query.Query;
+            return query;
         }
 
         protected override void ApplySort((string propertyName, bool isDescending) sortQuery)
@@ -139,10 +141,12 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         public IIncludableRepositoryQuery<TEntity, TNextProperty> ThenInclude<TNextProperty>(
             Expression<Func<TProperty, TNextProperty>> navigationPropertyPath)
         {
-            return new IncludableRepositoryQuery<TEntity, TNextProperty>(
+            var query = new IncludableRepositoryQuery<TEntity, TNextProperty>(
                 ((IIncludableQueryable<TEntity, TProperty>) Query).ThenInclude(navigationPropertyPath),
                 WhereExpressions,
                 OrderByExpressions);
+            Query = query.Query;
+            return query;
         }
     }
 }
