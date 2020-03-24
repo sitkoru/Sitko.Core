@@ -46,15 +46,24 @@ namespace Sitko.Core.Grpc.Server.Consul
             }
 
             _logger.LogInformation("GRPC Host: {Host}", _host);
-            var serverAddressesFeature = server.Features.Get<IServerAddressesFeature>();
-            var address = serverAddressesFeature.Addresses.Select(a => new Uri(a))
-                .FirstOrDefault(u => u.Scheme == "https");
-            if (address == null)
+            if (_options.Port != null && _options.Port > 0)
             {
-                throw new Exception("Can't find https address for grpc service");
+                _logger.LogInformation("Use grpc port from config");
+                _port = _options.Port.Value;
+            }
+            else
+            {
+                var serverAddressesFeature = server.Features.Get<IServerAddressesFeature>();
+                var address = serverAddressesFeature.Addresses.Select(a => new Uri(a))
+                    .FirstOrDefault(u => u.Scheme == "https");
+                if (address == null)
+                {
+                    throw new Exception("Can't find https address for grpc service");
+                }
+
+                _port = address.Port > 0 ? address.Port : 443;
             }
 
-            _port = address.Port > 0 ? address.Port : 443;
             _logger.LogInformation("GRPC Port: {Port}", _port);
         }
 
