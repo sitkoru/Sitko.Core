@@ -26,5 +26,14 @@ namespace Sitko.Core.Repository
         IRepositoryQuery<TEntity> Configure(Action<IRepositoryQuery<TEntity>>? configureQuery = null);
         Task<IRepositoryQuery<TEntity>> ConfigureAsync(Func<IRepositoryQuery<TEntity>, Task>? configureQuery = null);
         IRepositoryQuery<TEntity> Paginate(int page, int itemsPerPage);
+
+        IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(
+            Expression<Func<TEntity, TProperty>> navigationPropertyPath);
+    }
+
+    public interface IIncludableRepositoryQuery<TEntity, TProperty> : IRepositoryQuery<TEntity> where TEntity : class
+    {
+        IIncludableRepositoryQuery<TEntity, TNextProperty> ThenInclude<TNextProperty>(
+            Expression<Func<TProperty, TNextProperty>> navigationPropertyPath);
     }
 }
