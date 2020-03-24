@@ -38,10 +38,17 @@ namespace Sitko.Core.Consul.Web
             else
             {
                 var addressesFeature = server.Features.Get<IServerAddressesFeature>();
-                var address = addressesFeature.Addresses.FirstOrDefault(a => !a.StartsWith("https"));
-                if (string.IsNullOrEmpty(address)) address = addressesFeature.Addresses.First();
-                uri = new Uri(address.Replace("localhost", Config.IpAddress)
-                    .Replace("0.0.0.0", Config.IpAddress).Replace("[::]", Config.IpAddress));
+                var addresses = addressesFeature.Addresses.Select(a => new Uri(a.Replace("localhost", Config.IpAddress)
+                        .Replace("0.0.0.0", Config.IpAddress).Replace("[::]", Config.IpAddress))).OrderBy(u => u.Port)
+                    .ToList();
+                if (!addresses.Any())
+                {
+                    throw new Exception("No addresses available for consul registration");
+                }
+
+                var address = addresses.FirstOrDefault(u => u.Scheme != "https");
+                if (address == null) address = addresses.First();
+                uri = address;
             }
 
             var healthUrl = $"{uri.Scheme}://{uri.Host}:{uri.Port}/health";
