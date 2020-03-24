@@ -101,8 +101,8 @@ namespace Sitko.Core.Grpc.Server.Consul
                         DeregisterCriticalServiceAfter = _options.DeregisterTimeout,
                         Interval = _options.ChecksInterval,
                         GRPC = $"{_host}:{_port}",
-                        TLSSkipVerify = true,
-                        GRPCUseTLS = true
+                        TLSSkipVerify = _options.ValidateTls,
+                        GRPCUseTLS = _options.UseTls
                     },
                     Tags = new[] {"grpc", $"version:{_options.Version}"}
                 };
