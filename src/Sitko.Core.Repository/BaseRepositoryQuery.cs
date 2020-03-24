@@ -198,6 +198,9 @@ namespace Sitko.Core.Repository
             return this;
         }
 
+        public abstract IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(
+            Expression<Func<TEntity, TProperty>> navigationPropertyPath);
+
         private static object? ParsePropertyValue(Type propertyType, object? value)
         {
             if (value == null)
