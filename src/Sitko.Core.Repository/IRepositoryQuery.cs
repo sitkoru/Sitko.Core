@@ -31,9 +31,8 @@ namespace Sitko.Core.Repository
             Expression<Func<TEntity, TProperty>> navigationPropertyPath);
     }
 
-    public interface IIncludableRepositoryQuery<TEntity, TProperty> : IRepositoryQuery<TEntity> where TEntity : class
+    public interface IIncludableRepositoryQuery<TEntity, out TProperty> : IRepositoryQuery<TEntity>
+        where TEntity : class
     {
-        IIncludableRepositoryQuery<TEntity, TNextProperty> ThenInclude<TNextProperty>(
-            Expression<Func<TProperty, TNextProperty>> navigationPropertyPath);
     }
 }

@@ -86,7 +86,6 @@ namespace Sitko.Core.Repository
                 var groupWhere = new List<string>();
                 foreach (var condition in conditionsGroup.Conditions)
                 {
-                    PrepareCondition(condition);
                     var expression = condition.GetExpression(valueIndex);
                     if (!string.IsNullOrEmpty(expression))
                     {
@@ -150,30 +149,20 @@ namespace Sitko.Core.Repository
             var propertyInfo = FieldsResolver.GetPropertyInfo<TEntity>(property);
             if (propertyInfo != null)
             {
-                var condition = new QueryContextCondition(propertyInfo.Value.name) {Operator = @operator};
+                var condition =
+                    new QueryContextCondition(propertyInfo.Value.name)
+                    {
+                        Operator = @operator, ValueType = propertyInfo.Value.type
+                    };
                 if (value != null && condition.ValueType != null)
                 {
-                    condition.Value = ParsePropertyValue(condition.ValueType, condition.Value);
+                    condition.Value = ParsePropertyValue(condition.ValueType, value);
                 }
 
                 return condition;
             }
 
             return null;
-        }
-
-        protected void PrepareCondition(QueryContextCondition condition)
-        {
-            var propertyInfo = FieldsResolver.GetPropertyInfo<TEntity>(condition.Property);
-            if (propertyInfo != null)
-            {
-                condition.Property = propertyInfo.Value.name;
-                condition.ValueType = propertyInfo.Value.type;
-                if (condition.Value != null)
-                {
-                    //condition.Value = ParsePropertyValue(condition.ValueType, condition.Value);
-                }
-            }
         }
 
         protected virtual void SetCondition(string property, QueryContextOperator @operator, object value)
