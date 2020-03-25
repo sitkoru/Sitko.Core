@@ -15,6 +15,7 @@ namespace Sitko.Core.Grpc.Client.Consul
     public class ConsulGrpcClientProvider<T> : IGrpcClientProvider<T>, IAsyncDisposable where T : ClientBase<T>
     {
         private readonly ILogger<ConsulGrpcClientProvider<T>> _logger;
+        private readonly ILoggerFactory _loggerFactory;
         private readonly IConsulClient _consulClient;
         private readonly GrpcClientModuleConfig _config;
         private readonly AsyncLock _locker = new AsyncLock();
@@ -28,9 +29,11 @@ namespace Sitko.Core.Grpc.Client.Consul
 
         public ConsulGrpcClientProvider(
             ILogger<ConsulGrpcClientProvider<T>> logger,
+            ILoggerFactory loggerFactory,
             IConsulClient consulClient, GrpcClientModuleConfig config)
         {
             _logger = logger;
+            _loggerFactory = loggerFactory;
             _consulClient = consulClient;
             _config = config;
             _refreshTask = StartRefreshTaskAsync();
@@ -64,7 +67,8 @@ namespace Sitko.Core.Grpc.Client.Consul
                             "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
                     }
 
-                    _channel = GrpcChannel.ForAddress(_target!, new GrpcChannelOptions {HttpClient = client});
+                    _channel = GrpcChannel.ForAddress(_target!,
+                        new GrpcChannelOptions {HttpClient = client, LoggerFactory = _loggerFactory});
                     try
                     {
                         _logger.LogInformation("Channel {type} connected to {target}", typeof(T), _target);
