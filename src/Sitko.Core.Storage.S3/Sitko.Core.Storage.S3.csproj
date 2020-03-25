@@ -6,7 +6,7 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.3.110.38" />
+    <PackageReference Include="AWSSDK.S3" Version="3.3.110.39" />
     <PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="3.0.0" />
   </ItemGroup>
   <ItemGroup>
