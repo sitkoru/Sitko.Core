@@ -85,6 +85,16 @@
           "System.Diagnostics.DiagnosticSource": "4.5.1"
         }
       },
+      "Grpc.Net.ClientFactory": {
+        "type": "Transitive",
+        "resolved": "2.27.0",
+        "contentHash": "ufHv+ncg5zCBa8H1J53MdcPbrRNRFGXKemL8OsOMhUCBAWh9L4mpTv8gpv+sLn9Iw4sUArgqU/bsxyHbppLGPA==",
+        "dependencies": {
+          "Grpc.Core.Api": "2.27.0",
+          "Grpc.Net.Client": "2.27.0",
+          "Microsoft.Extensions.Http": "2.1.1"
+        }
+      },
       "Grpc.Net.Common": {
         "type": "Transitive",
         "resolved": "2.27.0",
@@ -1561,6 +1571,7 @@
         "type": "Project",
         "dependencies": {
           "Grpc.Net.Client": "2.27.0",
+          "Grpc.Net.ClientFactory": "2.27.0",
           "Sitko.Core.Grpc": "1.0.0"
         }
       }
