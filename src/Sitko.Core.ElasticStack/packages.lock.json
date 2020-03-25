@@ -15,21 +15,21 @@
       },
       "Elastic.Apm.SerilogEnricher": {
         "type": "Direct",
-        "requested": "[1.4.3, )",
-        "resolved": "1.4.3",
-        "contentHash": "xqTUdeTrc4vUvhkbi1+OzIDxo7J3K94XMlx6P4PRLuEFCHxU3/IU3rNEPGjrY+q3I1IaGrqtTAPCS7SFUx7YcA==",
+        "requested": "[1.4.4, )",
+        "resolved": "1.4.4",
+        "contentHash": "bGR5c1YZhKtH24jrj4DLpjUBAWgf8kXlLeZGnBu7bcYiQSzTR9vpca4V5TmhfqLcpLCj/aW2naWJyd/UcD/gPQ==",
         "dependencies": {
-          "Elastic.Apm": "1.2.0",
+          "Elastic.Apm": "1.4.0",
           "Serilog": "2.0.0"
         }
       },
       "Elastic.CommonSchema.Serilog": {
         "type": "Direct",
-        "requested": "[1.4.3, )",
-        "resolved": "1.4.3",
-        "contentHash": "eCP//X66kDlCCW5mcJxOSaPHKLelctXtZHPcuKp1pj0sL9oA081qOQqfgOlLqidJXZr+tsWDIuLkRvrXHJOK8A==",
+        "requested": "[1.4.4, )",
+        "resolved": "1.4.4",
+        "contentHash": "+aqSChlmAdyt49MtLfuYSB8e4Ar6r3+1tRTjd4E79qb5fD7op23exLVnhriz6XloGDJg5K4F60/4eoOs3OkSXw==",
         "dependencies": {
-          "Elastic.CommonSchema": "1.4.3",
+          "Elastic.CommonSchema": "1.4.4",
           "Microsoft.AspNetCore.Http.Abstractions": "2.2.0",
           "Serilog": "2.9.0"
         }
@@ -96,8 +96,8 @@
       },
       "Elastic.CommonSchema": {
         "type": "Transitive",
-        "resolved": "1.4.3",
-        "contentHash": "NrC4tnicWu9ByF8jcD2pXX9LZtcAD/OVyBntoEPJSxnsa7mAhYQ4bLQn80w49pKZY9kI1wgBTEiHAesgKtmwnw==",
+        "resolved": "1.4.4",
+        "contentHash": "kqyOfYxqf06yEzTcEafgw8BF3yvbaTcTvGX5E3FwGHz8UJOhtP+8ZuM8/EJz6wazl3Hb5csuGpoC7YFnHCvCLA==",
         "dependencies": {
           "System.Text.Json": "4.7.0"
         }
