@@ -14,6 +14,17 @@
           "System.Diagnostics.DiagnosticSource": "4.5.1"
         }
       },
+      "Grpc.Net.ClientFactory": {
+        "type": "Direct",
+        "requested": "[2.27.0, )",
+        "resolved": "2.27.0",
+        "contentHash": "ufHv+ncg5zCBa8H1J53MdcPbrRNRFGXKemL8OsOMhUCBAWh9L4mpTv8gpv+sLn9Iw4sUArgqU/bsxyHbppLGPA==",
+        "dependencies": {
+          "Grpc.Core.Api": "2.27.0",
+          "Grpc.Net.Client": "2.27.0",
+          "Microsoft.Extensions.Http": "2.1.1"
+        }
+      },
       "Flurl": {
         "type": "Transitive",
         "resolved": "2.8.2",

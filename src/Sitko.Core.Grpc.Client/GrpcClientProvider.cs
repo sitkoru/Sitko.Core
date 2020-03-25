@@ -1,40 +1,24 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Grpc.Core;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Sitko.Core.Grpc.Client
 {
-    public class GrpcClient<T> where T : ClientBase<T>
+    public interface IGrpcClientProvider<TClient> where TClient : ClientBase<TClient>
     {
-        private T? _currentInstance;
-        public bool IsReady { get; private set; }
-
-        public void SetReady(bool ready)
-        {
-            IsReady = ready;
-        }
-
-        public void SetInstance(T instance)
-        {
-            _currentInstance = instance;
-        }
-
-        public T Instance
-        {
-            get
-            {
-                if (IsReady && _currentInstance != null)
-                {
-                    return _currentInstance;
-                }
-
-                throw new Exception($"Client if {typeof(T)} isn't ready");
-            }
-        }
+        TClient Instance { get; }
     }
 
-    public interface IGrpcClientProvider<T> where T : ClientBase<T>
+    public class GrpcClientProvider<TClient> : IGrpcClientProvider<TClient> where TClient : ClientBase<TClient>
     {
-        Task<GrpcClient<T>> GetClientAsync();
+        private readonly IServiceProvider _serviceProvider;
+
+        public GrpcClientProvider(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
+
+
+        public TClient Instance => _serviceProvider.GetService<TClient>();
     }
 }
