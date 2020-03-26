@@ -89,6 +89,16 @@
           "Grpc.Net.ClientFactory": "2.27.0"
         }
       },
+      "Grpc.AspNetCore.Server.Reflection": {
+        "type": "Transitive",
+        "resolved": "2.27.0",
+        "contentHash": "44lf5WO+RXqrmjS7pie2xKg2zjQrEposX1KXSucKObFYjqZpA/Z3LKCE3BHPwTeM/TRsKu2EaZxoqYW/a9rXFg==",
+        "dependencies": {
+          "Google.Protobuf": "3.11.2",
+          "Grpc.AspNetCore.Server": "2.27.0",
+          "Grpc.Reflection": "2.27.0"
+        }
+      },
       "Grpc.Core.Api": {
         "type": "Transitive",
         "resolved": "2.27.0",
@@ -123,6 +133,15 @@
         "resolved": "2.27.0",
         "contentHash": "qMd5Yf6PsN+TxGmz/wPB1dbih7HHgTkWhIZ2wYQX52znbWG2uBaZsBcyQgda1nNaMrXJzevbGb9eFKnvqmOBkw==",
         "dependencies": {
+          "Grpc.Core.Api": "2.27.0"
+        }
+      },
+      "Grpc.Reflection": {
+        "type": "Transitive",
+        "resolved": "2.27.0",
+        "contentHash": "Tt4txqTCWw2/LQF46jf0UvqQX2Ff8EvatjHJts5oeAIU1yfm4Ggh0HpZOKrNDovT+UD305/Q75ztZxXq3jgkUw==",
+        "dependencies": {
+          "Google.Protobuf": "3.11.2",
           "Grpc.Core.Api": "2.27.0"
         }
       },
@@ -1648,6 +1667,7 @@
         "type": "Project",
         "dependencies": {
           "Grpc.AspNetCore": "2.27.0",
+          "Grpc.AspNetCore.Server.Reflection": "2.27.0",
           "Sitko.Core.App.Web": "1.0.0",
           "Sitko.Core.Grpc": "1.0.0"
         }
