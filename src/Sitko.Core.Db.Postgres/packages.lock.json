@@ -4,13 +4,13 @@
     ".NETStandard,Version=v2.1": {
       "Npgsql.EntityFrameworkCore.PostgreSQL": {
         "type": "Direct",
-        "requested": "[3.1.2, )",
-        "resolved": "3.1.2",
-        "contentHash": "hgCP4MGcOmxvtvJVPbgJ99B/wzZTAzdP9AHjcuN/S1F0SdaqaDAHFJGnE8d0ABa/kHYHqRdxqsbBAiJAEbqosQ==",
+        "requested": "[3.1.3, )",
+        "resolved": "3.1.3",
+        "contentHash": "OsuFPlLHx8fyZQOF6e1AOOZ5Wn93eMAGyMihTe/06WEfTy/a367XwU9xJR+sqfvwXKUy+fvLafgFVG0etLTklQ==",
         "dependencies": {
-          "Microsoft.EntityFrameworkCore": "3.1.2",
-          "Microsoft.EntityFrameworkCore.Abstractions": "3.1.2",
-          "Microsoft.EntityFrameworkCore.Relational": "3.1.2",
+          "Microsoft.EntityFrameworkCore": "3.1.3",
+          "Microsoft.EntityFrameworkCore.Abstractions": "3.1.3",
+          "Microsoft.EntityFrameworkCore.Relational": "3.1.3",
           "Npgsql": "4.1.3"
         }
       },
