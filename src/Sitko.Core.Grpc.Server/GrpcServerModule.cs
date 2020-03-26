@@ -32,6 +32,10 @@ namespace Sitko.Core.Grpc.Server
             IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
         {
             endpoints.MapGrpcService<HealthService>();
+            if (Config.EnableReflection)
+            {
+                endpoints.MapGrpcReflectionService();
+            }
         }
     }
 }
