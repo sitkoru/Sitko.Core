@@ -20,8 +20,12 @@ namespace Sitko.Core.Grpc.Server
             base.ConfigureServices(services, configuration, environment);
             services.AddGrpc(options =>
             {
-                options.EnableDetailedErrors = environment.IsDevelopment();
+                options.EnableDetailedErrors = Config.EnableDetailedErrors;
             });
+            if (Config.EnableReflection)
+            {
+                services.AddGrpcReflection();
+            }
         }
 
         public void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment,

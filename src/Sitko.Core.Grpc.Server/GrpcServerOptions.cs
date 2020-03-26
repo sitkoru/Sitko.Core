@@ -12,5 +12,8 @@ namespace Sitko.Core.Grpc.Server
         public bool ValidateTls { get; set; } = true;
         public TimeSpan ChecksInterval { get; set; } = TimeSpan.FromSeconds(60);
         public TimeSpan DeregisterTimeout { get; set; } = TimeSpan.FromSeconds(60);
+
+        public bool EnableReflection { get; set; } = false;
+        public bool EnableDetailedErrors { get; set; } = false;
     }
 }
