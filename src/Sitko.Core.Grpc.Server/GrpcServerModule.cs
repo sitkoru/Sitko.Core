@@ -21,6 +21,7 @@ namespace Sitko.Core.Grpc.Server
             services.AddGrpc(options =>
             {
                 options.EnableDetailedErrors = Config.EnableDetailedErrors;
+                Config.Configure?.Invoke(options);
             });
             if (Config.EnableReflection)
             {
