@@ -1,6 +1,5 @@
 using System;
-using System.Net;
-using System.Net.Mail;
+using FluentEmail.MailKitSmtp;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 
@@ -14,22 +13,19 @@ namespace Sitko.Core.Email.Smtp
 
         protected override void ConfigureBuilder(FluentEmailServicesBuilder builder)
         {
-            NetworkCredential? credential = null;
+            var config = new SmtpClientOptions
+            {
+                Server = Config.Server,
+                Port = Config.Port,
+                UseSsl = Config.UseSsl
+            };
             if (!string.IsNullOrEmpty(Config.UserName))
             {
-                credential = new NetworkCredential(Config.UserName, Config.Password);
+                config.RequiresAuthentication = true;
+                config.User = Config.UserName;
+                config.Password = Config.Password;
             }
-
-            builder.AddSmtpSender(() =>
-            {
-                var client = new SmtpClient(Config.Server, Config.Port) {EnableSsl = Config.UseSsl};
-                if (credential != null)
-                {
-                    client.Credentials = credential;
-                }
-
-                return client;
-            });
+            builder.AddMailKitSender(config);
         }
 
         public override void CheckConfig()
