@@ -1,4 +1,5 @@
 using System;
+using System.Net.Mail;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,7 +19,8 @@ namespace Sitko.Core.Email
             base.ConfigureServices(services, configuration, environment);
 
             services.AddScoped<IMailSender, FluentMailSender>();
-            var builder = services.AddFluentEmail(Config.From);
+            var address = new MailAddress(Config.From);
+            var builder = services.AddFluentEmail(address.Address, address.DisplayName);
             ConfigureBuilder(builder);
         }
 
