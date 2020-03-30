@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentEmail.Core;
@@ -45,33 +44,16 @@ namespace Sitko.Core.Email.Smtp
 
             try
             {
-                if (_smtpClientOptions.UsePickupDirectory)
-                {
-                    this.SaveToPickupDirectory(message, _smtpClientOptions.MailPickupDirectory).Wait();
-                    return response;
-                }
-
                 using (var client = new SmtpClient())
                 {
-                    if (_smtpClientOptions.SocketOptions.HasValue)
-                    {
-                        client.Connect(
-                            _smtpClientOptions.Server,
-                            _smtpClientOptions.Port,
-                            _smtpClientOptions.SocketOptions.Value,
-                            token.GetValueOrDefault());
-                    }
-                    else
-                    {
-                        client.Connect(
-                            _smtpClientOptions.Server,
-                            _smtpClientOptions.Port,
-                            _smtpClientOptions.UseSsl,
-                            token.GetValueOrDefault());
-                    }
+                    client.Connect(
+                        _smtpClientOptions.Server,
+                        _smtpClientOptions.Port,
+                        _smtpClientOptions.SocketOptions,
+                        token.GetValueOrDefault());
 
                     // Note: only needed if the SMTP server requires authentication
-                    if (_smtpClientOptions.RequiresAuthentication)
+                    if (!string.IsNullOrEmpty(_smtpClientOptions.UserName))
                     {
                         client.Authenticate(_smtpClientOptions.UserName, _smtpClientOptions.Password,
                             token.GetValueOrDefault());
@@ -108,33 +90,16 @@ namespace Sitko.Core.Email.Smtp
 
             try
             {
-                if (_smtpClientOptions.UsePickupDirectory)
-                {
-                    await this.SaveToPickupDirectory(message, _smtpClientOptions.MailPickupDirectory);
-                    return response;
-                }
-
                 using (var client = new SmtpClient())
                 {
-                    if (_smtpClientOptions.SocketOptions.HasValue)
-                    {
-                        await client.ConnectAsync(
-                            _smtpClientOptions.Server,
-                            _smtpClientOptions.Port,
-                            _smtpClientOptions.SocketOptions.Value,
-                            token.GetValueOrDefault());
-                    }
-                    else
-                    {
-                        await client.ConnectAsync(
-                            _smtpClientOptions.Server,
-                            _smtpClientOptions.Port,
-                            _smtpClientOptions.UseSsl,
-                            token.GetValueOrDefault());
-                    }
+                    await client.ConnectAsync(
+                        _smtpClientOptions.Server,
+                        _smtpClientOptions.Port,
+                        _smtpClientOptions.SocketOptions,
+                        token.GetValueOrDefault());
 
                     // Note: only needed if the SMTP server requires authentication
-                    if (_smtpClientOptions.RequiresAuthentication)
+                    if (!string.IsNullOrEmpty(_smtpClientOptions.UserName))
                     {
                         await client.AuthenticateAsync(_smtpClientOptions.UserName, _smtpClientOptions.Password,
                             token.GetValueOrDefault());
@@ -150,35 +115,6 @@ namespace Sitko.Core.Email.Smtp
             }
 
             return response;
-        }
-
-        /// <summary>
-        /// Saves email to a pickup directory.
-        /// </summary>
-        /// <param name="message">Message to save for pickup.</param>
-        /// <param name="pickupDirectory">Pickup directory.</param>
-        private async Task SaveToPickupDirectory(MimeMessage message, string pickupDirectory)
-        {
-            // Note: this will require that you know where the specified pickup directory is.
-            var path = Path.Combine(pickupDirectory, Guid.NewGuid().ToString() + ".eml");
-
-            if (File.Exists(path))
-                return;
-
-            try
-            {
-                using (var stream = new FileStream(path, FileMode.CreateNew))
-                {
-                    await message.WriteToAsync(stream);
-                    return;
-                }
-            }
-            catch (IOException)
-            {
-                // The file may have been created between our File.Exists() check and
-                // our attempt to create the stream.
-                throw;
-            }
         }
 
         /// <summary>
