@@ -1,6 +1,8 @@
 using System;
-using FluentEmail.MailKitSmtp;
+using FluentEmail.Core.Interfaces;
+using MailKit.Security;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Email.Smtp
@@ -13,19 +15,7 @@ namespace Sitko.Core.Email.Smtp
 
         protected override void ConfigureBuilder(FluentEmailServicesBuilder builder)
         {
-            var config = new SmtpClientOptions
-            {
-                Server = Config.Server,
-                Port = Config.Port,
-                UseSsl = Config.UseSsl
-            };
-            if (!string.IsNullOrEmpty(Config.UserName))
-            {
-                config.RequiresAuthentication = true;
-                config.User = Config.UserName;
-                config.Password = Config.Password;
-            }
-            builder.AddMailKitSender(config);
+            builder.Services.TryAdd(ServiceDescriptor.Scoped<ISender>(x => new MailKitSender(Config)));
         }
 
         public override void CheckConfig()
@@ -41,14 +31,5 @@ namespace Sitko.Core.Email.Smtp
                 throw new ArgumentException("Provide smtp port", nameof(Config.Port));
             }
         }
-    }
-
-    public class SmtpEmailModuleConfig : FluentEmailModuleConfig
-    {
-        public int Port { get; set; } = 25;
-        public string UserName { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-        public bool UseSsl { get; set; } = false;
-        public string Server { get; set; } = "localhost";
     }
 }
