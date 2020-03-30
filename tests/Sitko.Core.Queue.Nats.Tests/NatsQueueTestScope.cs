@@ -15,8 +15,24 @@ namespace Sitko.Core.Queue.Nats.Tests
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
             NatsQueueModuleConfig config, string name)
         {
-            config.ClientName = configuration["QUEUE_NATS_CLUSTER_NAME"];
-            config.AddServer(configuration["QUEUE_NATS_HOST"], Convert.ToInt32(configuration["QUEUE_NATS_PORT"]));
+            if (!string.IsNullOrEmpty(configuration["QUEUE_NATS_CLUSTER_NAME"]))
+            {
+                config.ClusterName = configuration["QUEUE_NATS_CLUSTER_NAME"];
+            }
+            else
+            {
+                config.ClusterName = "tests";
+            }
+
+            if (!string.IsNullOrEmpty(configuration["QUEUE_NATS_HOST"]))
+            {
+                config.AddServer(configuration["QUEUE_NATS_HOST"], Convert.ToInt32(configuration["QUEUE_NATS_PORT"]));
+            }
+            else
+            {
+                config.AddServer("127.0.0.1", 4222);
+            }
+
             config.Verbose = true;
             config.ConnectionTimeout = TimeSpan.FromSeconds(5);
             config.QueueNamePrefix = name.Replace(".", "_");
