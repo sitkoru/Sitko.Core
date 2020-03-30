@@ -2,7 +2,7 @@ version: "2.1"
 services:
     nats:
         image: nats-streaming:0.16.2
-        command: -cid cg2
+        command: -cid tests
         ports:
             - 4222:4222
     elastic-es:
