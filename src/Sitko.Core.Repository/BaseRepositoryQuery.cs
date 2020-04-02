@@ -78,6 +78,11 @@ namespace Sitko.Core.Repository
 
         public IRepositoryQuery<TEntity> Where(IEnumerable<QueryContextConditionsGroup> conditionsGroups)
         {
+            return ApplyConditions(conditionsGroups);
+        }
+
+        protected IRepositoryQuery<TEntity> ApplyConditions(IEnumerable<QueryContextConditionsGroup> conditionsGroups)
+        {
             var whereQueries = new List<string>();
             var valueIndex = 0;
             var values = new List<object?>();
@@ -86,12 +91,15 @@ namespace Sitko.Core.Repository
                 var groupWhere = new List<string>();
                 foreach (var condition in conditionsGroup.Conditions)
                 {
-                    var expression = condition.GetExpression(valueIndex);
-                    if (!string.IsNullOrEmpty(expression))
+                    if (PrepareCondition(condition))
                     {
-                        groupWhere.Add(expression);
-                        values.Add(condition.Value);
-                        valueIndex++;
+                        var expression = condition.GetExpression(valueIndex);
+                        if (!string.IsNullOrEmpty(expression))
+                        {
+                            groupWhere.Add(expression);
+                            values.Add(condition.Value);
+                            valueIndex++;
+                        }
                     }
                 }
 
@@ -121,7 +129,11 @@ namespace Sitko.Core.Repository
                 {
                     var group = new QueryContextConditionsGroup(new List<QueryContextCondition>());
                     foreach (var parsedCondition in conditionsGroup.Conditions
-                        .Select(condition => CreateCondition(condition.Property, condition.Operator, condition.Value)))
+                        .Select(condition => new QueryContextCondition(condition.Property)
+                        {
+                            Operator = condition.Operator,
+                            Value = condition.Value
+                        }))
                     {
                         if (parsedCondition != null)
                         {
@@ -144,30 +156,30 @@ namespace Sitko.Core.Repository
             return this;
         }
 
-        protected QueryContextCondition? CreateCondition(string property, QueryContextOperator @operator, object? value)
+        protected bool PrepareCondition(QueryContextCondition condition)
         {
-            var propertyInfo = FieldsResolver.GetPropertyInfo<TEntity>(property);
+            var propertyInfo = FieldsResolver.GetPropertyInfo<TEntity>(condition.Property);
             if (propertyInfo != null)
             {
-                var condition =
-                    new QueryContextCondition(propertyInfo.Value.name)
-                    {
-                        Operator = @operator, ValueType = propertyInfo.Value.type
-                    };
-                if (value != null && condition.ValueType != null)
+                condition.ValueType = propertyInfo.Value.type;
+                if (condition.Value != null && condition.ValueType != null)
                 {
-                    condition.Value = ParsePropertyValue(condition.ValueType, value);
+                    condition.Value = ParsePropertyValue(condition.ValueType, condition.Value);
                 }
 
-                return condition;
+                return true;
             }
 
-            return null;
+            return false;
         }
 
         protected virtual void SetCondition(string property, QueryContextOperator @operator, object value)
         {
-            var condition = CreateCondition(property, @operator, value);
+            var condition = new QueryContextCondition(property)
+            {
+                Operator = @operator,
+                Value = value
+            };
             if (condition != null)
             {
                 Where(condition);
