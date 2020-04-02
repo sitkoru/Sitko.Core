@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -25,61 +26,68 @@ namespace Sitko.Core.Search
             return typeof(T) == type;
         }
 
-        public Task DeleteIndexAsync()
+        public Task DeleteIndexAsync(CancellationToken cancellationToken = default)
         {
-            return _searcher.DeleteAsync(IndexName);
+            return _searcher.DeleteAsync(IndexName, cancellationToken);
         }
 
-        public Task<long> CountAsync(string term)
+        public Task<long> CountAsync(string term, CancellationToken cancellationToken = default)
         {
-            return _searcher.CountAsync(IndexName, term);
+            return _searcher.CountAsync(IndexName, term, cancellationToken);
         }
 
-        public Task InitAsync()
+        public Task InitAsync(CancellationToken cancellationToken = default)
         {
-            return _searcher.InitAsync(IndexName);
+            return _searcher.InitAsync(IndexName, cancellationToken);
         }
 
-        public async Task<T[]> SearchAsync(string term, int limit)
+        public async Task<T[]> SearchAsync(string term, int limit, CancellationToken cancellationToken = default)
         {
-            var result = await _searcher.SearchAsync(IndexName, term, limit);
-            return await LoadEntities(result);
+            var result = await _searcher.SearchAsync(IndexName, term, limit, cancellationToken);
+            return await LoadEntities(result, cancellationToken);
         }
 
-        public async Task<T[]> GetSimilarAsync(string id, int limit)
+        public async Task<T[]> GetSimilarAsync(string id, int limit, CancellationToken cancellationToken = default)
         {
-            var result = await _searcher.GetSimilarAsync(IndexName, id, limit);
-            return await LoadEntities(result);
+            var result = await _searcher.GetSimilarAsync(IndexName, id, limit, cancellationToken);
+            return await LoadEntities(result, cancellationToken);
         }
 
-        protected virtual async Task<T[]> LoadEntities(TSearchModel[] searchModels)
+        protected virtual async Task<T[]> LoadEntities(TSearchModel[] searchModels,
+            CancellationToken cancellationToken = default)
         {
-            var entities = await GetEntitiesAsync(searchModels);
+            var entities = await GetEntitiesAsync(searchModels, cancellationToken);
             return entities.OrderBy(e => Array.FindIndex(searchModels, model => model.Id == GetId(e))).ToArray();
         }
 
-        public Task AddOrUpdateEntityAsync(T entity)
+        public Task AddOrUpdateEntityAsync(T entity, CancellationToken cancellationToken = default)
         {
-            return AddOrUpdateEntitiesAsync(new[] {entity});
+            return AddOrUpdateEntitiesAsync(new[] {entity}, cancellationToken);
         }
 
-        public async Task<bool> AddOrUpdateEntitiesAsync(T[] entities)
+        public async Task<bool> AddOrUpdateEntitiesAsync(T[] entities, CancellationToken cancellationToken = default)
         {
-            return await _searcher.AddOrUpdateAsync(IndexName, await GetSearchModelsAsync(entities));
+            return await _searcher.AddOrUpdateAsync(IndexName, await GetSearchModelsAsync(entities, cancellationToken),
+                cancellationToken);
         }
 
-        public async Task<bool> DeleteEntityAsync(T entity)
+        public async Task<bool> DeleteEntityAsync(T entity, CancellationToken cancellationToken = default)
         {
-            return await _searcher.DeleteAsync(IndexName, await GetSearchModelsAsync(new[] {entity}));
+            return await _searcher.DeleteAsync(IndexName, await GetSearchModelsAsync(new[] {entity}, cancellationToken),
+                cancellationToken);
         }
 
-        public async Task<bool> DeleteEntitiesAsync(T[] entities)
+        public async Task<bool> DeleteEntitiesAsync(T[] entities, CancellationToken cancellationToken = default)
         {
-            return await _searcher.DeleteAsync(IndexName, await GetSearchModelsAsync(entities));
+            return await _searcher.DeleteAsync(IndexName, await GetSearchModelsAsync(entities, cancellationToken),
+                cancellationToken);
         }
 
-        protected abstract Task<TSearchModel[]> GetSearchModelsAsync(T[] entities);
-        protected abstract Task<T[]> GetEntitiesAsync(TSearchModel[] searchModels);
+        protected abstract Task<TSearchModel[]> GetSearchModelsAsync(T[] entities,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<T[]> GetEntitiesAsync(TSearchModel[] searchModels,
+            CancellationToken cancellationToken = default);
 
         protected abstract string GetId(T entity);
     }

@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sitko.Core.Repository
@@ -9,42 +10,64 @@ namespace Sitko.Core.Repository
 
     public interface IRepository<TEntity, TEntityPk> : IRepository where TEntity : class, IEntity<TEntityPk>
     {
-        Task<(TEntity[] items, int itemsCount)> GetAllAsync();
-        Task<(TEntity[] items, int itemsCount)> GetAllAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery);
-        Task<(TEntity[] items, int itemsCount)> GetAllAsync(Action<IRepositoryQuery<TEntity>> configureQuery);
+        Task<(TEntity[] items, int itemsCount)> GetAllAsync(CancellationToken cancellationToken = default);
 
-        Task<TEntity?> GetAsync();
-        Task<TEntity?> GetAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery);
-        Task<TEntity?> GetAsync(Action<IRepositoryQuery<TEntity>> configureQuery);
-        
-        Task<int> CountAsync();
-        Task<int> CountAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery);
-        Task<int> CountAsync(Action<IRepositoryQuery<TEntity>> configureQuery);
+        Task<(TEntity[] items, int itemsCount)> GetAllAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            CancellationToken cancellationToken = default);
 
-        Task<TEntity?> GetByIdAsync(TEntityPk id, Func<IRepositoryQuery<TEntity>, Task> configureQuery);
-        Task<TEntity?> GetByIdAsync(TEntityPk id, Action<IRepositoryQuery<TEntity>> configureQuery);
-        Task<TEntity?> GetByIdAsync(TEntityPk id);
+        Task<(TEntity[] items, int itemsCount)> GetAllAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            CancellationToken cancellationToken = default);
 
-        Task<TEntity> NewAsync();
+        Task<TEntity?> GetAsync(CancellationToken cancellationToken = default);
 
-        Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids, Func<IRepositoryQuery<TEntity>, Task> configureQuery);
-        Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids, Action<IRepositoryQuery<TEntity>> configureQuery);
-        Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids);
+        Task<TEntity?> GetAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            CancellationToken cancellationToken = default);
 
-        Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddAsync(TEntity entity);
+        Task<TEntity?> GetAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            CancellationToken cancellationToken = default);
 
-        Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity entity);
+        Task<int> CountAsync(CancellationToken cancellationToken = default);
 
-        Task<bool> DeleteAsync(TEntityPk id);
-        Task<bool> DeleteAsync(TEntity entity);
+        Task<int> CountAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            CancellationToken cancellationToken = default);
+
+        Task<int> CountAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            CancellationToken cancellationToken = default);
+
+        Task<TEntity?> GetByIdAsync(TEntityPk id, Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            CancellationToken cancellationToken = default);
+
+        Task<TEntity?> GetByIdAsync(TEntityPk id, Action<IRepositoryQuery<TEntity>> configureQuery,
+            CancellationToken cancellationToken = default);
+
+        Task<TEntity?> GetByIdAsync(TEntityPk id, CancellationToken cancellationToken = default);
+
+        Task<TEntity> NewAsync(CancellationToken cancellationToken = default);
+
+        Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids, Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            CancellationToken cancellationToken = default);
+
+        Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids, Action<IRepositoryQuery<TEntity>> configureQuery,
+            CancellationToken cancellationToken = default);
+
+        Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids, CancellationToken cancellationToken = default);
+
+        Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddAsync(TEntity entity,
+            CancellationToken cancellationToken = default);
+
+        Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity entity,
+            CancellationToken cancellationToken = default);
+
+        Task<bool> DeleteAsync(TEntityPk id, CancellationToken cancellationToken = default);
+        Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
         PropertyChange[] GetChanges(TEntity entity, TEntity oldEntity);
 
-        Task<bool> BeginTransactionAsync();
-        Task<bool> CommitTransactionAsync();
-        Task<bool> RollbackTransactionAsync();
-        
-        Task<bool> BeginBatchAsync();
-        Task<bool> CommitBatchAsync();
-        Task<bool> RollbackBatchAsync();
+        Task<bool> BeginTransactionAsync(CancellationToken cancellationToken = default);
+        Task<bool> CommitTransactionAsync(CancellationToken cancellationToken = default);
+        Task<bool> RollbackTransactionAsync(CancellationToken cancellationToken = default);
+
+        Task<bool> BeginBatchAsync(CancellationToken cancellationToken = default);
+        Task<bool> CommitBatchAsync(CancellationToken cancellationToken = default);
+        Task<bool> RollbackBatchAsync(CancellationToken cancellationToken = default);
     }
 }

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -34,7 +35,8 @@ namespace Sitko.Core.Repository
         public abstract IRepositoryQuery<TEntity> Configure(Action<IRepositoryQuery<TEntity>>? configureQuery = null);
 
         public abstract Task<IRepositoryQuery<TEntity>> ConfigureAsync(
-            Func<IRepositoryQuery<TEntity>, Task>? configureQuery = null);
+            Func<IRepositoryQuery<TEntity>, Task>? configureQuery = null,
+            CancellationToken cancellationToken = default);
 
         public virtual IRepositoryQuery<TEntity> OrderByString(string orderBy)
         {

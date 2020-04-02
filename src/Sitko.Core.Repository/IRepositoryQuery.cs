@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sitko.Core.Repository
@@ -24,7 +25,10 @@ namespace Sitko.Core.Repository
         IRepositoryQuery<TEntity> OrderBy(string property, bool isDescending);
         IRepositoryQuery<TEntity> OrderByString(string orderBy);
         IRepositoryQuery<TEntity> Configure(Action<IRepositoryQuery<TEntity>>? configureQuery = null);
-        Task<IRepositoryQuery<TEntity>> ConfigureAsync(Func<IRepositoryQuery<TEntity>, Task>? configureQuery = null);
+
+        Task<IRepositoryQuery<TEntity>> ConfigureAsync(Func<IRepositoryQuery<TEntity>, Task>? configureQuery = null,
+            CancellationToken cancellationToken = default);
+
         IRepositoryQuery<TEntity> Paginate(int page, int itemsPerPage);
 
         IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(

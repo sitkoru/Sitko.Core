@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Search;
@@ -19,10 +20,11 @@ namespace Sitko.Core.Repository.Search
             _repository = repository;
         }
 
-        protected override Task<TEntity[]> GetEntitiesAsync(TSearchModel[] searchModels)
+        protected override Task<TEntity[]> GetEntitiesAsync(TSearchModel[] searchModels,
+            CancellationToken cancellationToken = default)
         {
             var ids = searchModels.Select(s => ParseId(s.Id)).Distinct().ToArray();
-            return _repository.GetByIdsAsync(ids);
+            return _repository.GetByIdsAsync(ids, cancellationToken);
         }
 
         protected override string GetId(TEntity entity)

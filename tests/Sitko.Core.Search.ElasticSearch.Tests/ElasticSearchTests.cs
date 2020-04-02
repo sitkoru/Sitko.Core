@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -91,13 +92,15 @@ namespace Sitko.Core.Search.ElasticSearch.Tests
             _testModelProvider = testModelProvider;
         }
 
-        protected override Task<BaseSearchModel[]> GetSearchModelsAsync(TestModel[] entities)
+        protected override Task<BaseSearchModel[]> GetSearchModelsAsync(TestModel[] entities,
+            CancellationToken cancellationToken = default)
         {
             return Task.FromResult(entities
                 .Select(e => new BaseSearchModel(e.Id.ToString(), e.Title, e.Url, e.Description, e.Date)).ToArray());
         }
 
-        protected override Task<TestModel[]> GetEntitiesAsync(BaseSearchModel[] searchModels)
+        protected override Task<TestModel[]> GetEntitiesAsync(BaseSearchModel[] searchModels,
+            CancellationToken cancellationToken = default)
         {
             var ids = searchModels.Select(m => Guid.Parse(m.Id));
             return Task.FromResult(_testModelProvider.Models.Where(m => ids.Contains(m.Id)).ToArray());

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
 using FluentValidation.Results;
@@ -44,22 +45,25 @@ namespace Sitko.Core.Repository
         {
         }
 
-        protected abstract Task<TQuery> CreateRepositoryQueryAsync();
-        protected abstract Task<(TEntity[] items, bool needCount)> DoGetAllAsync(TQuery query);
-        protected abstract Task<int> DoCountAsync(TQuery query);
-        protected abstract Task<TEntity?> DoGetAsync(TQuery query);
+        protected abstract Task<TQuery> CreateRepositoryQueryAsync(CancellationToken cancellationToken = default);
 
-        protected abstract Task DoSaveAsync();
+        protected abstract Task<(TEntity[] items, bool needCount)> DoGetAllAsync(TQuery query,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<int> DoCountAsync(TQuery query, CancellationToken cancellationToken = default);
+        protected abstract Task<TEntity?> DoGetAsync(TQuery query, CancellationToken cancellationToken = default);
+
+        protected abstract Task DoSaveAsync(CancellationToken cancellationToken = default);
 
         public abstract PropertyChange[] GetChanges(TEntity item, TEntity oldEntity);
 
-        public abstract Task<bool> BeginTransactionAsync();
+        public abstract Task<bool> BeginTransactionAsync(CancellationToken cancellationToken = default);
 
-        public abstract Task<bool> CommitTransactionAsync();
-        public abstract Task<bool> RollbackTransactionAsync();
+        public abstract Task<bool> CommitTransactionAsync(CancellationToken cancellationToken = default);
+        public abstract Task<bool> RollbackTransactionAsync(CancellationToken cancellationToken = default);
 
 
-        public virtual Task<bool> BeginBatchAsync()
+        public virtual Task<bool> BeginBatchAsync(CancellationToken cancellationToken = default)
         {
             if (_batch != null)
             {
@@ -71,7 +75,7 @@ namespace Sitko.Core.Repository
             return Task.FromResult(true);
         }
 
-        public virtual async Task<bool> CommitBatchAsync()
+        public virtual async Task<bool> CommitBatchAsync(CancellationToken cancellationToken = default)
         {
             if (_batch == null)
             {
@@ -85,7 +89,7 @@ namespace Sitko.Core.Repository
             return true;
         }
 
-        public virtual Task<bool> RollbackBatchAsync()
+        public virtual Task<bool> RollbackBatchAsync(CancellationToken cancellationToken = default)
         {
             if (_batch == null)
             {
@@ -96,48 +100,50 @@ namespace Sitko.Core.Repository
             return Task.FromResult(true);
         }
 
-        protected abstract Task DoAddAsync(TEntity item);
-        protected abstract Task DoUpdateAsync(TEntity item);
-        protected abstract Task DoDeleteAsync(TEntity item);
-        protected abstract Task<TEntity> GetOldItem(TEntityPk id);
+        protected abstract Task DoAddAsync(TEntity item, CancellationToken cancellationToken = default);
+        protected abstract Task DoUpdateAsync(TEntity item, CancellationToken cancellationToken = default);
+        protected abstract Task DoDeleteAsync(TEntity item, CancellationToken cancellationToken = default);
+        protected abstract Task<TEntity> GetOldItemAsync(TEntityPk id, CancellationToken cancellationToken = default);
 
-        public virtual async Task<TEntity> NewAsync()
+        public virtual async Task<TEntity> NewAsync(CancellationToken cancellationToken = default)
         {
             var item = Activator.CreateInstance<TEntity>();
-            await AfterLoadAsync(item);
+            await AfterLoadAsync(item, cancellationToken);
             return item;
         }
 
-        public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddAsync(TEntity item)
+        public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddAsync(TEntity item,
+            CancellationToken cancellationToken = default)
         {
             (bool isValid, IList<ValidationFailure> errors) validationResult = (false, new List<ValidationFailure>());
-            if (await BeforeValidateAsync(item, validationResult, true))
+            if (await BeforeValidateAsync(item, validationResult, true, cancellationToken))
             {
-                validationResult = await ValidateAsync(item, true);
+                validationResult = await ValidateAsync(item, true, cancellationToken: cancellationToken);
                 if (validationResult.isValid)
                 {
-                    if (await BeforeSaveAsync(item, validationResult, true))
+                    if (await BeforeSaveAsync(item, validationResult, true, cancellationToken: cancellationToken))
                     {
-                        await DoAddAsync(item);
+                        await DoAddAsync(item, cancellationToken);
                     }
                 }
             }
 
             if (validationResult.isValid)
             {
-                await SaveAsync(new RepositoryRecord<TEntity, TEntityPk>(item));
+                await SaveAsync(new RepositoryRecord<TEntity, TEntityPk>(item), cancellationToken);
             }
 
             return new AddOrUpdateOperationResult<TEntity, TEntityPk>(item, validationResult.errors,
                 new PropertyChange[0]);
         }
 
-        private async Task SaveAsync(RepositoryRecord<TEntity, TEntityPk> record)
+        private async Task SaveAsync(RepositoryRecord<TEntity, TEntityPk> record,
+            CancellationToken cancellationToken = default)
         {
             if (_batch == null)
             {
-                await DoSaveAsync();
-                await AfterSaveAsync(new[] {record});
+                await DoSaveAsync(cancellationToken);
+                await AfterSaveAsync(new[] {record}, cancellationToken);
             }
             else
             {
@@ -145,24 +151,26 @@ namespace Sitko.Core.Repository
             }
         }
 
-        public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity item)
+        public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity item,
+            CancellationToken cancellationToken = default)
         {
-            var oldItem = await GetOldItem(item.Id);
+            var oldItem = await GetOldItemAsync(item.Id, cancellationToken);
             PropertyChange[] changes = new PropertyChange[0];
             (bool isValid, IList<ValidationFailure> errors) validationResult = (false, new List<ValidationFailure>());
-            if (await BeforeValidateAsync(item, validationResult, false))
+            if (await BeforeValidateAsync(item, validationResult, false, cancellationToken))
             {
                 changes = GetChanges(item, oldItem);
                 if (changes.Any())
                 {
-                    validationResult = await ValidateAsync(item, false, changes);
+                    validationResult = await ValidateAsync(item, false, changes, cancellationToken);
                     if (validationResult.isValid)
                     {
-                        if (await BeforeSaveAsync(item, validationResult, false, changes))
+                        if (await BeforeSaveAsync(item, validationResult, false, changes, cancellationToken))
                         {
-                            await DoUpdateAsync(item);
+                            await DoUpdateAsync(item, cancellationToken);
 
-                            await SaveAsync(new RepositoryRecord<TEntity, TEntityPk>(item, false, changes, oldItem));
+                            await SaveAsync(new RepositoryRecord<TEntity, TEntityPk>(item, false, changes, oldItem),
+                                cancellationToken);
                         }
                     }
                 }
@@ -172,26 +180,26 @@ namespace Sitko.Core.Repository
             return new AddOrUpdateOperationResult<TEntity, TEntityPk>(item, validationResult.errors, changes);
         }
 
-        public virtual async Task<bool> DeleteAsync(TEntityPk id)
+        public virtual async Task<bool> DeleteAsync(TEntityPk id, CancellationToken cancellationToken = default)
         {
-            var item = await GetByIdAsync(id);
+            var item = await GetByIdAsync(id, cancellationToken);
             if (item == null)
             {
                 return false;
             }
 
-            return await DeleteAsync(item);
+            return await DeleteAsync(item, cancellationToken);
         }
 
-        public virtual async Task<bool> DeleteAsync(TEntity entity)
+        public virtual async Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity != null)
             {
-                await BeforeDeleteAsync(entity);
-                await DoDeleteAsync(entity);
+                await BeforeDeleteAsync(entity, cancellationToken);
+                await DoDeleteAsync(entity, cancellationToken);
                 if (_batch == null)
                 {
-                    await DoSaveAsync();
+                    await DoSaveAsync(cancellationToken);
                 }
 
                 return true;
@@ -200,204 +208,214 @@ namespace Sitko.Core.Repository
             return false;
         }
 
-        public virtual async Task<TEntity?> GetAsync()
+        public virtual async Task<TEntity?> GetAsync(CancellationToken cancellationToken = default)
         {
-            return await DoGetAsync(await CreateRepositoryQueryAsync());
+            return await DoGetAsync(await CreateRepositoryQueryAsync(cancellationToken), cancellationToken);
         }
 
-        public virtual async Task<TEntity?> GetAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery)
+        public virtual async Task<TEntity?> GetAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            CancellationToken cancellationToken = default)
         {
-            var query = await CreateRepositoryQueryAsync();
-            await query.ConfigureAsync(configureQuery);
-            return await DoGetAsync(query);
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            await query.ConfigureAsync(configureQuery, cancellationToken);
+            return await DoGetAsync(query, cancellationToken);
         }
 
-        public virtual async Task<TEntity?> GetAsync(Action<IRepositoryQuery<TEntity>> configureQuery)
+        public virtual async Task<TEntity?> GetAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            CancellationToken cancellationToken = default)
         {
-            var query = await CreateRepositoryQueryAsync();
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
             query.Configure(configureQuery);
-            return await DoGetAsync(query);
+            return await DoGetAsync(query, cancellationToken);
         }
 
-        public virtual async Task<(TEntity[] items, int itemsCount)> GetAllAsync()
+        public virtual async Task<(TEntity[] items, int itemsCount)> GetAllAsync(
+            CancellationToken cancellationToken = default)
         {
-            var query = await CreateRepositoryQueryAsync();
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
 
-            (TEntity[] items, bool needCount) = await DoGetAllAsync(query);
+            (TEntity[] items, bool needCount) = await DoGetAllAsync(query, cancellationToken);
 
             var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
-                ? await CountAsync()
+                ? await CountAsync(cancellationToken)
                 : items.Length;
-            await AfterLoadAsync(items);
+            await AfterLoadAsync(items, cancellationToken);
 
             return (items, itemsCount);
         }
 
         public virtual async Task<(TEntity[] items, int itemsCount)> GetAllAsync(
-            Action<IRepositoryQuery<TEntity>> configureQuery)
+            Action<IRepositoryQuery<TEntity>> configureQuery, CancellationToken cancellationToken = default)
         {
-            var query = await CreateRepositoryQueryAsync();
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
             query.Configure(configureQuery);
 
-            (TEntity[] items, bool needCount) = await DoGetAllAsync(query);
+            (TEntity[] items, bool needCount) = await DoGetAllAsync(query, cancellationToken);
 
             var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
-                ? await CountAsync(configureQuery)
+                ? await CountAsync(configureQuery, cancellationToken)
                 : items.Length;
-            await AfterLoadAsync(items);
+            await AfterLoadAsync(items, cancellationToken);
 
             return (items, itemsCount);
         }
 
         public virtual async Task<(TEntity[] items, int itemsCount)> GetAllAsync(
-            Func<IRepositoryQuery<TEntity>, Task> configureQuery)
+            Func<IRepositoryQuery<TEntity>, Task> configureQuery, CancellationToken cancellationToken = default)
         {
-            var query = await CreateRepositoryQueryAsync();
-            await query.ConfigureAsync(configureQuery);
-            var (items, needCount) = await DoGetAllAsync(query);
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            await query.ConfigureAsync(configureQuery, cancellationToken);
+            var (items, needCount) = await DoGetAllAsync(query, cancellationToken);
 
             var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
-                ? await CountAsync(configureQuery)
+                ? await CountAsync(configureQuery, cancellationToken)
                 : items.Length;
-            await AfterLoadAsync(items);
+            await AfterLoadAsync(items, cancellationToken);
 
             return (items, itemsCount);
         }
 
-        public virtual async Task<int> CountAsync()
+        public virtual async Task<int> CountAsync(CancellationToken cancellationToken = default)
         {
-            return await DoCountAsync(await CreateRepositoryQueryAsync());
+            return await DoCountAsync(await CreateRepositoryQueryAsync(cancellationToken), cancellationToken);
         }
 
-        public virtual async Task<int> CountAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery)
+        public virtual async Task<int> CountAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            CancellationToken cancellationToken = default)
         {
-            var query = await CreateRepositoryQueryAsync();
-            await query.ConfigureAsync(configureQuery);
-            return await DoCountAsync(query);
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            await query.ConfigureAsync(configureQuery, cancellationToken);
+            return await DoCountAsync(query, cancellationToken);
         }
 
-        public virtual async Task<int> CountAsync(Action<IRepositoryQuery<TEntity>> configureQuery)
+        public virtual async Task<int> CountAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            CancellationToken cancellationToken = default)
         {
-            var query = await CreateRepositoryQueryAsync();
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
             query.Configure(configureQuery);
-            return await DoCountAsync(query);
+            return await DoCountAsync(query, cancellationToken);
         }
 
-        public virtual async Task<TEntity?> GetByIdAsync(TEntityPk id)
+        public virtual async Task<TEntity?> GetByIdAsync(TEntityPk id, CancellationToken cancellationToken = default)
         {
-            var query = await CreateRepositoryQueryAsync();
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
             query.Where(i => i.Id!.Equals(id));
 
-            return await DoGetAsync(query);
+            return await DoGetAsync(query, cancellationToken);
         }
 
         public virtual async Task<TEntity?> GetByIdAsync(TEntityPk id,
-            Func<IRepositoryQuery<TEntity>, Task> configureQuery)
+            Func<IRepositoryQuery<TEntity>, Task> configureQuery, CancellationToken cancellationToken = default)
         {
-            var query = await CreateRepositoryQueryAsync();
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
             query.Where(i => i.Id!.Equals(id));
-            await query.ConfigureAsync(configureQuery);
+            await query.ConfigureAsync(configureQuery, cancellationToken);
 
             return await DoGetAsync(query);
         }
 
-        public virtual async Task<TEntity?> GetByIdAsync(TEntityPk id, Action<IRepositoryQuery<TEntity>> configureQuery)
+        public virtual async Task<TEntity?> GetByIdAsync(TEntityPk id, Action<IRepositoryQuery<TEntity>> configureQuery,
+            CancellationToken cancellationToken = default)
         {
-            var query = await CreateRepositoryQueryAsync();
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
             query.Where(i => i.Id!.Equals(id));
             query.Configure(configureQuery);
 
-            return await DoGetAsync(query);
+            return await DoGetAsync(query, cancellationToken);
         }
 
-        public virtual async Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids)
+        public virtual async Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids,
+            CancellationToken cancellationToken = default)
         {
-            var query = await CreateRepositoryQueryAsync();
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
             query.Where(i => ids.Contains(i.Id));
 
-            (TEntity[] items, _) = await DoGetAllAsync(query);
+            (TEntity[] items, _) = await DoGetAllAsync(query, cancellationToken);
 
             return items;
         }
 
         public virtual async Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids,
-            Func<IRepositoryQuery<TEntity>, Task> configureQuery)
+            Func<IRepositoryQuery<TEntity>, Task> configureQuery, CancellationToken cancellationToken = default)
         {
-            var query = await CreateRepositoryQueryAsync();
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
             query.Where(i => ids.Contains(i.Id));
-            await query.ConfigureAsync(configureQuery);
+            await query.ConfigureAsync(configureQuery, cancellationToken);
 
-            (TEntity[] items, _) = await DoGetAllAsync(query);
+            (TEntity[] items, _) = await DoGetAllAsync(query, cancellationToken);
 
             return items;
         }
 
         public virtual async Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids,
-            Action<IRepositoryQuery<TEntity>> configureQuery)
+            Action<IRepositoryQuery<TEntity>> configureQuery, CancellationToken cancellationToken = default)
         {
-            var query = await CreateRepositoryQueryAsync();
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
             query.Where(i => ids.Contains(i.Id)).Configure(configureQuery);
 
-            (TEntity[] items, _) = await DoGetAllAsync(query);
+            (TEntity[] items, _) = await DoGetAllAsync(query, cancellationToken);
 
             return items;
         }
 
-        protected virtual Task AfterLoadAsync(TEntity entity)
+        protected virtual Task AfterLoadAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
-            return entity != null ? AfterLoadAsync(new[] {entity}) : Task.CompletedTask;
+            return entity != null ? AfterLoadAsync(new[] {entity}, cancellationToken) : Task.CompletedTask;
         }
 
-        protected virtual Task AfterLoadAsync(TEntity[] entities)
+        protected virtual Task AfterLoadAsync(TEntity[] entities, CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }
 
         protected virtual Task<bool> BeforeSaveAsync(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult, bool isNew,
-            PropertyChange[]? changes = null)
+            PropertyChange[]? changes = null, CancellationToken cancellationToken = default)
         {
-            return FiltersManager.BeforeSaveAsync<TEntity, TEntityPk>(item, validationResult, isNew, changes);
+            return FiltersManager.BeforeSaveAsync<TEntity, TEntityPk>(item, validationResult, isNew, changes,
+                cancellationToken);
         }
 
-        protected virtual async Task<bool> AfterSaveAsync(IEnumerable<RepositoryRecord<TEntity, TEntityPk>> items)
+        protected virtual async Task<bool> AfterSaveAsync(IEnumerable<RepositoryRecord<TEntity, TEntityPk>> items,
+            CancellationToken cancellationToken = default)
         {
             foreach (var item in items)
             {
-                await FiltersManager.AfterSaveAsync<TEntity, TEntityPk>(item.Item, item.IsNew, item.Changes);
+                await FiltersManager.AfterSaveAsync<TEntity, TEntityPk>(item.Item, item.IsNew, item.Changes,
+                    cancellationToken);
             }
 
             return true;
         }
 
-        protected virtual Task BeforeDeleteAsync(TEntity entity)
+        protected virtual Task BeforeDeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }
 
-        protected virtual Task CheckAccessAsync(TEntity entity)
+        protected virtual Task CheckAccessAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
-            return entity != null ? CheckAccessAsync(new[] {entity}) : Task.CompletedTask;
+            return entity != null ? CheckAccessAsync(new[] {entity}, cancellationToken) : Task.CompletedTask;
         }
 
-        protected virtual async Task CheckAccessAsync(TEntity[] entities)
+        protected virtual async Task CheckAccessAsync(TEntity[] entities, CancellationToken cancellationToken = default)
         {
             foreach (var accessChecker in AccessCheckers)
             {
-                await accessChecker.CheckAccessAsync(entities);
+                await accessChecker.CheckAccessAsync(entities, cancellationToken);
             }
         }
 
         protected virtual async Task<(bool isValid, IList<ValidationFailure> errors)> ValidateAsync(TEntity entity,
             bool isNew,
-            PropertyChange[]? changes = null)
+            PropertyChange[]? changes = null, CancellationToken cancellationToken = default)
         {
             var failures = new List<ValidationFailure>();
             if (Validators != null)
             {
                 foreach (var validator in Validators)
                 {
-                    var result = await validator.ValidateAsync(entity);
+                    var result = await validator.ValidateAsync(entity, cancellationToken);
                     if (!result.IsValid)
                     {
                         failures.AddRange(result.Errors);
@@ -410,9 +428,10 @@ namespace Sitko.Core.Repository
 
         protected virtual Task<bool> BeforeValidateAsync(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult,
-            bool isNew)
+            bool isNew, CancellationToken cancellationToken = default)
         {
-            return FiltersManager.BeforeValidateAsync<TEntity, TEntityPk>(item, validationResult, isNew);
+            return FiltersManager.BeforeValidateAsync<TEntity, TEntityPk>(item, validationResult, isNew,
+                cancellationToken);
         }
     }
 }

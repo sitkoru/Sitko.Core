@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
@@ -99,13 +100,14 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         }
 
         public override async Task<IRepositoryQuery<TEntity>> ConfigureAsync(
-            Func<IRepositoryQuery<TEntity>, Task>? configureQuery = null)
+            Func<IRepositoryQuery<TEntity>, Task>? configureQuery = null, CancellationToken cancellationToken = default)
         {
             if (configureQuery != null)
             {
                 await configureQuery(this);
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
             return this;
         }
 
@@ -154,8 +156,8 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             IIncludableRepositoryQuery<TEntity, IEnumerable<TPreviousProperty>> source,
             Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath)
         {
-            var efQuery = (EFRepositoryQuery<TEntity>)source;
-            var querySource = (IIncludableQueryable<TEntity, IEnumerable<TPreviousProperty>>)efQuery.QuerySource.Query;
+            var efQuery = (EFRepositoryQuery<TEntity>) source;
+            var querySource = (IIncludableQueryable<TEntity, IEnumerable<TPreviousProperty>>) efQuery.QuerySource.Query;
             efQuery.QuerySource.Query = querySource.ThenInclude(navigationPropertyPath);
             var query = new EFIncludableRepositoryQuery<TEntity, TNextProperty>(
                 efQuery.QuerySource,
@@ -169,8 +171,8 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             IIncludableRepositoryQuery<TEntity, TPreviousProperty> source,
             Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath)
         {
-            var efQuery = (EFRepositoryQuery<TEntity>)source;
-            var querySource = (IIncludableQueryable<TEntity, TPreviousProperty>)efQuery.QuerySource.Query;
+            var efQuery = (EFRepositoryQuery<TEntity>) source;
+            var querySource = (IIncludableQueryable<TEntity, TPreviousProperty>) efQuery.QuerySource.Query;
             efQuery.QuerySource.Query = querySource.ThenInclude(navigationPropertyPath);
             var query = new EFIncludableRepositoryQuery<TEntity, TNextProperty>(
                 efQuery.QuerySource,

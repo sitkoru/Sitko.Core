@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Sitko.Core.Search;
 
@@ -33,12 +34,12 @@ namespace Sitko.Core.Repository.Search
         }
 
         public override async Task<bool> AfterSaveAsync<TEntity, TEntityPk>(TEntity item, bool isNew,
-            PropertyChange[]? changes = null)
+            PropertyChange[]? changes = null, CancellationToken cancellationToken = default)
         {
             var provider = GetSearchProvider<TEntity>();
             if (provider != null)
             {
-                await provider.AddOrUpdateEntityAsync(item);
+                await provider.AddOrUpdateEntityAsync(item, cancellationToken);
                 return true;
             }
 
