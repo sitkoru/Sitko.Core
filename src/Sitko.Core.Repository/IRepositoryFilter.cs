@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation.Results;
 
@@ -11,16 +12,17 @@ namespace Sitko.Core.Repository
 
         Task<bool> BeforeValidateAsync<TEntity, TEntityPk>(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult,
-            bool isNew)
+            bool isNew, CancellationToken cancellationToken = default)
             where TEntity : class, IEntity<TEntityPk>;
 
         Task<bool> BeforeSaveAsync<TEntity, TEntityPk>(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult,
             bool isNew,
-            PropertyChange[]? changes = null)
+            PropertyChange[]? changes = null, CancellationToken cancellationToken = default)
             where TEntity : class, IEntity<TEntityPk>;
 
-        Task<bool> AfterSaveAsync<TEntity, TEntityPk>(TEntity item, bool isNew, PropertyChange[]? changes = null)
+        Task<bool> AfterSaveAsync<TEntity, TEntityPk>(TEntity item, bool isNew, PropertyChange[]? changes = null,
+            CancellationToken cancellationToken = default)
             where TEntity : class, IEntity<TEntityPk>;
     }
 }

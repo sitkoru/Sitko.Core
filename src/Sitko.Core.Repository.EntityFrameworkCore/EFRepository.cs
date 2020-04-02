@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -20,7 +21,8 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             DbContext = repositoryContext.DbContext;
         }
 
-        protected override async Task<(TEntity[] items, bool needCount)> DoGetAllAsync(EFRepositoryQuery<TEntity> query)
+        protected override async Task<(TEntity[] items, bool needCount)> DoGetAllAsync(EFRepositoryQuery<TEntity> query,
+            CancellationToken cancellationToken = default)
         {
             var dbQuery = query.BuildQuery();
             var needCount = false;
@@ -36,34 +38,36 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 needCount = true;
             }
 
-            return (await AddIncludes(dbQuery).ToArrayAsync(), needCount);
+            return (await AddIncludes(dbQuery).ToArrayAsync(cancellationToken), needCount);
         }
 
-        protected override async Task<TEntity?> DoGetAsync(EFRepositoryQuery<TEntity> query)
+        protected override async Task<TEntity?> DoGetAsync(EFRepositoryQuery<TEntity> query,
+            CancellationToken cancellationToken = default)
         {
             var dbQuery = query.BuildQuery();
-            var item = await AddIncludes(dbQuery).FirstOrDefaultAsync();
+            var item = await AddIncludes(dbQuery).FirstOrDefaultAsync(cancellationToken);
             if (item != null)
             {
-                await AfterLoadAsync(item);
+                await AfterLoadAsync(item, cancellationToken);
             }
 
             return item;
         }
 
-        protected override Task<int> DoCountAsync(EFRepositoryQuery<TEntity> query)
+        protected override Task<int> DoCountAsync(EFRepositoryQuery<TEntity> query,
+            CancellationToken cancellationToken = default)
         {
-            return query.BuildQuery().CountAsync();
+            return query.BuildQuery().CountAsync(cancellationToken);
         }
 
-        protected override async Task DoSaveAsync()
+        protected override async Task DoSaveAsync(CancellationToken cancellationToken = default)
         {
-            await DbContext.SaveChangesAsync();
+            await DbContext.SaveChangesAsync(cancellationToken);
         }
 
-        protected override Task DoAddAsync(TEntity item)
+        protected override Task DoAddAsync(TEntity item, CancellationToken cancellationToken = default)
         {
-            return DbContext.AddAsync(item).AsTask();
+            return DbContext.AddAsync(item, cancellationToken).AsTask();
         }
 
         public override PropertyChange[] GetChanges(TEntity item, TEntity oldEntity)
@@ -81,17 +85,17 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return DbContext.Set<T>();
         }
 
-        protected override Task<TEntity> GetOldItem(TEntityPk id)
+        protected override Task<TEntity> GetOldItemAsync(TEntityPk id, CancellationToken cancellationToken = default)
         {
-            return GetBaseQuery().Where(e => e.Id!.Equals(id)).AsNoTracking().FirstAsync();
+            return GetBaseQuery().Where(e => e.Id!.Equals(id)).AsNoTracking().FirstAsync(cancellationToken);
         }
 
-        protected override Task DoUpdateAsync(TEntity item)
+        protected override Task DoUpdateAsync(TEntity item, CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }
 
-        protected override Task DoDeleteAsync(TEntity item)
+        protected override Task DoDeleteAsync(TEntity item, CancellationToken cancellationToken = default)
         {
             DbContext.Remove(item);
             return Task.CompletedTask;
@@ -108,12 +112,13 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return query;
         }
 
-        protected override Task<EFRepositoryQuery<TEntity>> CreateRepositoryQueryAsync()
+        protected override Task<EFRepositoryQuery<TEntity>> CreateRepositoryQueryAsync(
+            CancellationToken cancellationToken = default)
         {
             return Task.FromResult(new EFRepositoryQuery<TEntity>(GetBaseQuery()));
         }
 
-        public override async Task<bool> BeginTransactionAsync()
+        public override async Task<bool> BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
             if (_transaction != null)
             {
@@ -123,7 +128,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             try
             {
                 _transaction = DbContext.Database.CurrentTransaction ??
-                               await DbContext.Database.BeginTransactionAsync();
+                               await DbContext.Database.BeginTransactionAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -135,13 +140,13 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return true;
         }
 
-        public override async Task<bool> CommitTransactionAsync()
+        public override async Task<bool> CommitTransactionAsync(CancellationToken cancellationToken = default)
         {
             if (_transaction != null)
             {
                 try
                 {
-                    await _transaction.CommitAsync();
+                    await _transaction.CommitAsync(cancellationToken);
                     return true;
                 }
                 catch (Exception ex)
@@ -156,13 +161,13 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return false;
         }
 
-        public override async Task<bool> RollbackTransactionAsync()
+        public override async Task<bool> RollbackTransactionAsync(CancellationToken cancellationToken = default)
         {
             if (_transaction != null)
             {
                 try
                 {
-                    await _transaction.RollbackAsync();
+                    await _transaction.RollbackAsync(cancellationToken);
                     return true;
                 }
                 catch (Exception ex)

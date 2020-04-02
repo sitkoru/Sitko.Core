@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation.Results;
 
@@ -10,7 +11,8 @@ namespace Sitko.Core.Repository
         public abstract bool CanProcess(Type type);
 
         public virtual Task<bool> BeforeValidateAsync<TEntity, TEntityPk>(TEntity item,
-            (bool isValid, IList<ValidationFailure> errors) validationResult, bool isNew)
+            (bool isValid, IList<ValidationFailure> errors) validationResult, bool isNew,
+            CancellationToken cancellationToken = default)
             where TEntity : class, IEntity<TEntityPk>
         {
             return Task.FromResult(true);
@@ -18,13 +20,15 @@ namespace Sitko.Core.Repository
 
         public virtual Task<bool> BeforeSaveAsync<TEntity, TEntityPk>(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult, bool isNew,
-            PropertyChange[]? changes = null) where TEntity : class, IEntity<TEntityPk>
+            PropertyChange[]? changes = null, CancellationToken cancellationToken = default)
+            where TEntity : class, IEntity<TEntityPk>
         {
             return Task.FromResult(true);
         }
 
         public virtual Task<bool> AfterSaveAsync<TEntity, TEntityPk>(TEntity item, bool isNew,
-            PropertyChange[]? changes = null) where TEntity : class, IEntity<TEntityPk>
+            PropertyChange[]? changes = null, CancellationToken cancellationToken = default)
+            where TEntity : class, IEntity<TEntityPk>
         {
             return Task.FromResult(true);
         }
