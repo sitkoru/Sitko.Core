@@ -54,18 +54,6 @@ namespace Sitko.Core.App
             _loggerConfiguration.Enrich.FromLogContext()
                 .Enrich.WithProperty("App", LoggingFacility);
 
-            if (Environment.IsDevelopment())
-            {
-                _logLevelSwitcher.Switch.MinimumLevel = LoggingDevelopmentLevel;
-                _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LoggingDevelopmentLevel;
-            }
-            else
-            {
-                _logLevelSwitcher.Switch.MinimumLevel = LoggingProductionLevel;
-                _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LogEventLevel.Warning;
-                _loggerConfiguration.MinimumLevel.Override("Microsoft", _logLevelSwitcher.MsMessagesSwitch);
-            }
-
             HostBuilder = Host.CreateDefaultBuilder(args)
                 .UseDefaultServiceProvider(options =>
                 {
@@ -153,6 +141,9 @@ namespace Sitko.Core.App
                         Console.WriteLine("Check run is successful");
                         System.Environment.Exit(0);
                     }
+                    
+                    ConfigureLogging();
+                    Log.Logger = _loggerConfiguration.CreateLogger();
                 }
                 catch (Exception e)
                 {
@@ -171,6 +162,18 @@ namespace Sitko.Core.App
 
         protected virtual void ConfigureLogging()
         {
+            if (Environment.IsDevelopment())
+            {
+                _logLevelSwitcher.Switch.MinimumLevel = LoggingDevelopmentLevel;
+                _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LoggingDevelopmentLevel;
+            }
+            else
+            {
+                _logLevelSwitcher.Switch.MinimumLevel = LoggingProductionLevel;
+                _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LogEventLevel.Warning;
+                _loggerConfiguration.MinimumLevel.Override("Microsoft", _logLevelSwitcher.MsMessagesSwitch);
+            }
+            
             if (LoggingEnableConsole)
             {
                 _loggerConfiguration
@@ -227,8 +230,6 @@ namespace Sitko.Core.App
         public async Task InitAsync()
         {
             var host = GetAppHost();
-            ConfigureLogging();
-            Log.Logger = _loggerConfiguration.CreateLogger();
 
             using var scope = host.Services.CreateScope();
             Logger.LogInformation("Init modules");

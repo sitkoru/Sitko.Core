@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Events;
 using Sitko.Core.App;
 using Sitko.Core.App.Logging;
 using Xunit.Abstractions;
@@ -110,6 +111,8 @@ namespace Sitko.Core.Xunit
     {
         public TestApplication(string[] args) : base(args)
         {
+            LoggingProductionLevel = LogEventLevel.Debug;
+            LoggingDevelopmentLevel = LogEventLevel.Debug;
         }
     }
 
