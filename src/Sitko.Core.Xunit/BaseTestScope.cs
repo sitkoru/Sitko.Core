@@ -30,9 +30,11 @@ namespace Sitko.Core.Xunit
         protected IHostEnvironment? Environment { get; set; }
         private TApplication? _application;
         private bool _isApplicationStarted;
+        protected string Name { get; private set; }
 
         public async Task ConfigureAsync(string name, ITestOutputHelper testOutputHelper)
         {
+            Name = name;
             _application = (TApplication) Activator.CreateInstance(typeof(TApplication), new object[] {new string[0]});
 
             _application.ConfigureServices((context, services) =>
