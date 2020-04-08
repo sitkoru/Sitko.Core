@@ -15,7 +15,7 @@ namespace Sitko.Core.Queue.Tests
         [Fact]
         public async Task FailingPublish()
         {
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
 
             var queue = scope.Get<IQueue>();
 
@@ -26,7 +26,7 @@ namespace Sitko.Core.Queue.Tests
         [Fact]
         public async Task FailingReceive()
         {
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
 
             var queue = scope.Get<IQueue>();
 

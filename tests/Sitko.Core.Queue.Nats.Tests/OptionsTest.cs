@@ -20,7 +20,7 @@ namespace Sitko.Core.Queue.Nats.Tests
         [Fact]
         public async Task CheckOptions()
         {
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
 
             var queue = scope.Get<IQueue>();
             var messageOptions = scope.Get<IEnumerable<IQueueMessageOptions>>();

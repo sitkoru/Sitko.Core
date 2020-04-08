@@ -15,15 +15,15 @@ namespace Sitko.Core.Xunit
         protected readonly Dictionary<string, IBaseTestScope> _scopes =
             new Dictionary<string, IBaseTestScope>();
 
-        protected T GetScope<T>([CallerMemberName] string name = "") where T : IBaseTestScope
+        protected async Task<T> GetScopeAsync<T>([CallerMemberName] string name = "") where T : IBaseTestScope
         {
             T scope;
 
             if (!_scopes.ContainsKey(name))
             {
                 scope = Activator.CreateInstance<T>();
-                scope.Configure(name, TestOutputHelper);
-                scope.OnCreated();
+                await scope.ConfigureAsync(name, TestOutputHelper);
+                await scope.OnCreatedAsync();
                 _scopes.Add(name, scope);
             }
             else
@@ -85,9 +85,9 @@ namespace Sitko.Core.Xunit
         }
 
 
-        protected T GetScope([CallerMemberName] string name = "")
+        protected Task<T> GetScopeAsync([CallerMemberName] string name = "")
         {
-            return GetScope<T>(name);
+            return GetScopeAsync<T>(name);
         }
 
 

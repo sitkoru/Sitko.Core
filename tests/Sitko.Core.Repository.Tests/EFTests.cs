@@ -26,7 +26,7 @@ namespace Sitko.Core.Repository.Tests
         {
             var json = "[{\"conditions\":[{\"property\":\"fooId\",\"operator\":1,\"value\":1}]}]";
 
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
 
             var repository = scope.Get<IRepository<TestModel, Guid>>();
 
@@ -41,7 +41,7 @@ namespace Sitko.Core.Repository.Tests
         [Fact]
         public async Task IncludeSingle()
         {
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
 
             var repository = scope.Get<IRepository<BarModel, Guid>>();
 
@@ -56,7 +56,7 @@ namespace Sitko.Core.Repository.Tests
         [Fact]
         public async Task IncludeCollection()
         {
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
 
             var repository = scope.Get<IRepository<TestModel, Guid>>();
 
@@ -73,7 +73,7 @@ namespace Sitko.Core.Repository.Tests
         [Fact]
         public async Task ThenInclude()
         {
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
 
             var repository = scope.Get<IRepository<TestModel, Guid>>();
             Assert.NotNull(repository);

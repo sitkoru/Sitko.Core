@@ -61,7 +61,7 @@ namespace Sitko.Core.Xunit
         {
         }
 
-        public override void OnCreated()
+        public override async Task OnCreatedAsync()
         {
             _dbContext = ServiceProvider.GetService<TDbContext>();
             if (_dbContext == null)
@@ -69,9 +69,9 @@ namespace Sitko.Core.Xunit
                 throw new Exception("Can't create db context");
             }
 
-            _dbContext.Database.EnsureDeleted();
-            _dbContext.Database.EnsureCreated();
-            InitDbContext(_dbContext);
+            await _dbContext.Database.EnsureDeletedAsync();
+            await _dbContext.Database.EnsureCreatedAsync();
+            await InitDbContextAsync(_dbContext);
         }
 
         public TDbContext GetDbContext()
@@ -84,8 +84,9 @@ namespace Sitko.Core.Xunit
             return _dbContext;
         }
 
-        protected virtual void InitDbContext(TDbContext dbContext)
+        protected virtual Task InitDbContextAsync(TDbContext dbContext)
         {
+            return Task.CompletedTask;
         }
 
         protected virtual void GetPostgresConfig(IConfiguration configuration,

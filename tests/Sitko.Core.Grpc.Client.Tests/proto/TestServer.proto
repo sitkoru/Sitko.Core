@@ -1,0 +1,16 @@
+syntax = "proto3";
+import "Sitko/Core/Grpc/ApiRequestInfo.proto";
+import "Sitko/Core/Grpc/ApiResponseInfo.proto";
+package Sitko.Core.Grpc.Client.Tests;
+
+message TestRequest {
+    Sitko.Core.Grpc.ApiRequestInfo RequestInfo = 1;
+}
+
+message TestResponse {
+    Sitko.Core.Grpc.ApiResponseInfo ResponseInfo = 1;
+}
+
+service TestService {
+    rpc Request(TestRequest) returns (TestResponse);
+}

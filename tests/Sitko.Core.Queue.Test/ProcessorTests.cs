@@ -19,7 +19,7 @@ namespace Sitko.Core.Queue.Tests
         [Fact]
         public async Task SingleProcessor()
         {
-            var scope = GetScope<ProcessorQueueTestScope>();
+            var scope = await GetScopeAsync<ProcessorQueueTestScope>();
 
             await scope.StartApplicationAsync(); // need to start hosted services
             var processor = scope.Get<FooTestMessageProcessor>();
@@ -44,7 +44,7 @@ namespace Sitko.Core.Queue.Tests
         [Fact]
         public async Task MultipleProcessors()
         {
-            var scope = GetScope<MultipleProcessorQueueTestScope>();
+            var scope = await GetScopeAsync<MultipleProcessorQueueTestScope>();
 
             await scope.StartApplicationAsync(); // need to start hosted services
             var counter = scope.Get<TestQueueProcessorCounter>();
