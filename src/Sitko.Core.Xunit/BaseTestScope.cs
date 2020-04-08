@@ -15,29 +15,31 @@ namespace Sitko.Core.Xunit
 {
     public interface IBaseTestScope : IAsyncDisposable
     {
-        void Configure(string name, ITestOutputHelper testOutputHelper);
+        Task ConfigureAsync(string name, ITestOutputHelper testOutputHelper);
         T Get<T>();
         IEnumerable<T> GetAll<T>();
         ILogger<T> GetLogger<T>();
-        void OnCreated();
+        Task OnCreatedAsync();
         Task StartApplicationAsync();
     }
 
     public abstract class BaseTestScope<TApplication> : IBaseTestScope where TApplication : Application<TApplication>
     {
         protected IServiceProvider? ServiceProvider;
+        protected IConfiguration? Configuration { get; set; }
+        protected IHostEnvironment? Environment { get; set; }
         private TApplication? _application;
         private bool _isApplicationStarted;
 
-        public void Configure(string name, ITestOutputHelper testOutputHelper)
+        public async Task ConfigureAsync(string name, ITestOutputHelper testOutputHelper)
         {
-            _application = (TApplication)Activator.CreateInstance(typeof(TApplication), new object[] {new string[0]});
+            _application = (TApplication) Activator.CreateInstance(typeof(TApplication), new object[] {new string[0]});
 
             _application.ConfigureServices((context, services) =>
             {
                 ConfigureServices(context.Configuration, context.HostingEnvironment, services, name);
             });
-            
+
             _application.AddModule<TestModule, TestModuleConfig>((configuration, environment, moduleConfig) =>
             {
                 moduleConfig.TestOutputHelper = testOutputHelper;
@@ -45,8 +47,12 @@ namespace Sitko.Core.Xunit
 
 
             _application = ConfigureApplication(_application, name);
+            await _application.InitAsync();
             ServiceProvider = _application.GetServices().CreateScope().ServiceProvider;
+            Configuration = ServiceProvider.GetService<IConfiguration>();
+            Environment = ServiceProvider.GetService<IHostEnvironment>();
         }
+
 
         protected virtual TApplication ConfigureApplication(TApplication application, string name)
         {
@@ -75,8 +81,9 @@ namespace Sitko.Core.Xunit
             return ServiceProvider.GetRequiredService<ILogger<T>>();
         }
 
-        public virtual void OnCreated()
+        public virtual Task OnCreatedAsync()
         {
+            return Task.CompletedTask;
         }
 
 

@@ -19,7 +19,7 @@ namespace Sitko.Core.Queue.Tests
         [Fact]
         public async Task PubSub()
         {
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
 
             var queue = scope.Get<IQueue>();
 
@@ -45,7 +45,7 @@ namespace Sitko.Core.Queue.Tests
         [Fact]
         public async Task PubSubMultiple()
         {
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
 
             var queue = scope.Get<IQueue>();
 
@@ -81,7 +81,7 @@ namespace Sitko.Core.Queue.Tests
         [Fact]
         public async Task RequestResponse()
         {
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
 
             var queue = scope.Get<IQueue>();
 
@@ -102,7 +102,7 @@ namespace Sitko.Core.Queue.Tests
         [Fact]
         public async Task UnSubscribe()
         {
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
 
             var queue = scope.Get<IQueue>();
 
@@ -137,7 +137,7 @@ namespace Sitko.Core.Queue.Tests
         [Fact]
         public async Task Context()
         {
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
 
             var queue = scope.Get<IQueue>();
             var sentContext = new QueueMessageContext

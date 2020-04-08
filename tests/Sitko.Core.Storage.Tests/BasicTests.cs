@@ -17,7 +17,7 @@ namespace Sitko.Core.Storage.Tests
         [Fact]
         public async Task UploadFile()
         {
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
 
             var storage = scope.Get<IStorage<TSettings>>();
 
@@ -38,7 +38,7 @@ namespace Sitko.Core.Storage.Tests
         [Fact]
         public async Task DownloadFile()
         {
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
 
             var storage = scope.Get<IStorage<TSettings>>();
 
@@ -65,7 +65,7 @@ namespace Sitko.Core.Storage.Tests
         [Fact]
         public async Task DeleteFile()
         {
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
 
             var storage = scope.Get<IStorage<TSettings>>();
 
@@ -88,7 +88,7 @@ namespace Sitko.Core.Storage.Tests
         [Fact]
         public async Task DeleteFileError()
         {
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
 
             var storage = scope.Get<IStorage<TSettings>>();
 

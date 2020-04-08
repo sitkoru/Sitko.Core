@@ -18,7 +18,7 @@ namespace Sitko.Core.Queue.Tests
         [Fact]
         public async Task Publish()
         {
-            var scope = GetScope<MiddlewareQueueTestScope>();
+            var scope = await GetScopeAsync<MiddlewareQueueTestScope>();
 
             var queue = scope.Get<IQueue>();
 
@@ -35,7 +35,7 @@ namespace Sitko.Core.Queue.Tests
         [Fact]
         public async Task Receive()
         {
-            var scope = GetScope<MiddlewareQueueTestScope>();
+            var scope = await GetScopeAsync<MiddlewareQueueTestScope>();
 
             var queue = scope.Get<IQueue>();
 
@@ -58,9 +58,9 @@ namespace Sitko.Core.Queue.Tests
         }
 
         [Fact]
-        public void Multiple()
+        public async Task Multiple()
         {
-            var scope = GetScope<MultipleMiddlewareQueueTestScope>();
+            var scope = await GetScopeAsync<MultipleMiddlewareQueueTestScope>();
 
             var classes =
                 typeof(MiddlewareTests).Assembly.ExportedTypes.Where(t => typeof(IQueueMiddleware).IsAssignableFrom(t));
@@ -73,7 +73,7 @@ namespace Sitko.Core.Queue.Tests
         [Fact]
         public async Task Chain()
         {
-            var scope = GetScope<ChainMiddlewareQueueTestScope>();
+            var scope = await GetScopeAsync<ChainMiddlewareQueueTestScope>();
 
             var state = scope.Get<ChainState>();
 

@@ -20,7 +20,7 @@ namespace Sitko.Core.Queue.Nats.Tests
         [Fact]
         public async Task TranslateNotification()
         {
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
 
             var queue = scope.Get<IQueue>();
 

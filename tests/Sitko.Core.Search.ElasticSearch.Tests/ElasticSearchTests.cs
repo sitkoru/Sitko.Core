@@ -20,7 +20,7 @@ namespace Sitko.Core.Search.ElasticSearch.Tests
         [Fact]
         public async Task Search()
         {
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
             var provider = scope.Get<TestModelProvider>();
             var searchProvider = scope.Get<ISearchProvider<TestModel>>();
             await searchProvider.DeleteIndexAsync();

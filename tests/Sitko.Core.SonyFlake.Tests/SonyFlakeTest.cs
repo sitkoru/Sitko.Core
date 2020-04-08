@@ -14,7 +14,7 @@ namespace Sitko.Core.SonyFlake.Tests
         [Fact]
         public async Task Generate()
         {
-            var scope = GetScope();
+            var scope = await GetScopeAsync();
 
             var provider = scope.Get<IIdProvider>();
 
