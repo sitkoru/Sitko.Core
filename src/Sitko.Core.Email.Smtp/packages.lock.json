@@ -4,11 +4,11 @@
     ".NETCoreApp,Version=v3.1": {
       "MailKit": {
         "type": "Direct",
-        "requested": "[2.5.2, )",
-        "resolved": "2.5.2",
-        "contentHash": "ZzArgcfBKOPCJNoQOM0/K84gyJj+aXUMAtK9Jqz5gfV2c4eP0XVzuwQltOt90rRj9xpTbZfe8P4S/VEdxcJMzA==",
+        "requested": "[2.6.0, )",
+        "resolved": "2.6.0",
+        "contentHash": "fY2ulWfn5xzulQfqTW66pLOrL26Puzmhl+VsXuqrVBhv5dWFwwKerxQM4HmMwr5Pd/ak9/5xSiFhIeXeD+HC2w==",
         "dependencies": {
-          "MimeKit": "2.5.2",
+          "MimeKit": "2.6.0",
           "System.Net.NameResolution": "4.3.0",
           "System.Net.Security": "4.3.2",
           "System.Runtime.Serialization.Primitives": "4.3.0"
@@ -39,8 +39,8 @@
       },
       "Hangfire.Core": {
         "type": "Transitive",
-        "resolved": "1.7.9",
-        "contentHash": "CmJ5MRUn7pxUUtuqcLubzzXktcPRQiV3S98jtin0x0a+Lvflm5evBJpTD3/6Do9u88y4gfij6aCR7WRGCVL5Hg==",
+        "resolved": "1.7.10",
+        "contentHash": "iyRQRW1H9U0WvxQjIjiDQRdmjh4CnCWbVPGpmx97CuNaT/7e2Y+5TYpQncG7ckJQbhnD132l3/+d7C+HRDxV+A==",
         "dependencies": {
           "Newtonsoft.Json": "11.0.1"
         }
@@ -58,8 +58,8 @@
       },
       "JetBrains.Annotations": {
         "type": "Transitive",
-        "resolved": "2019.1.3",
-        "contentHash": "E0x48BwZJKoNMNCekWGKsV4saQS89lf58ydT2szseV44CMYIbaHXjc7+305WLw6up3ibZN9yH6QdGSZo5tQhLg=="
+        "resolved": "2020.1.0",
+        "contentHash": "kD9D2ey3DGeLbfIzS8PkwLFkcF5vCOLk2rdjgfSxTfpoyovl7gAyoS6yq6T77zo9QgJGaVJ7PO/cSgLopnKlzg=="
       },
       "Microsoft.DotNet.PlatformAbstractions": {
         "type": "Transitive",
@@ -360,8 +360,8 @@
       },
       "MimeKit": {
         "type": "Transitive",
-        "resolved": "2.5.2",
-        "contentHash": "NtkzJS91ybVpWLIP3BIDXGbLcayetWLTCxbPxtvCRRimzDuAo753+xLGKrV4j6ix1IrugNNXRHOTQXfoXLwNHA==",
+        "resolved": "2.6.0",
+        "contentHash": "254R07ICLw0mIEhXEcYsALGF7Tgt8mAOfD7lcui1XXBdQGbpj5WFOzx9TojSMPBt2ZRBfolWhoSC9tnTVY7wRw==",
         "dependencies": {
           "Portable.BouncyCastle": "1.8.5",
           "System.Data.Common": "4.3.0",
@@ -1385,7 +1385,7 @@
         "type": "Project",
         "dependencies": {
           "Flurl.Http": "2.4.2",
-          "JetBrains.Annotations": "2019.1.3",
+          "JetBrains.Annotations": "2020.1.0",
           "Microsoft.Extensions.Configuration": "3.1.3",
           "Microsoft.Extensions.DependencyInjection": "3.1.3",
           "Microsoft.Extensions.Diagnostics.HealthChecks": "3.1.3",
@@ -1402,7 +1402,7 @@
         "type": "Project",
         "dependencies": {
           "FluentEmail.Core": "2.7.0",
-          "Hangfire.Core": "1.7.9",
+          "Hangfire.Core": "1.7.10",
           "HtmlAgilityPack": "1.11.23",
           "Sitko.Core.App": "1.0.0"
         }

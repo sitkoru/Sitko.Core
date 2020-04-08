@@ -13,9 +13,9 @@
       },
       "Hangfire.Core": {
         "type": "Direct",
-        "requested": "[1.7.9, )",
-        "resolved": "1.7.9",
-        "contentHash": "CmJ5MRUn7pxUUtuqcLubzzXktcPRQiV3S98jtin0x0a+Lvflm5evBJpTD3/6Do9u88y4gfij6aCR7WRGCVL5Hg==",
+        "requested": "[1.7.10, )",
+        "resolved": "1.7.10",
+        "contentHash": "iyRQRW1H9U0WvxQjIjiDQRdmjh4CnCWbVPGpmx97CuNaT/7e2Y+5TYpQncG7ckJQbhnD132l3/+d7C+HRDxV+A==",
         "dependencies": {
           "Newtonsoft.Json": "11.0.1"
         }
@@ -49,8 +49,8 @@
       },
       "JetBrains.Annotations": {
         "type": "Transitive",
-        "resolved": "2019.1.3",
-        "contentHash": "E0x48BwZJKoNMNCekWGKsV4saQS89lf58ydT2szseV44CMYIbaHXjc7+305WLw6up3ibZN9yH6QdGSZo5tQhLg=="
+        "resolved": "2020.1.0",
+        "contentHash": "kD9D2ey3DGeLbfIzS8PkwLFkcF5vCOLk2rdjgfSxTfpoyovl7gAyoS6yq6T77zo9QgJGaVJ7PO/cSgLopnKlzg=="
       },
       "Microsoft.DotNet.PlatformAbstractions": {
         "type": "Transitive",
@@ -1229,7 +1229,7 @@
         "type": "Project",
         "dependencies": {
           "Flurl.Http": "2.4.2",
-          "JetBrains.Annotations": "2019.1.3",
+          "JetBrains.Annotations": "2020.1.0",
           "Microsoft.Extensions.Configuration": "3.1.3",
           "Microsoft.Extensions.DependencyInjection": "3.1.3",
           "Microsoft.Extensions.Diagnostics.HealthChecks": "3.1.3",

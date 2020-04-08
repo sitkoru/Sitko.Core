@@ -28,8 +28,8 @@
       },
       "JetBrains.Annotations": {
         "type": "Transitive",
-        "resolved": "2019.1.3",
-        "contentHash": "E0x48BwZJKoNMNCekWGKsV4saQS89lf58ydT2szseV44CMYIbaHXjc7+305WLw6up3ibZN9yH6QdGSZo5tQhLg=="
+        "resolved": "2020.1.0",
+        "contentHash": "kD9D2ey3DGeLbfIzS8PkwLFkcF5vCOLk2rdjgfSxTfpoyovl7gAyoS6yq6T77zo9QgJGaVJ7PO/cSgLopnKlzg=="
       },
       "Microsoft.Bcl.AsyncInterfaces": {
         "type": "Transitive",
@@ -902,7 +902,7 @@
         "type": "Project",
         "dependencies": {
           "Flurl.Http": "2.4.2",
-          "JetBrains.Annotations": "2019.1.3",
+          "JetBrains.Annotations": "2020.1.0",
           "Microsoft.Extensions.Configuration": "3.1.3",
           "Microsoft.Extensions.DependencyInjection": "3.1.3",
           "Microsoft.Extensions.Diagnostics.HealthChecks": "3.1.3",

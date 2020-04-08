@@ -18,8 +18,8 @@
       },
       "AspNetCore.HealthChecks.Consul": {
         "type": "Transitive",
-        "resolved": "3.0.0",
-        "contentHash": "7cWovT1wGu5wKsWxp1Bswmyzl/P+v3osMtE49nrEgmnNR2yvD0oQbL5fSyqloIzWBuuwUHIo22xIWIuqIBgt4g==",
+        "resolved": "3.0.1",
+        "contentHash": "9FQSElTryie8KPezv/Z9JfsC3sFJ4P86bnn1g1GKeU6olMNOqY+b9YwlRM+Lj8gGBmRK+3u5RfqzTNhxwMxuBQ==",
         "dependencies": {
           "Microsoft.Extensions.Diagnostics.HealthChecks": "3.0.0",
           "Microsoft.Extensions.Http": "3.0.0"
@@ -68,8 +68,8 @@
       },
       "Grpc.Core.Api": {
         "type": "Transitive",
-        "resolved": "2.27.0",
-        "contentHash": "UAHXfV+n6TEMCybML7V+1qWP7G9byGXUE2mtATWpctP7xB8P5J++iYMuyxrprKkC36X/QuUwHJmHpBxlDHzF2g==",
+        "resolved": "2.28.1",
+        "contentHash": "ho/QAdmZFwxhl0pKVfKuACMHjC/X1/p2r20lv7M58/GD/oU/O8frrzbNjUTg7ZCJoyjHVrF5uW/uVSZVXMjq9w==",
         "dependencies": {
           "System.Memory": "4.5.3"
         }
@@ -105,13 +105,13 @@
       },
       "Grpc.Tools": {
         "type": "Transitive",
-        "resolved": "2.27.0",
-        "contentHash": "eaDHiBziIPLpJ9vLGgxW3YXgHhYCKi0yPgyVuDM1dSTQEzwzannL9i9aqaPfcVliY/vWDCik3ki0PPwxzLUdww=="
+        "resolved": "2.28.1",
+        "contentHash": "tqn+J6nZ2B9DqYixfOIQCDFY13IfYhHHO1BPBVjIcLZe6G6Dn66d5fJ7KCO544dnKkvC07mY2nEea5LmHMtK5w=="
       },
       "JetBrains.Annotations": {
         "type": "Transitive",
-        "resolved": "2019.1.3",
-        "contentHash": "E0x48BwZJKoNMNCekWGKsV4saQS89lf58ydT2szseV44CMYIbaHXjc7+305WLw6up3ibZN9yH6QdGSZo5tQhLg=="
+        "resolved": "2020.1.0",
+        "contentHash": "kD9D2ey3DGeLbfIzS8PkwLFkcF5vCOLk2rdjgfSxTfpoyovl7gAyoS6yq6T77zo9QgJGaVJ7PO/cSgLopnKlzg=="
       },
       "Microsoft.Bcl.AsyncInterfaces": {
         "type": "Transitive",
@@ -1537,7 +1537,7 @@
         "type": "Project",
         "dependencies": {
           "Flurl.Http": "2.4.2",
-          "JetBrains.Annotations": "2019.1.3",
+          "JetBrains.Annotations": "2020.1.0",
           "Microsoft.Extensions.Configuration": "3.1.3",
           "Microsoft.Extensions.DependencyInjection": "3.1.3",
           "Microsoft.Extensions.Diagnostics.HealthChecks": "3.1.3",
@@ -1553,7 +1553,7 @@
       "sitko.core.consul": {
         "type": "Project",
         "dependencies": {
-          "AspNetCore.HealthChecks.Consul": "3.0.0",
+          "AspNetCore.HealthChecks.Consul": "3.0.1",
           "Consul.GRPC": "0.7.2.6",
           "Sitko.Core.App": "1.0.0"
         }
@@ -1562,8 +1562,8 @@
         "type": "Project",
         "dependencies": {
           "Google.Protobuf": "3.11.4",
-          "Grpc.Core.Api": "2.27.0",
-          "Grpc.Tools": "2.27.0",
+          "Grpc.Core.Api": "2.28.1",
+          "Grpc.Tools": "2.28.1",
           "Sitko.Core.App": "1.0.0"
         }
       },

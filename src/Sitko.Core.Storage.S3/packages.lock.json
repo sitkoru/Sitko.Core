@@ -14,17 +14,17 @@
       },
       "AWSSDK.S3": {
         "type": "Direct",
-        "requested": "[3.3.110.42, )",
-        "resolved": "3.3.110.42",
-        "contentHash": "1U2e+8XKs3Yg8qTelRjaFP2oU0iYBZr93RhIVEgDf5jC6xUT6ICgE6XMxQQBBh0U761XbH9SEocSHQKqYQ6d2g==",
+        "requested": "[3.3.110.49, )",
+        "resolved": "3.3.110.49",
+        "contentHash": "qWImh3yogCJxIlcPefdvjoSGqvZ16dGSINysLt+0kVX+T2Tr2kjZP/zI8TtDt2NiQwrc1Rt0m9758MEM8pDBFw==",
         "dependencies": {
-          "AWSSDK.Core": "[3.3.105.5, 3.4.0)"
+          "AWSSDK.Core": "[3.3.106.2, 3.4.0)"
         }
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "3.3.105.5",
-        "contentHash": "z5DxgfCONeWm7umN6HeqrQ8nsc+ulq3umaYSKjaEHY4ggEOrHnQ/D8h0wFGjpggIzxiFgpYaFeqAMvIvORtqXA=="
+        "resolved": "3.3.106.2",
+        "contentHash": "HoOBdAqSLOSmA20nYlYd4BMVIvkeu7cqdOZhrwi+6PJQ6ktgXr8svE1g3jzGhXfbDG9GnzzZG4GZVcRE6ZxCrw=="
       },
       "Flurl": {
         "type": "Transitive",
@@ -43,8 +43,8 @@
       },
       "JetBrains.Annotations": {
         "type": "Transitive",
-        "resolved": "2019.1.3",
-        "contentHash": "E0x48BwZJKoNMNCekWGKsV4saQS89lf58ydT2szseV44CMYIbaHXjc7+305WLw6up3ibZN9yH6QdGSZo5tQhLg=="
+        "resolved": "2020.1.0",
+        "contentHash": "kD9D2ey3DGeLbfIzS8PkwLFkcF5vCOLk2rdjgfSxTfpoyovl7gAyoS6yq6T77zo9QgJGaVJ7PO/cSgLopnKlzg=="
       },
       "Microsoft.Bcl.AsyncInterfaces": {
         "type": "Transitive",
@@ -837,7 +837,7 @@
         "type": "Project",
         "dependencies": {
           "Flurl.Http": "2.4.2",
-          "JetBrains.Annotations": "2019.1.3",
+          "JetBrains.Annotations": "2020.1.0",
           "Microsoft.Extensions.Configuration": "3.1.3",
           "Microsoft.Extensions.DependencyInjection": "3.1.3",
           "Microsoft.Extensions.Diagnostics.HealthChecks": "3.1.3",
