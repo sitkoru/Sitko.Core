@@ -4,9 +4,9 @@
     ".NETStandard,Version=v2.1": {
       "Telegram.Bot": {
         "type": "Direct",
-        "requested": "[15.4.0, )",
-        "resolved": "15.4.0",
-        "contentHash": "vW6GxSFcugQ8604oypjiDVLqjTm045uaStty8Eh4NFCgNrU21tkw/uG5Fq5hI5i8EdgpoRQYAROkK79mcoYsPw==",
+        "requested": "[15.5.1, )",
+        "resolved": "15.5.1",
+        "contentHash": "GqZPbJ2gomved+q9Qcu6Vj346Gv/73TzJCqt/k5HxlY8mipwbrY9qWpuzJPIgfCOb+NvbHqE3iaPyZmJFRTxoQ==",
         "dependencies": {
           "NETStandard.Library": "1.6.1",
           "Newtonsoft.Json": "11.0.2",
@@ -30,8 +30,8 @@
       },
       "JetBrains.Annotations": {
         "type": "Transitive",
-        "resolved": "2019.1.3",
-        "contentHash": "E0x48BwZJKoNMNCekWGKsV4saQS89lf58ydT2szseV44CMYIbaHXjc7+305WLw6up3ibZN9yH6QdGSZo5tQhLg=="
+        "resolved": "2020.1.0",
+        "contentHash": "kD9D2ey3DGeLbfIzS8PkwLFkcF5vCOLk2rdjgfSxTfpoyovl7gAyoS6yq6T77zo9QgJGaVJ7PO/cSgLopnKlzg=="
       },
       "Microsoft.Bcl.AsyncInterfaces": {
         "type": "Transitive",
@@ -1393,7 +1393,7 @@
         "type": "Project",
         "dependencies": {
           "Flurl.Http": "2.4.2",
-          "JetBrains.Annotations": "2019.1.3",
+          "JetBrains.Annotations": "2020.1.0",
           "Microsoft.Extensions.Configuration": "3.1.3",
           "Microsoft.Extensions.DependencyInjection": "3.1.3",
           "Microsoft.Extensions.Diagnostics.HealthChecks": "3.1.3",

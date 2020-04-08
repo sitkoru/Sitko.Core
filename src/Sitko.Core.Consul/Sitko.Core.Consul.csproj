@@ -8,13 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AspNetCore.HealthChecks.Consul" Version="3.0.0"/>
+    <PackageReference Include="AspNetCore.HealthChecks.Consul" Version="3.0.1" />
     <!-- https://github.com/SonicGD/consuldotnet cause original lib is dead -->
-    <PackageReference Include="Consul.GRPC" Version="0.7.2.6"/>
+    <PackageReference Include="Consul.GRPC" Version="0.7.2.6" />
   </ItemGroup>
 
 </Project>
