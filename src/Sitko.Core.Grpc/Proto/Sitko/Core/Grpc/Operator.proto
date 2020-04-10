@@ -4,8 +4,8 @@ package Sitko.Core.Grpc;
 
 enum Operator {
     None = 0;
-    Equal = 1;
-    NotEqual = 2;
+    Equals = 1;
+    NotEquals = 2;
     Greater = 3;
     GreaterOrEqual = 4;
     Less = 5;
@@ -17,4 +17,11 @@ enum Operator {
     ContainsCaseInsensitive = 11;
     StartsWithCaseInsensitive = 12;
     EndsWithCaseInsensitive = 13;
+    NotIn = 14;
+    NotContains = 15;
+    NotStartsWith = 16;
+    NotEndsWith = 17;
+    NotContainsCaseInsensitive = 18;
+    NotStartsWithCaseInsensitive = 19;
+    NotEndsWithCaseInsensitive = 20;
 }
