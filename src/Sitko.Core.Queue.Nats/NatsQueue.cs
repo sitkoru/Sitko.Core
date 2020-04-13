@@ -82,6 +82,8 @@ namespace Sitko.Core.Queue.Nats
             }
             catch (Exception e)
             {
+                _logger.LogError(e, "Error publishing message {MessageType} to Nats: {ErrorText}", typeof(T),
+                    e.ToString());
                 result.SetException(e);
             }
 
@@ -143,8 +145,19 @@ namespace Sitko.Core.Queue.Nats
                     await callback(request.message, request.messageContext, (message, context) =>
                     {
                         var data = SerializePayload(message, context);
-                        args.Message.Respond(data);
-                        return Task.FromResult(new QueuePublishResult());
+                        var result = new QueuePublishResult();
+                        try
+                        {
+                            args.Message.Respond(data);
+                        }
+                        catch (NATSException ex)
+                        {
+                            _logger.LogError(ex, "Error responding to message {MessageId} (MessageType): {ErrorText}",
+                                request.messageContext.Id, request.messageContext.MessageType, ex.ToString());
+                            result.SetException(ex);
+                        }
+
+                        return Task.FromResult(result);
                     });
                 });
             _natsSubscriptions.TryAdd(id, sub);
