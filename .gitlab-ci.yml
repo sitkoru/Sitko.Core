@@ -26,14 +26,13 @@ build:
         SONYFLAKE_URI: http://sonyflake
     script:
         - dotnet restore --locked-mode
-        - dotnet test $CI_PROJECT_DIR/tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
-        - dotnet test $CI_PROJECT_DIR/tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj
-        - dotnet test $CI_PROJECT_DIR/tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj
-        - dotnet test $CI_PROJECT_DIR/tests/Sitko.Core.Repository.Tests/Sitko.Core.Repository.Tests.csproj
-        - dotnet test $CI_PROJECT_DIR/tests/Sitko.Core.SonyFlake.Tests/Sitko.Core.SonyFlake.Tests.csproj
-        - dotnet test $CI_PROJECT_DIR/tests/Sitko.Core.Storage.Tests/Sitko.Core.Storage.Tests.csproj
-        - dotnet test $CI_PROJECT_DIR/tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
-        - dotnet test $CI_PROJECT_DIR/tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
+        - dotnet test --no-restore $CI_PROJECT_DIR/tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
+        - dotnet test --no-restore $CI_PROJECT_DIR/tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj
+        - dotnet test --no-restore $CI_PROJECT_DIR/tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj
+        - dotnet test --no-restore $CI_PROJECT_DIR/tests/Sitko.Core.Repository.Tests/Sitko.Core.Repository.Tests.csproj
+        - dotnet test --no-restore $CI_PROJECT_DIR/tests/Sitko.Core.SonyFlake.Tests/Sitko.Core.SonyFlake.Tests.csproj
+        - dotnet test --no-restore $CI_PROJECT_DIR/tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
+        - dotnet test --no-restore $CI_PROJECT_DIR/tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
         - dotnet pack --no-restore -c Release /p:Version=$VERSION -o $CI_PROJECT_DIR/nugets
         - mkdir -p Composer/Core
         - mkdir -p Composer/Queue
