@@ -14,11 +14,11 @@ namespace Sitko.Core.Storage.S3.Tests
                 .AddModule<S3StorageModule<TestS3StorageSettings>, TestS3StorageSettings>(
                     (configuration, environment, moduleConfig) =>
                     {
-                        moduleConfig.PublicUri = new Uri(configuration["STORAGE_SERVER_URI"] + "/" + _bucketName);
-                        moduleConfig.Server = new Uri(configuration["STORAGE_SERVER_URI"]);
+                        moduleConfig.PublicUri = new Uri(configuration["MINIO_SERVER_URI"] + "/" + _bucketName);
+                        moduleConfig.Server = new Uri(configuration["MINIO_SERVER_URI"]);
                         moduleConfig.Bucket = _bucketName.ToString();
-                        moduleConfig.AccessKey = configuration["STORAGE_ACCESS_KEY"];
-                        moduleConfig.SecretKey = configuration["STORAGE_SECRET_KEY"];
+                        moduleConfig.AccessKey = configuration["MINIO_ACCESS_KEY"];
+                        moduleConfig.SecretKey = configuration["MINIO_SECRET_KEY"];
                     });
         }
 
