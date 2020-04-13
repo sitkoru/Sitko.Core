@@ -13,7 +13,7 @@ namespace Sitko.Core.Queue.Nats.Tests
         public BasicQueueTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
         }
-        
+
         [Fact]
         public async Task RequestResponseTimeout()
         {
@@ -23,8 +23,11 @@ namespace Sitko.Core.Queue.Nats.Tests
 
             var msg = new TestMessage();
             var timeout = TimeSpan.FromMilliseconds(1);
-            var subResult = await queue.ReplyAsync<TestMessage, TestResponse>((message, context) =>
-                Task.FromResult(new TestResponse {Id = message.Id}));
+            var subResult = await queue.ReplyAsync<TestMessage, TestResponse>(async (message, context) =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1));
+                return new TestResponse {Id = message.Id};
+            });
             Assert.True(subResult.IsSuccess);
             var ex = await Assert.ThrowsAsync<QueueRequestTimeoutException>(() =>
                 queue.RequestAsync<TestMessage, TestResponse>(msg, null, timeout));
