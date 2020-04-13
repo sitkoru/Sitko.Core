@@ -23,6 +23,7 @@ build:
         MINIO_ACCESS_KEY: ptTYf7VkCVbUjAzn
         MINIO_SECRET_KEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
         QUEUE_NATS_HOST: nats
+        SONYFLAKE_URI: http://sonyflake
     script:
         - dotnet restore --locked-mode
         - dotnet test $CI_PROJECT_DIR/tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
