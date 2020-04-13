@@ -4,12 +4,12 @@
     ".NETStandard,Version=v2.1": {
       "AspNetCore.HealthChecks.Consul": {
         "type": "Direct",
-        "requested": "[3.0.1, )",
-        "resolved": "3.0.1",
-        "contentHash": "9FQSElTryie8KPezv/Z9JfsC3sFJ4P86bnn1g1GKeU6olMNOqY+b9YwlRM+Lj8gGBmRK+3u5RfqzTNhxwMxuBQ==",
+        "requested": "[3.1.0, )",
+        "resolved": "3.1.0",
+        "contentHash": "Htc1M9mEsxGctS3ErPFQFzwK3tLaV9eY3XcnKm8gbi3Q8nw7vTU/74oIk2rBkbi5ALJsME/ZflHuW13pGF3/tA==",
         "dependencies": {
-          "Microsoft.Extensions.Diagnostics.HealthChecks": "3.0.0",
-          "Microsoft.Extensions.Http": "3.0.0"
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "3.1.3",
+          "Microsoft.Extensions.Http": "3.1.3"
         }
       },
       "Consul.GRPC": {
