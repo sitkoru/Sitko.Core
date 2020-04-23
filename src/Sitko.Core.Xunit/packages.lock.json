@@ -31,9 +31,9 @@
       },
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
-        "requested": "[16.5.0, )",
-        "resolved": "16.5.0",
-        "contentHash": "yHZOhVSPuGqgHi+KhHiAZqNY08avkQraXKvgKgDU8c/ztmGzw7gmukkv49EaTq6T3xmp4XroWk3gAlbJHMxl8w=="
+        "requested": "[16.6.0, )",
+        "resolved": "16.6.0",
+        "contentHash": "Ovn6x+hUumERZlilJLhf9CieJ+Muq1o4Nl/sqqXsOhg/oVNOB7ky2qHFN1gjkEBu3NNXSdOCp1XNW0a7+goeDw=="
       },
       "Serilog.Sinks.XUnit": {
         "type": "Direct",
@@ -649,8 +649,8 @@
       },
       "Scrutor": {
         "type": "Transitive",
-        "resolved": "3.2.0",
-        "contentHash": "wfVcGbiRtCXzbMY0fhJNUCH6n1IJ0ce8nz5Vn4/g2/k9x+inJ9CYV/hEH6QbDyitLTgro4wVzyPwKNU7eP0jTA==",
+        "resolved": "3.2.1",
+        "contentHash": "MXE+dFmrgrQ+313j82ggG99g65X+xHbsh7uawICPwaVUQcYUJXX3KQPeOWfz42rOo2CNeQ0DPi8g6aqMrM4Ufg==",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "2.1.1",
           "Microsoft.Extensions.DependencyModel": "2.1.0"
@@ -1547,7 +1547,7 @@
           "Microsoft.Extensions.Hosting": "3.1.3",
           "Microsoft.Extensions.Http": "3.1.3",
           "Microsoft.Extensions.Logging": "3.1.3",
-          "Scrutor": "3.2.0",
+          "Scrutor": "3.2.1",
           "Serilog.Exceptions": "5.4.0",
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Sinks.Console": "3.1.1"
