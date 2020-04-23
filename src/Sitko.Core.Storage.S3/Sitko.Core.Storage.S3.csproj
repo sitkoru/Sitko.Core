@@ -6,8 +6,8 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.3.110.50" />
-    <PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="3.1.0" />
+    <PackageReference Include="AWSSDK.S3" Version="3.3.110.55" />
+    <PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="3.1.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Storage\Sitko.Core.Storage.csproj" />

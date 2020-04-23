@@ -4,9 +4,9 @@
     ".NETCoreApp,Version=v3.1": {
       "AspNetCore.HealthChecks.OpenIdConnectServer": {
         "type": "Direct",
-        "requested": "[3.1.0, )",
-        "resolved": "3.1.0",
-        "contentHash": "mmrpONTMxMD/F1yHpw5XP14YD0Y5WP032eOsqRlt4MFWpMj9o0+WXlqVXoEgPqOjFRSaNVyEyzMt6NyjQ66pSg==",
+        "requested": "[3.1.1, )",
+        "resolved": "3.1.1",
+        "contentHash": "U+ydQpy8HzsuUUEiQSzDFwuNVVtN7V3ExMGQfgK+cZVbuTRL8AxsL8jbWKWUjYy1raou8JHP/4BUDExK/d8LNA==",
         "dependencies": {
           "Microsoft.Extensions.Diagnostics.HealthChecks": "3.1.3",
           "Microsoft.Extensions.Http": "3.1.3"
@@ -581,8 +581,8 @@
       },
       "Scrutor": {
         "type": "Transitive",
-        "resolved": "3.2.0",
-        "contentHash": "wfVcGbiRtCXzbMY0fhJNUCH6n1IJ0ce8nz5Vn4/g2/k9x+inJ9CYV/hEH6QbDyitLTgro4wVzyPwKNU7eP0jTA==",
+        "resolved": "3.2.1",
+        "contentHash": "MXE+dFmrgrQ+313j82ggG99g65X+xHbsh7uawICPwaVUQcYUJXX3KQPeOWfz42rOo2CNeQ0DPi8g6aqMrM4Ufg==",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "2.1.1",
           "Microsoft.Extensions.DependencyModel": "2.1.0"
@@ -1005,7 +1005,7 @@
           "Microsoft.Extensions.Hosting": "3.1.3",
           "Microsoft.Extensions.Http": "3.1.3",
           "Microsoft.Extensions.Logging": "3.1.3",
-          "Scrutor": "3.2.0",
+          "Scrutor": "3.2.1",
           "Serilog.Exceptions": "5.4.0",
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Sinks.Console": "3.1.1"

@@ -13,7 +13,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FluentEmail.Core" Version="2.7.0" />
-    <PackageReference Include="Hangfire.Core" Version="1.7.10" />
+    <PackageReference Include="Hangfire.Core" Version="1.7.11" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.23" />
   </ItemGroup>
 </Project>
