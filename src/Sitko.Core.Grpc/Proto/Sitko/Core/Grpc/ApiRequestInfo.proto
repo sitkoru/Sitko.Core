@@ -1,5 +1,6 @@
 syntax = "proto3";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
 
 package Sitko.Core.Grpc;
 
@@ -12,4 +13,5 @@ message ApiRequestInfo {
     string Filter = 10;
     google.protobuf.Timestamp DateFrom = 11;
     google.protobuf.Timestamp DateTo = 12;
+    map<string, google.protobuf.Any> Data = 13;
 }
