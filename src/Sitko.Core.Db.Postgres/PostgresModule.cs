@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using Sitko.Core.App;
 
@@ -13,7 +14,8 @@ namespace Sitko.Core.Db.Postgres
     public class PostgresModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleConfig<TDbContext>>
         where TDbContext : DbContext
     {
-        public PostgresModule(PostgresDatabaseModuleConfig<TDbContext> config, Application application) : base(config, application)
+        public PostgresModule(PostgresDatabaseModuleConfig<TDbContext> config, Application application) : base(config,
+            application)
         {
         }
 
@@ -49,10 +51,37 @@ namespace Sitko.Core.Db.Postgres
 
             if (environment.IsProduction())
             {
-                var dbContext = serviceProvider.GetRequiredService<TDbContext>();
-                if ((await dbContext.Database.GetPendingMigrationsAsync()).Any())
+                var logger = serviceProvider.GetService<ILogger<PostgresModule<TDbContext>>>();
+                var migrated = false;
+                for (var i = 1; i <= 10; i++)
                 {
-                    await dbContext.Database.MigrateAsync();
+                    logger.LogInformation("Migrate database");
+                    try
+                    {
+                        var dbContext = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<TDbContext>();
+                        if ((await dbContext.Database.GetPendingMigrationsAsync()).Any())
+                        {
+                            await dbContext.Database.MigrateAsync();
+                        }
+
+                        migrated = true;
+                        break;
+                    }
+                    catch (NpgsqlException ex)
+                    {
+                        logger.LogError(ex, "Error migrating database: {ErrorText}. Try #{TryNumber}", ex.ToString(),
+                            i);
+                        await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, i)));
+                    }
+                }
+
+                if (migrated)
+                {
+                    logger.LogInformation("Database migrated");
+                }
+                else
+                {
+                    throw new Exception("Can't migrate database after 10 tries. See previous errors");
                 }
             }
         }
@@ -97,7 +126,7 @@ namespace Sitko.Core.Db.Postgres
                 options.EnableSensitiveDataLogging();
             }
 
-            Config.Configure?.Invoke((DbContextOptionsBuilder<TDbContext>) options, p, configuration, environment);
+            Config.Configure?.Invoke((DbContextOptionsBuilder<TDbContext>)options, p, configuration, environment);
         }
     }
 }
