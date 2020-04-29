@@ -1,6 +1,5 @@
 using System;
 using FluentEmail.Core.Interfaces;
-using MailKit.Security;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sitko.Core.App;
