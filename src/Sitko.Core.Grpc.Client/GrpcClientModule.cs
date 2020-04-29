@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
+using Grpc.Net.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -71,6 +72,9 @@ namespace Sitko.Core.Grpc.Client
                     }
 
                     return handler;
+                }).ConfigureChannel(options =>
+                {
+                    Config.ConfigureChannelOptions?.Invoke(options);
                 });
             services.AddHealthChecks()
                 .AddCheck<GrpcClientHealthCheck<TClient>>($"GRPC Client check: {typeof(TClient)}");
@@ -89,6 +93,7 @@ namespace Sitko.Core.Grpc.Client
     {
         public bool EnableHttp2UnencryptedSupport { get; set; }
         public bool DisableCertificatesValidation { get; set; }
+        public Action<GrpcChannelOptions>? ConfigureChannelOptions { get; set; }
 
         internal readonly HashSet<Type> Interceptors = new HashSet<Type>();
 
