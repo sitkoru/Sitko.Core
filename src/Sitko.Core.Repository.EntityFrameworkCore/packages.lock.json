@@ -10,9 +10,9 @@
       },
       "System.Linq.Dynamic.Core": {
         "type": "Direct",
-        "requested": "[1.0.24, )",
-        "resolved": "1.0.24",
-        "contentHash": "kT9KuogF9yF0t7XQAr27aHpEgEXdUpIyp7HMHkVSWFq3toMmRZWnz7TgWX8fzq/k9+3B/UkKqn7BD6ybmcN8Xg==",
+        "requested": "[1.1.0, )",
+        "resolved": "1.1.0",
+        "contentHash": "rQsUazDr3v0kS0lbF3SyNTCYdXP9oU8sGzoxfB8Fd/uojgdmhtjWw4uRkUvVRop/8/2io7CBZ2q1z29mfvQhkg==",
         "dependencies": {
           "System.Reflection.Emit": "4.3.0"
         }
