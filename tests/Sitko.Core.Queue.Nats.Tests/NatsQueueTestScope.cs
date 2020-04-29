@@ -21,7 +21,7 @@ namespace Sitko.Core.Queue.Nats.Tests
             }
             else
             {
-                config.ClusterName = "tests";
+                config.ClusterName = "cg2";
             }
 
             if (!string.IsNullOrEmpty(configuration["QUEUE_NATS_HOST"]))

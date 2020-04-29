@@ -16,14 +16,14 @@ namespace Sitko.Core.Queue
         public static void LogError(this ILogger logger, QueuePublishResult queuePublishResult, string message,
             params object[] args)
         {
-            args.Append(queuePublishResult.GetErrorText());
+            var newArgs = args.Append(queuePublishResult.GetErrorText());
             if (queuePublishResult.Exception != null)
             {
-                logger.LogError(queuePublishResult.Exception, "{Message}: {ErrorText}", message, args);
+                logger.LogError(queuePublishResult.Exception, "{Message}: {ErrorText}", message, newArgs);
             }
             else
             {
-                logger.LogError("{Message}: {ErrorText}", message, args);
+                logger.LogError("{Message}: {ErrorText}", message, newArgs);
             }
         }
     }
