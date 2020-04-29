@@ -4,14 +4,14 @@
     ".NETCoreApp,Version=v3.1": {
       "Swashbuckle.AspNetCore": {
         "type": "Direct",
-        "requested": "[5.3.3, )",
-        "resolved": "5.3.3",
-        "contentHash": "5lxbFdRq6V7ohRrbHp+XjpNkwvZfKCyba47iJ52KhjkLd3uLMMaNQQGFgpvsgoWE2AG9y2zm8qLaRQmntXmahA==",
+        "requested": "[5.4.0, )",
+        "resolved": "5.4.0",
+        "contentHash": "38vkMtvx5002MtkPuvxERnRzqd49xW1jdHIvv9RIerXr+P5OGAVCzvRGo8sKA2nzl9S7jY5PZztr75QvOXy+Fw==",
         "dependencies": {
           "Microsoft.Extensions.ApiDescription.Server": "3.0.0",
-          "Swashbuckle.AspNetCore.Swagger": "5.3.3",
-          "Swashbuckle.AspNetCore.SwaggerGen": "5.3.3",
-          "Swashbuckle.AspNetCore.SwaggerUI": "5.3.3"
+          "Swashbuckle.AspNetCore.Swagger": "5.4.0",
+          "Swashbuckle.AspNetCore.SwaggerGen": "5.4.0",
+          "Swashbuckle.AspNetCore.SwaggerUI": "5.4.0"
         }
       },
       "AspNetCore.HealthChecks.UI.Client": {
@@ -514,24 +514,24 @@
       },
       "Swashbuckle.AspNetCore.Swagger": {
         "type": "Transitive",
-        "resolved": "5.3.3",
-        "contentHash": "AKLJib3neW+7cRh5uPemXRlCu/w+Tsj1dtV6hV/jVp+/T0GYOXDMbuafSI18ZHRVt2AL7mlh9H8CjJv9NOXXdg==",
+        "resolved": "5.4.0",
+        "contentHash": "vBwVCPxerORPMYPYoqs3LWv6yJoFm6vkuiWhECV397AiIHgEvfTHplXP5Ot3dh6czC/o6L9NTuOobx/Vh178vA==",
         "dependencies": {
           "Microsoft.OpenApi": "1.1.4"
         }
       },
       "Swashbuckle.AspNetCore.SwaggerGen": {
         "type": "Transitive",
-        "resolved": "5.3.3",
-        "contentHash": "px+bosREjIwbyknYoOmYN2+ygaBBeK73IrKY0MN7TORd/nEyX2boKPfKTvo4HJWH3tPtSHFXvo2TttDgCaCx7A==",
+        "resolved": "5.4.0",
+        "contentHash": "BRwoRY9VLZpcqFnaqS0WlGi/KSAbSXpf997B8voLru5L4oUhA8SKnp9HgqKb8EZfQB4pCTGVcO4vnzxYgjXOeA==",
         "dependencies": {
-          "Swashbuckle.AspNetCore.Swagger": "5.3.3"
+          "Swashbuckle.AspNetCore.Swagger": "5.4.0"
         }
       },
       "Swashbuckle.AspNetCore.SwaggerUI": {
         "type": "Transitive",
-        "resolved": "5.3.3",
-        "contentHash": "eWzYYfp1Y2Qzf7UtzfA863NBdIAFjNXl7tLGejTJ+KU+omWzRf5SLc7HLQk61MGMhs2N2fwNPGK7THx/KzhqvQ=="
+        "resolved": "5.4.0",
+        "contentHash": "7JDyyFXS+sPpe3dQ8yRV+62gP9kbxCDo9Wtna7MbUlg0+KyekkA/Gmb7bbZT3M2KcFyQGVXDlZoCd2+KhohD4A=="
       },
       "System.Buffers": {
         "type": "Transitive",
