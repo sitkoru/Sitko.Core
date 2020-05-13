@@ -43,9 +43,9 @@
       },
       "Serilog.Sinks.Graylog": {
         "type": "Direct",
-        "requested": "[2.1.2, )",
-        "resolved": "2.1.2",
-        "contentHash": "/tpuADSSS5RZTV8zuneYzKlogmMiXok0c8la3GOZpebQlJbhHcxmYwTqg1err+V0W/kwgwaXeoW9iJk49Sy9zQ==",
+        "requested": "[2.1.3, )",
+        "resolved": "2.1.3",
+        "contentHash": "ygKyzEkLMZcoqWUVjeZNCDST9zzvi5fLw+fXUOhkAyUxlZ4fPQUnVd1XLpTOtULoz1wnmB17AUMl18ajoHDLIQ==",
         "dependencies": {
           "Newtonsoft.Json": "12.0.2",
           "Serilog": "2.8.0",
