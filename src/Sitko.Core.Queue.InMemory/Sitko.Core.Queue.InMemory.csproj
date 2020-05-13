@@ -8,11 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Queue\Sitko.Core.Queue.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.Queue\Sitko.Core.Queue.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Threading.Channels" Version="4.7.0"/>
+    <PackageReference Include="System.Threading.Channels" Version="4.7.1" />
   </ItemGroup>
 
 </Project>

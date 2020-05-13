@@ -4,13 +4,14 @@
     ".NETCoreApp,Version=v3.1": {
       "Elastic.Apm.NetCoreAll": {
         "type": "Direct",
-        "requested": "[1.4.0, )",
-        "resolved": "1.4.0",
-        "contentHash": "IaeyV8JpUJ9Am0C/A+FM+ynIn34NJAgZzt0Bb5ikG+DFVdUU2y7QK8NDPCKdCbgTKROngtoBiAUUlrXdEZwKoA==",
+        "requested": "[1.5.0, )",
+        "resolved": "1.5.0",
+        "contentHash": "lzyZ1muLwf3GUCeISDkfkW2tQ74SrKsmNcsvuB1OX8sbpthb29ET8f18acvb//rRphKit5jfjV9Y/XhGbOC5Bw==",
         "dependencies": {
-          "Elastic.Apm": "1.4.0",
-          "Elastic.Apm.AspNetCore": "1.4.0",
-          "Elastic.Apm.EntityFrameworkCore": "1.4.0"
+          "Elastic.Apm": "1.5.0",
+          "Elastic.Apm.AspNetCore": "1.5.0",
+          "Elastic.Apm.EntityFrameworkCore": "1.5.0",
+          "Elastic.Apm.SqlClient": "1.5.0"
         }
       },
       "Elastic.Apm.SerilogEnricher": {
@@ -36,15 +37,15 @@
       },
       "Serilog.Sinks.Elasticsearch": {
         "type": "Direct",
-        "requested": "[8.0.1, )",
-        "resolved": "8.0.1",
-        "contentHash": "fEYO1BzAeiBlKcpDqE4GLw/vwJVmzOR8tSPq8I+2S/ytEXeAp/rMfOCOx0N7a4HohlEAyVytXVrfK+h4E+eRQA==",
+        "requested": "[8.1.0, )",
+        "resolved": "8.1.0",
+        "contentHash": "CBUGMX8BPB4M106N2aRedMojVYCDgrwyL+wlEDkKgRpz96+Wjs88kicTzKCPyVUXmrBcaTMIuFNG5abgffyjVA==",
         "dependencies": {
           "Elasticsearch.Net": "7.0.0",
           "Microsoft.CSharp": "4.5.0",
           "Serilog": "2.8.0",
           "Serilog.Formatting.Compact": "1.0.0",
-          "Serilog.Formatting.Elasticsearch": "8.0.1",
+          "Serilog.Formatting.Elasticsearch": "8.1.0",
           "Serilog.Sinks.File": "4.0.0",
           "Serilog.Sinks.PeriodicBatching": "2.1.1",
           "System.Diagnostics.DiagnosticSource": "4.5.1"
@@ -60,22 +61,22 @@
       },
       "Elastic.Apm": {
         "type": "Transitive",
-        "resolved": "1.4.0",
-        "contentHash": "51YWMmQN7f57Gn+tMHmbk+THT4dEvyvtH35gvSzDKTDIwePDf0WzBJToFob6eqNXqNGHpXqPsi5dztAVhBjEWQ==",
+        "resolved": "1.5.0",
+        "contentHash": "sdqhPueBv2ic8m29Z3GjfZJl5bwztaGpuO4wImujp1IHA+H9Um9A6Ozof3smWN25BnOgZmQ76axOGB8gkL6Ypg==",
         "dependencies": {
           "Microsoft.Diagnostics.Tracing.TraceEvent": "2.0.2",
           "Newtonsoft.Json": "11.0.2",
-          "System.Diagnostics.DiagnosticSource": "4.0.0",
+          "System.Diagnostics.DiagnosticSource": "4.6.0",
           "System.Diagnostics.PerformanceCounter": "4.5.0",
           "System.Threading.Tasks.Dataflow": "4.9.0"
         }
       },
       "Elastic.Apm.AspNetCore": {
         "type": "Transitive",
-        "resolved": "1.4.0",
-        "contentHash": "9FBYTeur8GrgDPX/+s6BBbO6D9cnqLa8UQ/qzIammflAcdU6wmcWSBh7H96BBic2WIc3hluoYcMjey28l98ZIQ==",
+        "resolved": "1.5.0",
+        "contentHash": "O+SH6O5Y6OkDbbXCQ6bW3CpTOmYkX3EGq5dtXwSeKqhx5Lvf6mAGxx0r6oz8Ydoc31MSfOl3pdkFOo/qf+Po3w==",
         "dependencies": {
-          "Elastic.Apm": "1.4.0",
+          "Elastic.Apm": "1.5.0",
           "Microsoft.AspNetCore.Hosting.Abstractions": "2.1.0",
           "Microsoft.AspNetCore.Http": "2.1.0",
           "Microsoft.AspNetCore.Http.Abstractions": "2.1.0",
@@ -87,11 +88,19 @@
       },
       "Elastic.Apm.EntityFrameworkCore": {
         "type": "Transitive",
-        "resolved": "1.4.0",
-        "contentHash": "knn8eaUgNpa941AbSxgc54oTzqLIb4yMB0hjQuW+vsmJUvvc1GuwPo/7lI2qxbjcFFW9LktO0Ez++HL25fayyQ==",
+        "resolved": "1.5.0",
+        "contentHash": "bJRTVoixAt9bjZuEtJxg0hyFmXj6zhjBQd6SITriAPtSVMLW2xTGAa34STeiT2o35In3ok5F9NF5csnEWOj1rQ==",
         "dependencies": {
-          "Elastic.Apm": "1.4.0",
+          "Elastic.Apm": "1.5.0",
           "Microsoft.EntityFrameworkCore.Relational": "2.0.0"
+        }
+      },
+      "Elastic.Apm.SqlClient": {
+        "type": "Transitive",
+        "resolved": "1.5.0",
+        "contentHash": "0OYxvX5QUWWEJw+SDFOPQ8vK7tZUUG85IEh83g8NfdTYYUwVU7d4NHnZwYLqP4MFdfEGXUHbCNr8wk3UOwWxRA==",
+        "dependencies": {
+          "Elastic.Apm": "1.5.0"
         }
       },
       "Elastic.CommonSchema": {
@@ -813,8 +822,8 @@
       },
       "Serilog.Formatting.Elasticsearch": {
         "type": "Transitive",
-        "resolved": "8.0.1",
-        "contentHash": "qESo5i71iCmp8X4Mk9R77mXNUZIPFfoXnaCkeY7AsbVGZHB8wBr0FDgFWi53oOdFJbX/grxUt6XTliO/EvMOgw==",
+        "resolved": "8.1.0",
+        "contentHash": "6pfhS0fqOiYADmwN4hY+8F7Dt7t/2Lcn/crws2ndYX6TzODgAtw8MH3ZHz054thvdxf4e41ZXEMprjvmSesETA==",
         "dependencies": {
           "Serilog": "2.8.0"
         }
@@ -949,8 +958,8 @@
       },
       "System.Diagnostics.DiagnosticSource": {
         "type": "Transitive",
-        "resolved": "4.5.1",
-        "contentHash": "zCno/m44ymWhgLFh7tELDG9587q0l/EynPM0m4KgLaWQbz/TEKvNRX2YT5ip2qXW/uayifQ2ZqbnErsKJ4lYrQ=="
+        "resolved": "4.6.0",
+        "contentHash": "mbBgoR0rRfl2uimsZ2avZY8g7Xnh1Mza0rJZLPcxqiMWlkGukjmRkuMJ/er+AhQuiRIh80CR/Hpeztr80seV5g=="
       },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",

@@ -14,17 +14,17 @@
       },
       "AWSSDK.S3": {
         "type": "Direct",
-        "requested": "[3.3.110.59, )",
-        "resolved": "3.3.110.59",
-        "contentHash": "i1TD6OqlZSu/4iqSQ1pS9Mn6MqZPcwLq2p0GfuQ9MjTz38gt2YsJ+3Kq369xWUATg09TNO12wVx8mX74NxIpzw==",
+        "requested": "[3.3.110.68, )",
+        "resolved": "3.3.110.68",
+        "contentHash": "mniZtfDfVYx7SmUA4L7NLj3vKG9yyJyr2+KBjUg5ov56XLNzfGtkaYGlgVS/54CAAxHMUjomadp2heRlewo7pw==",
         "dependencies": {
-          "AWSSDK.Core": "[3.3.106.13, 3.4.0)"
+          "AWSSDK.Core": "[3.3.106.22, 3.4.0)"
         }
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "3.3.106.13",
-        "contentHash": "w2QHR1vnmKeAggy14tzgX54R/xt3P1MmyQByQiWyV1bE3T7ORll6MFrlFyZV0Juz/QqT8BfXdM6PdSV8PCUVgQ=="
+        "resolved": "3.3.106.22",
+        "contentHash": "mwRh922ZgNhsqz5u2PJLWi0sdqACo+Ai3IgY5zkKblNLtMuoVW7vCeGY+TWFHF+LMScd6QmP/1JUGjsjqqwuxg=="
       },
       "Flurl": {
         "type": "Transitive",
