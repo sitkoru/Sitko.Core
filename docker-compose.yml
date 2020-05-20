@@ -5,6 +5,13 @@ services:
         command: -cid tests
         ports:
             - 4222:4222
+    postgres:
+        image: postgres:alpine
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_HOST_AUTH_METHOD=trust
+        ports:
+            - 5432:5432
     elastic-es:
         image: docker.elastic.co/elasticsearch/elasticsearch:7.6.0
         restart: always

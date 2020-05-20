@@ -29,8 +29,8 @@ namespace Sitko.Core.Xunit
                 .Build();
 
             var testInMemory =
-                string.IsNullOrEmpty(config["USE_POSTGRES"])
-                || !bool.TryParse(config["USE_POSTGRES"], out var outBool) || !outBool;
+                string.IsNullOrEmpty(config["XUNIT_USE_POSTGRES"])
+                || !bool.TryParse(config["XUNIT_USE_POSTGRES"], out var outBool) || !outBool;
             if (testInMemory)
             {
                 application.AddModule<InMemoryDatabaseModule<TDbContext>, InMemoryDatabaseModuleConfig<TDbContext>>(
