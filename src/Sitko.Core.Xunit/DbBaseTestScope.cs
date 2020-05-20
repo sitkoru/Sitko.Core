@@ -29,8 +29,8 @@ namespace Sitko.Core.Xunit
                 .Build();
 
             var testInMemory =
-                string.IsNullOrEmpty(config["CG_TESTS_POSTGRES"])
-                || !bool.TryParse(config["CG_TESTS_POSTGRES"], out var outBool) || !outBool;
+                string.IsNullOrEmpty(config["USE_POSTGRES"])
+                || !bool.TryParse(config["USE_POSTGRES"], out var outBool) || !outBool;
             if (testInMemory)
             {
                 application.AddModule<InMemoryDatabaseModule<TDbContext>, InMemoryDatabaseModuleConfig<TDbContext>>(
@@ -93,6 +93,32 @@ namespace Sitko.Core.Xunit
             IHostEnvironment environment, PostgresDatabaseModuleConfig<TDbContext> moduleConfig, string dbName)
         {
             throw new NotImplementedException("You need to implement postgres configuration in your scope");
+        }
+
+        protected void GetDefaultPostgresConfig(IConfiguration configuration, IHostEnvironment environment,
+            PostgresDatabaseModuleConfig<TDbContext> moduleConfig, string dbName)
+        {
+            if (!string.IsNullOrEmpty(configuration["POSTGRES_HOST"]))
+            {
+                moduleConfig.Host = configuration["POSTGRES_HOST"];
+            }
+
+            if (int.TryParse(configuration["POSTGRES_PORT"], out var parsedPort))
+            {
+                moduleConfig.Port = parsedPort;
+            }
+
+            if (!string.IsNullOrEmpty(configuration["POSTGRES_USERNAME"]))
+            {
+                moduleConfig.Username = configuration["POSTGRES_USERNAME"];
+            }
+
+            if (!string.IsNullOrEmpty(configuration["POSTGRES_PASSWORD"]))
+            {
+                moduleConfig.Password = configuration["POSTGRES_PASSWORD"];
+            }
+
+            moduleConfig.Database = dbName;
         }
 
         public override async ValueTask DisposeAsync()
