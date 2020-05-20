@@ -10,9 +10,10 @@ namespace Sitko.Core.Repository
     {
     }
 
-    public abstract class RepositoriesModule<T> : BaseApplicationModule, IRepositoriesModule
+    public abstract class RepositoriesModule<TAssembly, TConfig> : BaseApplicationModule<TConfig>, IRepositoriesModule
+        where TConfig : class, new()
     {
-        protected RepositoriesModule(BaseApplicationModuleConfig config, Application application) : base(config,
+        protected RepositoriesModule(TConfig config, Application application) : base(config,
             application)
         {
         }
@@ -23,10 +24,11 @@ namespace Sitko.Core.Repository
             base.ConfigureServices(services, configuration, environment);
             services.AddScoped<RepositoryFiltersManager>();
             services.Scan(s =>
-                s.FromAssemblyOf<T>().AddClasses(classes => classes.AssignableTo(typeof(IValidator<>)))
+                s.FromAssemblyOf<TAssembly>().AddClasses(classes => classes.AssignableTo(typeof(IValidator<>)))
                     .AsSelfWithInterfaces().WithScopedLifetime());
             services.Scan(s =>
-                s.FromAssemblyOf<T>().AddClasses(classes => classes.AssignableTo(typeof(IAccessChecker<,>)))
+                s.FromAssemblyOf<TAssembly>()
+                    .AddClasses(classes => classes.AssignableTo(typeof(IAccessChecker<,>)))
                     .AsSelfWithInterfaces().WithScopedLifetime());
         }
     }
