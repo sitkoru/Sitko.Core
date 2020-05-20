@@ -5,7 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
+using Microsoft.Extensions.Hosting;
+using Sitko.Core.Db.Postgres;
 using Sitko.Core.Repository.EntityFrameworkCore;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -93,6 +96,35 @@ namespace Sitko.Core.Repository.Tests
             Assert.NotNull(foo.Bar);
             Assert.NotNull(foo.Bar.Test);
         }
+
+        [Fact]
+        public async Task ThreadSafeFail()
+        {
+            var scope = await GetScopeAsync();
+
+            var repository = scope.Get<IRepository<TestModel, Guid>>();
+
+            var tasks = new List<Task> {repository.GetAllAsync(), repository.GetAllAsync()};
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => Task.WhenAll(tasks));
+        }
+
+        [Fact]
+        public async Task ThreadSafeSuccess()
+        {
+            var scope = await GetScopeAsync<EFTestScopeThreadSafe>();
+
+            var threadSafeRepository = scope.Get<IRepository<TestModel, Guid>>();
+
+            var tasks = new List<Task> {threadSafeRepository.GetAllAsync(), threadSafeRepository.GetAllAsync()};
+
+            await Task.WhenAll(tasks);
+
+            foreach (var task in tasks)
+            {
+                Assert.True(task.IsCompletedSuccessfully);
+            }
+        }
     }
 
     public class TestDbContext : DbContext
@@ -173,7 +205,30 @@ namespace Sitko.Core.Repository.Tests
     {
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
-            return base.ConfigureApplication(application, name).AddModule<EFRepositoriesModule<EFTestScope>>();
+            return base.ConfigureApplication(application, name)
+                .AddModule<EFRepositoriesModule<EFTestScope>, EFRepositoriesModuleConfig>();
+        }
+
+        protected override void GetPostgresConfig(IConfiguration configuration, IHostEnvironment environment,
+            PostgresDatabaseModuleConfig<TestDbContext> moduleConfig, string dbName)
+        {
+            GetDefaultPostgresConfig(configuration, environment, moduleConfig, dbName);
+        }
+    }
+
+    public class EFTestScopeThreadSafe : EFTestScope
+    {
+        protected override TestApplication ConfigureApplication(TestApplication application, string name)
+        {
+            return base.ConfigureApplication(application, name)
+                .AddModule<EFRepositoriesModule<EFTestScopeThreadSafe>, EFRepositoriesModuleConfig>(
+                    (configuration, environment, moduleConfig) => moduleConfig.EnableThreadSafeOperations = true);
+        }
+
+        protected override void GetPostgresConfig(IConfiguration configuration, IHostEnvironment environment,
+            PostgresDatabaseModuleConfig<TestDbContext> moduleConfig, string dbName)
+        {
+            GetDefaultPostgresConfig(configuration, environment, moduleConfig, dbName);
         }
     }
 }

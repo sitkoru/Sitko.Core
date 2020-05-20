@@ -5,9 +5,10 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore
 {
-    public class EFRepositoriesModule<T> : RepositoriesModule<T>
+    public class EFRepositoriesModule<T> : RepositoriesModule<T, EFRepositoriesModuleConfig>
     {
-        public EFRepositoriesModule(BaseApplicationModuleConfig config, Application application) : base(config, application)
+        public EFRepositoriesModule(EFRepositoriesModuleConfig config, Application application) : base(config,
+            application)
         {
         }
 
@@ -16,9 +17,19 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         {
             base.ConfigureServices(services, configuration, environment);
             services.AddScoped(typeof(EFRepositoryContext<,,>));
+            if (Config.EnableThreadSafeOperations)
+            {
+                services.AddScoped<EFRepositoryLock>();
+            }
+
             services.Scan(s =>
                 s.FromAssemblyOf<T>().AddClasses(classes => classes.AssignableTo(typeof(EFRepository<,,>)))
                     .AsSelfWithInterfaces().WithScopedLifetime());
         }
+    }
+
+    public class EFRepositoriesModuleConfig
+    {
+        public bool EnableThreadSafeOperations { get; set; }
     }
 }
