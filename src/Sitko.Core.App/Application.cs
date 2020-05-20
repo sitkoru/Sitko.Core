@@ -235,6 +235,7 @@ namespace Sitko.Core.App
             Logger.LogInformation("Init modules");
             foreach (var module in Modules)
             {
+                Logger.LogInformation("Init module {Module}", module);
                 await module.InitAsync(scope.ServiceProvider,
                     scope.ServiceProvider.GetRequiredService<IConfiguration>(),
                     scope.ServiceProvider.GetRequiredService<IHostEnvironment>());
