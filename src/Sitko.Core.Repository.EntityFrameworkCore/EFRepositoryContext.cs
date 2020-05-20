@@ -11,12 +11,14 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         private readonly ILoggerFactory _loggerFactory;
 
         public EFRepositoryContext(TDbContext dbContext, RepositoryFiltersManager filtersManager,
-            ILoggerFactory loggerFactory, List<IValidator<TEntity>>? validators = null,
+            ILoggerFactory loggerFactory, EFRepositoryLock? repositoryLock = null,
+            List<IValidator<TEntity>>? validators = null,
             List<IAccessChecker<TEntity, TEntityPk>>? accessCheckers = null)
         {
             _loggerFactory = loggerFactory;
             DbContext = dbContext;
             FiltersManager = filtersManager;
+            RepositoryLock = repositoryLock;
             Validators = validators;
             AccessCheckers = accessCheckers;
         }
@@ -27,6 +29,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             _loggerFactory.CreateLogger<EFRepository<TEntity, TEntityPk, TDbContext>>();
 
         public RepositoryFiltersManager FiltersManager { get; }
+        public EFRepositoryLock? RepositoryLock { get; }
         public List<IValidator<TEntity>>? Validators { get; }
         public List<IAccessChecker<TEntity, TEntityPk>>? AccessCheckers { get; }
     }
