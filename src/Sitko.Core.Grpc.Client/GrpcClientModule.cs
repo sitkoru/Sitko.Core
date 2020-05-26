@@ -62,6 +62,7 @@ namespace Sitko.Core.Grpc.Client
                 {
                     var resolver = provider.GetRequiredService<IGrpcServiceAddressResolver<TClient>>();
                     client.BaseAddress = resolver.GetAddress();
+                    client.DefaultRequestHeaders.Add("Application", environment.ApplicationName);
                 })
                 .ConfigurePrimaryHttpMessageHandler(() =>
                 {
