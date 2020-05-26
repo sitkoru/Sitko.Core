@@ -4,14 +4,14 @@
     ".NETCoreApp,Version=v3.1": {
       "Elastic.Apm.NetCoreAll": {
         "type": "Direct",
-        "requested": "[1.5.0, )",
-        "resolved": "1.5.0",
-        "contentHash": "lzyZ1muLwf3GUCeISDkfkW2tQ74SrKsmNcsvuB1OX8sbpthb29ET8f18acvb//rRphKit5jfjV9Y/XhGbOC5Bw==",
+        "requested": "[1.5.1, )",
+        "resolved": "1.5.1",
+        "contentHash": "DGzijZEtAYAxnea5YFNOo39yQq845j8mFaFBlKUij5IkipxH9PEulu8hlGDgJmZH0SjyXtFRbADmpikhQCcCgw==",
         "dependencies": {
-          "Elastic.Apm": "1.5.0",
-          "Elastic.Apm.AspNetCore": "1.5.0",
-          "Elastic.Apm.EntityFrameworkCore": "1.5.0",
-          "Elastic.Apm.SqlClient": "1.5.0"
+          "Elastic.Apm": "1.5.1",
+          "Elastic.Apm.AspNetCore": "1.5.1",
+          "Elastic.Apm.EntityFrameworkCore": "1.5.1",
+          "Elastic.Apm.SqlClient": "1.5.1"
         }
       },
       "Elastic.Apm.SerilogEnricher": {
@@ -61,8 +61,8 @@
       },
       "Elastic.Apm": {
         "type": "Transitive",
-        "resolved": "1.5.0",
-        "contentHash": "sdqhPueBv2ic8m29Z3GjfZJl5bwztaGpuO4wImujp1IHA+H9Um9A6Ozof3smWN25BnOgZmQ76axOGB8gkL6Ypg==",
+        "resolved": "1.5.1",
+        "contentHash": "ofqFjxhoWSPhFw66PBPHtHXfBb6x3z+SZAf6HrR+zEo7e40fgJoSOwQlnFRGBqTDY4At+otWhJLcVEVAKdR9ZQ==",
         "dependencies": {
           "Microsoft.Diagnostics.Tracing.TraceEvent": "2.0.2",
           "Newtonsoft.Json": "11.0.2",
@@ -73,10 +73,10 @@
       },
       "Elastic.Apm.AspNetCore": {
         "type": "Transitive",
-        "resolved": "1.5.0",
-        "contentHash": "O+SH6O5Y6OkDbbXCQ6bW3CpTOmYkX3EGq5dtXwSeKqhx5Lvf6mAGxx0r6oz8Ydoc31MSfOl3pdkFOo/qf+Po3w==",
+        "resolved": "1.5.1",
+        "contentHash": "Tdv1cXSt1+lKS8r39vxMPw7BGDt5e8bGjXvvAJhlS7MKZ4yeu4YzzbubduaAtRlSIISkE+wiAJvYcgm7sViQgw==",
         "dependencies": {
-          "Elastic.Apm": "1.5.0",
+          "Elastic.Apm": "1.5.1",
           "Microsoft.AspNetCore.Hosting.Abstractions": "2.1.0",
           "Microsoft.AspNetCore.Http": "2.1.0",
           "Microsoft.AspNetCore.Http.Abstractions": "2.1.0",
@@ -88,19 +88,19 @@
       },
       "Elastic.Apm.EntityFrameworkCore": {
         "type": "Transitive",
-        "resolved": "1.5.0",
-        "contentHash": "bJRTVoixAt9bjZuEtJxg0hyFmXj6zhjBQd6SITriAPtSVMLW2xTGAa34STeiT2o35In3ok5F9NF5csnEWOj1rQ==",
+        "resolved": "1.5.1",
+        "contentHash": "ksNOhmLTCDC5OSy5qXlZWJHx3I8ua8YQWMe7oY4asD5Hdql7sLe8gbZRyKgt1aMtzvyDDfBM+nj4JjEkTGadZQ==",
         "dependencies": {
-          "Elastic.Apm": "1.5.0",
+          "Elastic.Apm": "1.5.1",
           "Microsoft.EntityFrameworkCore.Relational": "2.0.0"
         }
       },
       "Elastic.Apm.SqlClient": {
         "type": "Transitive",
-        "resolved": "1.5.0",
-        "contentHash": "0OYxvX5QUWWEJw+SDFOPQ8vK7tZUUG85IEh83g8NfdTYYUwVU7d4NHnZwYLqP4MFdfEGXUHbCNr8wk3UOwWxRA==",
+        "resolved": "1.5.1",
+        "contentHash": "ffKKZGHb2cmFh9yAgadt2qlxq01v+VRCLqtcCEwW8iGzpywbeIuA+LpeZgSY2+K6ln3NVeoOcoQWwUBqO0Oaug==",
         "dependencies": {
-          "Elastic.Apm": "1.5.0"
+          "Elastic.Apm": "1.5.1"
         }
       },
       "Elastic.CommonSchema": {
