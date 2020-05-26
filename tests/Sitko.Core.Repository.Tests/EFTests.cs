@@ -104,7 +104,11 @@ namespace Sitko.Core.Repository.Tests
 
             var repository = scope.Get<IRepository<TestModel, Guid>>();
 
-            var tasks = new List<Task> {repository.GetAllAsync(), repository.GetAllAsync()};
+            var tasks = new List<Task>();
+            for (var i = 0; i < 10; i++)
+            {
+                tasks.Add(repository.GetAllAsync());
+            }
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => Task.WhenAll(tasks));
         }
