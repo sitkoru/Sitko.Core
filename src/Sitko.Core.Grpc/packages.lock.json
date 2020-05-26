@@ -4,27 +4,27 @@
     ".NETStandard,Version=v2.1": {
       "Google.Protobuf": {
         "type": "Direct",
-        "requested": "[3.11.4, )",
-        "resolved": "3.11.4",
-        "contentHash": "dajCxjDCiPyZuqwZCkFJTwhn/0TJ5VesIs4fXvs56ez1VUi68JjhYMMsPjnJ9gcPqJwTMtXMU1WqUdXYiG1x4w==",
+        "requested": "[3.12.1, )",
+        "resolved": "3.12.1",
+        "contentHash": "uzY+/sE+RvbWXPQ/Uh0Fri87+MI9etz8Re1pjIpIxqkrAgQ1JhzQ3A3c00kQzOCHraIQQRjHdAPf7UFYOhV1aw==",
         "dependencies": {
           "System.Memory": "4.5.2"
         }
       },
       "Grpc.Core.Api": {
         "type": "Direct",
-        "requested": "[2.28.1, )",
-        "resolved": "2.28.1",
-        "contentHash": "ho/QAdmZFwxhl0pKVfKuACMHjC/X1/p2r20lv7M58/GD/oU/O8frrzbNjUTg7ZCJoyjHVrF5uW/uVSZVXMjq9w==",
+        "requested": "[2.29.0, )",
+        "resolved": "2.29.0",
+        "contentHash": "0jBIZo2f6KkCPD0vxD8rs4tASTp0lwPcyE8BfxQ/dx39eQ4qAPD/eB7JZNlG9rXrzrYBuU4Etdr4eysYVddqYA==",
         "dependencies": {
           "System.Memory": "4.5.3"
         }
       },
       "Grpc.Tools": {
         "type": "Direct",
-        "requested": "[2.28.1, )",
-        "resolved": "2.28.1",
-        "contentHash": "tqn+J6nZ2B9DqYixfOIQCDFY13IfYhHHO1BPBVjIcLZe6G6Dn66d5fJ7KCO544dnKkvC07mY2nEea5LmHMtK5w=="
+        "requested": "[2.29.0, )",
+        "resolved": "2.29.0",
+        "contentHash": "pAftupednGwyRuldJAXjtsYKHdbhE5IsPI1spdTf193OMq9Fvj5OgEtVCTiTkAN7Ui+dc9X4UeDOaY9imqS79g=="
       },
       "Flurl": {
         "type": "Transitive",
