@@ -47,6 +47,13 @@ namespace Sitko.Core.Search
             return await LoadEntities(result, cancellationToken);
         }
 
+        public async Task<string[]> SearchIdsAsync(string term, int limit,
+            CancellationToken cancellationToken = default)
+        {
+            var result = await _searcher.SearchAsync(IndexName, term, limit, cancellationToken);
+            return result.Select(m => m.Id).ToArray();
+        }
+
         public async Task<T[]> GetSimilarAsync(string id, int limit, CancellationToken cancellationToken = default)
         {
             var result = await _searcher.GetSimilarAsync(IndexName, id, limit, cancellationToken);
