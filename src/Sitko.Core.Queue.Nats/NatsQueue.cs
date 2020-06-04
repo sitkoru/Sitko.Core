@@ -25,6 +25,9 @@ namespace Sitko.Core.Queue.Nats
         private readonly ConcurrentDictionary<Guid, IAsyncSubscription> _natsSubscriptions =
             new ConcurrentDictionary<Guid, IAsyncSubscription>();
 
+        private readonly ConcurrentDictionary<string, Action> _subscribeActions =
+            new ConcurrentDictionary<string, Action>();
+
         private readonly MethodInfo _deserializeBinaryMethod =
             typeof(NatsQueue).GetMethod(nameof(DeserializeBinaryPayload),
                 BindingFlags.NonPublic | BindingFlags.Instance);
@@ -43,7 +46,7 @@ namespace Sitko.Core.Queue.Nats
 
         protected override Task DoStartAsync()
         {
-            _connection = CreateConnection();
+            EnsureConnected();
             return Task.CompletedTask;
         }
 
@@ -68,17 +71,27 @@ namespace Sitko.Core.Queue.Nats
             return GetQueueName(Activator.CreateInstance<T>());
         }
 
-        protected override async Task<QueuePublishResult> DoPublishAsync<T>(T message, QueueMessageContext context)
+        private IStanConnection GetConnection()
         {
             if (_connection == null)
             {
-                throw new Exception("Connection to nats not etablished");
+                throw new Exception("Stan connection is not established");
             }
 
+            if (_connection.NATSConnection.State != ConnState.CONNECTED)
+            {
+                throw new Exception("Stan connection is not connected");
+            }
+
+            return _connection;
+        }
+
+        protected override async Task<QueuePublishResult> DoPublishAsync<T>(T message, QueueMessageContext context)
+        {
             var result = new QueuePublishResult();
             try
             {
-                await _connection.PublishAsync(GetQueueName(message), SerializePayload(message, context));
+                await GetConnection().PublishAsync(GetQueueName(message), SerializePayload(message, context));
             }
             catch (Exception e)
             {
@@ -246,18 +259,19 @@ namespace Sitko.Core.Queue.Nats
 
         protected override Task<QueueSubscribeResult> DoSubscribeAsync<T>(IQueueMessageOptions<T>? options = null)
         {
-            if (_connection == null)
-            {
-                throw new Exception("Connection to nats not established");
-            }
-
             var result = new QueueSubscribeResult();
             var queueName = GetQueueName<T>();
-            if (_stanSubscriptions.ContainsKey(queueName))
+            if (!_stanSubscriptions.ContainsKey(queueName))
             {
-                return Task.FromResult(result);
+                DoSubscribe(queueName, options);
+                _subscribeActions.TryAdd(queueName, () => DoSubscribe(queueName, options));
             }
 
+            return Task.FromResult(result);
+        }
+
+        private void DoSubscribe<T>(string queueName, IQueueMessageOptions<T>? options = null) where T : class
+        {
             var stanOptions = StanSubscriptionOptions.GetDefaultOptions();
             if (!(options is NatsMessageOptions<T> queueOptions))
             {
@@ -302,7 +316,6 @@ namespace Sitko.Core.Queue.Nats
                 stanOptions.DurableName = _config.ConsumerGroupName;
             }
 
-
             var deserializer = GetPayloadDeserializer<T>();
             if (deserializer == null)
             {
@@ -312,14 +325,14 @@ namespace Sitko.Core.Queue.Nats
             IStanSubscription sub;
             if (!string.IsNullOrEmpty(stanOptions.DurableName))
             {
-                sub = _connection.Subscribe(queueName,
+                sub = GetConnection().Subscribe(queueName,
                     _config.ConsumerGroupName, stanOptions,
                     async (sender, args) =>
                         await ProcessStanMessage(deserializer, args.Message, stanOptions.ManualAcks));
             }
             else
             {
-                sub = _connection.Subscribe(queueName, stanOptions,
+                sub = GetConnection().Subscribe(queueName, stanOptions,
                     async (sender, args) =>
                         await ProcessStanMessage(deserializer, args.Message, stanOptions.ManualAcks));
             }
@@ -327,8 +340,6 @@ namespace Sitko.Core.Queue.Nats
             _logger.LogInformation("{QueueName}: Subscribed", queueName);
 
             _stanSubscriptions.TryAdd(queueName, sub);
-
-            return Task.FromResult(result);
         }
 
         private async Task ProcessStanMessage<T>(
@@ -401,6 +412,7 @@ namespace Sitko.Core.Queue.Nats
             if (_stanSubscriptions.TryRemove(queueName, out var stanSubscription))
             {
                 stanSubscription.Unsubscribe();
+                _subscribeActions.Remove(queueName, out _);
             }
 
             return Task.CompletedTask;
@@ -484,10 +496,9 @@ namespace Sitko.Core.Queue.Nats
             return Task.FromResult((status, errorMessage));
         }
 
-        private IStanConnection CreateConnection()
+        private IConnection CreateNatsConnection(string clientId)
         {
             IConnection? natsConn = null;
-            var clientId = $"{_config.ClientName}_{Guid.NewGuid()}";
             try
             {
                 natsConn = GetNatsConnection(clientId);
@@ -510,6 +521,11 @@ namespace Sitko.Core.Queue.Nats
                 throw;
             }
 
+            return natsConn;
+        }
+
+        private IStanConnection CreateConnection(string clientId, IConnection natsConn)
+        {
             if (natsConn.State != ConnState.CONNECTED)
                 throw new Exception("nats conn is not connected");
             try
@@ -517,11 +533,21 @@ namespace Sitko.Core.Queue.Nats
                 var options = StanOptions.GetDefaultOptions();
                 options.NatsConn = natsConn;
                 options.ConnectTimeout = (int)_config.ConnectionTimeout.TotalMilliseconds;
+                options.ConnectionLostEventHandler += (sender, args) =>
+                {
+                    EnsureConnected();
+                };
                 var cf = new StanConnectionFactory();
+
                 var stanConnection = cf.CreateConnection(_config.ClusterName, clientId, options);
                 if (stanConnection.NATSConnection.State == ConnState.CONNECTED)
                 {
                     _natsConn = natsConn;
+                    foreach (var action in _subscribeActions.Values)
+                    {
+                        action();
+                    }
+
                     return stanConnection;
                 }
 
@@ -534,6 +560,35 @@ namespace Sitko.Core.Queue.Nats
                     ex.ToString(), natsConn.LastError?.ToString(), natsConn.LastError?.InnerException?.ToString());
                 throw;
             }
+        }
+
+        private void EnsureConnected()
+        {
+            var clientId = $"{_config.ClientName}_{Guid.NewGuid()}";
+            if (_natsConn != null)
+            {
+                clientId = _natsConn.Opts.Name;
+            }
+            else
+            {
+                _natsConn = CreateNatsConnection(clientId);
+            }
+
+            if (_connection != null)
+            {
+                try
+                {
+                    _connection.Close();
+                    _connection.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, ex.ToString());
+                }
+            }
+
+            _connection = null;
+            _connection = CreateConnection(clientId, _natsConn);
         }
 
         private IConnection GetNatsConnection(string clientId)
