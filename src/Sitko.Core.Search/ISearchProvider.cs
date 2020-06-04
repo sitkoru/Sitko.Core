@@ -12,15 +12,18 @@ namespace Sitko.Core.Search
         Task InitAsync(CancellationToken cancellationToken = default);
     }
 
-    public interface ISearchProvider<T> : ISearchProvider where T : class
+    public interface ISearchProvider<TEntity, TEntityPk> : ISearchProvider where TEntity : class
     {
-        Task<T[]> SearchAsync(string term, int limit, CancellationToken cancellationToken = default);
-        Task<string[]> GetIdsAsync(string term, int limit, CancellationToken cancellationToken = default);
-        Task<T[]> GetSimilarAsync(string id, int limit, CancellationToken cancellationToken = default);
-        Task<string[]> GetSimilarIdsAsync(string id, int limit, CancellationToken cancellationToken = default);
-        Task AddOrUpdateEntityAsync(T entity, CancellationToken cancellationToken = default);
-        Task<bool> AddOrUpdateEntitiesAsync(T[] entities, CancellationToken cancellationToken = default);
-        Task<bool> DeleteEntityAsync(T entity, CancellationToken cancellationToken = default);
-        Task<bool> DeleteEntitiesAsync(T[] entities, CancellationToken cancellationToken = default);
+        Task<TEntity[]> SearchAsync(string term, int limit, CancellationToken cancellationToken = default);
+        Task<TEntityPk[]> GetIdsAsync(string term, int limit, CancellationToken cancellationToken = default);
+        Task<TEntity[]> GetSimilarAsync(string id, int limit, CancellationToken cancellationToken = default);
+
+        Task<TEntityPk[]> GetSimilarIdsAsync(string id, int limit,
+            CancellationToken cancellationToken = default);
+
+        Task AddOrUpdateEntityAsync(TEntity entity, CancellationToken cancellationToken = default);
+        Task<bool> AddOrUpdateEntitiesAsync(TEntity[] entities, CancellationToken cancellationToken = default);
+        Task<bool> DeleteEntityAsync(TEntity entity, CancellationToken cancellationToken = default);
+        Task<bool> DeleteEntitiesAsync(TEntity[] entities, CancellationToken cancellationToken = default);
     }
 }

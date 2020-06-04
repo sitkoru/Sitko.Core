@@ -6,13 +6,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.Search
 {
-    public abstract class BaseSearchProvider<T, TSearchModel> : ISearchProvider<T>
+    public abstract class BaseSearchProvider<T, TEntityPk, TSearchModel> : ISearchProvider<T, TEntityPk>
         where T : class where TSearchModel : BaseSearchModel
     {
         private readonly ISearcher<TSearchModel> _searcher;
-        protected readonly ILogger<BaseSearchProvider<T, TSearchModel>> Logger;
+        protected readonly ILogger<BaseSearchProvider<T, TEntityPk, TSearchModel>> Logger;
 
-        protected BaseSearchProvider(ILogger<BaseSearchProvider<T, TSearchModel>> logger,
+        protected BaseSearchProvider(ILogger<BaseSearchProvider<T, TEntityPk, TSearchModel>> logger,
             ISearcher<TSearchModel>? searcher = null)
         {
             _searcher = searcher ?? throw new Exception($"No searcher for provider {this}");
@@ -47,11 +47,13 @@ namespace Sitko.Core.Search
             return await LoadEntities(result, cancellationToken);
         }
 
-        public async Task<string[]> GetIdsAsync(string term, int limit,
+        protected abstract TEntityPk ParseId(string id);
+
+        public async Task<TEntityPk[]> GetIdsAsync(string term, int limit,
             CancellationToken cancellationToken = default)
         {
             var result = await _searcher.SearchAsync(IndexName, term, limit, cancellationToken);
-            return result.Select(m => m.Id).ToArray();
+            return result.Select(m => ParseId(m.Id)).ToArray();
         }
 
         public async Task<T[]> GetSimilarAsync(string id, int limit, CancellationToken cancellationToken = default)
@@ -60,11 +62,11 @@ namespace Sitko.Core.Search
             return await LoadEntities(result, cancellationToken);
         }
 
-        public async Task<string[]> GetSimilarIdsAsync(string id, int limit,
+        public async Task<TEntityPk[]> GetSimilarIdsAsync(string id, int limit,
             CancellationToken cancellationToken = default)
         {
             var result = await _searcher.GetSimilarAsync(IndexName, id, limit, cancellationToken);
-            return result.Select(m => m.Id).ToArray();
+            return result.Select(m => ParseId(m.Id)).ToArray();
         }
 
         protected virtual async Task<T[]> LoadEntities(TSearchModel[] searchModels,

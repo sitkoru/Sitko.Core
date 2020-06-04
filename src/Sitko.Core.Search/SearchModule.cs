@@ -57,12 +57,13 @@ namespace Sitko.Core.Search
 
     public static class SearchModuleExtensions
     {
-        public static IServiceCollection RegisterSearchProvider<TSearchProvider, TEntity>(
-            this IServiceCollection serviceCollection) where TSearchProvider : class, ISearchProvider<TEntity>
+        public static IServiceCollection RegisterSearchProvider<TSearchProvider, TEntity, TEntityPk>(
+            this IServiceCollection serviceCollection)
+            where TSearchProvider : class, ISearchProvider<TEntity, TEntityPk>
             where TEntity : class
         {
             serviceCollection.AddScoped<TSearchProvider>();
-            serviceCollection.AddScoped<ISearchProvider<TEntity>, TSearchProvider>();
+            serviceCollection.AddScoped<ISearchProvider<TEntity, TEntityPk>, TSearchProvider>();
             return serviceCollection.AddScoped<ISearchProvider, TSearchProvider>();
         }
     }
