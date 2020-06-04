@@ -16,10 +16,10 @@ namespace Sitko.Core.Repository.Search
             _searchProviders = searchProviders;
         }
 
-        private ISearchProvider<T>? GetSearchProvider<T>() where T : class
+        private ISearchProvider<TEntity, TEntityPk>? GetSearchProvider<TEntity, TEntityPk>() where TEntity : class
         {
-            var provider = _searchProviders.FirstOrDefault(s => s.CanProcess(typeof(T)));
-            return provider as ISearchProvider<T>;
+            var provider = _searchProviders.FirstOrDefault(s => s.CanProcess(typeof(TEntity)));
+            return provider as ISearchProvider<TEntity, TEntityPk>;
         }
 
         private ISearchProvider? GetSearchProvider(Type entityType)
@@ -36,7 +36,7 @@ namespace Sitko.Core.Repository.Search
         public override async Task<bool> AfterSaveAsync<TEntity, TEntityPk>(TEntity item, bool isNew,
             PropertyChange[]? changes = null, CancellationToken cancellationToken = default)
         {
-            var provider = GetSearchProvider<TEntity>();
+            var provider = GetSearchProvider<TEntity, TEntityPk>();
             if (provider != null)
             {
                 await provider.AddOrUpdateEntityAsync(item, cancellationToken);

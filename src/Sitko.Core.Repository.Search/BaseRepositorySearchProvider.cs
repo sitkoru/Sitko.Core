@@ -7,13 +7,14 @@ using Sitko.Core.Search;
 namespace Sitko.Core.Repository.Search
 {
     public abstract class
-        BaseRepositorySearchProvider<TEntity, TEntityPk, TSearchModel> : BaseSearchProvider<TEntity, TSearchModel>
+        BaseRepositorySearchProvider<TEntity, TEntityPk, TSearchModel> : BaseSearchProvider<TEntity, TEntityPk,
+            TSearchModel>
         where TSearchModel : BaseSearchModel where TEntity : class, IEntity<TEntityPk>
     {
         private readonly IRepository<TEntity, TEntityPk> _repository;
 
         protected BaseRepositorySearchProvider(
-            ILogger<BaseSearchProvider<TEntity, TSearchModel>> logger,
+            ILogger<BaseSearchProvider<TEntity, TEntityPk, TSearchModel>> logger,
             IRepository<TEntity, TEntityPk> repository,
             ISearcher<TSearchModel>? searcher = null) : base(logger, searcher)
         {
@@ -31,7 +32,5 @@ namespace Sitko.Core.Repository.Search
         {
             return entity.Id!.ToString();
         }
-
-        protected abstract TEntityPk ParseId(string id);
     }
 }

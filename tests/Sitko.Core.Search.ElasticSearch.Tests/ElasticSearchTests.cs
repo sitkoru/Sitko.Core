@@ -22,7 +22,7 @@ namespace Sitko.Core.Search.ElasticSearch.Tests
         {
             var scope = await GetScopeAsync();
             var provider = scope.Get<TestModelProvider>();
-            var searchProvider = scope.Get<ISearchProvider<TestModel>>();
+            var searchProvider = scope.Get<ISearchProvider<TestModel, Guid>>();
             await searchProvider.DeleteIndexAsync();
             await searchProvider.InitAsync();
 
@@ -67,7 +67,7 @@ namespace Sitko.Core.Search.ElasticSearch.Tests
                 .ConfigureServices(collection =>
                 {
                     collection.AddSingleton<TestModelProvider>();
-                    collection.RegisterSearchProvider<TestSearchProvider, TestModel>();
+                    collection.RegisterSearchProvider<TestSearchProvider, TestModel, Guid>();
                 });
         }
     }
@@ -81,15 +81,20 @@ namespace Sitko.Core.Search.ElasticSearch.Tests
         public DateTimeOffset Date { get; set; } = DateTimeOffset.UtcNow;
     }
 
-    public class TestSearchProvider : BaseSearchProvider<TestModel, BaseSearchModel>
+    public class TestSearchProvider : BaseSearchProvider<TestModel, Guid, BaseSearchModel>
     {
         private readonly TestModelProvider _testModelProvider;
 
-        public TestSearchProvider(ILogger<BaseSearchProvider<TestModel, BaseSearchModel>> logger,
+        public TestSearchProvider(ILogger<BaseSearchProvider<TestModel, Guid, BaseSearchModel>> logger,
             TestModelProvider testModelProvider,
             ISearcher<BaseSearchModel>? searcher = null) : base(logger, searcher)
         {
             _testModelProvider = testModelProvider;
+        }
+
+        protected override Guid ParseId(string id)
+        {
+            return Guid.Parse(id);
         }
 
         protected override Task<BaseSearchModel[]> GetSearchModelsAsync(TestModel[] entities,
