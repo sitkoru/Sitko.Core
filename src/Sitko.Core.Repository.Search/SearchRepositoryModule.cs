@@ -17,6 +17,7 @@ namespace Sitko.Core.Repository.Search
         {
             base.ConfigureServices(services, configuration, environment);
             services.AddScoped<IRepositoryFilter, SearchRepositoryFilter>();
+            services.AddScoped<RepositoryIndexer>();
         }
     }
 }
