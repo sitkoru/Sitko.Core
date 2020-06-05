@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Scrutor;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Search
@@ -62,9 +63,7 @@ namespace Sitko.Core.Search
             where TSearchProvider : class, ISearchProvider<TEntity, TEntityPk>
             where TEntity : class
         {
-            serviceCollection.AddScoped<TSearchProvider>();
-            serviceCollection.AddScoped<ISearchProvider<TEntity, TEntityPk>, TSearchProvider>();
-            return serviceCollection.AddScoped<ISearchProvider, TSearchProvider>();
+            return serviceCollection.Scan(a => a.AddType<TSearchProvider>().AsSelfWithInterfaces());
         }
     }
 

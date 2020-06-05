@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Repository\Sitko.Core.Repository.csproj"/>
-    <ProjectReference Include="..\Sitko.Core.Search\Sitko.Core.Search.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.Repository\Sitko.Core.Repository.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Search\Sitko.Core.Search.csproj" />
   </ItemGroup>
 </Project>
