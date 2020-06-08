@@ -7,6 +7,7 @@ on:
 jobs:
     build:
         runs-on: self-hosted
+        container: docker.pkg.github.com/sitkoru/github-runner/runner:latest
         env:
             VERSION: 3.1.${{ github.run_id }}
             POSTGRES_HOST: localhost
@@ -17,32 +18,33 @@ jobs:
             MINIO_SECRET_KEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
             QUEUE_NATS_HOST: localhost
             SONYFLAKE_URI: http://localhost:8081
+        services:
+            nats:
+                image: nats-streaming:latest
+            sonyflake:
+                image: titpetric/sonyflake
+            minio:
+                image: bitnami/minio:latest
+            postgres:
+                image: postgres:alpine
         steps:
             -   uses: actions/checkout@v2
             -   name: Restore
                 run: dotnet restore --locked-mode
-            -   name: Run containers
-                run: |
-                    docker run -d --rm -p 5432:5432 --name postgres_${{ github.run_id }} postgres:alpine
-                    docker run -d --rm -p 9000:9000 --name minio_${{ github.run_id }} minio/minio:latest server /data
-                    docker run -d --rm -p 8081:80 --name sonyflake_${{ github.run_id }} titpetric/sonyflake
-                    docker run -d --rm -p 4222:4222 --name nats_${{ github.run_id }} nats-streaming:latest -cid tests
             -   name: Tests Sitko.Core.Queue
-                run: dotnet test --no-restore /p:Version=$VERSION $(pwd)/tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
+                run: dotnet test --no-restore $(pwd)/tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
             -   name: Sitko.Core.Queue.Nats
-                run: dotnet test --no-restore /p:Version=$VERSION $(pwd)/tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj
+                run: dotnet test --no-restore $(pwd)/tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj
             -   name: Sitko.Core.Queue.InMemory
-                run: dotnet test --no-restore /p:Version=$VERSION $(pwd)/tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj
+                run: dotnet test --no-restore $(pwd)/tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj
             -   name: Sitko.Core.Queue.Repository
-                run: dotnet test --no-restore /p:Version=$VERSION $(pwd)/tests/Sitko.Core.Repository.Tests/Sitko.Core.Repository.Tests.csproj
+                run: dotnet test --no-restore $(pwd)/tests/Sitko.Core.Repository.Tests/Sitko.Core.Repository.Tests.csproj
             -   name: Sitko.Core.Queue.Sony
-                run: dotnet test --no-restore /p:Version=$VERSION $(pwd)/tests/Sitko.Core.SonyFlake.Tests/Sitko.Core.SonyFlake.Tests.csproj
+                run: dotnet test --no-restore $(pwd)/tests/Sitko.Core.SonyFlake.Tests/Sitko.Core.SonyFlake.Tests.csproj
             -   name: Sitko.Core.Queue.Storage.FileSystem
-                run: dotnet test --no-restore /p:Version=$VERSION $(pwd)/tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
+                run: dotnet test --no-restore $(pwd)/tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
             -   name: Sitko.Core.Queue.Storage.S3
-                run: dotnet test --no-restore /p:Version=$VERSION $(pwd)/tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
-            -   name: Stop containers
-                run: docker stop postgres_${{ github.run_id }} minio_${{ github.run_id }} sonyflake_${{ github.run_id }} nats_${{ github.run_id }}
+                run: dotnet test --no-restore $(pwd)/tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
             -   name: Create packages
                 run: dotnet pack --no-restore -c Release /p:Version=$VERSION -o $(pwd)/nugets
             -   name: Create php packages
