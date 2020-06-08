@@ -9,15 +9,15 @@ jobs:
         runs-on: self-hosted
         container: docker.pkg.github.com/sitkoru/github-runner/runner:latest
         env:
-            VERSION: 3.1.${{ github.run_id }}
-            POSTGRES_HOST: localhost
+            VERSION: 3.2.0.${{ github.run_id }}
+            POSTGRES_HOST: postgres
             POSTGRES_HOST_AUTH_METHOD: trust
             XUNIT_USE_POSTGRES: "true"
-            MINIO_SERVER_URI: http://localhost:9000
+            MINIO_SERVER_URI: http://minio:9000
             MINIO_ACCESS_KEY: ptTYf7VkCVbUjAzn
             MINIO_SECRET_KEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
-            QUEUE_NATS_HOST: localhost
-            SONYFLAKE_URI: http://localhost:8081
+            QUEUE_NATS_HOST: nats
+            SONYFLAKE_URI: http://sonyflake
         services:
             nats:
                 image: nats-streaming:latest
