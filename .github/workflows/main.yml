@@ -16,6 +16,7 @@ jobs:
             MINIO_ACCESS_KEY: ptTYf7VkCVbUjAzn
             MINIO_SECRET_KEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
             QUEUE_NATS_HOST: nats
+            QUEUE_NATS_CLUSTER_NAME: test-cluster
             SONYFLAKE_URI: http://sonyflake
         services:
             nats:
