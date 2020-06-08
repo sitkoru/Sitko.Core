@@ -7,10 +7,10 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Email\Sitko.Core.Email.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.Email\Sitko.Core.Email.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentEmail.Mailgun" Version="2.7.0"/>
+    <PackageReference Include="FluentEmail.Mailgun" Version="2.8.0" />
   </ItemGroup>
 
 </Project>

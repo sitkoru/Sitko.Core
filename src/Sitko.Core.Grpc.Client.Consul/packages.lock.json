@@ -60,8 +60,8 @@
       },
       "Google.Protobuf": {
         "type": "Transitive",
-        "resolved": "3.12.1",
-        "contentHash": "uzY+/sE+RvbWXPQ/Uh0Fri87+MI9etz8Re1pjIpIxqkrAgQ1JhzQ3A3c00kQzOCHraIQQRjHdAPf7UFYOhV1aw==",
+        "resolved": "3.12.3",
+        "contentHash": "k+Dj0bdOy6/xhIZOthvDS2Ux9y5q6dWw+36n3SBVHYl520+tvcqLOpx6YsgQVy12cuzZbF+r73RZ0fxmpJ8c6A==",
         "dependencies": {
           "System.Memory": "4.5.2"
         }
@@ -76,31 +76,31 @@
       },
       "Grpc.Net.Client": {
         "type": "Transitive",
-        "resolved": "2.28.0",
-        "contentHash": "HtcnNJS6XQlkFQWOCC66x2QlfPLSeVFM4o0bIXn6xs9hogBJzgqY5jaoda6ZqdHvnQHBYK0rP6SNTj9hALn38A==",
+        "resolved": "2.29.0",
+        "contentHash": "uxMV3TMWyd60zJaqWeGCQCybSihplR+JyNGuzny9qyKTCGkcB0U4vPe8O6CJMG8GQyKevu103xsURWF/XNVrBg==",
         "dependencies": {
-          "Grpc.Core.Api": "2.27.0",
-          "Grpc.Net.Common": "2.28.0",
+          "Grpc.Core.Api": "2.29.0",
+          "Grpc.Net.Common": "2.29.0",
           "Microsoft.Extensions.Logging.Abstractions": "2.1.1",
           "System.Diagnostics.DiagnosticSource": "4.5.1"
         }
       },
       "Grpc.Net.ClientFactory": {
         "type": "Transitive",
-        "resolved": "2.28.0",
-        "contentHash": "+DmjJk+RN8S8D3su9iUqnylAf8yznCwCp1s/8wpLwJBb+PpKBn8+dWe6cS4yTyclIY5JU8OEZfxtXar3dinDdQ==",
+        "resolved": "2.29.0",
+        "contentHash": "lkgs+7OGwfY9ypq3zsDWwXzaat/Gj69LxmQww9F9oiEKdNCPMSQ/1HGQZiD0aaevPSsJBnxGri10j803Zqo3xg==",
         "dependencies": {
-          "Grpc.Core.Api": "2.27.0",
-          "Grpc.Net.Client": "2.28.0",
+          "Grpc.Core.Api": "2.29.0",
+          "Grpc.Net.Client": "2.29.0",
           "Microsoft.Extensions.Http": "2.1.1"
         }
       },
       "Grpc.Net.Common": {
         "type": "Transitive",
-        "resolved": "2.28.0",
-        "contentHash": "utqtswCYVTwY4IcLTC0LeY2Q01L9WB0nKUj9pRQXXnGnvcpvCCWPKcspV04+59rjCROovOXlqW0ypwKXapAGxQ==",
+        "resolved": "2.29.0",
+        "contentHash": "7Jxd1HFG2fzK2Q8Kf33/G79weBFto4pBerYU+NWV93cUr5W6WI1cne/9D3t9fFs0fgaboX8pUzVvfoGL39GVqw==",
         "dependencies": {
-          "Grpc.Core.Api": "2.27.0"
+          "Grpc.Core.Api": "2.29.0"
         }
       },
       "Grpc.Tools": {
@@ -664,8 +664,8 @@
       },
       "Serilog.Exceptions": {
         "type": "Transitive",
-        "resolved": "5.4.0",
-        "contentHash": "lvj5k8XkjKhn4A9llOwPwVL5n42OpWGtsoLY4dOwTJg98NxFxQn1jSWOnTeHJtW1JUzXXRvG3JHSwoETZll5KA==",
+        "resolved": "5.5.0",
+        "contentHash": "kZ2a2BSFEOPageZY7XKuKAHLYXAV5V/9QX3+gjMo0ePrvYjwF7FA+FvKEKMRFy9u3QBuh/wf11ekaMfqz6csoQ==",
         "dependencies": {
           "Serilog": "2.8.0",
           "System.Reflection.TypeExtensions": "4.7.0"
@@ -1545,7 +1545,7 @@
           "Microsoft.Extensions.Http": "3.1.4",
           "Microsoft.Extensions.Logging": "3.1.4",
           "Scrutor": "3.2.1",
-          "Serilog.Exceptions": "5.4.0",
+          "Serilog.Exceptions": "5.5.0",
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Sinks.Console": "3.1.1"
         }
@@ -1561,7 +1561,7 @@
       "sitko.core.grpc": {
         "type": "Project",
         "dependencies": {
-          "Google.Protobuf": "3.12.1",
+          "Google.Protobuf": "3.12.3",
           "Grpc.Core.Api": "2.29.0",
           "Grpc.Tools": "2.29.0",
           "Sitko.Core.App": "1.0.0"
@@ -1570,8 +1570,8 @@
       "sitko.core.grpc.client": {
         "type": "Project",
         "dependencies": {
-          "Grpc.Net.Client": "2.28.0",
-          "Grpc.Net.ClientFactory": "2.28.0",
+          "Grpc.Net.Client": "2.29.0",
+          "Grpc.Net.ClientFactory": "2.29.0",
           "Sitko.Core.Grpc": "1.0.0"
         }
       }

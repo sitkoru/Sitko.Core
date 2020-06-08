@@ -103,9 +103,9 @@
       },
       "Serilog.Exceptions": {
         "type": "Direct",
-        "requested": "[5.4.0, )",
-        "resolved": "5.4.0",
-        "contentHash": "lvj5k8XkjKhn4A9llOwPwVL5n42OpWGtsoLY4dOwTJg98NxFxQn1jSWOnTeHJtW1JUzXXRvG3JHSwoETZll5KA==",
+        "requested": "[5.5.0, )",
+        "resolved": "5.5.0",
+        "contentHash": "kZ2a2BSFEOPageZY7XKuKAHLYXAV5V/9QX3+gjMo0ePrvYjwF7FA+FvKEKMRFy9u3QBuh/wf11ekaMfqz6csoQ==",
         "dependencies": {
           "Serilog": "2.8.0",
           "System.Reflection.TypeExtensions": "4.7.0"

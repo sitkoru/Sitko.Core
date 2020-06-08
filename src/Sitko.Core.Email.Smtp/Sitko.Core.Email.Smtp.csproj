@@ -10,7 +10,7 @@
     <ProjectReference Include="..\Sitko.Core.Email\Sitko.Core.Email.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MailKit" Version="2.6.0" />
+    <PackageReference Include="MailKit" Version="2.7.0" />
   </ItemGroup>
 
 </Project>

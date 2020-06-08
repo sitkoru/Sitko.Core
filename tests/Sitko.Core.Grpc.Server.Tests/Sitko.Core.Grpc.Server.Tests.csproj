@@ -10,7 +10,7 @@
     <PackageReference Include="Grpc.Tools" Version="2.29.0" PrivateAssets="None" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.1.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.2" />
     <ProjectReference Include="..\..\src\Sitko.Core.Grpc.Server\Sitko.Core.Grpc.Server.csproj" />
     <ProjectReference Include="..\..\src\Sitko.Core.Xunit\Sitko.Core.Xunit.csproj" />
     <Protobuf Include="**/*.proto" GrpcServices="Both" AdditionalImportDirs="..\..\src\Sitko.Core.Grpc\Proto" />

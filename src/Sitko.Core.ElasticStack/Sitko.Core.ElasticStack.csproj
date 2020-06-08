@@ -9,8 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="Elastic.Apm.NetCoreAll" Version="1.5.1" />
-    <PackageReference Include="Elastic.Apm.SerilogEnricher" Version="1.5.0" />
-    <PackageReference Include="Elastic.CommonSchema.Serilog" Version="1.5.0" />
+    <PackageReference Include="Elastic.Apm.SerilogEnricher" Version="1.5.1" />
+    <PackageReference Include="Elastic.CommonSchema.Serilog" Version="1.5.1" />
     <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="8.1.0" />
   </ItemGroup>
 
