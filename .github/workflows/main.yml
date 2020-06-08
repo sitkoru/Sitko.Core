@@ -9,7 +9,7 @@ jobs:
         runs-on: self-hosted
         container: docker.pkg.github.com/sitkoru/github-runner/runner:latest
         env:
-            APP_VERSION: 3.2.0.${{ github.run_id }}
+            APP_VERSION: 3.2.0-ci.${{ github.run_id }}
             POSTGRES_HOST: postgres
             XUNIT_USE_POSTGRES: "true"
             MINIO_SERVER_URI: http://minio:9000
