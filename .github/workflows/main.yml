@@ -11,7 +11,6 @@ jobs:
         env:
             APP_VERSION: 3.2.0.${{ github.run_id }}
             POSTGRES_HOST: postgres
-            POSTGRES_HOST_AUTH_METHOD: trust
             XUNIT_USE_POSTGRES: "true"
             MINIO_SERVER_URI: http://minio:9000
             MINIO_ACCESS_KEY: ptTYf7VkCVbUjAzn
@@ -27,6 +26,8 @@ jobs:
                 image: bitnami/minio:latest
             postgres:
                 image: postgres:alpine
+                env:
+                    POSTGRES_HOST_AUTH_METHOD: trust
         steps:
             -   uses: actions/checkout@v2
             -   name: Restore
