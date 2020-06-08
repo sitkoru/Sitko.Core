@@ -9,7 +9,7 @@ jobs:
         runs-on: self-hosted
         container: docker.pkg.github.com/sitkoru/github-runner/runner:latest
         env:
-            VERSION: 3.2.0.${{ github.run_id }}
+            APP_VERSION: 3.2.0.${{ github.run_id }}
             POSTGRES_HOST: postgres
             POSTGRES_HOST_AUTH_METHOD: trust
             XUNIT_USE_POSTGRES: "true"
@@ -46,7 +46,7 @@ jobs:
             -   name: Sitko.Core.Queue.Storage.S3
                 run: dotnet test --no-restore $(pwd)/tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
             -   name: Create packages
-                run: dotnet pack --no-restore -c Release /p:Version=$VERSION -o $(pwd)/nugets
+                run: dotnet pack --no-restore -c Release /p:Version=$APP_VERSION -o $(pwd)/nugets
             -   name: Create php packages
                 run: |
                     mkdir -p Composer/Core
