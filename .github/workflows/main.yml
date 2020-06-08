@@ -25,6 +25,9 @@ jobs:
                 image: titpetric/sonyflake
             minio:
                 image: bitnami/minio:latest
+                env:
+                    MINIO_ACCESS_KEY: ptTYf7VkCVbUjAzn
+                    MINIO_SECRET_KEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
             postgres:
                 image: postgres:alpine
                 env:
