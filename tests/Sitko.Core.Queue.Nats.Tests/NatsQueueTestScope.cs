@@ -24,13 +24,19 @@ namespace Sitko.Core.Queue.Nats.Tests
                 config.ClusterName = "tests";
             }
 
+            var port = 4222;
             if (!string.IsNullOrEmpty(configuration["QUEUE_NATS_HOST"]))
             {
-                config.AddServer(configuration["QUEUE_NATS_HOST"], Convert.ToInt32(configuration["QUEUE_NATS_PORT"]));
+                if (!string.IsNullOrEmpty(configuration["QUEUE_NATS_PORT"]))
+                {
+                    port = int.Parse(configuration["QUEUE_NATS_PORT"]);
+                }
+
+                config.AddServer(configuration["QUEUE_NATS_HOST"], port);
             }
             else
             {
-                config.AddServer("127.0.0.1", 4222);
+                config.AddServer("127.0.0.1", port);
             }
 
             config.Verbose = true;
