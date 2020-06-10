@@ -31,14 +31,14 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 return await operation(_dbContext);
             }
 
-            await _lock.Lock.WaitAsync(cancellationToken);
+            await _lock.WaitAsync(cancellationToken);
             try
             {
                 return await operation(_dbContext);
             }
             finally
             {
-                _lock.Lock.Release();
+                _lock.Release();
             }
         }
 
@@ -51,14 +51,14 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 return;
             }
 
-            await _lock.Lock.WaitAsync(cancellationToken);
+            await _lock.WaitAsync(cancellationToken);
             try
             {
                 await operation(_dbContext);
             }
             finally
             {
-                _lock.Lock.Release();
+                _lock.Release();
             }
         }
 
@@ -71,14 +71,14 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 return await operation();
             }
 
-            await _lock.Lock.WaitAsync(cancellationToken);
+            await _lock.WaitAsync(cancellationToken);
             try
             {
                 return await operation();
             }
             finally
             {
-                _lock.Lock.Release();
+                _lock.Release();
             }
         }
 
@@ -91,14 +91,14 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 return;
             }
 
-            await _lock.Lock.WaitAsync(cancellationToken);
+            await _lock.WaitAsync(cancellationToken);
             try
             {
                 await operation();
             }
             finally
             {
-                _lock.Lock.Release();
+                _lock.Release();
             }
         }
 
@@ -110,14 +110,14 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 return operation(_dbContext);
             }
 
-            _lock.Lock.Wait(cancellationToken);
+            _lock.Wait(cancellationToken);
             try
             {
                 return operation(_dbContext);
             }
             finally
             {
-                _lock.Lock.Release();
+                _lock.Release();
             }
         }
 
@@ -130,14 +130,14 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 return;
             }
 
-            _lock.Lock.Wait(cancellationToken);
+            _lock.Wait(cancellationToken);
             try
             {
                 operation(_dbContext);
             }
             finally
             {
-                _lock.Lock.Release();
+                _lock.Release();
             }
         }
 
