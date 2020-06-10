@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -198,12 +199,37 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         public override PropertyChange[] GetChanges(TEntity item, TEntity oldEntity)
         {
-            return ExecuteDbContextOperation(dbContext => dbContext
-                .Entry(item)
-                .Properties
-                .Where(p => p.IsModified)
-                .Select(p => new PropertyChange(p.Metadata.Name, p.OriginalValue, p.CurrentValue))
-                .ToArray());
+            return ExecuteDbContextOperation(dbContext =>
+            {
+                var entry = dbContext.Entry(item);
+                var entityChanges = entry
+                    .Properties
+                    .Where(p => p.IsModified)
+                    .Select(p => new PropertyChange(p.Metadata.Name, p.OriginalValue, p.CurrentValue))
+                    .ToList();
+                if (!entityChanges.Any() && dbContext.ChangeTracker.HasChanges())
+                {
+                    foreach (var collection in entry.Collections)
+                    {
+                        if (collection.CurrentValue.Cast<object>().Any(collectionEntry =>
+                            dbContext.Entry(collectionEntry).State == EntityState.Modified))
+                        {
+                            entityChanges.Add(new PropertyChange(collection.Metadata.Name, collection, collection));
+                        }
+                    }
+
+                    foreach (var reference in entry.References)
+                    {
+                        if (reference.IsModified)
+                        {
+                            entityChanges.Add(new PropertyChange(reference.Metadata.Name, reference.CurrentValue,
+                                reference.CurrentValue));
+                        }
+                    }
+                }
+
+                return entityChanges.ToArray();
+            });
         }
 
         public DbSet<T> Set<T>() where T : class
