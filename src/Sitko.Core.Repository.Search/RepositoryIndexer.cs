@@ -10,10 +10,10 @@ namespace Sitko.Core.Repository.Search
     public class RepositoryIndexer
     {
         private readonly ILogger<RepositoryIndexer> _logger;
-        private readonly List<IRepositorySearchProvider>? _repositorySearchProviders;
+        private readonly IEnumerable<IRepositorySearchProvider>? _repositorySearchProviders;
 
         public RepositoryIndexer(ILogger<RepositoryIndexer> logger,
-            List<IRepositorySearchProvider>? repositorySearchProviders = null)
+            IEnumerable<IRepositorySearchProvider>? repositorySearchProviders = null)
         {
             _logger = logger;
             _repositorySearchProviders = repositorySearchProviders;
