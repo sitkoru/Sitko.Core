@@ -232,7 +232,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         protected IQueryable<TEntity> GetBaseQuery()
         {
-            return ExecuteDbContextOperation(dbContext => dbContext.Set<TEntity>().AsQueryable());
+            return _dbContext.Set<TEntity>().AsQueryable();
         }
 
         protected virtual IQueryable<TEntity> AddIncludes(IQueryable<TEntity> query)
