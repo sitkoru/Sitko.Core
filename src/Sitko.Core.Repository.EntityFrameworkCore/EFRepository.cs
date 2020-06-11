@@ -233,7 +233,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         public DbSet<T> Set<T>() where T : class
         {
-            return ExecuteDbContextOperation(dbContext => dbContext.Set<T>());
+            return _dbContext.Set<T>();
         }
 
         protected override Task<TEntity> GetOldItemAsync(TEntityPk id, CancellationToken cancellationToken = default)
