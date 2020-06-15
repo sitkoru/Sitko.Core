@@ -52,7 +52,7 @@ namespace Sitko.Core.Queue.Nats
 
         private string GetQueueName<T>(T message) where T : class
         {
-            string queueName = typeof(T).FullName;
+            string queueName = message.GetType().FullName;
             if (message is IMessage protoMessage)
             {
                 queueName = protoMessage.Descriptor.FullName;
@@ -95,7 +95,7 @@ namespace Sitko.Core.Queue.Nats
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error publishing message {MessageType} to Nats: {ErrorText}", typeof(T),
+                _logger.LogError(e, "Error publishing message {MessageType} to Nats: {ErrorText}", message.GetType(),
                     e.ToString());
                 result.SetException(e);
             }
