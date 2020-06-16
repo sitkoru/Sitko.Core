@@ -14,7 +14,6 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
     {
         private readonly TDbContext _dbContext;
         private readonly EFRepositoryLock? _lock;
-        private IDbContextTransaction? _transaction;
 
         protected EFRepository(EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext) : base(
             repositoryContext)
@@ -270,14 +269,14 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         public override async Task<bool> BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
-            if (_transaction != null)
+            if (GetCurrentTransaction() != null)
             {
                 return true;
             }
 
             try
             {
-                _transaction = await ExecuteDbContextOperationAsync(async dbContext =>
+                await ExecuteDbContextOperationAsync(async dbContext =>
                     dbContext.Database.CurrentTransaction ??
                     await dbContext.Database
                         .BeginTransactionAsync(
@@ -293,19 +292,25 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return true;
         }
 
+        private IDbContextTransaction? GetCurrentTransaction()
+        {
+            return _dbContext.Database.CurrentTransaction;
+        }
+
         public override async Task<bool> CommitTransactionAsync(CancellationToken cancellationToken = default)
         {
-            if (_transaction != null)
+            var transaction = GetCurrentTransaction();
+            if (transaction != null)
             {
                 try
                 {
-                    await _transaction.CommitAsync(cancellationToken);
+                    await transaction.CommitAsync(cancellationToken);
                     return true;
                 }
                 catch (Exception ex)
                 {
                     Logger.LogError(ex, "Error while commiting transaction {Id} in {Repository}: {ErrorText}",
-                        _transaction.TransactionId, GetType(),
+                        transaction.TransactionId, GetType(),
                         ex.ToString());
                     return false;
                 }
@@ -316,17 +321,18 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         public override async Task<bool> RollbackTransactionAsync(CancellationToken cancellationToken = default)
         {
-            if (_transaction != null)
+            var transaction = GetCurrentTransaction();
+            if (transaction != null)
             {
                 try
                 {
-                    await _transaction.RollbackAsync(cancellationToken);
+                    await transaction.RollbackAsync(cancellationToken);
                     return true;
                 }
                 catch (Exception ex)
                 {
                     Logger.LogError(ex, "Error while rollback transaction {Id} in {Repository}: {ErrorText}",
-                        _transaction.TransactionId, GetType(),
+                        transaction.TransactionId, GetType(),
                         ex.ToString());
                     return false;
                 }
