@@ -25,6 +25,30 @@ namespace Sitko.Core.Repository.Tests
         }
 
         [Fact]
+        public async Task Update()
+        {
+            var scope = await GetScopeAsync<EFTestScopeThreadSafe>();
+
+            var repository = scope.Get<IRepository<TestModel, Guid>>();
+
+            var item = await repository.GetAsync();
+
+            Assert.NotNull(item);
+            var oldValue = item.Status;
+            item.Status = TestStatus.Disabled;
+
+            var result = await repository.UpdateAsync(item);
+            Assert.True(result.IsSuccess);
+            Assert.Empty(result.Errors);
+            Assert.NotEmpty(result.Changes);
+            Assert.NotEmpty(result.Changes.Where(c => c.Name == nameof(item.Status)));
+            var change = result.Changes.First(c => c.Name == nameof(item.Status));
+            Assert.Equal(oldValue, change.OriginalValue);
+            Assert.Equal(item.Status, change.CurrentValue);
+        }
+
+
+        [Fact]
         public async Task JsonConditions()
         {
             var json = "[{\"conditions\":[{\"property\":\"fooId\",\"operator\":1,\"value\":1}]}]";
@@ -162,8 +186,15 @@ namespace Sitko.Core.Repository.Tests
     {
         public int FooId { get; set; }
 
+        public TestStatus Status { get; set; } = TestStatus.Enabled;
+
         [InverseProperty(nameof(BarModel.Test))]
         public List<BarModel> Bars { get; set; }
+    }
+
+    public enum TestStatus
+    {
+        Enabled, Disabled
     }
 
     public class BarModel : Entity<Guid>
