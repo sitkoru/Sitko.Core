@@ -33,15 +33,15 @@ namespace Sitko.Core.Db.Postgres
             where TEntity : class where TData : new()
         {
             var valueComparer = new ValueComparer<TData>(
-                (c1, c2) => c1.Equals(c2),
-                c => c.GetHashCode(),
-                c => Deserialize<TData>(Serialize(c)));
+                (c1, c2) => c1!.Equals(c2),
+                c => c!.GetHashCode(),
+                c => Deserialize<TData>(Serialize(c!)));
             modelBuilder
                 .Entity<TEntity>()
                 .Property(getProperty)
                 .HasColumnType("jsonb")
                 .HasColumnName(name)
-                .HasConversion(blocks => Serialize(blocks),
+                .HasConversion(data => Serialize(data!),
                     json => Deserialize<TData>(json) ?? new TData())
                 .Metadata.SetValueComparer(valueComparer);
         }
@@ -52,14 +52,14 @@ namespace Sitko.Core.Db.Postgres
         {
             var valueComparer = new ValueComparer<ICollection<TData>>(
                 (c1, c2) => c1.SequenceEqual(c2),
-                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v!.GetHashCode())),
                 c => Deserialize<ICollection<TData>>(Serialize(c)));
             modelBuilder
                 .Entity<TEntity>()
                 .Property(getProperty)
                 .HasColumnType("jsonb")
                 .HasColumnName(name)
-                .HasConversion(blocks => Serialize(blocks),
+                .HasConversion(data => Serialize(data),
                     json => Deserialize<ICollection<TData>>(json) ?? new List<TData>())
                 .Metadata.SetValueComparer(valueComparer);
         }
