@@ -78,6 +78,11 @@ namespace Sitko.Core.Queue.Nats
                 throw new Exception("Stan connection is not established");
             }
 
+            if (_connection.NATSConnection == null)
+            {
+                throw new Exception("Nats connection is null");
+            }
+
             if (_connection.NATSConnection.State != ConnState.CONNECTED)
             {
                 throw new Exception("Stan connection is not connected");
@@ -535,6 +540,7 @@ namespace Sitko.Core.Queue.Nats
                 options.ConnectTimeout = (int)_config.ConnectionTimeout.TotalMilliseconds;
                 options.ConnectionLostEventHandler += (sender, args) =>
                 {
+                    _logger.LogError("Stan connection is broken");
                     EnsureConnected();
                 };
                 var cf = new StanConnectionFactory();
@@ -619,6 +625,7 @@ namespace Sitko.Core.Queue.Nats
                 (sender, args) =>
                 {
                     _logger.LogInformation("NATS connection reconnected: {Conn}", args.Conn);
+                    EnsureConnected();
                 };
             if (_config.Servers.Any())
             {
