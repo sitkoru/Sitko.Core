@@ -1,4 +1,3 @@
-using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -20,13 +19,6 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             services.AddScoped(typeof(EFRepositoryContext<,,>));
             if (Config.EnableThreadSafeOperations)
             {
-                var options = new EFRepositoryLockOptions();
-                if (Config.ThreadSafeLockTimeout != null)
-                {
-                    options.Timeout = Config.ThreadSafeLockTimeout.Value;
-                }
-
-                services.AddSingleton(options);
                 services.AddScoped<EFRepositoryLock>();
             }
 
@@ -39,6 +31,5 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
     public class EFRepositoriesModuleConfig
     {
         public bool EnableThreadSafeOperations { get; set; }
-        public TimeSpan? ThreadSafeLockTimeout { get; set; }
     }
 }

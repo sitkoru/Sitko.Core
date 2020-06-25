@@ -1,19 +1,11 @@
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 using Nito.AsyncEx;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore
 {
     public class EFRepositoryLock
     {
-        private readonly EFRepositoryLockOptions _options;
-
-        public EFRepositoryLock(EFRepositoryLockOptions options)
-        {
-            _options = options;
-        }
-
         private readonly AsyncLock _mutex = new AsyncLock();
 
         public AwaitableDisposable<IDisposable> WaitAsync(CancellationToken cancellationToken, TimeSpan? timeout = null)
@@ -25,10 +17,5 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         {
             return _mutex.Lock(cancellationToken);
         }
-    }
-
-    public class EFRepositoryLockOptions
-    {
-        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(1);
     }
 }
