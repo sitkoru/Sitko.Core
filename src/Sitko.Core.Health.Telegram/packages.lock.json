@@ -4,9 +4,9 @@
     ".NETStandard,Version=v2.1": {
       "Telegram.Bot": {
         "type": "Direct",
-        "requested": "[15.6.0, )",
-        "resolved": "15.6.0",
-        "contentHash": "pS3nf0GVRnJAsdWJXp1pgXEDyYqotOZf5NUHxGNnmLKTQyJ1cUD1c54n8AKiXz4R2omIbyERRYZuBHJ2GbpqSw==",
+        "requested": "[15.7.1, )",
+        "resolved": "15.7.1",
+        "contentHash": "jIznYng1gO+F5XJBv1hZRKdL11BsixBrNY53gwjBAXbF17rYVlbMSJum4x1DPqc4RqxhgWBt6g6qifa9XEXOwg==",
         "dependencies": {
           "NETStandard.Library": "1.6.1",
           "Newtonsoft.Json": "11.0.2",

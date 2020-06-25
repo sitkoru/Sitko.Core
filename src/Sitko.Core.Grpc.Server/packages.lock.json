@@ -87,8 +87,8 @@
       },
       "Grpc.Core.Api": {
         "type": "Transitive",
-        "resolved": "2.29.0",
-        "contentHash": "0jBIZo2f6KkCPD0vxD8rs4tASTp0lwPcyE8BfxQ/dx39eQ4qAPD/eB7JZNlG9rXrzrYBuU4Etdr4eysYVddqYA==",
+        "resolved": "2.30.0",
+        "contentHash": "olr6WVb/aNp/2cAKhHl/b5IGTDjc0lCnT2tk/IY43wHix3+NIrF9gQr4tgXVbt7wDbf55+xDE/yicqa6ao/l2Q==",
         "dependencies": {
           "System.Memory": "4.5.3"
         }
@@ -133,8 +133,8 @@
       },
       "Grpc.Tools": {
         "type": "Transitive",
-        "resolved": "2.29.0",
-        "contentHash": "pAftupednGwyRuldJAXjtsYKHdbhE5IsPI1spdTf193OMq9Fvj5OgEtVCTiTkAN7Ui+dc9X4UeDOaY9imqS79g=="
+        "resolved": "2.30.0",
+        "contentHash": "ObXaZFLTH8Bhzy2Qu0OeLiAT7y0l1MVGzdMiRUGaeBMixtKTozVYdRMX2jozikt7H3ZsAadBnaelKba3sdJlKQ=="
       },
       "JetBrains.Annotations": {
         "type": "Transitive",
@@ -993,8 +993,8 @@
         "type": "Project",
         "dependencies": {
           "Google.Protobuf": "3.12.3",
-          "Grpc.Core.Api": "2.29.0",
-          "Grpc.Tools": "2.29.0",
+          "Grpc.Core.Api": "2.30.0",
+          "Grpc.Tools": "2.30.0",
           "Sitko.Core.App": "1.0.0"
         }
       }

@@ -4,17 +4,17 @@
     ".NETStandard,Version=v2.1": {
       "NEST": {
         "type": "Direct",
-        "requested": "[7.7.1, )",
-        "resolved": "7.7.1",
-        "contentHash": "JuzFiNEhOuJFS+5+nw5FUqt5IQPWHVfzxAcmZJPm9do2yd3jKXzr7dQrB7UiCGIB6DMqqXFt/23rxbYzjuxhYw==",
+        "requested": "[7.8.0, )",
+        "resolved": "7.8.0",
+        "contentHash": "QlGPCv1YT2cNqMh8iPQKrFMvHOyWgvd00eN7oq6krIoSW8LPJHOTdFDCxosjqpEnsf7cckOEXh/F1GVvUyhK3A==",
         "dependencies": {
-          "Elasticsearch.Net": "7.7.1"
+          "Elasticsearch.Net": "7.8.0"
         }
       },
       "Elasticsearch.Net": {
         "type": "Transitive",
-        "resolved": "7.7.1",
-        "contentHash": "h42d/SEgLm1ZqZ0feh8hVm7L4z/z2hr8Uzf2iPlHFqAVGO5CbGvqFiiuWEsoOlhigmpNTESgWQrXie+RUS4/Ag==",
+        "resolved": "7.8.0",
+        "contentHash": "QHiL8hLdb07M6gU2Ld4k8u/nTgiTj5WJHBGdvfRRkn8KrpsN2xNgukje49hXs886B9EOx129ou3hw6d6axwA9Q==",
         "dependencies": {
           "Microsoft.CSharp": "4.6.0",
           "System.Buffers": "4.5.0",

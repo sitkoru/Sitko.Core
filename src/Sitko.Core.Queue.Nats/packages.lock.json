@@ -13,9 +13,9 @@
       },
       "Grpc.Tools": {
         "type": "Direct",
-        "requested": "[2.29.0, )",
-        "resolved": "2.29.0",
-        "contentHash": "pAftupednGwyRuldJAXjtsYKHdbhE5IsPI1spdTf193OMq9Fvj5OgEtVCTiTkAN7Ui+dc9X4UeDOaY9imqS79g=="
+        "requested": "[2.30.0, )",
+        "resolved": "2.30.0",
+        "contentHash": "ObXaZFLTH8Bhzy2Qu0OeLiAT7y0l1MVGzdMiRUGaeBMixtKTozVYdRMX2jozikt7H3ZsAadBnaelKba3sdJlKQ=="
       },
       "NATS.Client": {
         "type": "Direct",
