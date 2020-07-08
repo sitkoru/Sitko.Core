@@ -25,6 +25,7 @@ namespace Sitko.Core.Consul.Web
             IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
+            services.AddSingleton<ConsulWebClient>();
             services.AddHealthChecks().AddCheck<ConsulWebHealthCheck>("Consul registration");
         }
 

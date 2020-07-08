@@ -20,7 +20,7 @@ namespace Sitko.Core.Consul.Web
 
         private readonly Uri _uri;
         private readonly string _healthUrl;
-        private string _name;
+        private readonly string _name;
 
         public ConsulWebClient(IServer server, IConsulClient consulClient, ConsulWebModuleConfig config,
             IHostEnvironment environment, ILogger<ConsulWebClient> logger)
