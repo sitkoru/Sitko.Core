@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Consul;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Helpers;
 
@@ -113,7 +115,7 @@ namespace Sitko.Core.Grpc.Server.Consul
                 _logger.LogInformation("Consul response code: {Code}", result.StatusCode);
             }
 
-            _registeredServices.Add(id, serviceName);
+            _registeredServices[id] = serviceName;
         }
 
         private bool _disposed;
@@ -135,23 +137,40 @@ namespace Sitko.Core.Grpc.Server.Consul
             }
         }
 
-        public async Task<bool> IsRegistered<T>() where T : class
+        public async Task<HealthCheckResult> CheckHealthAsync<T>(
+            CancellationToken cancellationToken = new CancellationToken()) where T : class
         {
-            if (_consulClient != null)
+            if (_consulClient == null)
             {
-                var id = GetServiceId<T>();
-                var serviceName = GetServiceName<T>();
-                var serviceResponse = await _consulClient.Catalog.Service(serviceName, "grpc");
-                if (serviceResponse.StatusCode == HttpStatusCode.OK)
-                {
-                    if (serviceResponse.Response.Any())
-                    {
-                        return serviceResponse.Response.Any(service => service.ServiceID == id);
-                    }
-                }
+                return HealthCheckResult.Unhealthy("No consul client");
             }
 
-            return false;
+            var id = GetServiceId<T>();
+            var serviceName = GetServiceName<T>();
+
+            var serviceResponse = await _consulClient.Catalog.Service(serviceName, "grpc", cancellationToken);
+            if (serviceResponse.StatusCode == HttpStatusCode.OK)
+            {
+                if (serviceResponse.Response.Any())
+                {
+                    if (serviceResponse.Response.Any(service => service.ServiceID == id))
+                    {
+                        return HealthCheckResult.Healthy();
+                    }
+
+                    return HealthCheckResult.Degraded($"Service {serviceName} exists but with another id");
+                }
+
+                if (_options.AutoFixRegistration)
+                {
+                    //no services. fix registration
+                    await RegisterAsync<T>();
+                }
+
+                return HealthCheckResult.Degraded($"No grpc service registered with name {serviceName}");
+            }
+
+            return HealthCheckResult.Unhealthy($"Error response from consul: {serviceResponse.StatusCode}");
         }
     }
 }

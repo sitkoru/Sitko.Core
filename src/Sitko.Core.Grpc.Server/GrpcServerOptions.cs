@@ -17,5 +17,7 @@ namespace Sitko.Core.Grpc.Server
         public bool EnableReflection { get; set; } = false;
         public bool EnableDetailedErrors { get; set; } = false;
         public Action<GrpcServiceOptions>? Configure { get; set; }
+
+        public bool AutoFixRegistration { get; set; } = false;
     }
 }

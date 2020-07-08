@@ -13,11 +13,10 @@ namespace Sitko.Core.Grpc.Server
             _registrar = registrar;
         }
 
-        public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
+        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            var isRegistered = await _registrar.IsRegistered<TService>();
-            return isRegistered ? HealthCheckResult.Healthy() : HealthCheckResult.Unhealthy();
+            return _registrar.CheckHealthAsync<TService>(cancellationToken);
         }
     }
 }
