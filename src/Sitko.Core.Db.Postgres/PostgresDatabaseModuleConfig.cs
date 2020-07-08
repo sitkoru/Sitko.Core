@@ -14,5 +14,6 @@ namespace Sitko.Core.Db.Postgres
         public bool EnableSensitiveLogging { get; set; } = false;
 
         public Assembly? MigrationsAssembly { get; set; }
+        public bool AutoApplyMigrations { get; set; } = true;
     }
 }

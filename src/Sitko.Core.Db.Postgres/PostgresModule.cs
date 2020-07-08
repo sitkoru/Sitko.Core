@@ -49,7 +49,7 @@ namespace Sitko.Core.Db.Postgres
         {
             await base.InitAsync(serviceProvider, configuration, environment);
 
-            if (environment.IsProduction())
+            if (Config.AutoApplyMigrations)
             {
                 var logger = serviceProvider.GetService<ILogger<PostgresModule<TDbContext>>>();
                 var migrated = false;
