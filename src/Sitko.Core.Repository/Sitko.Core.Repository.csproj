@@ -7,10 +7,10 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0"/>
-    <PackageReference Include="FluentValidation" Version="8.6.2"/>
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
+    <PackageReference Include="FluentValidation" Version="9.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
   </ItemGroup>
 </Project>

@@ -7,7 +7,7 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NEST" Version="7.8.0" />
+    <PackageReference Include="NEST" Version="7.8.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Search\Sitko.Core.Search.csproj" />
