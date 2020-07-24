@@ -9,8 +9,6 @@ namespace Sitko.Core.ElasticStack
         public bool LoggingEnabled { get; private set; }
         public bool ApmEnabled { get; private set; }
         public List<Uri>? ElasticSearchUrls { get; protected set; }
-        public string? ApmServiceName { get; set; }
-        public string ApmServiceVersion { get; set; } = "dev";
         public double ApmTransactionSampleRate { get; set; } = 1.0;
         public int ApmTransactionMaxSpans { get; set; } = 500;
         public bool ApmCentralConfig { get; set; } = true;

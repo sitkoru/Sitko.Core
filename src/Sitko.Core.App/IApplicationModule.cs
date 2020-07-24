@@ -21,8 +21,7 @@ namespace Sitko.Core.App
             IHostEnvironment environment);
 
         void ConfigureLogging(LoggerConfiguration loggerConfiguration, LogLevelSwitcher logLevelSwitcher,
-            string facility, IConfiguration configuration,
-            IHostEnvironment environment);
+            IConfiguration configuration, IHostEnvironment environment);
 
         Task InitAsync(IServiceProvider serviceProvider, IConfiguration configuration,
             IHostEnvironment environment);

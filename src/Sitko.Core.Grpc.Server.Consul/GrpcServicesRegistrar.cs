@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
+using Sitko.Core.App;
 using Sitko.Core.App.Helpers;
 
 namespace Sitko.Core.Grpc.Server.Consul
@@ -16,6 +17,7 @@ namespace Sitko.Core.Grpc.Server.Consul
     public class GrpcServicesRegistrar : IGrpcServicesRegistrar, IAsyncDisposable
     {
         private readonly GrpcServerOptions _options;
+        private readonly IApplication _application;
         private readonly IConsulClient? _consulClient;
         private readonly ILogger<GrpcServicesRegistrar> _logger;
         private readonly string _host = "127.0.0.1";
@@ -25,9 +27,11 @@ namespace Sitko.Core.Grpc.Server.Consul
         private readonly Dictionary<string, string> _registeredServices = new Dictionary<string, string>();
 
         public GrpcServicesRegistrar(GrpcServerOptions options,
+            IApplication application,
             IServer server, ILogger<GrpcServicesRegistrar> logger, IConsulClient? consulClient = null)
         {
             _options = options;
+            _application = application;
             _consulClient = consulClient;
             _logger = logger;
             if (!string.IsNullOrEmpty(_options.Host))
@@ -106,7 +110,7 @@ namespace Sitko.Core.Grpc.Server.Consul
                         TLSSkipVerify = _options.ValidateTls,
                         GRPCUseTLS = _options.UseTls
                     },
-                    Tags = new[] {"grpc", $"version:{_options.Version}"}
+                    Tags = new[] {"grpc", $"version:{_application.Version}"}
                 };
                 _logger.LogInformation("Register grpc service {serviceName} on {address}:{port}", serviceName, _host,
                     _port);

@@ -40,9 +40,7 @@ namespace Sitko.Core.App
         }
 
         public virtual void ConfigureLogging(LoggerConfiguration loggerConfiguration,
-            LogLevelSwitcher logLevelSwitcher,
-            string facility, IConfiguration configuration,
-            IHostEnvironment environment)
+            LogLevelSwitcher logLevelSwitcher, IConfiguration configuration, IHostEnvironment environment)
         {
         }
 

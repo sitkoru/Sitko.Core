@@ -14,16 +14,16 @@ namespace Sitko.Core.Graylog
     {
         public override void ConfigureLogging(LoggerConfiguration loggerConfiguration,
             LogLevelSwitcher logLevelSwitcher,
-            string facility, IConfiguration configuration,
+            IConfiguration configuration,
             IHostEnvironment environment)
         {
-            base.ConfigureLogging(loggerConfiguration, logLevelSwitcher, facility, configuration, environment);
+            base.ConfigureLogging(loggerConfiguration, logLevelSwitcher, configuration, environment);
             loggerConfiguration.WriteTo.Async(to => to.Graylog(
                 new GraylogSinkOptions
                 {
                     HostnameOrAddress = Config.Host,
                     Port = Config.Port,
-                    Facility = facility,
+                    Facility = Application.Name,
                     MinimumLogEventLevel = logLevelSwitcher.Switch.MinimumLevel
                 }, logLevelSwitcher.Switch));
         }

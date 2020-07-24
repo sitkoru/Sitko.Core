@@ -24,10 +24,10 @@ namespace Sitko.Core.ElasticStack
         }
 
         public override void ConfigureLogging(LoggerConfiguration loggerConfiguration,
-            LogLevelSwitcher logLevelSwitcher, string facility,
+            LogLevelSwitcher logLevelSwitcher,
             IConfiguration configuration, IHostEnvironment environment)
         {
-            base.ConfigureLogging(loggerConfiguration, logLevelSwitcher, facility, configuration, environment);
+            base.ConfigureLogging(loggerConfiguration, logLevelSwitcher, configuration, environment);
             if (Config.LoggingEnabled)
             {
                 loggerConfiguration.Enrich.WithElasticApmCorrelationInfo()
@@ -38,7 +38,9 @@ namespace Sitko.Core.ElasticStack
                         AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv7,
                         IndexFormat = Config.LoggingIndexFormat,
                         LevelSwitch = logLevelSwitcher.Switch
-                    }).Enrich.WithProperty("ApplicationName", facility);
+                    })
+                    .Enrich.WithProperty("ApplicationName", Application.Name)
+                    .Enrich.WithProperty("ApplicationVersion", Application.Version);
             }
 
             if (Config.ApmEnabled)
@@ -53,8 +55,8 @@ namespace Sitko.Core.ElasticStack
             base.ConfigureServices(services, configuration, environment);
             if (Config != null && Config.ApmEnabled)
             {
-                configuration["ElasticApm:ServiceName"] = Config.ApmServiceName ?? environment.ApplicationName;
-                configuration["ElasticApm:ServiceVersion"] = Config.ApmServiceVersion;
+                configuration["ElasticApm:ServiceName"] = Application.Name;
+                configuration["ElasticApm:ServiceVersion"] = Application.Version;
                 configuration["ElasticApm:TransactionSampleRate"] =
                     Config.ApmTransactionSampleRate.ToString(CultureInfo.InvariantCulture);
                 configuration["ElasticApm:TransactionMaxSpans"] = Config.ApmTransactionMaxSpans.ToString();

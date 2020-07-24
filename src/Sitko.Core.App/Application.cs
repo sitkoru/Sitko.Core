@@ -14,13 +14,12 @@ using Sitko.Core.App.Logging;
 
 namespace Sitko.Core.App
 {
-    public abstract class Application : IAsyncDisposable
+    public abstract class Application : IApplication, IAsyncDisposable
     {
         private readonly bool _check;
         private readonly LoggerConfiguration _loggerConfiguration = new LoggerConfiguration();
         private readonly LogLevelSwitcher _logLevelSwitcher = new LogLevelSwitcher();
         private readonly HashSet<Type> _registeredModules = new HashSet<Type>();
-        protected readonly List<IApplicationModule> Modules = new List<IApplicationModule>();
         private readonly Dictionary<string, object> _store = new Dictionary<string, object>();
         protected readonly IConfiguration Configuration;
         protected readonly IHostEnvironment Environment;
@@ -29,10 +28,11 @@ namespace Sitko.Core.App
 
         protected readonly Dictionary<string, LogEventLevel> LogEventLevels = new Dictionary<string, LogEventLevel>();
         protected readonly ILogger<Application> Logger;
+        protected readonly List<IApplicationModule> Modules = new List<IApplicationModule>();
 
         private IHost? _appHost;
 
-        protected Application(string[] args)
+        protected Application(string[] args, string? name = null, string? version = null)
         {
             Console.OutputEncoding = Encoding.UTF8;
             if (args.Length > 0 && args[0] == "check")
@@ -47,12 +47,30 @@ namespace Sitko.Core.App
             Configuration = tmpHost.Services.GetService<IConfiguration>();
             Environment = tmpHost.Services.GetService<IHostEnvironment>();
             Logger = tmpHost.Services.GetService<ILogger<Application>>();
-            LoggingFacility ??= Environment.ApplicationName;
             LoggingEnableConsole = Environment.IsDevelopment();
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                Name = name;
+            }
+            else
+            {
+                Name = Environment.ApplicationName;
+            }
+
+            if (!string.IsNullOrEmpty(version))
+            {
+                Version = version;
+            }
+            else
+            {
+                Version = "dev";
+            }
 
             _loggerConfiguration.MinimumLevel.ControlledBy(_logLevelSwitcher.Switch);
             _loggerConfiguration.Enrich.FromLogContext()
-                .Enrich.WithProperty("App", LoggingFacility);
+                .Enrich.WithProperty("App", Name)
+                .Enrich.WithProperty("AppVersion", Version);
 
             HostBuilder = Host.CreateDefaultBuilder(args)
                 .UseDefaultServiceProvider(options =>
@@ -70,8 +88,10 @@ namespace Sitko.Core.App
         protected LogEventLevel LoggingProductionLevel { get; set; } = LogEventLevel.Information;
         protected LogEventLevel LoggingDevelopmentLevel { get; set; } = LogEventLevel.Debug;
         protected bool LoggingEnableConsole { get; set; }
-        protected string? LoggingFacility { get; set; }
         protected Action<LoggerConfiguration, LogLevelSwitcher>? LoggingConfigure { get; set; }
+
+        public string Name { get; }
+        public string Version { get; }
 
         public virtual ValueTask DisposeAsync()
         {
@@ -136,12 +156,13 @@ namespace Sitko.Core.App
                     {
                         CheckRequiredModules(module);
                     }
+
                     if (_check)
                     {
                         Console.WriteLine("Check run is successful");
                         System.Environment.Exit(0);
                     }
-                    
+
                     ConfigureLogging();
                     Log.Logger = _loggerConfiguration.CreateLogger();
                 }
@@ -173,7 +194,7 @@ namespace Sitko.Core.App
                 _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LogEventLevel.Warning;
                 _loggerConfiguration.MinimumLevel.Override("Microsoft", _logLevelSwitcher.MsMessagesSwitch);
             }
-            
+
             if (LoggingEnableConsole)
             {
                 _loggerConfiguration
@@ -208,14 +229,13 @@ namespace Sitko.Core.App
                     configure?.Invoke(context.Configuration, context.HostingEnvironment, config);
                 }
 
-                var module = (TModule) Activator.CreateInstance(typeof(TModule), config, this);
+                var module = (TModule)Activator.CreateInstance(typeof(TModule), config, this);
                 if (!_check)
                 {
                     module.CheckConfig();
                 }
 
                 module.ConfigureLogging(_loggerConfiguration, _logLevelSwitcher,
-                    LoggingFacility ?? Environment.ApplicationName,
                     context.Configuration, context.HostingEnvironment);
                 module.ConfigureServices(services, context.Configuration, context.HostingEnvironment);
                 AddModule(module);
@@ -294,7 +314,7 @@ namespace Sitko.Core.App
         {
             if (_store.ContainsKey(key))
             {
-                return (T) _store[key];
+                return (T)_store[key];
             }
 
 #pragma warning disable 8603
@@ -314,6 +334,7 @@ namespace Sitko.Core.App
         {
             ConfigureServices((context, services) =>
             {
+                services.AddSingleton(typeof(IApplication), this);
                 services.AddSingleton(typeof(Application<T>), this);
                 services.AddSingleton(typeof(T), this);
                 services.AddHostedService<ApplicationLifetimeService<T>>();
@@ -323,19 +344,19 @@ namespace Sitko.Core.App
         public T ConfigureServices(Action<IServiceCollection> configure)
         {
             HostBuilder.ConfigureServices(configure);
-            return (T) this;
+            return (T)this;
         }
 
         public T ConfigureServices(Action<HostBuilderContext, IServiceCollection> configure)
         {
             HostBuilder.ConfigureServices(configure);
-            return (T) this;
+            return (T)this;
         }
 
         public T ConfigureLogLevel(string source, LogEventLevel level)
         {
             LogEventLevels.Add(source, level);
-            return (T) this;
+            return (T)this;
         }
 
         public T AddModule<TModule, TModuleConfig>(
@@ -343,20 +364,20 @@ namespace Sitko.Core.App
             where TModule : IApplicationModule<TModuleConfig> where TModuleConfig : class, new()
         {
             RegisterModule<TModule, TModuleConfig>(configure);
-            return (T) this;
+            return (T)this;
         }
 
         public T AddModule<TModule>() where TModule : BaseApplicationModule
         {
             AddModule<TModule, BaseApplicationModuleConfig>();
-            return (T) this;
+            return (T)this;
         }
 
 
         public T ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> action)
         {
             HostBuilder.ConfigureAppConfiguration(action);
-            return (T) this;
+            return (T)this;
         }
     }
 }

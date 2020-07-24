@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Sitko.Core.App;
 
 namespace Sitko.Core.Consul.Web
 {
@@ -16,6 +17,7 @@ namespace Sitko.Core.Consul.Web
     {
         private readonly IConsulClient _consulClient;
         private readonly ConsulWebModuleConfig _config;
+        private readonly IApplication _application;
         private readonly ILogger<ConsulWebClient> _logger;
 
         private readonly Uri _uri;
@@ -23,10 +25,11 @@ namespace Sitko.Core.Consul.Web
         private readonly string _name;
 
         public ConsulWebClient(IServer server, IConsulClient consulClient, ConsulWebModuleConfig config,
-            IHostEnvironment environment, ILogger<ConsulWebClient> logger)
+            IHostEnvironment environment, IApplication application, ILogger<ConsulWebClient> logger)
         {
             _consulClient = consulClient;
             _config = config;
+            _application = application;
             _logger = logger;
 
             _name = environment.ApplicationName;
@@ -67,7 +70,7 @@ namespace Sitko.Core.Consul.Web
                     DeregisterCriticalServiceAfter = _config.DeregisterTimeout,
                     Interval = _config.ChecksInterval
                 },
-                Tags = new[] {"metrics", $"healthUrl:{_healthUrl}", $"version:{_config.Version}"}
+                Tags = new[] {"metrics", $"healthUrl:{_healthUrl}", $"version:{_application.Version}"}
             };
 
             _logger.LogInformation("Registering in Consul as {Name} on {Host}:{Port}", _name,

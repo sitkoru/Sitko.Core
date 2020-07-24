@@ -35,7 +35,7 @@ namespace Sitko.Core.Xunit
         public async Task ConfigureAsync(string name, ITestOutputHelper testOutputHelper)
         {
             Name = name;
-            _application = (TApplication) Activator.CreateInstance(typeof(TApplication), new object[] {new string[0]});
+            _application = (TApplication)Activator.CreateInstance(typeof(TApplication), new object[] {new string[0]});
 
             _application.ConfigureServices((context, services) =>
             {
@@ -132,10 +132,10 @@ namespace Sitko.Core.Xunit
         }
 
         public override void ConfigureLogging(LoggerConfiguration loggerConfiguration,
-            LogLevelSwitcher logLevelSwitcher, string facility,
+            LogLevelSwitcher logLevelSwitcher,
             IConfiguration configuration, IHostEnvironment environment)
         {
-            base.ConfigureLogging(loggerConfiguration, logLevelSwitcher, facility, configuration, environment);
+            base.ConfigureLogging(loggerConfiguration, logLevelSwitcher, configuration, environment);
             if (Config.TestOutputHelper != null)
             {
                 loggerConfiguration.WriteTo.TestOutput(Config.TestOutputHelper, levelSwitch: logLevelSwitcher.Switch);

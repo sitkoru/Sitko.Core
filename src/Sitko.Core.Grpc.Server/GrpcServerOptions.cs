@@ -5,7 +5,6 @@ namespace Sitko.Core.Grpc.Server
 {
     public class GrpcServerOptions
     {
-        public string Version { get; set; } = "dev";
         public string? Host { get; set; }
         public int? Port { get; set; }
 
