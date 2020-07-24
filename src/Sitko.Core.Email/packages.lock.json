@@ -13,9 +13,9 @@
       },
       "Hangfire.Core": {
         "type": "Direct",
-        "requested": "[1.7.11, )",
-        "resolved": "1.7.11",
-        "contentHash": "/v+INBYRJJzMt5CPi+qFRsikYjbwUweBwLKGPc9PnDjD1o8MhQ5Ggx2/EOhavkQRwFgBRk5y3jCiD1HKR/WBPw==",
+        "requested": "[1.7.12, )",
+        "resolved": "1.7.12",
+        "contentHash": "xVpgaVt4IrNpWgd301FBa8RTcV0bDtZvdY7JzbGYcYTDnobYbMVFQCyXI9OYZ3g+hv9mD5IlRpmBPtPzKsaR+Q==",
         "dependencies": {
           "Newtonsoft.Json": "11.0.1"
         }

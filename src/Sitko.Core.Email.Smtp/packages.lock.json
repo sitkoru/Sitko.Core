@@ -39,8 +39,8 @@
       },
       "Hangfire.Core": {
         "type": "Transitive",
-        "resolved": "1.7.11",
-        "contentHash": "/v+INBYRJJzMt5CPi+qFRsikYjbwUweBwLKGPc9PnDjD1o8MhQ5Ggx2/EOhavkQRwFgBRk5y3jCiD1HKR/WBPw==",
+        "resolved": "1.7.12",
+        "contentHash": "xVpgaVt4IrNpWgd301FBa8RTcV0bDtZvdY7JzbGYcYTDnobYbMVFQCyXI9OYZ3g+hv9mD5IlRpmBPtPzKsaR+Q==",
         "dependencies": {
           "Newtonsoft.Json": "11.0.1"
         }
@@ -1233,7 +1233,7 @@
         "type": "Project",
         "dependencies": {
           "FluentEmail.Core": "2.8.0",
-          "Hangfire.Core": "1.7.11",
+          "Hangfire.Core": "1.7.12",
           "HtmlAgilityPack": "1.11.24",
           "Sitko.Core.App": "1.0.0"
         }

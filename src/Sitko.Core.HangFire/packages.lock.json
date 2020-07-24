@@ -14,11 +14,11 @@
       },
       "Hangfire.AspNetCore": {
         "type": "Direct",
-        "requested": "[1.7.11, )",
-        "resolved": "1.7.11",
-        "contentHash": "Z3FM67pW4t+XrYN1Yyx72HxSuiXmm1GsBPdtpfbCXgyFXAsUTJn5MV+1FcUyPSl61E2QwJpaKEGl/vH0N/ThJw==",
+        "requested": "[1.7.12, )",
+        "resolved": "1.7.12",
+        "contentHash": "ios/XlgILzLUQEVXa8tNTEGpDCdJxP5mdLk93pYl9z5zjotTfgopWmDZEnH7Y55YP9dWorv8UN4NXxGbwhiQ7w==",
         "dependencies": {
-          "Hangfire.Core": "[1.7.11]"
+          "Hangfire.Core": "[1.7.12]"
         }
       },
       "Hangfire.PostgreSql": {
@@ -78,8 +78,8 @@
       },
       "Hangfire.Core": {
         "type": "Transitive",
-        "resolved": "1.7.11",
-        "contentHash": "/v+INBYRJJzMt5CPi+qFRsikYjbwUweBwLKGPc9PnDjD1o8MhQ5Ggx2/EOhavkQRwFgBRk5y3jCiD1HKR/WBPw==",
+        "resolved": "1.7.12",
+        "contentHash": "xVpgaVt4IrNpWgd301FBa8RTcV0bDtZvdY7JzbGYcYTDnobYbMVFQCyXI9OYZ3g+hv9mD5IlRpmBPtPzKsaR+Q==",
         "dependencies": {
           "Newtonsoft.Json": "11.0.1"
         }
