@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -50,7 +51,7 @@ namespace Sitko.Core.Storage.Proxy.ImageSharp
 
         public override async Task<IImageResolver> GetAsync(HttpContext context)
         {
-            var key = context.Request.Path.Value.TrimStart(_slashChars);
+            var key = WebUtility.UrlDecode(context.Request.Path.Value).TrimStart(_slashChars);
 
             bool imageExists = await _storage.IsFileExistsAsync(key);
 
