@@ -32,7 +32,7 @@ namespace Sitko.Core.App
 
         private IHost? _appHost;
 
-        protected Application(string[] args, string? name = null, string? version = null)
+        protected Application(string[] args)
         {
             Console.OutputEncoding = Encoding.UTF8;
             if (args.Length > 0 && args[0] == "check")
@@ -49,23 +49,7 @@ namespace Sitko.Core.App
             Logger = tmpHost.Services.GetService<ILogger<Application>>();
             LoggingEnableConsole = Environment.IsDevelopment();
 
-            if (!string.IsNullOrEmpty(name))
-            {
-                Name = name;
-            }
-            else
-            {
-                Name = Environment.ApplicationName;
-            }
-
-            if (!string.IsNullOrEmpty(version))
-            {
-                Version = version;
-            }
-            else
-            {
-                Version = "dev";
-            }
+            Name = Environment.ApplicationName;
 
             _loggerConfiguration.MinimumLevel.ControlledBy(_logLevelSwitcher.Switch);
             _loggerConfiguration.Enrich.FromLogContext()
@@ -90,8 +74,8 @@ namespace Sitko.Core.App
         protected bool LoggingEnableConsole { get; set; }
         protected Action<LoggerConfiguration, LogLevelSwitcher>? LoggingConfigure { get; set; }
 
-        public string Name { get; }
-        public string Version { get; }
+        public string Name { get; private set; }
+        public string Version { get; private set; } = "dev";
 
         public virtual ValueTask DisposeAsync()
         {
@@ -150,6 +134,7 @@ namespace Sitko.Core.App
             {
                 try
                 {
+                    Init();
                     _appHost = HostBuilder.Build();
                     Logger.LogInformation("Check required modules");
                     foreach (var module in Modules)
@@ -163,7 +148,6 @@ namespace Sitko.Core.App
                         System.Environment.Exit(0);
                     }
 
-                    ConfigureLogging();
                     Log.Logger = _loggerConfiguration.CreateLogger();
                 }
                 catch (Exception e)
@@ -240,6 +224,44 @@ namespace Sitko.Core.App
                 module.ConfigureServices(services, context.Configuration, context.HostingEnvironment);
                 AddModule(module);
             });
+        }
+
+        private bool _initComplete;
+
+        private void Init()
+        {
+            if (!_initComplete)
+            {
+                var name = GetName();
+                if (!string.IsNullOrEmpty(name))
+                {
+                    Name = name;
+                }
+
+                var version = GetVersion();
+                if (!string.IsNullOrEmpty(version))
+                {
+                    Version = version;
+                }
+
+                InitApplication();
+                ConfigureLogging();
+                _initComplete = true;
+            }
+        }
+
+        protected virtual string? GetName()
+        {
+            return null;
+        }
+
+        protected virtual string? GetVersion()
+        {
+            return null;
+        }
+
+        protected virtual void InitApplication()
+        {
         }
 
         protected virtual void AddModule(IApplicationModule module)
