@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
@@ -37,8 +38,8 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
                 _logger.LogInformation("Method {Method} is not supported", context.Request.Method);
             }
 
-            var subPath = context.Request.Path;
-            _contentTypeProvider.TryGetContentType(subPath.Value, out var contentType);
+            var subPath = WebUtility.UrlDecode(context.Request.Path);
+            _contentTypeProvider.TryGetContentType(subPath, out var contentType);
 
             return TryServeStaticFile(context, contentType, subPath);
         }
