@@ -16,7 +16,7 @@ build:
             command: ["-cid", "tests"]
         -   name: titpetric/sonyflake
             alias: sonyflake
-        -   name: minio/minio:latest
+        -   name: minio/minio:RELEASE.2020-07-02T00-15-09Z
             alias: minio
             command: ["server", "/data"]
         -   name: postgres:alpine

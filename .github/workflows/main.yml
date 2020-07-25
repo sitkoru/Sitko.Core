@@ -24,7 +24,7 @@ jobs:
             sonyflake:
                 image: titpetric/sonyflake
             minio:
-                image: bitnami/minio:latest
+                image: bitnami/minio:2020.7.2
                 env:
                     MINIO_ACCESS_KEY: ptTYf7VkCVbUjAzn
                     MINIO_SECRET_KEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
