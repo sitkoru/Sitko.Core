@@ -52,7 +52,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
             return context.Request.Method == "GET" || context.Request.Method == "HEAD";
         }
 
-        private async Task TryServeStaticFile(HttpContext context, string contentType, PathString subPath)
+        private async Task TryServeStaticFile(HttpContext context, string contentType, string subPath)
         {
             var file = await _storage.GetFileAsync(subPath);
             if (file == null)
