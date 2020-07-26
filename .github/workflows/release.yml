@@ -60,4 +60,4 @@ jobs:
                     find $(pwd)/src/Sitko.Core.Grpc/Proto -name "*.proto" | xargs /usr/local/bin/protoc --php_out=$(pwd)/Composer/Core --grpc_out $(pwd)/Composer/Core --proto_path=/opt/include --proto_path=$(pwd)/src/Sitko.Core.Grpc/Proto --plugin=protoc-gen-grpc=/usr/local/bin/grpc_php_client_plugin
                     find $(pwd)/src/Sitko.Core.Queue.Nats/Proto -name "*.proto" | xargs /usr/local/bin/protoc --php_out=$(pwd)/Composer/Queue --proto_path=/opt/include --proto_path=$(pwd)/src/Sitko.Core.Queue.Nats/Proto
             -   name: Push to Nuget
-                run: dotnet nuget push $(pwd)/packages/*.nupkg -s https://api.nuget.org/v3/index.json -k $NUGET_API_KEY
+                run: dotnet nuget push $(pwd)/packages/*.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
