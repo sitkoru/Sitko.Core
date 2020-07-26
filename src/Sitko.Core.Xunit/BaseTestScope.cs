@@ -120,8 +120,7 @@ namespace Sitko.Core.Xunit
     {
         public TestApplication(string[] args) : base(args)
         {
-            LoggingProductionLevel = LogEventLevel.Debug;
-            LoggingDevelopmentLevel = LogEventLevel.Debug;
+            LoggingLevel = LogEventLevel.Debug;
         }
     }
 

@@ -69,8 +69,7 @@ namespace Sitko.Core.App
             });
         }
 
-        protected LogEventLevel LoggingProductionLevel { get; set; } = LogEventLevel.Information;
-        protected LogEventLevel LoggingDevelopmentLevel { get; set; } = LogEventLevel.Debug;
+        protected LogEventLevel LoggingLevel { get; set; } = LogEventLevel.Information;
         protected bool LoggingEnableConsole { get; set; }
         protected Action<LoggerConfiguration, LogLevelSwitcher>? LoggingConfigure { get; set; }
 
@@ -167,17 +166,9 @@ namespace Sitko.Core.App
 
         protected virtual void ConfigureLogging()
         {
-            if (Environment.IsDevelopment())
-            {
-                _logLevelSwitcher.Switch.MinimumLevel = LoggingDevelopmentLevel;
-                _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LoggingDevelopmentLevel;
-            }
-            else
-            {
-                _logLevelSwitcher.Switch.MinimumLevel = LoggingProductionLevel;
-                _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LogEventLevel.Warning;
-                _loggerConfiguration.MinimumLevel.Override("Microsoft", _logLevelSwitcher.MsMessagesSwitch);
-            }
+            _logLevelSwitcher.Switch.MinimumLevel = LoggingLevel;
+            _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LogEventLevel.Warning;
+            _loggerConfiguration.MinimumLevel.Override("Microsoft", _logLevelSwitcher.MsMessagesSwitch);
 
             if (LoggingEnableConsole)
             {
