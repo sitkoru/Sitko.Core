@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -40,16 +41,34 @@ namespace Sitko.Core.Consul.Web
             else
             {
                 var addressesFeature = server.Features.Get<IServerAddressesFeature>();
-                var addresses = addressesFeature.Addresses.Select(a => new Uri(a.Replace("localhost", _config.IpAddress)
-                        .Replace("0.0.0.0", _config.IpAddress).Replace("[::]", _config.IpAddress))).OrderBy(u => u.Port)
-                    .ToList();
+                var addresses = new List<Uri>();
+                foreach (var featureAddress in addressesFeature.Addresses)
+                {
+                    var preparedAddress = featureAddress
+                        .Replace("localhost", _config.IpAddress)
+                        .Replace("0.0.0.0", _config.IpAddress)
+                        .Replace("[::]", _config.IpAddress);
+
+                    var uriCreated = Uri.TryCreate(preparedAddress, UriKind.Absolute,
+                        out var uri);
+                    if (uriCreated && uri != null)
+                    {
+                        addresses.Add(uri);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Can't parse address {Address}", featureAddress);
+                    }
+                }
+
                 if (!addresses.Any())
                 {
                     throw new Exception("No addresses available for consul registration");
                 }
 
-                var address = addresses.FirstOrDefault(u => u.Scheme != "https");
+                var address = addresses.OrderBy(u => u.Port).FirstOrDefault(u => u.Scheme != "https");
                 if (address == null) address = addresses.First();
+                _logger.LogInformation("Consul uri: {Uri}", address);
                 _uri = address;
             }
 
