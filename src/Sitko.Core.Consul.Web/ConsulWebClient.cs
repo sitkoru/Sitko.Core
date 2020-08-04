@@ -95,7 +95,8 @@ namespace Sitko.Core.Consul.Web
             _logger.LogInformation("Registering in Consul as {Name} on {Host}:{Port}", _name,
                 _uri.Host, _uri.Port);
             await _consulClient.Agent.ServiceDeregister(registration.ID);
-            await _consulClient.Agent.ServiceRegister(registration);
+            var result = await _consulClient.Agent.ServiceRegister(registration);
+            _logger.LogInformation("Consul response code: {Code}", result.StatusCode);
         }
 
         public async Task<HealthCheckResult> CheckHealthAsync(
