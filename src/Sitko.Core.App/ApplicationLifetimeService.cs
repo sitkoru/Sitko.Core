@@ -27,12 +27,12 @@ namespace Sitko.Core.App
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _hostApplicationLifetime.ApplicationStarted.Register(() =>
-                _application.OnStarted(_configuration, _environment, _serviceProvider));
-            _hostApplicationLifetime.ApplicationStopping.Register(() =>
-                _application.OnStopping(_configuration, _environment, _serviceProvider));
-            _hostApplicationLifetime.ApplicationStopped.Register(() =>
-                _application.OnStopped(_configuration, _environment, _serviceProvider));
+            _hostApplicationLifetime.ApplicationStarted.Register(async () =>
+                await _application.OnStarted(_configuration, _environment, _serviceProvider));
+            _hostApplicationLifetime.ApplicationStopping.Register(async () =>
+                await _application.OnStopping(_configuration, _environment, _serviceProvider));
+            _hostApplicationLifetime.ApplicationStopped.Register(async () =>
+                await _application.OnStopped(_configuration, _environment, _serviceProvider));
 
             return Task.CompletedTask;
         }

@@ -285,30 +285,54 @@ namespace Sitko.Core.App
             }
         }
 
-        public void OnStarted(IConfiguration configuration, IHostEnvironment environment,
+        public async Task OnStarted(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider)
         {
             foreach (var module in Modules)
             {
-                module.ApplicationStarted(configuration, environment, serviceProvider);
+                try
+                {
+                    await module.ApplicationStarted(configuration, environment, serviceProvider);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error on application started hook in module {Module}: {ErrorText}", module,
+                        ex.ToString());
+                }
             }
         }
 
-        public void OnStopping(IConfiguration configuration, IHostEnvironment environment,
+        public async Task OnStopping(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider)
         {
             foreach (var module in Modules)
             {
-                module.ApplicationStopping(configuration, environment, serviceProvider);
+                try
+                {
+                    await module.ApplicationStopping(configuration, environment, serviceProvider);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error on application stopping hook in module {Module}: {ErrorText}", module,
+                        ex.ToString());
+                }
             }
         }
 
-        public void OnStopped(IConfiguration configuration, IHostEnvironment environment,
+        public async Task OnStopped(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider)
         {
             foreach (var module in Modules)
             {
-                module.ApplicationStopped(configuration, environment, serviceProvider);
+                try
+                {
+                    await module.ApplicationStopped(configuration, environment, serviceProvider);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error on application stopped hook in module {Module}: {ErrorText}", module,
+                        ex.ToString());
+                }
             }
         }
 
