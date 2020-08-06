@@ -4,13 +4,13 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Grpc.Core.Api" Version="2.30.0" />
-    <PackageReference Include="Grpc.Tools" Version="2.30.0" PrivateAssets="None" />
-    <PackageReference Include="Google.Protobuf" Version="3.12.3" />
+    <PackageReference Include="Grpc.Core.Api" Version="2.31.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.31.0" PrivateAssets="None" />
+    <PackageReference Include="Google.Protobuf" Version="3.12.4" />
     <Protobuf Include="Proto\**\*.proto" GrpcServices="None" />
   </ItemGroup>
   

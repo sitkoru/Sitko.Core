@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Email\Sitko.Core.Email.csproj" />

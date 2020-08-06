@@ -4,10 +4,10 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NEST" Version="7.8.1" />
+    <PackageReference Include="NEST" Version="7.8.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Search\Sitko.Core.Search.csproj" />
