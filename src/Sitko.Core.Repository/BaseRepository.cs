@@ -12,7 +12,7 @@ namespace Sitko.Core.Repository
     public interface IRepositoryContext<TEntity, TEntityPk> where TEntity : class, IEntity<TEntityPk>
     {
         RepositoryFiltersManager FiltersManager { get; }
-        List<IValidator<TEntity>>? Validators { get; }
+        List<IValidator>? Validators { get; }
         List<IAccessChecker<TEntity, TEntityPk>>? AccessCheckers { get; }
         ILogger<IRepository<TEntity, TEntityPk>> Logger { get; }
     }
@@ -20,7 +20,7 @@ namespace Sitko.Core.Repository
     public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<TEntity, TEntityPk>
         where TEntity : class, IEntity<TEntityPk> where TQuery : IRepositoryQuery<TEntity>
     {
-        protected readonly List<IValidator<TEntity>> Validators;
+        protected readonly IValidator[] Validators;
         protected readonly RepositoryFiltersManager FiltersManager;
         protected readonly List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers;
         protected readonly ILogger Logger;
@@ -28,21 +28,10 @@ namespace Sitko.Core.Repository
 
         protected BaseRepository(IRepositoryContext<TEntity, TEntityPk> repositoryContext)
         {
-            Validators = repositoryContext.Validators ?? new List<IValidator<TEntity>>();
+            Validators = repositoryContext.Validators?.ToArray() ?? new IValidator[0];
             FiltersManager = repositoryContext.FiltersManager;
             AccessCheckers = repositoryContext.AccessCheckers ?? new List<IAccessChecker<TEntity, TEntityPk>>();
             Logger = repositoryContext.Logger;
-
-            Init();
-        }
-
-        private void Init()
-        {
-            RegisterValidators();
-        }
-
-        protected virtual void RegisterValidators()
-        {
         }
 
         protected abstract Task<TQuery> CreateRepositoryQueryAsync(CancellationToken cancellationToken = default);
@@ -413,9 +402,10 @@ namespace Sitko.Core.Repository
             var failures = new List<ValidationFailure>();
             if (Validators != null)
             {
-                foreach (var validator in Validators)
+                foreach (var validator in Validators.Where(v => v.CanValidateInstancesOfType(typeof(TEntity))))
                 {
-                    var result = await validator.ValidateAsync(entity, cancellationToken);
+                    var result =
+                        await validator.ValidateAsync(new ValidationContext<TEntity>(entity), cancellationToken);
                     if (!result.IsValid)
                     {
                         failures.AddRange(result.Errors);

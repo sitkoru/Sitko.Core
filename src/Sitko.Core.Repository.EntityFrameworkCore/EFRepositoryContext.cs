@@ -12,7 +12,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         public EFRepositoryContext(TDbContext dbContext, RepositoryFiltersManager filtersManager,
             ILoggerFactory loggerFactory, EFRepositoryLock? repositoryLock = null,
-            List<IValidator<TEntity>>? validators = null,
+            List<IValidator>? validators = null,
             List<IAccessChecker<TEntity, TEntityPk>>? accessCheckers = null)
         {
             _loggerFactory = loggerFactory;
@@ -30,7 +30,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         public RepositoryFiltersManager FiltersManager { get; }
         public EFRepositoryLock? RepositoryLock { get; }
-        public List<IValidator<TEntity>>? Validators { get; }
+        public List<IValidator>? Validators { get; }
         public List<IAccessChecker<TEntity, TEntityPk>>? AccessCheckers { get; }
     }
 }
