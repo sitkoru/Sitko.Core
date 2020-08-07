@@ -12,6 +12,6 @@
     <ProjectReference Include="..\Sitko.Core.Storage\Sitko.Core.Storage.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp.Web" Version="1.0.0-beta0009" />
+    <PackageReference Include="SixLabors.ImageSharp.Web" Version="1.0.0-rc0003" />
   </ItemGroup>
 </Project>
