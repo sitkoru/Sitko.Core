@@ -38,7 +38,6 @@ ProjectSection(SolutionItems) = preProject
 	.editorconfig = .editorconfig
 	.gitignore = .gitignore
 	README.md = README.md
-	.gitlab-ci.yml = .gitlab-ci.yml
 	docker-compose.yml = docker-compose.yml
 	.github\workflows\main.yml = .github\workflows\main.yml
 	.github\workflows\release.yml = .github\workflows\release.yml
