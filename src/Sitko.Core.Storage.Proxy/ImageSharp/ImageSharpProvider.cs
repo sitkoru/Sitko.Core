@@ -22,6 +22,8 @@ namespace Sitko.Core.Storage.Proxy.ImageSharp
         }
 
         public abstract Task<IImageResolver> GetAsync(HttpContext context);
+        public ProcessingBehavior ProcessingBehavior => ProcessingBehavior.All;
+
 
         public Func<HttpContext, bool> Match
         {
