@@ -37,7 +37,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Files", "Solution 
 ProjectSection(SolutionItems) = preProject
 	.editorconfig = .editorconfig
 	.gitignore = .gitignore
-	NuGet.config = NuGet.config
 	README.md = README.md
 	.gitlab-ci.yml = .gitlab-ci.yml
 	docker-compose.yml = docker-compose.yml
