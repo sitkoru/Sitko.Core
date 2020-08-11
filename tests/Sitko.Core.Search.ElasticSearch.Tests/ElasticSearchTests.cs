@@ -75,9 +75,9 @@ namespace Sitko.Core.Search.ElasticSearch.Tests
     public class TestModel
     {
         public Guid Id { get; set; }
-        public string Title { get; set; }
-        public string Url { get; set; }
-        public string Description { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public DateTimeOffset Date { get; set; } = DateTimeOffset.UtcNow;
     }
 
