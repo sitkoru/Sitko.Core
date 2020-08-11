@@ -30,7 +30,7 @@ namespace Sitko.Core.Xunit
         protected IHostEnvironment? Environment { get; set; }
         private TApplication? _application;
         private bool _isApplicationStarted;
-        protected string Name { get; private set; }
+        protected string? Name { get; private set; }
 
         public async Task ConfigureAsync(string name, ITestOutputHelper testOutputHelper)
         {

@@ -4,6 +4,11 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Authors>George Drak</Authors>
+		<Company>Sitko.Ru</Company>
+		<PackageDescription>Sitko.Core</PackageDescription>
+		<RepositoryUrl>https://github.com/sitkoru/Sitko.Core</RepositoryUrl>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AWSSDK.S3" Version="3.3.112.1" />

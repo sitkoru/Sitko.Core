@@ -5,6 +5,11 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Authors>George Drak</Authors>
+		<Company>Sitko.Ru</Company>
+		<PackageDescription>Sitko.Core</PackageDescription>
+		<RepositoryUrl>https://github.com/sitkoru/Sitko.Core</RepositoryUrl>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
