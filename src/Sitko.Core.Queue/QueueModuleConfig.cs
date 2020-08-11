@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediatR;
-using Sitko.Core.Queue.MessageBus;
+using Sitko.Core.Queue.MediatR;
 
 namespace Sitko.Core.Queue
 {
@@ -10,7 +10,7 @@ namespace Sitko.Core.Queue
     {
         public HashSet<Type> Middlewares { get; } = new HashSet<Type>();
 
-        public List<(Type serviceType, Type implementationType)> TranslateMessageBusTypes { get; } =
+        public List<(Type serviceType, Type implementationType)> TranslateMediatRTypes { get; } =
             new List<(Type serviceType, Type implementationType)>();
 
         public HashSet<QueueProcessorEntry> ProcessorEntries { get; } = new HashSet<QueueProcessorEntry>();
@@ -23,10 +23,10 @@ namespace Sitko.Core.Queue
             HealthChecksEnabled = true;
         }
 
-        public void TranslateMessageBusNotification<TNotification>() where TNotification : class, INotification
+        public void TranslateMediatRNotification<TNotification>() where TNotification : class, INotification
         {
-            TranslateMessageBusTypes.Add((typeof(INotificationHandler<TNotification>),
-                typeof(MessageBusTranslator<TNotification>)));
+            TranslateMediatRTypes.Add((typeof(INotificationHandler<TNotification>),
+                typeof(MediatRTranslator<TNotification>)));
         }
 
         public void ConfigureMessage<T>(IQueueMessageOptions<T> options) where T : class

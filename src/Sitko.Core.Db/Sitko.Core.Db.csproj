@@ -5,23 +5,33 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<Authors>George Drak</Authors>
-		<Company>Sitko.Ru</Company>
-		<PackageDescription>Sitko.Core</PackageDescription>
-		<RepositoryUrl>https://github.com/sitkoru/Sitko.Core</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Authors>George Drak</Authors>
+    <Company>Sitko.Ru</Company>
+    <Product>Sitko.Core</Product>
+    <Description>Sitko.Core is a set of libraries to help build .NET Core applications fast</Description>
+    <Summary>Sitko.Core is a set of libraries to help build .NET Core applications fast</Summary>
+    <Copyright>Copyright © Sitko.ru 2020</Copyright>
+    <RepositoryUrl>https://github.com/sitkoru/Sitko.Core</RepositoryUrl>
+    <PackageIcon>packageIcon.png</PackageIcon>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.6"/>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.6">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="3.1.6" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="3.1.6"/>
   </ItemGroup>
-  
+  <ItemGroup>
+    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
+    <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
 </Project>

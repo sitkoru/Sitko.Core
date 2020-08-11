@@ -4,16 +4,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
-namespace Sitko.Core.MessageBus
+namespace Sitko.Core.MediatR
 {
-    public interface IMessageBusModule
+    public interface IMediatRModule
     {
     }
 
-    public class MessageBusModule<TAssembly> : BaseApplicationModule<MessageBusModuleConfig<TAssembly>>,
-        IMessageBusModule
+    public class MediatRModule<TAssembly> : BaseApplicationModule<MediatRModuleConfig<TAssembly>>,
+        IMediatRModule
     {
-        public MessageBusModule(MessageBusModuleConfig<TAssembly> config, Application application) : base(config,
+        public MediatRModule(MediatRModuleConfig<TAssembly> config, Application application) : base(config,
             application)
         {
         }

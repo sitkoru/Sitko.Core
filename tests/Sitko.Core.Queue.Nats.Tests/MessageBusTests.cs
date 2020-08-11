@@ -49,7 +49,7 @@ namespace Sitko.Core.Queue.Nats.Tests
             IHostEnvironment environment)
         {
             base.ConfigureQueue(config, configuration, environment);
-            config.TranslateMessageBusNotification<TestRequest>();
+            config.TranslateMediatRNotification<TestRequest>();
         }
 
         protected override TestApplication ConfigureApplication(TestApplication application, string name)

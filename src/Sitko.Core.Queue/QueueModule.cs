@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
-using Sitko.Core.MessageBus;
+using Sitko.Core.MediatR;
 using Sitko.Core.Queue.Internal;
 
 namespace Sitko.Core.Queue
@@ -57,7 +57,7 @@ namespace Sitko.Core.Queue
                 }
             }
 
-            foreach ((Type serviceType, Type implementationType) in Config.TranslateMessageBusTypes)
+            foreach ((Type serviceType, Type implementationType) in Config.TranslateMediatRTypes)
             {
                 services.AddTransient(serviceType, implementationType);
             }
@@ -67,9 +67,9 @@ namespace Sitko.Core.Queue
         {
             var modules = new List<Type>();
 
-            if (Config.TranslateMessageBusTypes.Any())
+            if (Config.TranslateMediatRTypes.Any())
             {
-                modules.Add(typeof(IMessageBusModule));
+                modules.Add(typeof(IMediatRModule));
             }
 
             return modules;

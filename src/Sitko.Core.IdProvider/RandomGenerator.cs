@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Sitko.Core.SonyFlake
+namespace Sitko.Core.IdProvider
 {
     public static class RandomGenerator
     {

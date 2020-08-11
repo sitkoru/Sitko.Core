@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Sitko.Core.SonyFlake
+namespace Sitko.Core.IdProvider.SonyFlake
 {
     public class SonyFlakeResponse
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace Sitko.Core.SonyFlake
+namespace Sitko.Core.IdProvider
 {
     public class IdGenerationException : Exception
     {

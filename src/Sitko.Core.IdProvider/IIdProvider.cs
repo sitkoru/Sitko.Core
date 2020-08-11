@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Sitko.Core.SonyFlake
+namespace Sitko.Core.IdProvider
 {
     public interface IIdProvider
     {

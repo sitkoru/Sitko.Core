@@ -6,7 +6,18 @@
     <IsPackable>true</IsPackable>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Authors>George Drak</Authors>
+    <Company>Sitko.Ru</Company>
+    <Product>Sitko.Core</Product>
+    <Description>Sitko.Core is a set of libraries to help build .NET Core applications fast</Description>
+    <Summary>Sitko.Core is a set of libraries to help build .NET Core applications fast</Summary>
+    <Copyright>Copyright © Sitko.ru 2020</Copyright>
+    <RepositoryUrl>https://github.com/sitkoru/Sitko.Core</RepositoryUrl>
+    <PackageIcon>packageIcon.png</PackageIcon>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,5 +33,8 @@
     <PackageReference Include="Serilog.Sinks.XUnit" Version="2.0.4" />
     <PackageReference Include="xunit" Version="2.4.1" />
   </ItemGroup>
-
+  <ItemGroup>
+    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
+    <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
 </Project>

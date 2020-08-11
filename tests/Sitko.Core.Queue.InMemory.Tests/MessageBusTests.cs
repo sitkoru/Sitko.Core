@@ -50,7 +50,7 @@ namespace Sitko.Core.Queue.InMemory.Tests
             string name)
         {
             base.Configure(configuration, environment, config, name);
-            config.TranslateMessageBusNotification<TestRequest>();
+            config.TranslateMediatRNotification<TestRequest>();
         }
 
         protected override TestApplication ConfigureApplication(TestApplication application, string name)

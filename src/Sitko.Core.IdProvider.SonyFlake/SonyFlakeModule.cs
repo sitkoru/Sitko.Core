@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
-namespace Sitko.Core.SonyFlake
+namespace Sitko.Core.IdProvider.SonyFlake
 {
     public class SonyFlakeModule : BaseApplicationModule<SonyFlakeModuleConfig>
     {

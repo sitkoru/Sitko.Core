@@ -1,4 +1,4 @@
-namespace Sitko.Core.SonyFlake
+namespace Sitko.Core.IdProvider.SonyFlake
 {
     public class SonyFlakeModuleConfig
     {

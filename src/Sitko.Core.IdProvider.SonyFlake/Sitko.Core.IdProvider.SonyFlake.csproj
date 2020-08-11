@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Nullable>enable</Nullable>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
     <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Authors>George Drak</Authors>
@@ -18,11 +18,9 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+  
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Email\Sitko.Core.Email.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="MailKit" Version="2.8.0" />
+    <ProjectReference Include="..\Sitko.Core.IdProvider\Sitko.Core.IdProvider.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />

@@ -53,7 +53,7 @@ namespace Sitko.Core.Queue.Tests
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
             TestQueueConfig config, string name)
         {
-            config.TranslateMessageBusNotification<TestRequest>();
+            config.TranslateMediatRNotification<TestRequest>();
         }
     }
 

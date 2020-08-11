@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Sitko.Core.IdProvider;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Json;
 
-namespace Sitko.Core.SonyFlake
+namespace Sitko.Core.IdProvider.SonyFlake
 {
     public class SonyFlakeIdProvider : IIdProvider
     {

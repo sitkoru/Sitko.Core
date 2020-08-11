@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
     <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Authors>George Drak</Authors>
@@ -19,10 +19,10 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Email\Sitko.Core.Email.csproj" />
+    <PackageReference Include="idunno.Authentication.Basic" Version="2.2.2" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MailKit" Version="2.8.0" />
+    <ProjectReference Include="..\Sitko.Core.Auth\Sitko.Core.Auth.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />

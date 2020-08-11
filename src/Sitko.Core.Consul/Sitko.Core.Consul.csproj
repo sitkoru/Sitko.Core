@@ -5,21 +5,31 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<Authors>George Drak</Authors>
-		<Company>Sitko.Ru</Company>
-		<PackageDescription>Sitko.Core</PackageDescription>
-		<RepositoryUrl>https://github.com/sitkoru/Sitko.Core</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Authors>George Drak</Authors>
+    <Company>Sitko.Ru</Company>
+    <Product>Sitko.Core</Product>
+    <Description>Sitko.Core is a set of libraries to help build .NET Core applications fast</Description>
+    <Summary>Sitko.Core is a set of libraries to help build .NET Core applications fast</Summary>
+    <Copyright>Copyright © Sitko.ru 2020</Copyright>
+    <RepositoryUrl>https://github.com/sitkoru/Sitko.Core</RepositoryUrl>
+    <PackageIcon>packageIcon.png</PackageIcon>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AspNetCore.HealthChecks.Consul" Version="3.1.1" />
+    <PackageReference Include="AspNetCore.HealthChecks.Consul" Version="3.1.1"/>
     <!-- https://github.com/SonicGD/consuldotnet cause original lib is dead Wait for https://github.com/G-Research/consuldotnet/pull/22 -->
-    <PackageReference Include="Consul.GRPC" Version="0.7.2.6" />
+    <PackageReference Include="Consul.GRPC" Version="0.7.2.6"/>
   </ItemGroup>
-
+  <ItemGroup>
+    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
+    <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
 </Project>
