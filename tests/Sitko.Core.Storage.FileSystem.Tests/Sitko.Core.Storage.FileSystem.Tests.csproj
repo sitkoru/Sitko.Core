@@ -12,11 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="..\Sitko.Core.Storage.Tests\Data\file.txt">
       <Link>Data\file.txt</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
