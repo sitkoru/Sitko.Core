@@ -416,5 +416,10 @@ namespace Sitko.Core.App
             HostBuilder.ConfigureAppConfiguration(action);
             return (T)this;
         }
+
+        protected override string? GetVersion()
+        {
+            return typeof(T).Assembly.GetName().Version.ToString();
+        }
     }
 }
