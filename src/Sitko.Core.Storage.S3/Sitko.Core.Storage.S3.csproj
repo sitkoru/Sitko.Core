@@ -18,7 +18,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.3.113" />
+    <PackageReference Include="AWSSDK.S3" Version="3.3.113.1" />
     <PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="3.1.1" />
   </ItemGroup>
   <ItemGroup>

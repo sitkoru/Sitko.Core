@@ -19,7 +19,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NEST" Version="7.8.2" />
+    <PackageReference Include="NEST" Version="7.9.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Search\Sitko.Core.Search.csproj" />
