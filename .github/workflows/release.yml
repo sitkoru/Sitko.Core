@@ -17,11 +17,5 @@ jobs:
                 run: dotnet restore --locked-mode
             -   name: Create packages
                 run: dotnet pack --no-restore -c Release /p:Version=$APP_VERSION -o $(pwd)/packages
-            -   name: Create php packages
-                run: |
-                    mkdir -p Composer/Core
-                    mkdir -p Composer/Queue
-                    find $(pwd)/src/Sitko.Core.Grpc/Proto -name "*.proto" | xargs /usr/local/bin/protoc --php_out=$(pwd)/Composer/Core --grpc_out $(pwd)/Composer/Core --proto_path=/opt/include --proto_path=$(pwd)/src/Sitko.Core.Grpc/Proto --plugin=protoc-gen-grpc=/usr/local/bin/grpc_php_client_plugin
-                    find $(pwd)/src/Sitko.Core.Queue.Nats/Proto -name "*.proto" | xargs /usr/local/bin/protoc --php_out=$(pwd)/Composer/Queue --proto_path=/opt/include --proto_path=$(pwd)/src/Sitko.Core.Queue.Nats/Proto
             -   name: Push to Nuget
                 run: find $(pwd)/packages -name *.nupkg -exec dotnet nuget push {} -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} \;
