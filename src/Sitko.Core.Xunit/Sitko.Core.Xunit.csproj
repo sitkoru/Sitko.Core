@@ -31,6 +31,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.7" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.0" PrivateAssets="None" />
     <PackageReference Include="Serilog.Sinks.XUnit" Version="2.0.4" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" PrivateAssets="None" />
     <PackageReference Include="xunit" Version="2.4.1" />
   </ItemGroup>
   <ItemGroup>
