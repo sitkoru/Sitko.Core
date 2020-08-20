@@ -180,7 +180,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 foreach (var collection in entry.Collections)
                 {
                     if (collection.CurrentValue.Cast<object>().Any(collectionEntry =>
-                        _dbContext.Entry(collectionEntry).State == EntityState.Modified))
+                        _dbContext.Entry(collectionEntry).State != EntityState.Unchanged))
                     {
                         entityChanges.Add(new PropertyChange(collection.Metadata.Name, collection, collection));
                     }
