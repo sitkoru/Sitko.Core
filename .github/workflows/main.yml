@@ -8,7 +8,7 @@ on:
 
 jobs:
     build:
-        runs-on: self-hosted
+        runs-on: ubuntu-latest
         container: docker.pkg.github.com/sitkoru/github-runner/runner:latest
         env:
             APP_VERSION: 3.2.0-ci.${{ github.run_id }}
