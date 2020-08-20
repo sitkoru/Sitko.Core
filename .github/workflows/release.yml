@@ -8,7 +8,7 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
-        container: docker.pkg.github.com/sitkoru/github-runner/runner:latest
+        container: mcr.microsoft.com/dotnet/core/sdk:3.1
         env:
             APP_VERSION: ${{ github.event.release.tag_name }}
         steps:
