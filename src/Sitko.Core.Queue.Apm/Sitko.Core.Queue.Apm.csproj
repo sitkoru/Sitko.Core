@@ -17,11 +17,13 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.ElasticStack\Sitko.Core.ElasticStack.csproj"/>
     <ProjectReference Include="..\Sitko.Core.Queue\Sitko.Core.Queue.csproj"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
   </ItemGroup>
 
   <ItemGroup>

@@ -17,6 +17,7 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj" />
@@ -27,6 +28,7 @@
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" Version="2.31.0" />
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.31.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />

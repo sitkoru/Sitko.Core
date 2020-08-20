@@ -17,6 +17,7 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +25,7 @@
     <PackageReference Include="Elastic.Apm.SerilogEnricher" Version="1.5.1"/>
     <PackageReference Include="Elastic.CommonSchema.Serilog" Version="1.5.1"/>
     <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="8.2.0"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
   </ItemGroup>
 
   <ItemGroup>

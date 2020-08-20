@@ -17,12 +17,14 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
   
   <ItemGroup>
     <PackageReference Include="Grpc.Core.Api" Version="2.31.0" />
     <PackageReference Include="Grpc.Tools" Version="2.31.0" PrivateAssets="None" />
     <PackageReference Include="Google.Protobuf" Version="3.13.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
     <Protobuf Include="Proto\**\*.proto" GrpcServices="None" />
   </ItemGroup>
   
