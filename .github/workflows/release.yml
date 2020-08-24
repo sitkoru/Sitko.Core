@@ -10,12 +10,30 @@ jobs:
         runs-on: ubuntu-latest
         container: mcr.microsoft.com/dotnet/core/sdk:3.1
         env:
-            APP_VERSION: ${{ github.event.release.tag_name }}
+            VERSION: ${{ github.event.release.tag_name }}
         steps:
             -   uses: actions/checkout@v2
             -   name: Restore
                 run: dotnet restore --locked-mode
             -   name: Create packages
-                run: dotnet pack --no-restore -c Release /p:Version=$APP_VERSION -o $(pwd)/packages
+                run: dotnet pack --no-restore -c Release /p:Version=$VERSION -o $(pwd)/packages
             -   name: Push to Nuget
                 run: find $(pwd)/packages -name *.nupkg -exec dotnet nuget push {} -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} \;
+            -   name: Download Sitko.Core
+                uses: actions/checkout@v2
+                with:
+                    repository: "sitkoru/Sitko.Core"
+                    path: proto
+                    ref: "proto"
+            -   name: Publish proto archive
+                run: |
+                    tar czf proto/proto.tar.gz -C src/Sitko.Core.Grpc/Proto .
+                    echo echo $VERSION > proto/VERSION
+                    cd proto
+                    git config user.name sitkobot
+                    git config user.email bot@sitko.ru
+                    git add proto.tar.gz
+                    git add VERSION
+                    git commit -m "publish proto archive $VERSION"
+                    git push
+                    
