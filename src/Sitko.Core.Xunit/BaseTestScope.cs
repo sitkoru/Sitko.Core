@@ -35,7 +35,7 @@ namespace Sitko.Core.Xunit
         public async Task ConfigureAsync(string name, ITestOutputHelper testOutputHelper)
         {
             Name = name;
-            _application = (TApplication)Activator.CreateInstance(typeof(TApplication), new object[] {new string[0]});
+            _application = CreateApplication();
 
             _application.ConfigureServices((context, services) =>
             {
@@ -53,6 +53,17 @@ namespace Sitko.Core.Xunit
             ServiceProvider = _application.GetServices().CreateScope().ServiceProvider;
             Configuration = ServiceProvider.GetService<IConfiguration>();
             Environment = ServiceProvider.GetService<IHostEnvironment>();
+        }
+
+        protected virtual TApplication CreateApplication()
+        {
+            var app = Activator.CreateInstance(typeof(TApplication), new object[] {new string[0]});
+            if (app is TApplication application)
+            {
+                return application;
+            }
+
+            throw new Exception($"Can't create application {typeof(TApplication)}");
         }
 
 
