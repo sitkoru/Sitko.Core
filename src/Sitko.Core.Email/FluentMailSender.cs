@@ -24,10 +24,10 @@ namespace Sitko.Core.Email
             _backgroundJobClient = backgroundJobClient;
         }
 
-        public Task<bool> SendHtmlMailAsync<T>(MailEntry<T> mailEntry, string template)
+        public async Task<bool> SendHtmlMailAsync<T>(MailEntry<T> mailEntry, string template)
         {
-            var html = _renderer.RenderViewToStringAsync(template, mailEntry).GetAwaiter().GetResult();
-            return SendMailAsync(mailEntry, html);
+            var html = await _renderer.RenderViewToStringAsync(template, mailEntry);
+            return await SendMailAsync(mailEntry, html);
         }
 
         public async Task<bool> SendHtmlMailAsync(MailEntry mailEntry, string template)
