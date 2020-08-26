@@ -13,10 +13,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Sitko.Core.Email
+namespace Sitko.Core.App.Web.Razor
 {
     public class ViewToStringRendererService : ViewExecutor
     {
@@ -57,10 +58,7 @@ namespace Sitko.Core.Email
             {
                 ViewData = new ViewDataDictionary(
                     new EmptyModelMetadataProvider(),
-                    new ModelStateDictionary())
-                {
-                    Model = model,
-                },
+                    new ModelStateDictionary()) {Model = model,},
                 TempData = new TempDataDictionary(
                     context.HttpContext,
                     _tempDataProvider),
@@ -79,10 +77,7 @@ namespace Sitko.Core.Email
                     view,
                     new ViewDataDictionary(
                         new EmptyModelMetadataProvider(),
-                        new ModelStateDictionary())
-                    {
-                        Model = model
-                    },
+                        new ModelStateDictionary()) {Model = model},
                     new TempDataDictionary(
                         context.HttpContext,
                         _tempDataProvider),

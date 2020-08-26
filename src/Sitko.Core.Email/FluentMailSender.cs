@@ -5,6 +5,7 @@ using FluentEmail.Core.Models;
 using Hangfire;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
+using Sitko.Core.App.Web.Razor;
 
 namespace Sitko.Core.Email
 {

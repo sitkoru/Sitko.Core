@@ -1,10 +1,9 @@
 using System;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
+using Sitko.Core.App.Web.Razor;
 
 namespace Sitko.Core.Email
 {
@@ -22,11 +21,7 @@ namespace Sitko.Core.Email
             IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
-            services.AddHttpContextAccessor();
-            services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
-            services.AddSingleton(new ViewToStringRendererServiceOptions(Config.Host,
-                Config.Scheme));
-            services.AddScoped<ViewToStringRendererService>();
+            services.AddViewToStringRenderer(Config.Host, Config.Scheme);
         }
 
         public override void CheckConfig()
