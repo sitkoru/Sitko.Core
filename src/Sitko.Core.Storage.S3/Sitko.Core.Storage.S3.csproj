@@ -19,9 +19,9 @@
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.5.0.4" />
+    <PackageReference Include="AWSSDK.S3" Version="3.5.0.5" />
     <PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="3.1.1" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Storage\Sitko.Core.Storage.csproj" />
