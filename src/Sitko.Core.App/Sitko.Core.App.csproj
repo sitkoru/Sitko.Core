@@ -20,26 +20,26 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Flurl.Http" Version="2.4.2"/>
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.7"/>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.7"/>
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="3.1.7"/>
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.7"/>
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.7"/>
-    <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.7"/>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
-    <PackageReference Include="Serilog.Exceptions" Version="5.6.0"/>
-    <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1"/>
-    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1"/>
-    <PackageReference Include="JetBrains.Annotations" Version="2020.1.0"/>
-    <PackageReference Include="Scrutor" Version="3.2.2"/>
-    <PackageReference Include="System.Text.Json" Version="4.7.2"/>
+    <PackageReference Include="Flurl.Http" Version="2.4.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.8" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.8" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="3.1.8" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.8" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.8" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.8" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Serilog.Exceptions" Version="5.6.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
+    <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
+    <PackageReference Include="Scrutor" Version="3.2.2" />
+    <PackageReference Include="System.Text.Json" Version="4.7.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md"/>
-    <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\"/>
-    <None Pack="true" PackagePath="buildTransitive" Include="Build\**\*.xml; Build\**\*.props; Build\**\*.targets;"/>
+    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
+    <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\" />
+    <None Pack="true" PackagePath="buildTransitive" Include="Build\**\*.xml; Build\**\*.props; Build\**\*.targets;" />
   </ItemGroup>
 
 </Project>
