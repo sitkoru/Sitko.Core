@@ -2,7 +2,7 @@ name: 5.0
 
 on:
     push:
-        branches: [master, net5]
+        branches: [master]
     pull_request:
         branches: [ master ]
 
