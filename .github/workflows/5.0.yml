@@ -1,4 +1,4 @@
-name: CI
+name: 5.0
 
 on:
     push:
