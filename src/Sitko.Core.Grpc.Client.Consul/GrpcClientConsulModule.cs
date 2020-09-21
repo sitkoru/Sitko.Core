@@ -16,7 +16,7 @@ namespace Sitko.Core.Grpc.Client.Consul
 
         public override List<Type> GetRequiredModules()
         {
-            return new List<Type> {typeof(ConsulModule)};
+            return new List<Type> {typeof(IConsulModule)};
         }
     }
 }

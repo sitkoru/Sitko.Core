@@ -2,7 +2,7 @@ using System;
 
 namespace Sitko.Core.Consul.Web
 {
-    public class ConsulWebModuleConfig
+    public class ConsulWebModuleConfig : ConsulModuleConfig
     {
         public string? IpAddress { get; set; }
         public Uri? ServiceUri { get; set; }

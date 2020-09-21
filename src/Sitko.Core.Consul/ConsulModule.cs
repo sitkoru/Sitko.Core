@@ -7,9 +7,14 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Consul
 {
-    public class ConsulModule : BaseApplicationModule<ConsulModuleConfig>
+    public interface IConsulModule
     {
-        public ConsulModule(ConsulModuleConfig config, Application application) : base(config,
+    }
+
+    public class ConsulModule<TConfig> : BaseApplicationModule<TConfig>, IConsulModule
+        where TConfig : ConsulModuleConfig, new()
+    {
+        public ConsulModule(TConfig config, Application application) : base(config,
             application)
         {
         }
@@ -22,13 +27,6 @@ namespace Sitko.Core.Consul
             {
                 var options = p.GetRequiredService<ConsulModuleConfig>();
                 return new ConsulClient(config => { config.Address = new Uri(options.ConsulUri); });
-            });
-            services.AddHealthChecks().AddConsul(options =>
-            {
-                var uri = new Uri(Config.ConsulUri);
-                options.HostName = uri.Host;
-                options.Port = uri.Port;
-                options.RequireHttps = false;
             });
         }
     }
