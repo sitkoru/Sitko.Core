@@ -42,7 +42,7 @@ jobs:
             -   name: Setup dotnet 5.0
                 uses: actions/setup-dotnet@v1.6.0
                 with:
-                    dotnet-version: '5.0.x'
+                    dotnet-version: '5.0.100-rc.1.20452.10'
             -   name: Restore
                 run: dotnet restore --locked-mode
             -   name: Tests Sitko.Core.Queue
