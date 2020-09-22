@@ -1,15 +1,14 @@
-name: 5.0
+name: Main
 
 on:
     push:
-        branches: [master]
+        branches: [ master ]
     pull_request:
         branches: [ master ]
 
 jobs:
     build:
         runs-on: ubuntu-latest
-        container: mcr.microsoft.com/dotnet/sdk:5.0
         env:
             APP_VERSION: 4.0.0-ci.${{ github.run_id }}
             POSTGRES_HOST: postgres
@@ -36,6 +35,14 @@ jobs:
                     POSTGRES_HOST_AUTH_METHOD: trust
         steps:
             -   uses: actions/checkout@v2
+            -   name: Setup dotnet 3.1
+                uses: actions/setup-dotnet@v1
+                with:
+                    dotnet-version: '3.1.x'
+            -   name: Setup dotnet 5.0
+                uses: actions/setup-dotnet@v1
+                with:
+                    dotnet-version: '5.0.x'
             -   name: Restore
                 run: dotnet restore --locked-mode
             -   name: Tests Sitko.Core.Queue
