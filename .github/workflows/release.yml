@@ -1,14 +1,13 @@
 name: Release
 
 on:
-    release:
-        types:
-            - created
+    tags:
+        - '*.*.*'
 
 jobs:
     build:
         runs-on: ubuntu-latest
-        container: mcr.microsoft.com/dotnet/core/sdk:3.1
+        container: mcr.microsoft.com/dotnet/sdk:5.0
         env:
             VERSION: ${{ github.event.release.tag_name }}
         steps:
@@ -26,6 +25,7 @@ jobs:
                     path: proto
                     ref: "proto"
             -   name: Publish proto archive
+                if: github.ref == 'refs/heads/master'
                 run: |
                     tar czf proto/proto.tar.gz -C src/Sitko.Core.Grpc/Proto .
                     echo echo $VERSION > proto/VERSION
