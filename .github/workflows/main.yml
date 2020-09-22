@@ -36,11 +36,11 @@ jobs:
         steps:
             -   uses: actions/checkout@v2
             -   name: Setup dotnet 3.1
-                uses: actions/setup-dotnet@v1.6.0
+                uses: actions/setup-dotnet@v1
                 with:
-                    dotnet-version: '3.1.x'
+                    dotnet-version: '3.1.402'
             -   name: Setup dotnet 5.0
-                uses: actions/setup-dotnet@v1.6.0
+                uses: actions/setup-dotnet@v1
                 with:
                     dotnet-version: '5.0.100-rc.1.20452.10'
             -   name: Restore
