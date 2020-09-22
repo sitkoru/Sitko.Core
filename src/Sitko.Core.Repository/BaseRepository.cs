@@ -51,6 +51,8 @@ namespace Sitko.Core.Repository
         public abstract Task<bool> CommitTransactionAsync(CancellationToken cancellationToken = default);
         public abstract Task<bool> RollbackTransactionAsync(CancellationToken cancellationToken = default);
 
+        public abstract Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default);
+
 
         public virtual Task<bool> BeginBatchAsync(CancellationToken cancellationToken = default)
         {

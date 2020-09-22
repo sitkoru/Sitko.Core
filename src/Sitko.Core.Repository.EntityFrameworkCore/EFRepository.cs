@@ -312,5 +312,10 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
             return false;
         }
+
+        public override Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default)
+        {
+            return _dbContext.Entry(entity).ReloadAsync();
+        }
     }
 }
