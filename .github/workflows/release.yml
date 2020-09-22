@@ -1,15 +1,16 @@
 name: Release
 
 on:
-    tags:
-        - '*.*.*'
+    push:
+        tags:
+            - '*.*.*'
 
 jobs:
     build:
         runs-on: ubuntu-latest
         container: mcr.microsoft.com/dotnet/sdk:5.0
         env:
-            VERSION: ${{ github.event.release.tag_name }}
+            VERSION: ${{ github.ref#refs/tags/ }}
         steps:
             -   uses: actions/checkout@v2
             -   name: Restore
