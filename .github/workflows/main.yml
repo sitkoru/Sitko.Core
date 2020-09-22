@@ -9,6 +9,7 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
+        container: debian:stable-slim
         env:
             APP_VERSION: 4.0.0-ci.${{ github.run_id }}
             POSTGRES_HOST: postgres
