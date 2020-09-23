@@ -46,8 +46,25 @@ namespace Sitko.Core.Repository.Tests
             Assert.Equal(oldValue, change.OriginalValue);
             Assert.Equal(item.Status, change.CurrentValue);
         }
+        
+        [Fact]
+        public async Task Refresh()
+        {
+            var scope = await GetScopeAsync<EFTestScopeThreadSafe>();
 
+            var repository = scope.Get<IRepository<TestModel, Guid>>();
 
+            var item = await repository.GetAsync();
+
+            Assert.NotNull(item);
+            var oldValue = item.Status;
+            item.Status = TestStatus.Disabled;
+
+           Assert.NotEqual(oldValue,item.Status);
+           await repository.RefreshAsync(item);
+           Assert.Equal(oldValue,item.Status);
+        }
+        
         [Fact]
         public async Task JsonConditions()
         {
