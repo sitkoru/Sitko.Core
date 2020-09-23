@@ -315,7 +315,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         public override Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
-            return _dbContext.Entry(entity).ReloadAsync();
+            return _dbContext.Entry(entity).ReloadAsync(cancellationToken);
         }
     }
 }
