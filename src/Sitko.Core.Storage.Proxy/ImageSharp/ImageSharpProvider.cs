@@ -79,10 +79,10 @@ namespace Sitko.Core.Storage.Proxy.ImageSharp
             var fileInfo = await _storage.GetFileAsync(_imagePath);
             if (fileInfo == null)
             {
-                return new ImageMetadata(DateTime.UtcNow);
+                return new ImageMetadata(DateTime.UtcNow, 0);
             }
 
-            return new ImageMetadata(fileInfo.LastModified.DateTime);
+            return new ImageMetadata(fileInfo.LastModified.DateTime, fileInfo.FileSize);
         }
 
         public async Task<Stream> OpenReadAsync()
