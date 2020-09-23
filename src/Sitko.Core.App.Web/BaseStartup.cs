@@ -85,6 +85,7 @@ namespace Sitko.Core.App.Web
             }
 
             WebApplication<T>.GetInstance().ConfigureStartupServices(services, Configuration, Environment);
+            AddDataProtection(services);
             ConfigureAppServices(services);
         }
 
@@ -99,9 +100,14 @@ namespace Sitko.Core.App.Web
             services.AddMemoryCache();
         }
 
-        public virtual void AddDataProtection(IServiceCollection services)
+        private void AddDataProtection(IServiceCollection services)
         {
-            services.AddDataProtection()
+            ConfigureDataProtection(services.AddDataProtection());
+        }
+
+        protected virtual IDataProtectionBuilder ConfigureDataProtection(IDataProtectionBuilder dataProtectionBuilder)
+        {
+            return dataProtectionBuilder
                 .SetApplicationName(Environment.ApplicationName)
                 .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
         }
