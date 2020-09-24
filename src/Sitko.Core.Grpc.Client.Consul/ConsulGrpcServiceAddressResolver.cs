@@ -14,7 +14,7 @@ namespace Sitko.Core.Grpc.Client.Consul
         where TClient : ClientBase<TClient>
     {
         private readonly IConsulClient _consulClient;
-        private readonly GrpcClientModuleConfig _config;
+        private readonly GrpcClientConsulModuleConfig _config;
         private readonly ILogger<ConsulGrpcServiceAddressResolver<TClient>> _logger;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private Uri? _target;
@@ -26,7 +26,7 @@ namespace Sitko.Core.Grpc.Client.Consul
         private Task? _refreshTask;
 
         public ConsulGrpcServiceAddressResolver(IConsulClient consulClient,
-            GrpcClientModuleConfig config,
+            GrpcClientConsulModuleConfig config,
             ILogger<ConsulGrpcServiceAddressResolver<TClient>> logger)
         {
             _consulClient = consulClient;
