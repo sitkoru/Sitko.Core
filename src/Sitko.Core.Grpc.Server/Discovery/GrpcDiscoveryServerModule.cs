@@ -31,7 +31,7 @@ namespace Sitko.Core.Grpc.Server.Discovery
         public override Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider)
         {
-            var registrar = serviceProvider.GetRequiredService<TRegistrar>();
+            var registrar = serviceProvider.GetRequiredService<IGrpcServicesRegistrar>();
             foreach (var serviceRegistration in _serviceRegistrations)
             {
                 serviceRegistration(registrar);
@@ -40,8 +40,8 @@ namespace Sitko.Core.Grpc.Server.Discovery
             return Task.CompletedTask;
         }
 
-        private readonly List<Action<TRegistrar>> _serviceRegistrations =
-            new List<Action<TRegistrar>>();
+        private readonly List<Action<IGrpcServicesRegistrar>> _serviceRegistrations =
+            new List<Action<IGrpcServicesRegistrar>>();
 
         private readonly List<Action<IHealthChecksBuilder>> _healthChecksRegistrations =
             new List<Action<IHealthChecksBuilder>>();
