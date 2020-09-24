@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Consul;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
+using Sitko.Core.Grpc.Client.Discovery;
 
 namespace Sitko.Core.Grpc.Client.Consul
 {

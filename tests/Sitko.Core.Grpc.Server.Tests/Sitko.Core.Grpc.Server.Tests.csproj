@@ -5,13 +5,13 @@
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="Grpc.Tools" Version="2.32.0" PrivateAssets="None" />
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.1.8" />
-    <ProjectReference Include="..\..\src\Sitko.Core.Grpc.Server\Sitko.Core.Grpc.Server.csproj" />
-    <ProjectReference Include="..\..\src\Sitko.Core.Xunit\Sitko.Core.Xunit.csproj" />
-    <Protobuf Include="**/*.proto" GrpcServices="Both" AdditionalImportDirs="..\..\src\Sitko.Core.Grpc\Proto" />
+    <PackageReference Include="Grpc.Tools" Version="2.32.0" PrivateAssets="None"/>
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.1.8"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.Grpc.Server\Sitko.Core.Grpc.Server.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.Xunit\Sitko.Core.Xunit.csproj"/>
+    <Protobuf Include="**/*.proto" GrpcServices="Both" AdditionalImportDirs="..\..\src\Sitko.Core.Grpc\Proto"/>
   </ItemGroup>
 
 </Project>

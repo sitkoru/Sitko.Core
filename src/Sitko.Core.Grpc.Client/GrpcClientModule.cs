@@ -1,15 +1,14 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
-using Grpc.Net.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
+using Sitko.Core.Grpc.Client.Discovery;
 
 namespace Sitko.Core.Grpc.Client
 {
@@ -17,11 +16,13 @@ namespace Sitko.Core.Grpc.Client
     {
     }
 
-    public abstract class GrpcClientModule<TClient, TResolver> : BaseApplicationModule<GrpcClientModuleConfig>,
+    public abstract class GrpcClientModule<TClient, TResolver, TConfig> : BaseApplicationModule<TConfig>,
         IGrpcClientModule<TClient>
-        where TClient : ClientBase<TClient> where TResolver : class, IGrpcServiceAddressResolver<TClient>
+        where TClient : ClientBase<TClient>
+        where TResolver : class, IGrpcServiceAddressResolver<TClient>
+        where TConfig : GrpcClientModuleConfig, new()
     {
-        public GrpcClientModule(GrpcClientModuleConfig config, Application application) : base(config, application)
+        public GrpcClientModule(TConfig config, Application application) : base(config, application)
         {
         }
 
@@ -36,7 +37,7 @@ namespace Sitko.Core.Grpc.Client
             }
 
             services.AddSingleton<IGrpcClientProvider<TClient>, GrpcClientProvider<TClient>>();
-            services.AddSingleton<IGrpcServiceAddressResolver<TClient>, TResolver>();
+            RegisterResolver(services);
             if (Config.Interceptors.Any())
             {
                 foreach (var type in Config.Interceptors)
@@ -88,20 +89,10 @@ namespace Sitko.Core.Grpc.Client
             var resolver = serviceProvider.GetService<IGrpcServiceAddressResolver<TClient>>();
             await resolver.InitAsync();
         }
-    }
 
-    public class GrpcClientModuleConfig
-    {
-        public bool EnableHttp2UnencryptedSupport { get; set; }
-        public bool DisableCertificatesValidation { get; set; }
-        public Action<GrpcChannelOptions>? ConfigureChannelOptions { get; set; }
-
-        internal readonly HashSet<Type> Interceptors = new HashSet<Type>();
-
-        public GrpcClientModuleConfig AddInterceptor<TInterceptor>() where TInterceptor : Interceptor
+        protected virtual void RegisterResolver(IServiceCollection services)
         {
-            Interceptors.Add(typeof(TInterceptor));
-            return this;
+            services.AddSingleton<IGrpcServiceAddressResolver<TClient>, TResolver>();
         }
     }
 }

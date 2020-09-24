@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Grpc.AspNetCore.Server;
 
 namespace Sitko.Core.Grpc.Server
@@ -18,5 +19,16 @@ namespace Sitko.Core.Grpc.Server
         public Action<GrpcServiceOptions>? Configure { get; set; }
 
         public bool AutoFixRegistration { get; set; } = false;
+
+        public Action<IGrpcServerModule>[] ServiceRegistrations => _serviceRegistrations.ToArray();
+
+        private readonly List<Action<IGrpcServerModule>> _serviceRegistrations =
+            new List<Action<IGrpcServerModule>>();
+
+        public GrpcServerOptions RegisterService<TService>() where TService : class
+        {
+            _serviceRegistrations.Add(module => module.RegisterService<TService>());
+            return this;
+        }
     }
 }

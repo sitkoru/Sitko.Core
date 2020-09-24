@@ -11,6 +11,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App;
 using Sitko.Core.App.Helpers;
+using Sitko.Core.Grpc.Server.Discovery;
 
 namespace Sitko.Core.Grpc.Server.Consul
 {

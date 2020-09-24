@@ -2,7 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace Sitko.Core.Grpc.Server
+namespace Sitko.Core.Grpc.Server.Discovery
 {
     public class GrpcServiceHealthCheck<TService> : IHealthCheck where TService : class
     {

@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Sitko.Core.Grpc.Client.Discovery;
 
 namespace Sitko.Core.Grpc.Client
 {

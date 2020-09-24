@@ -38,10 +38,11 @@ namespace Sitko.Core.Grpc.Server.Tests
             var response = await grpcClient.RequestAsync(new TestRequest());
             Assert.True(response.ResponseInfo.IsSuccess);
         }
-            
+
         private class ResponseVersionHandler : DelegatingHandler
         {
-            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+                CancellationToken cancellationToken)
             {
                 var response = await base.SendAsync(request, cancellationToken);
                 response.Version = request.Version;
@@ -63,13 +64,7 @@ namespace Sitko.Core.Grpc.Server.Tests
     {
         public override Task<TestResponse> Request(TestRequest request, ServerCallContext context)
         {
-            return Task.FromResult(new TestResponse
-            {
-                ResponseInfo = new ApiResponseInfo
-                {
-                    IsSuccess = true
-                }
-            });
+            return Task.FromResult(new TestResponse {ResponseInfo = new ApiResponseInfo {IsSuccess = true}});
         }
     }
 
@@ -77,8 +72,10 @@ namespace Sitko.Core.Grpc.Server.Tests
     {
         public TestApplication(string[] args) : base(args)
         {
-            AddModule<GrpcServerModule, GrpcServerOptions>()
-                .AddModule<GrpcServiceModule<TestServiceImpl>>().UseStartup<TestStartup>();
+            AddModule<GrpcServerModule, GrpcServerOptions>((configuration, environment, moduleConfig) =>
+            {
+                moduleConfig.RegisterService<TestServiceImpl>();
+            }).UseStartup<TestStartup>();
         }
     }
 }
