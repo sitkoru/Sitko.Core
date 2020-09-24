@@ -17,7 +17,7 @@ namespace Sitko.Core.Grpc.Server.Consul
 {
     public class ConsulGrpcServicesRegistrar : IGrpcServicesRegistrar, IAsyncDisposable
     {
-        private readonly GrpcServerOptions _options;
+        private readonly GrpcServerConsulModuleConfig _options;
         private readonly IApplication _application;
         private readonly IConsulClient? _consulClient;
         private readonly ILogger<ConsulGrpcServicesRegistrar> _logger;
@@ -27,7 +27,7 @@ namespace Sitko.Core.Grpc.Server.Consul
 
         private readonly Dictionary<string, string> _registeredServices = new Dictionary<string, string>();
 
-        public ConsulGrpcServicesRegistrar(GrpcServerOptions options,
+        public ConsulGrpcServicesRegistrar(GrpcServerConsulModuleConfig options,
             IApplication application,
             IServer server, ILogger<ConsulGrpcServicesRegistrar> logger, IConsulClient? consulClient = null)
         {
