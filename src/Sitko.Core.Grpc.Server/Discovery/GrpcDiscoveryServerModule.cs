@@ -8,9 +8,10 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Server.Discovery
 {
-    public class GrpcDiscoveryServerModule : GrpcServerModule
+    public abstract class GrpcDiscoveryServerModule<TRegistrar, TConfig> : BaseGrpcServerModule<TConfig>
+        where TRegistrar : class, IGrpcServicesRegistrar where TConfig : GrpcServerOptions, new()
     {
-        public GrpcDiscoveryServerModule(GrpcServerOptions config, Application application) : base(
+        protected GrpcDiscoveryServerModule(TConfig config, Application application) : base(
             config, application)
         {
         }
@@ -19,6 +20,7 @@ namespace Sitko.Core.Grpc.Server.Discovery
             IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
+            services.AddSingleton<IGrpcServicesRegistrar, TRegistrar>();
             var healthChecksBuilder = services.AddHealthChecks();
             foreach (var healthChecksRegistration in _healthChecksRegistrations)
             {
@@ -29,7 +31,7 @@ namespace Sitko.Core.Grpc.Server.Discovery
         public override Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider)
         {
-            var registrar = serviceProvider.GetRequiredService<IGrpcServicesRegistrar>();
+            var registrar = serviceProvider.GetRequiredService<TRegistrar>();
             foreach (var serviceRegistration in _serviceRegistrations)
             {
                 serviceRegistration(registrar);
@@ -38,8 +40,8 @@ namespace Sitko.Core.Grpc.Server.Discovery
             return Task.CompletedTask;
         }
 
-        private readonly List<Action<IGrpcServicesRegistrar>> _serviceRegistrations =
-            new List<Action<IGrpcServicesRegistrar>>();
+        private readonly List<Action<TRegistrar>> _serviceRegistrations =
+            new List<Action<TRegistrar>>();
 
         private readonly List<Action<IHealthChecksBuilder>> _healthChecksRegistrations =
             new List<Action<IHealthChecksBuilder>>();

@@ -6,18 +6,15 @@ using Sitko.Core.Grpc.Server.Discovery;
 
 namespace Sitko.Core.Grpc.Server.Consul
 {
-    public class GrpcServerConsulModule : BaseApplicationModule
+    public class GrpcServerConsulModule : GrpcDiscoveryServerModule<ConsulGrpcServicesRegistrar, GrpcServerConsulModuleConfig>
     {
-        public GrpcServerConsulModule(BaseApplicationModuleConfig config, Application application) : base(config,
+        public GrpcServerConsulModule(GrpcServerConsulModuleConfig config, Application application) : base(config,
             application)
         {
         }
+    }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
-            base.ConfigureServices(services, configuration, environment);
-            services.AddSingleton<IGrpcServicesRegistrar, GrpcServicesRegistrar>();
-        }
+    public class GrpcServerConsulModuleConfig : GrpcServerOptions
+    {
     }
 }
