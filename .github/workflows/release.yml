@@ -16,28 +16,8 @@ jobs:
               run: |
                   VERSION=${GITHUB_REF#refs/tags/}
                   echo ::set-output name=version::${VERSION}
-            -   name: Restore
-                run: dotnet restore --locked-mode
             -   name: Create packages
-                run: dotnet pack --no-restore -c Release /p:Version=${{ steps.prep.outputs.version }} -o $(pwd)/packages
+                run: dotnet pack -c Release /p:Version=${{ steps.prep.outputs.version }} -o $(pwd)/packages
             -   name: Push to Nuget
                 run: find $(pwd)/packages -name *.nupkg -exec dotnet nuget push {} -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} \;
-            -   name: Download Sitko.Core
-                uses: actions/checkout@v2
-                with:
-                    repository: "sitkoru/Sitko.Core"
-                    path: proto
-                    ref: "proto"
-            -   name: Publish proto archive
-                if: github.ref == 'refs/heads/master'
-                run: |
-                    tar czf proto/proto.tar.gz -C src/Sitko.Core.Grpc/Proto .
-                    echo echo ${{ steps.prep.outputs.version }} > proto/VERSION
-                    cd proto
-                    git config user.name sitkobot
-                    git config user.email bot@sitko.ru
-                    git add proto.tar.gz
-                    git add VERSION
-                    git commit -m "publish proto archive ${{ steps.prep.outputs.version }}"
-                    git push
                     
