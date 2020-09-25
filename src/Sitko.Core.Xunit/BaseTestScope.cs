@@ -131,7 +131,13 @@ namespace Sitko.Core.Xunit
     {
         public TestApplication(string[] args) : base(args)
         {
-            LoggingLevel = LogEventLevel.Debug;
+        }
+
+        protected override void ConfigureLogging(LoggerConfiguration loggerConfiguration,
+            LogLevelSwitcher logLevelSwitcher)
+        {
+            base.ConfigureLogging(loggerConfiguration, logLevelSwitcher);
+            logLevelSwitcher.Switch.MinimumLevel = LogEventLevel.Debug;
         }
     }
 
