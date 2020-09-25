@@ -6,10 +6,11 @@ using Sitko.Core.Consul;
 
 namespace Sitko.Core.Grpc.Client.Consul
 {
-    public class GrpcClientConsulModule<TClient> : GrpcClientModule<TClient, ConsulGrpcServiceAddressResolver<TClient>>
+    public class GrpcClientConsulModule<TClient> : GrpcClientModule<TClient, ConsulGrpcServiceAddressResolver<TClient>,
+        GrpcClientConsulModuleConfig>
         where TClient : ClientBase<TClient>
     {
-        public GrpcClientConsulModule(GrpcClientModuleConfig config, Application application) :
+        public GrpcClientConsulModule(GrpcClientConsulModuleConfig config, Application application) :
             base(config, application)
         {
         }
@@ -18,5 +19,9 @@ namespace Sitko.Core.Grpc.Client.Consul
         {
             return new List<Type> {typeof(IConsulModule)};
         }
+    }
+
+    public class GrpcClientConsulModuleConfig : GrpcClientModuleConfig
+    {
     }
 }

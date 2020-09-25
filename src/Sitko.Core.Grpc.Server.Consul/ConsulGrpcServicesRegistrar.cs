@@ -11,24 +11,25 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App;
 using Sitko.Core.App.Helpers;
+using Sitko.Core.Grpc.Server.Discovery;
 
 namespace Sitko.Core.Grpc.Server.Consul
 {
-    public class GrpcServicesRegistrar : IGrpcServicesRegistrar, IAsyncDisposable
+    public class ConsulGrpcServicesRegistrar : IGrpcServicesRegistrar, IAsyncDisposable
     {
-        private readonly GrpcServerOptions _options;
+        private readonly GrpcServerConsulModuleConfig _options;
         private readonly IApplication _application;
         private readonly IConsulClient? _consulClient;
-        private readonly ILogger<GrpcServicesRegistrar> _logger;
+        private readonly ILogger<ConsulGrpcServicesRegistrar> _logger;
         private readonly string _host = "127.0.0.1";
         private readonly int _port;
         private readonly bool _inContainer = DockerHelper.IsRunningInDocker();
 
         private readonly Dictionary<string, string> _registeredServices = new Dictionary<string, string>();
 
-        public GrpcServicesRegistrar(GrpcServerOptions options,
+        public ConsulGrpcServicesRegistrar(GrpcServerConsulModuleConfig options,
             IApplication application,
-            IServer server, ILogger<GrpcServicesRegistrar> logger, IConsulClient? consulClient = null)
+            IServer server, ILogger<ConsulGrpcServicesRegistrar> logger, IConsulClient? consulClient = null)
         {
             _options = options;
             _application = application;

@@ -30,17 +30,11 @@ namespace Sitko.Core.Storage.Proxy
             IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
-            services.AddImageSharpCore(options =>
+            services.AddImageSharp(options =>
                 {
                     options.Configuration = SixLabors.ImageSharp.Configuration.Default;
-                    options.MaxBrowserCacheDays = 1;
-                    options.MaxCacheDays = 1;
+                    options.BrowserMaxAge = TimeSpan.FromDays(1);
                     options.CachedNameLength = 12;
-                    options.OnParseCommands = _ => { };
-                    options.OnBeforeSave = _ => { };
-                    options.OnProcessed = _ => { };
-
-                    options.OnPrepareResponse = _ => { };
                     Config.ConfigureImageSharpMiddleware?.Invoke(options);
                 })
                 .SetRequestParser<QueryCollectionRequestParser>()
