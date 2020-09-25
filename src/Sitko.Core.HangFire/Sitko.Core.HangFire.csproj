@@ -20,10 +20,10 @@
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.13" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.14" />
     <PackageReference Include="Hangfire.PostgreSql" Version="1.7.1" />
     <PackageReference Include="AspNetCore.HealthChecks.Hangfire" Version="3.1.1" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj" />
