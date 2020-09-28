@@ -24,7 +24,7 @@
     <PackageReference Include="Elastic.Apm.NetCoreAll" Version="1.6.1" />
     <PackageReference Include="Elastic.Apm.SerilogEnricher" Version="1.5.1" />
     <PackageReference Include="Elastic.CommonSchema.Serilog" Version="1.5.1" />
-    <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="8.4.0" />
+    <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="8.4.1" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
 
