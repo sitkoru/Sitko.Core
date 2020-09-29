@@ -29,8 +29,6 @@ namespace Sitko.Core.HangFire
             services.AddHangfire(config =>
             {
                 Config.Configure?.Invoke(config);
-                config.UseFilter(new UseQueueFromScheduledFilter());
-                config.UseFilter(new PreserveOriginalQueueAttribute());
             });
             if (Config.IsHealthChecksEnabled)
             {
@@ -66,15 +64,6 @@ namespace Sitko.Core.HangFire
                     WorkerCount = Config.Workers, Queues = Config.Queues
                 });
             }
-
-            var currentHandler =
-                GlobalStateHandlers.Handlers.FirstOrDefault(h => h.StateName == ScheduledState.StateName);
-            if (currentHandler != null)
-            {
-                GlobalStateHandlers.Handlers.Remove(currentHandler);
-            }
-
-            GlobalStateHandlers.Handlers.Add(new StateHandler());
         }
     }
 
