@@ -2,16 +2,15 @@ name: CI
 
 on:
     push:
-        branches: [master]
+        branches: [ master ]
     pull_request:
         branches: [ master ]
 
 jobs:
     build:
         runs-on: ubuntu-latest
-        container: mcr.microsoft.com/dotnet/core/sdk:3.1
+        container: ghcr.io/sitkoru/actions-container
         env:
-            APP_VERSION: 3.2.0-ci.${{ github.run_id }}
             POSTGRES_HOST: postgres
             XUNIT_USE_POSTGRES: "true"
             MINIO_SERVER_URI: http://minio:9000
@@ -36,6 +35,9 @@ jobs:
                     POSTGRES_HOST_AUTH_METHOD: trust
         steps:
             -   uses: actions/checkout@v2
+            -   uses: actions/setup-dotnet@v1
+                with:
+                    dotnet-version: '3.1.x'
             -   name: Restore
                 run: dotnet restore --locked-mode
             -   name: Tests Sitko.Core.Queue
@@ -52,5 +54,7 @@ jobs:
                 run: dotnet test --no-restore $(pwd)/tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
             -   name: Sitko.Core.Queue.Storage.S3
                 run: dotnet test --no-restore $(pwd)/tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
+            -   name: Sitko.Core.Pdf
+                run: dotnet test --no-restore $(pwd)/tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
             -   name: Create packages
-                run: dotnet pack --no-restore -c Release /p:Version=$APP_VERSION
+                run: dotnet pack --no-restore -c Release
