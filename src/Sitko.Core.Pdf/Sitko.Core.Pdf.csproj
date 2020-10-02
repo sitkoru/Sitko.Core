@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+      <Nullable>enable</Nullable>
+      <LangVersion>latest</LangVersion>
+      <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
+      <PackageLicenseExpression>MIT</PackageLicenseExpression>
+      <Authors>George Drak</Authors>
+      <Company>Sitko.Ru</Company>
+      <Product>Sitko.Core</Product>
+      <Description>Sitko.Core is a set of libraries to help build .NET Core applications fast</Description>
+      <Summary>Sitko.Core is a set of libraries to help build .NET Core applications fast</Summary>
+      <Copyright>Copyright © Sitko.ru 2020</Copyright>
+      <RepositoryUrl>https://github.com/sitkoru/Sitko.Core</RepositoryUrl>
+      <PackageIcon>packageIcon.png</PackageIcon>
+      <PublishRepositoryUrl>true</PublishRepositoryUrl>
+      <IncludeSymbols>true</IncludeSymbols>
+      <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+      <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
+      <PackageReference Include="PuppeteerSharp" Version="2.0.4" />
+    </ItemGroup>
+
+</Project>
