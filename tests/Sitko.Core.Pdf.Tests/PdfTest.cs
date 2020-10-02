@@ -34,7 +34,7 @@ namespace Sitko.Core.Pdf.Tests
         }
 
         [Fact]
-        public async Task PdfAsync()
+        public async Task Pdf()
         {
             var scope = await GetScopeAsync();
             var renderer = scope.Get<IPdfRenderer>();
