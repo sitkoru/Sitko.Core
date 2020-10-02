@@ -1,10 +1,8 @@
-using System;
 using System.IO;
 using System.Threading.Tasks;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
-using JetBrains.Annotations;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -30,7 +28,7 @@ namespace Sitko.Core.Pdf.Tests
             var text = PdfTextExtractor.GetTextFromPage(pdf.GetPage(1), new LocationTextExtractionStrategy());
             pdf.Close();
 
-            Assert.Contains("Built for developers", text);
+            Assert.Contains("GitHub", text);
         }
 
         [Fact]
