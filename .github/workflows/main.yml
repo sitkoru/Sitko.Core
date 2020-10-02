@@ -11,7 +11,6 @@ jobs:
         runs-on: ubuntu-latest
         container: ghcr.io/sitkoru/actions-container:latest
         env:
-            APP_VERSION: 4.0.0-ci.${{ github.run_id }}
             POSTGRES_HOST: postgres
             XUNIT_USE_POSTGRES: "true"
             MINIO_SERVER_URI: http://minio:9000
@@ -58,5 +57,7 @@ jobs:
                 run: dotnet test $(pwd)/tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
             -   name: Sitko.Core.Queue.Storage.S3
                 run: dotnet test $(pwd)/tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
+            -   name: Sitko.Core.Pdf
+                run: dotnet test $(pwd)/tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
             -   name: Create packages
-                run: dotnet pack -c Release /p:Version=$APP_VERSION
+                run: dotnet pack -c Release
