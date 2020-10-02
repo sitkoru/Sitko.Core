@@ -10,9 +10,6 @@ jobs:
     build:
         runs-on: ubuntu-latest
         container: ghcr.io/sitkoru/actions-container
-        - uses: actions/setup-dotnet@v1
-          with:
-              dotnet-version: '3.1.x'
         env:
             POSTGRES_HOST: postgres
             XUNIT_USE_POSTGRES: "true"
@@ -38,6 +35,9 @@ jobs:
                     POSTGRES_HOST_AUTH_METHOD: trust
         steps:
             -   uses: actions/checkout@v2
+            -   uses: actions/setup-dotnet@v1
+                with:
+                    dotnet-version: '3.1.x'
             -   name: Restore
                 run: dotnet restore --locked-mode
             -   name: Tests Sitko.Core.Queue
