@@ -32,7 +32,7 @@ namespace Sitko.Core.Storage.FileSystem
                 Directory.CreateDirectory(dirPath);
             }
 
-            using var fileStream = File.Create(Path.Combine(_storagePath, path));
+            await using var fileStream = File.Create(Path.Combine(_storagePath, path));
             file.Seek(0, SeekOrigin.Begin);
             await file.CopyToAsync(fileStream);
             return true;
@@ -73,53 +73,60 @@ namespace Sitko.Core.Storage.FileSystem
             return Task.CompletedTask;
         }
 
-        protected override Task<StorageRecord?> DoGetFileAsync(string path)
+        protected override Task<StorageItem?> DoGetFileAsync(string path)
         {
-            StorageRecord? result = null;
+            StorageItem? result = null;
             var fullPath = Path.Combine(_storagePath, path);
             var fileInfo = new FileInfo(fullPath);
             if (fileInfo.Exists)
             {
-                var item = new StorageItem
+                result = new StorageItem(fileInfo.OpenRead())
                 {
                     FileName = fileInfo.Name,
                     FileSize = fileInfo.Length,
-                    Path = Path.GetDirectoryName(fileInfo.FullName),
-                    FilePath = fileInfo.FullName
+                    Path = PreparePath(Path.GetDirectoryName(fullPath)),
+                    FilePath = PreparePath(fullPath),
+                    LastModified = fileInfo.LastWriteTimeUtc
                 };
-                result = new StorageRecord(item, fileInfo.OpenRead()) {LastModified = fileInfo.LastWriteTimeUtc,};
             }
 
 
             return Task.FromResult(result);
         }
 
-        public override Task<StorageItemCollection> GetDirectoryContentsAsync(string path)
+        protected override Task<StorageFolder?> DoBuildStorageTreeAsync()
         {
-            var fullPath = Path.Combine(_storagePath, path);
-            return Task.FromResult(new StorageItemCollection(GetFiles(fullPath)));
+            return Task.FromResult(ListFolder("/"));
         }
 
-        private List<StorageItem> GetFiles(string path)
+        private StorageFolder ListFolder(string path)
         {
-            return new DirectoryInfo(path)
-                .EnumerateFileSystemInfos()
-                .Select(info =>
-                {
-                    if (info is FileInfo file)
+            var fullPath = path == "/" ? _storagePath : Path.Combine(_storagePath, path.Trim('/'));
+            IEnumerable<IStorageNode>? children = null;
+            if (Directory.Exists(fullPath))
+            {
+                children = new DirectoryInfo(fullPath)
+                    .EnumerateFileSystemInfos()
+                    .Select(info =>
                     {
-                        return new StorageRecord
+                        return info switch
                         {
-                            FileName = file.Name,
-                            FileSize = file.Length,
-                            LastModified = file.LastWriteTimeUtc,
-                            Path = Path.GetDirectoryName(file.FullName),
-                            FilePath = file.FullName
-                        } as StorageItem;
-                    }
-
-                    throw new InvalidOperationException("Unexpected type of FileSystemInfo");
-                }).ToList();
+                            FileInfo file => new StorageItem
+                            {
+                                FileName = file.Name,
+                                FileSize = file.Length,
+                                LastModified = file.LastWriteTimeUtc,
+                                Path = PreparePath(path)!.Trim('/'),
+                                FilePath = PreparePath(Path.Combine(path, file.Name))!.Trim('/')
+                            } as IStorageNode,
+                            DirectoryInfo dir => ListFolder(PreparePath(Path.Combine(path, dir.Name))),
+                            _ => throw new InvalidOperationException("Unexpected type of FileSystemInfo")
+                        };
+                    });
+            }
+            return new StorageFolder(path == "/" ? "/" : Path.GetFileNameWithoutExtension(path),
+                PreparePath(Path.Combine(_storagePath, path)),
+                children);
         }
     }
 }

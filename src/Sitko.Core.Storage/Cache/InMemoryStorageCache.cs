@@ -32,7 +32,7 @@ namespace Sitko.Core.Storage.Cache
     {
     }
 
-    public class InMemoryStorageCacheRecord : StorageRecord
+    public class InMemoryStorageCacheRecord : StorageItem
     {
         public InMemoryStorageCacheRecord(StorageItem item, byte[] data) : base(item)
         {

@@ -14,7 +14,7 @@ using MemoryCacheOptions = Sitko.Core.Caching.MemoryCacheOptions;
 namespace Sitko.Core.Storage.Cache
 {
     public abstract class BaseStorageCache<TOptions, TRecord> : IStorageCache<TOptions>
-        where TOptions : StorageCacheOptions where TRecord : StorageRecord
+        where TOptions : StorageCacheOptions where TRecord : StorageItem
     {
         protected readonly TOptions Options;
         protected readonly ILogger<BaseStorageCache<TOptions, TRecord>> Logger;
@@ -36,14 +36,14 @@ namespace Sitko.Core.Storage.Cache
             _cache?.Expire();
         }
 
-        public IEnumerator<StorageRecord> GetEnumerator()
+        public IEnumerator<StorageItem> GetEnumerator()
         {
             if (_cache == null)
             {
                 throw new Exception("Cache is not initialized");
             }
 
-            return _cache.Values<StorageRecord>().GetEnumerator();
+            return _cache.Values<StorageItem>().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -51,8 +51,8 @@ namespace Sitko.Core.Storage.Cache
             return GetEnumerator();
         }
 
-        public async Task<StorageRecord?> GetOrAddItemAsync(string path,
-            Func<Task<StorageRecord?>> addItem)
+        public async Task<StorageItem?> GetOrAddItemAsync(string path,
+            Func<Task<StorageItem?>> addItem)
         {
             if (_cache == null)
             {
@@ -147,7 +147,7 @@ namespace Sitko.Core.Storage.Cache
             return path;
         }
 
-        public Task<StorageRecord?> GetItemAsync(string path)
+        public Task<StorageItem?> GetItemAsync(string path)
         {
             if (_cache == null)
             {
@@ -156,7 +156,7 @@ namespace Sitko.Core.Storage.Cache
 
             var record = CacheExtensions.Get<TRecord?>(_cache, NormalizePath(path));
 
-            return Task.FromResult<StorageRecord?>(record);
+            return Task.FromResult<StorageItem?>(record);
         }
 
         public Task RemoveItemAsync(string path)

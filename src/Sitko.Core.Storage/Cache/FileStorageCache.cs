@@ -82,7 +82,7 @@ namespace Sitko.Core.Storage.Cache
 
         protected override async Task<FileStorageCacheRecord> GetEntryAsync(StorageItem item, Stream stream)
         {
-            var tempFileName = CreateMD5(item.FilePath!);
+            var tempFileName = CreateMD5(item.FullPath!);
             var split = tempFileName.Select((c, index) => new {c, index})
                 .GroupBy(x => x.index / 2)
                 .Select(group => group.Select(elem => elem.c))
@@ -95,7 +95,7 @@ namespace Sitko.Core.Storage.Cache
                 Directory.CreateDirectory(directoryPath);
             }
 
-            var filePath = Path.Combine(directoryPath, item.FileName);
+            var filePath = Path.Combine(directoryPath, item.Name);
 
             var fileStream = File.OpenWrite(filePath);
             if (!fileStream.CanWrite)
@@ -125,7 +125,7 @@ namespace Sitko.Core.Storage.Cache
         public TimeSpan CleanupInterval { get; set; } = TimeSpan.FromHours(1);
     }
 
-    public class FileStorageCacheRecord : StorageRecord
+    public class FileStorageCacheRecord : StorageItem
     {
         public FileStorageCacheRecord(StorageItem item, string filePath) : base(item)
         {

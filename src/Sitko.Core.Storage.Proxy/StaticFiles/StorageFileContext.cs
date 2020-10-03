@@ -22,7 +22,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
         private readonly HttpRequest _request;
         private readonly HttpResponse _response;
         private readonly ILogger _logger;
-        private readonly StorageRecord _record;
+        private readonly StorageItem _record;
         private readonly string _contentType;
 
         private EntityTagHeaderValue? _etag;
@@ -42,7 +42,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
         private RequestType _requestType;
 
         public StorageFileContext(HttpContext context, StorageFileOptions options, ILogger logger,
-            StorageRecord record,
+            StorageItem record,
             string contentType, PathString subPath)
         {
             _context = context;

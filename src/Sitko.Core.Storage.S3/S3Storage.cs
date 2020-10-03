@@ -139,7 +139,7 @@ namespace Sitko.Core.Storage.S3
             }
         }
 
-        protected override async Task<StorageRecord?> DoGetFileAsync(string path)
+        protected override async Task<StorageItem?> DoGetFileAsync(string path)
         {
             var request = new GetObjectRequest {BucketName = _options.Bucket, Key = path};
 
@@ -147,14 +147,14 @@ namespace Sitko.Core.Storage.S3
             {
                 var response = await _client.GetObjectAsync(request);
 
-                var item = new StorageItem
+                return new StorageItem(response.ResponseStream)
                 {
-                    Path = Path.GetDirectoryName(path),
                     FileName = Path.GetFileName(path),
+                    FileSize = response.ContentLength,
+                    Path = Path.GetDirectoryName(path),
                     FilePath = path,
-                    FileSize = response.ContentLength
+                    LastModified = response.LastModified
                 };
-                return new StorageRecord(item, response.ResponseStream) {LastModified = response.LastModified};
             }
             catch (AmazonS3Exception ex)
             {
@@ -167,28 +167,77 @@ namespace Sitko.Core.Storage.S3
                 {
                     Logger.LogDebug(ex, "File {File} not found", path);
                 }
-                
             }
 
             return null;
         }
 
-        public override async Task<StorageItemCollection> GetDirectoryContentsAsync(string path)
+        protected override async Task<StorageFolder?> DoBuildStorageTreeAsync()
         {
-            var request = new ListObjectsRequest {BucketName = _options.Bucket, Prefix = path};
-
-            var response = await _client.ListObjectsAsync(request);
-
-            var files = response.S3Objects.Select(entry => new StorageRecord
+            var root = new StorageFolder("/", "/");
+            try
             {
-                FileSize = entry.Size,
-                FileName = Path.GetFileName(entry.Key),
-                LastModified = entry.LastModified,
-                FilePath = entry.Key,
-                Path = Path.GetDirectoryName(entry.Key)
-            } as StorageItem).ToList();
+                ListObjectsV2Request request = new ListObjectsV2Request {BucketName = _options.Bucket};
+                ListObjectsV2Response response;
+                do
+                {
+                    response = await _client.ListObjectsV2Async(request);
+                    foreach (var s3Object in response.S3Objects)
+                    {
+                        AddObject(s3Object, root);
+                    }
 
-            return new StorageItemCollection(files);
+                    request.ContinuationToken = response.NextContinuationToken;
+                } while (response.IsTruncated);
+            }
+            catch (AmazonS3Exception amazonS3Exception)
+            {
+                Logger.LogError(amazonS3Exception, "S3 error occurred. Exception: {ErrorText}",
+                    amazonS3Exception.ToString());
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Exception. Exception: {ErrorText}",
+                    e.ToString());
+            }
+
+            return root;
+        }
+
+        private void AddObject(S3Object s3Object, StorageFolder root)
+        {
+            var parts = s3Object.Key.Split("/");
+            var current = root;
+            foreach (var part in parts)
+            {
+                if (part == parts.Last())
+                {
+                    current.AddChild(GetStorageItem(s3Object));
+                }
+                else
+                {
+                    var child = current.Children.OfType<StorageFolder>().FirstOrDefault(f => f.Name == part);
+                    if (child == null)
+                    {
+                        child = new StorageFolder(part, PreparePath(Path.Combine(current.FullPath, part)));
+                        current.AddChild(child);
+                    }
+
+                    current = child;
+                }
+            }
+        }
+
+        private StorageItem GetStorageItem(S3Object s3Object)
+        {
+            return new StorageItem
+            {
+                FileName = Path.GetFileName(s3Object.Key),
+                FileSize = s3Object.Size,
+                Path = Path.GetDirectoryName(s3Object.Key),
+                FilePath = s3Object.Key,
+                LastModified = s3Object.LastModified
+            };
         }
 
         public override ValueTask DisposeAsync()

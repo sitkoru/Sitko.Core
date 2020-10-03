@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Storage.Cache;
@@ -11,6 +13,8 @@ namespace Sitko.Core.Storage
         protected readonly ILogger<Storage<T>> Logger;
         private readonly IStorageCache? _cache;
         private readonly T _options;
+        private StorageFolder? _tree;
+        private DateTimeOffset? _treeLastBuild;
 
         protected Storage(T options, ILogger<Storage<T>> logger, IStorageCache? cache)
         {
@@ -25,7 +29,9 @@ namespace Sitko.Core.Storage
 
             var storageItem = CreateStorageItem(file, fileName, destinationPath);
 
-            return await SaveStorageItemAsync(file, path, destinationPath, storageItem);
+            var result = await SaveStorageItemAsync(file, path, destinationPath, storageItem);
+            await BuildStorageTreeAsync();
+            return result;
         }
 
 
@@ -46,7 +52,7 @@ namespace Sitko.Core.Storage
         private string GetDestinationPath(string fileName, string path)
         {
             var destinationName = GetStorageFileName(fileName);
-            var destinationPath = $"{path}/{destinationName}".Replace("\\", "/").Replace("//", "/");
+            var destinationPath = PreparePath($"{path}/{destinationName}")!;
             return destinationPath;
         }
 
@@ -57,7 +63,7 @@ namespace Sitko.Core.Storage
                 FileName = fileName,
                 FileSize = file.Length,
                 FilePath = destinationPath,
-                Path = Path.GetDirectoryName(destinationPath)?.Replace("\\", "/"),
+                Path = PreparePath(Path.GetDirectoryName(destinationPath))!,
             };
             return storageItem;
         }
@@ -67,7 +73,7 @@ namespace Sitko.Core.Storage
 
         protected abstract Task<bool> DoIsFileExistsAsync(StorageItem item);
         protected abstract Task DoDeleteAllAsync();
-        protected abstract Task<StorageRecord?> DoGetFileAsync(string path);
+        protected abstract Task<StorageItem?> DoGetFileAsync(string path);
 
         public async Task<bool> DeleteFileAsync(string filePath)
         {
@@ -76,15 +82,17 @@ namespace Sitko.Core.Storage
                 await _cache.RemoveItemAsync(filePath);
             }
 
-            return await DoDeleteAsync(filePath);
+            var result  = await DoDeleteAsync(filePath);
+            await BuildStorageTreeAsync();
+            return result;
         }
 
-        public Task<StorageRecord?> GetFileAsync(string path)
+        public Task<StorageItem?> GetFileAsync(string path)
         {
             return GetFileInternalAsync(path);
         }
 
-        protected virtual Task<StorageRecord?> GetFileInternalAsync(string path)
+        protected virtual Task<StorageItem?> GetFileInternalAsync(string path)
         {
             if (_cache != null)
             {
@@ -109,9 +117,37 @@ namespace Sitko.Core.Storage
             }
 
             await DoDeleteAllAsync();
+            _tree = null;
+            _treeLastBuild = null;
         }
 
-        public abstract Task<StorageItemCollection> GetDirectoryContentsAsync(string path);
+
+        public async Task<IEnumerable<IStorageNode>> GetDirectoryContentsAsync(string path)
+        {
+            if (_tree == null || _treeLastBuild < DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMinutes(30)))
+            {
+                await BuildStorageTreeAsync();
+            }
+
+            if (_tree == null) { return new List<IStorageNode>(); }
+
+            var parts = PreparePath(path.Trim('/'))!.Split("/");
+            var current = _tree;
+            foreach (var part in parts)
+            {
+                current = current?.Children.OfType<StorageFolder>().FirstOrDefault(f => f.Name == part);
+            }
+
+            return current?.Children ?? new IStorageNode[0];
+        }
+
+        private async Task BuildStorageTreeAsync()
+        {
+            _tree = await DoBuildStorageTreeAsync();
+            _treeLastBuild = DateTimeOffset.UtcNow;
+        }
+
+        protected abstract Task<StorageFolder?> DoBuildStorageTreeAsync();
 
         public Uri PublicUri(StorageItem item)
         {
@@ -127,6 +163,11 @@ namespace Sitko.Core.Storage
         public virtual ValueTask DisposeAsync()
         {
             return new ValueTask();
+        }
+
+        protected string? PreparePath(string? path)
+        {
+            return path?.Replace("\\", "/").Replace("//", "/");
         }
     }
 }
