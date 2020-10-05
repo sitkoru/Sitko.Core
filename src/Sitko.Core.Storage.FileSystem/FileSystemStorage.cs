@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Storage.Cache;
@@ -18,7 +20,8 @@ namespace Sitko.Core.Storage.FileSystem
             _storagePath = options.StoragePath;
         }
 
-        protected override async Task<bool> DoSaveAsync(string path, Stream file)
+        protected override async Task<bool> DoSaveAsync(string path, Stream file,
+            StorageItemMetadata metadata)
         {
             var dirName = Path.GetDirectoryName(path);
             if (string.IsNullOrEmpty(dirName))
@@ -32,9 +35,14 @@ namespace Sitko.Core.Storage.FileSystem
                 Directory.CreateDirectory(dirPath);
             }
 
-            await using var fileStream = File.Create(Path.Combine(_storagePath, path));
+            var fullPath = Path.Combine(_storagePath, path);
+            var metaDataPath = fullPath + ".metadata";
+            await using var fileStream = File.Create(fullPath);
             file.Seek(0, SeekOrigin.Begin);
             await file.CopyToAsync(fileStream);
+            await using var metaDataStream = File.Create(metaDataPath);
+            await metaDataStream.WriteAsync(
+                Encoding.UTF8.GetBytes(JsonSerializer.Serialize(metadata.Metadata)));
             return true;
         }
 
@@ -46,6 +54,12 @@ namespace Sitko.Core.Storage.FileSystem
                 try
                 {
                     File.Delete(path);
+                    var metaDataPath = path + ".metadata";
+                    if (File.Exists(metaDataPath))
+                    {
+                        File.Delete(metaDataPath);
+                    }
+
                     return Task.FromResult(true);
                 }
                 catch (Exception ex)
@@ -73,25 +87,34 @@ namespace Sitko.Core.Storage.FileSystem
             return Task.CompletedTask;
         }
 
-        protected override Task<StorageItem?> DoGetFileAsync(string path)
+        protected override async Task<FileDownloadResult?> DoGetFileAsync(string path)
         {
-            StorageItem? result = null;
+            FileDownloadResult? result = null;
             var fullPath = Path.Combine(_storagePath, path);
+            var metaDataPath = fullPath + ".metadata";
             var fileInfo = new FileInfo(fullPath);
+            var metaDataInfo = new FileInfo(metaDataPath);
+
             if (fileInfo.Exists)
             {
-                result = new StorageItem(fileInfo.OpenRead())
+                StorageItemMetadata metadata;
+                if (metaDataInfo.Exists)
                 {
-                    FileName = fileInfo.Name,
-                    FileSize = fileInfo.Length,
-                    Path = PreparePath(Path.GetDirectoryName(fullPath)),
-                    FilePath = PreparePath(fullPath),
-                    LastModified = fileInfo.LastWriteTimeUtc
-                };
+                    var json = await File.ReadAllTextAsync(metaDataPath);
+                    metadata = new StorageItemMetadata(
+                        JsonSerializer.Deserialize<List<KeyValuePair<string, string>>>(json));
+                }
+                else
+                {
+                    metadata = new StorageItemMetadata().Add(StorageItemMetadata.FieldFileName, fileInfo.Name)
+                        .Add(StorageItemMetadata.FieldDate, fileInfo.LastWriteTimeUtc.ToString("O"));
+                }
+
+                result = new FileDownloadResult(metadata, fileInfo.Length, fileInfo.OpenRead());
             }
 
 
-            return Task.FromResult(result);
+            return result;
         }
 
         protected override Task<StorageFolder?> DoBuildStorageTreeAsync()
@@ -111,6 +134,7 @@ namespace Sitko.Core.Storage.FileSystem
                     {
                         return info switch
                         {
+                            FileInfo metaData when metaData.Extension == ".metadata" => null,
                             FileInfo file => new StorageItem
                             {
                                 FileName = file.Name,
@@ -122,8 +146,9 @@ namespace Sitko.Core.Storage.FileSystem
                             DirectoryInfo dir => ListFolder(PreparePath(Path.Combine(path, dir.Name))),
                             _ => throw new InvalidOperationException("Unexpected type of FileSystemInfo")
                         };
-                    });
+                    }).Where(c => c != null);
             }
+
             return new StorageFolder(path == "/" ? "/" : Path.GetFileNameWithoutExtension(path),
                 PreparePath(Path.Combine(_storagePath, path)),
                 children);

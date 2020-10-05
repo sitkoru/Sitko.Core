@@ -24,7 +24,7 @@ namespace Sitko.Core.Storage.Cache
                     Logger.LogInformation("Start deleting obsolete files");
                     Expire();
                     var files = Directory.GetFiles(options.CacheDirectoryPath, "*.*", SearchOption.AllDirectories);
-                    var items = this.Select(i => (FileStorageCacheRecord) i).ToList();
+                    var items = this.Select(i => (FileStorageCacheRecord)i).ToList();
                     foreach (string file in files)
                     {
                         if (items.Any(i => i.PhysicalPath == file))
@@ -80,22 +80,23 @@ namespace Sitko.Core.Storage.Cache
             }
         }
 
-        protected override async Task<FileStorageCacheRecord> GetEntryAsync(StorageItem item, Stream stream)
+        protected override async Task<FileStorageCacheRecord> GetEntryAsync(FileDownloadResult item,
+            Stream stream)
         {
-            var tempFileName = CreateMD5(item.FullPath!);
+            var tempFileName = CreateMD5(Guid.NewGuid().ToString());
             var split = tempFileName.Select((c, index) => new {c, index})
                 .GroupBy(x => x.index / 2)
                 .Select(group => group.Select(elem => elem.c))
                 .Select(chars => new string(chars.ToArray())).ToArray();
-            var path = Path.Combine(split);
-            var directoryPath = Path.Combine(Options.CacheDirectoryPath, path);
+            var dirPath = Path.Combine(split);
+            var directoryPath = Path.Combine(Options.CacheDirectoryPath, dirPath);
 
             if (!Directory.Exists(directoryPath))
             {
                 Directory.CreateDirectory(directoryPath);
             }
 
-            var filePath = Path.Combine(directoryPath, item.Name);
+            var filePath = Path.Combine(directoryPath, Guid.NewGuid().ToString());
 
             var fileStream = File.OpenWrite(filePath);
             if (!fileStream.CanWrite)
@@ -105,7 +106,7 @@ namespace Sitko.Core.Storage.Cache
 
             await stream.CopyToAsync(fileStream);
             fileStream.Close();
-            return new FileStorageCacheRecord(item, filePath);
+            return new FileStorageCacheRecord(item.Metadata, item.FileSize, filePath);
         }
 
         public override async ValueTask DisposeAsync()
@@ -125,17 +126,29 @@ namespace Sitko.Core.Storage.Cache
         public TimeSpan CleanupInterval { get; set; } = TimeSpan.FromHours(1);
     }
 
-    public class FileStorageCacheRecord : StorageItem
+    public class FileStorageCacheRecord : IStorageCacheRecord
     {
-        public FileStorageCacheRecord(StorageItem item, string filePath) : base(item)
+        public FileStorageCacheRecord(StorageItemMetadata metadata, long fileSize, string filePath)
         {
+            Metadata = metadata;
+            FileSize = fileSize;
             PhysicalPath = filePath;
         }
 
-        public override Stream? OpenRead()
+        public string PhysicalPath { get; }
+
+        public StorageItemMetadata Metadata { get; }
+        public long FileSize { get; }
+
+        public Stream OpenRead()
         {
             var fileInfo = new FileInfo(PhysicalPath);
-            return fileInfo.Exists ? fileInfo.OpenRead() : null;
+            if (fileInfo.Exists)
+            {
+                return fileInfo.OpenRead();
+            }
+
+            throw new Exception($"File {PhysicalPath} doesn't exists");
         }
     }
 }

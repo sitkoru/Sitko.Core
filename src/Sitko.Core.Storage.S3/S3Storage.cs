@@ -64,14 +64,23 @@ namespace Sitko.Core.Storage.S3
             return response.S3Objects.Any();
         }
 
-        protected override async Task<bool> DoSaveAsync(string path, Stream file)
+        protected override async Task<bool> DoSaveAsync(string path, Stream file,
+            StorageItemMetadata metadata)
         {
             await CreateBucketAsync(_options.Bucket);
             using var fileTransferUtility = new TransferUtility(_client);
             try
             {
-                await fileTransferUtility.UploadAsync(file,
-                    _options.Bucket, path);
+                var request = new TransferUtilityUploadRequest
+                {
+                    InputStream = file, Key = path, BucketName = _options.Bucket
+                };
+                foreach (var metaDataEntry in metadata.Metadata)
+                {
+                    request.Metadata.Add(metaDataEntry.Key, metaDataEntry.Value);
+                }
+
+                await fileTransferUtility.UploadAsync(request);
                 return true;
             }
             catch (Exception e)
@@ -139,22 +148,22 @@ namespace Sitko.Core.Storage.S3
             }
         }
 
-        protected override async Task<StorageItem?> DoGetFileAsync(string path)
+        protected override async Task<FileDownloadResult?> DoGetFileAsync(string path)
         {
             var request = new GetObjectRequest {BucketName = _options.Bucket, Key = path};
 
             try
             {
                 var response = await _client.GetObjectAsync(request);
-
-                return new StorageItem(response.ResponseStream)
+                var metaData = new StorageItemMetadata()
+                    .Add(StorageItemMetadata.FieldFileName, Path.GetFileName(path))
+                    .Add(StorageItemMetadata.FieldDate, response.LastModified.ToString("O"));
+                foreach (var key in response.Metadata.Keys)
                 {
-                    FileName = Path.GetFileName(path),
-                    FileSize = response.ContentLength,
-                    Path = Path.GetDirectoryName(path),
-                    FilePath = path,
-                    LastModified = response.LastModified
-                };
+                    metaData.Add(key.Replace("x-amz-meta-", ""), response.Metadata[key]);
+                }
+
+                return new FileDownloadResult(metaData, response.ContentLength, response.ResponseStream);
             }
             catch (AmazonS3Exception ex)
             {
