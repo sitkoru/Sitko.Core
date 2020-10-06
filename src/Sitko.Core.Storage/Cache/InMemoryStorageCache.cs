@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -15,11 +16,12 @@ namespace Sitko.Core.Storage.Cache
         {
         }
 
-        protected override Task<InMemoryStorageCacheRecord> GetEntryAsync(StorageItem item, Stream stream)
+        protected override Task<InMemoryStorageCacheRecord> GetEntryAsync(FileDownloadResult item, Stream stream)
         {
             using var memoryStream = new MemoryStream();
             stream.CopyTo(memoryStream);
-            return Task.FromResult(new InMemoryStorageCacheRecord(item, memoryStream.ToArray()));
+            return Task.FromResult(
+                new InMemoryStorageCacheRecord(item.Metadata, item.FileSize, item.Date, memoryStream.ToArray()));
         }
 
         public override ValueTask DisposeAsync()
@@ -32,16 +34,23 @@ namespace Sitko.Core.Storage.Cache
     {
     }
 
-    public class InMemoryStorageCacheRecord : StorageItem
+    public class InMemoryStorageCacheRecord : IStorageCacheRecord
     {
-        public InMemoryStorageCacheRecord(StorageItem item, byte[] data) : base(item)
+        private byte[] Data { get; }
+        public string? Metadata { get; }
+        public long FileSize { get; }
+        public DateTimeOffset Date { get; }
+        public string? PhysicalPath { get; }
+
+        public InMemoryStorageCacheRecord(string? metadata, long fileSize, DateTimeOffset date, byte[] data)
         {
+            Metadata = metadata;
+            FileSize = fileSize;
             Data = data;
+            Date = date;
         }
 
-        public byte[] Data { get; }
-
-        public override Stream? OpenRead()
+        public Stream OpenRead()
         {
             return new MemoryStream(Data);
         }

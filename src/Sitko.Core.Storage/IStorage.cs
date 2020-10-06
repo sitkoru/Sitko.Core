@@ -7,7 +7,9 @@ namespace Sitko.Core.Storage
 {
     public interface IStorage
     {
-        Task<StorageItem> SaveFileAsync(Stream file, string fileName, string path);
+        Task<StorageItem> SaveFileAsync(Stream file, string fileName, string path,
+            object? metadata = null);
+
         Task<StorageItem?> GetFileAsync(string path);
         Task<bool> DeleteFileAsync(string filePath);
         Task<bool> IsFileExistsAsync(string path);

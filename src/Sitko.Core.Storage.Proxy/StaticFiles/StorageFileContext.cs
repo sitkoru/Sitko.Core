@@ -350,7 +350,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
 
             try
             {
-                await using var readStream = _record.OpenRead();
+                await using var readStream = _record.Stream;
                 // Larger StreamCopyBufferSize is required because in case of FileStream readStream isn't going to be buffering
                 await StreamCopyOperation.CopyToAsync(readStream, _response.Body, _length, StreamCopyBufferSize,
                     _context.RequestAborted);
@@ -394,7 +394,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
 
             try
             {
-                await using var readStream = _record.OpenRead();
+                await using var readStream = _record.Stream;
                 if (readStream == null)
                 {
                     throw new Exception("Empty strem");

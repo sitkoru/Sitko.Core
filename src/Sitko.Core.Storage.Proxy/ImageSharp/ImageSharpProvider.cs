@@ -89,7 +89,7 @@ namespace Sitko.Core.Storage.Proxy.ImageSharp
         {
             var file = await _storage.GetFileAsync(_imagePath);
 #pragma warning disable 8603
-            return file?.OpenRead();
+            return file?.Stream;
 #pragma warning restore 8603
         }
     }
