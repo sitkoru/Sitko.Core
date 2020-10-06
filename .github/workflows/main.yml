@@ -49,13 +49,13 @@ jobs:
                 run: dotnet test $(pwd)/tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj
             -   name: Sitko.Core.Queue.InMemory
                 run: dotnet test $(pwd)/tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj
-            -   name: Sitko.Core.Queue.Repository
+            -   name: Sitko.Core.Repository
                 run: dotnet test $(pwd)/tests/Sitko.Core.Repository.Tests/Sitko.Core.Repository.Tests.csproj
-            -   name: Sitko.Core.Queue.Sony
+            -   name: Sitko.Core.SonyFlake
                 run: dotnet test $(pwd)/tests/Sitko.Core.SonyFlake.Tests/Sitko.Core.SonyFlake.Tests.csproj
-            -   name: Sitko.Core.Queue.Storage.FileSystem
+            -   name: Sitko.Core.Storage.FileSystem
                 run: dotnet test $(pwd)/tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
-            -   name: Sitko.Core.Queue.Storage.S3
+            -   name: Sitko.Core.Storage.S3
                 run: dotnet test $(pwd)/tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
             -   name: Sitko.Core.Pdf
                 run: dotnet test $(pwd)/tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
