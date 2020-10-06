@@ -10,7 +10,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
         /// </summary>
         /// <param name="context">The request and response information.</param>
         /// <param name="file">The file to be served.</param>
-        public StorageFileResponseContext(HttpContext context, StorageRecord file)
+        public StorageFileResponseContext(HttpContext context, StorageItem file)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
             File = file;
@@ -24,6 +24,6 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
         /// <summary>
         /// The file to be served.
         /// </summary>
-        public StorageRecord File { get; }
+        public StorageItem File { get; }
     }
 }

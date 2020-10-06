@@ -22,7 +22,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
         private readonly HttpRequest _request;
         private readonly HttpResponse _response;
         private readonly ILogger _logger;
-        private readonly StorageRecord _record;
+        private readonly StorageItem _record;
         private readonly string _contentType;
 
         private EntityTagHeaderValue? _etag;
@@ -42,7 +42,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
         private RequestType _requestType;
 
         public StorageFileContext(HttpContext context, StorageFileOptions options, ILogger logger,
-            StorageRecord record,
+            StorageItem record,
             string contentType, PathString subPath)
         {
             _context = context;
@@ -350,7 +350,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
 
             try
             {
-                await using var readStream = _record.OpenRead();
+                await using var readStream = _record.Stream;
                 // Larger StreamCopyBufferSize is required because in case of FileStream readStream isn't going to be buffering
                 await StreamCopyOperation.CopyToAsync(readStream, _response.Body, _length, StreamCopyBufferSize,
                     _context.RequestAborted);
@@ -394,7 +394,7 @@ namespace Sitko.Core.Storage.Proxy.StaticFiles
 
             try
             {
-                await using var readStream = _record.OpenRead();
+                await using var readStream = _record.Stream;
                 if (readStream == null)
                 {
                     throw new Exception("Empty strem");
