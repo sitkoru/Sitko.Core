@@ -27,7 +27,7 @@
 
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" Version="2.31.0" />
-    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.31.0" />
+    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.32.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
