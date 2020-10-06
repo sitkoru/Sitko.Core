@@ -7,17 +7,19 @@ namespace Sitko.Core.Storage
     {
         public Stream Stream { get; }
 
-        public StorageItemMetadata Metadata { get; }
+        public string? Metadata { get; }
 
         public long FileSize { get; }
+        public DateTimeOffset Date { get; }
 
         public string? PhysicalPath { get; }
 
-        public FileDownloadResult(StorageItemMetadata metadata, long fileSize, Stream stream,
+        public FileDownloadResult(string? metadata, long fileSize, DateTimeOffset date, Stream stream,
             string? physicalPath = null)
         {
             Metadata = metadata;
             FileSize = fileSize;
+            Date = date;
             Stream = stream;
             PhysicalPath = physicalPath;
         }

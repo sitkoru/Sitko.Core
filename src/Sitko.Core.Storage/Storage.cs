@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Storage.Cache;
@@ -23,32 +24,31 @@ namespace Sitko.Core.Storage
             _options = options;
         }
 
-        public async Task<StorageItem> SaveFileAsync(Stream file, string fileName, string path,
-            StorageItemMetadata? metadata = null)
+        public async Task<StorageItem> SaveFileAsync(Stream file, string fileName, string path, object? metadata = null)
         {
             string destinationPath = GetDestinationPath(fileName, path);
 
-            if (metadata is null)
+            var itemMetadata = new StorageItemMetadata {FileName = fileName};
+
+            if (metadata != null)
             {
-                metadata = new StorageItemMetadata();
+                itemMetadata.SetData(metadata);
             }
 
-            metadata.Add(StorageItemMetadata.FieldFileName, fileName);
-            metadata.Add(StorageItemMetadata.FieldDate, DateTime.UtcNow.ToString("O"));
+            var storageItem = CreateStorageItem(destinationPath, DateTimeOffset.UtcNow, file.Length,
+                itemMetadata);
 
-            var storageItem = CreateStorageItem(destinationPath, file.Length, metadata);
-
-            var result = await SaveStorageItemAsync(file, path, destinationPath, storageItem, metadata);
+            var result = await SaveStorageItemAsync(file, path, destinationPath, storageItem, itemMetadata);
             await BuildStorageTreeAsync();
             return result;
         }
 
 
         private async Task<StorageItem> SaveStorageItemAsync(Stream file, string path, string destinationPath,
-            StorageItem storageItem, StorageItemMetadata storageItemMetadata)
+            StorageItem storageItem, StorageItemMetadata metadata)
         {
             file.Seek(0, SeekOrigin.Begin);
-            await DoSaveAsync(destinationPath, file, storageItemMetadata);
+            await DoSaveAsync(destinationPath, file, JsonSerializer.Serialize(metadata));
             Logger.LogInformation("File saved to {Path}", path);
             if (_cache != null && storageItem.FilePath != null)
             {
@@ -65,30 +65,42 @@ namespace Sitko.Core.Storage
             return destinationPath;
         }
 
-        private StorageItem CreateStorageItem(string destinationPath, long fileSize, StorageItemMetadata metadata,
+        protected StorageItem CreateStorageItem(string destinationPath,
+            DateTimeOffset date,
+            long fileSize,
+            string? metadata,
             Stream? stream = null, string? physicalPath = null)
         {
-            var itemMedata = new Dictionary<string, string>(metadata.Metadata);
+            return CreateStorageItem(destinationPath, date, fileSize,
+                string.IsNullOrEmpty(metadata)
+                    ? new StorageItemMetadata {FileName = Path.GetFileName(destinationPath)}
+                    : JsonSerializer.Deserialize<StorageItemMetadata>(metadata), stream,
+                physicalPath);
+        }
+
+
+        private StorageItem CreateStorageItem(string destinationPath,
+            DateTimeOffset date,
+            long fileSize,
+            StorageItemMetadata metadata,
+            Stream? stream = null, string? physicalPath = null)
+        {
             var storageItem = new StorageItem
             {
                 FileName =
-                    itemMedata.ContainsKey(StorageItemMetadata.FieldFileName)
-                        ? itemMedata[StorageItemMetadata.FieldFileName]
-                        : Path.GetFileName(destinationPath),
-                LastModified = itemMedata.ContainsKey(StorageItemMetadata.FieldDate)
-                    ? DateTimeOffset.Parse(itemMedata[StorageItemMetadata.FieldDate])
-                    : DateTimeOffset.UtcNow,
+                    metadata.FileName ?? Path.GetFileName(destinationPath),
+                LastModified = date,
                 FileSize = fileSize,
                 FilePath = destinationPath,
                 Path = PreparePath(Path.GetDirectoryName(destinationPath))!,
-                Metadata = itemMedata,
+                Metadata = metadata,
                 Stream = stream,
                 PhysicalPath = physicalPath
             };
             return storageItem;
         }
 
-        protected abstract Task<bool> DoSaveAsync(string path, Stream file, StorageItemMetadata metadata);
+        protected abstract Task<bool> DoSaveAsync(string path, Stream file, string metadata);
         protected abstract Task<bool> DoDeleteAsync(string filePath);
 
         protected abstract Task<bool> DoIsFileExistsAsync(StorageItem item);
@@ -126,7 +138,8 @@ namespace Sitko.Core.Storage
 
             if (result != null)
             {
-                return CreateStorageItem(path, result.FileSize, result.Metadata, result.Stream, result.PhysicalPath);
+                return CreateStorageItem(path, result.Date, result.FileSize, result.Metadata, result.Stream,
+                    result.PhysicalPath);
             }
 
             return null;
@@ -198,6 +211,13 @@ namespace Sitko.Core.Storage
         protected string? PreparePath(string? path)
         {
             return path?.Replace("\\", "/").Replace("//", "/");
+        }
+
+        protected const string MetaDataExtension = ".metadata";
+
+        protected string GetMetaDataPath(string filePath)
+        {
+            return filePath + MetaDataExtension;
         }
     }
 }

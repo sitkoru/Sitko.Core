@@ -24,7 +24,7 @@ namespace Sitko.Core.Storage.Cache
                     Logger.LogInformation("Start deleting obsolete files");
                     Expire();
                     var files = Directory.GetFiles(options.CacheDirectoryPath, "*.*", SearchOption.AllDirectories);
-                    var items = this.Select(i => (FileStorageCacheRecord)i).ToList();
+                    var items = this.Select(i => i).ToList();
                     foreach (string file in files)
                     {
                         if (items.Any(i => i.PhysicalPath == file))
@@ -106,7 +106,7 @@ namespace Sitko.Core.Storage.Cache
 
             await stream.CopyToAsync(fileStream);
             fileStream.Close();
-            return new FileStorageCacheRecord(item.Metadata, item.FileSize, filePath);
+            return new FileStorageCacheRecord(item.Metadata, item.FileSize, item.Date, filePath);
         }
 
         public override async ValueTask DisposeAsync()
@@ -128,17 +128,19 @@ namespace Sitko.Core.Storage.Cache
 
     public class FileStorageCacheRecord : IStorageCacheRecord
     {
-        public FileStorageCacheRecord(StorageItemMetadata metadata, long fileSize, string filePath)
+        public FileStorageCacheRecord(string? metadata, long fileSize, DateTimeOffset date, string filePath)
         {
             Metadata = metadata;
             FileSize = fileSize;
             PhysicalPath = filePath;
+            Date = date;
         }
 
         public string PhysicalPath { get; }
 
-        public StorageItemMetadata Metadata { get; }
+        public string? Metadata { get; }
         public long FileSize { get; }
+        public DateTimeOffset Date { get; }
 
         public Stream OpenRead()
         {

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -20,7 +19,7 @@ namespace Sitko.Core.Storage
         public string Path { get; set; }
         public string? StorageFileName => FilePath?.Substring(FilePath.LastIndexOf('/') + 1);
 
-        public IReadOnlyDictionary<string, string> Metadata { get; internal set; } = new Dictionary<string, string>();
+        internal StorageItemMetadata? Metadata { get; set; }
 
         public StorageItem()
         {
@@ -32,6 +31,11 @@ namespace Sitko.Core.Storage
             FileSize = item.FileSize;
             FilePath = item.FilePath;
             Path = item.Path;
+        }
+
+        public TMetadata? GetMetadata<TMetadata>() where TMetadata : class
+        {
+            return Metadata?.GetData<TMetadata>();
         }
 
         public string HumanSize

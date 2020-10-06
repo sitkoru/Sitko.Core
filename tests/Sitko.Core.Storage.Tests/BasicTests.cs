@@ -115,9 +115,10 @@ namespace Sitko.Core.Storage.Tests
 
             StorageItem uploaded;
             const string fileName = "file.txt";
+            var metaData = new FileMetaData();
             await using (var file = File.Open("Data/file.txt", FileMode.Open))
             {
-                uploaded = await storage.SaveFileAsync(file, fileName, "upload/dir1/dir2");
+                uploaded = await storage.SaveFileAsync(file, fileName, "upload/dir1/dir2", metaData);
             }
 
             Assert.NotNull(uploaded);
@@ -144,7 +145,20 @@ namespace Sitko.Core.Storage.Tests
             var fileNode = dir2DirectoryContent.First();
             Assert.NotNull(fileNode);
             Assert.IsType<StorageItem>(fileNode);
-            Assert.Equal(uploaded.FilePath, fileNode.FullPath);
+            if (fileNode is StorageItem item)
+            {
+                Assert.Equal(uploaded.FilePath, fileNode.FullPath);
+                Assert.Equal(fileName, fileNode.Name);
+
+                var itemMetaData = item.GetMetadata<FileMetaData>();
+                Assert.NotNull(itemMetaData);
+                Assert.Equal(metaData.Id, itemMetaData.Id);
+            }
         }
+    }
+
+    public class FileMetaData
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
     }
 }

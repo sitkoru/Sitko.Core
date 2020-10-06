@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 
 namespace Sitko.Core.Storage
 {
     public interface IStorage
     {
         Task<StorageItem> SaveFileAsync(Stream file, string fileName, string path,
-            StorageItemMetadata? metadata = null);
+            object? metadata = null);
 
         Task<StorageItem?> GetFileAsync(string path);
         Task<bool> DeleteFileAsync(string filePath);

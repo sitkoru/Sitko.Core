@@ -21,9 +21,10 @@ namespace Sitko.Core.Storage.Cache
 
     public interface IStorageCacheRecord
     {
-        StorageItemMetadata Metadata { get; }
+        string? Metadata { get; }
 
         long FileSize { get; }
+        DateTimeOffset Date { get; }
 
         public Stream OpenRead();
         public string? PhysicalPath { get; }

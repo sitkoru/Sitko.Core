@@ -126,7 +126,8 @@ namespace Sitko.Core.Storage.Cache
 
             return cacheEntry is null
                 ? null
-                : new FileDownloadResult(cacheEntry.Metadata, cacheEntry.FileSize, cacheEntry.OpenRead(),
+                : new FileDownloadResult(cacheEntry.Metadata, cacheEntry.FileSize, cacheEntry.Date,
+                    cacheEntry.OpenRead(),
                     cacheEntry.PhysicalPath);
         }
 
@@ -157,7 +158,8 @@ namespace Sitko.Core.Storage.Cache
 
             return Task.FromResult(cacheEntry is null
                 ? null
-                : new FileDownloadResult(cacheEntry.Metadata, cacheEntry.FileSize, cacheEntry.OpenRead(),
+                : new FileDownloadResult(cacheEntry.Metadata, cacheEntry.FileSize, cacheEntry.Date,
+                    cacheEntry.OpenRead(),
                     cacheEntry.PhysicalPath));
         }
 

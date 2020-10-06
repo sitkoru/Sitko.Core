@@ -1,30 +1,21 @@
-using System.Collections.Generic;
+using System.Text.Json;
 
 namespace Sitko.Core.Storage
 {
-    public class StorageItemMetadata
+    internal class StorageItemMetadata
     {
-        public const string FieldFileName = "filename";
-        public const string FieldDate = "data";
+        public string? FileName { get; set; }
 
-        private readonly Dictionary<string, string> _metadata = new Dictionary<string, string>();
+        public string? Data { get; set; }
 
-        public IEnumerable<KeyValuePair<string, string>> Metadata => _metadata;
-
-        public StorageItemMetadata()
+        public void SetData(object data)
         {
+            Data = JsonSerializer.Serialize(data);
         }
 
-        public StorageItemMetadata(IEnumerable<KeyValuePair<string, string>> serializedData)
+        public TData? GetData<TData>() where TData : class
         {
-            _metadata = new Dictionary<string, string>(serializedData);
-        }
-
-        public StorageItemMetadata Add(string key, string value)
-        {
-            _metadata[key.ToLowerInvariant()] = value;
-
-            return this;
+            return string.IsNullOrEmpty(Data) ? null : JsonSerializer.Deserialize<TData>(Data);
         }
     }
 }

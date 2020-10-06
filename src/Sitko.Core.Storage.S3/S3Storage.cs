@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Amazon;
 using Amazon.S3;
@@ -65,7 +66,7 @@ namespace Sitko.Core.Storage.S3
         }
 
         protected override async Task<bool> DoSaveAsync(string path, Stream file,
-            StorageItemMetadata metadata)
+            string metadata)
         {
             await CreateBucketAsync(_options.Bucket);
             using var fileTransferUtility = new TransferUtility(_client);
@@ -75,12 +76,15 @@ namespace Sitko.Core.Storage.S3
                 {
                     InputStream = file, Key = path, BucketName = _options.Bucket
                 };
-                foreach (var metaDataEntry in metadata.Metadata)
-                {
-                    request.Metadata.Add(metaDataEntry.Key, metaDataEntry.Value);
-                }
-
                 await fileTransferUtility.UploadAsync(request);
+
+                var metaDataRequest = new TransferUtilityUploadRequest
+                {
+                    InputStream = new MemoryStream(Encoding.UTF8.GetBytes(metadata)),
+                    Key = GetMetaDataPath(path),
+                    BucketName = _options.Bucket
+                };
+                await fileTransferUtility.UploadAsync(metaDataRequest);
                 return true;
             }
             catch (Exception e)
@@ -99,6 +103,11 @@ namespace Sitko.Core.Storage.S3
                     try
                     {
                         await _client.DeleteObjectAsync(_options.Bucket, filePath);
+                        if (await IsObjectExists(GetMetaDataPath(filePath)))
+                        {
+                            await _client.DeleteObjectAsync(_options.Bucket, GetMetaDataPath(filePath));
+                        }
+
                         return true;
                     }
                     catch (Exception e)
@@ -148,22 +157,13 @@ namespace Sitko.Core.Storage.S3
             }
         }
 
-        protected override async Task<FileDownloadResult?> DoGetFileAsync(string path)
+        private async Task<GetObjectResponse?> DownloadFileAsync(string path)
         {
             var request = new GetObjectRequest {BucketName = _options.Bucket, Key = path};
-
+            GetObjectResponse? response = null;
             try
             {
-                var response = await _client.GetObjectAsync(request);
-                var metaData = new StorageItemMetadata()
-                    .Add(StorageItemMetadata.FieldFileName, Path.GetFileName(path))
-                    .Add(StorageItemMetadata.FieldDate, response.LastModified.ToString("O"));
-                foreach (var key in response.Metadata.Keys)
-                {
-                    metaData.Add(key.Replace("x-amz-meta-", ""), response.Metadata[key]);
-                }
-
-                return new FileDownloadResult(metaData, response.ContentLength, response.ResponseStream);
+                response = await _client.GetObjectAsync(request);
             }
             catch (AmazonS3Exception ex)
             {
@@ -178,7 +178,35 @@ namespace Sitko.Core.Storage.S3
                 }
             }
 
-            return null;
+            return response;
+        }
+
+        private async Task<string?> DownloadFileMetadataAsync(string filePath)
+        {
+            string? metaData = null;
+            var metaDataResponse = await DownloadFileAsync(GetMetaDataPath(filePath));
+            if (metaDataResponse != null)
+            {
+                var buffer = new MemoryStream();
+                await metaDataResponse.ResponseStream.CopyToAsync(buffer);
+                metaData = Encoding.UTF8.GetString(buffer.ToArray());
+            }
+
+            return metaData;
+        }
+
+        protected override async Task<FileDownloadResult?> DoGetFileAsync(string path)
+        {
+            var fileResponse = await DownloadFileAsync(path);
+            if (fileResponse == null)
+            {
+                return null;
+            }
+
+            var metaData = await DownloadFileMetadataAsync(path);
+
+            return new FileDownloadResult(metaData, fileResponse.ContentLength, fileResponse.LastModified,
+                fileResponse.ResponseStream);
         }
 
         protected override async Task<StorageFolder?> DoBuildStorageTreeAsync()
@@ -193,7 +221,7 @@ namespace Sitko.Core.Storage.S3
                     response = await _client.ListObjectsV2Async(request);
                     foreach (var s3Object in response.S3Objects)
                     {
-                        AddObject(s3Object, root);
+                        await AddObjectAsync(s3Object, root);
                     }
 
                     request.ContinuationToken = response.NextContinuationToken;
@@ -213,15 +241,18 @@ namespace Sitko.Core.Storage.S3
             return root;
         }
 
-        private void AddObject(S3Object s3Object, StorageFolder root)
+        private async Task AddObjectAsync(S3Object s3Object, StorageFolder root)
         {
+            if (s3Object.Key.EndsWith(MetaDataExtension)) return;
             var parts = s3Object.Key.Split("/");
             var current = root;
             foreach (var part in parts)
             {
                 if (part == parts.Last())
                 {
-                    current.AddChild(GetStorageItem(s3Object));
+                    var metadata = await DownloadFileMetadataAsync(s3Object.Key);
+                    var item = CreateStorageItem(s3Object.Key, s3Object.LastModified, s3Object.Size, metadata);
+                    current.AddChild(item);
                 }
                 else
                 {
@@ -235,18 +266,6 @@ namespace Sitko.Core.Storage.S3
                     current = child;
                 }
             }
-        }
-
-        private StorageItem GetStorageItem(S3Object s3Object)
-        {
-            return new StorageItem
-            {
-                FileName = Path.GetFileName(s3Object.Key),
-                FileSize = s3Object.Size,
-                Path = Path.GetDirectoryName(s3Object.Key),
-                FilePath = s3Object.Key,
-                LastModified = s3Object.LastModified
-            };
         }
 
         public override ValueTask DisposeAsync()
