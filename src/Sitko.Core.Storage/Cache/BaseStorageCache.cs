@@ -13,8 +13,8 @@ using MemoryCacheOptions = Sitko.Core.Caching.MemoryCacheOptions;
 
 namespace Sitko.Core.Storage.Cache
 {
-    public abstract class BaseStorageCache<TOptions, TRecord> : IStorageCache<TOptions>
-        where TOptions : StorageCacheOptions where TRecord : StorageRecord
+    public abstract class BaseStorageCache<TOptions, TRecord> : IStorageCache<TOptions>, IEnumerable<TRecord>
+        where TOptions : StorageCacheOptions where TRecord : class, IStorageCacheRecord
     {
         protected readonly TOptions Options;
         protected readonly ILogger<BaseStorageCache<TOptions, TRecord>> Logger;
@@ -36,14 +36,14 @@ namespace Sitko.Core.Storage.Cache
             _cache?.Expire();
         }
 
-        public IEnumerator<StorageRecord> GetEnumerator()
+        public IEnumerator<TRecord> GetEnumerator()
         {
             if (_cache == null)
             {
                 throw new Exception("Cache is not initialized");
             }
 
-            return _cache.Values<StorageRecord>().GetEnumerator();
+            return _cache.Values<TRecord>().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -51,8 +51,8 @@ namespace Sitko.Core.Storage.Cache
             return GetEnumerator();
         }
 
-        public async Task<StorageRecord?> GetOrAddItemAsync(string path,
-            Func<Task<StorageRecord?>> addItem)
+        public async Task<FileDownloadResult?> GetOrAddItemAsync(string path,
+            Func<Task<FileDownloadResult?>> addItem)
         {
             if (_cache == null)
             {
@@ -81,16 +81,12 @@ namespace Sitko.Core.Storage.Cache
                         {
                             Logger.LogWarning(
                                 "File {Key} exceed maximum cache file size. File size: {FleSize}. Maximum size: {MaximumSize}",
-                                key, result.HumanSize,
+                                key, result.FileSize,
                                 Helpers.HumanSize(Options.MaxFileSizeToStore));
                             return result;
                         }
 
-                        var stream = result.OpenRead();
-                        if (stream == null)
-                        {
-                            throw new Exception($"Stream for file {key} is empty!");
-                        }
+                        var stream = result.Stream;
 
                         await using (stream)
                         {
@@ -128,13 +124,17 @@ namespace Sitko.Core.Storage.Cache
                 }
             }
 
-            return cacheEntry;
+            return cacheEntry is null
+                ? null
+                : new FileDownloadResult(cacheEntry.Metadata, cacheEntry.FileSize, cacheEntry.Date,
+                    cacheEntry.OpenRead(),
+                    cacheEntry.PhysicalPath);
         }
 
 
         protected abstract void DisposeItem(TRecord deletedRecord);
 
-        protected abstract Task<TRecord> GetEntryAsync(StorageItem item, Stream stream);
+        protected abstract Task<TRecord> GetEntryAsync(FileDownloadResult item, Stream stream);
 
         private string NormalizePath(string path)
         {
@@ -147,16 +147,20 @@ namespace Sitko.Core.Storage.Cache
             return path;
         }
 
-        public Task<StorageRecord?> GetItemAsync(string path)
+        public Task<FileDownloadResult?> GetItemAsync(string path)
         {
             if (_cache == null)
             {
                 throw new Exception("Cache is not initialized");
             }
 
-            var record = CacheExtensions.Get<TRecord?>(_cache, NormalizePath(path));
+            var cacheEntry = CacheExtensions.Get<TRecord?>(_cache, NormalizePath(path));
 
-            return Task.FromResult<StorageRecord?>(record);
+            return Task.FromResult(cacheEntry is null
+                ? null
+                : new FileDownloadResult(cacheEntry.Metadata, cacheEntry.FileSize, cacheEntry.Date,
+                    cacheEntry.OpenRead(),
+                    cacheEntry.PhysicalPath));
         }
 
         public Task RemoveItemAsync(string path)

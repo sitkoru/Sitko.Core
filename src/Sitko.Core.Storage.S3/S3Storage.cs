@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Amazon;
 using Amazon.S3;
@@ -64,14 +65,26 @@ namespace Sitko.Core.Storage.S3
             return response.S3Objects.Any();
         }
 
-        protected override async Task<bool> DoSaveAsync(string path, Stream file)
+        protected override async Task<bool> DoSaveAsync(string path, Stream file,
+            string metadata)
         {
             await CreateBucketAsync(_options.Bucket);
             using var fileTransferUtility = new TransferUtility(_client);
             try
             {
-                await fileTransferUtility.UploadAsync(file,
-                    _options.Bucket, path);
+                var request = new TransferUtilityUploadRequest
+                {
+                    InputStream = file, Key = path, BucketName = _options.Bucket
+                };
+                await fileTransferUtility.UploadAsync(request);
+
+                var metaDataRequest = new TransferUtilityUploadRequest
+                {
+                    InputStream = new MemoryStream(Encoding.UTF8.GetBytes(metadata)),
+                    Key = GetMetaDataPath(path),
+                    BucketName = _options.Bucket
+                };
+                await fileTransferUtility.UploadAsync(metaDataRequest);
                 return true;
             }
             catch (Exception e)
@@ -90,6 +103,11 @@ namespace Sitko.Core.Storage.S3
                     try
                     {
                         await _client.DeleteObjectAsync(_options.Bucket, filePath);
+                        if (await IsObjectExists(GetMetaDataPath(filePath)))
+                        {
+                            await _client.DeleteObjectAsync(_options.Bucket, GetMetaDataPath(filePath));
+                        }
+
                         return true;
                     }
                     catch (Exception e)
@@ -139,22 +157,13 @@ namespace Sitko.Core.Storage.S3
             }
         }
 
-        protected override async Task<StorageRecord?> DoGetFileAsync(string path)
+        private async Task<GetObjectResponse?> DownloadFileAsync(string path)
         {
             var request = new GetObjectRequest {BucketName = _options.Bucket, Key = path};
-
+            GetObjectResponse? response = null;
             try
             {
-                var response = await _client.GetObjectAsync(request);
-
-                var item = new StorageItem
-                {
-                    Path = Path.GetDirectoryName(path),
-                    FileName = Path.GetFileName(path),
-                    FilePath = path,
-                    FileSize = response.ContentLength
-                };
-                return new StorageRecord(item, response.ResponseStream) {LastModified = response.LastModified};
+                response = await _client.GetObjectAsync(request);
             }
             catch (AmazonS3Exception ex)
             {
@@ -167,28 +176,96 @@ namespace Sitko.Core.Storage.S3
                 {
                     Logger.LogDebug(ex, "File {File} not found", path);
                 }
-                
             }
 
-            return null;
+            return response;
         }
 
-        public override async Task<StorageItemCollection> GetDirectoryContentsAsync(string path)
+        private async Task<string?> DownloadFileMetadataAsync(string filePath)
         {
-            var request = new ListObjectsRequest {BucketName = _options.Bucket, Prefix = path};
-
-            var response = await _client.ListObjectsAsync(request);
-
-            var files = response.S3Objects.Select(entry => new StorageRecord
+            string? metaData = null;
+            var metaDataResponse = await DownloadFileAsync(GetMetaDataPath(filePath));
+            if (metaDataResponse != null)
             {
-                FileSize = entry.Size,
-                FileName = Path.GetFileName(entry.Key),
-                LastModified = entry.LastModified,
-                FilePath = entry.Key,
-                Path = Path.GetDirectoryName(entry.Key)
-            } as StorageItem).ToList();
+                var buffer = new MemoryStream();
+                await metaDataResponse.ResponseStream.CopyToAsync(buffer);
+                metaData = Encoding.UTF8.GetString(buffer.ToArray());
+            }
 
-            return new StorageItemCollection(files);
+            return metaData;
+        }
+
+        protected override async Task<FileDownloadResult?> DoGetFileAsync(string path)
+        {
+            var fileResponse = await DownloadFileAsync(path);
+            if (fileResponse == null)
+            {
+                return null;
+            }
+
+            var metaData = await DownloadFileMetadataAsync(path);
+
+            return new FileDownloadResult(metaData, fileResponse.ContentLength, fileResponse.LastModified,
+                fileResponse.ResponseStream);
+        }
+
+        protected override async Task<StorageFolder?> DoBuildStorageTreeAsync()
+        {
+            var root = new StorageFolder("/", "/");
+            try
+            {
+                ListObjectsV2Request request = new ListObjectsV2Request {BucketName = _options.Bucket};
+                ListObjectsV2Response response;
+                do
+                {
+                    response = await _client.ListObjectsV2Async(request);
+                    foreach (var s3Object in response.S3Objects)
+                    {
+                        await AddObjectAsync(s3Object, root);
+                    }
+
+                    request.ContinuationToken = response.NextContinuationToken;
+                } while (response.IsTruncated);
+            }
+            catch (AmazonS3Exception amazonS3Exception)
+            {
+                Logger.LogError(amazonS3Exception, "S3 error occurred. Exception: {ErrorText}",
+                    amazonS3Exception.ToString());
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Exception. Exception: {ErrorText}",
+                    e.ToString());
+            }
+
+            return root;
+        }
+
+        private async Task AddObjectAsync(S3Object s3Object, StorageFolder root)
+        {
+            if (s3Object.Key.EndsWith(MetaDataExtension)) return;
+            var parts = s3Object.Key.Split("/");
+            var current = root;
+            foreach (var part in parts)
+            {
+                if (part == parts.Last())
+                {
+                    var metadata = await DownloadFileMetadataAsync(s3Object.Key);
+                    var item = CreateStorageItem(s3Object.Key, s3Object.LastModified, s3Object.Size, metadata);
+                    current.AddChild(item);
+                }
+                else
+                {
+                    var child = current.Children.OfType<StorageFolder>().FirstOrDefault(f => f.Name == part);
+                    if (child == null)
+                    {
+                        child = new StorageFolder(part, PreparePath(Path.Combine(current.FullPath, part)));
+                        current.AddChild(child);
+                    }
+
+                    current = child;
+                }
+            }
         }
 
         public override ValueTask DisposeAsync()
