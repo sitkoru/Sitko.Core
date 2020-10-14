@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using FluentEmail.Core;
 using FluentEmail.Core.Models;
@@ -39,19 +41,24 @@ namespace Sitko.Core.Email
 
         public async Task<bool> SendMailAsync(MailEntry mailEntry, string body)
         {
-            var message = _emailFactory.Create().Subject(mailEntry.Subject);
-
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(body);
+            var plainText = htmlDoc.DocumentNode.SelectSingleNode("//body")?.InnerText;
 
-            message.Body(body, true);
-            message.PlaintextAlternativeBody(htmlDoc.DocumentNode.SelectSingleNode("//body")?.InnerText);
-
+            var attachments = new List<Attachment>();
             foreach (var attachment in mailEntry.Attachments)
             {
-                message.Attach(new Attachment
+                var stream = attachment.Data;
+                if (!stream.CanSeek)
                 {
-                    Data = attachment.Data, Filename = attachment.Name, ContentType = attachment.Type
+                    var ms = new MemoryStream();
+                    await stream.CopyToAsync(ms);
+                    stream = ms;
+                }
+
+                attachments.Add(new Attachment
+                {
+                    Data = stream, Filename = attachment.Name, ContentType = attachment.Type
                 });
             }
 
@@ -60,7 +67,16 @@ namespace Sitko.Core.Email
             {
                 try
                 {
-                    message.Data.ToAddresses.Clear();
+                    var message = _emailFactory.Create().Subject(mailEntry.Subject);
+                    message.Body(body, true);
+                    message.PlaintextAlternativeBody(plainText);
+
+                    foreach (var attachment in attachments)
+                    {
+                        attachment.Data.Position = 0;
+                        message.Attach(attachment);
+                    }
+
                     message.To(recipient);
                     var res = await message.SendAsync();
                     if (!res.Successful)
