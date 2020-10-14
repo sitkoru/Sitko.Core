@@ -26,9 +26,7 @@
     <PackageReference Include="Google.Protobuf" Version="3.13.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
     <Protobuf Include="Proto\**\*.proto" GrpcServices="None" />
-    <Content Include="Proto\**\*.proto">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <None Pack="true" PackagePath="protos" Include="Proto\**\*.proto" />
   </ItemGroup>
   
   <ItemGroup>
