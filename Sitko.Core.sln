@@ -134,8 +134,13 @@ EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{246EC1C4-F30C-4BEB-8E08-46F944A18573}"
 ProjectSection(SolutionItems) = preProject
-	.github\workflows\main.yml = .github\workflows\main.yml
 	.github\workflows\release.yml = .github\workflows\release.yml
+	.github\workflows\build.yml = .github\workflows\build.yml
+	.github\workflows\pdf.yml = .github\workflows\pdf.yml
+	.github\workflows\queue.yml = .github\workflows\queue.yml
+	.github\workflows\sonyflake.yml = .github\workflows\sonyflake.yml
+	.github\workflows\storage.yml = .github\workflows\storage.yml
+	.github\workflows\repository.yml = .github\workflows\repository.yml
 EndProjectSection
 EndProject
 Global

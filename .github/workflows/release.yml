@@ -20,9 +20,9 @@ jobs:
             -   name: Restore
                 run: dotnet restore
             -   name: Create packages
-                run: dotnet pack -c Release /p:Version=${{ steps.prep.outputs.version }} -o $(pwd)/packages
+                run: dotnet pack -c Release /p:Version=${{ steps.prep.outputs.version }} -o packages
             -   name: Push to Nuget
-                run: find $(pwd)/packages -name *.nupkg -exec dotnet nuget push {} -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} \;
+                run: find packages -name *.nupkg -exec dotnet nuget push {} -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} \;
             -   name: Download Sitko.Core
                 uses: actions/checkout@v2
                 with:
