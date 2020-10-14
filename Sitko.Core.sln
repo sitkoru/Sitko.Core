@@ -123,17 +123,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Auth.Basic", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.IdProvider", "src\Sitko.Core.IdProvider\Sitko.Core.IdProvider.csproj", "{88E933E0-1216-4EF3-9992-1D31CCF8077E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{6A6758B2-EA0C-40E7-9D2B-3D1DDD67A25E}"
-ProjectSection(SolutionItems) = preProject
-	.github\dependabot.yml = .github\dependabot.yml
-EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{80D996B7-3C5C-4012-9CAD-581EBD6C27FA}"
-ProjectSection(SolutionItems) = preProject
-	.github\workflows\release.yml = .github\workflows\release.yml
-	.github\workflows\main.yml = .github\workflows\main.yml
-EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Pdf", "src\Sitko.Core.Pdf\Sitko.Core.Pdf.csproj", "{653A9281-3F2E-4790-8857-EA7CDD7060AA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Pdf.Tests", "tests\Sitko.Core.Pdf.Tests\Sitko.Core.Pdf.Tests.csproj", "{2C044808-62B6-4323-A9D7-841B7AB9E74E}"
@@ -882,7 +871,6 @@ Global
 		{72935309-0088-4AE3-B0E3-6A556D883287} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 		{DDA51F9A-94B9-4EF6-924A-CF947F3F769D} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 		{88E933E0-1216-4EF3-9992-1D31CCF8077E} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
-		{80D996B7-3C5C-4012-9CAD-581EBD6C27FA} = {6A6758B2-EA0C-40E7-9D2B-3D1DDD67A25E}
 		{653A9281-3F2E-4790-8857-EA7CDD7060AA} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 		{2C044808-62B6-4323-A9D7-841B7AB9E74E} = {10C46F0D-1B13-447E-AD22-F01DDB5A79FD}
 		{246EC1C4-F30C-4BEB-8E08-46F944A18573} = {164C0858-0024-4D82-84F8-2686691A6503}
