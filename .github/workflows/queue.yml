@@ -1,0 +1,48 @@
+name: Sitko.Core.Queue
+
+on:
+    push:
+        branches: [ master ]
+        paths:
+            - "src/Sitko.Core.App/**"
+            - "src/Sitko.Core.Queue/**"
+            - "src/Sitko.Core.Queue.Apm/**"
+            - "src/Sitko.Core.Queue.InMemory/**"
+            - "src/Sitko.Core.Queue.Nats/**"
+            - "tests/Sitko.Core.Queue.Tests/**"
+            - "tests/Sitko.Core.Queue.InMemory.Tests/**"
+            - "tests/Sitko.Core.Queue.Nats.Tests/**"
+    pull_request:
+        paths:
+            - "src/Sitko.Core.App/**"
+            - "src/Sitko.Core.Queue/**"
+            - "src/Sitko.Core.Queue.Apm/**"
+            - "src/Sitko.Core.Queue.InMemory/**"
+            - "src/Sitko.Core.Queue.Nats/**"
+            - "tests/Sitko.Core.Queue.Test/**"
+            - "tests/Sitko.Core.Queue.InMemory.Tests/**"
+            - "tests/Sitko.Core.Queue.Nats.Tests/**"
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        container: ghcr.io/sitkoru/actions-container
+        env:
+            QUEUE_NATS_HOST: nats
+            QUEUE_NATS_CLUSTER_NAME: test-cluster
+        services:
+            nats:
+                image: nats-streaming:latest
+        steps:
+            -   uses: actions/checkout@v2
+            -   uses: actions/setup-dotnet@v1
+                with:
+                    dotnet-version: '3.1.x'
+            -   name: Add Github Actions logger
+                run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
+            -   name: Run tests Sitko.Core.Queue
+                run: dotnet test --logger GitHubActions tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
+            -   name: Run tests Sitko.Core.Queue.Nats
+                run: dotnet test --logger GitHubActions tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj
+            -   name: Run tests Sitko.Core.Queue.InMemory
+                run: dotnet test --logger GitHubActions tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj

@@ -11,13 +11,30 @@ jobs:
         container: mcr.microsoft.com/dotnet/sdk:5.0
         steps:
             -   uses: actions/checkout@v2
-            - name: Prepare
-              id: prep
-              run: |
-                  VERSION=${GITHUB_REF#refs/tags/}
-                  echo ::set-output name=version::${VERSION}
+            -   name: Prepare
+                id: prep
+                run: |
+                    VERSION=${GITHUB_REF#refs/tags/}
+                    echo ::set-output name=version::${VERSION}
             -   name: Create packages
                 run: dotnet pack -c Release /p:Version=${{ steps.prep.outputs.version }} -o $(pwd)/packages
             -   name: Push to Nuget
-                run: find $(pwd)/packages -name *.nupkg -exec dotnet nuget push {} -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} \;
+                run: find packages -name *.nupkg -exec dotnet nuget push {} -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} \;
+            -   name: Download Sitko.Core
+                uses: actions/checkout@v2
+                with:
+                    repository: "sitkoru/Sitko.Core"
+                    path: proto
+                    ref: "proto"
+            -   name: Publish proto archive
+                run: |
+                    tar czf proto/proto.tar.gz -C src/Sitko.Core.Grpc/Proto .
+                    echo echo ${{ steps.prep.outputs.version }}> proto/VERSION
+                    cd proto
+                    git config user.name sitkobot
+                    git config user.email bot@sitko.ru
+                    git add proto.tar.gz
+                    git add VERSION
+                    git commit -m "publish proto archive ${{ steps.prep.outputs.version }}"
+                    git push
                     
