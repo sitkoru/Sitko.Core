@@ -39,8 +39,6 @@ ProjectSection(SolutionItems) = preProject
 	.gitignore = .gitignore
 	README.md = README.md
 	docker-compose.yml = docker-compose.yml
-	.github\workflows\main.yml = .github\workflows\main.yml
-	.github\workflows\release.yml = .github\workflows\release.yml
 	LICENSE.md = LICENSE.md
 	packageIcon.png = packageIcon.png
 EndProjectSection
@@ -128,6 +126,22 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Pdf", "src\Sitko.Core.Pdf\Sitko.Core.Pdf.csproj", "{653A9281-3F2E-4790-8857-EA7CDD7060AA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Pdf.Tests", "tests\Sitko.Core.Pdf.Tests\Sitko.Core.Pdf.Tests.csproj", "{2C044808-62B6-4323-A9D7-841B7AB9E74E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{164C0858-0024-4D82-84F8-2686691A6503}"
+ProjectSection(SolutionItems) = preProject
+	.github\dependabot.yml = .github\dependabot.yml
+EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{246EC1C4-F30C-4BEB-8E08-46F944A18573}"
+ProjectSection(SolutionItems) = preProject
+	.github\workflows\release.yml = .github\workflows\release.yml
+	.github\workflows\build.yml = .github\workflows\build.yml
+	.github\workflows\pdf.yml = .github\workflows\pdf.yml
+	.github\workflows\queue.yml = .github\workflows\queue.yml
+	.github\workflows\sonyflake.yml = .github\workflows\sonyflake.yml
+	.github\workflows\storage.yml = .github\workflows\storage.yml
+	.github\workflows\repository.yml = .github\workflows\repository.yml
+EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -859,5 +873,6 @@ Global
 		{88E933E0-1216-4EF3-9992-1D31CCF8077E} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 		{653A9281-3F2E-4790-8857-EA7CDD7060AA} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 		{2C044808-62B6-4323-A9D7-841B7AB9E74E} = {10C46F0D-1B13-447E-AD22-F01DDB5A79FD}
+		{246EC1C4-F30C-4BEB-8E08-46F944A18573} = {164C0858-0024-4D82-84F8-2686691A6503}
 	EndGlobalSection
 EndGlobal

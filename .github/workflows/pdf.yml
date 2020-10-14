@@ -1,0 +1,28 @@
+name: Sitko.Core.Pdf
+
+on:
+    push:
+        branches: [ master ]
+        paths:
+            - "src/Sitko.Core.App/**"
+            - "src/Sitko.Core.Pdf/**"
+            - "tests/Sitko.Core.Pdf.Tests/**"
+    pull_request:
+        paths:
+            - "src/Sitko.Core.App/**"
+            - "src/Sitko.Core.Pdf/**"
+            - "tests/Sitko.Core.Pdf.Tests/**"
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        container: ghcr.io/sitkoru/actions-container
+        steps:
+            -   uses: actions/checkout@v2
+            -   uses: actions/setup-dotnet@v1
+                with:
+                    dotnet-version: '3.1.x'
+            -   name: Add Github Actions logger
+                run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
+            -   name: Run tests
+                run: dotnet test --logger GitHubActions tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj

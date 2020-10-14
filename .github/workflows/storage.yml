@@ -1,0 +1,46 @@
+name: Sitko.Core.Storage
+
+on:
+    push:
+        branches: [ master ]
+        paths:
+            - "src/Sitko.Core.App/**"
+            - "src/Sitko.Core.Storage/**"
+            - "src/Sitko.Core.Storage.FileSystem/**"
+            - "src/Sitko.Core.Storage.S3/**"
+            - "tests/Sitko.Core.Storage.FileSystem.Tests/**"
+            - "tests/Sitko.Core.Storage.S3.Tests/**"
+    pull_request:
+        paths:
+            - "src/Sitko.Core.App/**"
+            - "src/Sitko.Core.Storage/**"
+            - "src/Sitko.Core.Storage.FileSystem/**"
+            - "src/Sitko.Core.Storage.S3/**"
+            - "tests/Sitko.Core.Storage.FileSystem.Tests/**"
+            - "tests/Sitko.Core.Storage.S3.Tests/**"
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        container: ghcr.io/sitkoru/actions-container
+        env:
+            MINIO_SERVER_URI: http://minio:9000
+            MINIO_ACCESS_KEY: ptTYf7VkCVbUjAzn
+            MINIO_SECRET_KEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
+        services:
+            minio:
+                image: bitnami/minio:2020.7.2
+                env:
+                    MINIO_ACCESS_KEY: ptTYf7VkCVbUjAzn
+                    MINIO_SECRET_KEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
+        steps:
+            -   uses: actions/checkout@v2
+            -   uses: actions/setup-dotnet@v1
+                with:
+                    dotnet-version: '3.1.x'
+            -   name: Add Github Actions logger
+                run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
+            -   name: Sitko.Core.Storage.FileSystem
+                run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
+            -   name: Sitko.Core.Storage.S3
+                run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
