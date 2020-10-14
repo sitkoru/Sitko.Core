@@ -1,22 +1,26 @@
 name: Release
 
 on:
-    release:
-        types:
-            - created
+    push:
+        tags:
+            - '*.*.*'
 
 jobs:
     build:
         runs-on: ubuntu-latest
         container: mcr.microsoft.com/dotnet/core/sdk:3.1
-        env:
-            VERSION: ${{ github.event.release.tag_name }}
         steps:
             -   uses: actions/checkout@v2
+            -   name: Prepare
+                id: prep
+                shell: bash
+                run: |
+                    VERSION=${GITHUB_REF#refs/tags/}
+                    echo ::set-output name=version::${VERSION}
             -   name: Restore
-                run: dotnet restore --locked-mode
+                run: dotnet restore
             -   name: Create packages
-                run: dotnet pack --no-restore -c Release /p:Version=$VERSION -o $(pwd)/packages
+                run: dotnet pack -c Release /p:Version=${{ steps.prep.outputs.version }} -o $(pwd)/packages
             -   name: Push to Nuget
                 run: find $(pwd)/packages -name *.nupkg -exec dotnet nuget push {} -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} \;
             -   name: Download Sitko.Core
@@ -28,12 +32,12 @@ jobs:
             -   name: Publish proto archive
                 run: |
                     tar czf proto/proto.tar.gz -C src/Sitko.Core.Grpc/Proto .
-                    echo echo $VERSION > proto/VERSION
+                    echo echo ${{ steps.prep.outputs.version }}> proto/VERSION
                     cd proto
                     git config user.name sitkobot
                     git config user.email bot@sitko.ru
                     git add proto.tar.gz
                     git add VERSION
-                    git commit -m "publish proto archive $VERSION"
+                    git commit -m "publish proto archive ${{ steps.prep.outputs.version }}"
                     git push
                     
