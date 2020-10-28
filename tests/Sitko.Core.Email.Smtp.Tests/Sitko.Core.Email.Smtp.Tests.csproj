@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Sitko.Core.Email.Smtp\Sitko.Core.Email.Smtp.csproj" />
+    <ProjectReference Include="..\..\src\Sitko.Core.Xunit\Sitko.Core.Xunit.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Email.Tests\Sitko.Core.Email.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\Sitko.Core.Email.Tests\Data\file.txt">
+      <Link>Data\file.txt</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Sitko.Core.Email.Tests\Data\img.jpg">
+      <Link>Data\img.jpg</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>
