@@ -41,7 +41,7 @@ jobs:
                     dotnet-version: '3.1.x'
             -   uses: actions/setup-dotnet@v1
                 with:
-                    dotnet-version: '5.0.100-rc.2.20479.15'
+                    dotnet-version: '5.0.x'
             -   name: Add Github Actions logger
                 run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
             -   name: Run tests
