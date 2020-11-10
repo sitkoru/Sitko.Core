@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Grpc\Sitko.Core.Grpc.csproj" />
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Grpc.Net.ClientFactory" Version="2.33.1" />

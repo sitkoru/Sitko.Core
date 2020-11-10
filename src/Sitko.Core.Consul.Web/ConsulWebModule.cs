@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Consul;
 using Microsoft.Extensions.Configuration;
@@ -10,15 +9,10 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Consul.Web
 {
-    public class ConsulWebModule : BaseApplicationModule<ConsulWebModuleConfig>
+    public class ConsulWebModule : ConsulModule<ConsulWebModuleConfig>
     {
         public ConsulWebModule(ConsulWebModuleConfig config, Application application) : base(config, application)
         {
-        }
-
-        public override List<Type> GetRequiredModules()
-        {
-            return new List<Type> {typeof(ConsulModule)};
         }
 
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
@@ -26,7 +20,15 @@ namespace Sitko.Core.Consul.Web
         {
             base.ConfigureServices(services, configuration, environment);
             services.AddSingleton<ConsulWebClient>();
-            services.AddHealthChecks().AddCheck<ConsulWebHealthCheck>("Consul registration");
+            services.AddHealthChecks()
+                .AddCheck<ConsulWebHealthCheck>("Consul registration")
+                .AddConsul(options =>
+                {
+                    var uri = new Uri(Config.ConsulUri);
+                    options.HostName = uri.Host;
+                    options.Port = uri.Port;
+                    options.RequireHttps = false;
+                });
         }
 
         public override Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,

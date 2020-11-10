@@ -47,14 +47,8 @@ namespace Sitko.Core.App
             Configuration = tmpHost.Services.GetService<IConfiguration>();
             Environment = tmpHost.Services.GetService<IHostEnvironment>();
             Logger = tmpHost.Services.GetService<ILogger<Application>>();
-            LoggingEnableConsole = Environment.IsDevelopment();
 
             Name = Environment.ApplicationName;
-
-            _loggerConfiguration.MinimumLevel.ControlledBy(_logLevelSwitcher.Switch);
-            _loggerConfiguration.Enrich.FromLogContext()
-                .Enrich.WithProperty("App", Name)
-                .Enrich.WithProperty("AppVersion", Version);
 
             HostBuilder = Host.CreateDefaultBuilder(args)
                 .UseDefaultServiceProvider(options =>
@@ -69,9 +63,12 @@ namespace Sitko.Core.App
             });
         }
 
-        protected LogEventLevel LoggingLevel { get; set; } = LogEventLevel.Information;
-        protected bool LoggingEnableConsole { get; set; }
-        protected Action<LoggerConfiguration, LogLevelSwitcher>? LoggingConfigure { get; set; }
+        protected virtual bool LoggingEnableConsole => Environment.IsDevelopment();
+
+        protected virtual void ConfigureLogging(LoggerConfiguration loggerConfiguration,
+            LogLevelSwitcher logLevelSwitcher)
+        {
+        }
 
         public string Name { get; private set; }
         public string Version { get; private set; } = "dev";
@@ -164,27 +161,33 @@ namespace Sitko.Core.App
             return HostBuilder;
         }
 
-        protected virtual void ConfigureLogging()
+        protected virtual string ConsoleLogFormat =>
+            "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}] {Message:lj}{NewLine}{Exception}";
+
+        private void InitLogging()
         {
-            _logLevelSwitcher.Switch.MinimumLevel = LoggingLevel;
-            _logLevelSwitcher.MsMessagesSwitch.MinimumLevel = LogEventLevel.Warning;
-            _loggerConfiguration.MinimumLevel.Override("Microsoft", _logLevelSwitcher.MsMessagesSwitch);
+            _loggerConfiguration.MinimumLevel.ControlledBy(_logLevelSwitcher.Switch);
+            _loggerConfiguration.Enrich.FromLogContext()
+                .Enrich.WithProperty("App", Name)
+                .Enrich.WithProperty("AppVersion", Version);
+            _logLevelSwitcher.Switch.MinimumLevel =
+                Environment.IsDevelopment() ? LogEventLevel.Debug : LogEventLevel.Information;
 
             if (LoggingEnableConsole)
             {
                 _loggerConfiguration
                     .WriteTo.Console(
-                        outputTemplate:
-                        "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}] {Message:lj}{NewLine}{Exception}",
+                        outputTemplate: ConsoleLogFormat,
                         levelSwitch: _logLevelSwitcher.Switch);
             }
 
-            LoggingConfigure?.Invoke(_loggerConfiguration, _logLevelSwitcher);
-            foreach (var entry in LogEventLevels)
+            ConfigureLogging(_loggerConfiguration, _logLevelSwitcher);
+            foreach ((var key, LogEventLevel value) in LogEventLevels)
             {
-                _loggerConfiguration.MinimumLevel.Override(entry.Key, entry.Value);
+                _loggerConfiguration.MinimumLevel.Override(key, value);
             }
         }
+
 
         protected void RegisterModule<TModule, TModuleConfig>(
             Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null)
@@ -204,16 +207,23 @@ namespace Sitko.Core.App
                     configure?.Invoke(context.Configuration, context.HostingEnvironment, config);
                 }
 
-                var module = (TModule)Activator.CreateInstance(typeof(TModule), config, this);
-                if (!_check)
+                var instance = Activator.CreateInstance(typeof(TModule), config, this);
+                if (instance is TModule module)
                 {
-                    module.CheckConfig();
-                }
+                    if (!_check)
+                    {
+                        module.CheckConfig();
+                    }
 
-                module.ConfigureLogging(_loggerConfiguration, _logLevelSwitcher,
-                    context.Configuration, context.HostingEnvironment);
-                module.ConfigureServices(services, context.Configuration, context.HostingEnvironment);
-                AddModule(module);
+                    module.ConfigureLogging(_loggerConfiguration, _logLevelSwitcher,
+                        context.Configuration, context.HostingEnvironment);
+                    module.ConfigureServices(services, context.Configuration, context.HostingEnvironment);
+                    AddModule(module);
+                }
+                else
+                {
+                    throw new Exception($"Can't instantiate module {typeof(TModule)}");
+                }
             });
         }
 
@@ -236,7 +246,7 @@ namespace Sitko.Core.App
                 }
 
                 InitApplication();
-                ConfigureLogging();
+                InitLogging();
                 _initComplete = true;
             }
         }
@@ -358,16 +368,11 @@ namespace Sitko.Core.App
             return default;
 #pragma warning restore 8603
         }
-
-        protected void LogModuleRegistrationFailed<T>() where T : IApplicationModule
-        {
-            Logger.LogError("Can't register module {Module}: empty configuration", typeof(T));
-        }
     }
 
-    public class Application<T> : Application where T : Application<T>
+    public abstract class Application<T> : Application where T : Application<T>
     {
-        public Application(string[] args) : base(args)
+        protected Application(string[] args) : base(args)
         {
             ConfigureServices((context, services) =>
             {
@@ -419,7 +424,7 @@ namespace Sitko.Core.App
 
         protected override string? GetVersion()
         {
-            return typeof(T).Assembly.GetName().Version.ToString();
+            return typeof(T).Assembly.GetName().Version?.ToString();
         }
     }
 }

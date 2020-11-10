@@ -8,19 +8,16 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
-        container: mcr.microsoft.com/dotnet/core/sdk:3.1
+        container: mcr.microsoft.com/dotnet/sdk:5.0
         steps:
             -   uses: actions/checkout@v2
             -   name: Prepare
                 id: prep
-                shell: bash
                 run: |
                     VERSION=${GITHUB_REF#refs/tags/}
                     echo ::set-output name=version::${VERSION}
-            -   name: Restore
-                run: dotnet restore
             -   name: Create packages
-                run: dotnet pack -c Release /p:Version=${{ steps.prep.outputs.version }} -o packages
+                run: dotnet pack -c Release /p:Version=${{ steps.prep.outputs.version }} -o $(pwd)/packages
             -   name: Push to Nuget
                 run: find packages -name *.nupkg -exec dotnet nuget push {} -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} \;
             -   name: Download Sitko.Core
