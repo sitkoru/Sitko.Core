@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
@@ -23,16 +23,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[3.1.10,5.0.0]"/>
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="3.1.9"/>
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.9"/>
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="5.0.0"/>
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0"/>
+  <ItemGroup>
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
   </ItemGroup>
 
   <ItemGroup>

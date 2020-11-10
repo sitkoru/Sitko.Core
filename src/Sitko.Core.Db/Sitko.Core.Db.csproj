@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
@@ -25,18 +25,9 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.9"/>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.9" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive"/>
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="3.1.9"/>
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.0"/>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive"/>
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="5.0.0"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[3.1.9,5.0.0]"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="[3.1.9,5.0.0]" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive"/>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="[3.1.9,5.0.0]"/>
   </ItemGroup>
 
   <ItemGroup>
