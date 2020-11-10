@@ -24,6 +24,8 @@ namespace Sitko.Core.Grpc.Server.Consul
         private readonly string _host = "127.0.0.1";
         private readonly int _port;
         private readonly bool _inContainer = DockerHelper.IsRunningInDocker();
+        private readonly CancellationTokenSource _updateTtlCts = new CancellationTokenSource();
+        private Task? _updateTtlTask;
 
         private readonly Dictionary<string, string> _registeredServices = new Dictionary<string, string>();
 
@@ -105,11 +107,8 @@ namespace Sitko.Core.Grpc.Server.Consul
                     Port = _port,
                     Check = new AgentServiceCheck
                     {
-                        DeregisterCriticalServiceAfter = _options.DeregisterTimeout,
-                        Interval = _options.ChecksInterval,
-                        GRPC = $"{_host}:{_port}",
-                        TLSSkipVerify = _options.ValidateTls,
-                        GRPCUseTLS = _options.UseTls
+                        TTL = _options.ChecksInterval,
+                        DeregisterCriticalServiceAfter = _options.DeregisterTimeout
                     },
                     Tags = new[] {"grpc", $"version:{_application.Version}"}
                 };
@@ -121,6 +120,7 @@ namespace Sitko.Core.Grpc.Server.Consul
             }
 
             _registeredServices[id] = serviceName;
+            _updateTtlTask ??= UpdateChecksAsync(_updateTtlCts.Token);
         }
 
         private bool _disposed;
@@ -129,6 +129,12 @@ namespace Sitko.Core.Grpc.Server.Consul
         {
             if (!_disposed && _consulClient != null)
             {
+                if (_updateTtlTask != null)
+                {
+                    _updateTtlCts.Cancel();
+                    _updateTtlTask = null;
+                }
+
                 foreach (var registeredService in _registeredServices)
                 {
                     _logger.LogInformation(
@@ -176,6 +182,24 @@ namespace Sitko.Core.Grpc.Server.Consul
             }
 
             return HealthCheckResult.Unhealthy($"Error response from consul: {serviceResponse.StatusCode}");
+        }
+
+        private async Task UpdateChecksAsync(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                if (_consulClient != null)
+                {
+                    foreach (var service in _registeredServices)
+                    {
+                        await _consulClient.Agent.UpdateTTL("service:" + service.Key,
+                            $"Last update: {DateTime.UtcNow:O}", TTLStatus.Pass,
+                            cancellationToken);
+                    }
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken);
+            }
         }
     }
 }

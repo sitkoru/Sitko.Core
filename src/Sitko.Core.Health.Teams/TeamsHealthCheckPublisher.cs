@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -5,24 +6,19 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Telegram.Bot;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
+using TeamsHook.NET;
 
-namespace Sitko.Core.Health.Telegram
+namespace Sitko.Core.Health.Teams
 {
-    public class TelegramHealthCheckPublisher : BaseHealthCheckPublisher<TelegramHealthCheckPublisherOptions>
+    public class TeamsHealthCheckPublisher : BaseHealthCheckPublisher<TeamsHealthCheckPublisherOptions>
     {
-        private readonly ChatId _chatId;
-        private readonly ITelegramBotClient _telegramBotClient;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public TelegramHealthCheckPublisher(TelegramHealthCheckPublisherOptions options,
-            ILogger<TelegramHealthCheckPublisher> logger, IHostEnvironment hostingEnvironment,
+        public TeamsHealthCheckPublisher(TeamsHealthCheckPublisherOptions options,
+            ILogger<TeamsHealthCheckPublisher> logger, IHostEnvironment hostingEnvironment,
             IHttpClientFactory httpClientFactory) : base(options, logger, hostingEnvironment)
         {
-            _chatId = new ChatId(options.ChatId);
-            _telegramBotClient = new TelegramBotClient(options.Token,
-                httpClientFactory.CreateClient());
+            _httpClientFactory = httpClientFactory;
         }
 
         protected override Task DoSendAsync(string checkName, HealthReportEntry entry,
@@ -36,22 +32,26 @@ namespace Sitko.Core.Health.Telegram
                 HealthStatus.Healthy => $"Check {checkName} in {serviceName} is restored",
                 _ => $"Unknown check {checkName} status {entry.Status}"
             };
+            string color = entry.Status switch
+            {
+                HealthStatus.Unhealthy => Options.UnHealthyColor,
+                HealthStatus.Degraded => Options.DegradedColor,
+                HealthStatus.Healthy => Options.HealthyColor,
+                _ => ""
+            };
             string summary = string.IsNullOrEmpty(entry.Description) ? "No description" : entry.Description;
-
-
-            string text = $"{TelegramExtensions.TelegramRaw(title)}\n{TelegramExtensions.TelegramRaw(summary)}";
-
+            var sections = new List<Section>();
             if (entry.Status == HealthStatus.Unhealthy || entry.Status == HealthStatus.Degraded)
             {
                 if (entry.Exception != null)
                 {
-                    text += $"\n`{entry.Exception}`";
+                    sections.Add(new Section {ActivityTitle = "Exception", ActivityText = $"```{entry.Exception}```"});
                 }
             }
 
-            return _telegramBotClient.SendTextMessageAsync(_chatId,
-                text, ParseMode.Markdown,
-                cancellationToken: cancellationToken);
+            var client = new TeamsHookClient(_httpClientFactory.CreateClient());
+            return client.PostAsync(Options.WebHookUrl,
+                new MessageCard {Title = title, Text = summary, Sections = sections, ThemeColor = color});
         }
     }
 }

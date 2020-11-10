@@ -1,8 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
     <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Authors>George Drak</Authors>
@@ -16,16 +17,18 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.5.3.10" />
-    <PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="3.1.1" />
+    <ProjectReference Include="..\Sitko.Core.Health\Sitko.Core.Health.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="TeamsHook.NET" Version="0.1.0.17" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Storage\Sitko.Core.Storage.csproj" />
-  </ItemGroup>
+
   <ItemGroup>
     <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
     <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\" />

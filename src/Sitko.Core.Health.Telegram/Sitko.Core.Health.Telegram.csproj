@@ -21,12 +21,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Health\Sitko.Core.Health.csproj" />
   </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="Telegram.Bot" Version="15.7.1" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
