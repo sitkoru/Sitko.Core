@@ -22,10 +22,17 @@
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
     <ProjectReference Include="..\Sitko.Core.Caching\Sitko.Core.Caching.csproj"/>
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="[3.1.10,5.0.0]"/>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.10"/>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="5.0.0"/>
   </ItemGroup>
 
   <ItemGroup>

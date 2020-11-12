@@ -23,10 +23,19 @@
     <PackageReference Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="3.1.1"/>
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1"/>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
-    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="[3.1.10,5.0.0]"/>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="[3.1.10,5.0.0]"/>
   </ItemGroup>
-  
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="3.1.10"/>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="3.1.10"/>
+  </ItemGroup>
+
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="5.0.0"/>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="5.0.0"/>
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Auth\Sitko.Core.Auth.csproj"/>
   </ItemGroup>

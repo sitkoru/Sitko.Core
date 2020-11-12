@@ -27,15 +27,15 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
     <PackageReference Include="Scrutor" Version="3.3.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.10,5.0.0]" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[3.1.10,5.0.0]" />
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="[3.1.10,5.0.0]" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="[3.1.10,5.0.0]" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.10,5.0.0]" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="[3.1.10,5.0.0]" />
-    <PackageReference Include="System.Text.Json" Version="[4.7.2,5.0.0]" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
+    <PackageReference Include="System.Text.Json" Version="5.0.0" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
     <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\" />
