@@ -20,6 +20,7 @@ namespace Sitko.Core.Health.Teams
             base.ConfigureServices(services, configuration, environment);
             services.Configure<HealthCheckPublisherOptions>(options => { });
             services.AddHealthChecks();
+            services.AddHttpClient();
             services.AddSingleton<IHealthCheckPublisher, TeamsHealthCheckPublisher>();
         }
 
