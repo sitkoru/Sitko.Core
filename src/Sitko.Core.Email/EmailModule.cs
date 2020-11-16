@@ -27,11 +27,6 @@ namespace Sitko.Core.Email
         public override void CheckConfig()
         {
             base.CheckConfig();
-            if (Config.Host == null)
-            {
-                throw new ArgumentException("Provide value for host uri to generate absolute urls",
-                    nameof(Config.Host));
-            }
 
             if (string.IsNullOrEmpty(Config.Scheme))
             {

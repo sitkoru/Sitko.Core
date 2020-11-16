@@ -44,9 +44,9 @@ namespace Sitko.Core.App
                 .ConfigureHostConfiguration(builder => { builder.AddEnvironmentVariables("ASPNETCORE_"); })
                 .ConfigureLogging(builder => { builder.SetMinimumLevel(LogLevel.Information); }).Build();
 
-            Configuration = tmpHost.Services.GetService<IConfiguration>();
-            Environment = tmpHost.Services.GetService<IHostEnvironment>();
-            Logger = tmpHost.Services.GetService<ILogger<Application>>();
+            Configuration = tmpHost.Services.GetRequiredService<IConfiguration>();
+            Environment = tmpHost.Services.GetRequiredService<IHostEnvironment>();
+            Logger = tmpHost.Services.GetRequiredService<ILogger<Application>>();
 
             Name = Environment.ApplicationName;
 
