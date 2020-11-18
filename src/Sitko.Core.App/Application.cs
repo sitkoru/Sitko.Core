@@ -55,12 +55,11 @@ namespace Sitko.Core.App
                 {
                     options.ValidateOnBuild = true;
                     options.ValidateScopes = true;
+                }).ConfigureServices(services =>
+                {
+                    services.AddSingleton(_logLevelSwitcher);
+                    services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
                 });
-            HostBuilder.ConfigureServices(services =>
-            {
-                services.AddSingleton(_logLevelSwitcher);
-                services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
-            });
         }
 
         protected virtual bool LoggingEnableConsole => Environment.IsDevelopment();
