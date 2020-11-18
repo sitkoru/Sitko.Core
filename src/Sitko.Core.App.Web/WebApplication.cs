@@ -30,7 +30,13 @@ namespace Sitko.Core.App.Web
             return _instance!;
         }
 
-        public T Run<TStartup>(int port = 0) where TStartup : BaseStartup<T>
+        public T Run<TStartup>() where TStartup : BaseStartup<T>
+        {
+            UseStartup<TStartup>().GetAppHost().Start();
+            return (T)this;
+        }
+
+        public T Run<TStartup>(int port) where TStartup : BaseStartup<T>
         {
             GetHostBuilder().ConfigureWebHostDefaults(builder =>
                 builder.UseStartup<TStartup>().UseUrls($"http://*:{port.ToString()}"));
