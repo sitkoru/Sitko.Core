@@ -162,7 +162,7 @@ namespace Sitko.Core.App
         }
 
         protected virtual string ConsoleLogFormat =>
-            "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}] {Message:lj}{NewLine}{Exception}";
+            "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}]{NewLine}\t{Message:lj}{NewLine}{Exception}";
 
         private void InitLogging()
         {
