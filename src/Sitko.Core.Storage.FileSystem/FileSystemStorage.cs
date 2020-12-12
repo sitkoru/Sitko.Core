@@ -116,10 +116,10 @@ namespace Sitko.Core.Storage.FileSystem
         private async Task<StorageFolder> ListFolderAsync(string path)
         {
             var fullPath = path == "/" ? _storagePath : Path.Combine(_storagePath, path.Trim('/'));
-            List<IStorageNode>? children = null;
+            List<StorageNode>? children = null;
             if (Directory.Exists(fullPath))
             {
-                children = new List<IStorageNode>();
+                children = new List<StorageNode>();
                 foreach (var info in new DirectoryInfo(fullPath)
                     .EnumerateFileSystemInfos())
                 {
