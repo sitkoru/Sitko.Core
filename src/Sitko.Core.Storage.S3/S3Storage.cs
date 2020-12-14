@@ -195,7 +195,7 @@ namespace Sitko.Core.Storage.S3
             return metaData;
         }
 
-        protected override async Task<FileDownloadResult?> DoGetFileAsync(string path)
+        protected override async Task<StorageItemInfo?> DoGetFileAsync(string path)
         {
             var fileResponse = await DownloadFileAsync(path);
             if (fileResponse == null)
@@ -205,13 +205,13 @@ namespace Sitko.Core.Storage.S3
 
             var metaData = await DownloadFileMetadataAsync(path);
 
-            return new FileDownloadResult(metaData, fileResponse.ContentLength, fileResponse.LastModified,
-                fileResponse.ResponseStream);
+            return new StorageItemInfo(metaData, fileResponse.ContentLength, fileResponse.LastModified,
+                () => fileResponse.ResponseStream);
         }
 
-        protected override async Task<StorageFolder?> DoBuildStorageTreeAsync()
+        protected override async Task<StorageNode?> DoBuildStorageTreeAsync()
         {
-            var root = new StorageFolder("/", "/");
+            var root = StorageNode.CreateDirectory("/", "/");
             try
             {
                 ListObjectsV2Request request = new ListObjectsV2Request {BucketName = _options.Bucket};
@@ -241,7 +241,7 @@ namespace Sitko.Core.Storage.S3
             return root;
         }
 
-        private async Task AddObjectAsync(S3Object s3Object, StorageFolder root)
+        private async Task AddObjectAsync(S3Object s3Object, StorageNode root)
         {
             if (s3Object.Key.EndsWith(MetaDataExtension)) return;
             var parts = s3Object.Key.Split("/");
@@ -252,14 +252,15 @@ namespace Sitko.Core.Storage.S3
                 {
                     var metadata = await DownloadFileMetadataAsync(s3Object.Key);
                     var item = CreateStorageItem(s3Object.Key, s3Object.LastModified, s3Object.Size, metadata);
-                    current.AddChild(item);
+                    current.AddChild(StorageNode.CreateStorageItem(item));
                 }
                 else
                 {
-                    var child = current.Children.OfType<StorageFolder>().FirstOrDefault(f => f.Name == part);
+                    var child = current.Children.Where(n => n.Type == StorageNodeType.Directory)
+                        .FirstOrDefault(f => f.Name == part);
                     if (child == null)
                     {
-                        child = new StorageFolder(part, PreparePath(Path.Combine(current.FullPath, part)));
+                        child = StorageNode.CreateDirectory(part, PreparePath(Path.Combine(current.FullPath, part)));
                         current.AddChild(child);
                     }
 

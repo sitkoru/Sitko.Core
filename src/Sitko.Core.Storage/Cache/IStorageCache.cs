@@ -6,9 +6,9 @@ namespace Sitko.Core.Storage.Cache
 {
     public interface IStorageCache : IAsyncDisposable
     {
-        Task<FileDownloadResult?> GetItemAsync(string path);
+        Task<StorageItemInfo?> GetItemAsync(string path);
 
-        Task<FileDownloadResult?> GetOrAddItemAsync(string path, Func<Task<FileDownloadResult?>> addItem);
+        Task<StorageItemInfo?> GetOrAddItemAsync(string path, Func<Task<StorageItemInfo?>> addItem);
 
         Task RemoveItemAsync(string path);
         Task ClearAsync();
@@ -27,7 +27,6 @@ namespace Sitko.Core.Storage.Cache
         DateTimeOffset Date { get; }
 
         public Stream OpenRead();
-        public string? PhysicalPath { get; }
     }
 
     public abstract class StorageCacheOptions
