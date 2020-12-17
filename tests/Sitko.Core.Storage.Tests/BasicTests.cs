@@ -34,6 +34,7 @@ namespace Sitko.Core.Storage.Tests
             Assert.NotNull(uploaded);
             Assert.NotEqual(0, uploaded.FileSize);
             Assert.Equal(fileName, uploaded.FileName);
+            Assert.Equal("text/plain", uploaded.MimeType);
         }
 
         [Fact]

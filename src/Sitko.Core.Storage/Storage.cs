@@ -87,15 +87,16 @@ namespace Sitko.Core.Storage
             long fileSize,
             StorageItemMetadata metadata)
         {
+            var fileName = metadata.FileName ?? Path.GetFileName(destinationPath);
             var storageItem = new StorageItem
             {
                 Path = PreparePath(Path.GetDirectoryName(destinationPath))!,
-                FileName =
-                    metadata.FileName ?? Path.GetFileName(destinationPath),
+                FileName = fileName,
                 LastModified = date,
                 FileSize = fileSize,
                 FilePath = destinationPath,
-                MetadataJson = metadata.Data
+                MetadataJson = metadata.Data,
+                MimeType = MimeMapping.MimeUtility.GetMimeMapping(fileName)
             };
             return storageItem;
         }

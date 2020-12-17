@@ -14,6 +14,11 @@ namespace Sitko.Core.Storage
         /// Size of uploaded file
         /// </summary>
         public long FileSize { get; set; }
+
+        /// <summary>
+        /// MimeType of uploaded file
+        /// </summary>
+        public string MimeType { get; set; } = string.Empty;
         
         /// <summary>
         /// Full path to uploaded file in storage
