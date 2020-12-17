@@ -16,7 +16,7 @@ namespace Sitko.Core.Storage.Cache
         {
         }
 
-        protected override Task<InMemoryStorageCacheRecord> GetEntryAsync(StorageItemInfo item, Stream stream)
+        internal override Task<InMemoryStorageCacheRecord> GetEntryAsync(StorageItemInfo item, Stream stream)
         {
             using var memoryStream = new MemoryStream();
             stream.CopyTo(memoryStream);

@@ -51,7 +51,7 @@ namespace Sitko.Core.Storage.Cache
             return GetEnumerator();
         }
 
-        public async Task<StorageItemInfo?> GetOrAddItemAsync(string path,
+        async Task<StorageItemInfo?> IStorageCache.GetOrAddItemAsync(string path,
             Func<Task<StorageItemInfo?>> addItem)
         {
             if (_cache == null)
@@ -133,7 +133,7 @@ namespace Sitko.Core.Storage.Cache
 
         protected abstract void DisposeItem(TRecord deletedRecord);
 
-        protected abstract Task<TRecord> GetEntryAsync(StorageItemInfo item, Stream stream);
+        internal abstract Task<TRecord> GetEntryAsync(StorageItemInfo item, Stream stream);
 
         private string NormalizePath(string path)
         {
@@ -146,7 +146,7 @@ namespace Sitko.Core.Storage.Cache
             return path;
         }
 
-        public Task<StorageItemInfo?> GetItemAsync(string path)
+        Task<StorageItemInfo?> IStorageCache.GetItemAsync(string path)
         {
             if (_cache == null)
             {

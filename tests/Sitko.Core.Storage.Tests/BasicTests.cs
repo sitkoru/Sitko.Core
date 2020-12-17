@@ -156,6 +156,34 @@ namespace Sitko.Core.Storage.Tests
                 Assert.Equal(metaData.Id, itemMetaData.Id);
             }
         }
+
+        [Fact]
+        public async Task Metadata()
+        {
+            var scope = await GetScopeAsync();
+
+            var storage = scope.Get<IStorage<TSettings>>();
+
+            Assert.NotNull(storage);
+
+            StorageItem uploaded;
+            const string fileName = "file.txt";
+            var metaData = new FileMetaData();
+            await using (var file = File.Open("Data/file.txt", FileMode.Open))
+            {
+                uploaded = await storage.SaveAsync(file, fileName, "upload/dir1/dir2", metaData);
+            }
+            
+            Assert.NotNull(uploaded);
+
+            var item = await storage.GetAsync(uploaded.FilePath);
+            
+            Assert.NotNull(item);
+
+            var itemMetaData = item.GetMetadata<FileMetaData>();
+            Assert.NotNull(itemMetaData);
+            Assert.Equal(metaData.Id, itemMetaData.Id);
+        }
     }
 
     public class FileMetaData

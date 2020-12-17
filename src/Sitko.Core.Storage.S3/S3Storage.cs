@@ -195,7 +195,7 @@ namespace Sitko.Core.Storage.S3
             return metaData;
         }
 
-        protected override async Task<StorageItemInfo?> DoGetFileAsync(string path)
+        internal override async Task<StorageItemInfo?> DoGetFileAsync(string path)
         {
             var fileResponse = await DownloadFileAsync(path);
             if (fileResponse == null)

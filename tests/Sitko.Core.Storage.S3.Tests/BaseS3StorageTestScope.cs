@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Sitko.Core.Storage.Cache;
 using Sitko.Core.Xunit;
 
 namespace Sitko.Core.Storage.S3.Tests

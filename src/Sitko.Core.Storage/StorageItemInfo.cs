@@ -1,9 +1,11 @@
 using System;
 using System.IO;
-
+using System.Runtime.CompilerServices;
+[assembly: InternalsVisibleTo("Sitko.Core.Storage.S3")]
+[assembly: InternalsVisibleTo("Sitko.Core.Storage.FileSystem")]
 namespace Sitko.Core.Storage
 {
-    public class StorageItemInfo
+    internal class StorageItemInfo
     {
         public Func<Stream> GetStream { get; }
 

@@ -65,7 +65,7 @@ namespace Sitko.Core.Storage
             return destinationPath;
         }
 
-        protected StorageItem CreateStorageItem(string path, StorageItemInfo storageItemInfo)
+        internal StorageItem CreateStorageItem(string path, StorageItemInfo storageItemInfo)
         {
             return CreateStorageItem(path, storageItemInfo.Date, storageItemInfo.FileSize, storageItemInfo.Metadata);
         }
@@ -95,7 +95,7 @@ namespace Sitko.Core.Storage
                 LastModified = date,
                 FileSize = fileSize,
                 FilePath = destinationPath,
-                Metadata = metadata
+                MetadataJson = metadata.Data
             };
             return storageItem;
         }
@@ -105,7 +105,7 @@ namespace Sitko.Core.Storage
 
         protected abstract Task<bool> DoIsFileExistsAsync(StorageItem item);
         protected abstract Task DoDeleteAllAsync();
-        protected abstract Task<StorageItemInfo?> DoGetFileAsync(string path);
+        internal abstract Task<StorageItemInfo?> DoGetFileAsync(string path);
 
         public async Task<DownloadResult?> DownloadAsync(string path)
         {
@@ -208,7 +208,12 @@ namespace Sitko.Core.Storage
 
         public Uri PublicUri(StorageItem item)
         {
-            return new Uri($"{_options.PublicUri}/{item.FilePath}");
+            return PublicUri(item.FilePath);
+        }
+
+        public Uri PublicUri(string filePath)
+        {
+            return new Uri($"{_options.PublicUri}/{filePath}");
         }
 
         private string GetStorageFileName(string fileName)

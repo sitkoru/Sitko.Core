@@ -6,9 +6,9 @@ namespace Sitko.Core.Storage.Cache
 {
     public interface IStorageCache : IAsyncDisposable
     {
-        Task<StorageItemInfo?> GetItemAsync(string path);
+        internal Task<StorageItemInfo?> GetItemAsync(string path);
 
-        Task<StorageItemInfo?> GetOrAddItemAsync(string path, Func<Task<StorageItemInfo?>> addItem);
+        internal Task<StorageItemInfo?> GetOrAddItemAsync(string path, Func<Task<StorageItemInfo?>> addItem);
 
         Task RemoveItemAsync(string path);
         Task ClearAsync();

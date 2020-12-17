@@ -83,7 +83,7 @@ namespace Sitko.Core.Storage.FileSystem
             return Task.CompletedTask;
         }
 
-        protected override async Task<StorageItemInfo?> DoGetFileAsync(string path)
+        internal override async Task<StorageItemInfo?> DoGetFileAsync(string path)
         {
             StorageItemInfo? result = null;
             var fullPath = Path.Combine(_storagePath, path);
