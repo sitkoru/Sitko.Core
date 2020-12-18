@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Nito.AsyncEx;
 using Sitko.Core.Storage.Cache;
 
 namespace Sitko.Core.Storage
@@ -16,6 +17,7 @@ namespace Sitko.Core.Storage
         private readonly T _options;
         private StorageNode? _tree;
         private DateTimeOffset? _treeLastBuild;
+        private AsyncLock _treeLock = new();
 
         protected Storage(T options, ILogger<Storage<T>> logger, IStorageCache? cache)
         {
@@ -39,7 +41,7 @@ namespace Sitko.Core.Storage
                 itemMetadata);
 
             var result = await SaveStorageItemAsync(file, path, destinationPath, storageItem, itemMetadata);
-            await BuildStorageTreeAsync();
+            await RebuildStorageTreeAsync();
             return result;
         }
 
@@ -50,7 +52,7 @@ namespace Sitko.Core.Storage
             file.Seek(0, SeekOrigin.Begin);
             await DoSaveAsync(destinationPath, file, JsonSerializer.Serialize(metadata));
             Logger.LogInformation("File saved to {Path}", path);
-            if (_cache != null && storageItem.FilePath != null)
+            if (_cache != null && !string.IsNullOrEmpty(storageItem.FilePath))
             {
                 await _cache.RemoveItemAsync(storageItem.FilePath);
             }
@@ -128,7 +130,7 @@ namespace Sitko.Core.Storage
             }
 
             var result = await DoDeleteAsync(filePath);
-            await BuildStorageTreeAsync();
+            await RebuildStorageTreeAsync();
             return result;
         }
 
@@ -199,10 +201,23 @@ namespace Sitko.Core.Storage
             return current?.Children ?? new StorageNode[0];
         }
 
+        private async Task RebuildStorageTreeAsync()
+        {
+            if (_tree != null)
+            {
+                await BuildStorageTreeAsync();
+            }
+        }
+
         private async Task BuildStorageTreeAsync()
         {
-            _tree = await DoBuildStorageTreeAsync();
-            _treeLastBuild = DateTimeOffset.UtcNow;
+            using (await _treeLock.LockAsync())
+            {
+                Logger.LogInformation("Start building storage tree");
+                _tree = await DoBuildStorageTreeAsync();
+                _treeLastBuild = DateTimeOffset.UtcNow;
+                Logger.LogInformation("Done building storage tree");
+            }
         }
 
         protected abstract Task<StorageNode?> DoBuildStorageTreeAsync();
