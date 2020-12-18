@@ -14,7 +14,7 @@ namespace Sitko.Core.Storage
         protected readonly ILogger<Storage<T>> Logger;
         private readonly IStorageCache? _cache;
         private readonly T _options;
-        private StorageFolder? _tree;
+        private StorageNode? _tree;
         private DateTimeOffset? _treeLastBuild;
 
         protected Storage(T options, ILogger<Storage<T>> logger, IStorageCache? cache)
@@ -24,7 +24,7 @@ namespace Sitko.Core.Storage
             _options = options;
         }
 
-        public async Task<StorageItem> SaveFileAsync(Stream file, string fileName, string path, object? metadata = null)
+        public async Task<StorageItem> SaveAsync(Stream file, string fileName, string path, object? metadata = null)
         {
             string destinationPath = GetDestinationPath(fileName, path);
 
@@ -65,37 +65,38 @@ namespace Sitko.Core.Storage
             return destinationPath;
         }
 
+        internal StorageItem CreateStorageItem(string path, StorageItemInfo storageItemInfo)
+        {
+            return CreateStorageItem(path, storageItemInfo.Date, storageItemInfo.FileSize, storageItemInfo.Metadata);
+        }
+
         protected StorageItem CreateStorageItem(string destinationPath,
             DateTimeOffset date,
             long fileSize,
-            string? metadata,
-            Stream? stream = null, string? physicalPath = null)
+            string? metadata)
         {
             return CreateStorageItem(destinationPath, date, fileSize,
                 string.IsNullOrEmpty(metadata)
                     ? new StorageItemMetadata {FileName = Path.GetFileName(destinationPath)}
-                    : JsonSerializer.Deserialize<StorageItemMetadata>(metadata), stream,
-                physicalPath);
+                    : JsonSerializer.Deserialize<StorageItemMetadata>(metadata)!);
         }
 
 
         private StorageItem CreateStorageItem(string destinationPath,
             DateTimeOffset date,
             long fileSize,
-            StorageItemMetadata metadata,
-            Stream? stream = null, string? physicalPath = null)
+            StorageItemMetadata metadata)
         {
+            var fileName = metadata.FileName ?? Path.GetFileName(destinationPath);
             var storageItem = new StorageItem
             {
-                FileName =
-                    metadata.FileName ?? Path.GetFileName(destinationPath),
+                Path = PreparePath(Path.GetDirectoryName(destinationPath))!,
+                FileName = fileName,
                 LastModified = date,
                 FileSize = fileSize,
                 FilePath = destinationPath,
-                Path = PreparePath(Path.GetDirectoryName(destinationPath))!,
-                Metadata = metadata,
-                Stream = stream,
-                PhysicalPath = physicalPath
+                MetadataJson = metadata.Data,
+                MimeType = MimeMapping.MimeUtility.GetMimeMapping(fileName)
             };
             return storageItem;
         }
@@ -105,9 +106,21 @@ namespace Sitko.Core.Storage
 
         protected abstract Task<bool> DoIsFileExistsAsync(StorageItem item);
         protected abstract Task DoDeleteAllAsync();
-        protected abstract Task<FileDownloadResult?> DoGetFileAsync(string path);
+        internal abstract Task<StorageItemInfo?> DoGetFileAsync(string path);
 
-        public async Task<bool> DeleteFileAsync(string filePath)
+        public async Task<DownloadResult?> DownloadAsync(string path)
+        {
+            var info = await GetStorageItemInfoAsync(path);
+            if (info != null)
+            {
+                var item = CreateStorageItem(path, info);
+                return new DownloadResult(item, info.GetStream());
+            }
+
+            return null;
+        }
+
+        public async Task<bool> DeleteAsync(string filePath)
         {
             if (_cache != null)
             {
@@ -119,14 +132,14 @@ namespace Sitko.Core.Storage
             return result;
         }
 
-        public Task<StorageItem?> GetFileAsync(string path)
+        public Task<StorageItem?> GetAsync(string path)
         {
-            return GetFileInternalAsync(path);
+            return GetStorageItemInternalAsync(path);
         }
 
-        private async Task<StorageItem?> GetFileInternalAsync(string path)
+        private async Task<StorageItemInfo?> GetStorageItemInfoAsync(string path)
         {
-            FileDownloadResult? result;
+            StorageItemInfo? result;
             if (_cache != null)
             {
                 result = await _cache.GetOrAddItemAsync(path, async () => await DoGetFileAsync(path));
@@ -136,19 +149,20 @@ namespace Sitko.Core.Storage
                 result = await DoGetFileAsync(path);
             }
 
-            if (result != null)
-            {
-                return CreateStorageItem(path, result.Date, result.FileSize, result.Metadata, result.Stream,
-                    result.PhysicalPath);
-            }
+            return result;
+        }
 
-            return null;
+        private async Task<StorageItem?> GetStorageItemInternalAsync(string path)
+        {
+            var result = await GetStorageItemInfoAsync(path);
+
+            return result != null ? CreateStorageItem(path, result.Date, result.FileSize, result.Metadata) : null;
         }
 
 
-        public async Task<bool> IsFileExistsAsync(string path)
+        public async Task<bool> IsExistsAsync(string path)
         {
-            var result = await GetFileInternalAsync(path);
+            var result = await GetStorageItemInternalAsync(path);
             return result != null;
         }
 
@@ -165,23 +179,24 @@ namespace Sitko.Core.Storage
         }
 
 
-        public async Task<IEnumerable<IStorageNode>> GetDirectoryContentsAsync(string path)
+        public async Task<IEnumerable<StorageNode>> GetDirectoryContentsAsync(string path)
         {
             if (_tree == null || _treeLastBuild < DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMinutes(30)))
             {
                 await BuildStorageTreeAsync();
             }
 
-            if (_tree == null) { return new List<IStorageNode>(); }
+            if (_tree == null) { return new List<StorageNode>(); }
 
             var parts = PreparePath(path.Trim('/'))!.Split("/");
             var current = _tree;
             foreach (var part in parts)
             {
-                current = current?.Children.OfType<StorageFolder>().FirstOrDefault(f => f.Name == part);
+                current = current?.Children.Where(n => n.Type == StorageNodeType.Directory)
+                    .FirstOrDefault(f => f.Name == part);
             }
 
-            return current?.Children ?? new IStorageNode[0];
+            return current?.Children ?? new StorageNode[0];
         }
 
         private async Task BuildStorageTreeAsync()
@@ -190,11 +205,16 @@ namespace Sitko.Core.Storage
             _treeLastBuild = DateTimeOffset.UtcNow;
         }
 
-        protected abstract Task<StorageFolder?> DoBuildStorageTreeAsync();
+        protected abstract Task<StorageNode?> DoBuildStorageTreeAsync();
 
         public Uri PublicUri(StorageItem item)
         {
-            return new Uri($"{_options.PublicUri}/{item.FilePath}");
+            return PublicUri(item.FilePath);
+        }
+
+        public Uri PublicUri(string filePath)
+        {
+            return new Uri($"{_options.PublicUri}/{filePath}");
         }
 
         private string GetStorageFileName(string fileName)

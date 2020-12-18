@@ -2,11 +2,11 @@ using System;
 
 namespace Sitko.Core.Storage
 {
-    public static class Helpers
+    internal static class Helpers
     {
         private static readonly string[] _units = {"bytes", "KB", "MB", "GB", "TB", "PB"};
 
-        public static string HumanSize(long fileSize)
+        internal static string HumanSize(long fileSize)
         {
             if (fileSize < 1)
             {

@@ -1,56 +1,63 @@
 using System;
-using System.IO;
-using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace Sitko.Core.Storage
 {
-    public sealed class StorageItem : IStorageNode, IAsyncDisposable
+    public sealed record StorageItem
     {
-        public Stream? Stream { get; internal set; }
-
-        public string? FileName { get; set; }
+        /// <summary>
+        /// Name of uploaded file
+        /// </summary>
+        public string? FileName { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Size of uploaded file
+        /// </summary>
         public long FileSize { get; set; }
-        public string? FilePath { get; set; }
-        public string Name => FileName;
-        public string FullPath => FilePath;
-        public DateTimeOffset LastModified { get; set; }
-        public string? PhysicalPath { get; internal set; }
 
-        public string Path { get; set; }
-        public string? StorageFileName => FilePath?.Substring(FilePath.LastIndexOf('/') + 1);
+        /// <summary>
+        /// MimeType of uploaded file
+        /// </summary>
+        public string MimeType { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Full path to uploaded file in storage
+        /// </summary>
+        public string FilePath { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Last modified date of uploaded file
+        /// </summary>
+        public DateTimeOffset LastModified { get; set; } = DateTimeOffset.Now;
+        
+        /// <summary>
+        /// Path without file name to uploaded file in storage
+        /// </summary>
+        public string Path { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Uploaded file metadata JSON. Read-only.
+        /// </summary>
+        public string? MetadataJson { get; set; }
 
-        internal StorageItemMetadata? Metadata { get; set; }
-
-        public StorageItem()
-        {
-        }
-
-        public StorageItem(StorageItem item)
-        {
-            FileName = item.FileName;
-            FileSize = item.FileSize;
-            FilePath = item.FilePath;
-            Path = item.Path;
-        }
-
+        /// <summary>
+        /// Get uploaded file metadata mapped to object
+        /// </summary>
+        /// <typeparam name="TMetadata"></typeparam>
+        /// <returns>Uploaded file metadata object (TMedatata)</returns>
         public TMetadata? GetMetadata<TMetadata>() where TMetadata : class
         {
-            return Metadata?.GetData<TMetadata>();
+            return string.IsNullOrEmpty(MetadataJson) ? null : JsonSerializer.Deserialize<TMetadata>(MetadataJson);
         }
 
+        /// <summary>
+        /// Uploaded file size in human-readable format
+        /// </summary>
         public string HumanSize
         {
             get
             {
                 return Helpers.HumanSize(FileSize);
-            }
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            if (Stream != null)
-            {
-                await Stream.DisposeAsync();
             }
         }
     }

@@ -80,7 +80,7 @@ namespace Sitko.Core.Storage.Cache
             }
         }
 
-        protected override async Task<FileStorageCacheRecord> GetEntryAsync(FileDownloadResult item,
+        internal override async Task<FileStorageCacheRecord> GetEntryAsync(StorageItemInfo item,
             Stream stream)
         {
             var tempFileName = CreateMD5(Guid.NewGuid().ToString());

@@ -51,8 +51,8 @@ namespace Sitko.Core.Storage.Cache
             return GetEnumerator();
         }
 
-        public async Task<FileDownloadResult?> GetOrAddItemAsync(string path,
-            Func<Task<FileDownloadResult?>> addItem)
+        async Task<StorageItemInfo?> IStorageCache.GetOrAddItemAsync(string path,
+            Func<Task<StorageItemInfo?>> addItem)
         {
             if (_cache == null)
             {
@@ -86,7 +86,7 @@ namespace Sitko.Core.Storage.Cache
                             return result;
                         }
 
-                        var stream = result.Stream;
+                        var stream = result.GetStream();
 
                         await using (stream)
                         {
@@ -126,15 +126,14 @@ namespace Sitko.Core.Storage.Cache
 
             return cacheEntry is null
                 ? null
-                : new FileDownloadResult(cacheEntry.Metadata, cacheEntry.FileSize, cacheEntry.Date,
-                    cacheEntry.OpenRead(),
-                    cacheEntry.PhysicalPath);
+                : new StorageItemInfo(cacheEntry.Metadata, cacheEntry.FileSize, cacheEntry.Date,
+                    () => cacheEntry.OpenRead());
         }
 
 
         protected abstract void DisposeItem(TRecord deletedRecord);
 
-        protected abstract Task<TRecord> GetEntryAsync(FileDownloadResult item, Stream stream);
+        internal abstract Task<TRecord> GetEntryAsync(StorageItemInfo item, Stream stream);
 
         private string NormalizePath(string path)
         {
@@ -147,7 +146,7 @@ namespace Sitko.Core.Storage.Cache
             return path;
         }
 
-        public Task<FileDownloadResult?> GetItemAsync(string path)
+        Task<StorageItemInfo?> IStorageCache.GetItemAsync(string path)
         {
             if (_cache == null)
             {
@@ -158,9 +157,8 @@ namespace Sitko.Core.Storage.Cache
 
             return Task.FromResult(cacheEntry is null
                 ? null
-                : new FileDownloadResult(cacheEntry.Metadata, cacheEntry.FileSize, cacheEntry.Date,
-                    cacheEntry.OpenRead(),
-                    cacheEntry.PhysicalPath));
+                : new StorageItemInfo(cacheEntry.Metadata, cacheEntry.FileSize, cacheEntry.Date,
+                    () => cacheEntry.OpenRead()));
         }
 
         public Task RemoveItemAsync(string path)

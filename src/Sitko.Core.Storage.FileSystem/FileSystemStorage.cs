@@ -83,9 +83,9 @@ namespace Sitko.Core.Storage.FileSystem
             return Task.CompletedTask;
         }
 
-        protected override async Task<FileDownloadResult?> DoGetFileAsync(string path)
+        internal override async Task<StorageItemInfo?> DoGetFileAsync(string path)
         {
-            FileDownloadResult? result = null;
+            StorageItemInfo? result = null;
             var fullPath = Path.Combine(_storagePath, path);
             var metaDataPath = GetMetaDataPath(fullPath);
             var fileInfo = new FileInfo(fullPath);
@@ -99,21 +99,20 @@ namespace Sitko.Core.Storage.FileSystem
                     metadata = await File.ReadAllTextAsync(metaDataPath);
                 }
 
-
-                result = new FileDownloadResult(metadata, fileInfo.Length, fileInfo.LastWriteTimeUtc,
-                    fileInfo.OpenRead());
+                result = new StorageItemInfo(metadata, fileInfo.Length, fileInfo.LastWriteTimeUtc,
+                    () => new FileStream(fullPath, FileMode.Open));
             }
 
 
             return result;
         }
 
-        protected override Task<StorageFolder?> DoBuildStorageTreeAsync()
+        protected override Task<StorageNode?> DoBuildStorageTreeAsync()
         {
             return ListFolderAsync("/");
         }
 
-        private async Task<StorageFolder> ListFolderAsync(string path)
+        private async Task<StorageNode?> ListFolderAsync(string path)
         {
             var fullPath = path == "/" ? _storagePath : Path.Combine(_storagePath, path.Trim('/'));
             List<StorageNode>? children = null;
@@ -145,15 +144,14 @@ namespace Sitko.Core.Storage.FileSystem
                         var item = CreateStorageItem(PreparePath(Path.Combine(path, file.Name))!.Trim('/'),
                             file.LastWriteTimeUtc,
                             file.Length,
-                            metadata,
-                            physicalPath: file.FullName);
+                            metadata);
 
-                        children.Add(item);
+                        children.Add(StorageNode.CreateStorageItem(item));
                     }
                 }
             }
 
-            return new StorageFolder(path == "/" ? "/" : Path.GetFileNameWithoutExtension(path),
+            return StorageNode.CreateDirectory(path == "/" ? "/" : Path.GetFileNameWithoutExtension(path),
                 PreparePath(Path.Combine(_storagePath, path)),
                 children);
         }

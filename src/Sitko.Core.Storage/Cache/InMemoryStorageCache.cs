@@ -16,7 +16,7 @@ namespace Sitko.Core.Storage.Cache
         {
         }
 
-        protected override Task<InMemoryStorageCacheRecord> GetEntryAsync(FileDownloadResult item, Stream stream)
+        internal override Task<InMemoryStorageCacheRecord> GetEntryAsync(StorageItemInfo item, Stream stream)
         {
             using var memoryStream = new MemoryStream();
             stream.CopyTo(memoryStream);
@@ -40,7 +40,6 @@ namespace Sitko.Core.Storage.Cache
         public string? Metadata { get; }
         public long FileSize { get; }
         public DateTimeOffset Date { get; }
-        public string? PhysicalPath { get; }
 
         public InMemoryStorageCacheRecord(string? metadata, long fileSize, DateTimeOffset date, byte[] data)
         {
