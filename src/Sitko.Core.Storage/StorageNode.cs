@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Sitko.Core.Storage
@@ -57,6 +58,68 @@ namespace Sitko.Core.Storage
                 _children.AddRange(children);
                 Size += children.Sum(s => s.Size);
             }
+        }
+
+        public void AddItem(StorageItem item)
+        {
+            var parts = item.FilePath.Split("/");
+            var current = this;
+            foreach (var part in parts)
+            {
+                if (part == parts.Last())
+                {
+                    current.AddChild(CreateStorageItem(item));
+                }
+                else
+                {
+                    var child = current.Children.Where(n => n.Type == StorageNodeType.Directory)
+                        .FirstOrDefault(f => f.Name == part);
+                    if (child == null)
+                    {
+                        child = CreateDirectory(part, PreparePath(Path.Combine(current.FullPath, part)));
+                        current.AddChild(child);
+                    }
+
+                    current = child;
+                }
+            }
+        }
+
+        public void RemoveItem(StorageItem item)
+        {
+            RemoveItem(item.FilePath);
+        }
+
+        public void RemoveItem(string filePath)
+        {
+            var parts = filePath.Split("/");
+            var current = this;
+            foreach (var part in parts)
+            {
+                if (part == parts.Last())
+                {
+                    var children = current._children.FirstOrDefault(c =>
+                        c.Type == StorageNodeType.StorageItem && c.StorageItem!.FilePath == filePath);
+                    if (children != null)
+                    {
+                        current._children.Remove(children);
+                    }
+                }
+                else
+                {
+                    var child = current.Children.Where(n => n.Type == StorageNodeType.Directory)
+                        .FirstOrDefault(f => f.Name == part);
+                    if (child == null)
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+
+        private string PreparePath(string path)
+        {
+            return path.Replace("\\", "/").Replace("//", "/");
         }
 
         public string HumanSize
