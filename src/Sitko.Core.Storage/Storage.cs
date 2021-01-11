@@ -64,14 +64,14 @@ namespace Sitko.Core.Storage
             return storageItem;
         }
 
-        protected virtual string GetDestinationPath(string fileName, string path)
+        private string GetDestinationPath(string fileName, string path)
         {
             var destinationName = GetStorageFileName(fileName);
             var destinationPath = PreparePath($"{path}/{destinationName}")!;
             return destinationPath;
         }
 
-        internal StorageItem CreateStorageItem(string path, StorageItemInfo storageItemInfo)
+        private StorageItem CreateStorageItem(string path, StorageItemInfo storageItemInfo)
         {
             return CreateStorageItem(path, storageItemInfo.Date, storageItemInfo.FileSize, storageItemInfo.Metadata);
         }
