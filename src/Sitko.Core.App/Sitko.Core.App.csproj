@@ -21,10 +21,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-    <PackageReference Include="Serilog.Exceptions" Version="6.0.0" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
-    <PackageReference Include="Scrutor" Version="3.3.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="5.0.1" />
@@ -32,6 +28,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
     <PackageReference Include="System.Text.Json" Version="5.0.0" />
+    <PackageReference Include="Serilog.Exceptions" Version="6.0.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
   </ItemGroup>
   
   <ItemGroup>
