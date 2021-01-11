@@ -123,7 +123,7 @@ namespace Sitko.Core.Repository
         public virtual IRepositoryQuery<TEntity> WhereByString(string whereJson)
         {
             var where = JsonConvert.DeserializeObject<List<QueryContextConditionsGroup>>(whereJson);
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+
             if (where != null)
             {
                 var conditionsGroups = new List<QueryContextConditionsGroup>();

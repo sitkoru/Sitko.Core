@@ -14,7 +14,6 @@ namespace Sitko.Core.Storage.Cache
         Task ClearAsync();
     }
 
-    // ReSharper disable once UnusedTypeParameter
     public interface IStorageCache<T> : IStorageCache where T : StorageCacheOptions
     {
     }

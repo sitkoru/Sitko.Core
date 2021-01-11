@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
@@ -20,7 +19,7 @@ namespace Sitko.Core.Repository.Tests
 {
     public class EFTests : BaseTest<EFTestScope>
     {
-        public EFTests([NotNull] ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        public EFTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
         }
 

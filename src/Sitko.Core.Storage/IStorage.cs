@@ -81,7 +81,6 @@ namespace Sitko.Core.Storage
         Uri PublicUri(string filePath);
     }
 
-    // ReSharper disable once UnusedTypeParameter
     public interface IStorage<T> : IStorage where T : StorageOptions
     {
     }

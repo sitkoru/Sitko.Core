@@ -1,12 +1,10 @@
 using System;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using PuppeteerSharp;
 
 namespace Sitko.Core.Pdf
 {
-    [UsedImplicitly]
     internal class PdfRenderer : IPdfRenderer
     {
         private readonly PdfRendererModuleConfig _config;

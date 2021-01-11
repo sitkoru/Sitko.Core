@@ -1,13 +1,11 @@
 using System;
 using Grpc.Core;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Client.External
 {
-    [PublicAPI]
     public static class ExternalGrpcClientExtensions
     {
         public static TApplication AddExternalGrpcClient<TApplication, TClient>(this TApplication application,

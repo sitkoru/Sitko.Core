@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -87,7 +86,6 @@ namespace Sitko.Core.Queue.Tests
         }
     }
 
-    [UsedImplicitly]
     public class BarTestMessageProcessor : TestQueueProcessor<TestMessage>
     {
         public BarTestMessageProcessor(TestQueueProcessorCounter counter) : base(counter)

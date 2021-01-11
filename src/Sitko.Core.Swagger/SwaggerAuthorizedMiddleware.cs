@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
@@ -11,7 +9,6 @@ using Microsoft.AspNetCore.Http;
 
 namespace Sitko.Core.Swagger
 {
-    [UsedImplicitly]
     public class SwaggerAuthorizedMiddleware
     {
         private readonly RequestDelegate _next;
@@ -23,8 +20,6 @@ namespace Sitko.Core.Swagger
             _policyEvaluator = policyEvaluator;
         }
 
-        [SuppressMessage("ReSharper", "UseAsyncSuffix")]
-        [UsedImplicitly]
         public async Task Invoke(HttpContext context)
         {
             if (context.Request.Path.StartsWithSegments("/swagger"))
