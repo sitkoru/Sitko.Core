@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -187,12 +188,17 @@ namespace Sitko.Core.Storage.S3
             var metaDataResponse = await DownloadFileAsync(GetMetaDataPath(filePath));
             if (metaDataResponse != null)
             {
-                var buffer = new MemoryStream();
-                await metaDataResponse.ResponseStream.CopyToAsync(buffer);
-                metaData = Encoding.UTF8.GetString(buffer.ToArray());
+                metaData = await DownloadStreamAsString(metaDataResponse.ResponseStream);
             }
 
             return metaData;
+        }
+
+        private async Task<string> DownloadStreamAsString(Stream stream)
+        {
+            await using var buffer = new MemoryStream();
+            await stream.CopyToAsync(buffer);
+            return Encoding.UTF8.GetString(buffer.ToArray());
         }
 
         internal override async Task<StorageItemInfo?> DoGetFileAsync(string path)
@@ -214,18 +220,25 @@ namespace Sitko.Core.Storage.S3
             var root = StorageNode.CreateDirectory("/", "/");
             try
             {
-                ListObjectsV2Request request = new ListObjectsV2Request {BucketName = _options.Bucket};
+                var request = new ListObjectsV2Request {BucketName = _options.Bucket, Prefix = _options.BucketPath};
                 ListObjectsV2Response response;
+                var objects = new Dictionary<string, S3Object>();
                 do
                 {
+                    Logger.LogDebug($"Get objects list from S3. Current objects count: {objects.Count}");
                     response = await _client.ListObjectsV2Async(request);
                     foreach (var s3Object in response.S3Objects)
                     {
-                        await AddObjectAsync(s3Object, root);
+                        objects.Add(s3Object.Key, s3Object);
                     }
 
                     request.ContinuationToken = response.NextContinuationToken;
                 } while (response.IsTruncated);
+
+                foreach (var s3Object in objects.Values)
+                {
+                    await AddObjectAsync(s3Object, root, objects);
+                }
             }
             catch (AmazonS3Exception amazonS3Exception)
             {
@@ -241,32 +254,20 @@ namespace Sitko.Core.Storage.S3
             return root;
         }
 
-        private async Task AddObjectAsync(S3Object s3Object, StorageNode root)
+        private async Task AddObjectAsync(S3Object s3Object, StorageNode root, Dictionary<string, S3Object> s3Objects)
         {
             if (s3Object.Key.EndsWith(MetaDataExtension)) return;
-            var parts = s3Object.Key.Split("/");
-            var current = root;
-            foreach (var part in parts)
-            {
-                if (part == parts.Last())
-                {
-                    var metadata = await DownloadFileMetadataAsync(s3Object.Key);
-                    var item = CreateStorageItem(s3Object.Key, s3Object.LastModified, s3Object.Size, metadata);
-                    current.AddChild(StorageNode.CreateStorageItem(item));
-                }
-                else
-                {
-                    var child = current.Children.Where(n => n.Type == StorageNodeType.Directory)
-                        .FirstOrDefault(f => f.Name == part);
-                    if (child == null)
-                    {
-                        child = StorageNode.CreateDirectory(part, PreparePath(Path.Combine(current.FullPath, part)));
-                        current.AddChild(child);
-                    }
 
-                    current = child;
-                }
+            string? metadata = null;
+            var metadataPath = GetMetaDataPath(s3Object.Key);
+            if (s3Objects.ContainsKey(metadataPath))
+            {
+                metadata = await DownloadFileMetadataAsync(s3Object.Key);
             }
+
+            var item = CreateStorageItem(s3Object.Key, s3Object.LastModified, s3Object.Size, metadata);
+
+            root.AddItem(item);
         }
 
         public override ValueTask DisposeAsync()

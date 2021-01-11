@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -107,24 +106,24 @@ namespace Sitko.Core.Storage.FileSystem
             return result;
         }
 
-        protected override Task<StorageNode?> DoBuildStorageTreeAsync()
+        protected override async Task<StorageNode?> DoBuildStorageTreeAsync()
         {
-            return ListFolderAsync("/");
+            var root = StorageNode.CreateDirectory("/", "/");
+            await ListFolderAsync(root, "/");
+            return root;
         }
 
-        private async Task<StorageNode?> ListFolderAsync(string path)
+        private async Task ListFolderAsync(StorageNode root, string path)
         {
             var fullPath = path == "/" ? _storagePath : Path.Combine(_storagePath, path.Trim('/'));
-            List<StorageNode>? children = null;
             if (Directory.Exists(fullPath))
             {
-                children = new List<StorageNode>();
                 foreach (var info in new DirectoryInfo(fullPath)
                     .EnumerateFileSystemInfos())
                 {
                     if (info is DirectoryInfo dir)
                     {
-                        children.Add(await ListFolderAsync(PreparePath(Path.Combine(path, dir.Name))));
+                        await ListFolderAsync(root, PreparePath(Path.Combine(path, dir.Name)));
                     }
 
                     if (info is FileInfo file)
@@ -146,14 +145,10 @@ namespace Sitko.Core.Storage.FileSystem
                             file.Length,
                             metadata);
 
-                        children.Add(StorageNode.CreateStorageItem(item));
+                        root.AddItem(item);
                     }
                 }
             }
-
-            return StorageNode.CreateDirectory(path == "/" ? "/" : Path.GetFileNameWithoutExtension(path),
-                PreparePath(Path.Combine(_storagePath, path)),
-                children);
         }
     }
 }

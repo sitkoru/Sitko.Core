@@ -9,6 +9,8 @@ namespace Sitko.Core.Storage
     public abstract class StorageOptions
     {
         public Uri? PublicUri { get; set; }
+        
+        public TimeSpan StorageTreeCacheTimeout { get; set; } = TimeSpan.FromMinutes(30);
 
         public Action<IHostEnvironment, IConfiguration, IServiceCollection>? ConfigureCache { get; protected set; }
 

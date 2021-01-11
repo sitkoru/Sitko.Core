@@ -41,7 +41,11 @@ namespace Sitko.Core.Storage
                 itemMetadata);
 
             var result = await SaveStorageItemAsync(file, path, destinationPath, storageItem, itemMetadata);
-            await RebuildStorageTreeAsync();
+            if (_tree != null)
+            {
+                _tree.AddItem(storageItem);
+            }
+
             return result;
         }
 
@@ -67,7 +71,7 @@ namespace Sitko.Core.Storage
             return destinationPath;
         }
 
-        internal StorageItem CreateStorageItem(string path, StorageItemInfo storageItemInfo)
+        private StorageItem CreateStorageItem(string path, StorageItemInfo storageItemInfo)
         {
             return CreateStorageItem(path, storageItemInfo.Date, storageItemInfo.FileSize, storageItemInfo.Metadata);
         }
@@ -130,7 +134,11 @@ namespace Sitko.Core.Storage
             }
 
             var result = await DoDeleteAsync(filePath);
-            await RebuildStorageTreeAsync();
+            if (_tree != null)
+            {
+                _tree.RemoveItem(filePath);
+            }
+
             return result;
         }
 
@@ -183,7 +191,7 @@ namespace Sitko.Core.Storage
 
         public async Task<IEnumerable<StorageNode>> GetDirectoryContentsAsync(string path)
         {
-            if (_tree == null || _treeLastBuild < DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMinutes(30)))
+            if (_tree == null || _treeLastBuild < DateTimeOffset.UtcNow.Subtract(_options.StorageTreeCacheTimeout))
             {
                 await BuildStorageTreeAsync();
             }
@@ -201,21 +209,30 @@ namespace Sitko.Core.Storage
             return current?.Children ?? new StorageNode[0];
         }
 
-        private async Task RebuildStorageTreeAsync()
+        public async Task<IEnumerable<StorageNode>> RefreshDirectoryContentsAsync(string path)
         {
-            if (_tree != null)
-            {
-                await BuildStorageTreeAsync();
-            }
+            await BuildStorageTreeAsync();
+            return await GetDirectoryContentsAsync(path);
         }
+
+        private TaskCompletionSource<bool>? _treeBuildTaskSource = null;
 
         private async Task BuildStorageTreeAsync()
         {
+            if (_treeBuildTaskSource != null)
+            {
+                await _treeBuildTaskSource.Task;
+                return;
+            }
+
             using (await _treeLock.LockAsync())
             {
                 Logger.LogInformation("Start building storage tree");
+                _treeBuildTaskSource = new TaskCompletionSource<bool>();
                 _tree = await DoBuildStorageTreeAsync();
                 _treeLastBuild = DateTimeOffset.UtcNow;
+                _treeBuildTaskSource.SetResult(true);
+                _treeBuildTaskSource = null;
                 Logger.LogInformation("Done building storage tree");
             }
         }

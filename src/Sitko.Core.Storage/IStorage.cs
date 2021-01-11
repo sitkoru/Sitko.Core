@@ -58,6 +58,13 @@ namespace Sitko.Core.Storage
         /// <param name="path">Path to list</param>
         /// <returns>List of StorageNode</returns>
         Task<IEnumerable<StorageNode>> GetDirectoryContentsAsync(string path);
+        
+        /// <summary>
+        /// Refreshes storage items tree and returns folders and files in specified path
+        /// </summary>
+        /// <param name="path">Path to list</param>
+        /// <returns>List of StorageNode</returns>
+        Task<IEnumerable<StorageNode>> RefreshDirectoryContentsAsync(string path);
 
         /// <summary>
         /// Generate public uri for file
