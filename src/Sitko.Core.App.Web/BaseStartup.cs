@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
@@ -155,12 +153,6 @@ namespace Sitko.Core.App.Web
             {
                 endpoints.MapControllers();
             }
-
-            endpoints.MapHealthChecks("/health",
-                new HealthCheckOptions
-                {
-                    Predicate = _ => true, ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                });
         }
 
         public void Configure(IApplicationBuilder appBuilder, WebApplication<T> application)
