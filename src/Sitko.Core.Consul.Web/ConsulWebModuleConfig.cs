@@ -11,5 +11,6 @@ namespace Sitko.Core.Consul.Web
         public TimeSpan DeregisterTimeout { get; set; } = TimeSpan.FromSeconds(60);
 
         public bool AutoFixRegistration { get; set; } = false;
+        public string HealthCheckPath { get; set; } = "/health";
     }
 }

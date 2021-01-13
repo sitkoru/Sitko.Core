@@ -72,7 +72,7 @@ namespace Sitko.Core.Consul.Web
                 _uri = address;
             }
 
-            _healthUrl = $"{_uri.Scheme}://{_uri.Host}:{_uri.Port}/health";
+            _healthUrl = new Uri(_uri, _config.HealthCheckPath).ToString();
         }
 
         public async Task RegisterAsync()
