@@ -25,8 +25,8 @@
     <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentEmail.Core" Version="2.8.0" />
-    <PackageReference Include="Hangfire.Core" Version="1.7.18" />
+    <PackageReference Include="FluentEmail.Core" Version="2.9.0" />
+    <PackageReference Include="Hangfire.Core" Version="1.7.19" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.29" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
