@@ -25,7 +25,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-    <PackageReference Include="MimeMapping" Version="1.0.1.35" />
+    <PackageReference Include="MimeMapping" Version="1.0.1.37" />
     <PackageReference Include="Nito.AsyncEx" Version="5.1.0" />
   </ItemGroup>
 
