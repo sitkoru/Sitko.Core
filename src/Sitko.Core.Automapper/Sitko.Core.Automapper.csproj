@@ -24,7 +24,7 @@
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.0"/>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1"/>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
   </ItemGroup>
   <ItemGroup>
