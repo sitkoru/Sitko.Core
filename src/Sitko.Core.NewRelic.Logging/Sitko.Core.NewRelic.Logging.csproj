@@ -26,7 +26,7 @@
 
   <ItemGroup>
     <PackageReference Include="NewRelic.LogEnrichers.Serilog" Version="1.0.1" />
-    <PackageReference Include="Serilog.Sinks.NewRelic.Logs" Version="1.0.1" />
+    <PackageReference Include="Serilog.Sinks.NewRelic.Logs" Version="1.1.0" />
   </ItemGroup>
 
   <ItemGroup>
