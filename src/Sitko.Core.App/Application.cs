@@ -297,6 +297,7 @@ namespace Sitko.Core.App
         public async Task OnStarted(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider)
         {
+            await OnStartedAsync(configuration, environment, serviceProvider);
             foreach (var module in Modules)
             {
                 try
@@ -311,9 +312,16 @@ namespace Sitko.Core.App
             }
         }
 
+        protected virtual Task OnStartedAsync(IConfiguration configuration, IHostEnvironment environment,
+            IServiceProvider serviceProvider)
+        {
+            return Task.CompletedTask;
+        }
+
         public async Task OnStopping(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider)
         {
+            await OnStoppingAsync(configuration, environment, serviceProvider);
             foreach (var module in Modules)
             {
                 try
@@ -328,9 +336,16 @@ namespace Sitko.Core.App
             }
         }
 
+        protected virtual Task OnStoppingAsync(IConfiguration configuration, IHostEnvironment environment,
+            IServiceProvider serviceProvider)
+        {
+            return Task.CompletedTask;
+        }
+
         public async Task OnStopped(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider)
         {
+            await OnStoppedAsync(configuration, environment, serviceProvider);
             foreach (var module in Modules)
             {
                 try
@@ -343,6 +358,12 @@ namespace Sitko.Core.App
                         ex.ToString());
                 }
             }
+        }
+
+        protected virtual Task OnStoppedAsync(IConfiguration configuration, IHostEnvironment environment,
+            IServiceProvider serviceProvider)
+        {
+            return Task.CompletedTask;
         }
 
         public bool HasModule<TModule>() where TModule : IApplicationModule
