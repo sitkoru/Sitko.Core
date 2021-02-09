@@ -9,6 +9,6 @@ namespace Sitko.Core.Storage.S3.Tests
         public string AccessKey { get; set; }
         public string SecretKey { get; set; }
 
-        public string BucketPath { get; } = string.Empty;
+        public string BucketPath { get; set; } = string.Empty;
     }
 }
