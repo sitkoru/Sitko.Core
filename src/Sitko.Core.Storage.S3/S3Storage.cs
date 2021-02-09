@@ -69,6 +69,11 @@ namespace Sitko.Core.Storage.S3
         protected override async Task<bool> DoSaveAsync(string path, Stream file,
             string metadata)
         {
+            if (!string.IsNullOrEmpty(_options.BucketPath))
+            {
+                path = Path.Combine(_options.BucketPath, path);
+            }
+
             await CreateBucketAsync(_options.Bucket);
             using var fileTransferUtility = new TransferUtility(_client);
             try
