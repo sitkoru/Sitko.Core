@@ -26,15 +26,17 @@ namespace Sitko.Core.Storage.Tests
 
             StorageItem uploaded;
             const string fileName = "file.txt";
+            const string path = "upload";
             await using (var file = File.Open("Data/file.txt", FileMode.Open))
             {
-                uploaded = await storage.SaveAsync(file, fileName, "upload");
+                uploaded = await storage.SaveAsync(file, fileName, path);
             }
 
             Assert.NotNull(uploaded);
             Assert.NotEqual(0, uploaded.FileSize);
             Assert.Equal(fileName, uploaded.FileName);
             Assert.Equal("text/plain", uploaded.MimeType);
+            Assert.Equal(path, uploaded.Path);
         }
 
         [Fact]
@@ -174,11 +176,11 @@ namespace Sitko.Core.Storage.Tests
             {
                 uploaded = await storage.SaveAsync(file, fileName, "upload/dir1/dir2", metaData);
             }
-            
+
             Assert.NotNull(uploaded);
 
             var item = await storage.GetAsync(uploaded.FilePath);
-            
+
             Assert.NotNull(item);
 
             var itemMetaData = item.GetMetadata<FileMetaData>();

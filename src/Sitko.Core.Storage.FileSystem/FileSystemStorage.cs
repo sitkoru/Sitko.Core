@@ -9,12 +9,9 @@ namespace Sitko.Core.Storage.FileSystem
 {
     public sealed class FileSystemStorage<T> : Storage<T> where T : StorageOptions, IFileSystemStorageOptions
     {
-        private readonly string _storagePath;
-
         public FileSystemStorage(T options, ILogger<FileSystemStorage<T>> logger, IStorageCache? cache = null) : base(
             options, logger, cache)
         {
-            _storagePath = options.StoragePath;
         }
 
         protected override async Task<bool> DoSaveAsync(string path, Stream file,
@@ -26,13 +23,13 @@ namespace Sitko.Core.Storage.FileSystem
                 return false;
             }
 
-            var dirPath = Path.Combine(_storagePath, dirName);
+            var dirPath = Path.Combine(Options.StoragePath, dirName);
             if (!Directory.Exists(dirPath))
             {
                 Directory.CreateDirectory(dirPath);
             }
 
-            var fullPath = Path.Combine(_storagePath, path);
+            var fullPath = Path.Combine(Options.StoragePath, path);
             await using var fileStream = File.Create(fullPath);
             file.Seek(0, SeekOrigin.Begin);
             await file.CopyToAsync(fileStream);
@@ -43,7 +40,7 @@ namespace Sitko.Core.Storage.FileSystem
 
         protected override Task<bool> DoDeleteAsync(string filePath)
         {
-            var path = Path.Combine(_storagePath, filePath);
+            var path = Path.Combine(Options.StoragePath, filePath);
             if (File.Exists(path))
             {
                 try
@@ -68,15 +65,15 @@ namespace Sitko.Core.Storage.FileSystem
 
         protected override Task<bool> DoIsFileExistsAsync(StorageItem item)
         {
-            var fullPath = Path.Combine(_storagePath, item.FilePath);
+            var fullPath = Path.Combine(Options.StoragePath, item.FilePath);
             return Task.FromResult(File.Exists(fullPath));
         }
 
         protected override Task DoDeleteAllAsync()
         {
-            if (Directory.Exists(_storagePath))
+            if (Directory.Exists(Options.StoragePath))
             {
-                Directory.Delete(_storagePath, true);
+                Directory.Delete(Options.StoragePath, true);
             }
 
             return Task.CompletedTask;
@@ -85,7 +82,7 @@ namespace Sitko.Core.Storage.FileSystem
         internal override async Task<StorageItemInfo?> DoGetFileAsync(string path)
         {
             StorageItemInfo? result = null;
-            var fullPath = Path.Combine(_storagePath, path);
+            var fullPath = Path.Combine(Options.StoragePath, path);
             var metaDataPath = GetMetaDataPath(fullPath);
             var fileInfo = new FileInfo(fullPath);
             var metaDataInfo = new FileInfo(metaDataPath);
@@ -109,13 +106,13 @@ namespace Sitko.Core.Storage.FileSystem
         protected override async Task<StorageNode?> DoBuildStorageTreeAsync()
         {
             var root = StorageNode.CreateDirectory("/", "/");
-            await ListFolderAsync(root, "/");
+            await ListFolderAsync(root, string.IsNullOrEmpty(Options.Prefix) ? "/" : Options.Prefix);
             return root;
         }
 
         private async Task ListFolderAsync(StorageNode root, string path)
         {
-            var fullPath = path == "/" ? _storagePath : Path.Combine(_storagePath, path.Trim('/'));
+            var fullPath = path == "/" ? Options.StoragePath : Path.Combine(Options.StoragePath, path.Trim('/'));
             if (Directory.Exists(fullPath))
             {
                 foreach (var info in new DirectoryInfo(fullPath)

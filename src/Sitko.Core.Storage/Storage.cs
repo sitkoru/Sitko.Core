@@ -14,7 +14,7 @@ namespace Sitko.Core.Storage
     {
         protected readonly ILogger<Storage<T>> Logger;
         private readonly IStorageCache? _cache;
-        private readonly T _options;
+        protected readonly T Options;
         private StorageNode? _tree;
         private DateTimeOffset? _treeLastBuild;
         private AsyncLock _treeLock = new();
@@ -23,7 +23,7 @@ namespace Sitko.Core.Storage
         {
             Logger = logger;
             _cache = cache;
-            _options = options;
+            Options = options;
         }
 
         public async Task<StorageItem> SaveAsync(Stream file, string fileName, string path, object? metadata = null)
@@ -64,10 +64,15 @@ namespace Sitko.Core.Storage
             return storageItem;
         }
 
-        private string GetDestinationPath(string fileName, string path)
+        protected virtual string GetDestinationPath(string fileName, string path)
         {
             var destinationName = GetStorageFileName(fileName);
-            var destinationPath = PreparePath($"{path}/{destinationName}")!;
+            if (!string.IsNullOrEmpty(Options.Prefix))
+            {
+                path = Path.Combine(Options.Prefix, path);
+            }
+
+            var destinationPath = PreparePath(Path.Combine(path, destinationName))!;
             return destinationPath;
         }
 
@@ -93,6 +98,7 @@ namespace Sitko.Core.Storage
             long fileSize,
             StorageItemMetadata metadata)
         {
+            destinationPath = GetPathWithoutPrefix(destinationPath);
             var fileName = metadata.FileName ?? Path.GetFileName(destinationPath);
             var storageItem = new StorageItem
             {
@@ -133,13 +139,33 @@ namespace Sitko.Core.Storage
                 await _cache.RemoveItemAsync(filePath);
             }
 
-            var result = await DoDeleteAsync(filePath);
+            var result = await DoDeleteAsync(GetPathWithPrefix(filePath));
             if (_tree != null)
             {
                 _tree.RemoveItem(filePath);
             }
 
             return result;
+        }
+
+        protected string GetPathWithoutPrefix(string filePath)
+        {
+            if (!string.IsNullOrEmpty(Options.Prefix))
+            {
+                filePath = PreparePath(Path.GetRelativePath(Options.Prefix, filePath))!;
+            }
+
+            return filePath;
+        }
+
+        protected string GetPathWithPrefix(string filePath)
+        {
+            if (!string.IsNullOrEmpty(Options.Prefix) && !filePath.StartsWith(Options.Prefix))
+            {
+                filePath = PreparePath(Path.Combine(Options.Prefix, filePath))!;
+            }
+
+            return filePath;
         }
 
         public Task<StorageItem?> GetAsync(string path)
@@ -152,11 +178,12 @@ namespace Sitko.Core.Storage
             StorageItemInfo? result;
             if (_cache != null)
             {
-                result = await _cache.GetOrAddItemAsync(path, async () => await DoGetFileAsync(path));
+                result = await _cache.GetOrAddItemAsync(path,
+                    async () => await DoGetFileAsync(GetPathWithPrefix(path)));
             }
             else
             {
-                result = await DoGetFileAsync(path);
+                result = await DoGetFileAsync(GetPathWithPrefix(path));
             }
 
             return result;
@@ -191,7 +218,7 @@ namespace Sitko.Core.Storage
 
         public async Task<IEnumerable<StorageNode>> GetDirectoryContentsAsync(string path)
         {
-            if (_tree == null || _treeLastBuild < DateTimeOffset.UtcNow.Subtract(_options.StorageTreeCacheTimeout))
+            if (_tree == null || _treeLastBuild < DateTimeOffset.UtcNow.Subtract(Options.StorageTreeCacheTimeout))
             {
                 await BuildStorageTreeAsync();
             }
@@ -246,7 +273,7 @@ namespace Sitko.Core.Storage
 
         public Uri PublicUri(string filePath)
         {
-            return new Uri($"{_options.PublicUri}/{filePath}");
+            return new Uri($"{Options.PublicUri}/{filePath}");
         }
 
         private string GetStorageFileName(string fileName)

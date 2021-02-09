@@ -16,21 +16,18 @@ namespace Sitko.Core.Storage.S3
 {
     public sealed class S3Storage<T> : Storage<T> where T : StorageOptions, IS3StorageOptions
     {
-        private readonly T _options;
         private readonly AmazonS3Client _client;
 
         public S3Storage(T options, ILogger<S3Storage<T>> logger, IStorageCache? cache = null) : base(options, logger,
             cache)
         {
-            _options = options;
-
             var config = new AmazonS3Config
             {
                 RegionEndpoint = RegionEndpoint.USEast1,
-                ServiceURL = _options.Server.ToString(),
+                ServiceURL = Options.Server.ToString(),
                 ForcePathStyle = true
             };
-            _client = new AmazonS3Client(_options.AccessKey, _options.SecretKey, config);
+            _client = new AmazonS3Client(Options.AccessKey, Options.SecretKey, config);
         }
 
         private async Task CreateBucketAsync(string bucketName)
@@ -59,7 +56,7 @@ namespace Sitko.Core.Storage.S3
 
         private async Task<bool> IsObjectExists(string filePath)
         {
-            var request = new ListObjectsRequest {BucketName = _options.Bucket, Prefix = filePath, MaxKeys = 1};
+            var request = new ListObjectsRequest {BucketName = Options.Bucket, Prefix = filePath, MaxKeys = 1};
 
             var response = await _client.ListObjectsAsync(request);
 
@@ -69,18 +66,13 @@ namespace Sitko.Core.Storage.S3
         protected override async Task<bool> DoSaveAsync(string path, Stream file,
             string metadata)
         {
-            if (!string.IsNullOrEmpty(_options.BucketPath))
-            {
-                path = Path.Combine(_options.BucketPath, path);
-            }
-
-            await CreateBucketAsync(_options.Bucket);
+            await CreateBucketAsync(Options.Bucket);
             using var fileTransferUtility = new TransferUtility(_client);
             try
             {
                 var request = new TransferUtilityUploadRequest
                 {
-                    InputStream = file, Key = path, BucketName = _options.Bucket
+                    InputStream = file, Key = path, BucketName = Options.Bucket
                 };
                 await fileTransferUtility.UploadAsync(request);
 
@@ -88,7 +80,7 @@ namespace Sitko.Core.Storage.S3
                 {
                     InputStream = new MemoryStream(Encoding.UTF8.GetBytes(metadata)),
                     Key = GetMetaDataPath(path),
-                    BucketName = _options.Bucket
+                    BucketName = Options.Bucket
                 };
                 await fileTransferUtility.UploadAsync(metaDataRequest);
                 return true;
@@ -102,16 +94,16 @@ namespace Sitko.Core.Storage.S3
 
         protected override async Task<bool> DoDeleteAsync(string filePath)
         {
-            if (await IsBucketExists(_options.Bucket))
+            if (await IsBucketExists(Options.Bucket))
             {
                 if (await IsObjectExists(filePath))
                 {
                     try
                     {
-                        await _client.DeleteObjectAsync(_options.Bucket, filePath);
+                        await _client.DeleteObjectAsync(Options.Bucket, filePath);
                         if (await IsObjectExists(GetMetaDataPath(filePath)))
                         {
-                            await _client.DeleteObjectAsync(_options.Bucket, GetMetaDataPath(filePath));
+                            await _client.DeleteObjectAsync(Options.Bucket, GetMetaDataPath(filePath));
                         }
 
                         return true;
@@ -128,7 +120,7 @@ namespace Sitko.Core.Storage.S3
 
         private Task<GetObjectMetadataResponse> GetFileMetadata(StorageItem item)
         {
-            var request = new GetObjectMetadataRequest {BucketName = _options.Bucket, Key = item.FilePath};
+            var request = new GetObjectMetadataRequest {BucketName = Options.Bucket, Key = item.FilePath};
             return _client.GetObjectMetadataAsync(request);
         }
 
@@ -157,15 +149,15 @@ namespace Sitko.Core.Storage.S3
 
         protected override async Task DoDeleteAllAsync()
         {
-            if (await IsBucketExists(_options.Bucket))
+            if (await IsBucketExists(Options.Bucket))
             {
-                await AmazonS3Util.DeleteS3BucketWithObjectsAsync(_client, _options.Bucket);
+                await AmazonS3Util.DeleteS3BucketWithObjectsAsync(_client, Options.Bucket);
             }
         }
 
         private async Task<GetObjectResponse?> DownloadFileAsync(string path)
         {
-            var request = new GetObjectRequest {BucketName = _options.Bucket, Key = path};
+            var request = new GetObjectRequest {BucketName = Options.Bucket, Key = path};
             GetObjectResponse? response = null;
             try
             {
@@ -225,7 +217,7 @@ namespace Sitko.Core.Storage.S3
             var root = StorageNode.CreateDirectory("/", "/");
             try
             {
-                var request = new ListObjectsV2Request {BucketName = _options.Bucket, Prefix = _options.BucketPath};
+                var request = new ListObjectsV2Request {BucketName = Options.Bucket, Prefix = Options.Prefix};
                 ListObjectsV2Response response;
                 var objects = new Dictionary<string, S3Object>();
                 do

@@ -17,7 +17,7 @@ namespace Sitko.Core.Storage.S3.Tests
                         moduleConfig.PublicUri = new Uri(configuration["MINIO_SERVER_URI"] + "/" + _bucketName);
                         moduleConfig.Server = new Uri(configuration["MINIO_SERVER_URI"]);
                         moduleConfig.Bucket = _bucketName.ToString();
-                        moduleConfig.BucketPath = "test";
+                        moduleConfig.Prefix = "test";
                         moduleConfig.AccessKey = configuration["MINIO_ACCESS_KEY"];
                         moduleConfig.SecretKey = configuration["MINIO_SECRET_KEY"];
                     });
