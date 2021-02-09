@@ -17,7 +17,7 @@ namespace Sitko.Core.Storage
         public StorageOptions EnableCache<TCache, TCacheOptions>(Action<TCacheOptions>? configure = null)
             where TCache : class, IStorageCache<TCacheOptions> where TCacheOptions : StorageCacheOptions
         {
-            ConfigureCache = (environment, configuration, services) =>
+            ConfigureCache = (_, _, services) =>
             {
                 var options = Activator.CreateInstance<TCacheOptions>();
                 configure?.Invoke(options);

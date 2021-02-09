@@ -124,7 +124,7 @@ namespace Sitko.Core.Repository
         {
             var where = JsonConvert.DeserializeObject<List<QueryContextConditionsGroup>>(whereJson);
 
-            if (where != null)
+            if (where.Any())
             {
                 var conditionsGroups = new List<QueryContextConditionsGroup>();
                 foreach (var conditionsGroup in where)
@@ -133,8 +133,7 @@ namespace Sitko.Core.Repository
                     foreach (var parsedCondition in conditionsGroup.Conditions
                         .Select(condition => new QueryContextCondition(condition.Property)
                         {
-                            Operator = condition.Operator,
-                            Value = condition.Value
+                            Operator = condition.Operator, Value = condition.Value
                         }))
                     {
                         if (parsedCondition != null)
@@ -177,15 +176,8 @@ namespace Sitko.Core.Repository
 
         protected virtual void SetCondition(string property, QueryContextOperator @operator, object value)
         {
-            var condition = new QueryContextCondition(property)
-            {
-                Operator = @operator,
-                Value = value
-            };
-            if (condition != null)
-            {
-                Where(condition);
-            }
+            var condition = new QueryContextCondition(property) {Operator = @operator, Value = value};
+            Where(condition);
         }
 
         public virtual IRepositoryQuery<TEntity> Paginate(int page, int itemsPerPage)

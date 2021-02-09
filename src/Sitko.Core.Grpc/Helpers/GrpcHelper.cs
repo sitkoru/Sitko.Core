@@ -7,7 +7,7 @@ namespace Sitko.Core.Grpc.Helpers
 {
     public static class GrpcHelper
     {
-        public static string PrepareString(string s)
+        public static string PrepareString(string? s)
         {
             return s ?? string.Empty;
         }

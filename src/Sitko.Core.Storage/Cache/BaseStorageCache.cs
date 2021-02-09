@@ -62,7 +62,7 @@ namespace Sitko.Core.Storage.Cache
             var key = NormalizePath(path);
             if (!CacheExtensions.TryGetValue(_cache, key, out TRecord? cacheEntry)) // Look for cache key.
             {
-                var itemLock = _locks.GetOrAdd(key, k => new SemaphoreSlim(1, 1));
+                var itemLock = _locks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
 
                 await itemLock.WaitAsync();
                 try
@@ -94,7 +94,7 @@ namespace Sitko.Core.Storage.Cache
                             cacheEntry = await GetEntryAsync(result, stream);
 
                             var options = new MemoryCacheEntryOptions {SlidingExpiration = Options.Ttl};
-                            options.RegisterPostEvictionCallback((objKey, value, reason, state) =>
+                            options.RegisterPostEvictionCallback((_, value, _, _) =>
                             {
                                 if (value is TRecord deletedRecord)
                                 {

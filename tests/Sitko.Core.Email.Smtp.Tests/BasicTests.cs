@@ -31,7 +31,7 @@ namespace Sitko.Core.Email.Smtp.Tests
     {
         public TestApplication(string[] args) : base(args)
         {
-            AddModule<SmtpEmailModule, SmtpEmailModuleConfig>((configuration, environment, moduleConfig) =>
+            AddModule<SmtpEmailModule, SmtpEmailModuleConfig>((configuration, _, moduleConfig) =>
             {
                 moduleConfig.Server = configuration["EMAIL_TESTS_SMTP_HOST"];
                 moduleConfig.Port = int.Parse(configuration["EMAIL_TESTS_SMTP_PORT"]);

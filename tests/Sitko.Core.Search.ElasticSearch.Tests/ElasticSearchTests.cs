@@ -58,7 +58,7 @@ namespace Sitko.Core.Search.ElasticSearch.Tests
         {
             return base.ConfigureApplication(application, name)
                 .AddModule<ElasticSearchModule, ElasticSearchModuleConfig>(
-                    (configuration, environment, moduleConfig) =>
+                    (configuration, _, moduleConfig) =>
                     {
                         moduleConfig.Url = configuration["ELASTICSEARCH_URL"];
                         moduleConfig.Prefix = name.ToLower();

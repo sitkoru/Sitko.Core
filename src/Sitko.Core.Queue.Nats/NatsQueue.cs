@@ -157,7 +157,7 @@ namespace Sitko.Core.Queue.Nats
             var queue = GetQueueName<TMessage>();
             var id = Guid.NewGuid();
             var sub = _natsConn.SubscribeAsync(queue,
-                async (sender, args) =>
+                async (_, args) =>
                 {
                     var request = deserializer(args.Message.Data);
                     await callback(request.message, request.messageContext, (message, context) =>
@@ -170,7 +170,7 @@ namespace Sitko.Core.Queue.Nats
                         }
                         catch (NATSException ex)
                         {
-                            _logger.LogError(ex, "Error responding to message {MessageId} (MessageType): {ErrorText}",
+                            _logger.LogError(ex, "Error responding to message {MessageId} {MessageType}: {ErrorText}",
                                 request.messageContext.Id, request.messageContext.MessageType, ex.ToString());
                             result.SetException(ex);
                         }
@@ -332,13 +332,13 @@ namespace Sitko.Core.Queue.Nats
             {
                 sub = GetConnection().Subscribe(queueName,
                     _config.ConsumerGroupName, stanOptions,
-                    async (sender, args) =>
+                    async (_, args) =>
                         await ProcessStanMessage(deserializer, args.Message, stanOptions.ManualAcks));
             }
             else
             {
                 sub = GetConnection().Subscribe(queueName, stanOptions,
-                    async (sender, args) =>
+                    async (_, args) =>
                         await ProcessStanMessage(deserializer, args.Message, stanOptions.ManualAcks));
             }
 
@@ -518,9 +518,9 @@ namespace Sitko.Core.Queue.Nats
                 {
                     natsConn?.Close();
                 }
-                catch (Exception)
+                catch (Exception connEx)
                 {
-                    _logger.LogError(ex, ex.Message);
+                    _logger.LogError(connEx, "Error connecting to nats: {ErrorText}", connEx.ToString());
                 }
 
                 throw;
@@ -538,7 +538,7 @@ namespace Sitko.Core.Queue.Nats
                 var options = StanOptions.GetDefaultOptions();
                 options.NatsConn = natsConn;
                 options.ConnectTimeout = (int)_config.ConnectionTimeout.TotalMilliseconds;
-                options.ConnectionLostEventHandler += (sender, args) =>
+                options.ConnectionLostEventHandler += (_, _) =>
                 {
                     _logger.LogError("Stan connection is broken");
                     EnsureConnected();
@@ -589,7 +589,7 @@ namespace Sitko.Core.Queue.Nats
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, ex.ToString());
+                    _logger.LogError(ex, "Error disposing nats connection: {ErrorText}", ex.ToString());
                 }
             }
 
@@ -611,18 +611,18 @@ namespace Sitko.Core.Queue.Nats
             opts.PingInterval = 1000;
             opts.MaxPingsOut = 3;
             opts.AsyncErrorEventHandler =
-                (sender, args) =>
+                (_, args) =>
                 {
                     _logger.LogError(
                         "NATS event error: {ErrorText}. Connection {Connection}. Subs: {Subscription}", args.Error,
                         args.Conn, args.Subscription);
                 };
             opts.ClosedEventHandler =
-                (sender, args) => { _logger.LogInformation("Stan connection closed: {Conn}", args.Conn); };
+                (_, args) => { _logger.LogInformation("Stan connection closed: {Conn}", args.Conn); };
             opts.DisconnectedEventHandler =
-                (sender, args) => { _logger.LogInformation("NATS connection disconnected: {Conn}", args.Conn); };
+                (_, args) => { _logger.LogInformation("NATS connection disconnected: {Conn}", args.Conn); };
             opts.ReconnectedEventHandler =
-                (sender, args) =>
+                (_, args) =>
                 {
                     _logger.LogInformation("NATS connection reconnected: {Conn}", args.Conn);
                     EnsureConnected();

@@ -48,7 +48,7 @@ namespace Sitko.Core.Queue.Tests
 
             Assert.Equal(0, mw.Received);
 
-            var subResult = await queue.SubscribeAsync<TestMessage>((message, context) => Task.FromResult(true));
+            var subResult = await queue.SubscribeAsync<TestMessage>((_, _) => Task.FromResult(true));
             Assert.True(subResult.IsSuccess);
 
             publishResult = await queue.PublishAsync(new TestMessage());

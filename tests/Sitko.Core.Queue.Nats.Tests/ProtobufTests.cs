@@ -20,7 +20,7 @@ namespace Sitko.Core.Queue.Nats.Tests
             var queue = scope.Get<IQueue>();
 
             string receivedText = null;
-            await queue.SubscribeAsync<TestMsg>((message, context) =>
+            await queue.SubscribeAsync<TestMsg>((message, _) =>
             {
                 receivedText = message.Data;
                 return Task.FromResult(true);

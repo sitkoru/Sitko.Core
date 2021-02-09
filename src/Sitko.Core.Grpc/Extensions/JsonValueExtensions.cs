@@ -14,7 +14,7 @@ namespace Sitko.Core.Grpc.Extensions
             return new JsonValue {Json = JsonSerializer.Serialize(obj, Settings)};
         }
 
-        public static T GetValue<T>(this JsonValue val)
+        public static T? GetValue<T>(this JsonValue val)
         {
             return JsonSerializer.Deserialize<T>(val.Json, Settings);
         }

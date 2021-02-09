@@ -34,7 +34,7 @@ namespace Sitko.Core.Queue.Tests
 
 
             var received = false;
-            await queue.SubscribeAsync<TestMessage>((message, context) =>
+            await queue.SubscribeAsync<TestMessage>((_, _) =>
             {
                 received = true;
                 return Task.FromResult(true);

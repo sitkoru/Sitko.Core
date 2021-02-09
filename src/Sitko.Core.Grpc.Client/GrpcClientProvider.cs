@@ -19,6 +19,6 @@ namespace Sitko.Core.Grpc.Client
         }
 
 
-        public TClient Instance => _serviceProvider.GetService<TClient>();
+        public TClient Instance => _serviceProvider.GetRequiredService<TClient>();
     }
 }

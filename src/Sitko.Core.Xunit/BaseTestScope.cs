@@ -42,7 +42,7 @@ namespace Sitko.Core.Xunit
                 ConfigureServices(context.Configuration, context.HostingEnvironment, services, name);
             });
 
-            _application.AddModule<TestModule, TestModuleConfig>((configuration, environment, moduleConfig) =>
+            _application.AddModule<TestModule, TestModuleConfig>((_, _, moduleConfig) =>
             {
                 moduleConfig.TestOutputHelper = testOutputHelper;
             });
@@ -81,17 +81,17 @@ namespace Sitko.Core.Xunit
 
         public T Get<T>()
         {
-            return ServiceProvider.GetRequiredService<T>();
+            return ServiceProvider!.GetRequiredService<T>();
         }
 
         public IEnumerable<T> GetAll<T>()
         {
-            return ServiceProvider.GetServices<T>();
+            return ServiceProvider!.GetServices<T>();
         }
 
         public ILogger<T> GetLogger<T>()
         {
-            return ServiceProvider.GetRequiredService<ILogger<T>>();
+            return ServiceProvider!.GetRequiredService<ILogger<T>>();
         }
 
         public virtual Task OnCreatedAsync()

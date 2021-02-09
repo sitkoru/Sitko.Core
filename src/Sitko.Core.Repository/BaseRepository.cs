@@ -184,19 +184,14 @@ namespace Sitko.Core.Repository
 
         public virtual async Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
-            if (entity != null)
+            await BeforeDeleteAsync(entity, cancellationToken);
+            await DoDeleteAsync(entity, cancellationToken);
+            if (_batch == null)
             {
-                await BeforeDeleteAsync(entity, cancellationToken);
-                await DoDeleteAsync(entity, cancellationToken);
-                if (_batch == null)
-                {
-                    await DoSaveAsync(cancellationToken);
-                }
-
-                return true;
+                await DoSaveAsync(cancellationToken);
             }
 
-            return false;
+            return true;
         }
 
         public virtual async Task<TEntity?> GetAsync(CancellationToken cancellationToken = default)
@@ -351,7 +346,7 @@ namespace Sitko.Core.Repository
 
         protected virtual Task AfterLoadAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
-            return entity != null ? AfterLoadAsync(new[] {entity}, cancellationToken) : Task.CompletedTask;
+            return AfterLoadAsync(new[] {entity}, cancellationToken);
         }
 
         protected virtual Task AfterLoadAsync(TEntity[] entities, CancellationToken cancellationToken = default)
@@ -386,7 +381,7 @@ namespace Sitko.Core.Repository
 
         protected virtual Task CheckAccessAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
-            return entity != null ? CheckAccessAsync(new[] {entity}, cancellationToken) : Task.CompletedTask;
+            return CheckAccessAsync(new[] {entity}, cancellationToken);
         }
 
         protected virtual async Task CheckAccessAsync(TEntity[] entities, CancellationToken cancellationToken = default)
@@ -402,16 +397,13 @@ namespace Sitko.Core.Repository
             PropertyChange[]? changes = null, CancellationToken cancellationToken = default)
         {
             var failures = new List<ValidationFailure>();
-            if (Validators != null)
+            foreach (var validator in Validators.Where(v => v.CanValidateInstancesOfType(typeof(TEntity))))
             {
-                foreach (var validator in Validators.Where(v => v.CanValidateInstancesOfType(typeof(TEntity))))
+                var result =
+                    await validator.ValidateAsync(new ValidationContext<TEntity>(entity), cancellationToken);
+                if (!result.IsValid)
                 {
-                    var result =
-                        await validator.ValidateAsync(new ValidationContext<TEntity>(entity), cancellationToken);
-                    if (!result.IsValid)
-                    {
-                        failures.AddRange(result.Errors);
-                    }
+                    failures.AddRange(result.Errors);
                 }
             }
 

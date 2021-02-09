@@ -18,7 +18,7 @@ namespace Sitko.Core.Health.Teams
             IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
-            services.Configure<HealthCheckPublisherOptions>(options => { });
+            services.Configure<HealthCheckPublisherOptions>(_ => { });
             services.AddHealthChecks();
             services.AddHttpClient();
             services.AddSingleton<IHealthCheckPublisher, TeamsHealthCheckPublisher>();

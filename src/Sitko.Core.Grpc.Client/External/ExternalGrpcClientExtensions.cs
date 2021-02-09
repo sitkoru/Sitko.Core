@@ -21,8 +21,8 @@ namespace Sitko.Core.Grpc.Client.External
             Action<GrpcClientModuleConfig>? configure = null)
             where TApplication : Application<TApplication> where TClient : ClientBase<TClient>
         {
-            application.AddModule<ExternalGrpcClientModule<TClient>, GrpcClientStaticModuleConfig>((configuration,
-                environment, moduleConfig) =>
+            application.AddModule<ExternalGrpcClientModule<TClient>, GrpcClientStaticModuleConfig>((_,
+                _, moduleConfig) =>
             {
                 moduleConfig.Address = address;
                 configure?.Invoke(moduleConfig);

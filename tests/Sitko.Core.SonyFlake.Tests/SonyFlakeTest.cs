@@ -31,7 +31,7 @@ namespace Sitko.Core.SonyFlake.Tests
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name).AddModule<SonyFlakeModule, SonyFlakeModuleConfig>(
-                (configuration, environment, moduleConfig) =>
+                (configuration, _, moduleConfig) =>
                     moduleConfig.SonyflakeUri = configuration["SONYFLAKE_URI"]);
         }
     }

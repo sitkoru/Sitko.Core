@@ -273,7 +273,7 @@ namespace Sitko.Core.Repository.Tests
         {
             return base.ConfigureApplication(application, name)
                 .AddModule<EFRepositoriesModule<EFTestScopeThreadSafe>, EFRepositoriesModuleConfig>(
-                    (configuration, environment, moduleConfig) => moduleConfig.EnableThreadSafeOperations = true);
+                    (_, _, moduleConfig) => moduleConfig.EnableThreadSafeOperations = true);
         }
 
         protected override void GetPostgresConfig(IConfiguration configuration, IHostEnvironment environment,

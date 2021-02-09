@@ -18,7 +18,7 @@ namespace Sitko.Core.Health.Telegram
             IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
-            services.Configure<HealthCheckPublisherOptions>(options => { });
+            services.Configure<HealthCheckPublisherOptions>(_ => { });
             services.AddHealthChecks();
             services.AddSingleton<IHealthCheckPublisher, TelegramHealthCheckPublisher>();
         }

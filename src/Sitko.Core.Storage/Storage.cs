@@ -215,7 +215,7 @@ namespace Sitko.Core.Storage
             return await GetDirectoryContentsAsync(path);
         }
 
-        private TaskCompletionSource<bool>? _treeBuildTaskSource = null;
+        private TaskCompletionSource<bool>? _treeBuildTaskSource;
 
         private async Task BuildStorageTreeAsync()
         {

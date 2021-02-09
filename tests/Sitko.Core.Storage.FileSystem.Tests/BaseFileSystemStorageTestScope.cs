@@ -13,7 +13,7 @@ namespace Sitko.Core.Storage.FileSystem.Tests
         {
             return base.ConfigureApplication(application, name)
                 .AddModule<FileSystemStorageModule<TestFileSystemStorageSettings>, TestFileSystemStorageSettings>(
-                    (configuration, environment, moduleConfig) =>
+                    (_, _, moduleConfig) =>
                     {
                         moduleConfig.PublicUri = new Uri(_folder);
                         moduleConfig.StoragePath = _folder;

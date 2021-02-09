@@ -14,7 +14,7 @@ namespace Sitko.Core.Repository.Search
         private readonly IRepository<TEntity, TEntityPk> _repository;
 
         protected BaseRepositorySearchProvider(
-            ILogger<BaseSearchProvider<TEntity, TEntityPk, TSearchModel>> logger,
+            ILogger<BaseRepositorySearchProvider<TEntity, TEntityPk, TSearchModel>> logger,
             IRepository<TEntity, TEntityPk> repository,
             ISearcher<TSearchModel>? searcher = null) : base(logger, searcher)
         {

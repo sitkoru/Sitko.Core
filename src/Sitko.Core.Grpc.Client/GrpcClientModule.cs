@@ -70,7 +70,7 @@ namespace Sitko.Core.Grpc.Client
                     var handler = new HttpClientHandler();
                     if (Config.DisableCertificatesValidation)
                     {
-                        handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+                        handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
                     }
 
                     return handler;
@@ -86,7 +86,7 @@ namespace Sitko.Core.Grpc.Client
             IHostEnvironment environment)
         {
             await base.InitAsync(serviceProvider, configuration, environment);
-            var resolver = serviceProvider.GetService<IGrpcServiceAddressResolver<TClient>>();
+            var resolver = serviceProvider.GetRequiredService<IGrpcServiceAddressResolver<TClient>>();
             await resolver.InitAsync();
         }
 

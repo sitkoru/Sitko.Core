@@ -22,7 +22,7 @@ namespace Sitko.Core.Db.Postgres
             return JsonConvert.SerializeObject(obj, _jsonSettings);
         }
 
-        private static T Deserialize<T>(string json)
+        private static T? Deserialize<T>(string json)
         {
             return JsonConvert.DeserializeObject<T>(json, _jsonSettings);
         }
@@ -35,7 +35,7 @@ namespace Sitko.Core.Db.Postgres
             var valueComparer = new ValueComparer<TData>(
                 (c1, c2) => c1!.Equals(c2),
                 c => c!.GetHashCode(),
-                c => Deserialize<TData>(Serialize(c!)));
+                c => Deserialize<TData>(Serialize(c!)!)!);
             modelBuilder
                 .Entity<TEntity>()
                 .Property(getProperty)
@@ -53,7 +53,7 @@ namespace Sitko.Core.Db.Postgres
             var valueComparer = new ValueComparer<ICollection<TData>>(
                 (c1, c2) => c1.SequenceEqual(c2),
                 c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v!.GetHashCode())),
-                c => Deserialize<ICollection<TData>>(Serialize(c)));
+                c => Deserialize<ICollection<TData>>(Serialize(c)!)!);
             modelBuilder
                 .Entity<TEntity>()
                 .Property(getProperty)
@@ -71,7 +71,7 @@ namespace Sitko.Core.Db.Postgres
             var valueComparer = new ValueComparer<TData[]>(
                 (c1, c2) => c1.SequenceEqual(c2),
                 c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v!.GetHashCode())),
-                c => Deserialize<TData[]>(Serialize(c)));
+                c => Deserialize<TData[]>(Serialize(c)!)!);
             modelBuilder
                 .Entity<TEntity>()
                 .Property(getProperty)

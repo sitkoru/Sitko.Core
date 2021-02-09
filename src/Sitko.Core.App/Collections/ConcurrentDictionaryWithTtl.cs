@@ -10,7 +10,7 @@ namespace Sitko.Core.App.Collections
         private readonly Func<TValue, DateTimeOffset> _expirationPredicate;
         private readonly TimeSpan _ttl = TimeSpan.FromMinutes(30);
         private readonly TimeSpan _frequency = TimeSpan.FromSeconds(30);
-        private readonly Timer _timer;
+        private readonly Timer? _timer;
 
         public ConcurrentDictionaryWithTtl(Func<TValue, DateTimeOffset> expirationPredicate, TimeSpan? ttl = null,
             TimeSpan? frequency = null)
@@ -18,7 +18,7 @@ namespace Sitko.Core.App.Collections
             _expirationPredicate = expirationPredicate;
             if (ttl.HasValue) _ttl = ttl.Value;
             if (frequency.HasValue) _frequency = frequency.Value;
-            _timer = new Timer(state => Expire(), null, TimeSpan.Zero, _frequency);
+            _timer = new Timer(_ => Expire(), null, TimeSpan.Zero, _frequency);
         }
 
         private void Expire()

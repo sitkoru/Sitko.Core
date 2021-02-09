@@ -9,7 +9,7 @@ namespace Sitko.Core.Db.InMemory
     {
         public static IServiceCollection AddInMemoryDb<T>(this IServiceCollection services, bool useContextPooling,
             string databaseName,
-            Action<IServiceProvider, DbContextOptionsBuilder<T>> configureInMemory) where T : DbContext
+            Action<IServiceProvider, DbContextOptionsBuilder<T>>? configureInMemory) where T : DbContext
         {
             if (useContextPooling)
             {

@@ -241,14 +241,14 @@ namespace Sitko.Core.Queue
             var messageContext = GetMessageContext<TMessage>(parentMessageContext);
             (TResponse message, QueueMessageContext context)? response = null;
             (TResponse message, QueueMessageContext messageContext)? result = null;
-            var publishResult = await _pipeline.PublishAsync(message, messageContext, async (msg, context) =>
+            var publishResult = await _pipeline.PublishAsync(message, messageContext, async (_, context) =>
             {
                 response = await DoRequestAsync<TMessage, TResponse>(message, context, timeout.Value);
                 return new QueuePublishResult();
             });
             if (publishResult.IsSuccess && response != null)
             {
-                if (!await _pipeline.ReceiveAsync(response.Value.message, response.Value.context, (msg, context) =>
+                if (!await _pipeline.ReceiveAsync(response.Value.message, response.Value.context, (_, _) =>
                 {
                     result = response;
                     return Task.FromResult(true);

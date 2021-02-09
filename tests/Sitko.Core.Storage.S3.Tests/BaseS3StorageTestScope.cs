@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Sitko.Core.Storage.Cache;
 using Sitko.Core.Xunit;
 
 namespace Sitko.Core.Storage.S3.Tests
@@ -13,7 +12,7 @@ namespace Sitko.Core.Storage.S3.Tests
         {
             return base.ConfigureApplication(application, name)
                 .AddModule<S3StorageModule<TestS3StorageSettings>, TestS3StorageSettings>(
-                    (configuration, environment, moduleConfig) =>
+                    (configuration, _, moduleConfig) =>
                     {
                         moduleConfig.PublicUri = new Uri(configuration["MINIO_SERVER_URI"] + "/" + _bucketName);
                         moduleConfig.Server = new Uri(configuration["MINIO_SERVER_URI"]);

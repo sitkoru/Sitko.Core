@@ -123,7 +123,7 @@ namespace Sitko.Core.Storage.FileSystem
                 {
                     if (info is DirectoryInfo dir)
                     {
-                        await ListFolderAsync(root, PreparePath(Path.Combine(path, dir.Name)));
+                        await ListFolderAsync(root, PreparePath(Path.Combine(path, dir.Name))!);
                     }
 
                     if (info is FileInfo file)

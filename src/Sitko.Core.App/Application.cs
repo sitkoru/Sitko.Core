@@ -394,7 +394,7 @@ namespace Sitko.Core.App
     {
         protected Application(string[] args) : base(args)
         {
-            ConfigureServices((context, services) =>
+            ConfigureServices((_, services) =>
             {
                 services.AddSingleton(typeof(IApplication), this);
                 services.AddSingleton(typeof(Application<T>), this);

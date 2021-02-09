@@ -24,7 +24,7 @@ namespace Sitko.Core.Queue.Tests
             var queue = scope.Get<IQueue>();
 
             Guid? receivedId = null;
-            var sub = await queue.SubscribeAsync<TestRequest>((testRequest, context) =>
+            var sub = await queue.SubscribeAsync<TestRequest>((testRequest, _) =>
             {
                 receivedId = testRequest.Id;
                 return Task.FromResult(true);

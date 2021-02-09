@@ -22,7 +22,13 @@ namespace Sitko.Core.IdProvider.SonyFlake
             try
             {
                 var response = await _httpClient.GetJsonAsync<SonyFlakeResponse>("/");
-                return response.Id;
+                if (response is not null)
+                {
+                    return response.Id;
+                }
+
+                _logger.LogError("Empty response from SonyFlake");
+                throw new IdGenerationException();
             }
             catch (Exception ex)
             {

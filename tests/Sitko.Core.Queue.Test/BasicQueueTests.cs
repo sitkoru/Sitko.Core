@@ -24,7 +24,7 @@ namespace Sitko.Core.Queue.Tests
             var queue = scope.Get<IQueue>();
 
             Guid? receivedId = null;
-            var subResult = await queue.SubscribeAsync<TestMessage>((message, context) =>
+            var subResult = await queue.SubscribeAsync<TestMessage>((message, _) =>
             {
                 receivedId = message.Id;
                 return Task.FromResult(true);
@@ -50,7 +50,7 @@ namespace Sitko.Core.Queue.Tests
             var queue = scope.Get<IQueue>();
 
             Guid? receivedId1 = null;
-            var subResult = await queue.SubscribeAsync<TestMessage>((message, context) =>
+            var subResult = await queue.SubscribeAsync<TestMessage>((message, _) =>
             {
                 receivedId1 = message.Id;
                 return Task.FromResult(true);
@@ -58,7 +58,7 @@ namespace Sitko.Core.Queue.Tests
             Assert.True(subResult.IsSuccess);
 
             Guid? receivedId2 = null;
-            subResult = await queue.SubscribeAsync<TestMessage>((message, context) =>
+            subResult = await queue.SubscribeAsync<TestMessage>((message, _) =>
             {
                 receivedId2 = message.Id;
                 return Task.FromResult(true);
@@ -87,7 +87,7 @@ namespace Sitko.Core.Queue.Tests
 
             var msg = new TestMessage();
 
-            var subResult = await queue.ReplyAsync<TestMessage, TestResponse>((message, context) =>
+            var subResult = await queue.ReplyAsync<TestMessage, TestResponse>((message, _) =>
                 Task.FromResult(new TestResponse {Id = message.Id}));
             Assert.True(subResult.IsSuccess);
 
@@ -107,7 +107,7 @@ namespace Sitko.Core.Queue.Tests
             var queue = scope.Get<IQueue>();
 
             Guid? receivedId = null;
-            var subResult = await queue.SubscribeAsync<TestMessage>((message, context) =>
+            var subResult = await queue.SubscribeAsync<TestMessage>((message, _) =>
             {
                 receivedId = message.Id;
                 return Task.FromResult(true);
@@ -151,7 +151,7 @@ namespace Sitko.Core.Queue.Tests
                 Date = DateTimeOffset.UtcNow
             };
             QueueMessageContext? receivedContext = null;
-            var subResult = await queue.SubscribeAsync<TestMessage>((message, context) =>
+            var subResult = await queue.SubscribeAsync<TestMessage>((_, context) =>
             {
                 receivedContext = context;
                 return Task.FromResult(true);

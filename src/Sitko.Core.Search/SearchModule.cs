@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,7 +35,7 @@ namespace Sitko.Core.Search
         {
             var searchProviders = serviceProvider.GetServices<ISearchProvider>();
             var logger = serviceProvider.GetService<ILogger<SearchModule<TConfig>>>();
-            if (searchProviders != null)
+            if (searchProviders.Any())
             {
                 Task.Run(async () =>
                 {
@@ -46,7 +47,8 @@ namespace Sitko.Core.Search
                         }
                         catch (Exception e)
                         {
-                            logger.LogError(e, e.ToString());
+                            logger.LogError(e, "Error in search provider {Provider} init: {ErrorText}", searchProvider,
+                                e.ToString());
                         }
                     }
                 });

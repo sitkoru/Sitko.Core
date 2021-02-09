@@ -30,7 +30,11 @@ namespace Sitko.Core.Queue.Nats.Tests
             var testMessageOptions = messageOptions.FirstOrDefault(o => o is IQueueMessageOptions<TestMessage>);
             Assert.NotNull(testMessageOptions);
 
-            var subResult = await queue.SubscribeAsync<TestMessage>((message, context) => Task.FromResult(true));
+            var subResult = await queue.SubscribeAsync<TestMessage>((message, _) =>
+            {
+                if (message == null) throw new ArgumentNullException(nameof(message));
+                return Task.FromResult(true);
+            });
             Assert.True(subResult.IsSuccess);
 
             Assert.NotNull(subResult.Options);

@@ -14,7 +14,7 @@ namespace Sitko.Core.Email.Smtp
 
         protected override void ConfigureBuilder(FluentEmailServicesBuilder builder)
         {
-            builder.Services.TryAdd(ServiceDescriptor.Scoped<ISender>(x => new MailKitSender(Config)));
+            builder.Services.TryAdd(ServiceDescriptor.Scoped<ISender>(_ => new MailKitSender(Config)));
         }
 
         public override void CheckConfig()

@@ -18,7 +18,7 @@ namespace Sitko.Core.Xunit
         protected override TApplication ConfigureApplication(TApplication application, string name)
         {
             base.ConfigureApplication(application, name);
-            application.ConfigureAppConfiguration((context, builder) =>
+            application.ConfigureAppConfiguration((_, builder) =>
             {
                 builder.AddEnvironmentVariables()
                     .AddUserSecrets<TScope>();
@@ -34,10 +34,10 @@ namespace Sitko.Core.Xunit
             if (testInMemory)
             {
                 application.AddModule<InMemoryDatabaseModule<TDbContext>, InMemoryDatabaseModuleConfig<TDbContext>>(
-                    (configuration, environment, moduleConfig) =>
+                    (_, _, moduleConfig) =>
                     {
                         moduleConfig.Database = name;
-                        moduleConfig.Configure = (builder, provider, conf, env) =>
+                        moduleConfig.Configure = (builder, _, conf, env) =>
                         {
                             ConfigureInMemoryDatabaseModule(builder, conf, env);
                         };
@@ -63,7 +63,7 @@ namespace Sitko.Core.Xunit
 
         public override async Task OnCreatedAsync()
         {
-            _dbContext = ServiceProvider.GetService<TDbContext>();
+            _dbContext = ServiceProvider!.GetService<TDbContext>();
             if (_dbContext == null)
             {
                 throw new Exception("Can't create db context");

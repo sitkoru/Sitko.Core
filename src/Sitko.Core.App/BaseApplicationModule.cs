@@ -77,7 +77,7 @@ namespace Sitko.Core.App
         {
         }
 
-        public TConfig? GetConfig()
+        public TConfig GetConfig()
         {
             return Config;
         }

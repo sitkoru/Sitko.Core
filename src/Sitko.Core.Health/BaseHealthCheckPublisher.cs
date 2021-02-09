@@ -32,7 +32,7 @@ namespace Sitko.Core.Health
             {
                 bool isNew = true;
                 bool isChanged = false;
-                _entries.AddOrUpdate(entry.Key, s => entry.Value.Status, (s, reportEntry) =>
+                _entries.AddOrUpdate(entry.Key, _ => entry.Value.Status, (_, reportEntry) =>
                 {
                     isNew = false;
                     isChanged = reportEntry != entry.Value.Status;
@@ -47,7 +47,7 @@ namespace Sitko.Core.Health
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogCritical(ex, ex.ToString());
+                        Logger.LogCritical(ex, "Error publishing status: {ErrorText}", ex.ToString());
                     }
                 }
 

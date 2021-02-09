@@ -33,10 +33,10 @@ namespace Sitko.Core.Search.ElasticSearch
                         {
                             _logger.LogDebug("### ES REQEUST ###");
                             if (details.RequestBodyInBytes != null)
-                                _logger.LogDebug(Encoding.UTF8.GetString(details.RequestBodyInBytes));
+                                _logger.LogDebug("{Request}", Encoding.UTF8.GetString(details.RequestBodyInBytes));
                             _logger.LogDebug("### ES RESPONSE ###");
                             if (details.ResponseBodyInBytes != null)
-                                _logger.LogDebug(Encoding.UTF8.GetString(details.ResponseBodyInBytes));
+                                _logger.LogDebug("{Response}", Encoding.UTF8.GetString(details.ResponseBodyInBytes));
                         }
                     })
                     .PrettyJson();
@@ -45,7 +45,7 @@ namespace Sitko.Core.Search.ElasticSearch
                     settings.BasicAuthentication(_options.Login, _options.Password);
                 }
 
-                settings.ServerCertificateValidationCallback((o, certificate, arg3, arg4) => true);
+                settings.ServerCertificateValidationCallback((_, _, _, _) => true);
                 _client = new ElasticClient(settings);
             }
 
@@ -66,7 +66,7 @@ namespace Sitko.Core.Search.ElasticSearch
                 .Index(indexName.ToLowerInvariant());
         }
 
-        private static string GetSearchText(string term)
+        private static string GetSearchText(string? term)
         {
             var names = "";
             if (term != null)
@@ -201,7 +201,7 @@ namespace Sitko.Core.Search.ElasticSearch
             var indexExists = await GetClient().Indices.ExistsAsync(indexName, ct: cancellationToken);
             if (indexExists.Exists)
             {
-                _logger.LogDebug("Update existing index {indexName}", indexName);
+                _logger.LogDebug("Update existing index {IndexName}", indexName);
                 await GetClient().Indices.CloseAsync(indexName, ct: cancellationToken);
                 var result = await GetClient().Indices.UpdateSettingsAsync(indexName, c => c.IndexSettings(s =>
                     s.Analysis(BuildIndexDescriptor)), cancellationToken);
@@ -213,7 +213,7 @@ namespace Sitko.Core.Search.ElasticSearch
             }
             else
             {
-                _logger.LogDebug("Create new index {indexName}", indexName);
+                _logger.LogDebug("Create new index {IndexName}", indexName);
                 var result = await GetClient()
                     .Indices.CreateAsync(indexName,
                         c => c.Settings(s => s.Analysis(BuildIndexDescriptor)), cancellationToken);
