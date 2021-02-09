@@ -39,14 +39,14 @@ namespace Sitko.Core.Email
 
         public SendResponse Send(IFluentEmail email, CancellationToken? token = null)
         {
-            _logger.LogInformation("Send email {subject} to {recipients}", email.Data.Subject,
+            _logger.LogInformation("Send email {Subject} to {Recipients}", email.Data.Subject,
                 string.Join(", ", email.Data.ToAddresses));
             return new SendResponse {MessageId = Guid.NewGuid().ToString(), ErrorMessages = new List<string>()};
         }
 
         public Task<SendResponse> SendAsync(IFluentEmail email, CancellationToken? token = null)
         {
-            _logger.LogInformation("Send email {subject} to {recipients}", email.Data.Subject,
+            _logger.LogInformation("Send email {Subject} to {Recipients}", email.Data.Subject,
                 string.Join(", ", email.Data.ToAddresses));
             return Task.FromResult(new SendResponse
             {

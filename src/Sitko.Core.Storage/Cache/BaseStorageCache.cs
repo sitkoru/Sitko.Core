@@ -115,7 +115,7 @@ namespace Sitko.Core.Storage.Cache
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, ex.ToString());
+                    Logger.LogError(ex, "Error caching file {File}: {ErrorText}", key, ex.ToString());
                     return null;
                 }
                 finally

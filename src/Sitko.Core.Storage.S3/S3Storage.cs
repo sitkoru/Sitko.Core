@@ -47,7 +47,7 @@ namespace Sitko.Core.Storage.S3
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, ex.Message);
+                Logger.LogError(ex, "Error creating bucket {Bucket}: {ErrorText}", bucketName, ex.ToString());
                 throw;
             }
         }
@@ -90,7 +90,7 @@ namespace Sitko.Core.Storage.S3
             }
             catch (Exception e)
             {
-                Logger.LogError(e, e.Message);
+                Logger.LogError(e, "Error uploading file {File}: {ErrorText}", path, e.ToString());
                 throw;
             }
         }
@@ -113,7 +113,7 @@ namespace Sitko.Core.Storage.S3
                     }
                     catch (Exception e)
                     {
-                        Logger.LogError(e, e.Message);
+                        Logger.LogError(e, "Error deleting file {File}: {ErrorText}", filePath, e.ToString());
                     }
                 }
             }
@@ -225,7 +225,7 @@ namespace Sitko.Core.Storage.S3
                 var objects = new Dictionary<string, S3Object>();
                 do
                 {
-                    Logger.LogDebug($"Get objects list from S3. Current objects count: {objects.Count}");
+                    Logger.LogDebug("Get objects list from S3. Current objects count: {Count}", objects.Count);
                     response = await _client.ListObjectsV2Async(request);
                     foreach (var s3Object in response.S3Objects)
                     {

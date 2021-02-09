@@ -114,7 +114,7 @@ namespace Sitko.Core.App
             catch (Exception ex)
             {
                 var logger = serviceProvider.GetService<ILogger<Application>>();
-                logger.LogError(ex, ex.ToString());
+                logger.LogError(ex, "Error: {ErrorText}", ex.ToString());
             }
         }
 
@@ -147,7 +147,7 @@ namespace Sitko.Core.App
                 }
                 catch (Exception e)
                 {
-                    Logger.LogError($"Host build error: {e}");
+                    Logger.LogError("Host build error: {ErrorText}", e.ToString());
                     System.Environment.Exit(255);
                 }
             }

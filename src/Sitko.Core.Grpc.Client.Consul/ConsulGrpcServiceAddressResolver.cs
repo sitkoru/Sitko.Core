@@ -51,7 +51,7 @@ namespace Sitko.Core.Grpc.Client.Consul
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error in grpc client for {serviceName} configuration load task: {errorText}",
+                    _logger.LogError(ex, "Error in grpc client for {ServiceName} configuration load task: {ErrorText}",
                         _serviceName, ex.ToString());
                 }
             }
@@ -76,7 +76,7 @@ namespace Sitko.Core.Grpc.Client.Consul
 
                     if (target == _target) return;
                     _target = target;
-                    _logger.LogInformation("Target for {type} loaded: {target}", typeof(TClient), _target);
+                    _logger.LogInformation("Target for {Type} loaded: {Target}", typeof(TClient), _target);
                 }
                 else
                 {

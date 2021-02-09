@@ -83,7 +83,7 @@ namespace Sitko.Core.Email
                     {
                         foreach (var errorMessage in res.ErrorMessages)
                         {
-                            _logger.LogError("Error while sending email {subject} to {recipient}: {errorText}",
+                            _logger.LogError("Error while sending email {Subject} to {Recipient}: {ErrorText}",
                                 mailEntry.Subject, recipient, errorMessage);
                         }
 
@@ -92,7 +92,8 @@ namespace Sitko.Core.Email
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, ex.Message);
+                    _logger.LogError(ex, "Error while sending email {Subject} to {Recipient}: {ErrorText}",
+                        mailEntry.Subject, recipient, ex.ToString());
                     throw;
                 }
             }

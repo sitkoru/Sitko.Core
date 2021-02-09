@@ -85,7 +85,7 @@ namespace Sitko.Core.Search.ElasticSearch.Tests
     {
         private readonly TestModelProvider _testModelProvider;
 
-        public TestSearchProvider(ILogger<BaseSearchProvider<TestModel, Guid, BaseSearchModel>> logger,
+        public TestSearchProvider(ILogger<TestSearchProvider> logger,
             TestModelProvider testModelProvider,
             ISearcher<BaseSearchModel>? searcher = null) : base(logger, searcher)
         {

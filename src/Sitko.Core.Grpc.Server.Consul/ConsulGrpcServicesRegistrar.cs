@@ -112,7 +112,7 @@ namespace Sitko.Core.Grpc.Server.Consul
                     },
                     Tags = new[] {"grpc", $"version:{_application.Version}"}
                 };
-                _logger.LogInformation("Register grpc service {serviceName} on {address}:{port}", serviceName, _host,
+                _logger.LogInformation("Register grpc service {ServiceName} on {Address}:{Port}", serviceName, _host,
                     _port);
                 await _consulClient.Agent.ServiceDeregister(id);
                 var result = await _consulClient.Agent.ServiceRegister(registration);
@@ -138,7 +138,7 @@ namespace Sitko.Core.Grpc.Server.Consul
                 foreach (var registeredService in _registeredServices)
                 {
                     _logger.LogInformation(
-                        "Application stopping. Deregister grpc service {serviceName} on {address}:{port}",
+                        "Application stopping. Deregister grpc service {ServiceName} on {Address}:{Port}",
                         registeredService.Value, _host,
                         _port);
                     await _consulClient.Agent.ServiceDeregister(registeredService.Key);
