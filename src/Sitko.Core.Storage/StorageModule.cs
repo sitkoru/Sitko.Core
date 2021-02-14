@@ -10,7 +10,8 @@ namespace Sitko.Core.Storage
     {
     }
 
-    public abstract class StorageModule<TStorage, TStorageOptions> : BaseApplicationModule<TStorageOptions>, IStorageModule
+    public abstract class StorageModule<TStorage, TStorageOptions> : BaseApplicationModule<TStorageOptions>,
+        IStorageModule
         where TStorage : Storage<TStorageOptions> where TStorageOptions : StorageOptions, new()
     {
         protected StorageModule(TStorageOptions config, Application application) : base(config, application)
@@ -22,7 +23,9 @@ namespace Sitko.Core.Storage
         {
             base.ConfigureServices(services, configuration, environment);
             services.AddSingleton<IStorage<TStorageOptions>, TStorage>();
+            services.AddSingleton<TStorage>();
             Config.ConfigureCache?.Invoke(environment, configuration, services);
+            Config.ConfigureMetadata?.Invoke(environment, configuration, services);
         }
 
         public override void CheckConfig()

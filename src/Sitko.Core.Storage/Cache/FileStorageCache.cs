@@ -80,8 +80,8 @@ namespace Sitko.Core.Storage.Cache
             }
         }
 
-        internal override async Task<FileStorageCacheRecord> GetEntryAsync(StorageItemInfo item,
-            Stream stream)
+        internal override async Task<FileStorageCacheRecord> GetEntryAsync(StorageItemDownloadInfo item,
+            Stream stream, CancellationToken? cancellationToken = null)
         {
             var tempFileName = CreateMD5(Guid.NewGuid().ToString());
             var split = tempFileName.Select((c, index) => new {c, index})
@@ -104,7 +104,7 @@ namespace Sitko.Core.Storage.Cache
                 throw new Exception($"Can't write to file {filePath}");
             }
 
-            await stream.CopyToAsync(fileStream);
+            await stream.CopyToAsync(fileStream, cancellationToken ?? CancellationToken.None);
             fileStream.Close();
             return new FileStorageCacheRecord(item.Metadata, item.FileSize, item.Date, filePath);
         }
@@ -128,7 +128,8 @@ namespace Sitko.Core.Storage.Cache
 
     public class FileStorageCacheRecord : IStorageCacheRecord
     {
-        public FileStorageCacheRecord(string? metadata, long fileSize, DateTimeOffset date, string filePath)
+        internal FileStorageCacheRecord(StorageItemMetadata? metadata, long fileSize, DateTimeOffset date,
+            string filePath)
         {
             Metadata = metadata;
             FileSize = fileSize;
@@ -138,7 +139,7 @@ namespace Sitko.Core.Storage.Cache
 
         public string PhysicalPath { get; }
 
-        public string? Metadata { get; }
+        public StorageItemMetadata? Metadata { get; }
         public long FileSize { get; }
         public DateTimeOffset Date { get; }
 

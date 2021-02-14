@@ -9,7 +9,7 @@ namespace Sitko.Core.Storage
         /// Name of uploaded file
         /// </summary>
         public string? FileName { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// Size of uploaded file
         /// </summary>
@@ -19,22 +19,22 @@ namespace Sitko.Core.Storage
         /// MimeType of uploaded file
         /// </summary>
         public string MimeType { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// Full path to uploaded file in storage
         /// </summary>
         public string FilePath { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// Last modified date of uploaded file
         /// </summary>
         public DateTimeOffset LastModified { get; set; } = DateTimeOffset.Now;
-        
+
         /// <summary>
         /// Path without file name to uploaded file in storage
         /// </summary>
         public string Path { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// Uploaded file metadata JSON. Read-only.
         /// </summary>
@@ -59,6 +59,38 @@ namespace Sitko.Core.Storage
             {
                 return Helpers.HumanSize(FileSize);
             }
+        }
+
+        public StorageItem()
+        {
+        }
+
+        internal StorageItem(string destinationPath,
+            DateTimeOffset date,
+            long fileSize, string? prefix, StorageItemMetadata? metadata = null)
+        {
+            destinationPath = Helpers.GetPathWithoutPrefix(prefix, destinationPath);
+            var fileName = metadata?.FileName ?? System.IO.Path.GetFileName(destinationPath);
+            Path = Helpers.PreparePath(System.IO.Path.GetDirectoryName(destinationPath))!;
+            FileName = fileName;
+            LastModified = date;
+            FileSize = fileSize;
+            FilePath = destinationPath;
+            MetadataJson = metadata?.Data;
+            MimeType = MimeMapping.MimeUtility.GetMimeMapping(fileName);
+        }
+
+        internal StorageItem(string path, StorageItemDownloadInfo storageItemInfo, string? prefix) : this(path,
+            storageItemInfo.Date,
+            storageItemInfo.FileSize, prefix, storageItemInfo.Metadata)
+        {
+        }
+
+        internal StorageItem(StorageItemInfo storageItemInfo, string? prefix, StorageItemMetadata? metadata = null) :
+            this(storageItemInfo.Path,
+                storageItemInfo.Date,
+                storageItemInfo.FileSize, prefix, metadata)
+        {
         }
     }
 }

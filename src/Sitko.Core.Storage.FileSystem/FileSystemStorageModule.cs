@@ -10,6 +10,10 @@ namespace Sitko.Core.Storage.FileSystem
     {
         public FileSystemStorageModule(T config, Application application) : base(config, application)
         {
+            if (config.ConfigureMetadata is null)
+            {
+                config.EnableMetadata<FileSystemStorageMetadataProvider<T>, FileSystemStorageMetadataProviderOptions>();
+            }
         }
 
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,

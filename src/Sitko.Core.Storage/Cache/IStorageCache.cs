@@ -1,17 +1,19 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sitko.Core.Storage.Cache
 {
     public interface IStorageCache : IAsyncDisposable
     {
-        internal Task<StorageItemInfo?> GetItemAsync(string path);
+        internal Task<StorageItemDownloadInfo?> GetItemAsync(string path, CancellationToken? cancellationToken = null);
 
-        internal Task<StorageItemInfo?> GetOrAddItemAsync(string path, Func<Task<StorageItemInfo?>> addItem);
+        internal Task<StorageItemDownloadInfo?> GetOrAddItemAsync(string path, Func<Task<StorageItemDownloadInfo?>> addItem,
+            CancellationToken? cancellationToken = null);
 
-        Task RemoveItemAsync(string path);
-        Task ClearAsync();
+        Task RemoveItemAsync(string path, CancellationToken? cancellationToken = null);
+        Task ClearAsync(CancellationToken? cancellationToken = null);
     }
 
     public interface IStorageCache<T> : IStorageCache where T : StorageCacheOptions
@@ -20,7 +22,7 @@ namespace Sitko.Core.Storage.Cache
 
     public interface IStorageCacheRecord
     {
-        string? Metadata { get; }
+        StorageItemMetadata? Metadata { get; }
 
         long FileSize { get; }
         DateTimeOffset Date { get; }

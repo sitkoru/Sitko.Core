@@ -12,6 +12,10 @@ namespace Sitko.Core.Storage.S3
     {
         public S3StorageModule(T config, Application application) : base(config, application)
         {
+            if (config.ConfigureMetadata is null)
+            {
+                config.EnableMetadata<S3StorageMetadataProvider<T>, S3StorageMetadataProviderOptions>();
+            }
         }
 
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,

@@ -1,21 +1,24 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Storage.Cache;
+using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.FileSystem
 {
     public sealed class FileSystemStorage<T> : Storage<T> where T : StorageOptions, IFileSystemStorageOptions
     {
-        public FileSystemStorage(T options, ILogger<FileSystemStorage<T>> logger, IStorageCache? cache = null) : base(
-            options, logger, cache)
+        public FileSystemStorage(T options, ILogger<FileSystemStorage<T>> logger, IStorageCache? cache = null,
+            IStorageMetadataProvider? metadataProvider = null) : base(
+            options, logger, cache, metadataProvider)
         {
         }
 
         protected override async Task<bool> DoSaveAsync(string path, Stream file,
-            string metadata)
+            CancellationToken? cancellationToken = null)
         {
             var dirName = Path.GetDirectoryName(path);
             if (string.IsNullOrEmpty(dirName))
@@ -32,13 +35,11 @@ namespace Sitko.Core.Storage.FileSystem
             var fullPath = Path.Combine(Options.StoragePath, path);
             await using var fileStream = File.Create(fullPath);
             file.Seek(0, SeekOrigin.Begin);
-            await file.CopyToAsync(fileStream);
-            await using var metaDataStream = File.Create(GetMetaDataPath(fullPath));
-            await metaDataStream.WriteAsync(Encoding.UTF8.GetBytes(metadata));
+            await file.CopyToAsync(fileStream, cancellationToken ?? CancellationToken.None);
             return true;
         }
 
-        protected override Task<bool> DoDeleteAsync(string filePath)
+        protected override Task<bool> DoDeleteAsync(string filePath, CancellationToken? cancellationToken = null)
         {
             var path = Path.Combine(Options.StoragePath, filePath);
             if (File.Exists(path))
@@ -46,12 +47,6 @@ namespace Sitko.Core.Storage.FileSystem
                 try
                 {
                     File.Delete(path);
-                    var metaDataPath = GetMetaDataPath(path);
-                    if (File.Exists(metaDataPath))
-                    {
-                        File.Delete(metaDataPath);
-                    }
-
                     return Task.FromResult(true);
                 }
                 catch (Exception ex)
@@ -63,13 +58,13 @@ namespace Sitko.Core.Storage.FileSystem
             return Task.FromResult(false);
         }
 
-        protected override Task<bool> DoIsFileExistsAsync(StorageItem item)
+        protected override Task<bool> DoIsFileExistsAsync(StorageItem item, CancellationToken? cancellationToken = null)
         {
             var fullPath = Path.Combine(Options.StoragePath, item.FilePath);
             return Task.FromResult(File.Exists(fullPath));
         }
 
-        protected override Task DoDeleteAllAsync()
+        protected override Task DoDeleteAllAsync(CancellationToken? cancellationToken = null)
         {
             if (Directory.Exists(Options.StoragePath))
             {
@@ -79,38 +74,31 @@ namespace Sitko.Core.Storage.FileSystem
             return Task.CompletedTask;
         }
 
-        internal override async Task<StorageItemInfo?> DoGetFileAsync(string path)
+        internal override Task<StorageItemDownloadInfo?> DoGetFileAsync(string path,
+            CancellationToken? cancellationToken = null)
         {
-            StorageItemInfo? result = null;
+            StorageItemDownloadInfo? result = null;
             var fullPath = Path.Combine(Options.StoragePath, path);
-            var metaDataPath = GetMetaDataPath(fullPath);
             var fileInfo = new FileInfo(fullPath);
-            var metaDataInfo = new FileInfo(metaDataPath);
 
             if (fileInfo.Exists)
             {
-                string? metadata = null;
-                if (metaDataInfo.Exists)
-                {
-                    metadata = await File.ReadAllTextAsync(metaDataPath);
-                }
-
-                result = new StorageItemInfo(metadata, fileInfo.Length, fileInfo.LastWriteTimeUtc,
+                result = new StorageItemDownloadInfo(fileInfo.Length, fileInfo.LastWriteTimeUtc,
                     () => new FileStream(fullPath, FileMode.Open));
             }
 
-
-            return result;
+            return Task.FromResult(result);
         }
 
-        protected override async Task<StorageNode?> DoBuildStorageTreeAsync()
+        internal override Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
+            CancellationToken? cancellationToken = null)
         {
-            var root = StorageNode.CreateDirectory("/", "/");
-            await ListFolderAsync(root, string.IsNullOrEmpty(Options.Prefix) ? "/" : Options.Prefix);
-            return root;
+            var items = new List<StorageItemInfo>();
+            ListFolder(items, string.IsNullOrEmpty(Options.Prefix) ? "/" : Options.Prefix);
+            return Task.FromResult<IEnumerable<StorageItemInfo>>(items);
         }
 
-        private async Task ListFolderAsync(StorageNode root, string path)
+        private void ListFolder(List<StorageItemInfo> items, string path)
         {
             var fullPath = path == "/" ? Options.StoragePath : Path.Combine(Options.StoragePath, path.Trim('/'));
             if (Directory.Exists(fullPath))
@@ -120,29 +108,14 @@ namespace Sitko.Core.Storage.FileSystem
                 {
                     if (info is DirectoryInfo dir)
                     {
-                        await ListFolderAsync(root, PreparePath(Path.Combine(path, dir.Name))!);
+                        ListFolder(items, Helpers.PreparePath(Path.Combine(path, dir.Name))!);
                     }
 
                     if (info is FileInfo file)
                     {
-                        if (file.Extension == MetaDataExtension)
-                        {
-                            continue;
-                        }
-
-                        string? metadata = null;
-                        var metadataPath = GetMetaDataPath(file.FullName);
-                        if (File.Exists(metadataPath))
-                        {
-                            metadata = await File.ReadAllTextAsync(metadataPath);
-                        }
-
-                        var item = CreateStorageItem(PreparePath(Path.Combine(path, file.Name))!.Trim('/'),
-                            file.LastWriteTimeUtc,
-                            file.Length,
-                            metadata);
-
-                        root.AddItem(item);
+                        var item = new StorageItemInfo(Helpers.PreparePath(Path.Combine(path, file.Name))!.Trim('/'),
+                            file.Length, file.LastWriteTimeUtc);
+                        items.Add(item);
                     }
                 }
             }

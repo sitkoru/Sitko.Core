@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -16,17 +17,18 @@ namespace Sitko.Core.Storage.Cache
         {
         }
 
-        internal override Task<InMemoryStorageCacheRecord> GetEntryAsync(StorageItemInfo item, Stream stream)
+        internal override async Task<InMemoryStorageCacheRecord> GetEntryAsync(StorageItemDownloadInfo item, Stream stream,
+            CancellationToken? cancellationToken = null)
         {
             using var memoryStream = new MemoryStream();
-            stream.CopyTo(memoryStream);
-            return Task.FromResult(
-                new InMemoryStorageCacheRecord(item.Metadata, item.FileSize, item.Date, memoryStream.ToArray()));
+            await stream.CopyToAsync(memoryStream, cancellationToken ?? CancellationToken.None);
+            return
+                new InMemoryStorageCacheRecord(item.Metadata, item.FileSize, item.Date, memoryStream.ToArray());
         }
 
         public override ValueTask DisposeAsync()
         {
-            return new ValueTask();
+            return new();
         }
     }
 
@@ -37,11 +39,11 @@ namespace Sitko.Core.Storage.Cache
     public class InMemoryStorageCacheRecord : IStorageCacheRecord
     {
         private byte[] Data { get; }
-        public string? Metadata { get; }
+        public StorageItemMetadata? Metadata { get; }
         public long FileSize { get; }
         public DateTimeOffset Date { get; }
 
-        public InMemoryStorageCacheRecord(string? metadata, long fileSize, DateTimeOffset date, byte[] data)
+        public InMemoryStorageCacheRecord(StorageItemMetadata? metadata, long fileSize, DateTimeOffset date, byte[] data)
         {
             Metadata = metadata;
             FileSize = fileSize;
