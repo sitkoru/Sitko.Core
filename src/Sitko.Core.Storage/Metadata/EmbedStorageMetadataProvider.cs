@@ -11,14 +11,14 @@ using Nito.AsyncEx;
 namespace Sitko.Core.Storage.Metadata
 {
     public abstract class
-        EmbedStorageMetadataProvider<TStorage, TStorageOptions, TOptions> : BaseStorageMetadataProvider<TOptions>
+        EmbedStorageMetadataProvider<TStorage, TStorageOptions, TOptions> : BaseStorageMetadataProvider<TOptions,
+            TStorageOptions>
         where TStorage : IStorage<TStorageOptions>
         where TOptions : EmbedStorageMetadataProviderOptions
         where TStorageOptions : StorageOptions
     {
         private readonly IServiceProvider _serviceProvider;
         private TStorage? _storage;
-        private TStorageOptions? _storageOptions;
 
         protected TStorage Storage
         {
@@ -30,19 +30,6 @@ namespace Sitko.Core.Storage.Metadata
                 }
 
                 return _storage;
-            }
-        }
-
-        protected TStorageOptions StorageOptions
-        {
-            get
-            {
-                if (_storageOptions is null)
-                {
-                    _storageOptions = _serviceProvider.GetRequiredService<TStorageOptions>();
-                }
-
-                return _storageOptions;
             }
         }
 
@@ -64,8 +51,9 @@ namespace Sitko.Core.Storage.Metadata
         }
 
         protected EmbedStorageMetadataProvider(IServiceProvider serviceProvider, TOptions options,
+            TStorageOptions storageOptions,
             ILogger<EmbedStorageMetadataProvider<TStorage, TStorageOptions, TOptions>> logger)
-            : base(options, logger)
+            : base(options, storageOptions, logger)
         {
             _serviceProvider = serviceProvider;
         }
@@ -126,7 +114,7 @@ namespace Sitko.Core.Storage.Metadata
                 Logger.LogInformation("Done building storage tree");
             }
         }
-        
+
         public override ValueTask DisposeAsync()
         {
             return new();

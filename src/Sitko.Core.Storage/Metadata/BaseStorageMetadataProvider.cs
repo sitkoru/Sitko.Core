@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,19 +6,33 @@ using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.Storage.Metadata
 {
-    public abstract class BaseStorageMetadataProvider<TOptions> : IStorageMetadataProvider<TOptions>
+    public abstract class BaseStorageMetadataProvider<TOptions, TStorageOptions> : IStorageMetadataProvider<TOptions>
         where TOptions : StorageMetadataProviderOptions
+        where TStorageOptions : StorageOptions
     {
         protected TOptions Options { get; }
-        protected ILogger<BaseStorageMetadataProvider<TOptions>> Logger { get; }
+        protected TStorageOptions StorageOptions { get; }
+        protected ILogger<BaseStorageMetadataProvider<TOptions, TStorageOptions>> Logger { get; }
 
-        public BaseStorageMetadataProvider(TOptions options, ILogger<BaseStorageMetadataProvider<TOptions>> logger)
+        public BaseStorageMetadataProvider(TOptions options, TStorageOptions storageOptions,
+            ILogger<BaseStorageMetadataProvider<TOptions, TStorageOptions>> logger)
         {
             Options = options;
+            StorageOptions = storageOptions;
             Logger = logger;
         }
 
         public abstract ValueTask DisposeAsync();
+
+        Task IStorageMetadataProvider.InitAsync()
+        {
+            return DoInitAsync();
+        }
+
+        protected virtual Task DoInitAsync()
+        {
+            return Task.CompletedTask;
+        }
 
         Task IStorageMetadataProvider.SaveMetadataAsync(StorageItem storageItem, StorageItemMetadata itemMetadata,
             CancellationToken? cancellationToken)

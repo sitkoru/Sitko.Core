@@ -1,7 +1,8 @@
 using System;
 using Amazon;
+using Sitko.Core.Storage.S3;
 
-namespace Sitko.Core.Storage.S3.Tests
+namespace Sitko.Core.Storage.Metadata.Postgres.Tests
 {
     public class TestS3StorageSettings : StorageOptions, IS3StorageOptions
     {

@@ -13,6 +13,8 @@ namespace Sitko.Core.Storage
 
         public string? Prefix { get; set; }
 
+        public abstract string Name { get; set; }
+
         public Action<IHostEnvironment, IConfiguration, IServiceCollection>? ConfigureCache { get; protected set; }
         public Action<IHostEnvironment, IConfiguration, IServiceCollection>? ConfigureMetadata { get; protected set; }
 

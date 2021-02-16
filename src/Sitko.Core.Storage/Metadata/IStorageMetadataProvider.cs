@@ -7,6 +7,7 @@ namespace Sitko.Core.Storage.Metadata
 {
     public interface IStorageMetadataProvider : IAsyncDisposable
     {
+        internal Task InitAsync();
         internal Task SaveMetadataAsync(StorageItem storageItem, StorageItemMetadata itemMetadata,
             CancellationToken? cancellationToken = null);
 

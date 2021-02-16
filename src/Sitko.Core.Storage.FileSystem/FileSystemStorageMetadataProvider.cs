@@ -14,9 +14,10 @@ namespace Sitko.Core.Storage.FileSystem
         where TFileSystemOptions : StorageOptions, IFileSystemStorageOptions
 
     {
-        public FileSystemStorageMetadataProvider(IServiceProvider serviceProvider,
+        public FileSystemStorageMetadataProvider(IServiceProvider serviceProvider, TFileSystemOptions storageOptions,
             FileSystemStorageMetadataProviderOptions options,
             ILogger<FileSystemStorageMetadataProvider<TFileSystemOptions>> logger) : base(serviceProvider, options,
+            storageOptions,
             logger)
         {
         }

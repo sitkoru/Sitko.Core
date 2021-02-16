@@ -8,16 +8,20 @@ on:
             - "src/Sitko.Core.Storage/**"
             - "src/Sitko.Core.Storage.FileSystem/**"
             - "src/Sitko.Core.Storage.S3/**"
+            - "src/Sitko.Core.Storage.Metadata.Postgres/**"
             - "tests/Sitko.Core.Storage.FileSystem.Tests/**"
             - "tests/Sitko.Core.Storage.S3.Tests/**"
+            - "tests/Sitko.Core.Storage.Metadata.Postgres.Tests/**"
     pull_request:
         paths:
             - "src/Sitko.Core.App/**"
             - "src/Sitko.Core.Storage/**"
             - "src/Sitko.Core.Storage.FileSystem/**"
             - "src/Sitko.Core.Storage.S3/**"
+            - "src/Sitko.Core.Storage.Metadata.Postgres/**"
             - "tests/Sitko.Core.Storage.FileSystem.Tests/**"
             - "tests/Sitko.Core.Storage.S3.Tests/**"
+            - "tests/Sitko.Core.Storage.Metadata.Postgres.Tests/**"
 
 jobs:
     build:
@@ -27,12 +31,19 @@ jobs:
             MINIO_SERVER_URI: http://minio:9000
             MINIO_ACCESS_KEY: ptTYf7VkCVbUjAzn
             MINIO_SECRET_KEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
+            POSTGRES_HOST: localhost
+            POSTGRES_USERNAME: postgres
+            POSTGRES_PASSWORD: 123
         services:
             minio:
-                image: bitnami/minio:2020.7.2
+                image: bitnami/minio
                 env:
                     MINIO_ACCESS_KEY: ptTYf7VkCVbUjAzn
                     MINIO_SECRET_KEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
+            postgres:
+                image: postgres:alpine
+                env:
+                    POSTGRES_HOST_AUTH_METHOD: trust
         steps:
             -   uses: actions/checkout@v2
             -   uses: actions/setup-dotnet@v1
@@ -47,3 +58,5 @@ jobs:
                 run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
             -   name: Sitko.Core.Storage.S3
                 run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
+            -   name: Sitko.Core.Storage.Metadata.Postgres
+                run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.Metadata.Postgres.Tests/Sitko.Core.Storage.Metadata.Postgres.Tests.csproj

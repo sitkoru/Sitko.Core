@@ -65,7 +65,7 @@ namespace Sitko.Core.Storage
         {
         }
 
-        internal StorageItem(string destinationPath,
+        public StorageItem(string destinationPath,
             DateTimeOffset date,
             long fileSize, string? prefix, StorageItemMetadata? metadata = null)
         {

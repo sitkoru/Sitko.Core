@@ -152,8 +152,47 @@ namespace Sitko.Core.Storage.S3
         {
             if (await IsBucketExistsAsync(Options.Bucket))
             {
-                await AmazonS3Util.DeleteS3BucketWithObjectsAsync(_client, Options.Bucket,
-                    cancellationToken ?? CancellationToken.None);
+                if (string.IsNullOrEmpty(Options.Prefix))
+                {
+                    try
+                    {
+                        await AmazonS3Util.DeleteS3BucketWithObjectsAsync(_client, Options.Bucket,
+                            cancellationToken ?? CancellationToken.None);
+                    }
+                    catch (AmazonS3Exception ex) when (ex.Message.Contains(
+                        "A header you provided implies functionality that is not implemented"))
+                    {
+                        await DeleteAllObjectsInBucket(cancellationToken);
+                        await _client.DeleteBucketAsync(Options.Bucket);
+                    }
+                }
+                else
+                {
+                    await DeleteAllObjectsInBucket(cancellationToken);
+                }
+            }
+        }
+
+        private async Task DeleteAllObjectsInBucket(CancellationToken? cancellationToken = null)
+        {
+            var objects = await GetAllItemsAsync("/");
+            foreach (var chunk in SplitList(objects.ToList(), 1000))
+            {
+                var request = new DeleteObjectsRequest
+                {
+                    BucketName = Options.Bucket,
+                    Objects = chunk.Select(item => new KeyVersion {Key = GetPathWithPrefix(item.Path)})
+                        .ToList()
+                };
+                await _client.DeleteObjectsAsync(request, cancellationToken ?? CancellationToken.None);
+            }
+        }
+
+        public static IEnumerable<List<TItem>> SplitList<TItem>(List<TItem> locations, int nSize = 30)
+        {
+            for (int i = 0; i < locations.Count; i += nSize)
+            {
+                yield return locations.GetRange(i, Math.Min(nSize, locations.Count - i));
             }
         }
 

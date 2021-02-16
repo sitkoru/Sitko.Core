@@ -13,7 +13,9 @@ namespace Sitko.Core.Storage.S3
         where TS3Options : StorageOptions, IS3StorageOptions
     {
         public S3StorageMetadataProvider(IServiceProvider serviceProvider, S3StorageMetadataProviderOptions options,
-            ILogger<S3StorageMetadataProvider<TS3Options>> logger) : base(serviceProvider, options, logger)
+            TS3Options storageOptions,
+            ILogger<S3StorageMetadataProvider<TS3Options>> logger) : base(serviceProvider, options, storageOptions,
+            logger)
         {
         }
 
