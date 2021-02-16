@@ -31,7 +31,7 @@ jobs:
             MINIO_SERVER_URI: http://minio:9000
             MINIO_ACCESS_KEY: ptTYf7VkCVbUjAzn
             MINIO_SECRET_KEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
-            POSTGRES_HOST: localhost
+            POSTGRES_HOST: postgres
             POSTGRES_USERNAME: postgres
             POSTGRES_PASSWORD: 123
         services:
