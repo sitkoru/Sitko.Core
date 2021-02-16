@@ -27,4 +27,7 @@
     <ProjectReference Include="..\Sitko.Core.Db.Postgres\Sitko.Core.Db.Postgres.csproj" />
     <ProjectReference Include="..\Sitko.Core.Storage\Sitko.Core.Storage.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Migrations" />
+  </ItemGroup>
 </Project>

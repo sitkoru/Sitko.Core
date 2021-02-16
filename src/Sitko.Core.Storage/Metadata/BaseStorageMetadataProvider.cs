@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -37,7 +36,7 @@ namespace Sitko.Core.Storage.Metadata
         Task IStorageMetadataProvider.SaveMetadataAsync(StorageItem storageItem, StorageItemMetadata itemMetadata,
             CancellationToken? cancellationToken)
         {
-            return DoSaveMetadataAsync(storageItem, JsonSerializer.Serialize(itemMetadata), cancellationToken);
+            return DoSaveMetadataAsync(storageItem, itemMetadata, cancellationToken);
         }
 
         Task IStorageMetadataProvider.DeleteMetadataAsync(string filePath, CancellationToken? cancellationToken)
@@ -76,21 +75,15 @@ namespace Sitko.Core.Storage.Metadata
             return DoGetMetadataAsync(path, cancellationToken);
         }
 
-        protected async Task<StorageItemMetadata?> DoGetMetadataAsync(string path, CancellationToken? cancellationToken)
+        protected Task<StorageItemMetadata?> DoGetMetadataAsync(string path, CancellationToken? cancellationToken)
         {
-            var json = await DoGetMetadataJsonAsync(path, cancellationToken);
-            if (!string.IsNullOrEmpty(json))
-            {
-                return JsonSerializer.Deserialize<StorageItemMetadata>(json);
-            }
-
-            return null;
+            return DoGetMetadataJsonAsync(path, cancellationToken);
         }
 
-        protected abstract Task<string?> DoGetMetadataJsonAsync(string path,
+        protected abstract Task<StorageItemMetadata?> DoGetMetadataJsonAsync(string path,
             CancellationToken? cancellationToken = null);
 
-        protected abstract Task DoSaveMetadataAsync(StorageItem storageItem, string? metadata = null,
+        protected abstract Task DoSaveMetadataAsync(StorageItem storageItem, StorageItemMetadata? metadata = null,
             CancellationToken? cancellationToken = null);
     }
 }

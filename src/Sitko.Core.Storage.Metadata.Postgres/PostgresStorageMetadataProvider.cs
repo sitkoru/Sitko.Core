@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -69,16 +67,9 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             var root = StorageNode.CreateDirectory("/", "/");
             foreach (var itemRecord in records)
             {
-                StorageItemMetadata? metadata = null;
-
-                if (itemRecord.MetadataJson != null)
-                {
-                    metadata = JsonSerializer.Deserialize<StorageItemMetadata>(itemRecord.MetadataJson);
-                }
-
                 var item = new StorageItem(
                     itemRecord.FilePath, itemRecord.LastModified, itemRecord.FileSize,
-                    null, metadata);
+                    null, itemRecord.Metadata);
                 root.AddItem(item);
             }
 
@@ -98,15 +89,15 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             return path?.Replace("\\", "/").Replace("//", "/");
         }
 
-        protected override async Task<string?> DoGetMetadataJsonAsync(string path,
+        protected override async Task<StorageItemMetadata?> DoGetMetadataJsonAsync(string path,
             CancellationToken? cancellationToken = null)
         {
             await using var dbContext = GetDbContext();
             var record = await GetItemRecordAsync(dbContext, path, cancellationToken);
-            return record?.MetadataJson;
+            return record?.Metadata;
         }
 
-        protected override async Task DoSaveMetadataAsync(StorageItem storageItem, string? metadata = null,
+        protected override async Task DoSaveMetadataAsync(StorageItem storageItem, StorageItemMetadata? metadata = null,
             CancellationToken? cancellationToken = null)
         {
             await using var dbContext = GetDbContext();
@@ -117,7 +108,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
                 await dbContext.Records.AddAsync(record);
             }
 
-            record.MetadataJson = metadata;
+            record.Metadata = metadata;
             await dbContext.SaveChangesAsync(cancellationToken ?? CancellationToken.None);
         }
 

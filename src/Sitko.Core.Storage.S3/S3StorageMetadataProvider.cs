@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -33,28 +34,31 @@ namespace Sitko.Core.Storage.S3
             return Task.CompletedTask;
         }
 
-        protected override async Task DoSaveMetadataAsync(StorageItem storageItem, string? metadata = null,
+        protected override async Task DoSaveMetadataAsync(StorageItem storageItem, StorageItemMetadata? metadata = null,
             CancellationToken? cancellationToken = null)
         {
             if (metadata is not null)
             {
                 await Storage.DoSaveInternalAsync(GetMetaDataPath(storageItem.FilePath),
-                    new MemoryStream(Encoding.UTF8.GetBytes(metadata)), cancellationToken);
+                    new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(metadata))), cancellationToken);
             }
         }
 
-        protected override async Task<string?> DoGetMetadataJsonAsync(string filePath,
+        protected override async Task<StorageItemMetadata?> DoGetMetadataJsonAsync(string filePath,
             CancellationToken? cancellationToken = null)
         {
-            string? metaData = null;
             var metaDataResponse =
                 await Storage.DownloadFileAsync(GetMetaDataPath(filePath), cancellationToken);
             if (metaDataResponse != null)
             {
-                metaData = await metaDataResponse.ResponseStream.DownloadStreamAsString(cancellationToken);
+                var json = await metaDataResponse.ResponseStream.DownloadStreamAsString(cancellationToken);
+                if (!string.IsNullOrEmpty(json))
+                {
+                    return JsonSerializer.Deserialize<StorageItemMetadata>(json);
+                }
             }
 
-            return metaData;
+            return null;
         }
     }
 

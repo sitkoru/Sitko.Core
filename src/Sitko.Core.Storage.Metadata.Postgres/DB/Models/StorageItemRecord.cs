@@ -20,7 +20,6 @@ namespace Sitko.Core.Storage.Metadata.Postgres.DB.Models
             MimeType = storageItem.MimeType;
             LastModified = storageItem.LastModified;
             Path = storageItem.Path;
-            MetadataJson = storageItem.MetadataJson;
         }
 
         [Key] public Guid Id { get; set; } = Guid.NewGuid();
@@ -31,6 +30,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres.DB.Models
         public string MimeType { get; set; }
         public DateTimeOffset LastModified { get; set; } = DateTimeOffset.Now;
         public string Path { get; set; }
-        [Column(TypeName = "jsonb")] public string? MetadataJson { get; set; }
+
+        [Column(TypeName = "jsonb")] public StorageItemMetadata? Metadata { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Sitko.Core.Storage;
 
 namespace Sitko.Core.Storage.Metadata.Postgres.Migrations
 {
@@ -19,7 +20,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres.Migrations
                     MimeType = table.Column<string>(type: "text", nullable: false),
                     LastModified = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     Path = table.Column<string>(type: "text", nullable: false),
-                    MetadataJson = table.Column<string>(type: "jsonb", nullable: true)
+                    Metadata = table.Column<StorageItemMetadata>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
                 {

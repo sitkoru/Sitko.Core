@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using Sitko.Core.Storage;
 using Sitko.Core.Storage.Metadata.Postgres.DB;
 
 namespace Sitko.Core.Storage.Metadata.Postgres.Migrations
@@ -39,7 +40,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres.Migrations
                     b.Property<DateTimeOffset>("LastModified")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("MetadataJson")
+                    b.Property<StorageItemMetadata>("Metadata")
                         .HasColumnType("jsonb");
 
                     b.Property<string>("MimeType")

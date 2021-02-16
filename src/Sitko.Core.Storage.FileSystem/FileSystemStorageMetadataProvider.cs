@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -39,7 +40,7 @@ namespace Sitko.Core.Storage.FileSystem
             return Task.CompletedTask;
         }
 
-        protected override async Task<string?> DoGetMetadataJsonAsync(string path,
+        protected override async Task<StorageItemMetadata?> DoGetMetadataJsonAsync(string path,
             CancellationToken? cancellationToken = null)
         {
             var fullPath = Path.Combine(StorageOptions.StoragePath, path);
@@ -47,19 +48,26 @@ namespace Sitko.Core.Storage.FileSystem
             var metaDataInfo = new FileInfo(metaDataPath);
             if (metaDataInfo.Exists)
             {
-                return await File.ReadAllTextAsync(metaDataPath, cancellationToken ?? CancellationToken.None);
+                var json = await File.ReadAllTextAsync(metaDataPath, cancellationToken ?? CancellationToken.None);
+                if (!string.IsNullOrEmpty(json))
+                {
+                    return JsonSerializer.Deserialize<StorageItemMetadata>(json);
+                }
             }
 
             return null;
         }
 
-        protected override async Task DoSaveMetadataAsync(StorageItem storageItem, string? metadata = null,
+        protected override async Task DoSaveMetadataAsync(StorageItem storageItem, StorageItemMetadata? metadata = null,
             CancellationToken? cancellationToken = null)
         {
-            var fullPath = Path.Combine(StorageOptions.StoragePath, storageItem.FilePath);
-            await using var metaDataStream = File.Create(GetMetaDataPath(fullPath));
-            await metaDataStream.WriteAsync(Encoding.UTF8.GetBytes(metadata),
-                cancellationToken ?? CancellationToken.None);
+            if (metadata is not null)
+            {
+                var fullPath = Path.Combine(StorageOptions.StoragePath, storageItem.FilePath);
+                await using var metaDataStream = File.Create(GetMetaDataPath(fullPath));
+                await metaDataStream.WriteAsync(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(metadata)),
+                    cancellationToken ?? CancellationToken.None);
+            }
         }
     }
 
