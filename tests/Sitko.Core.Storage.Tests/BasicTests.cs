@@ -127,6 +127,12 @@ namespace Sitko.Core.Storage.Tests
 
             Assert.NotNull(uploaded);
 
+            await CheckFoldersContent(storage, uploaded, metaData);
+        }
+
+        protected static async Task CheckFoldersContent(IStorage<TSettings> storage, StorageItem uploaded,
+            FileMetaData? metaData)
+        {
             var uploadDirectoryContent = await storage.GetDirectoryContentsAsync("upload");
             Assert.NotEmpty(uploadDirectoryContent);
             Assert.Single(uploadDirectoryContent);
@@ -152,11 +158,14 @@ namespace Sitko.Core.Storage.Tests
             if (fileNode.StorageItem != null)
             {
                 Assert.Equal(uploaded.FilePath, fileNode.FullPath);
-                Assert.Equal(fileName, fileNode.Name);
+                Assert.Equal(uploaded.FileName, fileNode.Name);
 
-                var itemMetaData = fileNode.StorageItem.GetMetadata<FileMetaData>();
-                Assert.NotNull(itemMetaData);
-                Assert.Equal(metaData.Id, itemMetaData.Id);
+                if (metaData is not null)
+                {
+                    var itemMetaData = fileNode.StorageItem.GetMetadata<FileMetaData>();
+                    Assert.NotNull(itemMetaData);
+                    Assert.Equal(metaData.Id, itemMetaData.Id);
+                }
             }
         }
 

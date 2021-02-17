@@ -46,8 +46,8 @@ namespace Sitko.Core.Storage.Metadata.Postgres
         protected override async Task DoDeleteAllMetadataAsync(CancellationToken? cancellationToken)
         {
             await using var dbContext = GetDbContext();
-            await dbContext.Database.ExecuteSqlInterpolatedAsync(
-                $"DELETE FROM \"StorageItemRecords\" WHERE \"Storage\" = '{StorageOptions.Name}'",
+            await dbContext.Database.ExecuteSqlRawAsync(
+                $"DELETE FROM \"StorageItemRecords\" WHERE \"Storage\" = '{StorageOptions.Name}';",
                 cancellationToken ?? CancellationToken.None);
         }
 

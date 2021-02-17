@@ -233,7 +233,7 @@ namespace Sitko.Core.Storage
             if (_metadataProvider != null)
             {
                 var storageItems = await GetAllItemsAsync(path, cancellationToken);
-                await _metadataProvider.RefreshDirectoryContentsAsync(path, storageItems, cancellationToken);
+                await _metadataProvider.RefreshDirectoryContentsAsync(storageItems, cancellationToken);
                 return await _metadataProvider.GetDirectoryContentAsync(path, cancellationToken);
             }
 

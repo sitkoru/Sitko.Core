@@ -62,11 +62,13 @@ namespace Sitko.Core.Storage.Metadata
         protected abstract Task<IEnumerable<StorageNode>> DoGetDirectoryContentsAsync(string path,
             CancellationToken? cancellationToken = null);
 
-        Task IStorageMetadataProvider.RefreshDirectoryContentsAsync(string path,
-            IEnumerable<StorageItemInfo> storageItems,
+        async Task IStorageMetadataProvider.RefreshDirectoryContentsAsync(IEnumerable<StorageItemInfo> storageItems,
             CancellationToken? cancellationToken)
         {
-            return Task.CompletedTask;
+            foreach (var storageItem in storageItems)
+            {
+                await DoSaveMetadataAsync(new StorageItem(storageItem, StorageOptions.Prefix));
+            }
         }
 
         Task<StorageItemMetadata?> IStorageMetadataProvider.GetMetadataAsync(string path,
