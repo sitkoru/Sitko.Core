@@ -1,13 +1,12 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Npgsql;
 using Sitko.Core.Storage.S3;
 using Sitko.Core.Xunit;
 
 namespace Sitko.Core.Storage.Metadata.Postgres.Tests
 {
-    public class BaseStorageTestScope : BaseTestScope
+    public class BasePostgresStorageTestScope : BaseTestScope
     {
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
@@ -15,19 +14,44 @@ namespace Sitko.Core.Storage.Metadata.Postgres.Tests
                 .AddModule<S3StorageModule<TestS3StorageSettings>, TestS3StorageSettings>(
                     (configuration, _, moduleConfig) =>
                     {
-                        moduleConfig.PublicUri = new Uri(configuration["MINIO_SERVER_URI"] + "/" + name.ToLowerInvariant());
+                        moduleConfig.PublicUri =
+                            new Uri(configuration["MINIO_SERVER_URI"] + "/" + name.ToLowerInvariant());
                         moduleConfig.Server = new Uri(configuration["MINIO_SERVER_URI"]);
                         moduleConfig.Bucket = name.ToLowerInvariant();
                         moduleConfig.Prefix = "test";
                         moduleConfig.AccessKey = configuration["MINIO_ACCESS_KEY"];
                         moduleConfig.SecretKey = configuration["MINIO_SECRET_KEY"];
-                        ConfigureStorageModule(name, configuration, moduleConfig);
-                    });
-        }
+                        moduleConfig
+                            .EnableMetadata<PostgresStorageMetadataProvider<TestS3StorageSettings>,
+                                PostgresStorageMetadataProviderOptions>(options =>
+                            {
+                                var builder = new NpgsqlConnectionStringBuilder();
+                                if (!string.IsNullOrEmpty(configuration["POSTGRES_HOST"]))
+                                {
+                                    builder.Host = configuration["POSTGRES_HOST"];
+                                }
 
-        protected virtual void ConfigureStorageModule(string name, IConfiguration configuration,
-            TestS3StorageSettings moduleConfig)
-        {
+                                if (int.TryParse(configuration["POSTGRES_PORT"], out var parsedPort))
+                                {
+                                    builder.Port = parsedPort;
+                                }
+
+                                if (!string.IsNullOrEmpty(configuration["POSTGRES_USERNAME"]))
+                                {
+                                    builder.Username = configuration["POSTGRES_USERNAME"];
+                                }
+
+                                if (!string.IsNullOrEmpty(configuration["POSTGRES_PASSWORD"]))
+                                {
+                                    builder.Password = configuration["POSTGRES_PASSWORD"];
+                                }
+
+                                builder.Database = name;
+                                builder.SearchPath = "storage,public";
+                                options.ConnectionString = builder.ConnectionString;
+                                options.Schema = "storage";
+                            });
+                    });
         }
 
         public override async ValueTask DisposeAsync()
@@ -35,43 +59,6 @@ namespace Sitko.Core.Storage.Metadata.Postgres.Tests
             var storage = Get<IStorage<TestS3StorageSettings>>();
             await storage.DeleteAllAsync();
             await base.DisposeAsync();
-        }
-    }
-
-    public class BasePostgresStorageTestScope : BaseStorageTestScope
-    {
-        protected override void ConfigureStorageModule(string name, IConfiguration configuration,
-            TestS3StorageSettings moduleConfig)
-        {
-            base.ConfigureStorageModule(name, configuration, moduleConfig);
-            moduleConfig
-                .EnableMetadata<PostgresStorageMetadataProvider<TestS3StorageSettings>,
-                    PostgresStorageMetadataProviderOptions>(options =>
-                {
-                    var builder = new NpgsqlConnectionStringBuilder();
-                    if (!string.IsNullOrEmpty(configuration["POSTGRES_HOST"]))
-                    {
-                        builder.Host = configuration["POSTGRES_HOST"];
-                    }
-
-                    if (int.TryParse(configuration["POSTGRES_PORT"], out var parsedPort))
-                    {
-                        builder.Port = parsedPort;
-                    }
-
-                    if (!string.IsNullOrEmpty(configuration["POSTGRES_USERNAME"]))
-                    {
-                        builder.Username = configuration["POSTGRES_USERNAME"];
-                    }
-
-                    if (!string.IsNullOrEmpty(configuration["POSTGRES_PASSWORD"]))
-                    {
-                        builder.Password = configuration["POSTGRES_PASSWORD"];
-                    }
-
-                    builder.Database = name;
-                    options.ConnectionString = builder.ConnectionString;
-                });
         }
     }
 }

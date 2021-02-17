@@ -21,7 +21,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
 
         private StorageDbContext GetDbContext()
         {
-            return new(Options.ConnectionString);
+            return new(Options.ConnectionString, Options.Schema);
         }
 
         private Task<StorageItemRecord?> GetItemRecordAsync(StorageDbContext dbContext, string filePath,
@@ -128,5 +128,6 @@ namespace Sitko.Core.Storage.Metadata.Postgres
     public class PostgresStorageMetadataProviderOptions : StorageMetadataProviderOptions
     {
         public string ConnectionString { get; set; }
+        public string Schema { get; set; } = "public";
     }
 }
