@@ -128,7 +128,6 @@ namespace Sitko.Core.Pdf
                 {
                     if (_browser is null)
                     {
-                        await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultRevision);
                         _browser = await Puppeteer.LaunchAsync(new LaunchOptions
                         {
                             Headless = true,
