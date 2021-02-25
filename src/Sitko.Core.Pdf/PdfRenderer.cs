@@ -5,10 +5,11 @@ using PuppeteerSharp;
 
 namespace Sitko.Core.Pdf
 {
-    internal class PdfRenderer : IPdfRenderer
+    internal class PdfRenderer : IPdfRenderer, IAsyncDisposable
     {
         private readonly PdfRendererModuleConfig _config;
         private readonly ILogger<PdfRenderer> _logger;
+        private Browser? _browser;
 
         public PdfRenderer(PdfRendererModuleConfig config, ILogger<PdfRenderer> logger)
         {
@@ -34,9 +35,22 @@ namespace Sitko.Core.Pdf
 
         private async Task<Page> GetPageByUrl(string url, TimeSpan? delay = null)
         {
-            await using var browser = await GetBrowserAsync();
+            var browser = await GetBrowserAsync();
             var page = await browser.NewPageAsync();
             await page.GoToAsync(url);
+            if (delay != null)
+            {
+                await Task.Delay(delay.Value);
+            }
+
+            return page;
+        }
+
+        private async Task<Page> GetPageWithHtml(string html, TimeSpan? delay = null)
+        {
+            var browser = await GetBrowserAsync();
+            var page = await browser.NewPageAsync();
+            await page.SetContentAsync(html);
             if (delay != null)
             {
                 await Task.Delay(delay.Value);
@@ -93,18 +107,6 @@ namespace Sitko.Core.Pdf
             }
         }
 
-        private async Task<Page> GetPageWithHtml(string html, TimeSpan? delay = null)
-        {
-            await using var browser = await GetBrowserAsync();
-            await using var page = await browser.NewPageAsync();
-            await page.SetContentAsync(html);
-            if (delay != null)
-            {
-                await Task.Delay(delay.Value);
-            }
-
-            return page;
-        }
 
         private PdfOptions GetDefaultOptions()
         {
@@ -118,11 +120,26 @@ namespace Sitko.Core.Pdf
 
         private async Task<Browser> GetBrowserAsync()
         {
-            await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultRevision);
-            return await Puppeteer.LaunchAsync(new LaunchOptions
+            if (_browser is null)
             {
-                Headless = true, Args = new[] {"--no-sandbox"}, IgnoreHTTPSErrors = _config.IgnoreHTTPSErrors
-            });
+                await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultRevision);
+                _browser = await Puppeteer.LaunchAsync(new LaunchOptions
+                {
+                    Headless = true, Args = new[] {"--no-sandbox"}, IgnoreHTTPSErrors = _config.IgnoreHTTPSErrors
+                });
+            }
+
+            return _browser;
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            if (_browser is not null)
+            {
+                return _browser.DisposeAsync();
+            }
+
+            return new ValueTask();
         }
     }
 }
