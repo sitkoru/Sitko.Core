@@ -132,7 +132,8 @@ namespace Sitko.Core.Pdf
                         {
                             Headless = true,
                             Args = new[] {"--no-sandbox"},
-                            IgnoreHTTPSErrors = _config.IgnoreHTTPSErrors
+                            IgnoreHTTPSErrors = _config.IgnoreHTTPSErrors,
+                            DefaultViewport = _config.ViewPortOptions
                         });
                     }
                 }
