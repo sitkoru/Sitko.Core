@@ -8,7 +8,7 @@ using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage
 {
-    internal class StorageItemDownloadInfo
+    internal struct StorageItemDownloadInfo
     {
         public Func<Stream> GetStream { get; }
 
