@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.Cache
 {

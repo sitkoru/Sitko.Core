@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.Cache
 {

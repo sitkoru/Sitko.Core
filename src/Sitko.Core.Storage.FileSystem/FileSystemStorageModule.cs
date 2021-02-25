@@ -12,7 +12,7 @@ namespace Sitko.Core.Storage.FileSystem
         {
             if (config.ConfigureMetadata is null)
             {
-                config.EnableMetadata<FileSystemStorageMetadataProvider<T>, FileSystemStorageMetadataProviderOptions>();
+                config.UseMetadata<FileSystemStorageMetadataProvider<T>, FileSystemStorageMetadataProviderOptions>();
             }
         }
 

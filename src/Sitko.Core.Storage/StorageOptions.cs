@@ -31,7 +31,7 @@ namespace Sitko.Core.Storage
             return this;
         }
 
-        public StorageOptions EnableMetadata<TMetadataProvider, TMetadataProviderOptions>(
+        public StorageOptions UseMetadata<TMetadataProvider, TMetadataProviderOptions>(
             Action<TMetadataProviderOptions>? configure = null)
             where TMetadataProvider : class, IStorageMetadataProvider<TMetadataProviderOptions>
             where TMetadataProviderOptions : StorageMetadataProviderOptions

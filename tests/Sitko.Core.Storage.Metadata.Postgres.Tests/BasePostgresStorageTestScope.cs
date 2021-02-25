@@ -22,7 +22,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres.Tests
                         moduleConfig.AccessKey = configuration["MINIO_ACCESS_KEY"];
                         moduleConfig.SecretKey = configuration["MINIO_SECRET_KEY"];
                         moduleConfig
-                            .EnableMetadata<PostgresStorageMetadataProvider<TestS3StorageSettings>,
+                            .UseMetadata<PostgresStorageMetadataProvider<TestS3StorageSettings>,
                                 PostgresStorageMetadataProviderOptions>(options =>
                             {
                                 var builder = new NpgsqlConnectionStringBuilder();

@@ -1,13 +1,14 @@
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using Sitko.Core.Storage.Metadata;
 
 [assembly: InternalsVisibleTo("Sitko.Core.Storage.S3")]
 [assembly: InternalsVisibleTo("Sitko.Core.Storage.FileSystem")]
 
 namespace Sitko.Core.Storage
 {
-    internal class StorageItemDownloadInfo
+    internal struct StorageItemDownloadInfo
     {
         public Func<Stream> GetStream { get; }
 
@@ -21,25 +22,12 @@ namespace Sitko.Core.Storage
             FileSize = fileSize;
             Date = date;
             GetStream = getStream;
+            Metadata = null;
         }
 
         public void SetMetadata(StorageItemMetadata metadata)
         {
             Metadata = metadata;
-        }
-    }
-
-    internal struct StorageItemInfo
-    {
-        public string Path { get; }
-        public long FileSize { get; }
-        public DateTimeOffset Date { get; }
-
-        public StorageItemInfo(string path, long fileSize, DateTimeOffset date)
-        {
-            Path = path;
-            FileSize = fileSize;
-            Date = date;
         }
     }
 }

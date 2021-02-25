@@ -14,7 +14,7 @@ namespace Sitko.Core.Storage.S3
         {
             if (config.ConfigureMetadata is null)
             {
-                config.EnableMetadata<S3StorageMetadataProvider<T>, S3StorageMetadataProviderOptions>();
+                config.UseMetadata<S3StorageMetadataProvider<T>, S3StorageMetadataProviderOptions>();
             }
         }
 

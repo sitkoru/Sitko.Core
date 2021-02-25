@@ -120,8 +120,8 @@ namespace Sitko.Core.Storage
             var info = await GetStorageItemInfoAsync(path, cancellationToken);
             if (info != null)
             {
-                var item = new StorageItem(path, info, Options.Prefix);
-                return new DownloadResult(item, info.GetStream());
+                var item = new StorageItem(path, info.Value, Options.Prefix);
+                return new DownloadResult(item, info.Value.GetStream());
             }
 
             return null;
@@ -176,7 +176,7 @@ namespace Sitko.Core.Storage
                     var metadata = await _metadataProvider.GetMetadataAsync(path, cancellationToken);
                     if (metadata is not null)
                     {
-                        result.SetMetadata(metadata);
+                        result.Value.SetMetadata(metadata);
                     }
                 }
             }
@@ -190,7 +190,7 @@ namespace Sitko.Core.Storage
             var result = await GetStorageItemInfoAsync(path, cancellationToken);
 
             return result != null
-                ? new StorageItem(path, result.Date, result.FileSize, Options.Prefix, result.Metadata)
+                ? new StorageItem(path, result.Value.Date, result.Value.FileSize, Options.Prefix, result.Value.Metadata)
                 : null;
         }
 
@@ -248,7 +248,7 @@ namespace Sitko.Core.Storage
 
         public Uri PublicUri(string filePath)
         {
-            return new Uri($"{Options.PublicUri}/{filePath}");
+            return new(Options.PublicUri!, filePath);
         }
 
         internal abstract Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
