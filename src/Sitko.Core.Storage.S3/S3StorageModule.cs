@@ -1,5 +1,4 @@
 using System;
-using Amazon;
 using Amazon.S3;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,17 +19,19 @@ namespace Sitko.Core.Storage.S3
             base.ConfigureServices(services, configuration, environment);
             if (Config.Server != null)
             {
+                var config = new AmazonS3Config
+                {
+                    RegionEndpoint = Config.Region, ServiceURL = Config.Server.ToString(), ForcePathStyle = true
+                };
+                services.AddSingleton(_ =>
+                    new S3ClientProvider<T>(new AmazonS3Client(Config.AccessKey, Config.SecretKey, config)));
+
                 services.AddHealthChecks().AddS3(options =>
                 {
                     options.AccessKey = Config.AccessKey;
                     options.BucketName = Config.Bucket;
                     options.SecretKey = Config.SecretKey;
-                    options.S3Config = new AmazonS3Config
-                    {
-                        RegionEndpoint = RegionEndpoint.USEast1,
-                        ServiceURL = Config.Server.ToString(),
-                        ForcePathStyle = true
-                    };
+                    options.S3Config = config;
                 });
             }
         }

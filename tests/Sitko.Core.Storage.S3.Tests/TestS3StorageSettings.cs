@@ -1,4 +1,5 @@
 using System;
+using Amazon;
 
 namespace Sitko.Core.Storage.S3.Tests
 {
@@ -8,5 +9,6 @@ namespace Sitko.Core.Storage.S3.Tests
         public string Bucket { get; set; }
         public string AccessKey { get; set; }
         public string SecretKey { get; set; }
+        public RegionEndpoint Region { get; } = RegionEndpoint.USEast1;
     }
 }

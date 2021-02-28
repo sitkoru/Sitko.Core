@@ -1,4 +1,5 @@
 using System;
+using Amazon;
 
 namespace Sitko.Core.Storage.S3
 {
@@ -8,5 +9,6 @@ namespace Sitko.Core.Storage.S3
         string Bucket { get; }
         string AccessKey { get; }
         string SecretKey { get; }
+        RegionEndpoint Region { get; }
     }
 }
