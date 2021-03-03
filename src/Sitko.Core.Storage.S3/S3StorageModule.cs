@@ -17,21 +17,18 @@ namespace Sitko.Core.Storage.S3
             IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
+            services.AddSingleton(_ => new S3ClientProvider<T>(Config));
             if (Config.Server != null)
             {
-                var config = new AmazonS3Config
-                {
-                    RegionEndpoint = Config.Region, ServiceURL = Config.Server.ToString(), ForcePathStyle = true
-                };
-                services.AddSingleton(_ =>
-                    new S3ClientProvider<T>(new AmazonS3Client(Config.AccessKey, Config.SecretKey, config)));
-
                 services.AddHealthChecks().AddS3(options =>
                 {
                     options.AccessKey = Config.AccessKey;
                     options.BucketName = Config.Bucket;
                     options.SecretKey = Config.SecretKey;
-                    options.S3Config = config;
+                    options.S3Config = new AmazonS3Config
+                    {
+                        RegionEndpoint = Config.Region, ServiceURL = Config.Server.ToString(), ForcePathStyle = true
+                    };
                 });
             }
         }
