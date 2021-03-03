@@ -22,23 +22,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Db.InMemory\Sitko.Core.Db.InMemory.csproj"/>
-    <ProjectReference Include="..\Sitko.Core.Db.Postgres\Sitko.Core.Db.Postgres.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.Db.InMemory\Sitko.Core.Db.InMemory.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Db.Postgres\Sitko.Core.Db.Postgres.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoBogus" Version="2.12.0"/>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
-    <PackageReference Include="Serilog.Sinks.XUnit" Version="2.0.4"/>
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" PrivateAssets="None"/>
-    <PackageReference Include="xunit" Version="2.4.1"/>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" PrivateAssets="None"/>
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0"/>
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="5.0.0"/>
+    <PackageReference Include="AutoBogus" Version="2.12.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Serilog.Sinks.XUnit" Version="2.0.4" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" PrivateAssets="None" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md"/>
-    <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\"/>
+    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
+    <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>

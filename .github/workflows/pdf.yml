@@ -7,18 +7,26 @@ on:
             - "src/Sitko.Core.App/**"
             - "src/Sitko.Core.Pdf/**"
             - "tests/Sitko.Core.Pdf.Tests/**"
+            - ".github/workflows/pdf.yml"
     pull_request:
         paths:
             - "src/Sitko.Core.App/**"
             - "src/Sitko.Core.Pdf/**"
             - "tests/Sitko.Core.Pdf.Tests/**"
+            - ".github/workflows/pdf.yml"
 
 jobs:
     build:
         runs-on: ubuntu-latest
         container: ghcr.io/sitkoru/actions-container
+        env:
+            PUPPETEER_EXECUTABLE_PATH: "/usr/bin/google-chrome-stable"
         steps:
             -   uses: actions/checkout@v2
+            -   name: Install chrome
+                run: |
+                    apt-get update
+                    apt-get install -y google-chrome-stable
             -   uses: actions/setup-dotnet@v1
                 with:
                     dotnet-version: '3.1.x'

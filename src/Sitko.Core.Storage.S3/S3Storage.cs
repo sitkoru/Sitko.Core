@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Amazon;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
@@ -15,21 +14,16 @@ using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.S3
 {
-    public sealed class S3Storage<T> : Storage<T> where T : StorageOptions, IS3StorageOptions
+    public sealed class S3Storage<T> : Storage<T> where T : StorageOptions, IS3StorageOptions, new()
     {
-        private readonly AmazonS3Client _client;
+        private readonly AmazonS3Client _s3Client;
 
-        public S3Storage(T options, ILogger<S3Storage<T>> logger, IStorageCache? cache = null,
+        public S3Storage(T options, S3ClientProvider<T> s3ClientProvider, ILogger<S3Storage<T>> logger,
+            IStorageCache? cache = null,
             IStorageMetadataProvider? metadataProvider = null) : base(options, logger,
             cache, metadataProvider)
         {
-            var config = new AmazonS3Config
-            {
-                RegionEndpoint = RegionEndpoint.USEast1,
-                ServiceURL = Options.Server.ToString(),
-                ForcePathStyle = true
-            };
-            _client = new AmazonS3Client(Options.AccessKey, Options.SecretKey, config);
+            _s3Client = s3ClientProvider.S3Client;
         }
 
         private async Task CreateBucketAsync(string bucketName, CancellationToken? cancellationToken = null)
@@ -41,7 +35,7 @@ namespace Sitko.Core.Storage.S3
                 {
                     var putBucketRequest = new PutBucketRequest {BucketName = bucketName, UseClientRegion = true};
 
-                    await _client.PutBucketAsync(putBucketRequest, cancellationToken ?? CancellationToken.None);
+                    await _s3Client.PutBucketAsync(putBucketRequest, cancellationToken ?? CancellationToken.None);
                 }
             }
             catch (Exception ex)
@@ -53,7 +47,7 @@ namespace Sitko.Core.Storage.S3
 
         private Task<bool> IsBucketExistsAsync(string bucketName)
         {
-            return AmazonS3Util.DoesS3BucketExistV2Async(_client, bucketName);
+            return AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, bucketName);
         }
 
         internal Task<bool> DoSaveInternalAsync(string path, Stream file,
@@ -66,7 +60,7 @@ namespace Sitko.Core.Storage.S3
             CancellationToken? cancellationToken = null)
         {
             await CreateBucketAsync(Options.Bucket, cancellationToken);
-            using var fileTransferUtility = new TransferUtility(_client);
+            using var fileTransferUtility = new TransferUtility(_s3Client);
             try
             {
                 var request = new TransferUtilityUploadRequest
@@ -86,12 +80,12 @@ namespace Sitko.Core.Storage.S3
 
         internal Task<bool> IsObjectExistsAsync(string filePath, CancellationToken? cancellationToken = null)
         {
-            return _client.IsObjectExistsAsync(Options.Bucket, filePath, cancellationToken);
+            return _s3Client.IsObjectExistsAsync(Options.Bucket, filePath, cancellationToken);
         }
 
         internal Task DeleteObjectAsync(string filePath, CancellationToken? cancellationToken = null)
         {
-            return _client.DeleteObjectAsync(Options.Bucket, filePath,
+            return _s3Client.DeleteObjectAsync(Options.Bucket, filePath,
                 cancellationToken ?? CancellationToken.None);
         }
 
@@ -121,7 +115,7 @@ namespace Sitko.Core.Storage.S3
             CancellationToken? cancellationToken = null)
         {
             var request = new GetObjectMetadataRequest {BucketName = Options.Bucket, Key = item.FilePath};
-            return _client.GetObjectMetadataAsync(request, cancellationToken ?? CancellationToken.None);
+            return _s3Client.GetObjectMetadataAsync(request, cancellationToken ?? CancellationToken.None);
         }
 
         protected override async Task<bool> DoIsFileExistsAsync(StorageItem item,
@@ -156,14 +150,14 @@ namespace Sitko.Core.Storage.S3
                 {
                     try
                     {
-                        await AmazonS3Util.DeleteS3BucketWithObjectsAsync(_client, Options.Bucket,
+                        await AmazonS3Util.DeleteS3BucketWithObjectsAsync(_s3Client, Options.Bucket,
                             cancellationToken ?? CancellationToken.None);
                     }
                     catch (AmazonS3Exception ex) when (ex.Message.Contains(
                         "A header you provided implies functionality that is not implemented"))
                     {
                         await DeleteAllObjectsInBucket(cancellationToken);
-                        await _client.DeleteBucketAsync(Options.Bucket);
+                        await _s3Client.DeleteBucketAsync(Options.Bucket);
                     }
                 }
                 else
@@ -184,7 +178,7 @@ namespace Sitko.Core.Storage.S3
                     Objects = chunk.Select(item => new KeyVersion {Key = GetPathWithPrefix(item.Path)})
                         .ToList()
                 };
-                await _client.DeleteObjectsAsync(request, cancellationToken ?? CancellationToken.None);
+                await _s3Client.DeleteObjectsAsync(request, cancellationToken ?? CancellationToken.None);
             }
         }
 
@@ -199,7 +193,7 @@ namespace Sitko.Core.Storage.S3
         internal Task<GetObjectResponse?> DownloadFileAsync(string filePath,
             CancellationToken? cancellationToken = null)
         {
-            return _client.DownloadFileAsync(Options.Bucket, filePath, Logger,
+            return _s3Client.DownloadFileAsync(Options.Bucket, filePath, Logger,
                 cancellationToken ?? CancellationToken.None);
         }
 
@@ -227,7 +221,7 @@ namespace Sitko.Core.Storage.S3
                 do
                 {
                     Logger.LogDebug("Get objects list from S3. Current objects count: {Count}", items.Count);
-                    response = await _client.ListObjectsV2Async(request, cancellationToken ?? CancellationToken.None);
+                    response = await _s3Client.ListObjectsV2Async(request, cancellationToken ?? CancellationToken.None);
                     items.AddRange(response.S3Objects.Select(s3Object =>
                         new StorageItemInfo(s3Object.Key, s3Object.Size, s3Object.LastModified)));
 
@@ -250,7 +244,7 @@ namespace Sitko.Core.Storage.S3
 
         public override ValueTask DisposeAsync()
         {
-            _client.Dispose();
+            _s3Client.Dispose();
             return base.DisposeAsync();
         }
     }

@@ -11,7 +11,7 @@ namespace Sitko.Core.Storage.S3
 {
     internal class S3StorageMetadataProvider<TS3Options> : EmbedStorageMetadataProvider<S3Storage<TS3Options>,
         TS3Options, S3StorageMetadataProviderOptions>
-        where TS3Options : StorageOptions, IS3StorageOptions
+        where TS3Options : StorageOptions, IS3StorageOptions, new()
     {
         public S3StorageMetadataProvider(IServiceProvider serviceProvider, S3StorageMetadataProviderOptions options,
             TS3Options storageOptions,
