@@ -160,8 +160,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Storage.Metadata
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Storage.Metadata.Postgres.Tests", "tests\Sitko.Core.Storage.Metadata.Postgres.Tests\Sitko.Core.Storage.Metadata.Postgres.Tests.csproj", "{5DD6BB60-5F5B-4332-BA46-D13CD48EE998}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Storage.ImgProxy", "src\Sitko.Core.Storage.ImgProxy\Sitko.Core.Storage.ImgProxy.csproj", "{B5DD3A0A-6BB9-4FCB-9798-A6EA3DBD16DB}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -931,18 +929,6 @@ Global
 		{5DD6BB60-5F5B-4332-BA46-D13CD48EE998}.Release|x64.Build.0 = Release|Any CPU
 		{5DD6BB60-5F5B-4332-BA46-D13CD48EE998}.Release|x86.ActiveCfg = Release|Any CPU
 		{5DD6BB60-5F5B-4332-BA46-D13CD48EE998}.Release|x86.Build.0 = Release|Any CPU
-		{B5DD3A0A-6BB9-4FCB-9798-A6EA3DBD16DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B5DD3A0A-6BB9-4FCB-9798-A6EA3DBD16DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B5DD3A0A-6BB9-4FCB-9798-A6EA3DBD16DB}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{B5DD3A0A-6BB9-4FCB-9798-A6EA3DBD16DB}.Debug|x64.Build.0 = Debug|Any CPU
-		{B5DD3A0A-6BB9-4FCB-9798-A6EA3DBD16DB}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{B5DD3A0A-6BB9-4FCB-9798-A6EA3DBD16DB}.Debug|x86.Build.0 = Debug|Any CPU
-		{B5DD3A0A-6BB9-4FCB-9798-A6EA3DBD16DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B5DD3A0A-6BB9-4FCB-9798-A6EA3DBD16DB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B5DD3A0A-6BB9-4FCB-9798-A6EA3DBD16DB}.Release|x64.ActiveCfg = Release|Any CPU
-		{B5DD3A0A-6BB9-4FCB-9798-A6EA3DBD16DB}.Release|x64.Build.0 = Release|Any CPU
-		{B5DD3A0A-6BB9-4FCB-9798-A6EA3DBD16DB}.Release|x86.ActiveCfg = Release|Any CPU
-		{B5DD3A0A-6BB9-4FCB-9798-A6EA3DBD16DB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6677865F-C349-4D25-9E19-3DEC43E92DD5} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
@@ -1009,6 +995,5 @@ Global
 		{E494675D-64F1-4789-B406-EE9707215D4C} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 		{63F0BDD3-F970-476D-8E1A-DCF74B22BE54} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 		{5DD6BB60-5F5B-4332-BA46-D13CD48EE998} = {10C46F0D-1B13-447E-AD22-F01DDB5A79FD}
-		{B5DD3A0A-6BB9-4FCB-9798-A6EA3DBD16DB} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 	EndGlobalSection
 EndGlobal
