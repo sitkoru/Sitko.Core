@@ -77,21 +77,21 @@ namespace Sitko.Core.Storage.Cache
                         }
 
                         if (Options.MaxFileSizeToStore > 0 &&
-                            result.Value.FileSize > Options.MaxFileSizeToStore)
+                            result.FileSize > Options.MaxFileSizeToStore)
                         {
                             Logger.LogWarning(
                                 "File {Key} exceed maximum cache file size. File size: {FleSize}. Maximum size: {MaximumSize}",
-                                key, result.Value.FileSize,
+                                key, result.FileSize,
                                 Helpers.HumanSize(Options.MaxFileSizeToStore));
                             return result;
                         }
 
-                        var stream = result.Value.GetStream();
+                        var stream = result.GetStream();
 
                         await using (stream)
                         {
                             Logger.LogDebug("Download file {Key}", key);
-                            cacheEntry = await GetEntryAsync(result.Value, stream, cancellationToken);
+                            cacheEntry = await GetEntryAsync(result, stream, cancellationToken);
 
                             var options = new MemoryCacheEntryOptions {SlidingExpiration = Options.Ttl};
                             options.RegisterPostEvictionCallback((_, value, _, _) =>
@@ -105,7 +105,7 @@ namespace Sitko.Core.Storage.Cache
                             });
                             if (Options.MaxCacheSize > 0)
                             {
-                                options.Size = result.Value.FileSize;
+                                options.Size = result.FileSize;
                             }
 
                             Logger.LogDebug("Add file {Key} to cache", key);
