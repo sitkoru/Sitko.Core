@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using PuppeteerSharp;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Pdf
@@ -23,7 +24,6 @@ namespace Sitko.Core.Pdf
     public class PdfRendererModuleConfig
     {
         public bool IgnoreHTTPSErrors { get; set; } = false;
-        public int Width { get; set; } = 1920;
-        public int Height { get; set; } = 1080;
+        public ViewPortOptions ViewPortOptions { get; set; } = ViewPortOptions.Default;
     }
 }

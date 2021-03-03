@@ -1,14 +1,17 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Nito.AsyncEx;
 using PuppeteerSharp;
 
 namespace Sitko.Core.Pdf
 {
-    internal class PdfRenderer : IPdfRenderer
+    internal class PdfRenderer : IPdfRenderer, IAsyncDisposable
     {
         private readonly PdfRendererModuleConfig _config;
         private readonly ILogger<PdfRenderer> _logger;
+        private Browser? _browser;
+        private readonly AsyncLock _lock = new();
 
         public PdfRenderer(PdfRendererModuleConfig config, ILogger<PdfRenderer> logger)
         {
@@ -16,54 +19,137 @@ namespace Sitko.Core.Pdf
             _logger = logger;
         }
 
-        public async Task<byte[]> GetPdfByUrlAsync(string url, PdfOptions? options = null)
+        public async Task<byte[]> GetPdfByUrlAsync(string url, PdfOptions? options = null, TimeSpan? delay = null)
         {
             try
             {
-                await using var browser = await GetBrowserAsync();
-                var page = await browser.NewPageAsync();
-                await page.GoToAsync(url);
+                await using var page = await GetPageByUrl(url, delay);
                 options ??= GetDefaultOptions();
                 var pdf = await page.PdfDataAsync(options);
                 return pdf;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error while generating pdf from url: {errorText}", ex.ToString());
+                _logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
                 throw new Exception(ex.Message, ex);
             }
         }
 
-        public PdfOptions GetDefaultOptions()
+        private async Task<Page> GetPageByUrl(string url, TimeSpan? delay = null)
         {
-            return new PdfOptions {PrintBackground = true};
+            var browser = await GetBrowserAsync();
+            var page = await browser.NewPageAsync();
+            await page.GoToAsync(url);
+            if (delay != null)
+            {
+                await Task.Delay(delay.Value);
+            }
+
+            return page;
         }
 
-        public async Task<byte[]> GetPdfByHtmlAsync(string html, PdfOptions? options = null)
+        private async Task<Page> GetPageWithHtml(string html, TimeSpan? delay = null)
+        {
+            var browser = await GetBrowserAsync();
+            var page = await browser.NewPageAsync();
+            await page.SetContentAsync(html);
+            if (delay != null)
+            {
+                await Task.Delay(delay.Value);
+            }
+
+            return page;
+        }
+
+        public async Task<byte[]> GetPdfByHtmlAsync(string html, PdfOptions? options = null, TimeSpan? delay = null)
         {
             try
             {
-                await using var browser = await GetBrowserAsync();
-                await using var page = await browser.NewPageAsync();
-                await page.SetContentAsync(html);
+                await using var page = await GetPageWithHtml(html, delay);
                 options ??= GetDefaultOptions();
                 var pdf = await page.PdfDataAsync(options);
                 return pdf;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error while generating pdf from html: {errorText}", ex.ToString());
+                _logger.LogError(ex, "Error while generating pdf from html: {ErrorText}", ex.ToString());
                 throw new Exception(ex.Message, ex);
             }
+        }
+
+        public async Task<byte[]> GetScreenshotByUrlAsync(string url, ScreenshotOptions? options = null,
+            TimeSpan? delay = null)
+        {
+            try
+            {
+                await using var page = await GetPageByUrl(url, delay);
+                options ??= GetDefaultScreenshotOptions();
+                return await page.ScreenshotDataAsync(options);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
+                throw new Exception(ex.Message, ex);
+            }
+        }
+
+        public async Task<byte[]> GetScreenshotByHtmlAsync(string html, ScreenshotOptions? options = null,
+            TimeSpan? delay = null)
+        {
+            try
+            {
+                await using var page = await GetPageWithHtml(html, delay);
+                options ??= GetDefaultScreenshotOptions();
+                return await page.ScreenshotDataAsync(options);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
+                throw new Exception(ex.Message, ex);
+            }
+        }
+
+
+        private PdfOptions GetDefaultOptions()
+        {
+            return new() {PrintBackground = true};
+        }
+
+        private ScreenshotOptions GetDefaultScreenshotOptions()
+        {
+            return new() {FullPage = true, Type = ScreenshotType.Png};
         }
 
         private async Task<Browser> GetBrowserAsync()
         {
-            await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultRevision);
-            return await Puppeteer.LaunchAsync(new LaunchOptions
+            if (_browser is null)
             {
-                Headless = true, Args = new[] {"--no-sandbox"}, IgnoreHTTPSErrors = _config.IgnoreHTTPSErrors
-            });
+                using (await _lock.LockAsync())
+                {
+                    if (_browser is null)
+                    {
+                        _browser = await Puppeteer.LaunchAsync(new LaunchOptions
+                        {
+                            Headless = true,
+                            Args = new[] {"--no-sandbox"},
+                            IgnoreHTTPSErrors = _config.IgnoreHTTPSErrors,
+                            DefaultViewport = _config.ViewPortOptions
+                        });
+                    }
+                }
+            }
+
+            return _browser;
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            if (_browser is not null)
+            {
+                return _browser.DisposeAsync();
+            }
+
+            return new ValueTask();
         }
     }
 }
