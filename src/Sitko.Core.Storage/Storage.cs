@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Nito.AsyncEx;
 using Sitko.Core.Storage.Cache;
+using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage
 {
@@ -14,19 +13,20 @@ namespace Sitko.Core.Storage
     {
         protected readonly ILogger<Storage<T>> Logger;
         private readonly IStorageCache? _cache;
+        protected readonly IStorageMetadataProvider? _metadataProvider;
         protected readonly T Options;
-        private StorageNode? _tree;
-        private DateTimeOffset? _treeLastBuild;
-        private AsyncLock _treeLock = new();
 
-        protected Storage(T options, ILogger<Storage<T>> logger, IStorageCache? cache)
+        protected Storage(T options, ILogger<Storage<T>> logger, IStorageCache? cache,
+            IStorageMetadataProvider? metadataProvider)
         {
             Logger = logger;
             _cache = cache;
+            _metadataProvider = metadataProvider;
             Options = options;
         }
 
-        public async Task<StorageItem> SaveAsync(Stream file, string fileName, string path, object? metadata = null)
+        public async Task<StorageItem> SaveAsync(Stream file, string fileName, string path, object? metadata = null,
+            CancellationToken? cancellationToken = null)
         {
             string destinationPath = GetDestinationPath(fileName, path);
 
@@ -37,13 +37,14 @@ namespace Sitko.Core.Storage
                 itemMetadata.SetData(metadata);
             }
 
-            var storageItem = CreateStorageItem(destinationPath, DateTimeOffset.UtcNow, file.Length,
+            var storageItem = new StorageItem(destinationPath, DateTimeOffset.UtcNow, file.Length, Options.Prefix,
                 itemMetadata);
 
-            var result = await SaveStorageItemAsync(file, path, destinationPath, storageItem, itemMetadata);
-            if (_tree != null)
+            var result = await SaveStorageItemAsync(file, path, destinationPath, storageItem, itemMetadata,
+                cancellationToken);
+            if (_metadataProvider != null)
             {
-                _tree.AddItem(storageItem);
+                await _metadataProvider.SaveMetadataAsync(storageItem, itemMetadata, cancellationToken);
             }
 
             return result;
@@ -51,14 +52,14 @@ namespace Sitko.Core.Storage
 
 
         private async Task<StorageItem> SaveStorageItemAsync(Stream file, string path, string destinationPath,
-            StorageItem storageItem, StorageItemMetadata metadata)
+            StorageItem storageItem, StorageItemMetadata metadata, CancellationToken? cancellationToken = null)
         {
             file.Seek(0, SeekOrigin.Begin);
-            await DoSaveAsync(destinationPath, file, JsonSerializer.Serialize(metadata));
+            await DoSaveAsync(destinationPath, file, cancellationToken);
             Logger.LogInformation("File saved to {Path}", path);
             if (_cache != null && !string.IsNullOrEmpty(storageItem.FilePath))
             {
-                await _cache.RemoveItemAsync(storageItem.FilePath);
+                await _cache.RemoveItemAsync(storageItem.FilePath, cancellationToken);
             }
 
             return storageItem;
@@ -72,199 +73,173 @@ namespace Sitko.Core.Storage
                 path = Path.Combine(Options.Prefix, path);
             }
 
-            var destinationPath = PreparePath(Path.Combine(path, destinationName))!;
+            var destinationPath = Helpers.PreparePath(Path.Combine(path, destinationName))!;
             return destinationPath;
         }
 
-        private StorageItem CreateStorageItem(string path, StorageItemInfo storageItemInfo)
+        // private StorageItem CreateStorageItem(string path, StorageItemInfo storageItemInfo)
+        // {
+        //     return CreateStorageItem(path, storageItemInfo.Date,
+        //         storageItemInfo.FileSize, storageItemInfo.Metadata);
+        // }
+
+        // internal StorageItem CreateStorageItem(string destinationPath,
+        //     DateTimeOffset date,
+        //     long fileSize, StorageItemMetadata? metadata = null)
+        // {
+        //     destinationPath = Helpers.GetPathWithoutPrefix(destinationPath);
+        //     var fileName = metadata?.FileName ?? Path.GetFileName(destinationPath);
+        //     var storageItem = new StorageItem
+        //     {
+        //         Path = Helpers.PreparePath(Path.GetDirectoryName(destinationPath))!,
+        //         FileName = fileName,
+        //         LastModified = date,
+        //         FileSize = fileSize,
+        //         FilePath = destinationPath,
+        //         MetadataJson = metadata?.Data,
+        //         MimeType = MimeMapping.MimeUtility.GetMimeMapping(fileName)
+        //     };
+        //     return storageItem;
+        // }
+
+        protected abstract Task<bool> DoSaveAsync(string path, Stream file,
+            CancellationToken? cancellationToken = null);
+
+        protected abstract Task<bool> DoDeleteAsync(string filePath, CancellationToken? cancellationToken = null);
+
+        protected abstract Task<bool>
+            DoIsFileExistsAsync(StorageItem item, CancellationToken? cancellationToken = null);
+
+        protected abstract Task DoDeleteAllAsync(CancellationToken? cancellationToken = null);
+
+        internal abstract Task<StorageItemDownloadInfo?> DoGetFileAsync(string path,
+            CancellationToken? cancellationToken = null);
+
+        public async Task<DownloadResult?> DownloadAsync(string path, CancellationToken? cancellationToken = null)
         {
-            return CreateStorageItem(path, storageItemInfo.Date, storageItemInfo.FileSize, storageItemInfo.Metadata);
-        }
-
-        protected StorageItem CreateStorageItem(string destinationPath,
-            DateTimeOffset date,
-            long fileSize,
-            string? metadata)
-        {
-            return CreateStorageItem(destinationPath, date, fileSize,
-                string.IsNullOrEmpty(metadata)
-                    ? new StorageItemMetadata {FileName = Path.GetFileName(destinationPath)}
-                    : JsonSerializer.Deserialize<StorageItemMetadata>(metadata)!);
-        }
-
-
-        private StorageItem CreateStorageItem(string destinationPath,
-            DateTimeOffset date,
-            long fileSize,
-            StorageItemMetadata metadata)
-        {
-            destinationPath = GetPathWithoutPrefix(destinationPath);
-            var fileName = metadata.FileName ?? Path.GetFileName(destinationPath);
-            var storageItem = new StorageItem
-            {
-                Path = PreparePath(Path.GetDirectoryName(destinationPath))!,
-                FileName = fileName,
-                LastModified = date,
-                FileSize = fileSize,
-                FilePath = destinationPath,
-                MetadataJson = metadata.Data,
-                MimeType = MimeMapping.MimeUtility.GetMimeMapping(fileName)
-            };
-            return storageItem;
-        }
-
-        protected abstract Task<bool> DoSaveAsync(string path, Stream file, string metadata);
-        protected abstract Task<bool> DoDeleteAsync(string filePath);
-
-        protected abstract Task<bool> DoIsFileExistsAsync(StorageItem item);
-        protected abstract Task DoDeleteAllAsync();
-        internal abstract Task<StorageItemInfo?> DoGetFileAsync(string path);
-
-        public async Task<DownloadResult?> DownloadAsync(string path)
-        {
-            var info = await GetStorageItemInfoAsync(path);
+            var info = await GetStorageItemInfoAsync(path, cancellationToken);
             if (info != null)
             {
-                var item = CreateStorageItem(path, info);
+                var item = new StorageItem(path, info, Options.Prefix);
                 return new DownloadResult(item, info.GetStream());
             }
 
             return null;
         }
 
-        public async Task<bool> DeleteAsync(string filePath)
+        public async Task<bool> DeleteAsync(string filePath, CancellationToken? cancellationToken = null)
         {
             if (_cache != null)
             {
-                await _cache.RemoveItemAsync(filePath);
+                await _cache.RemoveItemAsync(filePath, cancellationToken);
             }
 
-            var result = await DoDeleteAsync(GetPathWithPrefix(filePath));
-            if (_tree != null)
+            var result = await DoDeleteAsync(GetPathWithPrefix(filePath), cancellationToken);
+            if (result && _metadataProvider != null)
             {
-                _tree.RemoveItem(filePath);
+                await _metadataProvider.DeleteMetadataAsync(filePath, cancellationToken);
             }
 
             return result;
         }
 
-        protected string GetPathWithoutPrefix(string filePath)
-        {
-            if (!string.IsNullOrEmpty(Options.Prefix))
-            {
-                filePath = PreparePath(Path.GetRelativePath(Options.Prefix, filePath))!;
-            }
-
-            return filePath;
-        }
 
         protected string GetPathWithPrefix(string filePath)
         {
             if (!string.IsNullOrEmpty(Options.Prefix) && !filePath.StartsWith(Options.Prefix))
             {
-                filePath = PreparePath(Path.Combine(Options.Prefix, filePath))!;
+                filePath = Helpers.PreparePath(Path.Combine(Options.Prefix, filePath))!;
             }
 
             return filePath;
         }
 
-        public Task<StorageItem?> GetAsync(string path)
+        public Task<StorageItem?> GetAsync(string path, CancellationToken? cancellationToken = null)
         {
-            return GetStorageItemInternalAsync(path);
+            return GetStorageItemInternalAsync(path, cancellationToken);
         }
 
-        private async Task<StorageItemInfo?> GetStorageItemInfoAsync(string path)
+        private async Task<StorageItemDownloadInfo?> GetStorageItemInfoAsync(string path,
+            CancellationToken? cancellationToken = null)
         {
-            StorageItemInfo? result;
+            StorageItemDownloadInfo? result;
             if (_cache != null)
             {
                 result = await _cache.GetOrAddItemAsync(path,
-                    async () => await DoGetFileAsync(GetPathWithPrefix(path)));
+                    async () => await DoGetFileAsync(GetPathWithPrefix(path)), cancellationToken);
             }
             else
             {
-                result = await DoGetFileAsync(GetPathWithPrefix(path));
+                result = await DoGetFileAsync(GetPathWithPrefix(path), cancellationToken);
+                if (result is not null && _metadataProvider is not null)
+                {
+                    var metadata = await _metadataProvider.GetMetadataAsync(path, cancellationToken);
+                    if (metadata is not null)
+                    {
+                        result.SetMetadata(metadata);
+                    }
+                }
             }
 
             return result;
         }
 
-        private async Task<StorageItem?> GetStorageItemInternalAsync(string path)
+        private async Task<StorageItem?> GetStorageItemInternalAsync(string path,
+            CancellationToken? cancellationToken = null)
         {
-            var result = await GetStorageItemInfoAsync(path);
+            var result = await GetStorageItemInfoAsync(path, cancellationToken);
 
-            return result != null ? CreateStorageItem(path, result.Date, result.FileSize, result.Metadata) : null;
+            return result != null
+                ? new StorageItem(path, result.Date, result.FileSize, Options.Prefix, result.Metadata)
+                : null;
         }
 
 
-        public async Task<bool> IsExistsAsync(string path)
+        public async Task<bool> IsExistsAsync(string path, CancellationToken? cancellationToken = null)
         {
-            var result = await GetStorageItemInternalAsync(path);
+            var result = await GetStorageItemInternalAsync(path, cancellationToken);
             return result != null;
         }
 
-        public async Task DeleteAllAsync()
+        public async Task DeleteAllAsync(CancellationToken? cancellationToken = null)
         {
             if (_cache != null)
             {
-                await _cache.ClearAsync();
+                await _cache.ClearAsync(cancellationToken);
             }
 
-            await DoDeleteAllAsync();
-            _tree = null;
-            _treeLastBuild = null;
+            await DoDeleteAllAsync(cancellationToken);
+            if (_metadataProvider != null)
+            {
+                await _metadataProvider.DeleteAllMetadataAsync(cancellationToken);
+            }
         }
 
 
-        public async Task<IEnumerable<StorageNode>> GetDirectoryContentsAsync(string path)
+        public Task<IEnumerable<StorageNode>> GetDirectoryContentsAsync(string path,
+            CancellationToken? cancellationToken = null)
         {
-            if (_tree == null || _treeLastBuild < DateTimeOffset.UtcNow.Subtract(Options.StorageTreeCacheTimeout))
+            if (_metadataProvider != null)
             {
-                await BuildStorageTreeAsync();
+                return _metadataProvider.GetDirectoryContentAsync(path, cancellationToken);
             }
 
-            if (_tree == null) { return new List<StorageNode>(); }
-
-            var parts = PreparePath(path.Trim('/'))!.Split("/");
-            var current = _tree;
-            foreach (var part in parts)
-            {
-                current = current?.Children.Where(n => n.Type == StorageNodeType.Directory)
-                    .FirstOrDefault(f => f.Name == part);
-            }
-
-            return current?.Children ?? new StorageNode[0];
+            throw new Exception("No metadata provider");
         }
 
-        public async Task<IEnumerable<StorageNode>> RefreshDirectoryContentsAsync(string path)
+        public async Task<IEnumerable<StorageNode>> RefreshDirectoryContentsAsync(string path,
+            CancellationToken? cancellationToken = null)
         {
-            await BuildStorageTreeAsync();
-            return await GetDirectoryContentsAsync(path);
-        }
-
-        private TaskCompletionSource<bool>? _treeBuildTaskSource;
-
-        private async Task BuildStorageTreeAsync()
-        {
-            if (_treeBuildTaskSource != null)
+            if (_metadataProvider != null)
             {
-                await _treeBuildTaskSource.Task;
-                return;
+                var storageItems = await GetAllItemsAsync(path, cancellationToken);
+                await _metadataProvider.RefreshDirectoryContentsAsync(storageItems, cancellationToken);
+                return await _metadataProvider.GetDirectoryContentAsync(path, cancellationToken);
             }
 
-            using (await _treeLock.LockAsync())
-            {
-                Logger.LogInformation("Start building storage tree");
-                _treeBuildTaskSource = new TaskCompletionSource<bool>();
-                _tree = await DoBuildStorageTreeAsync();
-                _treeLastBuild = DateTimeOffset.UtcNow;
-                _treeBuildTaskSource.SetResult(true);
-                _treeBuildTaskSource = null;
-                Logger.LogInformation("Done building storage tree");
-            }
+            throw new Exception("No metadata provider");
         }
 
-        protected abstract Task<StorageNode?> DoBuildStorageTreeAsync();
 
         public Uri PublicUri(StorageItem item)
         {
@@ -273,7 +248,15 @@ namespace Sitko.Core.Storage
 
         public Uri PublicUri(string filePath)
         {
-            return new Uri($"{Options.PublicUri}/{filePath}");
+            return new(Options.PublicUri!, filePath);
+        }
+
+        internal abstract Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
+            CancellationToken? cancellationToken = null);
+
+        Task<IEnumerable<StorageItemInfo>> IStorage.GetAllItemsAsync(string path, CancellationToken? cancellationToken)
+        {
+            return GetAllItemsAsync(path, cancellationToken);
         }
 
         private string GetStorageFileName(string fileName)
@@ -285,18 +268,6 @@ namespace Sitko.Core.Storage
         public virtual ValueTask DisposeAsync()
         {
             return new ValueTask();
-        }
-
-        protected string? PreparePath(string? path)
-        {
-            return path?.Replace("\\", "/").Replace("//", "/");
-        }
-
-        protected const string MetaDataExtension = ".metadata";
-
-        protected string GetMetaDataPath(string filePath)
-        {
-            return filePath + MetaDataExtension;
         }
     }
 }

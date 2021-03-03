@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Model;
@@ -10,6 +10,7 @@ using Amazon.S3.Transfer;
 using Amazon.S3.Util;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Storage.Cache;
+using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.S3
 {
@@ -18,23 +19,23 @@ namespace Sitko.Core.Storage.S3
         private readonly AmazonS3Client _s3Client;
 
         public S3Storage(T options, S3ClientProvider<T> s3ClientProvider, ILogger<S3Storage<T>> logger,
-            IStorageCache? cache = null)
-            : base(options, logger,
-                cache)
+            IStorageCache? cache = null,
+            IStorageMetadataProvider? metadataProvider = null) : base(options, logger,
+            cache, metadataProvider)
         {
             _s3Client = s3ClientProvider.S3Client;
         }
 
-        private async Task CreateBucketAsync(string bucketName)
+        private async Task CreateBucketAsync(string bucketName, CancellationToken? cancellationToken = null)
         {
             try
             {
-                var bucketExists = await IsBucketExists(bucketName);
+                var bucketExists = await IsBucketExistsAsync(bucketName);
                 if (!bucketExists)
                 {
                     var putBucketRequest = new PutBucketRequest {BucketName = bucketName, UseClientRegion = true};
 
-                    await _s3Client.PutBucketAsync(putBucketRequest);
+                    await _s3Client.PutBucketAsync(putBucketRequest, cancellationToken ?? CancellationToken.None);
                 }
             }
             catch (Exception ex)
@@ -44,24 +45,21 @@ namespace Sitko.Core.Storage.S3
             }
         }
 
-        private Task<bool> IsBucketExists(string bucketName)
+        private Task<bool> IsBucketExistsAsync(string bucketName)
         {
             return AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, bucketName);
         }
 
-        private async Task<bool> IsObjectExists(string filePath)
+        internal Task<bool> DoSaveInternalAsync(string path, Stream file,
+            CancellationToken? cancellationToken = null)
         {
-            var request = new ListObjectsRequest {BucketName = Options.Bucket, Prefix = filePath, MaxKeys = 1};
-
-            var response = await _s3Client.ListObjectsAsync(request);
-
-            return response.S3Objects.Any();
+            return DoSaveAsync(path, file, cancellationToken);
         }
 
         protected override async Task<bool> DoSaveAsync(string path, Stream file,
-            string metadata)
+            CancellationToken? cancellationToken = null)
         {
-            await CreateBucketAsync(Options.Bucket);
+            await CreateBucketAsync(Options.Bucket, cancellationToken);
             using var fileTransferUtility = new TransferUtility(_s3Client);
             try
             {
@@ -69,15 +67,8 @@ namespace Sitko.Core.Storage.S3
                 {
                     InputStream = file, Key = path, BucketName = Options.Bucket
                 };
-                await fileTransferUtility.UploadAsync(request);
+                await fileTransferUtility.UploadAsync(request, cancellationToken ?? CancellationToken.None);
 
-                var metaDataRequest = new TransferUtilityUploadRequest
-                {
-                    InputStream = new MemoryStream(Encoding.UTF8.GetBytes(metadata)),
-                    Key = GetMetaDataPath(path),
-                    BucketName = Options.Bucket
-                };
-                await fileTransferUtility.UploadAsync(metaDataRequest);
                 return true;
             }
             catch (Exception e)
@@ -87,19 +78,26 @@ namespace Sitko.Core.Storage.S3
             }
         }
 
-        protected override async Task<bool> DoDeleteAsync(string filePath)
+        internal Task<bool> IsObjectExistsAsync(string filePath, CancellationToken? cancellationToken = null)
         {
-            if (await IsBucketExists(Options.Bucket))
+            return _s3Client.IsObjectExistsAsync(Options.Bucket, filePath, cancellationToken);
+        }
+
+        internal Task DeleteObjectAsync(string filePath, CancellationToken? cancellationToken = null)
+        {
+            return _s3Client.DeleteObjectAsync(Options.Bucket, filePath,
+                cancellationToken ?? CancellationToken.None);
+        }
+
+        protected override async Task<bool> DoDeleteAsync(string filePath, CancellationToken? cancellationToken = null)
+        {
+            if (await IsBucketExistsAsync(Options.Bucket))
             {
-                if (await IsObjectExists(filePath))
+                if (await IsObjectExistsAsync(filePath, cancellationToken))
                 {
                     try
                     {
-                        await _s3Client.DeleteObjectAsync(Options.Bucket, filePath);
-                        if (await IsObjectExists(GetMetaDataPath(filePath)))
-                        {
-                            await _s3Client.DeleteObjectAsync(Options.Bucket, GetMetaDataPath(filePath));
-                        }
+                        await DeleteObjectAsync(filePath, cancellationToken);
 
                         return true;
                     }
@@ -113,17 +111,19 @@ namespace Sitko.Core.Storage.S3
             return false;
         }
 
-        private Task<GetObjectMetadataResponse> GetFileMetadata(StorageItem item)
+        private Task<GetObjectMetadataResponse> GetFileMetadataAsync(StorageItem item,
+            CancellationToken? cancellationToken = null)
         {
             var request = new GetObjectMetadataRequest {BucketName = Options.Bucket, Key = item.FilePath};
-            return _s3Client.GetObjectMetadataAsync(request);
+            return _s3Client.GetObjectMetadataAsync(request, cancellationToken ?? CancellationToken.None);
         }
 
-        protected override async Task<bool> DoIsFileExistsAsync(StorageItem item)
+        protected override async Task<bool> DoIsFileExistsAsync(StorageItem item,
+            CancellationToken? cancellationToken = null)
         {
             try
             {
-                await GetFileMetadata(item);
+                await GetFileMetadataAsync(item, cancellationToken);
                 return true;
             }
             catch (AmazonS3Exception e)
@@ -142,95 +142,91 @@ namespace Sitko.Core.Storage.S3
             }
         }
 
-        protected override async Task DoDeleteAllAsync()
+        protected override async Task DoDeleteAllAsync(CancellationToken? cancellationToken = null)
         {
-            if (await IsBucketExists(Options.Bucket))
+            if (await IsBucketExistsAsync(Options.Bucket))
             {
-                await AmazonS3Util.DeleteS3BucketWithObjectsAsync(_s3Client, Options.Bucket);
-            }
-        }
-
-        private async Task<GetObjectResponse?> DownloadFileAsync(string path)
-        {
-            var request = new GetObjectRequest {BucketName = Options.Bucket, Key = path};
-            GetObjectResponse? response = null;
-            try
-            {
-                response = await _s3Client.GetObjectAsync(request);
-            }
-            catch (AmazonS3Exception ex)
-            {
-                if (string.Equals(ex.ErrorCode, "NoSuchBucket"))
+                if (string.IsNullOrEmpty(Options.Prefix))
                 {
-                    throw;
+                    try
+                    {
+                        await AmazonS3Util.DeleteS3BucketWithObjectsAsync(_s3Client, Options.Bucket,
+                            cancellationToken ?? CancellationToken.None);
+                    }
+                    catch (AmazonS3Exception ex) when (ex.Message.Contains(
+                        "A header you provided implies functionality that is not implemented"))
+                    {
+                        await DeleteAllObjectsInBucket(cancellationToken);
+                        await _s3Client.DeleteBucketAsync(Options.Bucket);
+                    }
                 }
-
-                if (string.Equals(ex.ErrorCode, "NotFound"))
+                else
                 {
-                    Logger.LogDebug(ex, "File {File} not found", path);
+                    await DeleteAllObjectsInBucket(cancellationToken);
                 }
             }
-
-            return response;
         }
 
-        private async Task<string?> DownloadFileMetadataAsync(string filePath)
+        private async Task DeleteAllObjectsInBucket(CancellationToken? cancellationToken = null)
         {
-            string? metaData = null;
-            var metaDataResponse = await DownloadFileAsync(GetMetaDataPath(filePath));
-            if (metaDataResponse != null)
+            var objects = await GetAllItemsAsync("/");
+            foreach (var chunk in SplitList(objects.ToList(), 1000))
             {
-                metaData = await DownloadStreamAsString(metaDataResponse.ResponseStream);
+                var request = new DeleteObjectsRequest
+                {
+                    BucketName = Options.Bucket,
+                    Objects = chunk.Select(item => new KeyVersion {Key = GetPathWithPrefix(item.Path)})
+                        .ToList()
+                };
+                await _s3Client.DeleteObjectsAsync(request, cancellationToken ?? CancellationToken.None);
             }
-
-            return metaData;
         }
 
-        private async Task<string> DownloadStreamAsString(Stream stream)
+        public static IEnumerable<List<TItem>> SplitList<TItem>(List<TItem> locations, int nSize = 30)
         {
-            await using var buffer = new MemoryStream();
-            await stream.CopyToAsync(buffer);
-            return Encoding.UTF8.GetString(buffer.ToArray());
+            for (int i = 0; i < locations.Count; i += nSize)
+            {
+                yield return locations.GetRange(i, Math.Min(nSize, locations.Count - i));
+            }
         }
 
-        internal override async Task<StorageItemInfo?> DoGetFileAsync(string path)
+        internal Task<GetObjectResponse?> DownloadFileAsync(string filePath,
+            CancellationToken? cancellationToken = null)
         {
-            var fileResponse = await DownloadFileAsync(path);
+            return _s3Client.DownloadFileAsync(Options.Bucket, filePath, Logger,
+                cancellationToken ?? CancellationToken.None);
+        }
+
+        internal override async Task<StorageItemDownloadInfo?> DoGetFileAsync(string path,
+            CancellationToken? cancellationToken = null)
+        {
+            var fileResponse = await DownloadFileAsync(path, cancellationToken ?? CancellationToken.None);
             if (fileResponse == null)
             {
                 return null;
             }
 
-            var metaData = await DownloadFileMetadataAsync(path);
-
-            return new StorageItemInfo(metaData, fileResponse.ContentLength, fileResponse.LastModified,
+            return new StorageItemDownloadInfo(fileResponse.ContentLength, fileResponse.LastModified,
                 () => fileResponse.ResponseStream);
         }
 
-        protected override async Task<StorageNode?> DoBuildStorageTreeAsync()
+        internal override async Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
+            CancellationToken? cancellationToken = null)
         {
-            var root = StorageNode.CreateDirectory("/", "/");
+            var items = new List<StorageItemInfo>();
             try
             {
-                var request = new ListObjectsV2Request {BucketName = Options.Bucket, Prefix = Options.Prefix};
+                var request = new ListObjectsV2Request {BucketName = Options.Bucket, Prefix = GetPathWithPrefix(path)};
                 ListObjectsV2Response response;
-                var objects = new Dictionary<string, S3Object>();
                 do
                 {
-                    Logger.LogDebug("Get objects list from S3. Current objects count: {Count}", objects.Count);
-                    response = await _s3Client.ListObjectsV2Async(request);
-                    foreach (var s3Object in response.S3Objects)
-                    {
-                        objects.Add(s3Object.Key, s3Object);
-                    }
+                    Logger.LogDebug("Get objects list from S3. Current objects count: {Count}", items.Count);
+                    response = await _s3Client.ListObjectsV2Async(request, cancellationToken ?? CancellationToken.None);
+                    items.AddRange(response.S3Objects.Select(s3Object =>
+                        new StorageItemInfo(s3Object.Key, s3Object.Size, s3Object.LastModified)));
 
                     request.ContinuationToken = response.NextContinuationToken;
                 } while (response.IsTruncated);
-
-                foreach (var s3Object in objects.Values)
-                {
-                    await AddObjectAsync(s3Object, root, objects);
-                }
             }
             catch (AmazonS3Exception amazonS3Exception)
             {
@@ -243,23 +239,7 @@ namespace Sitko.Core.Storage.S3
                     e.ToString());
             }
 
-            return root;
-        }
-
-        private async Task AddObjectAsync(S3Object s3Object, StorageNode root, Dictionary<string, S3Object> s3Objects)
-        {
-            if (s3Object.Key.EndsWith(MetaDataExtension)) return;
-
-            string? metadata = null;
-            var metadataPath = GetMetaDataPath(s3Object.Key);
-            if (s3Objects.ContainsKey(metadataPath))
-            {
-                metadata = await DownloadFileMetadataAsync(s3Object.Key);
-            }
-
-            var item = CreateStorageItem(s3Object.Key, s3Object.LastModified, s3Object.Size, metadata);
-
-            root.AddItem(item);
+            return items;
         }
 
         public override ValueTask DisposeAsync()

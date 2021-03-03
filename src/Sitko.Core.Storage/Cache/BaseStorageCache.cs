@@ -51,8 +51,8 @@ namespace Sitko.Core.Storage.Cache
             return GetEnumerator();
         }
 
-        async Task<StorageItemInfo?> IStorageCache.GetOrAddItemAsync(string path,
-            Func<Task<StorageItemInfo?>> addItem)
+        async Task<StorageItemDownloadInfo?> IStorageCache.GetOrAddItemAsync(string path,
+            Func<Task<StorageItemDownloadInfo?>> addItem, CancellationToken? cancellationToken = null)
         {
             if (_cache == null)
             {
@@ -64,7 +64,7 @@ namespace Sitko.Core.Storage.Cache
             {
                 var itemLock = _locks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
 
-                await itemLock.WaitAsync();
+                await itemLock.WaitAsync(cancellationToken ?? CancellationToken.None);
                 try
                 {
                     if (!CacheExtensions.TryGetValue(_cache, key, out cacheEntry))
@@ -91,7 +91,7 @@ namespace Sitko.Core.Storage.Cache
                         await using (stream)
                         {
                             Logger.LogDebug("Download file {Key}", key);
-                            cacheEntry = await GetEntryAsync(result, stream);
+                            cacheEntry = await GetEntryAsync(result, stream, cancellationToken);
 
                             var options = new MemoryCacheEntryOptions {SlidingExpiration = Options.Ttl};
                             options.RegisterPostEvictionCallback((_, value, _, _) =>
@@ -126,14 +126,15 @@ namespace Sitko.Core.Storage.Cache
 
             return cacheEntry is null
                 ? null
-                : new StorageItemInfo(cacheEntry.Metadata, cacheEntry.FileSize, cacheEntry.Date,
+                : new StorageItemDownloadInfo( /*cacheEntry.Metadata, */cacheEntry.FileSize, cacheEntry.Date,
                     () => cacheEntry.OpenRead());
         }
 
 
         protected abstract void DisposeItem(TRecord deletedRecord);
 
-        internal abstract Task<TRecord> GetEntryAsync(StorageItemInfo item, Stream stream);
+        internal abstract Task<TRecord> GetEntryAsync(StorageItemDownloadInfo item, Stream stream,
+            CancellationToken? cancellationToken = null);
 
         private string NormalizePath(string path)
         {
@@ -146,7 +147,8 @@ namespace Sitko.Core.Storage.Cache
             return path;
         }
 
-        Task<StorageItemInfo?> IStorageCache.GetItemAsync(string path)
+        Task<StorageItemDownloadInfo?> IStorageCache.GetItemAsync(string path,
+            CancellationToken? cancellationToken = null)
         {
             if (_cache == null)
             {
@@ -155,13 +157,13 @@ namespace Sitko.Core.Storage.Cache
 
             var cacheEntry = CacheExtensions.Get<TRecord?>(_cache, NormalizePath(path));
 
-            return Task.FromResult(cacheEntry is null
+            return Task.FromResult<StorageItemDownloadInfo?>(cacheEntry is null
                 ? null
-                : new StorageItemInfo(cacheEntry.Metadata, cacheEntry.FileSize, cacheEntry.Date,
+                : new StorageItemDownloadInfo(cacheEntry.FileSize, cacheEntry.Date,
                     () => cacheEntry.OpenRead()));
         }
 
-        public Task RemoveItemAsync(string path)
+        public Task RemoveItemAsync(string path, CancellationToken? cancellationToken = null)
         {
             if (_cache == null)
             {
@@ -172,7 +174,7 @@ namespace Sitko.Core.Storage.Cache
             return Task.CompletedTask;
         }
 
-        public Task ClearAsync()
+        public Task ClearAsync(CancellationToken? cancellationToken = null)
         {
             _cache?.Dispose();
             _cache = new MemoryCache(new MemoryCacheOptions {SizeLimit = Options.MaxCacheSize});

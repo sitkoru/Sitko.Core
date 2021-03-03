@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace Sitko.Core.Storage
 {
@@ -23,6 +24,26 @@ namespace Sitko.Core.Storage
             }
 
             return $"{Math.Round(size, 2):N}{_units[unit]}";
+        }
+
+        internal static string? PreparePath(string? path)
+        {
+            return path?.Replace("\\", "/").Replace("//", "/");
+        }
+
+        internal static string GetPathWithoutPrefix(string? prefix, string filePath)
+        {
+            if (!string.IsNullOrEmpty(prefix))
+            {
+                if (filePath.StartsWith("/"))
+                {
+                    prefix = "/" + prefix;
+                }
+
+                filePath = Helpers.PreparePath(Path.GetRelativePath(prefix, filePath))!;
+            }
+
+            return filePath;
         }
     }
 }

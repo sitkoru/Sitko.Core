@@ -1,8 +1,8 @@
 using System.Text.Json;
 
-namespace Sitko.Core.Storage
+namespace Sitko.Core.Storage.Metadata
 {
-    internal class StorageItemMetadata
+    public class StorageItemMetadata
     {
         public string? FileName { get; set; }
 
