@@ -40,7 +40,7 @@ namespace Sitko.Core.Storage
             var storageItem = new StorageItem(destinationPath, DateTimeOffset.UtcNow, file.Length, Options.Prefix,
                 itemMetadata);
 
-            var result = await SaveStorageItemAsync(file, path, destinationPath, storageItem, itemMetadata,
+            var result = await SaveStorageItemAsync(file, path, destinationPath, storageItem,
                 cancellationToken);
             if (_metadataProvider != null)
             {
@@ -52,7 +52,7 @@ namespace Sitko.Core.Storage
 
 
         private async Task<StorageItem> SaveStorageItemAsync(Stream file, string path, string destinationPath,
-            StorageItem storageItem, StorageItemMetadata metadata, CancellationToken? cancellationToken = null)
+            StorageItem storageItem, CancellationToken? cancellationToken = null)
         {
             file.Seek(0, SeekOrigin.Begin);
             await DoSaveAsync(destinationPath, file, cancellationToken);
@@ -63,6 +63,27 @@ namespace Sitko.Core.Storage
             }
 
             return storageItem;
+        }
+
+        public async Task<StorageItem> UpdateMetaDataAsync(StorageItem item, string fileName,
+            object? metadata = null, CancellationToken? cancellationToken = null)
+        {
+            if (_metadataProvider is null)
+            {
+                throw new Exception("No metadata provider");
+            }
+
+            Logger.LogDebug("Update metadata for item {Path}", item.FilePath);
+            var itemMetadata = new StorageItemMetadata {FileName = fileName};
+
+            if (metadata != null)
+            {
+                itemMetadata.SetData(metadata);
+            }
+
+            await _metadataProvider.SaveMetadataAsync(item, itemMetadata, cancellationToken);
+            item = (await GetStorageItemInternalAsync(item.FilePath, cancellationToken))!;
+            return item;
         }
 
         protected virtual string GetDestinationPath(string fileName, string path)
@@ -76,31 +97,6 @@ namespace Sitko.Core.Storage
             var destinationPath = Helpers.PreparePath(Path.Combine(path, destinationName))!;
             return destinationPath;
         }
-
-        // private StorageItem CreateStorageItem(string path, StorageItemInfo storageItemInfo)
-        // {
-        //     return CreateStorageItem(path, storageItemInfo.Date,
-        //         storageItemInfo.FileSize, storageItemInfo.Metadata);
-        // }
-
-        // internal StorageItem CreateStorageItem(string destinationPath,
-        //     DateTimeOffset date,
-        //     long fileSize, StorageItemMetadata? metadata = null)
-        // {
-        //     destinationPath = Helpers.GetPathWithoutPrefix(destinationPath);
-        //     var fileName = metadata?.FileName ?? Path.GetFileName(destinationPath);
-        //     var storageItem = new StorageItem
-        //     {
-        //         Path = Helpers.PreparePath(Path.GetDirectoryName(destinationPath))!,
-        //         FileName = fileName,
-        //         LastModified = date,
-        //         FileSize = fileSize,
-        //         FilePath = destinationPath,
-        //         MetadataJson = metadata?.Data,
-        //         MimeType = MimeMapping.MimeUtility.GetMimeMapping(fileName)
-        //     };
-        //     return storageItem;
-        // }
 
         protected abstract Task<bool> DoSaveAsync(string path, Stream file,
             CancellationToken? cancellationToken = null);

@@ -108,6 +108,11 @@ namespace Sitko.Core.Storage.Metadata.Postgres
                 await dbContext.Records.AddAsync(record);
             }
 
+            if (metadata is not null)
+            {
+                record.FileName = metadata.FileName;
+            }
+
             record.Metadata = metadata;
             await dbContext.SaveChangesAsync(cancellationToken ?? CancellationToken.None);
         }

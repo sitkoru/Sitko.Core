@@ -20,6 +20,9 @@ namespace Sitko.Core.Storage
         Task<StorageItem> SaveAsync(Stream file, string fileName, string path,
             object? metadata = null, CancellationToken? cancellationToken = null);
 
+        Task<StorageItem> UpdateMetaDataAsync(StorageItem item, string fileName,
+            object? metadata = null, CancellationToken? cancellationToken = null);
+
         /// <summary>
         /// Get uploaded file info without downloading file
         /// </summary>
