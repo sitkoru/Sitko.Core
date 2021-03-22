@@ -42,9 +42,9 @@ namespace Sitko.Core.Storage.Metadata
         protected string GetMetaDataPath(string filePath)
         {
             filePath = filePath + MetaDataExtension;
-            if (!string.IsNullOrEmpty(StorageOptions.Prefix))
+            if (!string.IsNullOrEmpty(StorageOptions.Prefix) && !filePath.StartsWith(StorageOptions.Prefix))
             {
-                filePath = Helpers.PreparePath(Path.Combine(StorageOptions.Prefix, filePath))!;
+                filePath = Helpers.PreparePath($"{StorageOptions.Prefix}/{filePath}")!;
             }
 
             return filePath;

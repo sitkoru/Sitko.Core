@@ -28,6 +28,11 @@ namespace Sitko.Core.Storage
 
         internal static string? PreparePath(string? path)
         {
+            if (path?.StartsWith('/') == true)
+            {
+                path = path.Substring(1);
+            }
+
             return path?.Replace("\\", "/").Replace("//", "/");
         }
 
