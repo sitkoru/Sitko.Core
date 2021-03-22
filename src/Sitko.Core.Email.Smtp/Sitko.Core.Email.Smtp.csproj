@@ -23,7 +23,7 @@
     <ProjectReference Include="..\Sitko.Core.Email\Sitko.Core.Email.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MailKit" Version="2.10.1" />
+    <PackageReference Include="MailKit" Version="2.11.1" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
