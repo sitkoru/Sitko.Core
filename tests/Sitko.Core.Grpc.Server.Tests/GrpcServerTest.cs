@@ -2,12 +2,9 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Grpc.Core;
 using Grpc.Net.Client;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Sitko.Core.App.Web;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -49,33 +46,6 @@ namespace Sitko.Core.Grpc.Server.Tests
 
                 return response;
             }
-        }
-    }
-
-    public class TestStartup : BaseStartup<TestApplication>
-    {
-        public TestStartup(IConfiguration configuration, IHostEnvironment environment) : base(
-            configuration, environment)
-        {
-        }
-    }
-
-    public class TestServiceImpl : TestService.TestServiceBase
-    {
-        public override Task<TestResponse> Request(TestRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(new TestResponse {ResponseInfo = new ApiResponseInfo {IsSuccess = true}});
-        }
-    }
-
-    public class TestApplication : WebApplication<TestApplication>
-    {
-        public TestApplication(string[] args) : base(args)
-        {
-            AddModule<GrpcServerModule, GrpcServerOptions>((_, _, moduleConfig) =>
-            {
-                moduleConfig.RegisterService<TestServiceImpl>();
-            }).UseStartup<TestStartup>();
         }
     }
 }
