@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using Elastic.Apm.NetCoreAll;
 using Elastic.Apm.SerilogEnricher;
 using Elastic.CommonSchema.Serilog;
@@ -30,15 +31,22 @@ namespace Sitko.Core.ElasticStack
             base.ConfigureLogging(loggerConfiguration, logLevelSwitcher, configuration, environment);
             if (Config.LoggingEnabled)
             {
+                var options = new ElasticsearchSinkOptions(Config.ElasticSearchUrls)
+                {
+                    CustomFormatter = new EcsTextFormatter(),
+                    AutoRegisterTemplate = true,
+                    IndexFormat =
+                        Config.LoggingIndexFormat ??
+                        $"dotnet-{Assembly.GetExecutingAssembly().GetName().Name!.ToLower().Replace(".", "-")}-{environment.EnvironmentName.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
+                    LevelSwitch = logLevelSwitcher.Switch
+                };
+                if (Config.LoggingTemplateVersion is not null)
+                {
+                    options.AutoRegisterTemplateVersion = Config.LoggingTemplateVersion.Value;
+                }
+
                 loggerConfiguration.Enrich.WithElasticApmCorrelationInfo()
-                    .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(Config.ElasticSearchUrls)
-                    {
-                        CustomFormatter = new EcsTextFormatter(),
-                        AutoRegisterTemplate = true,
-                        AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv7,
-                        IndexFormat = Config.LoggingIndexFormat,
-                        LevelSwitch = logLevelSwitcher.Switch
-                    })
+                    .WriteTo.Elasticsearch(options)
                     .Enrich.WithProperty("ApplicationName", Application.Name)
                     .Enrich.WithProperty("ApplicationVersion", Application.Version);
             }

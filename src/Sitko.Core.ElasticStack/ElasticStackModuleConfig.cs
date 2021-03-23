@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Serilog.Sinks.Elasticsearch;
 
 namespace Sitko.Core.ElasticStack
 {
@@ -30,7 +31,8 @@ namespace Sitko.Core.ElasticStack
         public int ApmStackTraceLimit { get; set; } = 50;
         public TimeSpan ApmSpanFramesMinDuration { get; set; } = TimeSpan.FromSeconds(0.5);
         public string ApmLogLevel { get; set; } = "Error";
-        public string LoggingIndexFormat { get; set; } = "apm-logs-{0:yyyy.MM.dd}";
+        public string? LoggingIndexFormat { get; set; }
+        public AutoRegisterTemplateVersion? LoggingTemplateVersion { get; set; }
 
         public ElasticStackModuleConfig EnableLogging(Uri elasticSearchUri)
         {

@@ -166,7 +166,9 @@ namespace Sitko.Core.App
         private void InitLogging()
         {
             _loggerConfiguration.MinimumLevel.ControlledBy(_logLevelSwitcher.Switch);
-            _loggerConfiguration.Enrich.FromLogContext()
+            _loggerConfiguration
+                .Enrich.FromLogContext()
+                .Enrich.WithMachineName()
                 .Enrich.WithProperty("App", Name)
                 .Enrich.WithProperty("AppVersion", Version);
             _logLevelSwitcher.Switch.MinimumLevel =
