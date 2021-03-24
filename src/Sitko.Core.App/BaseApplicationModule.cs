@@ -82,4 +82,10 @@ namespace Sitko.Core.App
             return Config;
         }
     }
+
+    public interface IHostBuilderModule<TConfig> : IApplicationModule<TConfig> where TConfig : class, new()
+    {
+        public void ConfigureHostBuilder(IHostBuilder hostBuilder, IConfiguration configuration,
+            IHostEnvironment environment);
+    }
 }

@@ -200,15 +200,26 @@ namespace Sitko.Core.App
             }
 
             _registeredModules.Add(typeof(TModule));
+            var config = new TModuleConfig();
+            if (!_check)
+            {
+                configure?.Invoke(Configuration, Environment, config);
+            }
+
+            var instance = Activator.CreateInstance(typeof(TModule), config, this);
+            if (instance is IHostBuilderModule<TModuleConfig> hostBuilderModule)
+            {
+                hostBuilderModule.ConfigureHostBuilder(HostBuilder, Configuration, Environment);
+            }
+
             HostBuilder.ConfigureServices((context, services) =>
             {
-                var config = new TModuleConfig();
                 if (!_check)
                 {
                     configure?.Invoke(context.Configuration, context.HostingEnvironment, config);
                 }
 
-                var instance = Activator.CreateInstance(typeof(TModule), config, this);
+                instance = Activator.CreateInstance(typeof(TModule), config, this);
                 if (instance is TModule module)
                 {
                     if (!_check)
