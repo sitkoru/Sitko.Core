@@ -8,7 +8,6 @@ namespace Sitko.Core.Grpc.Server.Discovery
     {
         Task RegisterAsync<T>() where T : class;
 
-        Task<HealthCheckResult> CheckHealthAsync<T>(
-            CancellationToken cancellationToken = new CancellationToken()) where T : class;
+        Task<HealthCheckResult> CheckHealthAsync<T>(CancellationToken cancellationToken = default) where T : class;
     }
 }

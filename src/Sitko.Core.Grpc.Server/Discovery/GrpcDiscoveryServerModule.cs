@@ -28,23 +28,18 @@ namespace Sitko.Core.Grpc.Server.Discovery
             }
         }
 
-        public override Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
+        public override async Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider)
         {
             var registrar = serviceProvider.GetRequiredService<IGrpcServicesRegistrar>();
             foreach (var serviceRegistration in _serviceRegistrations)
             {
-                serviceRegistration(registrar);
+                await serviceRegistration(registrar);
             }
-
-            return Task.CompletedTask;
         }
 
-        private readonly List<Action<IGrpcServicesRegistrar>> _serviceRegistrations =
-            new List<Action<IGrpcServicesRegistrar>>();
-
-        private readonly List<Action<IHealthChecksBuilder>> _healthChecksRegistrations =
-            new List<Action<IHealthChecksBuilder>>();
+        private readonly List<Func<IGrpcServicesRegistrar, Task>> _serviceRegistrations = new();
+        private readonly List<Action<IHealthChecksBuilder>> _healthChecksRegistrations = new();
 
         public override void RegisterService<TService>()
         {

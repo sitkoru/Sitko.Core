@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -24,10 +24,10 @@ namespace Sitko.Core.Grpc.Server.Consul
         private readonly string _host = "127.0.0.1";
         private readonly int _port;
         private readonly bool _inContainer = DockerHelper.IsRunningInDocker();
-        private readonly CancellationTokenSource _updateTtlCts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _updateTtlCts = new();
         private Task? _updateTtlTask;
 
-        private readonly Dictionary<string, string> _registeredServices = new Dictionary<string, string>();
+        private readonly ConcurrentDictionary<string, string> _registeredServices = new();
 
         public ConsulGrpcServicesRegistrar(GrpcServerConsulModuleConfig options,
             IApplication application,
@@ -74,6 +74,7 @@ namespace Sitko.Core.Grpc.Server.Consul
             }
 
             _logger.LogInformation("GRPC Port: {Port}", _port);
+            _updateTtlTask = UpdateChecksAsync(_updateTtlCts.Token);
         }
 
         private string GetServiceName<T>()
@@ -119,8 +120,7 @@ namespace Sitko.Core.Grpc.Server.Consul
                 _logger.LogInformation("Consul response code: {Code}", result.StatusCode);
             }
 
-            _registeredServices[id] = serviceName;
-            _updateTtlTask ??= UpdateChecksAsync(_updateTtlCts.Token);
+            _registeredServices.TryAdd(id, serviceName);
         }
 
         private bool _disposed;
@@ -132,6 +132,7 @@ namespace Sitko.Core.Grpc.Server.Consul
                 if (_updateTtlTask != null)
                 {
                     _updateTtlCts.Cancel();
+                    await _updateTtlTask;
                     _updateTtlTask = null;
                 }
 
@@ -148,8 +149,8 @@ namespace Sitko.Core.Grpc.Server.Consul
             }
         }
 
-        public async Task<HealthCheckResult> CheckHealthAsync<T>(
-            CancellationToken cancellationToken = new CancellationToken()) where T : class
+        public async Task<HealthCheckResult> CheckHealthAsync<T>(CancellationToken cancellationToken = default)
+            where T : class
         {
             if (_consulClient == null)
             {
@@ -188,7 +189,8 @@ namespace Sitko.Core.Grpc.Server.Consul
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (_consulClient != null)
+                await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken);
+                if (!cancellationToken.IsCancellationRequested && _consulClient != null && _registeredServices.Any())
                 {
                     foreach (var service in _registeredServices)
                     {
@@ -197,8 +199,6 @@ namespace Sitko.Core.Grpc.Server.Consul
                             cancellationToken);
                     }
                 }
-
-                await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken);
             }
         }
     }
