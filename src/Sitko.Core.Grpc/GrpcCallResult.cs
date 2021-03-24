@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Sitko.Core.Grpc
 {
     public class GrpcCallResult
     {
         public bool IsSuccess { get; }
-        public string? Error { get; }
+        private readonly List<string> _errors = new();
+        public string[] Error => _errors.ToArray();
         public Exception? Exception { get; }
 
         public GrpcCallResult()
@@ -16,7 +18,13 @@ namespace Sitko.Core.Grpc
         public GrpcCallResult(string error)
         {
             IsSuccess = false;
-            Error = error;
+            _errors.Add(error);
+        }
+
+        public GrpcCallResult(IEnumerable<string> errors)
+        {
+            IsSuccess = false;
+            _errors.AddRange(errors);
         }
 
         public GrpcCallResult(Exception exception, string? error = null) : this(error ?? exception.Message)

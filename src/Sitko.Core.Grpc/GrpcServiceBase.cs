@@ -48,9 +48,10 @@ namespace Sitko.Core.Grpc
                 {
                     response.SetException(result.Exception, Logger, request);
                 }
-                else
+
+                if (result.Error.Length > 0)
                 {
-                    response.SetError(result.Error!);
+                    response.SetErrors(result.Error);
                 }
             }
         }
@@ -75,6 +76,21 @@ namespace Sitko.Core.Grpc
 
                 return response;
             }
+        }
+
+        protected GrpcCallResult Ok()
+        {
+            return new();
+        }
+
+        protected GrpcCallResult Error(string error)
+        {
+            return new(error);
+        }
+
+        protected GrpcCallResult Exception(Exception ex, string? error = null)
+        {
+            return new(ex, error);
         }
     }
 }
