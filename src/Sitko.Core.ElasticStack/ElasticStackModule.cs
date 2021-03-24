@@ -31,19 +31,29 @@ namespace Sitko.Core.ElasticStack
             base.ConfigureLogging(loggerConfiguration, logLevelSwitcher, configuration, environment);
             if (Config.LoggingEnabled)
             {
+                var rolloverAlias = string.IsNullOrEmpty(Config.LoggingLiferRolloverAlias)
+                    ? $"dotnet-logs-{environment.ApplicationName.ToLower().Replace(".", "-")}-{environment.EnvironmentName.ToLower().Replace(".", "-")}"
+                    : Config.LoggingLiferRolloverAlias;
                 var options = new ElasticsearchSinkOptions(Config.ElasticSearchUrls)
                 {
                     CustomFormatter = new EcsTextFormatter(),
                     AutoRegisterTemplate = true,
+                    AutoRegisterTemplateVersion = Config.LoggingTemplateVersion ?? AutoRegisterTemplateVersion.ESv7,
+                    NumberOfReplicas = Config.LoggingNumberOfReplicas,
                     IndexFormat =
                         Config.LoggingIndexFormat ??
-                        $"dotnet-{Assembly.GetExecutingAssembly().GetName().Name!.ToLower().Replace(".", "-")}-{environment.EnvironmentName.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
-                    LevelSwitch = logLevelSwitcher.Switch
+                        $"dotnet-logs-{environment.ApplicationName.ToLower().Replace(".", "-")}-{environment.EnvironmentName.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
+                    LevelSwitch = logLevelSwitcher.Switch,
+                    TemplateName = rolloverAlias
                 };
-                if (Config.LoggingTemplateVersion is not null)
+
+                if (!string.IsNullOrEmpty(Config.LoggingLifeCycleName))
                 {
-                    options.AutoRegisterTemplateVersion = Config.LoggingTemplateVersion.Value;
-                    options.NumberOfReplicas = Config.LoggingNumberOfReplicas;
+                    options.TemplateCustomSettings = new Dictionary<string, string>
+                    {
+                        {"lifecycle.name", Config.LoggingLifeCycleName}, {"lifecycle.rollover_alias", rolloverAlias}
+                    };
+                    options.IndexAliases = new[] {rolloverAlias};
                 }
 
                 loggerConfiguration.Enrich.WithElasticApmCorrelationInfo()

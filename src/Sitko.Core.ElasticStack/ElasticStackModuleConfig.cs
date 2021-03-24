@@ -34,6 +34,9 @@ namespace Sitko.Core.ElasticStack
         public string? LoggingIndexFormat { get; set; }
         public AutoRegisterTemplateVersion? LoggingTemplateVersion { get; set; }
         public int? LoggingNumberOfReplicas { get; set; }
+        public string? LoggingLifeCycleName { get; set; }
+        public string? LoggingLiferRolloverAlias { get; set; }
+
 
         public ElasticStackModuleConfig EnableLogging(Uri elasticSearchUri)
         {
