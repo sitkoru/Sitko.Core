@@ -43,6 +43,7 @@ namespace Sitko.Core.ElasticStack
                 if (Config.LoggingTemplateVersion is not null)
                 {
                     options.AutoRegisterTemplateVersion = Config.LoggingTemplateVersion.Value;
+                    options.NumberOfReplicas = Config.LoggingNumberOfReplicas;
                 }
 
                 loggerConfiguration.Enrich.WithElasticApmCorrelationInfo()
