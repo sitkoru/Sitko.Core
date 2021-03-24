@@ -12,26 +12,29 @@ using Microsoft.Extensions.Logging;
 using Sitko.Core.App;
 using Sitko.Core.App.Helpers;
 using Sitko.Core.Grpc.Server.Discovery;
+using Tempus;
 
 namespace Sitko.Core.Grpc.Server.Consul
 {
     public class ConsulGrpcServicesRegistrar : IGrpcServicesRegistrar, IAsyncDisposable
     {
-        private readonly GrpcServerConsulModuleConfig _options;
         private readonly IApplication _application;
         private readonly IConsulClient? _consulClient;
-        private readonly ILogger<ConsulGrpcServicesRegistrar> _logger;
         private readonly string _host = "127.0.0.1";
-        private readonly int _port;
         private readonly bool _inContainer = DockerHelper.IsRunningInDocker();
-        private readonly CancellationTokenSource _updateTtlCts = new();
-        private Task? _updateTtlTask;
+        private readonly ILogger<ConsulGrpcServicesRegistrar> _logger;
+        private readonly GrpcServerConsulModuleConfig _options;
+        private readonly int _port;
 
         private readonly ConcurrentDictionary<string, string> _registeredServices = new();
 
+        private bool _disposed;
+        private IScheduledTask? _updateTtlTask;
+
         public ConsulGrpcServicesRegistrar(GrpcServerConsulModuleConfig options,
             IApplication application,
-            IServer server, ILogger<ConsulGrpcServicesRegistrar> logger, IConsulClient? consulClient = null)
+            IServer server, IScheduler scheduler, ILogger<ConsulGrpcServicesRegistrar> logger,
+            IConsulClient? consulClient = null)
         {
             _options = options;
             _application = application;
@@ -74,24 +77,40 @@ namespace Sitko.Core.Grpc.Server.Consul
             }
 
             _logger.LogInformation("GRPC Port: {Port}", _port);
-            _updateTtlTask = UpdateChecksAsync(_updateTtlCts.Token);
-        }
-
-        private string GetServiceName<T>()
-        {
-            var serviceName = typeof(T).BaseType?.DeclaringType?.Name;
-            if (string.IsNullOrEmpty(serviceName))
+            //_updateTtlTask = UpdateChecksAsync(_updateTtlCts.Token);
+            _updateTtlTask = scheduler.Schedule(TimeSpan.FromSeconds(15), async token =>
             {
-                throw new Exception($"Can't find service name for {typeof(T)}");
-            }
-
-            return serviceName;
+                await UpdateServicesTtlAsync(token);
+            }, (context, _) =>
+            {
+                _logger.LogError(context.Exception, "Error updating TTL for gRPC services: {ErrorText}",
+                    context.Exception.ToString());
+                return Task.CompletedTask;
+            });
         }
 
-        private string GetServiceId<T>()
+
+        public async ValueTask DisposeAsync()
         {
-            var serviceName = GetServiceName<T>();
-            return _inContainer ? $"{serviceName}_{_host}_{_port}" : serviceName;
+            if (!_disposed && _consulClient != null)
+            {
+                if (_updateTtlTask != null)
+                {
+                    await _updateTtlTask.Cancel();
+                    _updateTtlTask = null;
+                }
+
+                foreach (var registeredService in _registeredServices)
+                {
+                    _logger.LogInformation(
+                        "Application stopping. Deregister grpc service {ServiceName} on {Address}:{Port}",
+                        registeredService.Value, _host,
+                        _port);
+                    await _consulClient.Agent.ServiceDeregister(registeredService.Key);
+                }
+
+                _disposed = true;
+            }
         }
 
         public async Task RegisterAsync<T>() where T : class
@@ -121,32 +140,6 @@ namespace Sitko.Core.Grpc.Server.Consul
             }
 
             _registeredServices.TryAdd(id, serviceName);
-        }
-
-        private bool _disposed;
-
-        public async ValueTask DisposeAsync()
-        {
-            if (!_disposed && _consulClient != null)
-            {
-                if (_updateTtlTask != null)
-                {
-                    _updateTtlCts.Cancel();
-                    await _updateTtlTask;
-                    _updateTtlTask = null;
-                }
-
-                foreach (var registeredService in _registeredServices)
-                {
-                    _logger.LogInformation(
-                        "Application stopping. Deregister grpc service {ServiceName} on {Address}:{Port}",
-                        registeredService.Value, _host,
-                        _port);
-                    await _consulClient.Agent.ServiceDeregister(registeredService.Key);
-                }
-
-                _disposed = true;
-            }
         }
 
         public async Task<HealthCheckResult> CheckHealthAsync<T>(CancellationToken cancellationToken = default)
@@ -185,20 +178,45 @@ namespace Sitko.Core.Grpc.Server.Consul
             return HealthCheckResult.Unhealthy($"Error response from consul: {serviceResponse.StatusCode}");
         }
 
-        private async Task UpdateChecksAsync(CancellationToken cancellationToken)
+        private string GetServiceName<T>()
         {
-            while (!cancellationToken.IsCancellationRequested)
+            var serviceName = typeof(T).BaseType?.DeclaringType?.Name;
+            if (string.IsNullOrEmpty(serviceName))
             {
-                await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken);
-                if (!cancellationToken.IsCancellationRequested && _consulClient != null && _registeredServices.Any())
+                throw new Exception($"Can't find service name for {typeof(T)}");
+            }
+
+            return serviceName;
+        }
+
+        private string GetServiceId<T>()
+        {
+            var serviceName = GetServiceName<T>();
+            return _inContainer ? $"{serviceName}_{_host}_{_port}" : serviceName;
+        }
+
+        private async Task UpdateServicesTtlAsync(CancellationToken token)
+        {
+            if (!token.IsCancellationRequested && _consulClient != null && _registeredServices.Any())
+            {
+                _logger.LogDebug("Update TTL for gRPC services");
+                foreach (var service in _registeredServices)
                 {
-                    foreach (var service in _registeredServices)
+                    _logger.LogDebug("Service: {ServiceId}/{ServiceName}", service.Key, service.Value);
+                    try
                     {
                         await _consulClient.Agent.UpdateTTL("service:" + service.Key,
                             $"Last update: {DateTime.UtcNow:O}", TTLStatus.Pass,
-                            cancellationToken);
+                            token);
+                    }
+                    catch (Exception exception)
+                    {
+                        _logger.LogError(exception, "Error updating TTL for {ServiceId}/{ServiceName}: {ErrorText}",
+                            service.Key, service.Value, exception.ToString());
                     }
                 }
+
+                _logger.LogDebug("All gRPC services TTL updated");
             }
         }
     }

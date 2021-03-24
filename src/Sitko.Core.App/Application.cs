@@ -11,6 +11,7 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
 using Sitko.Core.App.Logging;
+using Tempus;
 
 namespace Sitko.Core.App
 {
@@ -414,6 +415,7 @@ namespace Sitko.Core.App
                 services.AddSingleton(typeof(Application<T>), this);
                 services.AddSingleton(typeof(T), this);
                 services.AddHostedService<ApplicationLifetimeService<T>>();
+                services.AddTransient<IScheduler, Scheduler>();
             });
         }
 
