@@ -14,8 +14,8 @@ namespace Sitko.Core.ElasticStack
         public int ApmTransactionMaxSpans { get; set; } = 500;
         public bool ApmCentralConfig { get; set; } = true;
         public List<string>? ApmSanitizeFieldNames { get; set; }
-        public readonly Dictionary<string, string> ApmGlobalLabels = new Dictionary<string, string>();
-        public List<Uri>? ApmServerUrls { get; protected set; }
+        public readonly Dictionary<string, string> ApmGlobalLabels = new();
+        public List<Uri>? ApmServerUrls { get; private set; }
         public string? ApmSecretToken { get; set; }
         public string? ApmApiKey { get; set; }
         public bool ApmVerifyServerCert { get; set; } = true;
