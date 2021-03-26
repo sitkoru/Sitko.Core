@@ -58,7 +58,6 @@ namespace Sitko.Core.Grpc
 
         protected async Task<TResponse> ProcessCallAsync<TRequest, TResponse>(TRequest request,
             Func<TResponse, Task<GrpcCallResult>> executeAsync,
-            ILogger? logger = null,
             [CallerMemberName] string? methodName = null)
             where TResponse : class, IGrpcResponse, new() where TRequest : class, IGrpcRequest
         {
@@ -71,7 +70,7 @@ namespace Sitko.Core.Grpc
                 }
                 catch (Exception ex)
                 {
-                    response.SetException(ex, logger, request, 500, methodName);
+                    response.SetException(ex, Logger, request, 500, methodName);
                 }
 
                 return response;
