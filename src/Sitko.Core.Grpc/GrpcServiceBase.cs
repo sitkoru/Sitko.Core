@@ -89,7 +89,7 @@ namespace Sitko.Core.Grpc
                 {
                     await executeAsync(async fillResponse =>
                     {
-                        var response = new TResponse();
+                        var response = CreateResponse<TResponse>();
                         fillResponse(response);
                         await responseStream.WriteAsync(response);
                     });
