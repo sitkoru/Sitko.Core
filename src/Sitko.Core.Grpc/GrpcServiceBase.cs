@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Grpc.Extensions;
 
@@ -74,6 +75,31 @@ namespace Sitko.Core.Grpc
                 }
 
                 return response;
+            }
+        }
+
+        public async Task ProcessStreamAsync<TRequest, TResponse>(TRequest request,
+            IServerStreamWriter<TResponse> responseStream,
+            Func<Func<Action<TResponse>, Task>, Task> executeAsync,
+            [CallerMemberName] string? methodName = null)
+            where TResponse : class, IGrpcResponse, new() where TRequest : class, IGrpcRequest
+        {
+            {
+                try
+                {
+                    await executeAsync(async fillResponse =>
+                    {
+                        var response = new TResponse();
+                        fillResponse(response);
+                        await responseStream.WriteAsync(response);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    var response = CreateResponse<TResponse>();
+                    response.SetException(ex, Logger, request, 500, methodName);
+                    await responseStream.WriteAsync(response);
+                }
             }
         }
 
