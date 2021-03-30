@@ -99,10 +99,10 @@ namespace Sitko.Core.App.Web
 
                     configurationBuilder.AddEnvironmentVariables();
                 })
-                .ConfigureWebHostDefaults(builder =>
+                .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    builder.UseStartup<TStartup>();
-                    ConfigureWebHostDefaults(builder);
+                    webBuilder.UseStartup<TStartup>();
+                    ConfigureWebHostDefaults(webBuilder);
                 })
                 .ConfigureServices(collection =>
                 {
@@ -113,20 +113,6 @@ namespace Sitko.Core.App.Web
 
         protected virtual void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)
         {
-        }
-
-        private WebApplication<TStartup> UseStartup()
-        {
-            GetHostBuilder().ConfigureWebHostDefaults(builder =>
-            {
-                builder.UseStartup<TStartup>();
-            });
-            return this;
-        }
-
-        protected override IHost BuildAppHost()
-        {
-            return HostBuilder.ConfigureWebHostDefaults(builder => builder.UseStartup<TStartup>()).Build();
         }
 
         public WebApplication<TStartup> Run()
