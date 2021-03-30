@@ -25,6 +25,16 @@ namespace Sitko.Core.App.Web
             _instance = (T)this;
         }
 
+        protected override void ConfigureHostBuilder(IHostBuilder builder)
+        {
+            base.ConfigureHostBuilder(builder);
+            builder.ConfigureWebHostDefaults(ConfigureWebHostDefaults);
+        }
+
+        protected virtual void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)
+        {
+        }
+
         public static T GetInstance()
         {
             return _instance!;

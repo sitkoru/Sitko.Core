@@ -41,8 +41,7 @@ namespace Sitko.Core.App
                 _check = true;
             }
 
-            var tmpHost = Host.CreateDefaultBuilder(args)
-                .ConfigureHostConfiguration(builder => { builder.AddEnvironmentVariables("ASPNETCORE_"); })
+            var tmpHost = CreateHostBuilder(args)
                 .ConfigureLogging(builder => { builder.SetMinimumLevel(LogLevel.Information); }).Build();
 
             Configuration = tmpHost.Services.GetRequiredService<IConfiguration>();
@@ -51,7 +50,7 @@ namespace Sitko.Core.App
 
             Name = Environment.ApplicationName;
 
-            HostBuilder = Host.CreateDefaultBuilder(args)
+            HostBuilder = CreateHostBuilder(args)
                 .UseDefaultServiceProvider(options =>
                 {
                     options.ValidateOnBuild = true;
@@ -61,6 +60,17 @@ namespace Sitko.Core.App
                     services.AddSingleton(_logLevelSwitcher);
                     services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
                 });
+        }
+
+        private IHostBuilder CreateHostBuilder(string[] args)
+        {
+            var builder = Host.CreateDefaultBuilder();
+            ConfigureHostBuilder(builder);
+            return builder;
+        }
+
+        protected virtual void ConfigureHostBuilder(IHostBuilder builder)
+        {
         }
 
         protected virtual bool LoggingEnableConsole => Environment.IsDevelopment();
