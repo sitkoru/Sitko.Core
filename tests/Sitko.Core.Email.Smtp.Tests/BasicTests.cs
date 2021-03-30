@@ -19,7 +19,7 @@ namespace Sitko.Core.Email.Smtp.Tests
     {
     }
     
-    public class TestStartup : BaseStartup<TestApplication>
+    public class TestStartup : BaseStartup
     {
         public TestStartup(IConfiguration configuration, IHostEnvironment environment) : base(
             configuration, environment)
@@ -27,7 +27,7 @@ namespace Sitko.Core.Email.Smtp.Tests
         }
     }
     
-    public class TestApplication : WebApplication<TestApplication>
+    public class TestApplication : WebApplication<TestStartup>
     {
         public TestApplication(string[] args) : base(args)
         {
@@ -40,7 +40,7 @@ namespace Sitko.Core.Email.Smtp.Tests
                 moduleConfig.From = configuration["EMAIL_TESTS_FROM"];
                 moduleConfig.Host = new HostString("tests.local");
                 moduleConfig.Scheme = "https";
-            }).UseStartup<TestStartup>();
+            });
         }
     }
 }

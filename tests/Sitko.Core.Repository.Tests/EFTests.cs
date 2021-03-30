@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
 using Sitko.Core.Db.Postgres;
 using Sitko.Core.Repository.EntityFrameworkCore;
 using Sitko.Core.Xunit;
@@ -45,7 +46,7 @@ namespace Sitko.Core.Repository.Tests
             Assert.Equal(oldValue, change.OriginalValue);
             Assert.Equal(item.Status, change.CurrentValue);
         }
-        
+
         [Fact]
         public async Task Refresh()
         {
@@ -59,11 +60,11 @@ namespace Sitko.Core.Repository.Tests
             var oldValue = item.Status;
             item.Status = TestStatus.Disabled;
 
-           Assert.NotEqual(oldValue,item.Status);
-           await repository.RefreshAsync(item);
-           Assert.Equal(oldValue,item.Status);
+            Assert.NotEqual(oldValue, item.Status);
+            await repository.RefreshAsync(item);
+            Assert.Equal(oldValue, item.Status);
         }
-        
+
         [Fact]
         public async Task JsonConditions()
         {
@@ -257,7 +258,7 @@ namespace Sitko.Core.Repository.Tests
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name)
-                .AddModule<EFRepositoriesModule<EFTestScope>, EFRepositoriesModuleConfig>();
+                .AddModule<TestApplication, EFRepositoriesModule<EFTestScope>, EFRepositoriesModuleConfig>();
         }
 
         protected override void GetPostgresConfig(IConfiguration configuration, IHostEnvironment environment,
@@ -272,7 +273,7 @@ namespace Sitko.Core.Repository.Tests
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name)
-                .AddModule<EFRepositoriesModule<EFTestScopeThreadSafe>, EFRepositoriesModuleConfig>(
+                .AddModule<TestApplication, EFRepositoriesModule<EFTestScopeThreadSafe>, EFRepositoriesModuleConfig>(
                     (_, _, moduleConfig) => moduleConfig.EnableThreadSafeOperations = true);
         }
 
