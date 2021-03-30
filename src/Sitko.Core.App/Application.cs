@@ -45,7 +45,7 @@ namespace Sitko.Core.App
                 .UseDefaultServiceProvider(options =>
                 {
                     options.ValidateOnBuild = false;
-                    options.ValidateScopes = false;
+                    options.ValidateScopes = true;
                 })
                 .ConfigureLogging(builder => { builder.SetMinimumLevel(LogLevel.Information); }).Build();
 
