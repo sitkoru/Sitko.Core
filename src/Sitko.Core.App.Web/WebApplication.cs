@@ -85,7 +85,7 @@ namespace Sitko.Core.App.Web
             catch (Exception ex)
             {
                 var logger = serviceProvider.GetService<ILogger<WebApplication<T>>>();
-                logger.LogError(ex, ex.ToString());
+                logger.LogError(ex, "Error executing command: {ErrorText}", ex.ToString());
             }
 
             await host.StopAsync();
