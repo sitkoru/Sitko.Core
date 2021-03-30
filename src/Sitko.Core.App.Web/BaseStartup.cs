@@ -82,7 +82,7 @@ namespace Sitko.Core.App.Web
                 });
             }
 
-            WebApplication.GetInstance().ConfigureStartupServices(services, Configuration, Environment);
+            WebApplication.GetInstance()?.ConfigureStartupServices(services, Configuration, Environment);
             AddDataProtection(services);
             ConfigureHealthChecks(services.AddHealthChecks());
             ConfigureAppServices(services);

@@ -42,11 +42,19 @@ namespace Sitko.Core.App
             }
 
             var tmpHost = CreateHostBuilder(args)
+                .UseDefaultServiceProvider(options =>
+                {
+                    options.ValidateOnBuild = false;
+                    options.ValidateScopes = false;
+                })
                 .ConfigureLogging(builder => { builder.SetMinimumLevel(LogLevel.Information); }).Build();
 
             Configuration = tmpHost.Services.GetRequiredService<IConfiguration>();
             Environment = tmpHost.Services.GetRequiredService<IHostEnvironment>();
             Logger = tmpHost.Services.GetRequiredService<ILogger<Application>>();
+
+            Logger.LogInformation("Start application {Application} with Environment {Environment}",
+                Environment.ApplicationName, Environment.EnvironmentName);
 
             Name = Environment.ApplicationName;
 
@@ -146,7 +154,7 @@ namespace Sitko.Core.App
                 try
                 {
                     Init();
-                    _appHost = HostBuilder.Build();
+                    _appHost = BuildAppHost();
                     Logger.LogInformation("Check required modules");
                     foreach (var module in Modules)
                     {
@@ -169,6 +177,11 @@ namespace Sitko.Core.App
             }
 
             return _appHost!;
+        }
+
+        protected virtual IHost BuildAppHost()
+        {
+            return HostBuilder.Build();
         }
 
         public IHostBuilder GetHostBuilder()

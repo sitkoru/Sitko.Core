@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.App.Web
 {
@@ -18,9 +19,9 @@ namespace Sitko.Core.App.Web
             _instance = this;
         }
 
-        public static WebApplication GetInstance()
+        public static WebApplication? GetInstance()
         {
-            return _instance!;
+            return _instance;
         }
 
         public virtual void ConfigureStartupServices(IServiceCollection services, IConfiguration configuration,
@@ -78,7 +79,26 @@ namespace Sitko.Core.App.Web
     {
         protected WebApplication(string[] args) : base(args)
         {
-            GetHostBuilder()
+            Logger.LogInformation("Web application with startup {Startup}", typeof(TStartup));
+        }
+
+        protected override void ConfigureHostBuilder(IHostBuilder builder)
+        {
+            base.ConfigureHostBuilder(builder);
+            builder.ConfigureHostConfiguration(configurationBuilder =>
+                {
+                    configurationBuilder.AddUserSecrets<TStartup>(true);
+                    configurationBuilder.AddEnvironmentVariables();
+                })
+                .ConfigureAppConfiguration((context, configurationBuilder) =>
+                {
+                    if (context.HostingEnvironment.IsDevelopment())
+                    {
+                        configurationBuilder.AddUserSecrets<TStartup>();
+                    }
+
+                    configurationBuilder.AddEnvironmentVariables();
+                })
                 .ConfigureWebHostDefaults(builder =>
                 {
                     builder.UseStartup<TStartup>();
@@ -86,6 +106,7 @@ namespace Sitko.Core.App.Web
                 })
                 .ConfigureServices(collection =>
                 {
+                    collection.AddSingleton(typeof(WebApplication), this);
                     collection.AddSingleton(typeof(WebApplication<TStartup>), this);
                 });
         }
@@ -94,6 +115,19 @@ namespace Sitko.Core.App.Web
         {
         }
 
+        private WebApplication<TStartup> UseStartup()
+        {
+            GetHostBuilder().ConfigureWebHostDefaults(builder =>
+            {
+                builder.UseStartup<TStartup>();
+            });
+            return this;
+        }
+
+        protected override IHost BuildAppHost()
+        {
+            return HostBuilder.ConfigureWebHostDefaults(builder => builder.UseStartup<TStartup>()).Build();
+        }
 
         public WebApplication<TStartup> Run()
         {
@@ -103,21 +137,10 @@ namespace Sitko.Core.App.Web
 
         public WebApplication<TStartup> Run(int port)
         {
-            GetHostBuilder().ConfigureWebHostDefaults(builder =>
-                builder.UseStartup<TStartup>().UseUrls($"http://*:{port.ToString()}"));
+            GetHostBuilder().ConfigureWebHostDefaults(builder => builder.UseUrls($"http://*:{port.ToString()}"));
 
             GetAppHost().Start();
             return this;
-        }
-
-
-        public IHostBuilder CreateBasicHostBuilder()
-        {
-            return GetHostBuilder().ConfigureAppConfiguration(builder =>
-            {
-                builder.AddUserSecrets<TStartup>();
-                builder.AddEnvironmentVariables();
-            }).ConfigureWebHostDefaults(builder => builder.UseStartup<TStartup>());
         }
     }
 
