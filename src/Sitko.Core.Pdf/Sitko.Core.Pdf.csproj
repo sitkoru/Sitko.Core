@@ -21,13 +21,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
-    <PackageReference Include="PuppeteerSharp" Version="2.0.4"/>
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
+    <PackageReference Include="PuppeteerSharp" Version="2.0.4" />
     <PackageReference Include="Nito.AsyncEx" Version="5.1.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md"/>
-    <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\"/>
+    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
+    <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>
