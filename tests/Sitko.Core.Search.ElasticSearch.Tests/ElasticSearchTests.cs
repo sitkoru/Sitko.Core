@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Sitko.Core.App;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -57,7 +58,7 @@ namespace Sitko.Core.Search.ElasticSearch.Tests
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name)
-                .AddModule<ElasticSearchModule, ElasticSearchModuleConfig>(
+                .AddModule<TestApplication, ElasticSearchModule, ElasticSearchModuleConfig>(
                     (configuration, _, moduleConfig) =>
                     {
                         moduleConfig.Url = configuration["ELASTICSEARCH_URL"];

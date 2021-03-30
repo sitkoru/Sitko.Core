@@ -11,7 +11,7 @@ using Sitko.Core.Db.Postgres;
 namespace Sitko.Core.Xunit
 {
     public abstract class DbBaseTestScope<TApplication, TScope, TDbContext> : BaseTestScope<TApplication>
-        where TScope : class where TDbContext : DbContext where TApplication : Application<TApplication>
+        where TScope : class where TDbContext : DbContext where TApplication : Application
     {
         private TDbContext? _dbContext;
 

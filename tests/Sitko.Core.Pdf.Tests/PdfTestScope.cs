@@ -1,3 +1,4 @@
+using Sitko.Core.App;
 using Sitko.Core.Xunit;
 
 namespace Sitko.Core.Pdf.Tests
@@ -6,7 +7,9 @@ namespace Sitko.Core.Pdf.Tests
     {
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
-            return base.ConfigureApplication(application, name).AddModule<PdfRendererModule, PdfRendererModuleConfig>();
+            base.ConfigureApplication(application, name);
+            application.AddModule<TestApplication, PdfRendererModule, PdfRendererModuleConfig>();
+            return application;
         }
     }
 }

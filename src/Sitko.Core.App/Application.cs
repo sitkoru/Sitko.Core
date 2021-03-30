@@ -42,11 +42,19 @@ namespace Sitko.Core.App
             }
 
             var tmpHost = CreateHostBuilder(args)
+                .UseDefaultServiceProvider(options =>
+                {
+                    options.ValidateOnBuild = false;
+                    options.ValidateScopes = true;
+                })
                 .ConfigureLogging(builder => { builder.SetMinimumLevel(LogLevel.Information); }).Build();
 
             Configuration = tmpHost.Services.GetRequiredService<IConfiguration>();
             Environment = tmpHost.Services.GetRequiredService<IHostEnvironment>();
             Logger = tmpHost.Services.GetRequiredService<ILogger<Application>>();
+
+            Logger.LogInformation("Start application {Application} with Environment {Environment}",
+                Environment.ApplicationName, Environment.EnvironmentName);
 
             Name = Environment.ApplicationName;
 
@@ -59,12 +67,17 @@ namespace Sitko.Core.App
                 {
                     services.AddSingleton(_logLevelSwitcher);
                     services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
+                    services.AddSingleton(typeof(IApplication), this);
+                    services.AddSingleton(typeof(Application), this);
+                    services.AddSingleton(GetType(), this);
+                    services.AddHostedService<ApplicationLifetimeService>();
+                    services.AddTransient<IScheduler, Scheduler>();
                 });
         }
 
         private IHostBuilder CreateHostBuilder(string[] args)
         {
-            var builder = Host.CreateDefaultBuilder();
+            var builder = Host.CreateDefaultBuilder(args);
             ConfigureHostBuilder(builder);
             return builder;
         }
@@ -141,7 +154,7 @@ namespace Sitko.Core.App
                 try
                 {
                     Init();
-                    _appHost = HostBuilder.Build();
+                    _appHost = BuildAppHost();
                     Logger.LogInformation("Check required modules");
                     foreach (var module in Modules)
                     {
@@ -164,6 +177,11 @@ namespace Sitko.Core.App
             }
 
             return _appHost!;
+        }
+
+        protected virtual IHost BuildAppHost()
+        {
+            return HostBuilder.Build();
         }
 
         public IHostBuilder GetHostBuilder()
@@ -242,7 +260,7 @@ namespace Sitko.Core.App
                     module.ConfigureLogging(_loggerConfiguration, _logLevelSwitcher,
                         context.Configuration, context.HostingEnvironment);
                     module.ConfigureServices(services, context.Configuration, context.HostingEnvironment);
-                    AddModule(module);
+                    Modules.Add(module);
                 }
                 else
                 {
@@ -282,17 +300,17 @@ namespace Sitko.Core.App
 
         protected virtual string? GetVersion()
         {
-            return null;
+            return GetType().Assembly.GetName().Version?.ToString();
         }
 
         protected virtual void InitApplication()
         {
         }
 
-        protected virtual void AddModule(IApplicationModule module)
-        {
-            Modules.Add(module);
-        }
+        // protected virtual void AddModule(IApplicationModule module)
+        // {
+        //     Modules.Add(module);
+        // }
 
         public async Task InitAsync()
         {
@@ -413,64 +431,70 @@ namespace Sitko.Core.App
             return default;
 #pragma warning restore 8603
         }
-    }
 
-    public abstract class Application<T> : Application where T : Application<T>
-    {
-        protected Application(string[] args) : base(args)
-        {
-            ConfigureServices((_, services) =>
-            {
-                services.AddSingleton(typeof(IApplication), this);
-                services.AddSingleton(typeof(Application<T>), this);
-                services.AddSingleton(typeof(T), this);
-                services.AddHostedService<ApplicationLifetimeService<T>>();
-                services.AddTransient<IScheduler, Scheduler>();
-            });
-        }
-
-        public T ConfigureServices(Action<IServiceCollection> configure)
-        {
-            HostBuilder.ConfigureServices(configure);
-            return (T)this;
-        }
-
-        public T ConfigureServices(Action<HostBuilderContext, IServiceCollection> configure)
-        {
-            HostBuilder.ConfigureServices(configure);
-            return (T)this;
-        }
-
-        public T ConfigureLogLevel(string source, LogEventLevel level)
+        public Application ConfigureLogLevel(string source, LogEventLevel level)
         {
             LogEventLevels.Add(source, level);
-            return (T)this;
+            return this;
         }
 
-        public T AddModule<TModule, TModuleConfig>(
+        public Application AddModule<TModule, TModuleConfig>(
             Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null)
-            where TModule : IApplicationModule<TModuleConfig> where TModuleConfig : class, new()
+            where TModule : IApplicationModule<TModuleConfig>
+            where TModuleConfig : class, new()
         {
             RegisterModule<TModule, TModuleConfig>(configure);
-            return (T)this;
+            return this;
+        }
+    }
+
+    public static class ApplicationExtensions
+    {
+        public static T ConfigureServices<T>(this T application, Action<IServiceCollection> configure)
+            where T : Application
+        {
+            application.GetHostBuilder().ConfigureServices(configure);
+            return application;
         }
 
-        public T AddModule<TModule>() where TModule : BaseApplicationModule
+        public static TApplication ConfigureServices<TApplication>(this TApplication application,
+            Action<HostBuilderContext, IServiceCollection> configure) where TApplication : Application
         {
-            AddModule<TModule, BaseApplicationModuleConfig>();
-            return (T)this;
+            application.GetHostBuilder().ConfigureServices(configure);
+            return application;
         }
 
-
-        public T ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> action)
+        public static TApplication ConfigureLogLevel<TApplication>(this TApplication application, string source,
+            LogEventLevel level) where TApplication : Application
         {
-            HostBuilder.ConfigureAppConfiguration(action);
-            return (T)this;
+            application.ConfigureLogLevel(source, level);
+            return application;
         }
 
-        protected override string? GetVersion()
+        public static TApplication AddModule<TApplication, TModule, TModuleConfig>(this TApplication application,
+            Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null)
+            where TApplication : Application
+            where TModule : IApplicationModule<TModuleConfig>
+            where TModuleConfig : class, new()
         {
-            return typeof(T).Assembly.GetName().Version?.ToString();
+            application.AddModule<TModule, TModuleConfig>(configure);
+            return application;
+        }
+
+        public static TApplication AddModule<TApplication, TModule>(this TApplication application)
+            where TModule : BaseApplicationModule
+            where TApplication : Application
+        {
+            application.AddModule<TModule, BaseApplicationModuleConfig>();
+            return application;
+        }
+
+        public static TApplication ConfigureAppConfiguration<TApplication>(this TApplication application,
+            Action<HostBuilderContext, IConfigurationBuilder> action)
+            where TApplication : Application
+        {
+            application.GetHostBuilder().ConfigureAppConfiguration(action);
+            return application;
         }
     }
 }

@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Sitko.Core.App;
 using Sitko.Core.IdProvider;
 using Sitko.Core.IdProvider.SonyFlake;
 using Sitko.Core.Xunit;
@@ -30,7 +31,7 @@ namespace Sitko.Core.SonyFlake.Tests
     {
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
-            return base.ConfigureApplication(application, name).AddModule<SonyFlakeModule, SonyFlakeModuleConfig>(
+            return base.ConfigureApplication(application, name).AddModule<TestApplication, SonyFlakeModule, SonyFlakeModuleConfig>(
                 (configuration, _, moduleConfig) =>
                     moduleConfig.SonyflakeUri = configuration["SONYFLAKE_URI"]);
         }

@@ -15,7 +15,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Sitko.Core.App.Web
 {
-    public abstract class BaseStartup<T> where T : WebApplication<T>
+    public abstract class BaseStartup
     {
         protected IConfiguration Configuration { get; }
         protected IHostEnvironment Environment { get; }
@@ -82,7 +82,7 @@ namespace Sitko.Core.App.Web
                 });
             }
 
-            WebApplication<T>.GetInstance().ConfigureStartupServices(services, Configuration, Environment);
+            WebApplication.GetInstance()?.ConfigureStartupServices(services, Configuration, Environment);
             AddDataProtection(services);
             ConfigureHealthChecks(services.AddHealthChecks());
             ConfigureAppServices(services);
@@ -155,7 +155,7 @@ namespace Sitko.Core.App.Web
             }
         }
 
-        public void Configure(IApplicationBuilder appBuilder, WebApplication<T> application)
+        public void Configure(IApplicationBuilder appBuilder, WebApplication application)
         {
             if (!string.IsNullOrEmpty(_defaultCulture))
             {

@@ -23,7 +23,7 @@ namespace Sitko.Core.Xunit
         Task StartApplicationAsync();
     }
 
-    public abstract class BaseTestScope<TApplication> : IBaseTestScope where TApplication : Application<TApplication>
+    public abstract class BaseTestScope<TApplication> : IBaseTestScope where TApplication : Application
     {
         protected IServiceProvider? ServiceProvider;
         protected IConfiguration? Configuration { get; set; }
@@ -127,7 +127,7 @@ namespace Sitko.Core.Xunit
     {
     }
 
-    public class TestApplication : Application<TestApplication>
+    public class TestApplication : Application
     {
         public TestApplication(string[] args) : base(args)
         {

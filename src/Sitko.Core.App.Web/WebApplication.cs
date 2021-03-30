@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
@@ -12,83 +10,27 @@ using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.App.Web
 {
-    public abstract class WebApplication<T> : Application<T> where T : WebApplication<T>
+    public abstract class WebApplication : Application
     {
-        private static T? _instance;
+        private static WebApplication? _instance;
 
         protected WebApplication(string[] args) : base(args)
         {
-            GetHostBuilder().ConfigureServices(collection =>
+            _instance = this;
+        }
+
+        public static WebApplication? GetInstance()
+        {
+            return _instance;
+        }
+
+        public virtual void ConfigureStartupServices(IServiceCollection services, IConfiguration configuration,
+            IHostEnvironment environment)
+        {
+            foreach (var webModule in GetWebModules())
             {
-                collection.AddSingleton(typeof(WebApplication<T>), this);
-            });
-            _instance = (T)this;
-        }
-
-        protected override void ConfigureHostBuilder(IHostBuilder builder)
-        {
-            base.ConfigureHostBuilder(builder);
-            builder.ConfigureWebHostDefaults(ConfigureWebHostDefaults);
-        }
-
-        protected virtual void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)
-        {
-        }
-
-        public static T GetInstance()
-        {
-            return _instance!;
-        }
-
-        public T Run<TStartup>() where TStartup : BaseStartup<T>
-        {
-            UseStartup<TStartup>().GetAppHost().Start();
-            return (T)this;
-        }
-
-        public T Run<TStartup>(int port) where TStartup : BaseStartup<T>
-        {
-            GetHostBuilder().ConfigureWebHostDefaults(builder =>
-                builder.UseStartup<TStartup>().UseUrls($"http://*:{port.ToString()}"));
-
-            GetAppHost().Start();
-            return (T)this;
-        }
-
-        public T UseStartup<TStartup>() where TStartup : BaseStartup<T>
-        {
-            GetHostBuilder().ConfigureWebHostDefaults(webBuilder =>
-            {
-                webBuilder.UseStartup<TStartup>();
-            });
-            return (T)this;
-        }
-
-        public async Task RunAsync<TStartup>() where TStartup : BaseStartup<T>
-        {
-            await UseStartup<TStartup>().RunAsync();
-        }
-
-        public async Task ExecuteAsync<TStartup>(Func<IServiceProvider, Task> command) where TStartup : BaseStartup<T>
-        {
-            GetHostBuilder().UseConsoleLifetime();
-            using var host = UseStartup<TStartup>().GetAppHost();
-            await InitAsync();
-
-            var serviceProvider = host.Services;
-            await host.StartAsync();
-            try
-            {
-                using var scope = serviceProvider.CreateScope();
-                await command(scope.ServiceProvider);
+                webModule.ConfigureStartupServices(services, configuration, environment);
             }
-            catch (Exception ex)
-            {
-                var logger = serviceProvider.GetService<ILogger<WebApplication<T>>>();
-                logger.LogError(ex, "Error executing command: {ErrorText}", ex.ToString());
-            }
-
-            await host.StopAsync();
         }
 
         protected List<IWebApplicationModule> GetWebModules()
@@ -131,24 +73,78 @@ namespace Sitko.Core.App.Web
                 webModule.ConfigureEndpoints(configuration, environment, appBuilder, endpoints);
             }
         }
+    }
 
-        public virtual void ConfigureStartupServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+    public abstract class WebApplication<TStartup> : WebApplication where TStartup : BaseStartup
+    {
+        protected WebApplication(string[] args) : base(args)
         {
-            foreach (var webModule in GetWebModules())
-            {
-                webModule.ConfigureStartupServices(services, configuration, environment);
-            }
+            Logger.LogInformation("Web application with startup {Startup}", typeof(TStartup));
         }
 
-        public IHostBuilder CreateBasicHostBuilder<TStartup>()
-            where TStartup : BaseStartup<T>
+        protected override void ConfigureHostBuilder(IHostBuilder builder)
         {
-            return GetHostBuilder().ConfigureAppConfiguration(builder =>
-            {
-                builder.AddUserSecrets<TStartup>();
-                builder.AddEnvironmentVariables();
-            }).ConfigureWebHostDefaults(builder => builder.UseStartup<TStartup>());
+            base.ConfigureHostBuilder(builder);
+            builder.ConfigureHostConfiguration(configurationBuilder =>
+                {
+                    configurationBuilder.AddUserSecrets<TStartup>(true);
+                    configurationBuilder.AddEnvironmentVariables();
+                })
+                .ConfigureAppConfiguration((context, configurationBuilder) =>
+                {
+                    if (context.HostingEnvironment.IsDevelopment())
+                    {
+                        configurationBuilder.AddUserSecrets<TStartup>();
+                    }
+
+                    configurationBuilder.AddEnvironmentVariables();
+                })
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<TStartup>();
+                    ConfigureWebHostDefaults(webBuilder);
+                })
+                .ConfigureServices(collection =>
+                {
+                    collection.AddSingleton(typeof(WebApplication), this);
+                    collection.AddSingleton(typeof(WebApplication<TStartup>), this);
+                });
+        }
+
+        protected virtual void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)
+        {
+        }
+
+        public WebApplication<TStartup> Run()
+        {
+            GetAppHost().Start();
+            return this;
+        }
+
+        public WebApplication<TStartup> Run(int port)
+        {
+            GetHostBuilder().ConfigureWebHostDefaults(builder => builder.UseUrls($"http://*:{port.ToString()}"));
+
+            GetAppHost().Start();
+            return this;
+        }
+    }
+
+    public static class WebApplicationExtensions
+    {
+        public static TWebApplication Run<TWebApplication, TStartup>(this TWebApplication application)
+            where TWebApplication : WebApplication<TStartup> where TStartup : BaseStartup
+        {
+            application.Run();
+            return application;
+        }
+
+        public static TWebApplication Run<TWebApplication, TStartup>(this TWebApplication application, int port)
+            where TStartup : BaseStartup
+            where TWebApplication : WebApplication<TStartup>
+        {
+            application.Run(port);
+            return application;
         }
     }
 }
