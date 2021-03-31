@@ -26,6 +26,38 @@ namespace Sitko.Core.Storage.ImgProxy
                 .WithCredentials(_options.Key, _options.Salt);
         }
 
+        public string Url(string url)
+        {
+            _logger.LogDebug("Build url to image {Url}", url);
+            return BuildUrl(url);
+        }
+
+        public string Format(string url, string format)
+        {
+            _logger.LogDebug("Build url to image {Url} with format {Format}", url, format);
+            return BuildUrl(url, builder => builder.WithFormat(format));
+        }
+
+        public string Preset(string url, string preset)
+        {
+            _logger.LogDebug("Build url to image {Url} with preset {Preset}", url, preset);
+            return BuildUrl(url, builder => builder.WithPreset(preset));
+        }
+
+        public string Build(string url, Action<ImgProxyBuilder> build)
+        {
+            _logger.LogDebug("Build url to image {Url}", url);
+            return BuildUrl(url, build);
+        }
+
+        public string Resize(string url, int width, int height, string type = "auto", bool enlarge = false)
+        {
+            _logger.LogDebug(
+                "Build url to resized image {Url}. Width: {Width}. Height: {Height}. Type: {Type}. Enlarge: {Enlarge}",
+                url, width, height, type, enlarge);
+            return BuildUrl(url, builder => builder.WithResize(type, width, height, enlarge));
+        }
+
         public string Url(StorageItem item)
         {
             _logger.LogDebug("Build url to item {Item}", item.FilePath);
@@ -60,9 +92,14 @@ namespace Sitko.Core.Storage.ImgProxy
 
         private string BuildUrl(StorageItem item, Action<ImgProxyBuilder>? build = null)
         {
+            return BuildUrl(_storage.PublicUri(item).ToString(), build);
+        }
+
+        private string BuildUrl(string url, Action<ImgProxyBuilder>? build = null)
+        {
             var builder = GetBuilder();
             build?.Invoke(builder);
-            return builder.Build(_storage.PublicUri(item).ToString(), _options.EncodeUrls);
+            return builder.Build(url, _options.EncodeUrls);
         }
     }
 }
