@@ -307,11 +307,6 @@ namespace Sitko.Core.App
         {
         }
 
-        // protected virtual void AddModule(IApplicationModule module)
-        // {
-        //     Modules.Add(module);
-        // }
-
         public async Task InitAsync()
         {
             var host = GetAppHost();
@@ -435,6 +430,13 @@ namespace Sitko.Core.App
         public Application ConfigureLogLevel(string source, LogEventLevel level)
         {
             LogEventLevels.Add(source, level);
+            return this;
+        }
+
+        public Application AddModule<TModule>() where TModule : BaseApplicationModule
+
+        {
+            RegisterModule<TModule, BaseApplicationModuleConfig>();
             return this;
         }
 
