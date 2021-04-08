@@ -1,0 +1,48 @@
+name: Sitko.Core.Repository
+
+on:
+    push:
+        branches: [ master ]
+        paths:
+            - "src/Sitko.Core.App/**"
+            - "src/Sitko.Core.Grpc/**"
+            - "src/Sitko.Core.Grpc.Client/**"
+            - "src/Sitko.Core.Grpc.Server/**"
+            - "tests/Sitko.Core.Grpc.Client.Tests/**"
+            - "tests/Sitko.Core.Grpc.Server.Tests/**"
+            - ".github/workflows/grpc.yml"
+    pull_request:
+        branches: [ master ]
+        paths:
+            - "src/Sitko.Core.App/**"
+            - "src/Sitko.Core.Grpc/**"
+            - "src/Sitko.Core.Grpc.Client/**"
+            - "src/Sitko.Core.Grpc.Server/**"
+            - "tests/Sitko.Core.Grpc.Client.Tests/**"
+            - "tests/Sitko.Core.Grpc.Server.Tests/**"
+            - ".github/workflows/grpc.yml"
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        container: ghcr.io/sitkoru/actions-container
+        env:
+            POSTGRES_HOST: postgres
+            XUNIT_USE_POSTGRES: "true"
+        services:
+            postgres:
+                image: postgres:alpine
+                env:
+                    POSTGRES_HOST_AUTH_METHOD: trust
+        steps:
+            -   uses: actions/checkout@v2
+            -   uses: actions/setup-dotnet@v1
+                with:
+                    dotnet-version: '3.1.x'
+            -   uses: actions/setup-dotnet@v1
+                with:
+                    dotnet-version: '5.0.x'
+            -   name: Add Github Actions logger
+                run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
+            -   name: Run tests
+                run: dotnet test --logger GitHubActions tests/Sitko.Core.Grpc.Client.Tests/Sitko.Core.Grpc.Client.Tests.csproj

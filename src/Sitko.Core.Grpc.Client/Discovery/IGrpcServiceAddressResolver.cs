@@ -4,9 +4,10 @@ using Grpc.Core;
 
 namespace Sitko.Core.Grpc.Client.Discovery
 {
-    public interface IGrpcServiceAddressResolver<T> where T : ClientBase<T>
+    public interface IGrpcServiceAddressResolver<TClient> where TClient : ClientBase<TClient>
     {
         public Task InitAsync();
         public Uri? GetAddress();
+        event EventHandler? OnChange;
     }
 }

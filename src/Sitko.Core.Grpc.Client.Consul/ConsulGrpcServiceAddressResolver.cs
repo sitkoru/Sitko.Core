@@ -16,7 +16,7 @@ namespace Sitko.Core.Grpc.Client.Consul
         private readonly IConsulClient _consulClient;
         private readonly GrpcClientConsulModuleConfig _config;
         private readonly ILogger<ConsulGrpcServiceAddressResolver<TClient>> _logger;
-        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cts = new();
         private Uri? _target;
         private ulong _lastIndex;
 
@@ -83,6 +83,8 @@ namespace Sitko.Core.Grpc.Client.Consul
                     _logger.LogError("Empty response from consul for service {ServiceName}", _serviceName);
                     _target = null;
                 }
+
+                OnChange?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -90,6 +92,8 @@ namespace Sitko.Core.Grpc.Client.Consul
         {
             return _target;
         }
+
+        public event EventHandler? OnChange;
 
         public async ValueTask DisposeAsync()
         {

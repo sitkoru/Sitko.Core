@@ -28,5 +28,7 @@ namespace Sitko.Core.Grpc.Client.External
         {
             return _address;
         }
+
+        public event EventHandler? OnChange;
     }
 }
