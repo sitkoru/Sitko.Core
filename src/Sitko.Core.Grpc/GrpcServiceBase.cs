@@ -21,7 +21,7 @@ namespace Sitko.Core.Grpc
             return new() {ResponseInfo = new ApiResponseInfo {IsSuccess = true}};
         }
 
-        protected TResponse ProcessCall<TRequest, TResponse>(TRequest request,
+        protected Task<TResponse> ProcessCall<TRequest, TResponse>(TRequest request,
             Func<TResponse, GrpcCallResult> execute,
             [CallerMemberName] string? methodName = null)
             where TResponse : class, IGrpcResponse, new() where TRequest : class, IGrpcRequest
@@ -37,7 +37,7 @@ namespace Sitko.Core.Grpc
                 response.SetException(ex, Logger, request, 500, methodName);
             }
 
-            return response;
+            return Task.FromResult(response);
         }
 
         private void ProcessError<TRequest, TResponse>(GrpcCallResult result, TRequest request, TResponse response)

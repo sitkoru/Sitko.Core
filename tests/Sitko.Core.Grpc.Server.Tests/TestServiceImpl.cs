@@ -9,8 +9,7 @@ namespace Sitko.Core.Grpc.Server.Tests
         public override Task<TestResponse> Request(TestRequest request, ServerCallContext context)
         {
             Logger.LogDebug("Execute request");
-            var result = ProcessCall<TestRequest, TestResponse>(request, _ => new GrpcCallResult());
-            return Task.FromResult(result);
+            return ProcessCall<TestRequest, TestResponse>(request, _ => new GrpcCallResult());
         }
 
         public TestServiceImpl(ILogger<TestServiceImpl> logger) : base(logger)
