@@ -1,4 +1,4 @@
-name: Sitko.Core.Repository
+name: Sitko.Core.Grpc
 
 on:
     push:
