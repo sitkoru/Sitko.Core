@@ -27,10 +27,5 @@ namespace Sitko.Core.App.Web
             IApplicationBuilder appBuilder)
         {
         }
-
-        void ConfigureStartupServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
-        }
     }
 }

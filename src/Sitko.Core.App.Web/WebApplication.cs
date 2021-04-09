@@ -16,15 +16,6 @@ namespace Sitko.Core.App.Web
         {
         }
 
-        public virtual void ConfigureStartupServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
-            foreach (var webModule in GetWebModules())
-            {
-                webModule.ConfigureStartupServices(services, configuration, environment);
-            }
-        }
-
         protected List<IWebApplicationModule> GetWebModules()
         {
             return Modules.OfType<IWebApplicationModule>().ToList();

@@ -100,7 +100,6 @@ namespace Sitko.Core.App.Web
                 });
             }
 
-            WebApplication.ConfigureStartupServices(services, Configuration, Environment);
             AddDataProtection(services);
             ConfigureHealthChecks(services.AddHealthChecks());
             ConfigureAppServices(services);
