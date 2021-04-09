@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,7 +19,7 @@ namespace Sitko.Core.App
     public abstract class Application : IApplication, IAsyncDisposable
     {
         public readonly Guid Id = Guid.NewGuid();
-        private static readonly Dictionary<Guid, Application> _apps = new Dictionary<Guid, Application>();
+        private static readonly ConcurrentDictionary<Guid, Application> _apps = new ConcurrentDictionary<Guid, Application>();
         private readonly bool _check;
         private readonly LoggerConfiguration _loggerConfiguration = new LoggerConfiguration();
         private readonly LogLevelSwitcher _logLevelSwitcher = new LogLevelSwitcher();
@@ -37,7 +38,7 @@ namespace Sitko.Core.App
 
         protected Application(string[] args)
         {
-            _apps.Add(Id, this);
+            _apps.TryAdd(Id, this);
             Console.OutputEncoding = Encoding.UTF8;
             if (args.Length > 0 && args[0] == "check")
             {
