@@ -19,6 +19,7 @@ namespace Sitko.Core.App.Web
     {
         protected IConfiguration Configuration { get; }
         protected IHostEnvironment Environment { get; }
+        protected WebApplication WebApplication { get; }
 
         protected virtual bool EnableMvc { get; } = true;
         protected virtual bool AddHttpContextAccessor { get; } = true;
@@ -34,6 +35,23 @@ namespace Sitko.Core.App.Web
         {
             Configuration = configuration;
             Environment = environment;
+            var appId = configuration.GetValue<Guid?>("ApplicationId");
+            if (appId is not null)
+            {
+                var app = Application.GetApp(appId.Value);
+                if (app is WebApplication webApplication)
+                {
+                    WebApplication = webApplication;
+                }
+                else
+                {
+                    throw new Exception($"App {appId} is not a WebApplication");
+                }
+            }
+            else
+            {
+                throw new Exception("ApplicationId is empty");
+            }
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -82,7 +100,7 @@ namespace Sitko.Core.App.Web
                 });
             }
 
-            WebApplication.GetInstance()?.ConfigureStartupServices(services, Configuration, Environment);
+            WebApplication.ConfigureStartupServices(services, Configuration, Environment);
             AddDataProtection(services);
             ConfigureHealthChecks(services.AddHealthChecks());
             ConfigureAppServices(services);

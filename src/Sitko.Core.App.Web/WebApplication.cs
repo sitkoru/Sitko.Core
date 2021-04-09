@@ -12,16 +12,8 @@ namespace Sitko.Core.App.Web
 {
     public abstract class WebApplication : Application
     {
-        private static WebApplication? _instance;
-
         protected WebApplication(string[] args) : base(args)
         {
-            _instance = this;
-        }
-
-        public static WebApplication? GetInstance()
-        {
-            return _instance;
         }
 
         public virtual void ConfigureStartupServices(IServiceCollection services, IConfiguration configuration,
@@ -85,7 +77,8 @@ namespace Sitko.Core.App.Web
         protected override void ConfigureHostBuilder(IHostBuilder builder)
         {
             base.ConfigureHostBuilder(builder);
-            builder.ConfigureHostConfiguration(configurationBuilder =>
+            builder
+                .ConfigureHostConfiguration(configurationBuilder =>
                 {
                     configurationBuilder.AddUserSecrets<TStartup>(true);
                     configurationBuilder.AddEnvironmentVariables();
@@ -99,15 +92,16 @@ namespace Sitko.Core.App.Web
 
                     configurationBuilder.AddEnvironmentVariables();
                 })
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<TStartup>();
-                    ConfigureWebHostDefaults(webBuilder);
-                })
                 .ConfigureServices(collection =>
                 {
                     collection.AddSingleton(typeof(WebApplication), this);
                     collection.AddSingleton(typeof(WebApplication<TStartup>), this);
+                })
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseSetting("ApplicationId", this.Id.ToString());
+                    webBuilder.UseStartup<TStartup>();
+                    ConfigureWebHostDefaults(webBuilder);
                 });
         }
 

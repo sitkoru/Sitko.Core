@@ -17,6 +17,8 @@ namespace Sitko.Core.App
 {
     public abstract class Application : IApplication, IAsyncDisposable
     {
+        public readonly Guid Id = Guid.NewGuid();
+        private static readonly Dictionary<Guid, Application> _apps = new Dictionary<Guid, Application>();
         private readonly bool _check;
         private readonly LoggerConfiguration _loggerConfiguration = new LoggerConfiguration();
         private readonly LogLevelSwitcher _logLevelSwitcher = new LogLevelSwitcher();
@@ -35,6 +37,7 @@ namespace Sitko.Core.App
 
         protected Application(string[] args)
         {
+            _apps.Add(Id, this);
             Console.OutputEncoding = Encoding.UTF8;
             if (args.Length > 0 && args[0] == "check")
             {
@@ -73,6 +76,16 @@ namespace Sitko.Core.App
                     services.AddHostedService<ApplicationLifetimeService>();
                     services.AddTransient<IScheduler, Scheduler>();
                 });
+        }
+
+        public static Application GetApp(Guid id)
+        {
+            if (_apps.ContainsKey(id))
+            {
+                return _apps[id];
+            }
+
+            throw new ArgumentException($"Application {id} is not registered", nameof(id));
         }
 
         private IHostBuilder CreateHostBuilder(string[] args)
