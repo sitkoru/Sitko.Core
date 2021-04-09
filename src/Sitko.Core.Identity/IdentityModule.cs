@@ -18,8 +18,6 @@ namespace Sitko.Core.Identity
         where TDbContext : IdentityDbContext<TUser, TRole, TPk>
         where TPk : IEquatable<TPk>
     {
-        private IdentityBuilder? _identityBuilder;
-
         public IdentityModule(IdentityModuleOptions config, Application application) : base(config, application)
         {
         }
@@ -28,12 +26,17 @@ namespace Sitko.Core.Identity
             IHostEnvironment environment)
         {
             base.ConfigureServices(services, configuration, environment);
-            _identityBuilder = services
+            var identityBuilder = services
                 .AddIdentity<TUser, TRole>(options =>
                     options.SignIn.RequireConfirmedAccount = Config.RequireConfirmedAccount)
                 .AddEntityFrameworkStores<TDbContext>()
                 .AddErrorDescriber<RussianIdentityErrorDescriber>()
                 .AddDefaultTokenProviders();
+            if (Config.AddDefaultUi)
+            {
+                identityBuilder.AddDefaultUI();
+                services.AddRazorPages();
+            }
 
             services.ConfigureApplicationCookie(options =>
             {
@@ -59,16 +62,6 @@ namespace Sitko.Core.Identity
         {
             appBuilder.UseAuthentication();
             appBuilder.UseAuthorization();
-        }
-
-        public void ConfigureStartupServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
-            if (Config.AddDefaultUi)
-            {
-                _identityBuilder.AddDefaultUI();
-                services.AddRazorPages();
-            }
         }
     }
 
