@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
@@ -23,44 +22,27 @@ namespace Sitko.Core.Grpc
         }
 
         protected Task<TResponse> ProcessCall<TRequest, TResponse>(TRequest request,
-            Func<TResponse, GrpcCallResult> execute,
-            [CallerMemberName] string? methodName = null)
+            ServerCallContext context,
+            Func<TResponse, GrpcCallResult> execute)
             where TResponse : class, IGrpcResponse, new() where TRequest : class, IGrpcRequest
         {
             var response = CreateResponse<TResponse>();
             try
             {
                 var result = execute(response);
-                ProcessError(result, request, response);
+                ProcessResult(result, request, response, context.Method);
             }
             catch (Exception ex)
             {
-                response.SetException(ex, Logger, request, 500, methodName);
+                ProcessResult(new GrpcCallResult(ex), request, response, context.Method);
             }
 
             return Task.FromResult(response);
         }
 
-        private void ProcessError<TRequest, TResponse>(GrpcCallResult result, TRequest request, TResponse response)
-            where TResponse : class, IGrpcResponse, new() where TRequest : class, IGrpcRequest
-        {
-            if (!result.IsSuccess)
-            {
-                if (result.Exception is not null)
-                {
-                    response.SetException(result.Exception, Logger, request);
-                }
-
-                if (result.Error.Length > 0)
-                {
-                    response.SetErrors(result.Error);
-                }
-            }
-        }
-
         protected async Task<TResponse> ProcessCallAsync<TRequest, TResponse>(TRequest request,
-            Func<TResponse, Task<GrpcCallResult>> executeAsync,
-            [CallerMemberName] string? methodName = null)
+            ServerCallContext context,
+            Func<TResponse, Task<GrpcCallResult>> executeAsync)
             where TResponse : class, IGrpcResponse, new() where TRequest : class, IGrpcRequest
         {
             {
@@ -68,11 +50,11 @@ namespace Sitko.Core.Grpc
                 try
                 {
                     var result = await executeAsync(response);
-                    ProcessError(result, request, response);
+                    ProcessResult(result, request, response, context.Method);
                 }
                 catch (Exception ex)
                 {
-                    response.SetException(ex, Logger, request, 500, methodName);
+                    ProcessResult(new GrpcCallResult(ex), request, response, context.Method);
                 }
 
                 return response;
@@ -81,8 +63,8 @@ namespace Sitko.Core.Grpc
 
         public async Task ProcessStreamAsync<TRequest, TResponse>(TRequest request,
             IServerStreamWriter<TResponse> responseStream,
-            Func<Func<Action<TResponse>, Task>, Task> executeAsync,
-            [CallerMemberName] string? methodName = null)
+            ServerCallContext context,
+            Func<Func<Action<TResponse>, Task>, Task> executeAsync)
             where TResponse : class, IGrpcResponse, new() where TRequest : class, IGrpcRequest
         {
             {
@@ -98,8 +80,30 @@ namespace Sitko.Core.Grpc
                 catch (Exception ex)
                 {
                     var response = CreateResponse<TResponse>();
-                    response.SetException(ex, Logger, request, 500, methodName);
+                    ProcessResult(new GrpcCallResult(ex), request, response, context.Method);
                     await responseStream.WriteAsync(response);
+                }
+            }
+        }
+
+        private void ProcessResult<TRequest, TResponse>(GrpcCallResult result, TRequest request, TResponse response,
+            string methodName)
+            where TResponse : class, IGrpcResponse, new() where TRequest : class, IGrpcRequest
+        {
+            if (!result.IsSuccess)
+            {
+                if (result.Exception is not null)
+                {
+                    Logger.LogError(result.Exception,
+                        "Error in method {MethodName}. Request: {@Request}. Error: {ErrorText}",
+                        methodName,
+                        request, result.Exception.ToString());
+                    response.SetException(result.Exception);
+                }
+
+                if (result.Error.Length > 0)
+                {
+                    response.SetErrors(result.Error);
                 }
             }
         }
@@ -113,7 +117,7 @@ namespace Sitko.Core.Grpc
         {
             return new(error);
         }
-        
+
         protected GrpcCallResult Error(IEnumerable<string> errors)
         {
             return new(errors);
