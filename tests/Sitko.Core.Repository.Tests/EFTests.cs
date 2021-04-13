@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
@@ -45,6 +46,31 @@ namespace Sitko.Core.Repository.Tests
             var change = result.Changes.First(c => c.Name == nameof(item.Status));
             Assert.Equal(oldValue, change.OriginalValue);
             Assert.Equal(item.Status, change.CurrentValue);
+        }
+
+        [Fact]
+        public async Task Validation()
+        {
+            var scope = await GetScopeAsync<EFTestScopeThreadSafe>();
+            var validator = scope.GetAll<IValidator>();
+            Assert.NotEmpty(validator);
+
+            var typedValidator = scope.GetAll<IValidator<TestModel>>();
+            Assert.NotEmpty(typedValidator);
+
+            var repository = scope.Get<IRepository<TestModel, Guid>>();
+
+            var item = await repository.GetAsync();
+
+            Assert.NotNull(item);
+            item.Status = TestStatus.Error;
+
+            var result = await repository.UpdateAsync(item);
+            Assert.False(result.IsSuccess);
+            Assert.Single(result.Errors);
+            var error = result.Errors.First();
+            Assert.Equal(nameof(TestModel.Status), error.PropertyName);
+            Assert.Equal("Status can't be error", error.ErrorMessage);
         }
 
         [Fact]
@@ -185,12 +211,12 @@ namespace Sitko.Core.Repository.Tests
             base.OnModelCreating(modelBuilder);
             var testModels = new List<TestModel>
             {
-                new TestModel {Id = Guid.NewGuid(), FooId = 1},
-                new TestModel {Id = Guid.NewGuid(), FooId = 2},
-                new TestModel {Id = Guid.NewGuid(), FooId = 3},
-                new TestModel {Id = Guid.NewGuid(), FooId = 4},
-                new TestModel {Id = Guid.NewGuid(), FooId = 5},
-                new TestModel {Id = Guid.NewGuid(), FooId = 5}
+                new() {Id = Guid.NewGuid(), FooId = 1},
+                new() {Id = Guid.NewGuid(), FooId = 2},
+                new() {Id = Guid.NewGuid(), FooId = 3},
+                new() {Id = Guid.NewGuid(), FooId = 4},
+                new() {Id = Guid.NewGuid(), FooId = 5},
+                new() {Id = Guid.NewGuid(), FooId = 5}
             };
             modelBuilder.Entity<TestModel>().HasData(testModels);
             var barModel = new BarModel {Id = Guid.NewGuid(), TestId = testModels.First().Id};
@@ -209,9 +235,17 @@ namespace Sitko.Core.Repository.Tests
         public List<BarModel> Bars { get; set; }
     }
 
+    public class TestModelValidator : AbstractValidator<TestModel>
+    {
+        public TestModelValidator()
+        {
+            RuleFor(m => m.Status).NotEqual(TestStatus.Error).WithMessage("Status can't be error");
+        }
+    }
+
     public enum TestStatus
     {
-        Enabled, Disabled
+        Enabled, Disabled, Error
     }
 
     public class BarModel : Entity<Guid>
@@ -253,14 +287,8 @@ namespace Sitko.Core.Repository.Tests
         }
     }
 
-    public class EFTestScope : DbBaseTestScope<EFTestScope, TestDbContext>
+    public abstract class BaseEFTestScope : DbBaseTestScope<BaseEFTestScope, TestDbContext>
     {
-        protected override TestApplication ConfigureApplication(TestApplication application, string name)
-        {
-            return base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, EFRepositoriesModule<EFTestScope>, EFRepositoriesModuleConfig>();
-        }
-
         protected override void GetPostgresConfig(IConfiguration configuration, IHostEnvironment environment,
             PostgresDatabaseModuleConfig<TestDbContext> moduleConfig, string dbName)
         {
@@ -268,19 +296,22 @@ namespace Sitko.Core.Repository.Tests
         }
     }
 
-    public class EFTestScopeThreadSafe : EFTestScope
+    public class EFTestScope : BaseEFTestScope
+    {
+        protected override TestApplication ConfigureApplication(TestApplication application, string name)
+        {
+            return base.ConfigureApplication(application, name)
+                .AddModule<TestApplication, EFRepositoriesModule<EFTestScope>, EFRepositoriesModuleConfig>();
+        }
+    }
+
+    public class EFTestScopeThreadSafe : BaseEFTestScope
     {
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name)
                 .AddModule<TestApplication, EFRepositoriesModule<EFTestScopeThreadSafe>, EFRepositoriesModuleConfig>(
                     (_, _, moduleConfig) => moduleConfig.EnableThreadSafeOperations = true);
-        }
-
-        protected override void GetPostgresConfig(IConfiguration configuration, IHostEnvironment environment,
-            PostgresDatabaseModuleConfig<TestDbContext> moduleConfig, string dbName)
-        {
-            GetDefaultPostgresConfig(configuration, environment, moduleConfig, dbName);
         }
     }
 }
