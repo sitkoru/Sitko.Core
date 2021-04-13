@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Grpc.Core;
@@ -111,6 +112,11 @@ namespace Sitko.Core.Grpc
         protected GrpcCallResult Error(string error)
         {
             return new(error);
+        }
+        
+        protected GrpcCallResult Error(IEnumerable<string> errors)
+        {
+            return new(errors);
         }
 
         protected GrpcCallResult Exception(Exception ex, string? error = null)
