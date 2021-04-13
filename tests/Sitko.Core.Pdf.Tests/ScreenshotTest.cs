@@ -1,8 +1,4 @@
-using System.IO;
 using System.Threading.Tasks;
-using iText.Kernel.Pdf;
-using iText.Kernel.Pdf.Canvas.Parser;
-using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using Xunit;
 using Xunit.Abstractions;
 
