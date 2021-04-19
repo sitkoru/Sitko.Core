@@ -1,7 +1,7 @@
 version: "2.1"
 services:
     nats:
-        image: nats-streaming:0.16.2
+        image: nats-streaming:0.21.2
         command: -cid tests
         ports:
             - 4222:4222
