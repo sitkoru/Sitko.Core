@@ -10,7 +10,7 @@ jobs:
         runs-on: ubuntu-latest
         container: mcr.microsoft.com/dotnet/sdk:5.0
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v2.3.4
             -   name: Prepare
                 id: prep
                 run: |
@@ -21,7 +21,7 @@ jobs:
             -   name: Push to Nuget
                 run: find packages -name *.nupkg -exec dotnet nuget push {} -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} \;
             -   name: Download Sitko.Core
-                uses: actions/checkout@v2
+                uses: actions/checkout@v2.3.4
                 with:
                     repository: "sitkoru/Sitko.Core"
                     path: proto
