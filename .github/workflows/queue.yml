@@ -35,10 +35,10 @@ jobs:
                 image: nats-streaming:latest
         steps:
             -   uses: actions/checkout@v2
-            -   uses: actions/setup-dotnet@v1
+            -   uses: actions/setup-dotnet@v1.8.0
                 with:
                     dotnet-version: '3.1.x'
-            -   uses: actions/setup-dotnet@v1
+            -   uses: actions/setup-dotnet@v1.8.0
                 with:
                     dotnet-version: '5.0.x'
             -   name: Add Github Actions logger
