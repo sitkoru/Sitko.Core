@@ -45,7 +45,7 @@ jobs:
                 env:
                     POSTGRES_HOST_AUTH_METHOD: trust
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v2.3.4
             -   uses: actions/setup-dotnet@v1.8.0
                 with:
                     dotnet-version: '3.1.x'
