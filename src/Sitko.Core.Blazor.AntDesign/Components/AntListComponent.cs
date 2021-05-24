@@ -5,7 +5,7 @@ using Sitko.Core.App.Blazor.Components;
 
 namespace Sitko.Core.Blazor.AntDesign.Components
 {
-    public abstract class AntListPage<TItem> : BaseComponent where TItem : class
+    public abstract class AntListComponent<TItem> : BaseComponent where TItem : class
     {
         protected IEnumerable<TItem> Items;
         protected int Count;
