@@ -1,5 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
@@ -22,11 +21,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="10.1.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App.Blazor\Sitko.Core.App.Blazor.csproj" />
+    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj" />
   </ItemGroup>
   
   <ItemGroup>
