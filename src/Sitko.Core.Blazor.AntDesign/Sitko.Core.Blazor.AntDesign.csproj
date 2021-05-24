@@ -22,15 +22,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App.Blazor\Sitko.Core.App.Blazor.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.App.Blazor\Sitko.Core.App.Blazor.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AntDesign" Version="0.8.0"/>
+    <PackageReference Include="AntDesign" Version="0.8.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md"/>
-    <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\"/>
+    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
+    <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>
