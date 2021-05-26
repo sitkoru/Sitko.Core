@@ -18,11 +18,22 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         private readonly TDbContext _dbContext;
         private readonly AsyncLock _asyncLock = new();
 
-        protected EFRepository(EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext) : base(
+        protected EFRepository(IOptionsMonitor<EFRepositoriesModuleConfig> config,
+            EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext) : base(
             repositoryContext)
         {
             _repositoryContext = repositoryContext;
             _dbContext = repositoryContext.DbContext;
+        }
+
+        private EFRepositoryLock? GetLock()
+        {
+            if (_config.CurrentValue.EnableThreadSafeOperations)
+            {
+                return _lock;
+            }
+
+            return null;
         }
 
         protected async Task<T> ExecuteDbContextOperationAsync<T>(Func<TDbContext, Task<T>> operation,

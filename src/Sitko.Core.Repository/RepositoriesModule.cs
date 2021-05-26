@@ -11,10 +11,9 @@ namespace Sitko.Core.Repository
     }
 
     public abstract class RepositoriesModule<TAssembly, TConfig> : BaseApplicationModule<TConfig>, IRepositoriesModule
-        where TConfig : class, new()
+        where TConfig : BaseModuleConfig, new()
     {
-        protected RepositoriesModule(TConfig config, Application application) : base(config,
-            application)
+        protected RepositoriesModule(Application application) : base(application)
         {
         }
 

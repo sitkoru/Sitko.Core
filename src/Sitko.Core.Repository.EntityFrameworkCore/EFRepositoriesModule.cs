@@ -7,8 +7,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 {
     public class EFRepositoriesModule<T> : RepositoriesModule<T, EFRepositoriesModuleConfig>
     {
-        public EFRepositoriesModule(EFRepositoriesModuleConfig config, Application application) : base(config,
-            application)
+        public EFRepositoriesModule(Application application) : base(application)
         {
         }
 
@@ -24,7 +23,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         }
     }
 
-    public class EFRepositoriesModuleConfig
+    public class EFRepositoriesModuleConfig : BaseModuleConfig
     {
     }
 }
