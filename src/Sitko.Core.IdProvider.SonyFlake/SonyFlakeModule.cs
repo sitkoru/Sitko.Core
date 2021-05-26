@@ -8,7 +8,7 @@ namespace Sitko.Core.IdProvider.SonyFlake
 {
     public class SonyFlakeModule : BaseApplicationModule<SonyFlakeModuleConfig>
     {
-        public SonyFlakeModule(SonyFlakeModuleConfig config, Application application) : base(config, application)
+        public SonyFlakeModule(Application application) : base(application)
         {
         }
 
@@ -18,17 +18,8 @@ namespace Sitko.Core.IdProvider.SonyFlake
             base.ConfigureServices(services, configuration, environment);
             services.AddHttpClient<IIdProvider, SonyFlakeIdProvider>(client =>
             {
-                client.BaseAddress = new Uri(Config.SonyflakeUri);
+                client.BaseAddress = new Uri(GetConfig().Uri);
             });
-        }
-
-        public override void CheckConfig()
-        {
-            base.CheckConfig();
-            if (string.IsNullOrEmpty(Config.SonyflakeUri))
-            {
-                throw new ArgumentException("Provide sonyflake url", nameof(Config.SonyflakeUri));
-            }
         }
     }
 }
