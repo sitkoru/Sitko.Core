@@ -154,7 +154,7 @@ namespace Sitko.Core.Storage.Cache
         }
 
         Task<StorageItemDownloadInfo?> IStorageCache<TStorageOptions>.GetItemAsync(string path,
-            CancellationToken? cancellationToken )
+            CancellationToken? cancellationToken)
         {
             if (_cache == null)
             {

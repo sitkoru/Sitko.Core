@@ -10,7 +10,7 @@ using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.S3
 {
-    internal class S3StorageMetadataProvider<TStorageOptions> : EmbedStorageMetadataProvider<S3Storage<TStorageOptions>,
+    public class S3StorageMetadataProvider<TStorageOptions> : EmbedStorageMetadataProvider<S3Storage<TStorageOptions>,
         TStorageOptions, S3StorageMetadataProviderOptions>
         where TStorageOptions : S3StorageOptions, new()
     {
@@ -64,7 +64,7 @@ namespace Sitko.Core.Storage.S3
         }
     }
 
-    internal class S3StorageMetadataProviderOptions : EmbedStorageMetadataProviderOptions
+    public class S3StorageMetadataProviderOptions : EmbedStorageMetadataProviderOptions
     {
     }
 }

@@ -29,7 +29,7 @@ namespace Sitko.Core.Storage.S3
             base.ConfigureServices(services, configuration, environment);
             services.AddSingleton<S3ClientProvider<TS3StorageOptions>>();
             services.AddHealthChecks().Add(new HealthCheckRegistration(GetType().Name,
-                (Func<IServiceProvider, IHealthCheck>)(sp =>
+                _ =>
                 {
                     var options = new S3BucketOptions
                     {
@@ -44,7 +44,7 @@ namespace Sitko.Core.Storage.S3
                         }
                     };
                     return new S3HealthCheck(options);
-                }), null, null, null));
+                }, null, null, null));
         }
     }
 
