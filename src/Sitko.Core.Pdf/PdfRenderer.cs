@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Nito.AsyncEx;
 using PuppeteerSharp;
 
@@ -8,12 +9,12 @@ namespace Sitko.Core.Pdf
 {
     internal class PdfRenderer : IPdfRenderer, IAsyncDisposable
     {
-        private readonly PdfRendererModuleConfig _config;
+        private readonly IOptionsMonitor<PdfRendererModuleConfig> _config;
         private readonly ILogger<PdfRenderer> _logger;
         private Browser? _browser;
         private readonly AsyncLock _lock = new();
 
-        public PdfRenderer(PdfRendererModuleConfig config, ILogger<PdfRenderer> logger)
+        public PdfRenderer(IOptionsMonitor<PdfRendererModuleConfig> config, ILogger<PdfRenderer> logger)
         {
             _config = config;
             _logger = logger;
@@ -132,8 +133,8 @@ namespace Sitko.Core.Pdf
                         {
                             Headless = true,
                             Args = new[] {"--no-sandbox"},
-                            IgnoreHTTPSErrors = _config.IgnoreHTTPSErrors,
-                            DefaultViewport = _config.ViewPortOptions
+                            IgnoreHTTPSErrors = _config.CurrentValue.IgnoreHTTPSErrors,
+                            DefaultViewport = _config.CurrentValue.ViewPortOptions
                         });
                     }
                 }
