@@ -9,19 +9,21 @@ using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage
 {
-    public abstract class Storage<T> : IStorage<T>, IAsyncDisposable where T : StorageOptions
+    public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsyncDisposable
+        where TStorageOptions : StorageOptions
     {
-        protected readonly ILogger<Storage<T>> Logger;
-        private readonly IStorageCache? _cache;
-        protected readonly IStorageMetadataProvider? _metadataProvider;
-        protected readonly T Options;
+        protected readonly ILogger<Storage<TStorageOptions>> Logger;
+        private readonly IStorageCache<TStorageOptions>? _cache;
+        protected readonly IStorageMetadataProvider<TStorageOptions>? MetadataProvider;
+        protected readonly TStorageOptions Options;
 
-        protected Storage(T options, ILogger<Storage<T>> logger, IStorageCache? cache,
-            IStorageMetadataProvider? metadataProvider)
+        protected Storage(TStorageOptions options, ILogger<Storage<TStorageOptions>> logger,
+            IStorageCache<TStorageOptions>? cache,
+            IStorageMetadataProvider<TStorageOptions>? metadataProvider)
         {
             Logger = logger;
             _cache = cache;
-            _metadataProvider = metadataProvider;
+            MetadataProvider = metadataProvider;
             Options = options;
         }
 
@@ -42,9 +44,9 @@ namespace Sitko.Core.Storage
 
             var result = await SaveStorageItemAsync(file, path, destinationPath, storageItem,
                 cancellationToken);
-            if (_metadataProvider != null)
+            if (MetadataProvider != null)
             {
-                await _metadataProvider.SaveMetadataAsync(storageItem, itemMetadata, cancellationToken);
+                await MetadataProvider.SaveMetadataAsync(storageItem, itemMetadata, cancellationToken);
             }
 
             return result;
@@ -68,7 +70,7 @@ namespace Sitko.Core.Storage
         public async Task<StorageItem> UpdateMetaDataAsync(StorageItem item, string fileName,
             object? metadata = null, CancellationToken? cancellationToken = null)
         {
-            if (_metadataProvider is null)
+            if (MetadataProvider is null)
             {
                 throw new Exception("No metadata provider");
             }
@@ -81,7 +83,7 @@ namespace Sitko.Core.Storage
                 itemMetadata.SetData(metadata);
             }
 
-            await _metadataProvider.SaveMetadataAsync(item, itemMetadata, cancellationToken);
+            await MetadataProvider.SaveMetadataAsync(item, itemMetadata, cancellationToken);
             item = (await GetStorageItemInternalAsync(item.FilePath, cancellationToken))!;
             return item;
         }
@@ -131,9 +133,9 @@ namespace Sitko.Core.Storage
             }
 
             var result = await DoDeleteAsync(GetPathWithPrefix(filePath), cancellationToken);
-            if (result && _metadataProvider != null)
+            if (result && MetadataProvider != null)
             {
-                await _metadataProvider.DeleteMetadataAsync(filePath, cancellationToken);
+                await MetadataProvider.DeleteMetadataAsync(filePath, cancellationToken);
             }
 
             return result;
@@ -167,9 +169,9 @@ namespace Sitko.Core.Storage
             else
             {
                 result = await DoGetFileAsync(GetPathWithPrefix(path), cancellationToken);
-                if (result is not null && _metadataProvider is not null)
+                if (result is not null && MetadataProvider is not null)
                 {
-                    var metadata = await _metadataProvider.GetMetadataAsync(path, cancellationToken);
+                    var metadata = await MetadataProvider.GetMetadataAsync(path, cancellationToken);
                     if (metadata is not null)
                     {
                         result.SetMetadata(metadata);
@@ -205,9 +207,9 @@ namespace Sitko.Core.Storage
             }
 
             await DoDeleteAllAsync(cancellationToken);
-            if (_metadataProvider != null)
+            if (MetadataProvider != null)
             {
-                await _metadataProvider.DeleteAllMetadataAsync(cancellationToken);
+                await MetadataProvider.DeleteAllMetadataAsync(cancellationToken);
             }
         }
 
@@ -215,9 +217,9 @@ namespace Sitko.Core.Storage
         public Task<IEnumerable<StorageNode>> GetDirectoryContentsAsync(string path,
             CancellationToken? cancellationToken = null)
         {
-            if (_metadataProvider != null)
+            if (MetadataProvider != null)
             {
-                return _metadataProvider.GetDirectoryContentAsync(path, cancellationToken);
+                return MetadataProvider.GetDirectoryContentAsync(path, cancellationToken);
             }
 
             throw new Exception("No metadata provider");
@@ -226,11 +228,11 @@ namespace Sitko.Core.Storage
         public async Task<IEnumerable<StorageNode>> RefreshDirectoryContentsAsync(string path,
             CancellationToken? cancellationToken = null)
         {
-            if (_metadataProvider != null)
+            if (MetadataProvider != null)
             {
                 var storageItems = await GetAllItemsAsync(path, cancellationToken);
-                await _metadataProvider.RefreshDirectoryContentsAsync(storageItems, cancellationToken);
-                return await _metadataProvider.GetDirectoryContentAsync(path, cancellationToken);
+                await MetadataProvider.RefreshDirectoryContentsAsync(storageItems, cancellationToken);
+                return await MetadataProvider.GetDirectoryContentAsync(path, cancellationToken);
             }
 
             throw new Exception("No metadata provider");

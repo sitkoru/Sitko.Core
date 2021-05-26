@@ -17,7 +17,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres.Tests
         {
             var scope = await GetScopeAsync();
             var storage = scope.Get<IStorage<TestS3StorageSettings>>();
-            var metadataProvider = scope.Get<IStorageMetadataProvider>();
+            var metadataProvider = scope.Get<IStorageMetadataProvider<TestS3StorageSettings>>();
 
 
             StorageItem uploaded;
