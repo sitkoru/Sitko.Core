@@ -17,7 +17,8 @@ namespace Sitko.Core.Storage.S3.Tests
                     {
                         moduleConfig.Bucket = _bucketName.ToString();
                         moduleConfig.Prefix = "test";
-                    });
+                    }).AddModule<TestApplication, S3StorageMetadataModule<TestS3StorageSettings>,
+                    S3StorageMetadataProviderOptions>();
         }
 
         public override async ValueTask DisposeAsync()

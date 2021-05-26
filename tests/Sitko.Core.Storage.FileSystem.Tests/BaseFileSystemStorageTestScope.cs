@@ -19,7 +19,9 @@ namespace Sitko.Core.Storage.FileSystem.Tests
                     {
                         moduleConfig.PublicUri = new Uri(_folder);
                         moduleConfig.StoragePath = _folder;
-                    });
+                    })
+                .AddModule<TestApplication, FileSystemStorageMetadataModule<TestFileSystemStorageSettings>,
+                    FileSystemStorageMetadataProviderOptions>();
         }
 
         public override async ValueTask DisposeAsync()
