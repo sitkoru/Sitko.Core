@@ -8,8 +8,7 @@ namespace Sitko.Core.Pdf
 {
     public class PdfRendererModule : BaseApplicationModule<PdfRendererModuleConfig>
     {
-        public PdfRendererModule(PdfRendererModuleConfig config, Application application) : base(config,
-            application)
+        public PdfRendererModule(Application application) : base(application)
         {
         }
 
@@ -21,7 +20,7 @@ namespace Sitko.Core.Pdf
         }
     }
 
-    public class PdfRendererModuleConfig
+    public class PdfRendererModuleConfig : BaseModuleConfig
     {
         public bool IgnoreHTTPSErrors { get; set; } = false;
         public ViewPortOptions ViewPortOptions { get; set; } = ViewPortOptions.Default;
