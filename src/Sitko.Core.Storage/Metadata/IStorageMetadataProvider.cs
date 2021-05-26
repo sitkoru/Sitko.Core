@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Sitko.Core.App;
 
 [assembly: InternalsVisibleTo("Sitko.Core.Storage.Metadata.Postgres.Tests")]
+
 namespace Sitko.Core.Storage.Metadata
 {
-    public interface IStorageMetadataProvider : IAsyncDisposable
+    public interface IStorageMetadataProvider<TStorageOptions> : IAsyncDisposable where TStorageOptions : StorageOptions
     {
         internal Task InitAsync();
+
         internal Task SaveMetadataAsync(StorageItem storageItem, StorageItemMetadata itemMetadata,
             CancellationToken? cancellationToken = null);
 
@@ -25,12 +28,13 @@ namespace Sitko.Core.Storage.Metadata
         internal Task<StorageItemMetadata?> GetMetadataAsync(string path, CancellationToken? cancellationToken = null);
     }
 
-    public interface IStorageMetadataProvider<TOptions> : IStorageMetadataProvider
-        where TOptions : StorageMetadataProviderOptions
+
+    public interface IStorageMetadataProvider<TStorageOptions, TOptions> : IStorageMetadataProvider<TStorageOptions>
+        where TStorageOptions : StorageOptions
     {
     }
 
-    public abstract class StorageMetadataProviderOptions
+    public abstract class StorageMetadataProviderOptions : BaseModuleConfig
     {
     }
 }

@@ -3,13 +3,16 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.Cache
 {
-    public class InMemoryStorageCache : BaseStorageCache<InMemoryStorageCacheOptions, InMemoryStorageCacheRecord>
+    public class InMemoryStorageCache<TStorageOptions> : BaseStorageCache<TStorageOptions, InMemoryStorageCacheOptions,
+        InMemoryStorageCacheRecord> where TStorageOptions : StorageOptions
     {
-        public InMemoryStorageCache(InMemoryStorageCacheOptions options, ILogger<InMemoryStorageCache> logger) : base(
+        public InMemoryStorageCache(IOptionsMonitor<InMemoryStorageCacheOptions> options,
+            ILogger<InMemoryStorageCache<TStorageOptions>> logger) : base(
             options, logger)
         {
         }
@@ -18,7 +21,8 @@ namespace Sitko.Core.Storage.Cache
         {
         }
 
-        internal override async Task<InMemoryStorageCacheRecord> GetEntryAsync(StorageItemDownloadInfo item, Stream stream,
+        internal override async Task<InMemoryStorageCacheRecord> GetEntryAsync(StorageItemDownloadInfo item,
+            Stream stream,
             CancellationToken? cancellationToken = null)
         {
             using var memoryStream = new MemoryStream();
@@ -44,7 +48,8 @@ namespace Sitko.Core.Storage.Cache
         public long FileSize { get; }
         public DateTimeOffset Date { get; }
 
-        public InMemoryStorageCacheRecord(StorageItemMetadata? metadata, long fileSize, DateTimeOffset date, byte[] data)
+        public InMemoryStorageCacheRecord(StorageItemMetadata? metadata, long fileSize, DateTimeOffset date,
+            byte[] data)
         {
             Metadata = metadata;
             FileSize = fileSize;

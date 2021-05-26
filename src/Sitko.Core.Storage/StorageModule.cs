@@ -16,7 +16,7 @@ namespace Sitko.Core.Storage
         IStorageModule
         where TStorage : Storage<TStorageOptions> where TStorageOptions : StorageOptions, new()
     {
-        protected StorageModule(TStorageOptions config, Application application) : base(config, application)
+        protected StorageModule(Application application) : base(application)
         {
         }
 
@@ -26,29 +26,15 @@ namespace Sitko.Core.Storage
             base.ConfigureServices(services, configuration, environment);
             services.AddSingleton<IStorage<TStorageOptions>, TStorage>();
             services.AddSingleton<TStorage>();
-            Config.ConfigureCache?.Invoke(environment, configuration, services);
-            Config.ConfigureMetadata?.Invoke(environment, configuration, services);
-        }
-
-        public override void CheckConfig()
-        {
-            base.CheckConfig();
-            if (Config.PublicUri is null)
-            {
-                throw new ArgumentException("Storage url is empty");
-            }
-
-            if (string.IsNullOrEmpty(Config.Name))
-            {
-                throw new ArgumentException("Storage name is empty");
-            }
+            // Config.ConfigureCache?.Invoke(environment, configuration, services);
+            // Config.ConfigureMetadata?.Invoke(environment, configuration, services);
         }
 
         public override async Task InitAsync(IServiceProvider serviceProvider, IConfiguration configuration,
             IHostEnvironment environment)
         {
             await base.InitAsync(serviceProvider, configuration, environment);
-            var metadataProvider = serviceProvider.GetService<IStorageMetadataProvider>();
+            var metadataProvider = serviceProvider.GetService<IStorageMetadataProvider<TStorageOptions>>();
             if (metadataProvider is not null)
             {
                 await metadataProvider.InitAsync();

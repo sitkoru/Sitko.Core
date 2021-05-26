@@ -1,13 +1,15 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
 using Sitko.Core.Storage.Cache;
 using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage
 {
-    public abstract class StorageOptions
+    public abstract class StorageOptions : BaseModuleConfig
     {
         public Uri? PublicUri { get; set; }
 
@@ -15,35 +17,41 @@ namespace Sitko.Core.Storage
 
         public abstract string Name { get; set; }
 
-        public Action<IHostEnvironment, IConfiguration, IServiceCollection>? ConfigureCache { get; protected set; }
-        public Action<IHostEnvironment, IConfiguration, IServiceCollection>? ConfigureMetadata { get; protected set; }
+        // public Action<IHostEnvironment, IConfiguration, IServiceCollection>? ConfigureCache { get; protected set; }
+        // public Action<IHostEnvironment, IConfiguration, IServiceCollection>? ConfigureMetadata { get; protected set; }
 
-        public StorageOptions EnableCache<TCache, TCacheOptions>(Action<TCacheOptions>? configure = null)
-            where TCache : class, IStorageCache<TCacheOptions> where TCacheOptions : StorageCacheOptions
-        {
-            ConfigureCache = (_, _, services) =>
-            {
-                var options = Activator.CreateInstance<TCacheOptions>();
-                configure?.Invoke(options);
-                services.AddSingleton(options);
-                services.AddSingleton<IStorageCache, TCache>();
-            };
-            return this;
-        }
+        // public StorageOptions EnableCache<TCache, TCacheOptions>(Action<TCacheOptions>? configure = null)
+        //     where TCache : class, IStorageCache<TCacheOptions> where TCacheOptions : StorageCacheOptions
+        // {
+        //     ConfigureCache = (_, _, services) =>
+        //     {
+        //         var options = Activator.CreateInstance<TCacheOptions>();
+        //         configure?.Invoke(options);
+        //         services.AddSingleton(options);
+        //         services.AddSingleton<IStorageCache, TCache>();
+        //     };
+        //     return this;
+        // }
 
-        public StorageOptions UseMetadata<TMetadataProvider, TMetadataProviderOptions>(
-            Action<TMetadataProviderOptions>? configure = null)
-            where TMetadataProvider : class, IStorageMetadataProvider<TMetadataProviderOptions>
-            where TMetadataProviderOptions : StorageMetadataProviderOptions
+
+
+        public override (bool isSuccess, IEnumerable<string> errors) CheckConfig()
         {
-            ConfigureMetadata = (_, _, services) =>
+            var result = base.CheckConfig();
+            if (result.isSuccess)
             {
-                var options = Activator.CreateInstance<TMetadataProviderOptions>();
-                configure?.Invoke(options);
-                services.AddSingleton(options);
-                services.AddSingleton<IStorageMetadataProvider, TMetadataProvider>();
-            };
-            return this;
+                if (PublicUri is null)
+                {
+                    return (false, new[] {"Storage url is empty"});
+                }
+
+                if (string.IsNullOrEmpty(Name))
+                {
+                    return (false, new[] {"Storage name is empty"});
+                }
+            }
+
+            return result;
         }
     }
 }

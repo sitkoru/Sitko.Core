@@ -2,22 +2,26 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Sitko.Core.App;
 using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.Cache
 {
-    public interface IStorageCache : IAsyncDisposable
+    public interface IStorageCache<TStorageOptions> : IAsyncDisposable where TStorageOptions : StorageOptions
     {
-        internal Task<StorageItemDownloadInfo?> GetItemAsync(string path, CancellationToken? cancellationToken = null);
+        internal Task<StorageItemDownloadInfo?> GetItemAsync(string path,
+            CancellationToken? cancellationToken = default);
 
-        internal Task<StorageItemDownloadInfo?> GetOrAddItemAsync(string path, Func<Task<StorageItemDownloadInfo?>> addItem,
-            CancellationToken? cancellationToken = null);
+        internal Task<StorageItemDownloadInfo?> GetOrAddItemAsync(string path,
+            Func<Task<StorageItemDownloadInfo?>> addItem,
+            CancellationToken? cancellationToken = default);
 
-        Task RemoveItemAsync(string path, CancellationToken? cancellationToken = null);
-        Task ClearAsync(CancellationToken? cancellationToken = null);
+        Task RemoveItemAsync(string path, CancellationToken? cancellationToken = default);
+        Task ClearAsync(CancellationToken? cancellationToken = default);
     }
 
-    public interface IStorageCache<T> : IStorageCache where T : StorageCacheOptions
+    public interface IStorageCache<TStorageOptions, TCacheOptions> : IStorageCache<TStorageOptions>
+        where TCacheOptions : StorageCacheOptions where TStorageOptions : StorageOptions
     {
     }
 
@@ -31,7 +35,7 @@ namespace Sitko.Core.Storage.Cache
         public Stream OpenRead();
     }
 
-    public abstract class StorageCacheOptions
+    public abstract class StorageCacheOptions : BaseModuleConfig
     {
         public TimeSpan Ttl { get; set; } = TimeSpan.FromHours(12);
         public long MaxFileSizeToStore { get; set; }
