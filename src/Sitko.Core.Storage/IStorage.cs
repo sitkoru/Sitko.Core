@@ -98,7 +98,7 @@ namespace Sitko.Core.Storage
             CancellationToken? cancellationToken = null);
     }
 
-    public interface IStorage<T> : IStorage where T : StorageOptions
+    public interface IStorage<TStorageOptions> : IStorage where TStorageOptions : StorageOptions
     {
     }
 }
