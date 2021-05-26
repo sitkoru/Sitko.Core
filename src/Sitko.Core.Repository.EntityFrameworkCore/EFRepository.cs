@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore
 {
@@ -12,25 +13,39 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         BaseRepository<TEntity, TEntityPk, EFRepositoryQuery<TEntity>>
         where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext
     {
+        private readonly IOptionsMonitor<EFRepositoriesModuleConfig> _config;
         private readonly TDbContext _dbContext;
         private readonly EFRepositoryLock? _lock;
 
-        protected EFRepository(EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext) : base(
+        protected EFRepository(IOptionsMonitor<EFRepositoriesModuleConfig> config,
+            EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext) : base(
             repositoryContext)
         {
+            _config = config;
             _dbContext = repositoryContext.DbContext;
             _lock = repositoryContext.RepositoryLock;
+        }
+
+        private EFRepositoryLock? GetLock()
+        {
+            if (_config.CurrentValue.EnableThreadSafeOperations)
+            {
+                return _lock;
+            }
+
+            return null;
         }
 
         protected async Task<T> ExecuteDbContextOperationAsync<T>(Func<TDbContext, Task<T>> operation,
             CancellationToken cancellationToken = default)
         {
-            if (_lock == null)
+            var efLock = GetLock();
+            if (efLock == null)
             {
                 return await operation(_dbContext);
             }
 
-            using (await _lock.WaitAsync(cancellationToken))
+            using (await efLock.WaitAsync(cancellationToken))
             {
                 return await operation(_dbContext);
             }
@@ -39,13 +54,14 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         protected async Task ExecuteDbContextOperationAsync(Func<TDbContext, Task> operation,
             CancellationToken cancellationToken = default)
         {
-            if (_lock == null)
+            var efLock = GetLock();
+            if (efLock == null)
             {
                 await operation(_dbContext);
                 return;
             }
 
-            using (await _lock.WaitAsync(cancellationToken))
+            using (await efLock.WaitAsync(cancellationToken))
             {
                 await operation(_dbContext);
             }
@@ -55,12 +71,13 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         protected async Task<T> ExecuteDbContextOperationAsync<T>(Func<Task<T>> operation,
             CancellationToken cancellationToken = default)
         {
-            if (_lock == null)
+            var efLock = GetLock();
+            if (efLock == null)
             {
                 return await operation();
             }
 
-            using (await _lock.WaitAsync(cancellationToken))
+            using (await efLock.WaitAsync(cancellationToken))
             {
                 return await operation();
             }
@@ -69,13 +86,14 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         protected async Task ExecuteDbContextOperationAsync(Func<Task> operation,
             CancellationToken cancellationToken = default)
         {
-            if (_lock == null)
+            var efLock = GetLock();
+            if (efLock == null)
             {
                 await operation();
                 return;
             }
 
-            using (await _lock.WaitAsync(cancellationToken))
+            using (await efLock.WaitAsync(cancellationToken))
             {
                 await operation();
             }
@@ -84,12 +102,13 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         protected T ExecuteDbContextOperation<T>(Func<TDbContext, T> operation,
             CancellationToken cancellationToken = default)
         {
-            if (_lock == null)
+            var efLock = GetLock();
+            if (efLock == null)
             {
                 return operation(_dbContext);
             }
 
-            using (_lock.Wait(cancellationToken))
+            using (efLock.Wait(cancellationToken))
             {
                 return operation(_dbContext);
             }
@@ -98,13 +117,14 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         protected void ExecuteDbContextOperation(Action<TDbContext> operation,
             CancellationToken cancellationToken = default)
         {
-            if (_lock == null)
+            var efLock = GetLock();
+            if (efLock == null)
             {
                 operation(_dbContext);
                 return;
             }
 
-            using (_lock.Wait(cancellationToken))
+            using (efLock.Wait(cancellationToken))
             {
                 operation(_dbContext);
             }

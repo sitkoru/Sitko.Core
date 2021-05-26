@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Sitko.Core.App;
 using Sitko.Core.Db.Postgres;
 using Sitko.Core.Repository.EntityFrameworkCore;
@@ -265,24 +266,24 @@ namespace Sitko.Core.Repository.Tests
 
     public class TestRepository : EFRepository<TestModel, Guid, TestDbContext>
     {
-        public TestRepository(EFRepositoryContext<TestModel, Guid, TestDbContext> repositoryContext) : base(
-            repositoryContext)
+        public TestRepository(IOptionsMonitor<EFRepositoriesModuleConfig> config,
+            EFRepositoryContext<TestModel, Guid, TestDbContext> repositoryContext) : base(config, repositoryContext)
         {
         }
     }
 
     public class BarRepository : EFRepository<BarModel, Guid, TestDbContext>
     {
-        public BarRepository(EFRepositoryContext<BarModel, Guid, TestDbContext> repositoryContext) : base(
-            repositoryContext)
+        public BarRepository(IOptionsMonitor<EFRepositoriesModuleConfig> config,
+            EFRepositoryContext<BarModel, Guid, TestDbContext> repositoryContext) : base(config, repositoryContext)
         {
         }
     }
 
     public class FooRepository : EFRepository<FooModel, Guid, TestDbContext>
     {
-        public FooRepository(EFRepositoryContext<FooModel, Guid, TestDbContext> repositoryContext) : base(
-            repositoryContext)
+        public FooRepository(IOptionsMonitor<EFRepositoriesModuleConfig> config,
+            EFRepositoryContext<FooModel, Guid, TestDbContext> repositoryContext) : base(config, repositoryContext)
         {
         }
     }

@@ -7,8 +7,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 {
     public class EFRepositoriesModule<T> : RepositoriesModule<T, EFRepositoriesModuleConfig>
     {
-        public EFRepositoriesModule(EFRepositoriesModuleConfig config, Application application) : base(config,
-            application)
+        public EFRepositoriesModule(Application application) : base(application)
         {
         }
 
@@ -17,10 +16,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         {
             base.ConfigureServices(services, configuration, environment);
             services.AddScoped(typeof(EFRepositoryContext<,,>));
-            if (Config.EnableThreadSafeOperations)
-            {
-                services.AddScoped<EFRepositoryLock>();
-            }
+            services.AddScoped<EFRepositoryLock>();
 
             services.Scan(s =>
                 s.FromAssemblyOf<T>().AddClasses(classes => classes.AssignableTo(typeof(EFRepository<,,>)))
@@ -28,7 +24,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         }
     }
 
-    public class EFRepositoriesModuleConfig
+    public class EFRepositoriesModuleConfig : BaseModuleConfig
     {
         public bool EnableThreadSafeOperations { get; set; }
     }
