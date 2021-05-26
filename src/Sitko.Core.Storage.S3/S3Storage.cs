@@ -9,6 +9,7 @@ using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Amazon.S3.Util;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sitko.Core.Storage.Cache;
 using Sitko.Core.Storage.Metadata;
 
@@ -19,7 +20,7 @@ namespace Sitko.Core.Storage.S3
     {
         private readonly AmazonS3Client _s3Client;
 
-        public S3Storage(TStorageOptions options, S3ClientProvider<TStorageOptions> s3ClientProvider,
+        public S3Storage(IOptionsMonitor<TStorageOptions> options, S3ClientProvider<TStorageOptions> s3ClientProvider,
             ILogger<S3Storage<TStorageOptions>> logger,
             IStorageCache<TStorageOptions>? cache = null,
             IStorageMetadataProvider<TStorageOptions>? metadataProvider = null) : base(options, logger,
