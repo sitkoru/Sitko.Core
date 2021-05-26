@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Serilog;
 using Sitko.Core.App.Logging;
 
@@ -11,24 +12,26 @@ namespace Sitko.Core.App
 {
     public abstract class BaseApplicationModule : BaseApplicationModule<BaseApplicationModuleConfig>
     {
-        protected BaseApplicationModule(BaseApplicationModuleConfig config, Application application) : base(
-            config, application)
+        protected BaseApplicationModule(Application application) : base(application)
         {
         }
     }
 
-    public class BaseApplicationModuleConfig
+    public class BaseApplicationModuleConfig : BaseModuleConfig
     {
     }
 
-    public abstract class BaseApplicationModule<TConfig> : IApplicationModule<TConfig> where TConfig : class, new()
+    public abstract class BaseApplicationModule<TConfig> : IApplicationModule<TConfig>
+        where TConfig : BaseModuleConfig, new()
     {
-        protected TConfig Config { get; }
+        //protected TConfig Config { get; }
         protected Application Application { get; }
 
-        protected BaseApplicationModule(TConfig config, Application application)
+        private IOptionsMonitor<TConfig>? _config;
+
+        protected BaseApplicationModule(Application application)
         {
-            Config = config;
+            //Config = config;
             Application = application;
         }
 
@@ -36,7 +39,7 @@ namespace Sitko.Core.App
         public virtual void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {
-            services.AddSingleton(Config);
+            //services.AddSingleton(Config);
         }
 
         public virtual void ConfigureLogging(LoggerConfiguration loggerConfiguration,
@@ -73,13 +76,28 @@ namespace Sitko.Core.App
             return Task.CompletedTask;
         }
 
-        public virtual void CheckConfig()
-        {
-        }
-
         public TConfig GetConfig()
         {
-            return Config;
+            _config ??= Application.GetServices().GetService<IOptionsMonitor<TConfig>>();
+            if (_config is null)
+            {
+                throw new Exception($"Module {GetType()} is not configured");
+            }
+
+            return _config.CurrentValue;
+        }
+
+        public (bool isSuccess, IEnumerable<string> errors) CheckConfig()
+        {
+            return GetConfig().CheckConfig();
+        }
+    }
+
+    public abstract class BaseModuleConfig
+    {
+        public virtual (bool isSuccess, IEnumerable<string> errors) CheckConfig()
+        {
+            return (true, new string[0]);
         }
     }
 

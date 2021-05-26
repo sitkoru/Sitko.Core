@@ -11,8 +11,7 @@ namespace Sitko.Core.App
 {
     public interface IApplicationModule<TConfig> : IApplicationModule where TConfig : class, new()
     {
-        TConfig? GetConfig();
-        void CheckConfig();
+        TConfig GetConfig();
     }
 
     public interface IApplicationModule
@@ -36,5 +35,7 @@ namespace Sitko.Core.App
 
         Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider);
+        
+        (bool isSuccess, IEnumerable<string> errors) CheckConfig();
     }
 }

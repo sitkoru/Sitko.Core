@@ -65,24 +65,29 @@ namespace Sitko.Core.App.Web
             Logger.LogInformation("Web application with startup {Startup}", typeof(TStartup));
         }
 
+        protected override void ConfigureAppConfiguration(HostBuilderContext context,
+            IConfigurationBuilder configurationBuilder)
+        {
+            base.ConfigureAppConfiguration(context, configurationBuilder);
+            if (context.HostingEnvironment.IsDevelopment())
+            {
+                configurationBuilder.AddUserSecrets<TStartup>();
+            }
+
+            configurationBuilder.AddEnvironmentVariables();
+        }
+
+        protected override void ConfigureHostConfiguration(IConfigurationBuilder configurationBuilder)
+        {
+            base.ConfigureHostConfiguration(configurationBuilder);
+            configurationBuilder.AddUserSecrets<TStartup>(true);
+            configurationBuilder.AddEnvironmentVariables();
+        }
+
         protected override void ConfigureHostBuilder(IHostBuilder builder)
         {
             base.ConfigureHostBuilder(builder);
             builder
-                .ConfigureHostConfiguration(configurationBuilder =>
-                {
-                    configurationBuilder.AddUserSecrets<TStartup>(true);
-                    configurationBuilder.AddEnvironmentVariables();
-                })
-                .ConfigureAppConfiguration((context, configurationBuilder) =>
-                {
-                    if (context.HostingEnvironment.IsDevelopment())
-                    {
-                        configurationBuilder.AddUserSecrets<TStartup>();
-                    }
-
-                    configurationBuilder.AddEnvironmentVariables();
-                })
                 .ConfigureServices(collection =>
                 {
                     collection.AddSingleton(typeof(WebApplication), this);
