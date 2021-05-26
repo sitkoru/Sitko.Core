@@ -11,6 +11,11 @@ namespace Sitko.Core.Pdf
         public PdfRendererModule(Application application) : base(application)
         {
         }
+        
+        public override string GetConfigKey()
+        {
+            return "PdfRenderer";
+        }
 
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)

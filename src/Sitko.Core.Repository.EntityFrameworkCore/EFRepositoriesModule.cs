@@ -11,6 +11,11 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         {
         }
 
+        public override string GetConfigKey()
+        {
+            return $"Repositories:EF:{typeof(T).Name}";
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

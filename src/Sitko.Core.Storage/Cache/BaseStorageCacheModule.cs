@@ -31,6 +31,11 @@ namespace Sitko.Core.Storage.Cache
         public FileStorageCacheModule(Application application) : base(application)
         {
         }
+        
+        public override string GetConfigKey()
+        {
+            return $"Storage:Cache:FileSystem:{typeof(TStorageOptions).Name}";
+        }
     }
     
     public class
@@ -40,6 +45,11 @@ namespace Sitko.Core.Storage.Cache
     {
         public InMemoryStorageCacheModule(Application application) : base(application)
         {
+        }
+        
+        public override string GetConfigKey()
+        {
+            return $"Storage:Cache:InMemory:{typeof(TStorageOptions).Name}";
         }
     }
 }

@@ -17,6 +17,11 @@ namespace Sitko.Core.Storage.S3
         public S3StorageModule(Application application) : base(application)
         {
         }
+        
+        public override string GetConfigKey()
+        {
+            return $"Storage:S3:{typeof(TS3StorageOptions).Name}";
+        }
 
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)

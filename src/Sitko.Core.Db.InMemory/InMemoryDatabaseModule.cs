@@ -14,6 +14,11 @@ namespace Sitko.Core.Db.InMemory
         {
         }
 
+        public override string GetConfigKey()
+        {
+            return $"Db:InMemory:{typeof(TDbContext).Name}";
+        }
+
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)
         {

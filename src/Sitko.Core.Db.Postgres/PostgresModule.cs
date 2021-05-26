@@ -17,6 +17,11 @@ namespace Sitko.Core.Db.Postgres
         public PostgresModule(Application application) : base(application)
         {
         }
+        
+        public override string GetConfigKey()
+        {
+            return $"Db:Postgres:{typeof(TDbContext).Name}";
+        }
 
         public override async Task InitAsync(IServiceProvider serviceProvider, IConfiguration configuration,
             IHostEnvironment environment)
