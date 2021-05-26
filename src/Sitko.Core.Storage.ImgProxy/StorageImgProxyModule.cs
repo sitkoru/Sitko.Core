@@ -14,6 +14,11 @@ namespace Sitko.Core.Storage.ImgProxy
         public StorageImgProxyModule(Application application) : base(application)
         {
         }
+        
+        public override string GetConfigKey()
+        {
+            return $"Storage:ImgProxy:{typeof(TStorageOptions).Name}";
+        }
 
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)

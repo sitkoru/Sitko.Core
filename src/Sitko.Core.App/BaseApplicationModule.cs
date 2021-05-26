@@ -87,6 +87,8 @@ namespace Sitko.Core.App
             return _config.CurrentValue;
         }
 
+        public abstract string GetConfigKey();
+
         public (bool isSuccess, IEnumerable<string> errors) CheckConfig()
         {
             return GetConfig().CheckConfig();

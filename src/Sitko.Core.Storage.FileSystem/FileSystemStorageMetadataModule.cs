@@ -7,6 +7,11 @@ namespace Sitko.Core.Storage.FileSystem
         FileSystemStorageMetadataProvider<TStorageOptions>, FileSystemStorageMetadataProviderOptions>
         where TStorageOptions : StorageOptions, IFileSystemStorageOptions
     {
+        public override string GetConfigKey()
+        {
+            return $"Storage:Metadata:FileSystem:{typeof(TStorageOptions).Name}";
+        }
+        
         public FileSystemStorageMetadataModule(Application application) : base(application)
         {
         }

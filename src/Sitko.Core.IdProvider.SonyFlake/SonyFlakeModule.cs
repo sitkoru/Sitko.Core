@@ -11,6 +11,11 @@ namespace Sitko.Core.IdProvider.SonyFlake
         public SonyFlakeModule(Application application) : base(application)
         {
         }
+        
+        public override string GetConfigKey()
+        {
+            return "SonyFlake";
+        }
 
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)

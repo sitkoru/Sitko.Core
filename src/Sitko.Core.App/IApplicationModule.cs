@@ -12,6 +12,7 @@ namespace Sitko.Core.App
     public interface IApplicationModule<TConfig> : IApplicationModule where TConfig : class, new()
     {
         TConfig GetConfig();
+        string GetConfigKey();
     }
 
     public interface IApplicationModule

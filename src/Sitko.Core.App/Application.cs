@@ -256,7 +256,7 @@ namespace Sitko.Core.App
 
 
         protected void RegisterModule<TModule, TModuleConfig>(
-            Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null)
+            Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null, string? configKey = null)
             where TModule : IApplicationModule<TModuleConfig> where TModuleConfig : BaseModuleConfig, new()
         {
             if (_registeredModules.Contains(typeof(TModule)))
@@ -265,23 +265,22 @@ namespace Sitko.Core.App
             }
 
             _registeredModules.Add(typeof(TModule));
-            var hostBuilderConfig = new TModuleConfig();
-            var configName = typeof(TModule).Name.Replace("Module", "").Replace(".", "_").ToUpperInvariant();
-            Configuration.Bind(configName, hostBuilderConfig);
-            if (!_check)
-            {
-                configure?.Invoke(Configuration, Environment, hostBuilderConfig);
-            }
+           
 
-            var instance = Activator.CreateInstance(typeof(TModule), this);
-            if (instance is IHostBuilderModule<TModuleConfig> hostBuilderModule)
+            var module = (TModule)Activator.CreateInstance(typeof(TModule), this);
+            configKey ??= module.GetConfigKey();
+            if (module is IHostBuilderModule<TModuleConfig> hostBuilderModule)
             {
                 hostBuilderModule.ConfigureHostBuilder(HostBuilder, Configuration, Environment);
             }
 
             HostBuilder.ConfigureServices((context, services) =>
             {
-                services.Configure<TModuleConfig>(Configuration.GetSection(configName)).PostConfigure<TModuleConfig>(
+                
+                Logger.LogDebug("Load config for module {Module} from section {ConfigSectionName}",
+                    typeof(TModule),
+                    configKey);
+                services.Configure<TModuleConfig>(Configuration.GetSection(configKey)).PostConfigure<TModuleConfig>(
                     config =>
                     {
                         if (!_check)
@@ -290,18 +289,10 @@ namespace Sitko.Core.App
                         }
                     });
 
-                instance = Activator.CreateInstance(typeof(TModule), this);
-                if (instance is TModule module)
-                {
-                    module.ConfigureLogging(_loggerConfiguration, _logLevelSwitcher,
-                        context.Configuration, context.HostingEnvironment);
-                    module.ConfigureServices(services, context.Configuration, context.HostingEnvironment);
-                    Modules.Add(module);
-                }
-                else
-                {
-                    throw new Exception($"Can't instantiate module {typeof(TModule)}");
-                }
+                module.ConfigureLogging(_loggerConfiguration, _logLevelSwitcher,
+                    context.Configuration, context.HostingEnvironment);
+                module.ConfigureServices(services, context.Configuration, context.HostingEnvironment);
+                Modules.Add(module);
             });
         }
 
@@ -363,7 +354,7 @@ namespace Sitko.Core.App
                         }
 
                         Logger.LogError("Module {Module} config check failed", module);
-                        System.Environment.Exit(0);
+                        System.Environment.Exit(1);
                     }
                 }
 
@@ -499,11 +490,12 @@ namespace Sitko.Core.App
         }
 
         public Application AddModule<TModule, TModuleConfig>(
-            Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null)
+            Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null,
+            string? configKey = null)
             where TModule : IApplicationModule<TModuleConfig>
             where TModuleConfig : BaseModuleConfig, new()
         {
-            RegisterModule<TModule, TModuleConfig>(configure);
+            RegisterModule<TModule, TModuleConfig>(configure, configKey);
             return this;
         }
     }

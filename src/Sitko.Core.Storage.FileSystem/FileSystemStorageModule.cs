@@ -12,6 +12,11 @@ namespace Sitko.Core.Storage.FileSystem
         public FileSystemStorageModule(Application application) : base(application)
         {
         }
+        
+        public override string GetConfigKey()
+        {
+            return $"Storage:FileSystem:{typeof(TStorageOptions).Name}";
+        }
 
         public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
             IHostEnvironment environment)

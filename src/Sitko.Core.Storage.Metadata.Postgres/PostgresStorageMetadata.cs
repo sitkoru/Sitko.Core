@@ -10,5 +10,10 @@ namespace Sitko.Core.Storage.Metadata.Postgres
         public PostgresStorageMetadataModule(Application application) : base(application)
         {
         }
+        
+        public override string GetConfigKey()
+        {
+            return $"Storage:Metadata:Postgres:{typeof(TStorageOptions).Name}";
+        }
     }
 }
