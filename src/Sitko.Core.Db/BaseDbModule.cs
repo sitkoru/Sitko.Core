@@ -15,7 +15,7 @@ namespace Sitko.Core.Db
         where TDbContext : DbContext
         where TConfig : BaseDbModuleConfig<TDbContext>, new()
     {
-        protected BaseDbModule(TConfig config, Application application) : base(config, application)
+        protected BaseDbModule(Application application) : base(application)
         {
         }
 
@@ -27,7 +27,7 @@ namespace Sitko.Core.Db
         }
     }
 
-    public abstract class BaseDbModuleConfig<TDbContext> where TDbContext : DbContext
+    public abstract class BaseDbModuleConfig<TDbContext> : BaseModuleConfig where TDbContext : DbContext
     {
         public string Database { get; set; } = "dbname";
 

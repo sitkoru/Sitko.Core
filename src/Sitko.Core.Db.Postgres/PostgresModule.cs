@@ -14,34 +14,8 @@ namespace Sitko.Core.Db.Postgres
     public class PostgresModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleConfig<TDbContext>>
         where TDbContext : DbContext
     {
-        public PostgresModule(PostgresDatabaseModuleConfig<TDbContext> config, Application application) : base(config,
-            application)
+        public PostgresModule(Application application) : base(application)
         {
-        }
-
-        public override void CheckConfig()
-        {
-            base.CheckConfig();
-
-            if (string.IsNullOrEmpty(Config.Host))
-            {
-                throw new ArgumentException("Postgres host is empty");
-            }
-
-            if (string.IsNullOrEmpty(Config.Username))
-            {
-                throw new ArgumentException("Postgres username is empty");
-            }
-
-            if (string.IsNullOrEmpty(Config.Database))
-            {
-                throw new ArgumentException("Postgres database is empty");
-            }
-
-            if (Config.Port == 0)
-            {
-                throw new ArgumentException("Postgres host is empty");
-            }
         }
 
         public override async Task InitAsync(IServiceProvider serviceProvider, IConfiguration configuration,
@@ -49,7 +23,7 @@ namespace Sitko.Core.Db.Postgres
         {
             await base.InitAsync(serviceProvider, configuration, environment);
 
-            if (Config.AutoApplyMigrations)
+            if (GetConfig().AutoApplyMigrations)
             {
                 var logger = serviceProvider.GetService<ILogger<PostgresModule<TDbContext>>>();
                 var migrated = false;
@@ -91,42 +65,39 @@ namespace Sitko.Core.Db.Postgres
         {
             base.ConfigureServices(services, configuration, environment);
 
-            var connBuilder = new NpgsqlConnectionStringBuilder
-            {
-                Host = Config.Host,
-                Port = Config.Port,
-                Username = Config.Username,
-                Password = Config.Password,
-                Database = Config.Database,
-                Pooling = Config.EnableNpgsqlPooling
-            };
-
             services.AddMemoryCache();
-            if (Config.EnableContextPooling)
-            {
-                services.AddDbContextPool<TDbContext>((p, options) =>
-                    ConfigureNpgsql(options, connBuilder, p, configuration, environment));
-            }
-            else
-            {
-                services.AddDbContext<TDbContext>((p, options) =>
-                    ConfigureNpgsql(options, connBuilder, p, configuration, environment));
-            }
+            services.AddDbContextPool<TDbContext>((serviceProvider, options) =>
+                ConfigureNpgsql(options, serviceProvider, configuration, environment));
         }
 
-        private void ConfigureNpgsql(DbContextOptionsBuilder options, NpgsqlConnectionStringBuilder connBuilder,
+        private NpgsqlConnectionStringBuilder CreateBuilder()
+        {
+            var connBuilder = new NpgsqlConnectionStringBuilder
+            {
+                Host = GetConfig().Host,
+                Port = GetConfig().Port,
+                Username = GetConfig().Username,
+                Password = GetConfig().Password,
+                Database = GetConfig().Database,
+                Pooling = GetConfig().EnableNpgsqlPooling
+            };
+            return connBuilder;
+        }
+
+        private void ConfigureNpgsql(DbContextOptionsBuilder options,
             IServiceProvider p, IConfiguration configuration, IHostEnvironment environment)
         {
-            options.UseNpgsql(connBuilder.ConnectionString,
-                builder => builder.MigrationsAssembly(Config.MigrationsAssembly != null
-                    ? Config.MigrationsAssembly.FullName
+            var config = GetConfig();
+            options.UseNpgsql(CreateBuilder().ConnectionString,
+                builder => builder.MigrationsAssembly(config.MigrationsAssembly != null
+                    ? config.MigrationsAssembly.FullName
                     : typeof(TDbContext).Assembly.FullName));
-            if (Config.EnableSensitiveLogging)
+            if (config.EnableSensitiveLogging)
             {
                 options.EnableSensitiveDataLogging();
             }
 
-            Config.Configure?.Invoke((DbContextOptionsBuilder<TDbContext>)options, p, configuration, environment);
+            config.Configure?.Invoke((DbContextOptionsBuilder<TDbContext>)options, p, configuration, environment);
         }
     }
 }
