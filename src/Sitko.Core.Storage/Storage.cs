@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sitko.Core.Storage.Cache;
 using Sitko.Core.Storage.Metadata;
 
@@ -15,16 +16,17 @@ namespace Sitko.Core.Storage
         protected readonly ILogger<Storage<TStorageOptions>> Logger;
         private readonly IStorageCache<TStorageOptions>? _cache;
         protected readonly IStorageMetadataProvider<TStorageOptions>? MetadataProvider;
-        protected readonly TStorageOptions Options;
+        protected TStorageOptions Options => _optionsMonitor.CurrentValue;
+        private readonly IOptionsMonitor<TStorageOptions> _optionsMonitor;
 
-        protected Storage(TStorageOptions options, ILogger<Storage<TStorageOptions>> logger,
+        protected Storage(IOptionsMonitor<TStorageOptions> options, ILogger<Storage<TStorageOptions>> logger,
             IStorageCache<TStorageOptions>? cache,
             IStorageMetadataProvider<TStorageOptions>? metadataProvider)
         {
             Logger = logger;
             _cache = cache;
             MetadataProvider = metadataProvider;
-            Options = options;
+            _optionsMonitor = options;
         }
 
         public async Task<StorageItem> SaveAsync(Stream file, string fileName, string path, object? metadata = null,
