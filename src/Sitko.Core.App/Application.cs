@@ -19,9 +19,13 @@ namespace Sitko.Core.App
     public abstract class Application : IApplication, IAsyncDisposable
     {
         public readonly Guid Id = Guid.NewGuid();
-        private static readonly ConcurrentDictionary<Guid, Application> _apps = new ConcurrentDictionary<Guid, Application>();
+
+        private static readonly ConcurrentDictionary<Guid, Application> _apps =
+            new ConcurrentDictionary<Guid, Application>();
+
         private readonly bool _check;
         private readonly LoggerConfiguration _loggerConfiguration = new LoggerConfiguration();
+        private List<Action<LoggerConfiguration, LogLevelSwitcher>> _loggerConfigurationActions = new();
         private readonly LogLevelSwitcher _logLevelSwitcher = new LogLevelSwitcher();
         private readonly HashSet<Type> _registeredModules = new HashSet<Type>();
         private readonly Dictionary<string, object> _store = new Dictionary<string, object>();
@@ -97,6 +101,17 @@ namespace Sitko.Core.App
         }
 
         protected virtual void ConfigureHostBuilder(IHostBuilder builder)
+        {
+            builder.ConfigureHostConfiguration(ConfigureHostConfiguration);
+            builder.ConfigureAppConfiguration(ConfigureAppConfiguration);
+        }
+
+        protected virtual void ConfigureHostConfiguration(IConfigurationBuilder configurationBuilder)
+        {
+        }
+
+        protected virtual void ConfigureAppConfiguration(HostBuilderContext context,
+            IConfigurationBuilder configurationBuilder)
         {
         }
 
@@ -181,6 +196,11 @@ namespace Sitko.Core.App
                         System.Environment.Exit(0);
                     }
 
+                    foreach (var loggerConfigurationAction in _loggerConfigurationActions)
+                    {
+                        loggerConfigurationAction(_loggerConfiguration, _logLevelSwitcher);
+                    }
+
                     Log.Logger = _loggerConfiguration.CreateLogger();
                 }
                 catch (Exception e)
@@ -235,7 +255,7 @@ namespace Sitko.Core.App
 
         protected void RegisterModule<TModule, TModuleConfig>(
             Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null)
-            where TModule : IApplicationModule<TModuleConfig> where TModuleConfig : class, new()
+            where TModule : IApplicationModule<TModuleConfig> where TModuleConfig : BaseModuleConfig, new()
         {
             if (_registeredModules.Contains(typeof(TModule)))
             {
@@ -244,12 +264,14 @@ namespace Sitko.Core.App
 
             _registeredModules.Add(typeof(TModule));
             var hostBuilderConfig = new TModuleConfig();
+            var configName = typeof(TModule).Name.Replace("Module", "").Replace(".", "_").ToUpperInvariant();
+            Configuration.Bind(configName, hostBuilderConfig);
             if (!_check)
             {
                 configure?.Invoke(Configuration, Environment, hostBuilderConfig);
             }
 
-            var instance = Activator.CreateInstance(typeof(TModule), hostBuilderConfig, this);
+            var instance = Activator.CreateInstance(typeof(TModule), this);
             if (instance is IHostBuilderModule<TModuleConfig> hostBuilderModule)
             {
                 hostBuilderModule.ConfigureHostBuilder(HostBuilder, Configuration, Environment);
@@ -257,20 +279,18 @@ namespace Sitko.Core.App
 
             HostBuilder.ConfigureServices((context, services) =>
             {
-                var config = new TModuleConfig();
-                if (!_check)
-                {
-                    configure?.Invoke(context.Configuration, context.HostingEnvironment, config);
-                }
+                services.Configure<TModuleConfig>(Configuration.GetSection(configName)).PostConfigure<TModuleConfig>(
+                    config =>
+                    {
+                        if (!_check)
+                        {
+                            configure?.Invoke(context.Configuration, context.HostingEnvironment, config);
+                        }
+                    });
 
-                instance = Activator.CreateInstance(typeof(TModule), config, this);
+                instance = Activator.CreateInstance(typeof(TModule), this);
                 if (instance is TModule module)
                 {
-                    if (!_check)
-                    {
-                        module.CheckConfig();
-                    }
-
                     module.ConfigureLogging(_loggerConfiguration, _logLevelSwitcher,
                         context.Configuration, context.HostingEnvironment);
                     module.ConfigureServices(services, context.Configuration, context.HostingEnvironment);
@@ -329,6 +349,22 @@ namespace Sitko.Core.App
             Logger.LogInformation("Init modules");
             foreach (var module in Modules)
             {
+                Logger.LogInformation("Check module {Module} config", module);
+                if (!_check)
+                {
+                    var checkConfigResult = module.CheckConfig();
+                    if (!checkConfigResult.isSuccess)
+                    {
+                        foreach (var error in checkConfigResult.errors)
+                        {
+                            Logger.LogError("Module {Module} config error: {Error}", module, error);
+                        }
+
+                        Logger.LogError("Module {Module} config check failed", module);
+                        System.Environment.Exit(0);
+                    }
+                }
+
                 Logger.LogInformation("Init module {Module}", module);
                 await module.InitAsync(scope.ServiceProvider,
                     scope.ServiceProvider.GetRequiredService<IConfiguration>(),
@@ -447,6 +483,12 @@ namespace Sitko.Core.App
             return this;
         }
 
+        public Application ConfigureLogging(Action<LoggerConfiguration, LogLevelSwitcher> configure)
+        {
+            _loggerConfigurationActions.Add(configure);
+            return this;
+        }
+
         public Application AddModule<TModule>() where TModule : BaseApplicationModule
 
         {
@@ -457,7 +499,7 @@ namespace Sitko.Core.App
         public Application AddModule<TModule, TModuleConfig>(
             Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null)
             where TModule : IApplicationModule<TModuleConfig>
-            where TModuleConfig : class, new()
+            where TModuleConfig : BaseModuleConfig, new()
         {
             RegisterModule<TModule, TModuleConfig>(configure);
             return this;
@@ -491,7 +533,7 @@ namespace Sitko.Core.App
             Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null)
             where TApplication : Application
             where TModule : IApplicationModule<TModuleConfig>
-            where TModuleConfig : class, new()
+            where TModuleConfig : BaseModuleConfig, new()
         {
             application.AddModule<TModule, TModuleConfig>(configure);
             return application;
