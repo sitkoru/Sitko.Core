@@ -42,7 +42,7 @@ namespace Sitko.Core.Xunit
             return scope;
         }
 
-        protected IServiceScope? CreateServiceScope<T>([CallerMemberName] string name = "")
+        protected IServiceScope CreateServiceScope<T>([CallerMemberName] string name = "")
             where T : IBaseTestScope
         {
             if (!_scopes.ContainsKey(name))
@@ -51,7 +51,7 @@ namespace Sitko.Core.Xunit
             }
 
             var scope = (T)_scopes[name];
-            return scope?.Get<IServiceScopeFactory>().CreateScope();
+            return scope.Get<IServiceScopeFactory>().CreateScope();
         }
 
         protected BaseTest(ITestOutputHelper testOutputHelper)
@@ -91,7 +91,7 @@ namespace Sitko.Core.Xunit
         }
 
 
-        protected IServiceScope? CreateServiceScope([CallerMemberName] string name = "")
+        protected IServiceScope CreateServiceScope([CallerMemberName] string name = "")
         {
             return CreateServiceScope<T>(name);
         }

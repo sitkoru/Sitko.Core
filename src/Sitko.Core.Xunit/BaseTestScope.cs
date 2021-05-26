@@ -42,9 +42,9 @@ namespace Sitko.Core.Xunit
                 ConfigureServices(context.Configuration, context.HostingEnvironment, services, name);
             });
 
-            _application.AddModule<TestModule, TestModuleConfig>((_, _, moduleConfig) =>
+            _application.ConfigureLogging((configuration, logLevelSwitcher) =>
             {
-                moduleConfig.TestOutputHelper = testOutputHelper;
+                configuration.WriteTo.TestOutput(testOutputHelper, levelSwitch: logLevelSwitcher.Switch);
             });
 
 
@@ -139,28 +139,5 @@ namespace Sitko.Core.Xunit
             base.ConfigureLogging(loggerConfiguration, logLevelSwitcher);
             logLevelSwitcher.Switch.MinimumLevel = LogEventLevel.Debug;
         }
-    }
-
-    public class TestModule : BaseApplicationModule<TestModuleConfig>
-    {
-        public TestModule(TestModuleConfig config, Application application) : base(config, application)
-        {
-        }
-
-        public override void ConfigureLogging(LoggerConfiguration loggerConfiguration,
-            LogLevelSwitcher logLevelSwitcher,
-            IConfiguration configuration, IHostEnvironment environment)
-        {
-            base.ConfigureLogging(loggerConfiguration, logLevelSwitcher, configuration, environment);
-            if (Config.TestOutputHelper != null)
-            {
-                loggerConfiguration.WriteTo.TestOutput(Config.TestOutputHelper, levelSwitch: logLevelSwitcher.Switch);
-            }
-        }
-    }
-
-    public class TestModuleConfig
-    {
-        public ITestOutputHelper? TestOutputHelper { get; set; }
     }
 }
