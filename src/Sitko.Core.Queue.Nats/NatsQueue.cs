@@ -8,12 +8,15 @@ using System.Threading.Tasks;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NATS.Client;
 using Newtonsoft.Json;
 using Sitko.Core.Queue.Exceptions;
 using Sitko.Core.Queue.Internal;
 using STAN.Client;
+using Options = NATS.Client.Options;
 
 namespace Sitko.Core.Queue.Nats
 {
@@ -33,10 +36,20 @@ namespace Sitko.Core.Queue.Nats
         private readonly ConcurrentDictionary<string, IStanSubscription> _stanSubscriptions = new();
 
         private bool _disposed;
+        private IConnection? _natsConn;
+        private readonly string _consumerGroupName;
+        private readonly string _clientName;
 
-        public NatsQueue(NatsQueueModuleConfig config, QueueContext context, ILogger<NatsQueue> logger) : base(config,
+
+        public NatsQueue(IOptionsMonitor<NatsQueueModuleConfig> config, QueueContext context,
+            IHostEnvironment environment,
+            ILogger<NatsQueue> logger) : base(config,
             context, logger)
         {
+            _clientName = environment.ApplicationName.Replace('.', '_');
+            _consumerGroupName = !string.IsNullOrEmpty(Config.ConsumerGroupName)
+                ? Config.ConsumerGroupName
+                : environment.ApplicationName;
         }
 
         protected override Task DoStartAsync()
@@ -53,9 +66,9 @@ namespace Sitko.Core.Queue.Nats
                 queueName = protoMessage.Descriptor.FullName;
             }
 
-            if (!string.IsNullOrEmpty(_config.QueueNamePrefix))
+            if (!string.IsNullOrEmpty(Config.QueueNamePrefix))
             {
-                queueName = $"{_config.QueueNamePrefix}_{queueName}";
+                queueName = $"{Config.QueueNamePrefix}_{queueName}";
             }
 
             return queueName;
@@ -75,7 +88,7 @@ namespace Sitko.Core.Queue.Nats
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error publishing message {MessageType} to Nats: {ErrorText}", message.GetType(),
+                Logger.LogError(e, "Error publishing message {MessageType} to Nats: {ErrorText}", message.GetType(),
                     e.ToString());
                 result.SetException(e);
             }
@@ -101,7 +114,7 @@ namespace Sitko.Core.Queue.Nats
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error while deserializing response of type {Type}: {ErrorText}",
+                    Logger.LogError(ex, "Error while deserializing response of type {Type}: {ErrorText}",
                         typeof(TResponse), ex.ToString());
                     return null;
                 }
@@ -140,7 +153,7 @@ namespace Sitko.Core.Queue.Nats
                         }
                         catch (NATSException ex)
                         {
-                            _logger.LogError(ex, "Error responding to message {MessageId} {MessageType}: {ErrorText}",
+                            Logger.LogError(ex, "Error responding to message {MessageId} {MessageType}: {ErrorText}",
                                 request.messageContext.Id, request.messageContext.MessageType, ex.ToString());
                             result.SetException(ex);
                         }
@@ -256,7 +269,7 @@ namespace Sitko.Core.Queue.Nats
 
             if (queueOptions.All)
             {
-                _logger.LogInformation("{QueueName}: Load all messages", queueName);
+                Logger.LogInformation("{QueueName}: Load all messages", queueName);
                 stanOptions.DeliverAllAvailable();
                 queueOptions.Durable = false;
             }
@@ -264,7 +277,7 @@ namespace Sitko.Core.Queue.Nats
             {
                 if (queueOptions.StartAt.HasValue)
                 {
-                    _logger.LogInformation("{QueueName}: Load all messages starts from {Date}", queueName,
+                    Logger.LogInformation("{QueueName}: Load all messages starts from {Date}", queueName,
                         queueOptions.StartAt.Value);
                     stanOptions.StartAt(queueOptions.StartAt.Value);
                     queueOptions.Durable = false;
@@ -273,7 +286,7 @@ namespace Sitko.Core.Queue.Nats
 
             if (queueOptions.ManualAck)
             {
-                _logger.LogInformation("{QueueName}: Manual acks with {Timeout} timeout", queueName,
+                Logger.LogInformation("{QueueName}: Manual acks with {Timeout} timeout", queueName,
                     queueOptions.AckWait);
                 stanOptions.AckWait = (int)queueOptions.AckWait.TotalMilliseconds;
                 stanOptions.ManualAcks = true;
@@ -281,15 +294,15 @@ namespace Sitko.Core.Queue.Nats
 
             if (queueOptions.MaxInFlight > 0)
             {
-                _logger.LogInformation("{QueueName}: {MaxInFlight} max in flight", queueName, queueOptions.MaxInFlight);
+                Logger.LogInformation("{QueueName}: {MaxInFlight} max in flight", queueName, queueOptions.MaxInFlight);
                 stanOptions.MaxInflight = queueOptions.MaxInFlight;
             }
 
-            if (queueOptions.Durable && !string.IsNullOrEmpty(_config.ConsumerGroupName))
+            if (queueOptions.Durable && !string.IsNullOrEmpty(_consumerGroupName))
             {
-                _logger.LogInformation("{QueueName}: Durable name - {DurableName}", queueName,
-                    _config.ConsumerGroupName);
-                stanOptions.DurableName = _config.ConsumerGroupName;
+                Logger.LogInformation("{QueueName}: Durable name - {DurableName}", queueName,
+                    _consumerGroupName);
+                stanOptions.DurableName = _consumerGroupName;
             }
 
             var deserializer = GetPayloadDeserializer<T>();
@@ -302,7 +315,7 @@ namespace Sitko.Core.Queue.Nats
             if (!string.IsNullOrEmpty(stanOptions.DurableName))
             {
                 sub = GetConnection().Subscribe(queueName,
-                    _config.ConsumerGroupName, stanOptions,
+                    _consumerGroupName, stanOptions,
                     // ReSharper disable once AsyncVoidLambda
                     async (_, args) =>
                         await ProcessStanMessage(deserializer, args.Message, stanOptions.ManualAcks));
@@ -315,7 +328,7 @@ namespace Sitko.Core.Queue.Nats
                         await ProcessStanMessage(deserializer, args.Message, stanOptions.ManualAcks));
             }
 
-            _logger.LogInformation("{QueueName}: Subscribed", queueName);
+            Logger.LogInformation("{QueueName}: Subscribed", queueName);
 
             _stanSubscriptions.TryAdd(queueName, sub);
         }
@@ -335,7 +348,7 @@ namespace Sitko.Core.Queue.Nats
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error while processing message of type {Type}: {ErrorText}", typeof(T),
+                Logger.LogError(ex, "Error while processing message of type {Type}: {ErrorText}", typeof(T),
                     ex.ToString());
             }
         }
@@ -481,17 +494,17 @@ namespace Sitko.Core.Queue.Nats
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex,
+                Logger.LogCritical(ex,
                     "Nats connection error ({ExType}): {ErrorText}. Connection error: {ConnectionError} - {ConnectionInnerError}. Nats urls: {NatsUrls}. Nats timeout: {NatsTimeout}",
                     ex.GetType(), ex.ToString(), natsConn?.LastError.ToString(),
-                    natsConn?.LastError?.InnerException?.ToString(), _config.Servers, _config.ConnectionTimeout);
+                    natsConn?.LastError?.InnerException?.ToString(), Config.Servers, Config.ConnectionTimeout);
                 try
                 {
                     natsConn?.Close();
                 }
                 catch (Exception connEx)
                 {
-                    _logger.LogError(connEx, "Error connecting to nats: {ErrorText}", connEx.ToString());
+                    Logger.LogError(connEx, "Error connecting to nats: {ErrorText}", connEx.ToString());
                 }
 
                 throw;
@@ -508,15 +521,15 @@ namespace Sitko.Core.Queue.Nats
             {
                 var options = StanOptions.GetDefaultOptions();
                 options.NatsConn = natsConn;
-                options.ConnectTimeout = (int)_config.ConnectionTimeout.TotalMilliseconds;
+                options.ConnectTimeout = (int)Config.ConnectionTimeout.TotalMilliseconds;
                 options.ConnectionLostEventHandler += (_, _) =>
                 {
-                    _logger.LogError("Stan connection is broken");
+                    Logger.LogError("Stan connection is broken");
                     GetConnection();
                 };
                 var cf = new StanConnectionFactory();
 
-                var stanConnection = cf.CreateConnection(_config.ClusterName, clientId, options);
+                var stanConnection = cf.CreateConnection(Config.ClusterName, clientId, options);
                 if (stanConnection.NATSConnection.State == ConnState.CONNECTED)
                 {
                     foreach (var action in _subscribeActions.Values)
@@ -531,7 +544,7 @@ namespace Sitko.Core.Queue.Nats
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex,
+                Logger.LogCritical(ex,
                     "Error while connecting to nats: {ErrorText}. Connection error: {ConnectionError} - {ConnectionInnerError}",
                     ex.ToString(), natsConn.LastError?.ToString(), natsConn.LastError?.InnerException?.ToString());
                 throw;
@@ -541,10 +554,10 @@ namespace Sitko.Core.Queue.Nats
         private IStanConnection GetConnection()
         {
             var isNew = false;
-            
+            var clientId = $"{_clientName}_{Guid.NewGuid()}";
             if (_connection == null || _connection.NATSConnection.State != ConnState.CONNECTED)
             {
-                _logger.LogWarning("Nats connection is null or not connected");
+                Logger.LogWarning("Nats connection is null or not connected");
                 isNew = true;
             }
 
@@ -557,7 +570,7 @@ namespace Sitko.Core.Queue.Nats
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error disposing nats connection: {ErrorText}", ex.ToString());
+                    Logger.LogError(ex, "Error disposing nats connection: {ErrorText}", ex.ToString());
                 }
                 finally
                 {
@@ -568,7 +581,7 @@ namespace Sitko.Core.Queue.Nats
             if (_connection == null)
             {
                 var clientId = $"{_config.ClientName}_{Guid.NewGuid()}";
-                _logger.LogWarning("Stan connection is not established");
+                Logger.LogWarning("Stan connection is not established");
                 _connection = CreateConnection(clientId, CreateNatsConnection(clientId));
             }
 
@@ -592,55 +605,55 @@ namespace Sitko.Core.Queue.Nats
             opts.AsyncErrorEventHandler =
                 (_, args) =>
                 {
-                    _logger.LogError(
+                    Logger.LogError(
                         "NATS event error: {ErrorText}. Connection {Connection}. Subs: {Subscription}", args.Error,
                         args.Conn, args.Subscription);
                 };
             opts.ClosedEventHandler =
-                (_, args) => { _logger.LogInformation("Stan connection closed: {Conn}", args.Conn); };
+                (_, args) => { Logger.LogInformation("Stan connection closed: {Conn}", args.Conn); };
             opts.DisconnectedEventHandler =
-                (_, args) => { _logger.LogInformation("NATS connection disconnected: {Conn}", args.Conn); };
+                (_, args) => { Logger.LogInformation("NATS connection disconnected: {Conn}", args.Conn); };
             opts.ReconnectedEventHandler =
                 (_, args) =>
                 {
-                    _logger.LogInformation("NATS connection reconnected: {Conn}", args.Conn);
+                    Logger.LogInformation("NATS connection reconnected: {Conn}", args.Conn);
                     GetConnection();
                 };
-            if (_config.Servers.Any())
+            if (Config.Servers.Any())
             {
                 var servers = new List<string>();
-                foreach (var server in _config.Servers)
+                foreach (var server in Config.Servers)
                 {
-                    if (IPAddress.TryParse(server.host, out var ip))
+                    if (IPAddress.TryParse(server.Host, out var ip))
                     {
-                        servers.Add($"nats://{ip}:{server.port}");
+                        servers.Add($"nats://{ip}:{server.Port}");
                     }
                     else
                     {
-                        var entry = Dns.GetHostEntry(server.host);
+                        var entry = Dns.GetHostEntry(server.Host);
                         if (entry.AddressList.Any())
                         {
                             foreach (var ipAddress in entry.AddressList)
                             {
-                                servers.Add($"nats://{ipAddress}:{server.port}");
+                                servers.Add($"nats://{ipAddress}:{server.Port}");
                             }
                         }
                         else
                         {
-                            throw new Exception($"Can't resolve ip for host {server.host}");
+                            throw new Exception($"Can't resolve ip for host {server.Port}");
                         }
                     }
                 }
 
-                if (_config.Verbose)
-                    _logger.LogInformation("Nats urls: {Urls}", servers);
+                if (Config.Verbose)
+                    Logger.LogInformation("Nats urls: {Urls}", servers);
                 opts.Servers = servers.ToArray();
             }
 
-            opts.Verbose = _config.Verbose;
-            opts.Timeout = (int)_config.ConnectionTimeout.TotalMilliseconds;
-            if (_config.Verbose)
-                _logger.LogInformation("Nats timeout: {Timeout}", _config.ConnectionTimeout);
+            opts.Verbose = Config.Verbose;
+            opts.Timeout = (int)Config.ConnectionTimeout.TotalMilliseconds;
+            if (Config.Verbose)
+                Logger.LogInformation("Nats timeout: {Timeout}", Config.ConnectionTimeout);
 
             return opts;
         }

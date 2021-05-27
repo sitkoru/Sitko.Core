@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sitko.Core.Queue.Exceptions;
 using Sitko.Core.Queue.Internal;
 
@@ -15,7 +16,7 @@ namespace Sitko.Core.Queue.InMemory
             new ConcurrentDictionary<Type, InMemoryQueueChannel>();
 
 
-        public InMemoryQueue(InMemoryQueueModuleConfig config, QueueContext context,
+        public InMemoryQueue(IOptionsMonitor<InMemoryQueueModuleConfig> config, QueueContext context,
             ILogger<InMemoryQueue> logger) : base(config, context, logger)
         {
         }
@@ -24,7 +25,7 @@ namespace Sitko.Core.Queue.InMemory
         {
             return (InMemoryQueueChannel<T>)_channels.GetOrAdd(typeof(T), _ =>
             {
-                var channel = new InMemoryQueueChannel<T>(_logger);
+                var channel = new InMemoryQueueChannel<T>(Logger);
                 channel.Run();
                 return channel;
             });
