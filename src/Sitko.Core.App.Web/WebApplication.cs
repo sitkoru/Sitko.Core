@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.App.Web
 {
@@ -18,7 +17,7 @@ namespace Sitko.Core.App.Web
 
         protected List<IWebApplicationModule> GetWebModules()
         {
-            return Modules.OfType<IWebApplicationModule>().ToList();
+            return RegisteredModules.OfType<IWebApplicationModule>().ToList();
         }
 
         public virtual void AppBuilderHook(IConfiguration configuration, IHostEnvironment environment,
@@ -62,7 +61,6 @@ namespace Sitko.Core.App.Web
     {
         protected WebApplication(string[] args) : base(args)
         {
-            Logger.LogInformation("Web application with startup {Startup}", typeof(TStartup));
         }
 
         protected override void ConfigureAppConfiguration(HostBuilderContext context,
@@ -107,15 +105,15 @@ namespace Sitko.Core.App.Web
 
         public WebApplication<TStartup> Run()
         {
-            GetAppHost().Start();
+            Build().Start();
             return this;
         }
 
         public WebApplication<TStartup> Run(int port)
         {
-            GetHostBuilder().ConfigureWebHostDefaults(builder => builder.UseUrls($"http://*:{port.ToString()}"));
-
-            GetAppHost().Start();
+            Build(builder =>
+                builder.ConfigureWebHostDefaults(
+                    webHostBuilder => webHostBuilder.UseUrls($"http://*:{port.ToString()}"))).Start();
             return this;
         }
     }
