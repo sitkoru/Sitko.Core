@@ -2,49 +2,49 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using idunno.Authentication.Basic;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Auth.Basic
 {
     public class BasicAuthModule : AuthModule<BasicAuthOptions>
     {
-        public BasicAuthModule(BasicAuthOptions config, Application application) : base(config, application)
+        public override string GetConfigKey()
         {
+            return "Auth:Basic";
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            BasicAuthOptions startupConfig)
         {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupConfig);
             services.AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme).AddBasic(options =>
             {
-                options.Realm = Config.Realm;
+                options.Realm = startupConfig.Realm;
                 options.Events = new BasicAuthenticationEvents
                 {
-                    OnValidateCredentials = context =>
+                    OnValidateCredentials = validateContext =>
                     {
-                        if (context.Username == Config.Username && context.Password == Config.Password)
+                        var config = GetConfig(validateContext.HttpContext.RequestServices);
+                        if (validateContext.Username == config.Username && validateContext.Password == config.Password)
                         {
                             var claims = new[]
                             {
                                 new Claim(
                                     ClaimTypes.NameIdentifier,
-                                    context.Username,
+                                    validateContext.Username,
                                     ClaimValueTypes.String,
-                                    context.Options.ClaimsIssuer),
+                                    validateContext.Options.ClaimsIssuer),
                                 new Claim(
                                     ClaimTypes.Name,
-                                    context.Username,
+                                    validateContext.Username,
                                     ClaimValueTypes.String,
-                                    context.Options.ClaimsIssuer)
+                                    validateContext.Options.ClaimsIssuer)
                             };
 
-                            context.Principal = new ClaimsPrincipal(
-                                new ClaimsIdentity(claims, context.Scheme.Name));
-                            context.Success();
+                            validateContext.Principal = new ClaimsPrincipal(
+                                new ClaimsIdentity(claims, validateContext.Scheme.Name));
+                            validateContext.Success();
                         }
 
                         return Task.CompletedTask;
