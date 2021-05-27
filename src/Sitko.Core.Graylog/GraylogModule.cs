@@ -1,6 +1,3 @@
-using System;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Configuration;
 using Serilog.Core;
@@ -12,38 +9,24 @@ namespace Sitko.Core.Graylog
 {
     public class GraylogModule : BaseApplicationModule<GraylogLoggingOptions>
     {
-        public override void ConfigureLogging(LoggerConfiguration loggerConfiguration,
-            LogLevelSwitcher logLevelSwitcher,
-            IConfiguration configuration,
-            IHostEnvironment environment)
+        public override string GetConfigKey()
         {
-            base.ConfigureLogging(loggerConfiguration, logLevelSwitcher, configuration, environment);
+            return "Logging:Graylog";
+        }
+
+        public override void ConfigureLogging(ApplicationContext context, GraylogLoggingOptions config,
+            LoggerConfiguration loggerConfiguration,
+            LogLevelSwitcher logLevelSwitcher)
+        {
+            base.ConfigureLogging(context, config, loggerConfiguration, logLevelSwitcher);
             loggerConfiguration.WriteTo.Async(to => to.Graylog(
                 new GraylogSinkOptions
                 {
-                    HostnameOrAddress = Config.Host,
-                    Port = Config.Port,
-                    Facility = Application.Name,
+                    HostnameOrAddress = config.Host,
+                    Port = config.Port,
+                    Facility = context.Name,
                     MinimumLogEventLevel = logLevelSwitcher.Switch.MinimumLevel
                 }, logLevelSwitcher.Switch));
-        }
-
-        public GraylogModule(GraylogLoggingOptions config, Application application) : base(config, application)
-        {
-        }
-
-        public override void CheckConfig()
-        {
-            base.CheckConfig();
-            if (string.IsNullOrEmpty(Config.Host))
-            {
-                throw new ArgumentException("Host can't be empty", nameof(Config.Host));
-            }
-
-            if (Config.Port == 0)
-            {
-                throw new ArgumentException("Port must be greater than 0", nameof(Config.Port));
-            }
         }
     }
 
