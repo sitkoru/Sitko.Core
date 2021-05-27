@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using TeamsHook.NET;
 
 namespace Sitko.Core.Health.Teams
@@ -14,7 +15,7 @@ namespace Sitko.Core.Health.Teams
     {
         private readonly IHttpClientFactory _httpClientFactory;
 
-        public TeamsHealthCheckPublisher(TeamsHealthCheckPublisherOptions options,
+        public TeamsHealthCheckPublisher(IOptionsMonitor<TeamsHealthCheckPublisherOptions> options,
             ILogger<TeamsHealthCheckPublisher> logger, IHostEnvironment hostingEnvironment,
             IHttpClientFactory httpClientFactory) : base(options, logger, hostingEnvironment)
         {

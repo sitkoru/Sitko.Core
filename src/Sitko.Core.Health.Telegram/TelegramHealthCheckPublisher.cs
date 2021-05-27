@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -16,12 +17,12 @@ namespace Sitko.Core.Health.Telegram
         private readonly ChatId _chatId;
         private readonly ITelegramBotClient _telegramBotClient;
 
-        public TelegramHealthCheckPublisher(TelegramHealthCheckPublisherOptions options,
+        public TelegramHealthCheckPublisher(IOptionsMonitor<TelegramHealthCheckPublisherOptions> options,
             ILogger<TelegramHealthCheckPublisher> logger, IHostEnvironment hostingEnvironment,
             IHttpClientFactory httpClientFactory) : base(options, logger, hostingEnvironment)
         {
-            _chatId = new ChatId(options.ChatId);
-            _telegramBotClient = new TelegramBotClient(options.Token,
+            _chatId = new ChatId(Options.ChatId);
+            _telegramBotClient = new TelegramBotClient(Options.Token,
                 httpClientFactory.CreateClient());
         }
 
