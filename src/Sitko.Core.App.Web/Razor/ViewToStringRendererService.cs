@@ -18,16 +18,16 @@ using Microsoft.Extensions.Options;
 
 namespace Sitko.Core.App.Web.Razor
 {
-    public class ViewToStringRendererService : ViewExecutor
+    public class ViewToStringRendererService<TConfig> : ViewExecutor where TConfig : IViewToStringRendererServiceOptions
     {
-        private readonly ViewToStringRendererServiceOptions _options;
+        private readonly IOptionsMonitor<TConfig> _options;
         private readonly IActionContextAccessor _actionContextAccessor;
         private readonly ITempDataProvider _tempDataProvider;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IServiceProvider _serviceProvider;
 
         public ViewToStringRendererService(
-            ViewToStringRendererServiceOptions options,
+            IOptionsMonitor<TConfig> options,
             IActionContextAccessor actionContextAccessor,
             IOptions<MvcViewOptions> viewOptions,
             IHttpResponseStreamWriterFactory writerFactory,
@@ -100,7 +100,12 @@ namespace Sitko.Core.App.Web.Razor
                     httpContext = new DefaultHttpContext
                     {
                         RequestServices = _serviceProvider.CreateScope().ServiceProvider,
-                        Request = {Protocol = "GET", Host = _options.Host, Scheme = _options.Scheme}
+                        Request =
+                        {
+                            Protocol = "GET",
+                            Host = new HostString(_options.CurrentValue.Host),
+                            Scheme = _options.CurrentValue.Scheme
+                        }
                     };
                 }
 
@@ -191,15 +196,9 @@ namespace Sitko.Core.App.Web.Razor
         }
     }
 
-    public class ViewToStringRendererServiceOptions
+    public interface IViewToStringRendererServiceOptions
     {
-        public ViewToStringRendererServiceOptions(HostString host, string scheme)
-        {
-            Host = host;
-            Scheme = scheme;
-        }
-
-        public HostString Host { get; }
-        public string Scheme { get; }
+        string Host { get; }
+        string Scheme { get; }
     }
 }

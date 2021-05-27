@@ -7,14 +7,12 @@ namespace Sitko.Core.App.Web.Razor
 {
     public static class RazorExtensions
     {
-        public static IServiceCollection AddViewToStringRenderer(this IServiceCollection services, HostString host,
-            string scheme)
+        public static IServiceCollection AddViewToStringRenderer<TConfig>(this IServiceCollection services)
+            where TConfig : IViewToStringRendererServiceOptions
         {
             services.AddHttpContextAccessor();
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
-            services.TryAddSingleton(new ViewToStringRendererServiceOptions(host,
-                scheme));
-            services.TryAddScoped<ViewToStringRendererService>();
+            services.TryAddScoped<ViewToStringRendererService<TConfig>>();
             return services;
         }
     }

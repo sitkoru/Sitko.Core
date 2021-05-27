@@ -18,19 +18,11 @@ namespace Sitko.Core.Xunit
         protected override TApplication ConfigureApplication(TApplication application, string name)
         {
             base.ConfigureApplication(application, name);
-            application.ConfigureAppConfiguration((_, builder) =>
-            {
-                builder.AddEnvironmentVariables()
-                    .AddUserSecrets<TScope>();
-            });
-            var config = new ConfigurationBuilder()
-                .AddEnvironmentVariables()
-                .AddUserSecrets<TScope>()
-                .Build();
 
             var testInMemory =
-                string.IsNullOrEmpty(config["XUNIT_USE_POSTGRES"])
-                || !bool.TryParse(config["XUNIT_USE_POSTGRES"], out var outBool) || !outBool;
+                string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("XUNIT_USE_POSTGRES"))
+                || !bool.TryParse(System.Environment.GetEnvironmentVariable("XUNIT_USE_POSTGRES"), out var outBool) ||
+                !outBool;
             if (testInMemory)
             {
                 application.AddModule<InMemoryDatabaseModule<TDbContext>, InMemoryDatabaseModuleConfig<TDbContext>>(

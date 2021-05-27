@@ -1,33 +1,20 @@
-using System;
+using System.Collections.Generic;
 using FluentEmail.Mailgun;
 using Microsoft.Extensions.DependencyInjection;
-using Sitko.Core.App;
 
 namespace Sitko.Core.Email.MailGun
 {
     public class MailGunEmailModule : FluentEmailModule<MailGunEmailModuleConfig>
     {
-        public MailGunEmailModule(MailGunEmailModuleConfig config, Application application) : base(config, application)
+        protected override void ConfigureBuilder(FluentEmailServicesBuilder builder,
+            MailGunEmailModuleConfig config)
         {
+            builder.AddMailGunSender(config.Domain, config.ApiKey, config.Region);
         }
 
-        protected override void ConfigureBuilder(FluentEmailServicesBuilder builder)
+        public override string GetConfigKey()
         {
-            builder.AddMailGunSender(Config.Domain, Config.ApiKey, Config.Region);
-        }
-
-        public override void CheckConfig()
-        {
-            base.CheckConfig();
-            if (string.IsNullOrEmpty(Config.Domain))
-            {
-                throw new ArgumentException("Provide domain registered in mailgun", nameof(Config.Domain));
-            }
-
-            if (string.IsNullOrEmpty(Config.ApiKey))
-            {
-                throw new ArgumentException("Provide mailgun apikey", nameof(Config.ApiKey));
-            }
+            return "Email:Mailgun";
         }
     }
 
@@ -36,5 +23,24 @@ namespace Sitko.Core.Email.MailGun
         public string Domain { get; set; } = "mg.localhost";
         public string ApiKey { get; set; } = string.Empty;
         public MailGunRegion Region { get; set; } = MailGunRegion.USA;
+
+        public override (bool isSuccess, IEnumerable<string> errors) CheckConfig()
+        {
+            var result = base.CheckConfig();
+            if (result.isSuccess)
+            {
+                if (string.IsNullOrEmpty(Domain))
+                {
+                    return (false, new[] {"Provide domain registered in mailgun"});
+                }
+
+                if (string.IsNullOrEmpty(ApiKey))
+                {
+                    return (false, new[] {"Provide mailgun apikey"});
+                }
+            }
+
+            return result;
+        }
     }
 }

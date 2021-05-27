@@ -67,10 +67,6 @@ namespace Sitko.Core.App.Web
             IConfigurationBuilder configurationBuilder)
         {
             base.ConfigureAppConfiguration(context, configurationBuilder);
-            if (context.HostingEnvironment.IsDevelopment())
-            {
-                configurationBuilder.AddUserSecrets<TStartup>();
-            }
 
             configurationBuilder.AddEnvironmentVariables();
         }
