@@ -113,6 +113,7 @@ namespace Sitko.Core.App
 
             if (!modulesCheckSuccess)
             {
+                tmpLogger.LogInformation("Check required modules failed");
                 Environment.Exit(1);
             }
 
