@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Consul.Web
@@ -17,7 +18,8 @@ namespace Sitko.Core.Consul.Web
     public class ConsulWebClient
     {
         private readonly IConsulClient _consulClient;
-        private readonly ConsulWebModuleConfig _config;
+        private readonly IOptionsMonitor<ConsulWebModuleConfig> _configMonitor;
+        private ConsulWebModuleConfig Config => _configMonitor.CurrentValue;
         private readonly IApplication _application;
         private readonly ILogger<ConsulWebClient> _logger;
 
@@ -25,18 +27,19 @@ namespace Sitko.Core.Consul.Web
         private readonly string _healthUrl;
         private readonly string _name;
 
-        public ConsulWebClient(IServer server, IConsulClient consulClient, ConsulWebModuleConfig config,
+        public ConsulWebClient(IServer server, IConsulClient consulClient,
+            IOptionsMonitor<ConsulWebModuleConfig> config,
             IHostEnvironment environment, IApplication application, ILogger<ConsulWebClient> logger)
         {
             _consulClient = consulClient;
-            _config = config;
+            _configMonitor = config;
             _application = application;
             _logger = logger;
 
             _name = environment.ApplicationName;
-            if (_config.ServiceUri != null)
+            if (Config.ServiceUri != null)
             {
-                _uri = _config.ServiceUri;
+                _uri = Config.ServiceUri;
             }
             else
             {
@@ -45,9 +48,9 @@ namespace Sitko.Core.Consul.Web
                 foreach (var featureAddress in addressesFeature.Addresses)
                 {
                     var preparedAddress = featureAddress
-                        .Replace("localhost", _config.IpAddress)
-                        .Replace("0.0.0.0", _config.IpAddress)
-                        .Replace("[::]", _config.IpAddress);
+                        .Replace("localhost", Config.IpAddress)
+                        .Replace("0.0.0.0", Config.IpAddress)
+                        .Replace("[::]", Config.IpAddress);
 
                     var uriCreated = Uri.TryCreate(preparedAddress, UriKind.Absolute,
                         out var uri);
@@ -72,7 +75,7 @@ namespace Sitko.Core.Consul.Web
                 _uri = address;
             }
 
-            _healthUrl = new Uri(_uri, _config.HealthCheckPath).ToString();
+            _healthUrl = new Uri(_uri, Config.HealthCheckPath).ToString();
         }
 
         public async Task RegisterAsync()
@@ -86,8 +89,8 @@ namespace Sitko.Core.Consul.Web
                 Check = new AgentServiceCheck
                 {
                     HTTP = _healthUrl,
-                    DeregisterCriticalServiceAfter = _config.DeregisterTimeout,
-                    Interval = _config.ChecksInterval
+                    DeregisterCriticalServiceAfter = Config.DeregisterTimeout,
+                    Interval = Config.ChecksInterval
                 },
                 Tags = new[] {"metrics", $"healthUrl:{_healthUrl}", $"version:{_application.Version}"}
             };
@@ -110,7 +113,7 @@ namespace Sitko.Core.Consul.Web
                     return HealthCheckResult.Healthy();
                 }
 
-                if (_config.AutoFixRegistration)
+                if (Config.AutoFixRegistration)
                 {
                     //no services. fix registration
                     await RegisterAsync();
