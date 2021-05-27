@@ -12,9 +12,6 @@ namespace Sitko.Core.App
 {
     public abstract class BaseApplicationModule : BaseApplicationModule<BaseApplicationModuleConfig>
     {
-        protected BaseApplicationModule(Application application) : base(application)
-        {
-        }
     }
 
     public class BaseApplicationModuleConfig : BaseModuleConfig
@@ -24,38 +21,25 @@ namespace Sitko.Core.App
     public abstract class BaseApplicationModule<TConfig> : IApplicationModule<TConfig>
         where TConfig : BaseModuleConfig, new()
     {
-        //protected TConfig Config { get; }
-        protected Application Application { get; }
-
-        private IOptionsMonitor<TConfig>? _config;
-
-        protected BaseApplicationModule(Application application)
-        {
-            //Config = config;
-            Application = application;
-        }
-
-
-        public virtual void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
-            //services.AddSingleton(Config);
-        }
-
-        public virtual void ConfigureLogging(LoggerConfiguration loggerConfiguration,
-            LogLevelSwitcher logLevelSwitcher, IConfiguration configuration, IHostEnvironment environment)
+        public virtual void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            TConfig startupConfig)
         {
         }
 
-        public virtual Task InitAsync(IServiceProvider serviceProvider, IConfiguration configuration,
-            IHostEnvironment environment)
+        public virtual void ConfigureLogging(ApplicationContext context, TConfig config,
+            LoggerConfiguration loggerConfiguration,
+            LogLevelSwitcher logLevelSwitcher)
+        {
+        }
+
+        public virtual Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider)
         {
             return Task.CompletedTask;
         }
 
-        public virtual List<Type> GetRequiredModules()
+        public virtual IEnumerable<Type> GetRequiredModules(ApplicationContext context, TConfig config)
         {
-            return new List<Type>();
+            return new Type[0];
         }
 
         public virtual Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
@@ -76,23 +60,12 @@ namespace Sitko.Core.App
             return Task.CompletedTask;
         }
 
-        public TConfig GetConfig()
+        public TConfig GetConfig(IServiceProvider serviceProvider)
         {
-            _config ??= Application.GetServices().GetService<IOptionsMonitor<TConfig>>();
-            if (_config is null)
-            {
-                throw new Exception($"Module {GetType()} is not configured");
-            }
-
-            return _config.CurrentValue;
+            return serviceProvider.GetRequiredService<IOptions<TConfig>>().Value;
         }
 
         public abstract string GetConfigKey();
-
-        public (bool isSuccess, IEnumerable<string> errors) CheckConfig()
-        {
-            return GetConfig().CheckConfig();
-        }
     }
 
     public abstract class BaseModuleConfig
@@ -105,7 +78,6 @@ namespace Sitko.Core.App
 
     public interface IHostBuilderModule<TConfig> : IApplicationModule<TConfig> where TConfig : class, new()
     {
-        public void ConfigureHostBuilder(IHostBuilder hostBuilder, IConfiguration configuration,
-            IHostEnvironment environment);
+        public void ConfigureHostBuilder(ApplicationContext context, IHostBuilder hostBuilder, TConfig currentConfig);
     }
 }

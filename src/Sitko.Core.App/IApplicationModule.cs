@@ -11,22 +11,19 @@ namespace Sitko.Core.App
 {
     public interface IApplicationModule<TConfig> : IApplicationModule where TConfig : class, new()
     {
-        TConfig GetConfig();
         string GetConfigKey();
+
+        void ConfigureLogging(ApplicationContext context, TConfig config, LoggerConfiguration loggerConfiguration,
+            LogLevelSwitcher logLevelSwitcher);
+
+        void ConfigureServices(ApplicationContext context, IServiceCollection services, TConfig startupConfig);
+
+        IEnumerable<Type> GetRequiredModules(ApplicationContext context, TConfig config);
     }
 
     public interface IApplicationModule
     {
-        void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment);
-
-        void ConfigureLogging(LoggerConfiguration loggerConfiguration, LogLevelSwitcher logLevelSwitcher,
-            IConfiguration configuration, IHostEnvironment environment);
-
-        Task InitAsync(IServiceProvider serviceProvider, IConfiguration configuration,
-            IHostEnvironment environment);
-
-        List<Type> GetRequiredModules();
+        Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider);
 
         Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider);
@@ -36,7 +33,5 @@ namespace Sitko.Core.App
 
         Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider);
-        
-        (bool isSuccess, IEnumerable<string> errors) CheckConfig();
     }
 }
