@@ -49,7 +49,7 @@ namespace Sitko.Core.Xunit
                     configuration,
                     environment, moduleConfig) =>
                 {
-                    GetPostgresConfig(configuration, environment, moduleConfig, name);
+                    GetPostgresConfig(configuration, environment, moduleConfig, application.Id, name);
                 });
             }
 
@@ -90,35 +90,16 @@ namespace Sitko.Core.Xunit
         }
 
         protected virtual void GetPostgresConfig(IConfiguration configuration,
-            IHostEnvironment environment, PostgresDatabaseModuleConfig<TDbContext> moduleConfig, string dbName)
+            IHostEnvironment environment, PostgresDatabaseModuleConfig<TDbContext> moduleConfig, Guid applicationId,
+            string dbName)
         {
             throw new NotImplementedException("You need to implement postgres configuration in your scope");
         }
 
         protected void GetDefaultPostgresConfig(IConfiguration configuration, IHostEnvironment environment,
-            PostgresDatabaseModuleConfig<TDbContext> moduleConfig, string dbName)
+            PostgresDatabaseModuleConfig<TDbContext> moduleConfig, Guid applicationId, string dbName)
         {
-            if (!string.IsNullOrEmpty(configuration["POSTGRES_HOST"]))
-            {
-                moduleConfig.Host = configuration["POSTGRES_HOST"];
-            }
-
-            if (int.TryParse(configuration["POSTGRES_PORT"], out var parsedPort))
-            {
-                moduleConfig.Port = parsedPort;
-            }
-
-            if (!string.IsNullOrEmpty(configuration["POSTGRES_USERNAME"]))
-            {
-                moduleConfig.Username = configuration["POSTGRES_USERNAME"];
-            }
-
-            if (!string.IsNullOrEmpty(configuration["POSTGRES_PASSWORD"]))
-            {
-                moduleConfig.Password = configuration["POSTGRES_PASSWORD"];
-            }
-
-            moduleConfig.Database = dbName;
+            moduleConfig.Database = $"{applicationId}_{dbName}";
         }
 
         public override async ValueTask DisposeAsync()

@@ -11,7 +11,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres.Tests
         {
             base.ConfigureApplication(application, name)
                 .AddModule<TestApplication, S3StorageModule<TestS3StorageSettings>, TestS3StorageSettings>(
-                    (configuration, _, moduleConfig) =>
+                    (_, _, moduleConfig) =>
                     {
                         moduleConfig.Bucket = name.ToLowerInvariant();
                         moduleConfig.Prefix = "test";

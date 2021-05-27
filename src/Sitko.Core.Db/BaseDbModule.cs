@@ -15,14 +15,9 @@ namespace Sitko.Core.Db
         where TDbContext : DbContext
         where TConfig : BaseDbModuleConfig<TDbContext>, new()
     {
-        protected BaseDbModule(Application application) : base(application)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services, TConfig startupConfig)
         {
-        }
-
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupConfig);
             services.AddHealthChecks().AddDbContextCheck<TDbContext>($"DB {typeof(TDbContext)} check");
         }
     }

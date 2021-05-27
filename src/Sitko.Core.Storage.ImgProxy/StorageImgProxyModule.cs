@@ -11,25 +11,22 @@ namespace Sitko.Core.Storage.ImgProxy
         StorageImgProxyModule<TStorageOptions> : BaseApplicationModule<StorageImgProxyModuleConfig<TStorageOptions>>
         where TStorageOptions : StorageOptions
     {
-        public StorageImgProxyModule(Application application) : base(application)
-        {
-        }
-        
         public override string GetConfigKey()
         {
             return $"Storage:ImgProxy:{typeof(TStorageOptions).Name}";
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            StorageImgProxyModuleConfig<TStorageOptions> startupConfig)
         {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupConfig);
             services.AddSingleton<IImgProxyUrlGenerator<TStorageOptions>, ImgProxyUrlGenerator<TStorageOptions>>();
         }
 
-        public override List<Type> GetRequiredModules()
+        public override IEnumerable<Type> GetRequiredModules(ApplicationContext context,
+            StorageImgProxyModuleConfig<TStorageOptions> config)
         {
-            return new() { typeof(IStorageModule) };
+            return new[] {typeof(IStorageModule)};
         }
     }
 

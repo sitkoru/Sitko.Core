@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.Metadata
@@ -13,19 +11,16 @@ namespace Sitko.Core.Storage.Metadata
         where TProvider : class, IStorageMetadataProvider<TStorageOptions, TProviderOptions>
         where TProviderOptions : StorageMetadataProviderOptions, new()
     {
-        protected BaseStorageMetadataModule(Application application) : base(application)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            TProviderOptions startupConfig)
         {
-        }
-
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
+            base.ConfigureServices(context, services, startupConfig);
             services.AddSingleton<IStorageMetadataProvider<TStorageOptions>, TProvider>();
         }
 
-        public override List<Type> GetRequiredModules()
+        public override IEnumerable<Type> GetRequiredModules(ApplicationContext context, TProviderOptions config)
         {
-            return new() {typeof(IStorageModule)};
+            return new[] {typeof(IStorageModule)};
         }
     }
 }

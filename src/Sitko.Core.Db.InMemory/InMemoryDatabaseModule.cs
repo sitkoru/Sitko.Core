@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Db.InMemory
@@ -10,24 +8,23 @@ namespace Sitko.Core.Db.InMemory
     public class InMemoryDatabaseModule<TDbContext> : BaseDbModule<TDbContext, InMemoryDatabaseModuleConfig<TDbContext>>
         where TDbContext : DbContext
     {
-        public InMemoryDatabaseModule(Application application) : base(application)
-        {
-        }
-
         public override string GetConfigKey()
         {
             return $"Db:InMemory:{typeof(TDbContext).Name}";
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            InMemoryDatabaseModuleConfig<TDbContext> startupConfig)
         {
-            services.AddDbContext<TDbContext>((p, options) =>
+            base.ConfigureServices(context, services, startupConfig);
+            services.AddDbContext<TDbContext>((serviceProvider, options) =>
             {
+                var config = GetConfig(serviceProvider);
                 options.ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-                    .UseInMemoryDatabase(GetConfig().Database);
-                GetConfig().Configure?.Invoke((DbContextOptionsBuilder<TDbContext>)options, p, configuration,
-                    environment);
+                    .UseInMemoryDatabase(config.Database);
+                config.Configure?.Invoke((DbContextOptionsBuilder<TDbContext>)options, serviceProvider,
+                    context.Configuration,
+                    context.Environment);
             });
         }
     }

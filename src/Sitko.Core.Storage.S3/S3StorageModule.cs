@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using Amazon;
 using Amazon.S3;
 using HealthChecks.Aws.S3;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.S3
@@ -14,32 +12,29 @@ namespace Sitko.Core.Storage.S3
     public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3StorageOptions>, TS3StorageOptions>
         where TS3StorageOptions : S3StorageOptions, new()
     {
-        public S3StorageModule(Application application) : base(application)
-        {
-        }
-        
         public override string GetConfigKey()
         {
             return $"Storage:S3:{typeof(TS3StorageOptions).Name}";
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            TS3StorageOptions startupConfig)
         {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupConfig);
             services.AddSingleton<S3ClientProvider<TS3StorageOptions>>();
             services.AddHealthChecks().Add(new HealthCheckRegistration(GetType().Name,
-                _ =>
+                serviceProvider =>
                 {
+                    var config = GetConfig(serviceProvider);
                     var options = new S3BucketOptions
                     {
-                        AccessKey = GetConfig().AccessKey,
-                        BucketName = GetConfig().Bucket,
-                        SecretKey = GetConfig().SecretKey,
+                        AccessKey = config.AccessKey,
+                        BucketName = config.Bucket,
+                        SecretKey = config.SecretKey,
                         S3Config = new AmazonS3Config
                         {
-                            RegionEndpoint = GetConfig().Region,
-                            ServiceURL = GetConfig().Server.ToString(),
+                            RegionEndpoint = config.Region,
+                            ServiceURL = config.Server?.ToString(),
                             ForcePathStyle = true
                         }
                     };

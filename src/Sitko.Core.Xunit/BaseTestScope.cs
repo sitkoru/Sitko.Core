@@ -49,8 +49,8 @@ namespace Sitko.Core.Xunit
 
 
             _application = ConfigureApplication(_application, name);
-            await _application.InitAsync();
-            ServiceProvider = _application.GetServices().CreateScope().ServiceProvider;
+            var host = await _application.BuildAndInitAsync();
+            ServiceProvider = host.Services.CreateScope().ServiceProvider;
             Configuration = ServiceProvider.GetService<IConfiguration>();
             Environment = ServiceProvider.GetService<IHostEnvironment>();
         }

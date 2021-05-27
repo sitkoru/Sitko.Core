@@ -271,9 +271,9 @@ namespace Sitko.Core.Repository.Tests
     public abstract class BaseEFTestScope : DbBaseTestScope<BaseEFTestScope, TestDbContext>
     {
         protected override void GetPostgresConfig(IConfiguration configuration, IHostEnvironment environment,
-            PostgresDatabaseModuleConfig<TestDbContext> moduleConfig, string dbName)
+            PostgresDatabaseModuleConfig<TestDbContext> moduleConfig, Guid applicationId, string dbName)
         {
-            GetDefaultPostgresConfig(configuration, environment, moduleConfig, dbName);
+            GetDefaultPostgresConfig(configuration, environment, moduleConfig, applicationId, dbName);
         }
     }
 

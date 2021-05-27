@@ -1,25 +1,19 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore
 {
     public class EFRepositoriesModule<T> : RepositoriesModule<T, EFRepositoriesModuleConfig>
     {
-        public EFRepositoriesModule(Application application) : base(application)
-        {
-        }
-
         public override string GetConfigKey()
         {
             return $"Repositories:EF:{typeof(T).Name}";
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            EFRepositoriesModuleConfig startupConfig)
         {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupConfig);
             services.AddScoped(typeof(EFRepositoryContext<,,>));
 
             services.Scan(s =>

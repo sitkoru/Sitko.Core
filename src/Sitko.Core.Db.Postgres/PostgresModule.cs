@@ -14,21 +14,15 @@ namespace Sitko.Core.Db.Postgres
     public class PostgresModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleConfig<TDbContext>>
         where TDbContext : DbContext
     {
-        public PostgresModule(Application application) : base(application)
-        {
-        }
-        
         public override string GetConfigKey()
         {
             return $"Db:Postgres:{typeof(TDbContext).Name}";
         }
 
-        public override async Task InitAsync(IServiceProvider serviceProvider, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override async Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider)
         {
-            await base.InitAsync(serviceProvider, configuration, environment);
-
-            if (GetConfig().AutoApplyMigrations)
+            await base.InitAsync(context, serviceProvider);
+            if (GetConfig(serviceProvider).AutoApplyMigrations)
             {
                 var logger = serviceProvider.GetService<ILogger<PostgresModule<TDbContext>>>();
                 var migrated = false;
@@ -65,35 +59,43 @@ namespace Sitko.Core.Db.Postgres
             }
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            PostgresDatabaseModuleConfig<TDbContext> startupConfig)
         {
-            base.ConfigureServices(services, configuration, environment);
-
+            base.ConfigureServices(context, services, startupConfig);
             services.AddMemoryCache();
-            services.AddDbContextPool<TDbContext>((serviceProvider, options) =>
-                ConfigureNpgsql(options, serviceProvider, configuration, environment));
+            if (startupConfig.EnableContextPooling)
+            {
+                services.AddDbContextPool<TDbContext>((serviceProvider, options) =>
+                    ConfigureNpgsql(options, serviceProvider, context.Configuration, context.Environment));
+            }
+            else
+            {
+                services.AddDbContext<TDbContext>((serviceProvider, options) =>
+                    ConfigureNpgsql(options, serviceProvider, context.Configuration, context.Environment));
+            }
         }
 
-        private NpgsqlConnectionStringBuilder CreateBuilder()
+        private NpgsqlConnectionStringBuilder CreateBuilder(
+            PostgresDatabaseModuleConfig<TDbContext> config)
         {
             var connBuilder = new NpgsqlConnectionStringBuilder
             {
-                Host = GetConfig().Host,
-                Port = GetConfig().Port,
-                Username = GetConfig().Username,
-                Password = GetConfig().Password,
-                Database = GetConfig().Database,
-                Pooling = GetConfig().EnableNpgsqlPooling
+                Host = config.Host,
+                Port = config.Port,
+                Username = config.Username,
+                Password = config.Password,
+                Database = config.Database,
+                Pooling = config.EnableNpgsqlPooling
             };
             return connBuilder;
         }
 
         private void ConfigureNpgsql(DbContextOptionsBuilder options,
-            IServiceProvider p, IConfiguration configuration, IHostEnvironment environment)
+            IServiceProvider serviceProvider, IConfiguration configuration, IHostEnvironment environment)
         {
-            var config = GetConfig();
-            options.UseNpgsql(CreateBuilder().ConnectionString,
+            var config = GetConfig(serviceProvider);
+            options.UseNpgsql(CreateBuilder(config).ConnectionString,
                 builder => builder.MigrationsAssembly(config.MigrationsAssembly != null
                     ? config.MigrationsAssembly.FullName
                     : typeof(TDbContext).Assembly.FullName));
@@ -102,7 +104,8 @@ namespace Sitko.Core.Db.Postgres
                 options.EnableSensitiveDataLogging();
             }
 
-            config.Configure?.Invoke((DbContextOptionsBuilder<TDbContext>)options, p, configuration, environment);
+            config.Configure?.Invoke((DbContextOptionsBuilder<TDbContext>)options, serviceProvider, configuration,
+                environment);
         }
     }
 }

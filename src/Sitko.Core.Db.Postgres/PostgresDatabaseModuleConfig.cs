@@ -11,6 +11,7 @@ namespace Sitko.Core.Db.Postgres
         public string Username { get; set; } = "postgres";
         public string Password { get; set; } = string.Empty;
         public bool EnableNpgsqlPooling { get; set; } = true;
+        public bool EnableContextPooling { get; set; } = true;
         public bool EnableSensitiveLogging { get; set; } = false;
 
         public Assembly? MigrationsAssembly { get; set; }
