@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using FluentValidation;
 using Sitko.Core.App;
 using Sitko.Core.IdProvider;
 using Sitko.Core.IdProvider.SonyFlake;

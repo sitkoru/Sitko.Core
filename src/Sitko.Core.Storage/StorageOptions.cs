@@ -1,12 +1,6 @@
 using System;
-using System.Collections.Generic;
 using FluentValidation;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
-using Sitko.Core.Storage.Cache;
-using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage
 {

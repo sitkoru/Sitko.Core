@@ -6,7 +6,6 @@ using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Serilog;
 using Sitko.Core.App.Logging;
 using IL.FluentValidation.Extensions.Options;
