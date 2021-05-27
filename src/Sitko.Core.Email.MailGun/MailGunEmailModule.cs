@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using FluentEmail.Mailgun;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;

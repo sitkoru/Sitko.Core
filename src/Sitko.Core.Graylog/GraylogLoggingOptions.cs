@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using FluentValidation;
 using Sitko.Core.App;
 
