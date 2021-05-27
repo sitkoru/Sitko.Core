@@ -1,40 +1,24 @@
-using System;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Health.Telegram
 {
     public class TelegramHealthReporterModule : BaseApplicationModule<TelegramHealthCheckPublisherOptions>
     {
-        public TelegramHealthReporterModule(TelegramHealthCheckPublisherOptions config,
-            Application application) : base(config, application)
+        public override string GetConfigKey()
         {
+            return "Health:Telegram";
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            TelegramHealthCheckPublisherOptions startupConfig)
         {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupConfig);
             services.Configure<HealthCheckPublisherOptions>(_ => { });
             services.AddHealthChecks();
+            services.AddHttpClient();
             services.AddSingleton<IHealthCheckPublisher, TelegramHealthCheckPublisher>();
-        }
-
-        public override void CheckConfig()
-        {
-            base.CheckConfig();
-            if (string.IsNullOrEmpty(Config.Token))
-            {
-                throw new ArgumentException("Telegram token can't be empty", nameof(Config.Token));
-            }
-
-            if (Config.ChatId == 0)
-            {
-                throw new ArgumentException("Telegram chat id can't be 0", nameof(Config.ChatId));
-            }
         }
     }
 }
