@@ -1,29 +1,23 @@
 using System;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
 namespace Sitko.Core.IdProvider.SonyFlake
 {
     public class SonyFlakeModule : BaseApplicationModule<SonyFlakeModuleConfig>
     {
-        public SonyFlakeModule(Application application) : base(application)
-        {
-        }
-        
         public override string GetConfigKey()
         {
             return "SonyFlake";
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            SonyFlakeModuleConfig startupConfig)
         {
-            base.ConfigureServices(services, configuration, environment);
-            services.AddHttpClient<IIdProvider, SonyFlakeIdProvider>(client =>
+            base.ConfigureServices(context, services, startupConfig);
+            services.AddHttpClient<IIdProvider, SonyFlakeIdProvider>((serviceProvider, client) =>
             {
-                client.BaseAddress = new Uri(GetConfig().Uri);
+                client.BaseAddress = new Uri(GetConfig(serviceProvider).Uri);
             });
         }
     }

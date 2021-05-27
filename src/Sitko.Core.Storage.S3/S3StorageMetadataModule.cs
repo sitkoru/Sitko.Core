@@ -1,5 +1,4 @@
-﻿using Sitko.Core.App;
-using Sitko.Core.Storage.Metadata;
+﻿using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.S3
 {
@@ -10,10 +9,6 @@ namespace Sitko.Core.Storage.S3
         public override string GetConfigKey()
         {
             return $"Storage:Metadata:FileSystem:{typeof(TStorageOptions).Name}";
-        }
-
-        public S3StorageMetadataModule(Application application) : base(application)
-        {
         }
     }
 }

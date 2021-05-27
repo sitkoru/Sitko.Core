@@ -1,6 +1,4 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using PuppeteerSharp;
 using Sitko.Core.App;
 
@@ -8,19 +6,15 @@ namespace Sitko.Core.Pdf
 {
     public class PdfRendererModule : BaseApplicationModule<PdfRendererModuleConfig>
     {
-        public PdfRendererModule(Application application) : base(application)
-        {
-        }
-        
         public override string GetConfigKey()
         {
             return "PdfRenderer";
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            PdfRendererModuleConfig startupConfig)
         {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupConfig);
             services.AddSingleton<IPdfRenderer, PdfRenderer>();
         }
     }

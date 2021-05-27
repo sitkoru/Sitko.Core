@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.Cache
@@ -11,14 +9,10 @@ namespace Sitko.Core.Storage.Cache
         where TCache : class, IStorageCache<TStorageOptions, TCacheOptions>
         where TStorageOptions : StorageOptions
     {
-        public BaseStorageCacheModule(Application application) : base(application)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            TCacheOptions startupConfig)
         {
-        }
-
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupConfig);
             services.AddSingleton<IStorageCache<TStorageOptions>, TCache>();
         }
     }
@@ -28,25 +22,17 @@ namespace Sitko.Core.Storage.Cache
             FileStorageCache<TStorageOptions>,
             FileStorageCacheOptions> where TStorageOptions : StorageOptions
     {
-        public FileStorageCacheModule(Application application) : base(application)
-        {
-        }
-        
         public override string GetConfigKey()
         {
             return $"Storage:Cache:FileSystem:{typeof(TStorageOptions).Name}";
         }
     }
-    
+
     public class
         InMemoryStorageCacheModule<TStorageOptions> : BaseStorageCacheModule<TStorageOptions,
             InMemoryStorageCache<TStorageOptions>,
             InMemoryStorageCacheOptions> where TStorageOptions : StorageOptions
     {
-        public InMemoryStorageCacheModule(Application application) : base(application)
-        {
-        }
-        
         public override string GetConfigKey()
         {
             return $"Storage:Cache:InMemory:{typeof(TStorageOptions).Name}";
