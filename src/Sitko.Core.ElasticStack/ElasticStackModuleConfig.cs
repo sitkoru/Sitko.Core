@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Serilog.Sinks.Elasticsearch;
+using Sitko.Core.App;
 
 namespace Sitko.Core.ElasticStack
 {
-    public class ElasticStackModuleConfig
+    public class ElasticStackModuleConfig : BaseModuleConfig
     {
         public bool LoggingEnabled { get; private set; }
         public bool ApmEnabled { get; private set; }
@@ -60,6 +61,31 @@ namespace Sitko.Core.ElasticStack
             ApmEnabled = true;
             ApmServerUrls = apmUrls.ToList();
             return this;
+        }
+
+        public override (bool isSuccess, IEnumerable<string> errors) CheckConfig()
+        {
+            var result = base.CheckConfig();
+            if (result.isSuccess)
+            {
+                if (ApmEnabled)
+                {
+                    if (ApmServerUrls == null || !ApmServerUrls.Any())
+                    {
+                        return (false, new[] {"ApmServerUrls can't be empty"});
+                    }
+                }
+
+                if (LoggingEnabled)
+                {
+                    if (ElasticSearchUrls == null || !ElasticSearchUrls.Any())
+                    {
+                        return (false, new[] {"ElasticSearchUrls can't be empty"});
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }
