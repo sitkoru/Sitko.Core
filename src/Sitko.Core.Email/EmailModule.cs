@@ -11,28 +11,14 @@ namespace Sitko.Core.Email
     {
     }
 
-    public abstract class EmailModule<T> : BaseApplicationModule<T>, IEmailModule where T : EmailModuleConfig, new()
+    public abstract class EmailModule<TEmailConfig> : BaseApplicationModule<TEmailConfig>, IEmailModule
+        where TEmailConfig : EmailModuleConfig, new()
     {
-        protected EmailModule(T config, Application application) : base(config, application)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            TEmailConfig startupConfig)
         {
-        }
-
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
-            base.ConfigureServices(services, configuration, environment);
-            services.AddViewToStringRenderer(Config.Host, Config.Scheme);
-        }
-
-        public override void CheckConfig()
-        {
-            base.CheckConfig();
-
-            if (string.IsNullOrEmpty(Config.Scheme))
-            {
-                throw new ArgumentException("Provide value for uri scheme to generate absolute urls",
-                    nameof(Config.Scheme));
-            }
+            base.ConfigureServices(context, services, startupConfig);
+            services.AddViewToStringRenderer<EmailModuleConfig>();
         }
     }
 }
