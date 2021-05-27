@@ -3,17 +3,17 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore
 {
-    public class EFRepositoriesModule<T> : RepositoriesModule<T, EFRepositoriesModuleConfig>
+    public class EFRepositoriesModule<T> : RepositoriesModule<T, EfRepositoriesModuleOptions>
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return $"Repositories:EF:{typeof(T).Name}";
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            EFRepositoriesModuleConfig startupConfig)
+            EfRepositoriesModuleOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddScoped(typeof(EFRepositoryContext<,,>));
             services.AddScoped<EFRepositoryLock>();
 
@@ -23,7 +23,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         }
     }
 
-    public class EFRepositoriesModuleConfig : BaseModuleConfig
+    public class EfRepositoriesModuleOptions : BaseModuleOptions
     {
         public bool EnableThreadSafeOperations { get; set; }
     }

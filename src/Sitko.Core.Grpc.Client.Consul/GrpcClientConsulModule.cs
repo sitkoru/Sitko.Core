@@ -7,22 +7,22 @@ using Sitko.Core.Consul;
 namespace Sitko.Core.Grpc.Client.Consul
 {
     public class GrpcClientConsulModule<TClient> : GrpcClientModule<TClient, ConsulGrpcServiceAddressResolver<TClient>,
-        GrpcClientConsulModuleConfig>
+        GrpcClientConsulModuleOptions>
         where TClient : ClientBase<TClient>
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Grpc:Client:Consul";
         }
 
         public override IEnumerable<Type> GetRequiredModules(ApplicationContext context,
-            GrpcClientConsulModuleConfig config)
+            GrpcClientConsulModuleOptions options)
         {
             return new List<Type> {typeof(IConsulModule)};
         }
     }
 
-    public class GrpcClientConsulModuleConfig : GrpcClientModuleConfig
+    public class GrpcClientConsulModuleOptions : GrpcClientModuleOptions
     {
     }
 }

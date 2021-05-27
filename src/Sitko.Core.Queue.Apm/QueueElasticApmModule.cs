@@ -8,22 +8,22 @@ namespace Sitko.Core.Queue.Apm
 {
     public class QueueElasticApmModule : BaseApplicationModule
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Queue:Elastic:Apm";
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            BaseApplicationModuleConfig startupConfig)
+            BaseApplicationModuleOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddSingleton<IQueueMiddleware, QueueElasticApmMiddleware>();
         }
 
         public override IEnumerable<Type> GetRequiredModules(ApplicationContext context,
-            BaseApplicationModuleConfig config)
+            BaseApplicationModuleOptions options)
         {
-            return new List<Type>(base.GetRequiredModules(context, config)) {typeof(ElasticStackModule)};
+            return new List<Type>(base.GetRequiredModules(context, options)) {typeof(ElasticStackModule)};
         }
     }
 }

@@ -1,30 +1,20 @@
-using System.Collections.Generic;
+using FluentValidation;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Health.Telegram
 {
-    public class TelegramHealthCheckPublisherOptions : BaseModuleConfig
+    public class TelegramHealthCheckPublisherOptions : BaseModuleOptions
     {
         public string Token { get; set; } = string.Empty;
         public long ChatId { get; set; } = 0;
+    }
 
-        public override (bool isSuccess, IEnumerable<string> errors) CheckConfig()
+    public class TelegramHealthCheckPublisherOptionsValidator : AbstractValidator<TelegramHealthCheckPublisherOptions>
+    {
+        public TelegramHealthCheckPublisherOptionsValidator()
         {
-            var result = base.CheckConfig();
-            if (result.isSuccess)
-            {
-                if (string.IsNullOrEmpty(Token))
-                {
-                    return (false, new[] {"Telegram token can't be empty"});
-                }
-
-                if (ChatId == 0)
-                {
-                    return (false, new[] {"Telegram chat id can't be 0"});
-                }
-            }
-
-            return result;
+            RuleFor(o => o.Token).NotEmpty().WithMessage("Telegram token can't be empty");
+            RuleFor(o => o.ChatId).NotEqual(0).WithMessage("Telegram chat id can't be 0");
         }
     }
 }

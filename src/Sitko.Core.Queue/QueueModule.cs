@@ -15,36 +15,36 @@ namespace Sitko.Core.Queue
 
     public abstract class QueueModule<TQueue, TConfig> : BaseApplicationModule<TConfig>, IQueueModule
         where TQueue : class, IQueue
-        where TConfig : QueueModuleConfig, new()
+        where TConfig : QueueModuleOptions, new()
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TConfig startupConfig)
+            TConfig startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddSingleton<IQueue, TQueue>();
             services.AddSingleton<QueueContext>();
 
-            if (startupConfig.HealthChecksEnabled)
+            if (startupOptions.HealthChecksEnabled)
             {
                 services.AddHealthChecks().AddCheck<QueueHealthCheck>("Queue health check");
             }
 
-            if (startupConfig.Middlewares.Any())
+            if (startupOptions.Middlewares.Any())
             {
                 services.Scan(selector =>
-                    selector.AddTypes(startupConfig.Middlewares).AsSelfWithInterfaces().WithSingletonLifetime());
+                    selector.AddTypes(startupOptions.Middlewares).AsSelfWithInterfaces().WithSingletonLifetime());
             }
 
-            foreach (var options in startupConfig.Options)
+            foreach (var options in startupOptions.Options)
             {
                 services.AddSingleton(typeof(IQueueMessageOptions), options.Value);
             }
 
-            if (startupConfig.ProcessorEntries.Any())
+            if (startupOptions.ProcessorEntries.Any())
             {
-                var types = startupConfig.ProcessorEntries.Select(e => e.Type).Distinct().ToArray();
+                var types = startupOptions.ProcessorEntries.Select(e => e.Type).Distinct().ToArray();
                 services.Scan(selector => selector.AddTypes(types).AsSelfWithInterfaces().WithScopedLifetime());
-                var messageTypes = startupConfig.ProcessorEntries.SelectMany(e => e.MessageTypes).Distinct().ToArray();
+                var messageTypes = startupOptions.ProcessorEntries.SelectMany(e => e.MessageTypes).Distinct().ToArray();
                 foreach (var messageType in messageTypes)
                 {
                     var host = typeof(QueueProcessorHost<>).MakeGenericType(messageType);
@@ -52,7 +52,7 @@ namespace Sitko.Core.Queue
                 }
             }
 
-            foreach ((Type serviceType, Type implementationType) in startupConfig.TranslateMediatRTypes)
+            foreach ((Type serviceType, Type implementationType) in startupOptions.TranslateMediatRTypes)
             {
                 services.AddTransient(serviceType, implementationType);
             }

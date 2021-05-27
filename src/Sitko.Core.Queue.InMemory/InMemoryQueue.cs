@@ -10,13 +10,13 @@ using Sitko.Core.Queue.Internal;
 
 namespace Sitko.Core.Queue.InMemory
 {
-    public class InMemoryQueue : BaseQueue<InMemoryQueueModuleConfig>
+    public class InMemoryQueue : BaseQueue<InMemoryQueueModuleOptions>
     {
         private readonly ConcurrentDictionary<Type, InMemoryQueueChannel> _channels =
             new ConcurrentDictionary<Type, InMemoryQueueChannel>();
 
 
-        public InMemoryQueue(IOptionsMonitor<InMemoryQueueModuleConfig> config, QueueContext context,
+        public InMemoryQueue(IOptionsMonitor<InMemoryQueueModuleOptions> config, QueueContext context,
             ILogger<InMemoryQueue> logger) : base(config, context, logger)
         {
         }

@@ -7,16 +7,16 @@ namespace Sitko.Core.Health.Teams
     public class TeamsHealthReporterModule : BaseApplicationModule<TeamsHealthCheckPublisherOptions>
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TeamsHealthCheckPublisherOptions startupConfig)
+            TeamsHealthCheckPublisherOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.Configure<HealthCheckPublisherOptions>(_ => { });
             services.AddHealthChecks();
             services.AddHttpClient();
             services.AddSingleton<IHealthCheckPublisher, TeamsHealthCheckPublisher>();
         }
 
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Health:Teams";
         }

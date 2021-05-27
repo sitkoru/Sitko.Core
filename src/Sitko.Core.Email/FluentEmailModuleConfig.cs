@@ -1,23 +1,18 @@
-using System.Collections.Generic;
+using FluentValidation;
 
 namespace Sitko.Core.Email
 {
-    public abstract class FluentEmailModuleConfig : EmailModuleConfig
+    public abstract class FluentEmailModuleOptions : EmailModuleOptions
     {
         public string From { get; set; } = "admin@localhost";
+    }
 
-        public override (bool isSuccess, IEnumerable<string> errors) CheckConfig()
+    public abstract class FluentEmailModuleOptionsValidator<TOptions> : EmailModuleOptionsValidator<TOptions>
+        where TOptions : FluentEmailModuleOptions
+    {
+        public FluentEmailModuleOptionsValidator()
         {
-            var result = base.CheckConfig();
-            if (result.isSuccess)
-            {
-                if (string.IsNullOrEmpty(From))
-                {
-                    return (false, new[] {"Provide value for from address"});
-                }
-            }
-
-            return result;
+            RuleFor(o => o.From).NotEmpty().WithMessage("Provide value for from address");
         }
     }
 }

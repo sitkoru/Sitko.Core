@@ -4,7 +4,7 @@ using Xunit.Abstractions;
 namespace Sitko.Core.Queue.InMemory.Tests
 {
     public class BasicQueueTests : BasicQueueTests<InMemoryQueueTestScope, InMemoryQueueModule, InMemoryQueue,
-        InMemoryQueueModuleConfig>
+        InMemoryQueueModuleOptions>
     {
         public BasicQueueTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {

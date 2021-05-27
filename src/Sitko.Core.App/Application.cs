@@ -151,7 +151,7 @@ namespace Sitko.Core.App
                     var appContext = GetContext(context.HostingEnvironment, context.Configuration);
                     foreach (var moduleRegistration in _moduleRegistrations)
                     {
-                        moduleRegistration.Value.Configure(appContext, services);
+                        moduleRegistration.Value.ConfigureOptions(appContext, services);
                         moduleRegistration.Value.ConfigureServices(appContext, services);
                     }
                 }).ConfigureLogging((context, _) =>
@@ -308,11 +308,11 @@ namespace Sitko.Core.App
 
         protected virtual string ConsoleLogFormat =>
             "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}]{NewLine}\t{Message:lj}{NewLine}{Exception}";
-        
 
-        protected void RegisterModule<TModule, TModuleConfig>(
-            Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null, string? configKey = null)
-            where TModule : IApplicationModule<TModuleConfig>, new() where TModuleConfig : BaseModuleConfig, new()
+
+        protected void RegisterModule<TModule, TModuleOptions>(
+            Action<IConfiguration, IHostEnvironment, TModuleOptions>? configureOptions = null, string? optionsKey = null)
+            where TModule : IApplicationModule<TModuleOptions>, new() where TModuleOptions : BaseModuleOptions, new()
         {
             if (_moduleRegistrations.ContainsKey(typeof(TModule)))
             {
@@ -320,7 +320,7 @@ namespace Sitko.Core.App
             }
 
             _moduleRegistrations.Add(typeof(TModule),
-                new ApplicationModuleRegistration<TModule, TModuleConfig>(configure, configKey));
+                new ApplicationModuleRegistration<TModule, TModuleOptions>(configureOptions, optionsKey));
         }
 
         protected virtual string? GetName()
@@ -346,22 +346,6 @@ namespace Sitko.Core.App
             logger.LogInformation("Init modules");
             foreach (var module in _moduleRegistrations)
             {
-                logger.LogInformation("Check module {Module} config", module.Key);
-                if (!_check)
-                {
-                    var checkConfigResult = module.Value.CheckConfig(scope.ServiceProvider);
-                    if (!checkConfigResult.isSuccess)
-                    {
-                        foreach (var error in checkConfigResult.errors)
-                        {
-                            logger.LogError("Module {Module} config error: {Error}", module.Key, error);
-                        }
-
-                        logger.LogError("Module {Module} config check failed", module.Key);
-                        Environment.Exit(1);
-                    }
-                }
-
                 logger.LogInformation("Init module {Module}", module.Key);
                 await module.Value.InitAsync(
                     GetContext(scope.ServiceProvider), scope.ServiceProvider);
@@ -509,17 +493,17 @@ namespace Sitko.Core.App
         public Application AddModule<TModule>() where TModule : BaseApplicationModule, new()
 
         {
-            RegisterModule<TModule, BaseApplicationModuleConfig>();
+            RegisterModule<TModule, BaseApplicationModuleOptions>();
             return this;
         }
 
-        public Application AddModule<TModule, TModuleConfig>(
-            Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null,
-            string? configKey = null)
-            where TModule : IApplicationModule<TModuleConfig>, new()
-            where TModuleConfig : BaseModuleConfig, new()
+        public Application AddModule<TModule, TModuleOptions>(
+            Action<IConfiguration, IHostEnvironment, TModuleOptions>? configureOptions = null,
+            string? optionsKey = null)
+            where TModule : IApplicationModule<TModuleOptions>, new()
+            where TModuleOptions : BaseModuleOptions, new()
         {
-            RegisterModule<TModule, TModuleConfig>(configure, configKey);
+            RegisterModule<TModule, TModuleOptions>(configureOptions, optionsKey);
             return this;
         }
     }
@@ -540,13 +524,13 @@ namespace Sitko.Core.App
             return application;
         }
 
-        public static TApplication AddModule<TApplication, TModule, TModuleConfig>(this TApplication application,
-            Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null)
+        public static TApplication AddModule<TApplication, TModule, TModuleOptions>(this TApplication application,
+            Action<IConfiguration, IHostEnvironment, TModuleOptions>? configureOptions = null)
             where TApplication : Application
-            where TModule : IApplicationModule<TModuleConfig>, new()
-            where TModuleConfig : BaseModuleConfig, new()
+            where TModule : IApplicationModule<TModuleOptions>, new()
+            where TModuleOptions : BaseModuleOptions, new()
         {
-            application.AddModule<TModule, TModuleConfig>(configure);
+            application.AddModule<TModule, TModuleOptions>(configureOptions);
             return application;
         }
 
@@ -554,7 +538,7 @@ namespace Sitko.Core.App
             where TModule : BaseApplicationModule, new()
             where TApplication : Application
         {
-            application.AddModule<TModule, BaseApplicationModuleConfig>();
+            application.AddModule<TModule, BaseApplicationModuleOptions>();
             return application;
         }
 

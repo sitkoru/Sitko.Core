@@ -7,9 +7,9 @@ using Sitko.Core.Queue.Internal;
 
 namespace Sitko.Core.Queue.Tests
 {
-    public class TestQueue : BaseQueue<TestQueueConfig>
+    public class TestQueue : BaseQueue<TestQueueOptions>
     {
-        public TestQueue(IOptionsMonitor<TestQueueConfig> config, QueueContext context, ILogger<TestQueue> logger) :
+        public TestQueue(IOptionsMonitor<TestQueueOptions> config, QueueContext context, ILogger<TestQueue> logger) :
             base(config, context, logger)
         {
         }
@@ -55,15 +55,15 @@ namespace Sitko.Core.Queue.Tests
         }
     }
 
-    public class TestQueueModule : QueueModule<TestQueue, TestQueueConfig>
+    public class TestQueueModule : QueueModule<TestQueue, TestQueueOptions>
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Queue:Test";
         }
     }
 
-    public class TestQueueConfig : QueueModuleConfig
+    public class TestQueueOptions : QueueModuleOptions
     {
     }
 }

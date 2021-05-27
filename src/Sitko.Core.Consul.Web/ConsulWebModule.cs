@@ -9,23 +9,23 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Consul.Web
 {
-    public class ConsulWebModule : ConsulModule<ConsulWebModuleConfig>
+    public class ConsulWebModule : ConsulModule<ConsulWebModuleOptions>
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Consul:Web";
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            ConsulWebModuleConfig startupConfig)
+            ConsulWebModuleOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddSingleton<ConsulWebClient>();
             services.AddHealthChecks()
                 .AddCheck<ConsulWebHealthCheck>("Consul registration")
                 .AddConsul(options =>
                 {
-                    var uri = new Uri(startupConfig.ConsulUri);
+                    var uri = new Uri(startupOptions.ConsulUri);
                     options.HostName = uri.Host;
                     options.Port = uri.Port;
                     options.RequireHttps = false;

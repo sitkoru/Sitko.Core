@@ -35,7 +35,7 @@ namespace Sitko.Core.Storage.Cache
         public Stream OpenRead();
     }
 
-    public abstract class StorageCacheOptions : BaseModuleConfig
+    public abstract class StorageCacheOptions : BaseModuleOptions
     {
         public TimeSpan Ttl { get; set; } = TimeSpan.FromHours(12);
         public long MaxFileSizeToStore { get; set; }

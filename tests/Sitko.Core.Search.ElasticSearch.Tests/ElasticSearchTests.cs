@@ -58,7 +58,7 @@ namespace Sitko.Core.Search.ElasticSearch.Tests
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, ElasticSearchModule, ElasticSearchModuleConfig>(
+                .AddModule<TestApplication, ElasticSearchModule, ElasticSearchModuleOptions>(
                     (configuration, _, moduleConfig) =>
                     {
                         moduleConfig.Prefix = name.ToLower();

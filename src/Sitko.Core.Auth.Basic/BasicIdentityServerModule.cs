@@ -9,23 +9,23 @@ namespace Sitko.Core.Auth.Basic
 {
     public class BasicAuthModule : AuthModule<BasicAuthOptions>
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Auth:Basic";
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            BasicAuthOptions startupConfig)
+            BasicAuthOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme).AddBasic(options =>
             {
-                options.Realm = startupConfig.Realm;
+                options.Realm = startupOptions.Realm;
                 options.Events = new BasicAuthenticationEvents
                 {
                     OnValidateCredentials = validateContext =>
                     {
-                        var config = GetConfig(validateContext.HttpContext.RequestServices);
+                        var config = GetOptions(validateContext.HttpContext.RequestServices);
                         if (validateContext.Username == config.Username && validateContext.Password == config.Password)
                         {
                             var claims = new[]

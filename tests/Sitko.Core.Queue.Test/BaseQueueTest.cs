@@ -9,7 +9,7 @@ namespace Sitko.Core.Queue.Tests
         where T : BaseQueueTestScope<TQueueModule, TQueue, TConfig>
         where TQueueModule : QueueModule<TQueue, TConfig>, new()
         where TQueue : class, IQueue
-        where TConfig : QueueModuleConfig, new()
+        where TConfig : QueueModuleOptions, new()
     {
         protected BaseQueueTest(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
@@ -19,7 +19,7 @@ namespace Sitko.Core.Queue.Tests
     public abstract class BaseQueueTestScope<TQueueModule, TQueue, TConfig> : BaseTestScope
         where TQueueModule : QueueModule<TQueue, TConfig>, new()
         where TQueue : class, IQueue
-        where TConfig : QueueModuleConfig, new()
+        where TConfig : QueueModuleOptions, new()
     {
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
@@ -35,15 +35,15 @@ namespace Sitko.Core.Queue.Tests
     }
 
     public abstract class
-        BaseTestQueueTest<T> : BaseQueueTest<T, TestQueueModule, TestQueue, TestQueueConfig>
-        where T : BaseQueueTestScope<TestQueueModule, TestQueue, TestQueueConfig>
+        BaseTestQueueTest<T> : BaseQueueTest<T, TestQueueModule, TestQueue, TestQueueOptions>
+        where T : BaseQueueTestScope<TestQueueModule, TestQueue, TestQueueOptions>
     {
         protected BaseTestQueueTest(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
         }
     }
 
-    public abstract class BaseTestQueueTestScope : BaseQueueTestScope<TestQueueModule, TestQueue, TestQueueConfig>
+    public abstract class BaseTestQueueTestScope : BaseQueueTestScope<TestQueueModule, TestQueue, TestQueueOptions>
     {
     }
 }

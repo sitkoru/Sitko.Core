@@ -13,11 +13,11 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         BaseRepository<TEntity, TEntityPk, EFRepositoryQuery<TEntity>>
         where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext
     {
-        private readonly IOptionsMonitor<EFRepositoriesModuleConfig> _config;
+        private readonly IOptionsMonitor<EfRepositoriesModuleOptions> _config;
         private readonly TDbContext _dbContext;
         private readonly EFRepositoryLock? _lock;
 
-        protected EFRepository(IOptionsMonitor<EFRepositoriesModuleConfig> config,
+        protected EFRepository(IOptionsMonitor<EfRepositoriesModuleOptions> config,
             EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext) : base(
             repositoryContext)
         {

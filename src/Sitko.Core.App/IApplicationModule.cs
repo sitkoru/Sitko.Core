@@ -9,16 +9,16 @@ using Sitko.Core.App.Logging;
 
 namespace Sitko.Core.App
 {
-    public interface IApplicationModule<TConfig> : IApplicationModule where TConfig : class, new()
+    public interface IApplicationModule<in TModuleOptions> : IApplicationModule where TModuleOptions : class, new()
     {
-        string GetConfigKey();
+        string GetOptionsKey();
 
-        void ConfigureLogging(ApplicationContext context, TConfig config, LoggerConfiguration loggerConfiguration,
+        void ConfigureLogging(ApplicationContext context, TModuleOptions options, LoggerConfiguration loggerConfiguration,
             LogLevelSwitcher logLevelSwitcher);
 
-        void ConfigureServices(ApplicationContext context, IServiceCollection services, TConfig startupConfig);
+        void ConfigureServices(ApplicationContext context, IServiceCollection services, TModuleOptions startupOptions);
 
-        IEnumerable<Type> GetRequiredModules(ApplicationContext context, TConfig config);
+        IEnumerable<Type> GetRequiredModules(ApplicationContext context, TModuleOptions config);
     }
 
     public interface IApplicationModule

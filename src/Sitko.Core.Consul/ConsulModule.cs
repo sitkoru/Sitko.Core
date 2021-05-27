@@ -10,26 +10,26 @@ namespace Sitko.Core.Consul
     }
 
     public class ConsulModule<TConfig> : BaseApplicationModule<TConfig>, IConsulModule
-        where TConfig : ConsulModuleConfig, new()
+        where TConfig : ConsulModuleOptions, new()
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Consul";
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TConfig startupConfig)
+            TConfig startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddSingleton<IConsulClient, ConsulClient>(serviceProvider =>
             {
-                var options = GetConfig(serviceProvider);
+                var options = GetOptions(serviceProvider);
                 return new ConsulClient(config => { config.Address = new Uri(options.ConsulUri); });
             });
         }
     }
 
-    public class ConsulModuleConfig : BaseModuleConfig
+    public class ConsulModuleOptions : BaseModuleOptions
     {
         public string ConsulUri { get; set; } = "http://localhost:8500";
     }

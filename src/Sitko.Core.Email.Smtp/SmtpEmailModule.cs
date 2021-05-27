@@ -4,15 +4,15 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Sitko.Core.Email.Smtp
 {
-    public class SmtpEmailModule : FluentEmailModule<SmtpEmailModuleConfig>
+    public class SmtpEmailModule : FluentEmailModule<SmtpEmailModuleOptions>
     {
         protected override void ConfigureBuilder(FluentEmailServicesBuilder builder,
-            SmtpEmailModuleConfig fluentEmailModuleConfig)
+            SmtpEmailModuleOptions fluentEmailModuleOptions)
         {
             builder.Services.TryAddScoped<ISender, MailKitSender>();
         }
 
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Email:Smtp";
         }

@@ -1,23 +1,17 @@
-using System.Collections.Generic;
+using FluentValidation;
 
 namespace Sitko.Core.Auth.IdentityServer
 {
     public class JwtAuthOptions : IdentityServerAuthOptions
     {
         public string JwtAudience { get; set; } = string.Empty;
+    }
 
-        public override (bool isSuccess, IEnumerable<string> errors) CheckConfig()
+    public class JwtAuthOptionsValidator : IdentityServerAuthOptionsValidator<JwtAuthOptions>
+    {
+        public JwtAuthOptionsValidator()
         {
-            var result = base.CheckConfig();
-            if (result.isSuccess)
-            {
-                if (string.IsNullOrEmpty(JwtAudience))
-                {
-                    return (false, new[] {"Oidc jwt audience can't be empty"});
-                }
-            }
-
-            return result;
+            RuleFor(o => o.JwtAudience).NotEmpty().WithMessage("Oidc jwt audience can't be empty");
         }
     }
 }

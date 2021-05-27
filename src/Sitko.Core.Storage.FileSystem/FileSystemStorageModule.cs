@@ -7,15 +7,15 @@ namespace Sitko.Core.Storage.FileSystem
         FileSystemStorageModule<TStorageOptions> : StorageModule<FileSystemStorage<TStorageOptions>, TStorageOptions>
         where TStorageOptions : StorageOptions, IFileSystemStorageOptions, new()
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return $"Storage:FileSystem:{typeof(TStorageOptions).Name}";
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TStorageOptions startupConfig)
+            TStorageOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddSingleton<IStorage<TStorageOptions>, FileSystemStorage<TStorageOptions>>();
         }
     }

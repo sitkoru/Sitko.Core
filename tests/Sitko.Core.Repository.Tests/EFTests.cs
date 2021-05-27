@@ -266,7 +266,7 @@ namespace Sitko.Core.Repository.Tests
 
     public class TestRepository : EFRepository<TestModel, Guid, TestDbContext>
     {
-        public TestRepository(IOptionsMonitor<EFRepositoriesModuleConfig> config,
+        public TestRepository(IOptionsMonitor<EfRepositoriesModuleOptions> config,
             EFRepositoryContext<TestModel, Guid, TestDbContext> repositoryContext) : base(config, repositoryContext)
         {
         }
@@ -274,7 +274,7 @@ namespace Sitko.Core.Repository.Tests
 
     public class BarRepository : EFRepository<BarModel, Guid, TestDbContext>
     {
-        public BarRepository(IOptionsMonitor<EFRepositoriesModuleConfig> config,
+        public BarRepository(IOptionsMonitor<EfRepositoriesModuleOptions> config,
             EFRepositoryContext<BarModel, Guid, TestDbContext> repositoryContext) : base(config, repositoryContext)
         {
         }
@@ -282,7 +282,7 @@ namespace Sitko.Core.Repository.Tests
 
     public class FooRepository : EFRepository<FooModel, Guid, TestDbContext>
     {
-        public FooRepository(IOptionsMonitor<EFRepositoriesModuleConfig> config,
+        public FooRepository(IOptionsMonitor<EfRepositoriesModuleOptions> config,
             EFRepositoryContext<FooModel, Guid, TestDbContext> repositoryContext) : base(config, repositoryContext)
         {
         }
@@ -291,9 +291,9 @@ namespace Sitko.Core.Repository.Tests
     public abstract class BaseEFTestScope : DbBaseTestScope<BaseEFTestScope, TestDbContext>
     {
         protected override void GetPostgresConfig(IConfiguration configuration, IHostEnvironment environment,
-            PostgresDatabaseModuleConfig<TestDbContext> moduleConfig, Guid applicationId, string dbName)
+            PostgresDatabaseModuleOptions<TestDbContext> moduleOptions, Guid applicationId, string dbName)
         {
-            GetDefaultPostgresConfig(configuration, environment, moduleConfig, applicationId, dbName);
+            GetDefaultPostgresConfig(configuration, environment, moduleOptions, applicationId, dbName);
         }
     }
 
@@ -302,7 +302,7 @@ namespace Sitko.Core.Repository.Tests
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, EFRepositoriesModule<EFTestScope>, EFRepositoriesModuleConfig>();
+                .AddModule<TestApplication, EFRepositoriesModule<EFTestScope>, EfRepositoriesModuleOptions>();
         }
     }
 
@@ -311,7 +311,7 @@ namespace Sitko.Core.Repository.Tests
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, EFRepositoriesModule<EFTestScopeThreadSafe>, EFRepositoriesModuleConfig>(
+                .AddModule<TestApplication, EFRepositoriesModule<EFTestScopeThreadSafe>, EfRepositoriesModuleOptions>(
                     (_, _, moduleConfig) => moduleConfig.EnableThreadSafeOperations = true);
         }
     }

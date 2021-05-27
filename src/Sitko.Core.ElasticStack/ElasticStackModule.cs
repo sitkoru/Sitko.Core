@@ -14,120 +14,127 @@ using Sitko.Core.App.Logging;
 
 namespace Sitko.Core.ElasticStack
 {
-    public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleConfig>,
-        IHostBuilderModule<ElasticStackModuleConfig>
+    public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOptions>,
+        IHostBuilderModule<ElasticStackModuleOptions>
     {
         public void ConfigureHostBuilder(ApplicationContext context, IHostBuilder hostBuilder,
-            ElasticStackModuleConfig config)
+            ElasticStackModuleOptions startupOptions)
         {
-            if (config.ApmEnabled)
+            if (startupOptions.ApmEnabled)
             {
                 Environment.SetEnvironmentVariable("ELASTIC_APM_SERVICE_NAME", context.Name);
                 Environment.SetEnvironmentVariable("ELASTIC_APM_SERVICE_VERSION", context.Version);
                 Environment.SetEnvironmentVariable("ELASTIC_APM_TRANSACTION_SAMPLE_RATE",
-                    config.ApmTransactionSampleRate.ToString(CultureInfo.InvariantCulture));
+                    startupOptions.ApmTransactionSampleRate.ToString(CultureInfo.InvariantCulture));
                 Environment.SetEnvironmentVariable("ElasticApm:TransactionMaxSpans",
-                    config.ApmTransactionMaxSpans.ToString());
-                Environment.SetEnvironmentVariable("ElasticApm:CentralConfig", config.ApmCentralConfig.ToString());
-                Environment.SetEnvironmentVariable("ElasticApm:SanitizeFieldNames", config.ApmCentralConfig.ToString());
-                if (config.ApmSanitizeFieldNames != null && config.ApmSanitizeFieldNames.Any())
+                    startupOptions.ApmTransactionMaxSpans.ToString());
+                Environment.SetEnvironmentVariable("ElasticApm:CentralConfig",
+                    startupOptions.ApmCentralConfig.ToString());
+                Environment.SetEnvironmentVariable("ElasticApm:SanitizeFieldNames",
+                    startupOptions.ApmCentralConfig.ToString());
+                if (startupOptions.ApmSanitizeFieldNames != null && startupOptions.ApmSanitizeFieldNames.Any())
                 {
                     Environment.SetEnvironmentVariable("ElasticApm:SanitizeFieldNames",
-                        string.Join(", ", config.ApmSanitizeFieldNames));
+                        string.Join(", ", startupOptions.ApmSanitizeFieldNames));
                 }
 
-                if (config.ApmGlobalLabels.Any())
+                if (startupOptions.ApmGlobalLabels.Any())
                 {
                     Environment.SetEnvironmentVariable("ElasticApm:GlobalLabels",
-                        string.Join(",", config.ApmGlobalLabels.Select(kv => $"{kv.Key}={kv.Value}")));
+                        string.Join(",", startupOptions.ApmGlobalLabels.Select(kv => $"{kv.Key}={kv.Value}")));
                 }
 
-                if (config.ApmServerUrls != null && config.ApmServerUrls.Any())
+                if (startupOptions.ApmServerUrls != null && startupOptions.ApmServerUrls.Any())
                 {
-                    Environment.SetEnvironmentVariable("ElasticApm:ServerUrls", string.Join(",", config.ApmServerUrls));
+                    Environment.SetEnvironmentVariable("ElasticApm:ServerUrls",
+                        string.Join(",", startupOptions.ApmServerUrls));
                 }
 
-                Environment.SetEnvironmentVariable("ElasticApm:SecretToken", config.ApmSecretToken);
-                Environment.SetEnvironmentVariable("ElasticApm:ApiKey", config.ApmApiKey);
+                Environment.SetEnvironmentVariable("ElasticApm:SecretToken", startupOptions.ApmSecretToken);
+                Environment.SetEnvironmentVariable("ElasticApm:ApiKey", startupOptions.ApmApiKey);
                 Environment.SetEnvironmentVariable("ElasticApm:VerifyServerCert",
-                    config.ApmVerifyServerCert.ToString());
+                    startupOptions.ApmVerifyServerCert.ToString());
                 Environment.SetEnvironmentVariable("ElasticApm:FlushInterval",
-                    $"{config.ApmFlushInterval.TotalSeconds}s");
+                    $"{startupOptions.ApmFlushInterval.TotalSeconds}s");
                 Environment.SetEnvironmentVariable("ElasticApm:MaxBatchEventCount",
-                    config.ApmMaxBatchEventCount.ToString());
+                    startupOptions.ApmMaxBatchEventCount.ToString());
                 Environment.SetEnvironmentVariable("ElasticApm:MaxQueueEventCount",
-                    config.ApmMaxQueueEventCount.ToString());
+                    startupOptions.ApmMaxQueueEventCount.ToString());
                 Environment.SetEnvironmentVariable("ElasticApm:MetricsInterval",
-                    $"{config.ApmMetricsInterval.TotalSeconds}s");
-                if (config.ApmDisableMetrics != null && config.ApmDisableMetrics.Any())
+                    $"{startupOptions.ApmMetricsInterval.TotalSeconds}s");
+                if (startupOptions.ApmDisableMetrics != null && startupOptions.ApmDisableMetrics.Any())
                 {
                     Environment.SetEnvironmentVariable("ElasticApm:DisableMetrics",
-                        string.Join(",", config.ApmDisableMetrics));
+                        string.Join(",", startupOptions.ApmDisableMetrics));
                 }
 
-                Environment.SetEnvironmentVariable("ElasticApm:CaptureBody", config.ApmCaptureBody);
-                if (config.ApmCaptureBodyContentTypes != null && config.ApmCaptureBodyContentTypes.Any())
+                Environment.SetEnvironmentVariable("ElasticApm:CaptureBody", startupOptions.ApmCaptureBody);
+                if (startupOptions.ApmCaptureBodyContentTypes != null &&
+                    startupOptions.ApmCaptureBodyContentTypes.Any())
                 {
                     Environment.SetEnvironmentVariable("ElasticApm:CaptureBodyContentTypes",
-                        string.Join(",", config.ApmCaptureBodyContentTypes));
+                        string.Join(",", startupOptions.ApmCaptureBodyContentTypes));
                 }
 
-                Environment.SetEnvironmentVariable("ElasticApm:CaptureHeaders", config.ApmCaptureHeaders.ToString());
+                Environment.SetEnvironmentVariable("ElasticApm:CaptureHeaders",
+                    startupOptions.ApmCaptureHeaders.ToString());
                 Environment.SetEnvironmentVariable("ElasticApm:UseElasticTraceparentHeader",
-                    config.ApmUseElasticTraceparentHeader.ToString());
-                Environment.SetEnvironmentVariable("ElasticApm:StackTraceLimit", config.ApmStackTraceLimit.ToString());
+                    startupOptions.ApmUseElasticTraceparentHeader.ToString());
+                Environment.SetEnvironmentVariable("ElasticApm:StackTraceLimit",
+                    startupOptions.ApmStackTraceLimit.ToString());
                 Environment.SetEnvironmentVariable("ElasticApm:SpanFramesMinDuration",
-                    $"{config.ApmSpanFramesMinDuration.TotalMilliseconds}ms");
-                Environment.SetEnvironmentVariable("ElasticApm:ApmLogLevel", config.ApmLogLevel);
+                    $"{startupOptions.ApmSpanFramesMinDuration.TotalMilliseconds}ms");
+                Environment.SetEnvironmentVariable("ElasticApm:ApmLogLevel", startupOptions.ApmLogLevel);
                 hostBuilder.UseAllElasticApm();
             }
         }
 
-        public override void ConfigureLogging(ApplicationContext context, ElasticStackModuleConfig config,
+        public override void ConfigureLogging(ApplicationContext context, ElasticStackModuleOptions options,
             LoggerConfiguration loggerConfiguration,
             LogLevelSwitcher logLevelSwitcher)
         {
-            base.ConfigureLogging(context, config, loggerConfiguration, logLevelSwitcher);
-            if (config.LoggingEnabled)
+            base.ConfigureLogging(context, options, loggerConfiguration, logLevelSwitcher);
+            if (options.LoggingEnabled)
             {
-                var rolloverAlias = string.IsNullOrEmpty(config.LoggingLiferRolloverAlias)
+                var rolloverAlias = string.IsNullOrEmpty(options.LoggingLiferRolloverAlias)
                     ? $"dotnet-logs-{context.Name.ToLower().Replace(".", "-")}-{context.Environment.EnvironmentName.ToLower().Replace(".", "-")}"
-                    : config.LoggingLiferRolloverAlias;
-                var options = new ElasticsearchSinkOptions(config.ElasticSearchUrls)
+                    : options.LoggingLiferRolloverAlias;
+                var sinkOptions = new ElasticsearchSinkOptions(options.ElasticSearchUrls)
                 {
                     CustomFormatter = new EcsTextFormatter(),
                     AutoRegisterTemplate = true,
-                    AutoRegisterTemplateVersion = config.LoggingTemplateVersion ?? AutoRegisterTemplateVersion.ESv7,
-                    NumberOfReplicas = config.LoggingNumberOfReplicas,
+                    AutoRegisterTemplateVersion = options.LoggingTemplateVersion ?? AutoRegisterTemplateVersion.ESv7,
+                    NumberOfReplicas = options.LoggingNumberOfReplicas,
                     IndexFormat =
-                        config.LoggingIndexFormat ??
+                        options.LoggingIndexFormat ??
                         $"dotnet-logs-{context.Name.ToLower().Replace(".", "-")}-{context.Name.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
                     LevelSwitch = logLevelSwitcher.Switch,
                     TemplateName = rolloverAlias
                 };
 
-                if (!string.IsNullOrEmpty(config.LoggingLifeCycleName))
+                if (!string.IsNullOrEmpty(options.LoggingLifeCycleName))
                 {
-                    options.TemplateCustomSettings = new Dictionary<string, string>
+                    sinkOptions.TemplateCustomSettings = new Dictionary<string, string>
                     {
-                        {"lifecycle.name", config.LoggingLifeCycleName}, {"lifecycle.rollover_alias", rolloverAlias}
+                        {"lifecycle.name", options.LoggingLifeCycleName},
+                        {"lifecycle.rollover_alias", rolloverAlias}
                     };
-                    options.IndexAliases = new[] {rolloverAlias};
+                    sinkOptions.IndexAliases = new[] {rolloverAlias};
                 }
 
                 loggerConfiguration.Enrich.WithElasticApmCorrelationInfo()
-                    .WriteTo.Elasticsearch(options)
+                    .WriteTo.Elasticsearch(sinkOptions)
                     .Enrich.WithProperty("ApplicationName", context.Name)
                     .Enrich.WithProperty("ApplicationVersion", context.Version);
             }
 
-            if (config.ApmEnabled)
+            if (options.ApmEnabled)
             {
                 loggerConfiguration.MinimumLevel.Override("Elastic.Apm", LogEventLevel.Error);
             }
         }
 
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "ElasticApm";
         }

@@ -18,23 +18,23 @@ namespace Sitko.Core.Grpc.Client
         IGrpcClientModule<TClient>
         where TClient : ClientBase<TClient>
         where TResolver : class, IGrpcServiceAddressResolver<TClient>
-        where TConfig : GrpcClientModuleConfig, new()
+        where TConfig : GrpcClientModuleOptions, new()
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TConfig startupConfig)
+            TConfig startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
-            if (startupConfig.EnableHttp2UnencryptedSupport)
+            base.ConfigureServices(context, services, startupOptions);
+            if (startupOptions.EnableHttp2UnencryptedSupport)
             {
                 AppContext.SetSwitch(
                     "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
             }
 
             services.AddSingleton<IGrpcClientProvider<TClient>, GrpcClientProvider<TClient>>();
-            RegisterResolver(services, startupConfig);
-            if (startupConfig.Interceptors.Any())
+            RegisterResolver(services, startupOptions);
+            if (startupOptions.Interceptors.Any())
             {
-                foreach (var type in startupConfig.Interceptors)
+                foreach (var type in startupOptions.Interceptors)
                 {
                     services.AddSingleton(type);
                 }
@@ -42,7 +42,7 @@ namespace Sitko.Core.Grpc.Client
 
             services.AddGrpcClient<TClient>((provider, options) =>
                 {
-                    var config = GetConfig(provider);
+                    var config = GetOptions(provider);
                     if (config.Interceptors.Any())
                     {
                         foreach (var service in config.Interceptors.Select(provider.GetService))
@@ -60,7 +60,7 @@ namespace Sitko.Core.Grpc.Client
                 .ConfigurePrimaryHttpMessageHandler(() =>
                 {
                     var handler = new HttpClientHandler();
-                    if (startupConfig.DisableCertificatesValidation)
+                    if (startupOptions.DisableCertificatesValidation)
                     {
                         handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
                     }
@@ -68,7 +68,7 @@ namespace Sitko.Core.Grpc.Client
                     return handler;
                 }).ConfigureChannel(options =>
                 {
-                    startupConfig.ConfigureChannelOptions?.Invoke(options);
+                    startupOptions.ConfigureChannelOptions?.Invoke(options);
                 });
             services.AddHealthChecks()
                 .AddCheck<GrpcClientHealthCheck<TClient>>($"GRPC Client check: {typeof(TClient)}");

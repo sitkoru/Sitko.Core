@@ -6,7 +6,7 @@ namespace Sitko.Core.Storage.S3
         S3StorageMetadataProvider<TStorageOptions>, S3StorageMetadataProviderOptions>
         where TStorageOptions : S3StorageOptions, new()
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return $"Storage:Metadata:FileSystem:{typeof(TStorageOptions).Name}";
         }

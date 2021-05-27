@@ -22,7 +22,7 @@ namespace Sitko.Core.ElasticStack.Tests
     {
         public ElasticApplication(string[] args) : base(args)
         {
-            AddModule<ElasticStackModule, ElasticStackModuleConfig>(
+            AddModule<ElasticStackModule, ElasticStackModuleOptions>(
                 (configuration, environment, moduleConfig) =>
                 {
                     moduleConfig.EnableLogging(new Uri(configuration["ELASTICSTACK_ES_URL"]));

@@ -109,9 +109,9 @@ namespace Sitko.Core.Queue.Tests
         }
 
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
-            TestQueueConfig config, string name)
+            TestQueueOptions options, string name)
         {
-            config.RegisterProcessor<FooTestMessageProcessor, TestMessage>();
+            options.RegisterProcessor<FooTestMessageProcessor, TestMessage>();
         }
     }
 
@@ -126,9 +126,9 @@ namespace Sitko.Core.Queue.Tests
         }
 
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
-            TestQueueConfig config, string name)
+            TestQueueOptions options, string name)
         {
-            config.RegisterProcessors<ProcessorTests>();
+            options.RegisterProcessors<ProcessorTests>();
         }
     }
 }

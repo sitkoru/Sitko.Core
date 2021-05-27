@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -10,23 +11,23 @@ using Sitko.Core.App.Logging;
 
 namespace Sitko.Core.App
 {
-    public abstract class BaseApplicationModule : BaseApplicationModule<BaseApplicationModuleConfig>
+    public abstract class BaseApplicationModule : BaseApplicationModule<BaseApplicationModuleOptions>
     {
     }
 
-    public class BaseApplicationModuleConfig : BaseModuleConfig
+    public class BaseApplicationModuleOptions : BaseModuleOptions
     {
     }
 
-    public abstract class BaseApplicationModule<TConfig> : IApplicationModule<TConfig>
-        where TConfig : BaseModuleConfig, new()
+    public abstract class BaseApplicationModule<TModuleOptions> : IApplicationModule<TModuleOptions>
+        where TModuleOptions : BaseModuleOptions, new()
     {
         public virtual void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TConfig startupConfig)
+            TModuleOptions startupOptions)
         {
         }
 
-        public virtual void ConfigureLogging(ApplicationContext context, TConfig config,
+        public virtual void ConfigureLogging(ApplicationContext context, TModuleOptions options,
             LoggerConfiguration loggerConfiguration,
             LogLevelSwitcher logLevelSwitcher)
         {
@@ -37,7 +38,7 @@ namespace Sitko.Core.App
             return Task.CompletedTask;
         }
 
-        public virtual IEnumerable<Type> GetRequiredModules(ApplicationContext context, TConfig config)
+        public virtual IEnumerable<Type> GetRequiredModules(ApplicationContext context, TModuleOptions config)
         {
             return new Type[0];
         }
@@ -60,24 +61,27 @@ namespace Sitko.Core.App
             return Task.CompletedTask;
         }
 
-        public TConfig GetConfig(IServiceProvider serviceProvider)
+        public TModuleOptions GetOptions(IServiceProvider serviceProvider)
         {
-            return serviceProvider.GetRequiredService<IOptions<TConfig>>().Value;
+            return serviceProvider.GetRequiredService<IOptions<TModuleOptions>>().Value;
         }
 
-        public abstract string GetConfigKey();
+        public abstract string GetOptionsKey();
     }
 
-    public abstract class BaseModuleConfig
+    public interface IModuleOptionsWithValidation
     {
-        public virtual (bool isSuccess, IEnumerable<string> errors) CheckConfig()
-        {
-            return (true, new string[0]);
-        }
+        Type GetValidatorType();
     }
 
-    public interface IHostBuilderModule<TConfig> : IApplicationModule<TConfig> where TConfig : class, new()
+    public abstract class BaseModuleOptions
     {
-        public void ConfigureHostBuilder(ApplicationContext context, IHostBuilder hostBuilder, TConfig currentConfig);
+    }
+
+    public interface IHostBuilderModule<in TModuleOptions> : IApplicationModule<TModuleOptions>
+        where TModuleOptions : class, new()
+    {
+        public void ConfigureHostBuilder(ApplicationContext context, IHostBuilder hostBuilder,
+            TModuleOptions startupOptions);
     }
 }

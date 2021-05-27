@@ -56,9 +56,9 @@ namespace Sitko.Core.Queue.Tests
     public class FailingMiddlewareQueueTestScope : BaseTestQueueTestScope
     {
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
-            TestQueueConfig config, string name)
+            TestQueueOptions options, string name)
         {
-            config.RegisterMiddleware<FailingMiddleware>();
+            options.RegisterMiddleware<FailingMiddleware>();
         }
     }
 

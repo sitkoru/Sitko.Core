@@ -10,43 +10,43 @@ namespace Sitko.Core.Auth.Google
 {
     public class GoogleAuthModule : AuthModule<GoogleAuthModuleOptions>
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Auth:Google";
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            GoogleAuthModuleOptions startupConfig)
+            GoogleAuthModuleOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services
                 .AddAuthentication(options =>
                 {
-                    options.DefaultScheme = startupConfig.SignInScheme;
-                    options.DefaultChallengeScheme = startupConfig.ChallengeScheme;
+                    options.DefaultScheme = startupOptions.SignInScheme;
+                    options.DefaultChallengeScheme = startupOptions.ChallengeScheme;
                 })
-                .AddCookie(startupConfig.SignInScheme, options =>
+                .AddCookie(startupOptions.SignInScheme, options =>
                 {
-                    options.ExpireTimeSpan = startupConfig.CookieExpire;
+                    options.ExpireTimeSpan = startupOptions.CookieExpire;
                     options.SlidingExpiration = true;
                     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                     options.Cookie.SameSite = SameSiteMode.None;
                     options.Cookie.IsEssential = true;
                     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                    startupConfig.ConfigureCookie?.Invoke(options.Cookie);
+                    startupOptions.ConfigureCookie?.Invoke(options.Cookie);
                 })
                 .AddGoogle(options =>
                 {
-                    options.ClientId = startupConfig.ClientId;
-                    options.ClientSecret = startupConfig.ClientSecret;
+                    options.ClientId = startupOptions.ClientId;
+                    options.ClientSecret = startupOptions.ClientSecret;
                     options.SaveTokens = true;
-                    if (startupConfig.Users.Any())
+                    if (startupOptions.Users.Any())
                     {
                         options.Events = new OAuthEvents
                         {
                             OnTicketReceived = receivedContext =>
                             {
-                                var config = GetConfig(receivedContext.HttpContext.RequestServices);
+                                var config = GetOptions(receivedContext.HttpContext.RequestServices);
                                 var email = receivedContext.Principal?.Claims
                                     .FirstOrDefault(c => c.Type == ClaimTypes.Email)
                                     ?.Value;

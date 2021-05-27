@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using FluentValidation;
 using Sitko.Core.App;
 using Sitko.Core.IdProvider;
 using Sitko.Core.IdProvider.SonyFlake;
@@ -32,7 +33,7 @@ namespace Sitko.Core.SonyFlake.Tests
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, SonyFlakeModule, SonyFlakeModuleConfig>();
+                .AddModule<TestApplication, SonyFlakeModule, SonyFlakeModuleOptions>();
         }
     }
 }

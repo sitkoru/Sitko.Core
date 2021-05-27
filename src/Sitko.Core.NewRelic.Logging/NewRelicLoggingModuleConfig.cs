@@ -1,26 +1,21 @@
 using System.Collections.Generic;
+using FluentValidation;
 using Sitko.Core.App;
 
 namespace Sitko.Core.NewRelic.Logging
 {
-    public class NewRelicLoggingModuleConfig : BaseModuleConfig
+    public class NewRelicLoggingModuleOptions : BaseModuleOptions
     {
         public string LicenseKey { get; set; } = string.Empty;
         public bool EnableLogging { get; set; } = false;
         public string LogsUrl { get; set; } = "https://log-api.newrelic.com/log/v1";
+    }
 
-        public override (bool isSuccess, IEnumerable<string> errors) CheckConfig()
+    public class NewRelicLoggingModuleOptionsValidator : AbstractValidator<NewRelicLoggingModuleOptions>
+    {
+        public NewRelicLoggingModuleOptionsValidator()
         {
-            var result = base.CheckConfig();
-            if (result.isSuccess)
-            {
-                if (string.IsNullOrEmpty(LicenseKey))
-                {
-                    return (false, new[] {"Provide License Key for NewRelic"});
-                }
-            }
-
-            return result;
+            RuleFor(o => o.LicenseKey).NotEmpty().WithMessage("Provide License Key for NewRelic");
         }
     }
 }

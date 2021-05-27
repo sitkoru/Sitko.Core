@@ -11,10 +11,10 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Db.Postgres
 {
-    public class PostgresModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleConfig<TDbContext>>
+    public class PostgresModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleOptions<TDbContext>>
         where TDbContext : DbContext
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return $"Db:Postgres:{typeof(TDbContext).Name}";
         }
@@ -22,7 +22,7 @@ namespace Sitko.Core.Db.Postgres
         public override async Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider)
         {
             await base.InitAsync(context, serviceProvider);
-            if (GetConfig(serviceProvider).AutoApplyMigrations)
+            if (GetOptions(serviceProvider).AutoApplyMigrations)
             {
                 var logger = serviceProvider.GetService<ILogger<PostgresModule<TDbContext>>>();
                 var migrated = false;
@@ -60,11 +60,11 @@ namespace Sitko.Core.Db.Postgres
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            PostgresDatabaseModuleConfig<TDbContext> startupConfig)
+            PostgresDatabaseModuleOptions<TDbContext> startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddMemoryCache();
-            if (startupConfig.EnableContextPooling)
+            if (startupOptions.EnableContextPooling)
             {
                 services.AddDbContextPool<TDbContext>((serviceProvider, options) =>
                     ConfigureNpgsql(options, serviceProvider, context.Configuration, context.Environment));
@@ -77,16 +77,16 @@ namespace Sitko.Core.Db.Postgres
         }
 
         private NpgsqlConnectionStringBuilder CreateBuilder(
-            PostgresDatabaseModuleConfig<TDbContext> config)
+            PostgresDatabaseModuleOptions<TDbContext> options)
         {
             var connBuilder = new NpgsqlConnectionStringBuilder
             {
-                Host = config.Host,
-                Port = config.Port,
-                Username = config.Username,
-                Password = config.Password,
-                Database = config.Database,
-                Pooling = config.EnableNpgsqlPooling
+                Host = options.Host,
+                Port = options.Port,
+                Username = options.Username,
+                Password = options.Password,
+                Database = options.Database,
+                Pooling = options.EnableNpgsqlPooling
             };
             return connBuilder;
         }
@@ -94,7 +94,7 @@ namespace Sitko.Core.Db.Postgres
         private void ConfigureNpgsql(DbContextOptionsBuilder options,
             IServiceProvider serviceProvider, IConfiguration configuration, IHostEnvironment environment)
         {
-            var config = GetConfig(serviceProvider);
+            var config = GetOptions(serviceProvider);
             options.UseNpgsql(CreateBuilder(config).ConnectionString,
                 builder => builder.MigrationsAssembly(config.MigrationsAssembly != null
                     ? config.MigrationsAssembly.FullName

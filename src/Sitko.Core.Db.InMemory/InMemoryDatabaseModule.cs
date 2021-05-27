@@ -5,21 +5,21 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Db.InMemory
 {
-    public class InMemoryDatabaseModule<TDbContext> : BaseDbModule<TDbContext, InMemoryDatabaseModuleConfig<TDbContext>>
+    public class InMemoryDatabaseModule<TDbContext> : BaseDbModule<TDbContext, InMemoryDatabaseModuleOptions<TDbContext>>
         where TDbContext : DbContext
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return $"Db:InMemory:{typeof(TDbContext).Name}";
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            InMemoryDatabaseModuleConfig<TDbContext> startupConfig)
+            InMemoryDatabaseModuleOptions<TDbContext> startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddDbContext<TDbContext>((serviceProvider, options) =>
             {
-                var config = GetConfig(serviceProvider);
+                var config = GetOptions(serviceProvider);
                 options.ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
                     .UseInMemoryDatabase(config.Database);
                 config.Configure?.Invoke((DbContextOptionsBuilder<TDbContext>)options, serviceProvider,

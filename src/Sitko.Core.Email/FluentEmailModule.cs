@@ -5,16 +5,16 @@ using Sitko.Core.App;
 namespace Sitko.Core.Email
 {
     public abstract class FluentEmailModule<TEmailConfig> : EmailModule<TEmailConfig>
-        where TEmailConfig : FluentEmailModuleConfig, new()
+        where TEmailConfig : FluentEmailModuleOptions, new()
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TEmailConfig startupConfig)
+            TEmailConfig startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddScoped<IMailSender, FluentMailSender>();
-            var address = new MailAddress(startupConfig.From);
+            var address = new MailAddress(startupOptions.From);
             var builder = services.AddFluentEmail(address.Address, address.DisplayName);
-            ConfigureBuilder(builder, startupConfig);
+            ConfigureBuilder(builder, startupOptions);
         }
 
         protected abstract void ConfigureBuilder(FluentEmailServicesBuilder builder,

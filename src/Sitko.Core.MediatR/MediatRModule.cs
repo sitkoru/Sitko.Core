@@ -8,17 +8,17 @@ namespace Sitko.Core.MediatR
     {
     }
 
-    public class MediatRModule<TAssembly> : BaseApplicationModule<MediatRModuleConfig<TAssembly>>,
+    public class MediatRModule<TAssembly> : BaseApplicationModule<MediatRModuleOptions<TAssembly>>,
         IMediatRModule
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            MediatRModuleConfig<TAssembly> startupConfig)
+            MediatRModuleOptions<TAssembly> startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
-            services.AddMediatR(startupConfig.Assemblies.ToArray());
+            base.ConfigureServices(context, services, startupOptions);
+            services.AddMediatR(startupOptions.Assemblies.ToArray());
         }
 
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "MediatR";
         }

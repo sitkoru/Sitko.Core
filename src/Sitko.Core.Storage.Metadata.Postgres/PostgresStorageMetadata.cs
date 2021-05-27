@@ -5,7 +5,7 @@
             PostgresStorageMetadataProvider<TStorageOptions>, PostgresStorageMetadataProviderOptions>
         where TStorageOptions : StorageOptions
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return $"Storage:Metadata:Postgres:{typeof(TStorageOptions).Name}";
         }

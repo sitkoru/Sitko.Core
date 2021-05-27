@@ -9,21 +9,21 @@ namespace Sitko.Core.Graylog
 {
     public class GraylogModule : BaseApplicationModule<GraylogLoggingOptions>
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Logging:Graylog";
         }
 
-        public override void ConfigureLogging(ApplicationContext context, GraylogLoggingOptions config,
+        public override void ConfigureLogging(ApplicationContext context, GraylogLoggingOptions options,
             LoggerConfiguration loggerConfiguration,
             LogLevelSwitcher logLevelSwitcher)
         {
-            base.ConfigureLogging(context, config, loggerConfiguration, logLevelSwitcher);
+            base.ConfigureLogging(context, options, loggerConfiguration, logLevelSwitcher);
             loggerConfiguration.WriteTo.Async(to => to.Graylog(
                 new GraylogSinkOptions
                 {
-                    HostnameOrAddress = config.Host,
-                    Port = config.Port,
+                    HostnameOrAddress = options.Host,
+                    Port = options.Port,
                     Facility = context.Name,
                     MinimumLogEventLevel = logLevelSwitcher.Switch.MinimumLevel
                 }, logLevelSwitcher.Switch));

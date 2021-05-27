@@ -1,26 +1,18 @@
-using System.Collections.Generic;
+using FluentValidation;
 using Sitko.Core.App;
 
 namespace Sitko.Core.IdProvider.SonyFlake
 {
-    public class SonyFlakeModuleConfig : BaseModuleConfig
+    public class SonyFlakeModuleOptions : BaseModuleOptions
     {
-        public string Uri { get; set; } = "http://id.localhost";
+        public string? Uri { get; set; }
+    }
 
-        public override (bool isSuccess, IEnumerable<string> errors) CheckConfig()
+    public class SonyFlakeModuleConfigValidator : AbstractValidator<SonyFlakeModuleOptions>
+    {
+        public SonyFlakeModuleConfigValidator()
         {
-            var result = base.CheckConfig();
-            if (result.isSuccess)
-            {
-                if (string.IsNullOrEmpty(Uri))
-                {
-                    return (false, new[] {"Provide sonyflake url"});
-                }
-
-                return result;
-            }
-
-            return result;
+            RuleFor(c => c.Uri).NotEmpty().WithMessage("Provide SonyFlake url");
         }
     }
 }
