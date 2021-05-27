@@ -1,6 +1,3 @@
-using System;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using NewRelic.LogEnrichers.Serilog;
 using Serilog;
 using Sitko.Core.App;
@@ -10,32 +7,22 @@ namespace Sitko.Core.NewRelic.Logging
 {
     public class NewRelicLoggingModule : BaseApplicationModule<NewRelicLoggingModuleConfig>
     {
-        public NewRelicLoggingModule(NewRelicLoggingModuleConfig config, Application application) : base(config,
-            application)
+        public override string GetConfigKey()
         {
+            return "Logging:NewRelic";
         }
 
-        public override void ConfigureLogging(LoggerConfiguration loggerConfiguration,
-            LogLevelSwitcher logLevelSwitcher,
-            IConfiguration configuration, IHostEnvironment environment)
+        public override void ConfigureLogging(ApplicationContext context, NewRelicLoggingModuleConfig config,
+            LoggerConfiguration loggerConfiguration, LogLevelSwitcher logLevelSwitcher)
         {
-            base.ConfigureLogging(loggerConfiguration, logLevelSwitcher, configuration, environment);
-            if (Config.EnableLogging)
+            base.ConfigureLogging(context, config, loggerConfiguration, logLevelSwitcher);
+            if (config.EnableLogging)
             {
                 loggerConfiguration
                     .Enrich.WithNewRelicLogsInContext()
-                    .WriteTo.NewRelicLogs(Config.LogsUrl,
-                        environment.ApplicationName,
-                        Config.LicenseKey);
-            }
-        }
-
-        public override void CheckConfig()
-        {
-            base.CheckConfig();
-            if (string.IsNullOrEmpty(Config.LicenseKey))
-            {
-                throw new ArgumentException("Provide License Key for NewRelic");
+                    .WriteTo.NewRelicLogs(config.LogsUrl,
+                        context.Name,
+                        config.LicenseKey);
             }
         }
     }
