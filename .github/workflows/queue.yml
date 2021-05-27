@@ -29,7 +29,7 @@ jobs:
         container: ghcr.io/sitkoru/actions-container
         env:
             QUEUE__NATS__SERVERS__0: nats://nats:4222
-            QUEUE__NATS__CLUSTER_NAME: test-cluster
+            QUEUE__NATS__CLUSTERNAME: test-cluster
         services:
             nats:
                 image: nats-streaming:latest
