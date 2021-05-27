@@ -11,20 +11,21 @@ namespace Sitko.Core.Consul.Web
 {
     public class ConsulWebModule : ConsulModule<ConsulWebModuleConfig>
     {
-        public ConsulWebModule(ConsulWebModuleConfig config, Application application) : base(config, application)
+        public override string GetConfigKey()
         {
+            return "Consul:Web";
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            ConsulWebModuleConfig startupConfig)
         {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupConfig);
             services.AddSingleton<ConsulWebClient>();
             services.AddHealthChecks()
                 .AddCheck<ConsulWebHealthCheck>("Consul registration")
                 .AddConsul(options =>
                 {
-                    var uri = new Uri(Config.ConsulUri);
+                    var uri = new Uri(startupConfig.ConsulUri);
                     options.HostName = uri.Host;
                     options.Port = uri.Port;
                     options.RequireHttps = false;
