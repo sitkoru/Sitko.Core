@@ -2,28 +2,31 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Sitko.Core.App.Logging;
+using IL.FluentValidation.Extensions.Options;
 
 namespace Sitko.Core.App
 {
-    internal class ApplicationModuleRegistration<TModule, TModuleConfig> : ApplicationModuleRegistration
-        where TModule : IApplicationModule<TModuleConfig>, new() where TModuleConfig : BaseModuleConfig, new()
+    internal class ApplicationModuleRegistration<TModule, TModuleOptions> : ApplicationModuleRegistration
+        where TModule : IApplicationModule<TModuleOptions>, new() where TModuleOptions : BaseModuleOptions, new()
     {
-        private readonly Action<IConfiguration, IHostEnvironment, TModuleConfig>? _configure;
+        private readonly Action<IConfiguration, IHostEnvironment, TModuleOptions>? _configureOptions;
         private readonly string? _configKey;
         private readonly TModule _instance;
 
-        public ApplicationModuleRegistration(Action<IConfiguration, IHostEnvironment, TModuleConfig>? configure = null,
-            string? configKey = null)
+        public ApplicationModuleRegistration(
+            Action<IConfiguration, IHostEnvironment, TModuleOptions>? configureOptions = null,
+            string? optionsKey = null)
         {
             _instance = Activator.CreateInstance<TModule>();
-            _configure = configure;
-            _configKey = configKey ?? _instance.GetConfigKey();
+            _configureOptions = configureOptions;
+            _configKey = optionsKey ?? _instance.GetOptionsKey();
         }
 
         public override IApplicationModule GetInstance()
@@ -31,15 +34,35 @@ namespace Sitko.Core.App
             return _instance;
         }
 
-        public override ApplicationModuleRegistration Configure(ApplicationContext context,
+        public override ApplicationModuleRegistration ConfigureOptions(ApplicationContext context,
             IServiceCollection services)
         {
-            services.Configure<TModuleConfig>(context.Configuration.GetSection(_configKey))
-                .PostConfigure<TModuleConfig>(
-                    config =>
+            var builder = services.AddOptions<TModuleOptions>()
+                .Bind(context.Configuration.GetSection(_configKey))
+                .PostConfigure(
+                    options =>
                     {
-                        _configure?.Invoke(context.Configuration, context.Environment, config);
+                        _configureOptions?.Invoke(context.Configuration, context.Environment, options);
                     });
+            var optionsInstance = Activator.CreateInstance<TModuleOptions>();
+            Type? validatorType;
+            if (optionsInstance is IModuleOptionsWithValidation moduleOptionsWithValidation)
+            {
+                validatorType = moduleOptionsWithValidation.GetValidatorType();
+            }
+            else
+            {
+                validatorType = typeof(TModuleOptions).Assembly.ExportedTypes
+                    .Where(typeof(IValidator<TModuleOptions>).IsAssignableFrom).FirstOrDefault();
+            }
+
+            if (validatorType is not null)
+            {
+                builder.Services.AddTransient(validatorType);
+                builder.FluentValidate()
+                    .With(provider => (IValidator<TModuleOptions>)provider.GetRequiredService(validatorType));
+            }
+
             return this;
         }
 
@@ -47,18 +70,18 @@ namespace Sitko.Core.App
             ApplicationContext context,
             LoggerConfiguration loggerConfiguration, LogLevelSwitcher logLevelSwitcher)
         {
-            var config = CreateConfig(context.Configuration, context.Environment);
-            _instance.ConfigureLogging(context, config, loggerConfiguration, logLevelSwitcher);
+            var options = CreateOptions(context.Configuration, context.Environment);
+            _instance.ConfigureLogging(context, options, loggerConfiguration, logLevelSwitcher);
             return this;
         }
 
         public override ApplicationModuleRegistration ConfigureHostBuilder(ApplicationContext context,
             IHostBuilder hostBuilder)
         {
-            if (_instance is IHostBuilderModule<TModuleConfig> hostBuilderModule)
+            if (_instance is IHostBuilderModule<TModuleOptions> hostBuilderModule)
             {
-                var config = CreateConfig(context.Configuration, context.Environment);
-                hostBuilderModule.ConfigureHostBuilder(context, hostBuilder, config);
+                var options = CreateOptions(context.Configuration, context.Environment);
+                hostBuilderModule.ConfigureHostBuilder(context, hostBuilder, options);
             }
 
             return this;
@@ -68,9 +91,9 @@ namespace Sitko.Core.App
             ApplicationContext context,
             Type[] registeredModules)
         {
-            var config = CreateConfig(context.Configuration, context.Environment);
+            var options = CreateOptions(context.Configuration, context.Environment);
             var missingModules = new List<Type>();
-            foreach (var requiredModule in _instance.GetRequiredModules(context, config))
+            foreach (var requiredModule in _instance.GetRequiredModules(context, options))
             {
                 if (!registeredModules.Any(t => requiredModule.IsAssignableFrom(t)))
                 {
@@ -81,20 +104,20 @@ namespace Sitko.Core.App
             return (!missingModules.Any(), missingModules);
         }
 
-        private TModuleConfig CreateConfig(IConfiguration configuration, IHostEnvironment environment)
+        private TModuleOptions CreateOptions(IConfiguration configuration, IHostEnvironment environment)
         {
-            var config = Activator.CreateInstance<TModuleConfig>();
-            configuration.Bind(_configKey, config);
-            _configure?.Invoke(configuration, environment, config);
-            return config;
+            var options = Activator.CreateInstance<TModuleOptions>();
+            configuration.Bind(_configKey, options);
+            _configureOptions?.Invoke(configuration, environment, options);
+            return options;
         }
 
         public override ApplicationModuleRegistration ConfigureServices(
             ApplicationContext context,
             IServiceCollection services)
         {
-            var config = CreateConfig(context.Configuration, context.Environment);
-            _instance.ConfigureServices(context, services, config);
+            var options = CreateOptions(context.Configuration, context.Environment);
+            _instance.ConfigureServices(context, services, options);
             return this;
         }
 
@@ -120,19 +143,13 @@ namespace Sitko.Core.App
         {
             return _instance.InitAsync(context, serviceProvider);
         }
-
-        public override (bool isSuccess, IEnumerable<string> errors) CheckConfig(IServiceProvider serviceProvider)
-        {
-            var config = serviceProvider.GetRequiredService<IOptions<TModuleConfig>>();
-            return config.Value.CheckConfig();
-        }
     }
 
     internal abstract class ApplicationModuleRegistration
     {
         public abstract IApplicationModule GetInstance();
 
-        public abstract ApplicationModuleRegistration Configure(ApplicationContext context,
+        public abstract ApplicationModuleRegistration ConfigureOptions(ApplicationContext context,
             IServiceCollection services);
 
         public abstract ApplicationModuleRegistration ConfigureLogging(ApplicationContext context,
@@ -151,8 +168,6 @@ namespace Sitko.Core.App
             IServiceProvider serviceProvider);
 
         public abstract Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider);
-
-        public abstract (bool isSuccess, IEnumerable<string> errors) CheckConfig(IServiceProvider serviceProvider);
 
         public abstract ApplicationModuleRegistration ConfigureHostBuilder(ApplicationContext context,
             IHostBuilder hostBuilder);

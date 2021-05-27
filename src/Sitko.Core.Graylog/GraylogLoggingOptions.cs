@@ -1,30 +1,21 @@
 using System.Collections.Generic;
+using FluentValidation;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Graylog
 {
-    public class GraylogLoggingOptions : BaseModuleConfig
+    public class GraylogLoggingOptions : BaseModuleOptions
     {
-        public string Host { get; set; } = "locahost";
+        public string Host { get; set; } = "localhost";
         public int Port { get; set; } = 22021;
+    }
 
-        public override (bool isSuccess, IEnumerable<string> errors) CheckConfig()
+    public class GraylogLoggingOptionsValidator : AbstractValidator<GraylogLoggingOptions>
+    {
+        public GraylogLoggingOptionsValidator()
         {
-            var result = base.CheckConfig();
-            if (result.isSuccess)
-            {
-                if (string.IsNullOrEmpty(Host))
-                {
-                    return (false, new[] {"Host can't be empty"});
-                }
-
-                if (Port == 0)
-                {
-                    return (false, new[] {"Port must be greater than 0"});
-                }
-            }
-
-            return result;
+            RuleFor(o => o.Host).NotEmpty().WithMessage("Host can't be empty");
+            RuleFor(o => o.Port).GreaterThan(0).WithMessage("Port must be greater than 0");
         }
     }
 }

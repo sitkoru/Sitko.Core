@@ -20,7 +20,7 @@ using Options = NATS.Client.Options;
 
 namespace Sitko.Core.Queue.Nats
 {
-    public class NatsQueue : BaseQueue<NatsQueueModuleConfig>
+    public class NatsQueue : BaseQueue<NatsQueueModuleOptions>
     {
         private IStanConnection? _connection;
         private static readonly ConnectionFactory _connectionFactory = new();
@@ -41,7 +41,7 @@ namespace Sitko.Core.Queue.Nats
         private readonly string _clientName;
 
 
-        public NatsQueue(IOptionsMonitor<NatsQueueModuleConfig> config, QueueContext context,
+        public NatsQueue(IOptionsMonitor<NatsQueueModuleOptions> config, QueueContext context,
             IHostEnvironment environment,
             ILogger<NatsQueue> logger) : base(config,
             context, logger)

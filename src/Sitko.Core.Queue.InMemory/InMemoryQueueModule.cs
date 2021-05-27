@@ -2,15 +2,15 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Queue.InMemory
 {
-    public class InMemoryQueueModule : QueueModule<InMemoryQueue, InMemoryQueueModuleConfig>
+    public class InMemoryQueueModule : QueueModule<InMemoryQueue, InMemoryQueueModuleOptions>
     { 
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Queue:InMemory";
         }
     }
 
-    public class InMemoryQueueModuleConfig : QueueModuleConfig
+    public class InMemoryQueueModuleOptions : QueueModuleOptions
     {
     }
 }

@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FluentValidation;
 using Serilog.Sinks.Elasticsearch;
 using Sitko.Core.App;
 
 namespace Sitko.Core.ElasticStack
 {
-    public class ElasticStackModuleConfig : BaseModuleConfig
+    public class ElasticStackModuleOptions : BaseModuleOptions
     {
         public bool LoggingEnabled { get; private set; }
         public bool ApmEnabled { get; private set; }
@@ -39,53 +40,39 @@ namespace Sitko.Core.ElasticStack
         public string? LoggingLiferRolloverAlias { get; set; }
 
 
-        public ElasticStackModuleConfig EnableLogging(Uri elasticSearchUri)
+        public ElasticStackModuleOptions EnableLogging(Uri elasticSearchUri)
         {
             return EnableLogging(new[] {elasticSearchUri});
         }
 
-        public ElasticStackModuleConfig EnableLogging(IEnumerable<Uri> elasticSearchUrls)
+        public ElasticStackModuleOptions EnableLogging(IEnumerable<Uri> elasticSearchUrls)
         {
             LoggingEnabled = true;
             ElasticSearchUrls = elasticSearchUrls.ToList();
             return this;
         }
 
-        public ElasticStackModuleConfig EnableApm(Uri apmUri)
+        public ElasticStackModuleOptions EnableApm(Uri apmUri)
         {
             return EnableApm(new[] {apmUri});
         }
 
-        public ElasticStackModuleConfig EnableApm(IEnumerable<Uri> apmUrls)
+        public ElasticStackModuleOptions EnableApm(IEnumerable<Uri> apmUrls)
         {
             ApmEnabled = true;
             ApmServerUrls = apmUrls.ToList();
             return this;
         }
+    }
 
-        public override (bool isSuccess, IEnumerable<string> errors) CheckConfig()
+    public class ElasticStackModuleOptionsValidator : AbstractValidator<ElasticStackModuleOptions>
+    {
+        public ElasticStackModuleOptionsValidator()
         {
-            var result = base.CheckConfig();
-            if (result.isSuccess)
-            {
-                if (ApmEnabled)
-                {
-                    if (ApmServerUrls == null || !ApmServerUrls.Any())
-                    {
-                        return (false, new[] {"ApmServerUrls can't be empty"});
-                    }
-                }
-
-                if (LoggingEnabled)
-                {
-                    if (ElasticSearchUrls == null || !ElasticSearchUrls.Any())
-                    {
-                        return (false, new[] {"ElasticSearchUrls can't be empty"});
-                    }
-                }
-            }
-
-            return result;
+            RuleFor(o => o.ApmServerUrls).NotEmpty().When(o => o.ApmEnabled)
+                .WithMessage("ApmServerUrls can't be empty");
+            RuleFor(o => o.ElasticSearchUrls).NotEmpty().When(o => o.LoggingEnabled)
+                .WithMessage("ElasticSearchUrls can't be empty");
         }
     }
 }

@@ -6,15 +6,15 @@ namespace Sitko.Core.Health.Telegram
 {
     public class TelegramHealthReporterModule : BaseApplicationModule<TelegramHealthCheckPublisherOptions>
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Health:Telegram";
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TelegramHealthCheckPublisherOptions startupConfig)
+            TelegramHealthCheckPublisherOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.Configure<HealthCheckPublisherOptions>(_ => { });
             services.AddHealthChecks();
             services.AddHttpClient();

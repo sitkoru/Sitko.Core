@@ -9,12 +9,12 @@ namespace Sitko.Core.Repository
     }
 
     public abstract class RepositoriesModule<TAssembly, TConfig> : BaseApplicationModule<TConfig>, IRepositoriesModule
-        where TConfig : BaseModuleConfig, new()
+        where TConfig : BaseModuleOptions, new()
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TConfig startupConfig)
+            TConfig startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddScoped<RepositoryFiltersManager>();
             services.Scan(s =>
                 s.FromAssemblyOf<TAssembly>().AddClasses(classes => classes.AssignableTo(typeof(IValidator<>)))

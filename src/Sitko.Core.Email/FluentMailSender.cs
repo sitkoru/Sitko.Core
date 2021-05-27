@@ -14,12 +14,12 @@ namespace Sitko.Core.Email
     public class FluentMailSender : IMailSender
     {
         private readonly IFluentEmailFactory _emailFactory;
-        private readonly ViewToStringRendererService<EmailModuleConfig> _renderer;
+        private readonly ViewToStringRendererService<EmailModuleOptions> _renderer;
         private readonly ILogger<FluentMailSender> _logger;
         private readonly IBackgroundJobClient? _backgroundJobClient;
 
         public FluentMailSender(IFluentEmailFactory emailFactory,
-            ViewToStringRendererService<EmailModuleConfig> renderer,
+            ViewToStringRendererService<EmailModuleOptions> renderer,
             ILogger<FluentMailSender> logger, IBackgroundJobClient? backgroundJobClient = null)
         {
             _emailFactory = emailFactory;

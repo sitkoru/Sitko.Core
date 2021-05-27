@@ -5,7 +5,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Server
 {
-    public class GrpcServerOptions : BaseModuleConfig
+    public class GrpcServerOptions : BaseModuleOptions
     {
         public string? Host { get; set; }
         public int? Port { get; set; }

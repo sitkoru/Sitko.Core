@@ -6,14 +6,14 @@ namespace Sitko.Core.Repository.Search
     public class SearchRepositoryModule : BaseApplicationModule
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            BaseApplicationModuleConfig startupConfig)
+            BaseApplicationModuleOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddScoped<IRepositoryFilter, SearchRepositoryFilter>();
             services.AddScoped<RepositoryIndexer>();
         }
 
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Search:Repository";
         }

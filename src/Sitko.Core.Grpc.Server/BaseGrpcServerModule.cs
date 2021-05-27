@@ -14,20 +14,20 @@ namespace Sitko.Core.Grpc.Server
         IWebApplicationModule where TConfig : GrpcServerOptions, new()
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TConfig startupConfig)
+            TConfig startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddGrpc(options =>
             {
-                options.EnableDetailedErrors = startupConfig.EnableDetailedErrors;
-                startupConfig.Configure?.Invoke(options);
+                options.EnableDetailedErrors = startupOptions.EnableDetailedErrors;
+                startupOptions.Configure?.Invoke(options);
             });
-            if (startupConfig.EnableReflection)
+            if (startupOptions.EnableReflection)
             {
                 services.AddGrpcReflection();
             }
 
-            foreach (var registration in startupConfig.ServiceRegistrations)
+            foreach (var registration in startupOptions.ServiceRegistrations)
             {
                 registration(this);
             }
@@ -36,7 +36,7 @@ namespace Sitko.Core.Grpc.Server
         public void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
         {
-            var config = GetConfig(appBuilder.ApplicationServices);
+            var config = GetOptions(appBuilder.ApplicationServices);
             foreach (var endpointRegistration in _endpointRegistrations)
             {
                 endpointRegistration(endpoints);

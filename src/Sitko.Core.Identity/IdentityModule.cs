@@ -19,16 +19,16 @@ namespace Sitko.Core.Identity
         where TPk : IEquatable<TPk>
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            IdentityModuleOptions startupConfig)
+            IdentityModuleOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             var identityBuilder = services
                 .AddIdentity<TUser, TRole>(options =>
-                    options.SignIn.RequireConfirmedAccount = startupConfig.RequireConfirmedAccount)
+                    options.SignIn.RequireConfirmedAccount = startupOptions.RequireConfirmedAccount)
                 .AddEntityFrameworkStores<TDbContext>()
                 .AddErrorDescriber<RussianIdentityErrorDescriber>()
                 .AddDefaultTokenProviders();
-            if (startupConfig.AddDefaultUi)
+            if (startupOptions.AddDefaultUi)
             {
                 identityBuilder.AddDefaultUI();
                 services.AddRazorPages();
@@ -36,10 +36,10 @@ namespace Sitko.Core.Identity
 
             services.ConfigureApplicationCookie(options =>
             {
-                options.LoginPath = startupConfig.LoginPath;
-                options.LogoutPath = startupConfig.LogoutPath;
-                options.ExpireTimeSpan = TimeSpan.FromDays(startupConfig.CookieExpireDays);
-                options.SlidingExpiration = startupConfig.CookieSlidingExpiration;
+                options.LoginPath = startupOptions.LoginPath;
+                options.LogoutPath = startupOptions.LogoutPath;
+                options.ExpireTimeSpan = TimeSpan.FromDays(startupOptions.CookieExpireDays);
+                options.SlidingExpiration = startupOptions.CookieSlidingExpiration;
             });
         }
 
@@ -47,7 +47,7 @@ namespace Sitko.Core.Identity
             IApplicationBuilder appBuilder,
             IEndpointRouteBuilder endpoints)
         {
-            var config = GetConfig(appBuilder.ApplicationServices);
+            var config = GetOptions(appBuilder.ApplicationServices);
             if (config.AddDefaultUi)
             {
                 endpoints.MapRazorPages();
@@ -61,13 +61,13 @@ namespace Sitko.Core.Identity
             appBuilder.UseAuthorization();
         }
 
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Identity";
         }
     }
 
-    public class IdentityModuleOptions : BaseModuleConfig
+    public class IdentityModuleOptions : BaseModuleOptions
     {
         public bool AddDefaultUi { get; set; }
         public int CookieExpireDays { get; set; } = 30;

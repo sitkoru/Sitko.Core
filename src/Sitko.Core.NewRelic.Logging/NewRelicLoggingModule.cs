@@ -5,24 +5,24 @@ using Sitko.Core.App.Logging;
 
 namespace Sitko.Core.NewRelic.Logging
 {
-    public class NewRelicLoggingModule : BaseApplicationModule<NewRelicLoggingModuleConfig>
+    public class NewRelicLoggingModule : BaseApplicationModule<NewRelicLoggingModuleOptions>
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Logging:NewRelic";
         }
 
-        public override void ConfigureLogging(ApplicationContext context, NewRelicLoggingModuleConfig config,
+        public override void ConfigureLogging(ApplicationContext context, NewRelicLoggingModuleOptions options,
             LoggerConfiguration loggerConfiguration, LogLevelSwitcher logLevelSwitcher)
         {
-            base.ConfigureLogging(context, config, loggerConfiguration, logLevelSwitcher);
-            if (config.EnableLogging)
+            base.ConfigureLogging(context, options, loggerConfiguration, logLevelSwitcher);
+            if (options.EnableLogging)
             {
                 loggerConfiguration
                     .Enrich.WithNewRelicLogsInContext()
-                    .WriteTo.NewRelicLogs(config.LogsUrl,
+                    .WriteTo.NewRelicLogs(options.LogsUrl,
                         context.Name,
-                        config.LicenseKey);
+                        options.LicenseKey);
             }
         }
     }

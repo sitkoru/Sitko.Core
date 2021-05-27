@@ -8,10 +8,10 @@ namespace Sitko.Core.Auth.IdentityServer
         where TAuthOptions : IdentityServerAuthOptions, new()
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TAuthOptions startupConfig)
+            TAuthOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
-            if (Uri.TryCreate(startupConfig.OidcServerUrl, UriKind.Absolute, out var oidcUri))
+            base.ConfigureServices(context, services, startupOptions);
+            if (Uri.TryCreate(startupOptions.OidcServerUrl, UriKind.Absolute, out var oidcUri))
             {
                 services.AddHealthChecks().AddIdentityServer(oidcUri);
             }

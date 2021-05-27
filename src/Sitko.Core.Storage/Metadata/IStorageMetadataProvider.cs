@@ -35,7 +35,7 @@ namespace Sitko.Core.Storage.Metadata
     {
     }
 
-    public abstract class StorageMetadataProviderOptions : BaseModuleConfig
+    public abstract class StorageMetadataProviderOptions : BaseModuleOptions
     {
     }
 }

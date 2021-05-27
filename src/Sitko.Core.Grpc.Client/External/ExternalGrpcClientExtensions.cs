@@ -10,7 +10,7 @@ namespace Sitko.Core.Grpc.Client.External
     {
         public static TApplication AddExternalGrpcClient<TApplication, TClient>(this TApplication application,
             string address,
-            Action<GrpcClientModuleConfig>? configure = null)
+            Action<GrpcClientModuleOptions>? configure = null)
             where TApplication : Application where TClient : ClientBase<TClient>
         {
             return application.AddExternalGrpcClient<TApplication, TClient>(new Uri(address), configure);
@@ -18,10 +18,10 @@ namespace Sitko.Core.Grpc.Client.External
 
         public static TApplication AddExternalGrpcClient<TApplication, TClient>(this TApplication application,
             Uri address,
-            Action<GrpcClientModuleConfig>? configure = null)
+            Action<GrpcClientModuleOptions>? configure = null)
             where TApplication : Application where TClient : ClientBase<TClient>
         {
-            application.AddModule<ExternalGrpcClientModule<TClient>, GrpcClientStaticModuleConfig>((_,
+            application.AddModule<ExternalGrpcClientModule<TClient>, GrpcClientStaticModuleOptions>((_,
                 _, moduleConfig) =>
             {
                 moduleConfig.Address = address;
@@ -32,10 +32,10 @@ namespace Sitko.Core.Grpc.Client.External
 
         public static TApplication AddExternalGrpcClient<TApplication, TClient>(this TApplication application,
             Func<IConfiguration, IHostEnvironment, Uri> getAddress,
-            Action<GrpcClientModuleConfig>? configure = null)
+            Action<GrpcClientModuleOptions>? configure = null)
             where TApplication : Application where TClient : ClientBase<TClient>
         {
-            application.AddModule<ExternalGrpcClientModule<TClient>, GrpcClientStaticModuleConfig>((configuration,
+            application.AddModule<ExternalGrpcClientModule<TClient>, GrpcClientStaticModuleOptions>((configuration,
                 environment, moduleConfig) =>
             {
                 moduleConfig.Address = getAddress(configuration, environment);

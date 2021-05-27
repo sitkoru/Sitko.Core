@@ -9,12 +9,12 @@ namespace Sitko.Core.Pdf
 {
     internal class PdfRenderer : IPdfRenderer, IAsyncDisposable
     {
-        private readonly IOptionsMonitor<PdfRendererModuleConfig> _config;
+        private readonly IOptionsMonitor<PdfRendererModuleOptions> _config;
         private readonly ILogger<PdfRenderer> _logger;
         private Browser? _browser;
         private readonly AsyncLock _lock = new();
 
-        public PdfRenderer(IOptionsMonitor<PdfRendererModuleConfig> config, ILogger<PdfRenderer> logger)
+        public PdfRenderer(IOptionsMonitor<PdfRendererModuleOptions> config, ILogger<PdfRenderer> logger)
         {
             _config = config;
             _logger = logger;

@@ -16,26 +16,26 @@ using Sitko.Core.App.Web;
 namespace Sitko.Core.HangFire
 {
     public class HangfireModule<THangfireConfig> : BaseApplicationModule<THangfireConfig>, IWebApplicationModule
-        where THangfireConfig : HangfireModuleConfig, new()
+        where THangfireConfig : HangfireModuleOptions, new()
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Hangfire";
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            THangfireConfig startupConfig)
+            THangfireConfig startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddHangfire(config =>
             {
-                startupConfig.Configure?.Invoke(config);
+                startupOptions.Configure?.Invoke(config);
             });
-            if (startupConfig.IsHealthChecksEnabled)
+            if (startupOptions.IsHealthChecksEnabled)
             {
                 services.AddHealthChecks().AddHangfire(options =>
                 {
-                    startupConfig.ConfigureHealthChecks?.Invoke(options);
+                    startupOptions.ConfigureHealthChecks?.Invoke(options);
                 });
             }
         }
@@ -43,7 +43,7 @@ namespace Sitko.Core.HangFire
         public virtual void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
-            var config = GetConfig(appBuilder.ApplicationServices);
+            var config = GetOptions(appBuilder.ApplicationServices);
             if (config.IsDashboardEnabled)
             {
                 var authFilters = new List<IDashboardAuthorizationFilter>();
@@ -59,7 +59,7 @@ namespace Sitko.Core.HangFire
         public virtual void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
-            var config = GetConfig(appBuilder.ApplicationServices);
+            var config = GetOptions(appBuilder.ApplicationServices);
             if (config.IsWorkersEnabled)
             {
                 appBuilder.UseHangfireServer(new BackgroundJobServerOptions
@@ -70,7 +70,7 @@ namespace Sitko.Core.HangFire
         }
     }
 
-    public abstract class HangfireModuleConfig : BaseModuleConfig
+    public abstract class HangfireModuleOptions : BaseModuleOptions
     {
         public Action<IGlobalConfiguration>? Configure { get; set; }
 
@@ -111,13 +111,13 @@ namespace Sitko.Core.HangFire
         }
     }
 
-    public class HangfirePostgresModuleConfig : HangfireModuleConfig
+    public class HangfirePostgresModuleOptions : HangfireModuleOptions
     {
         public string ConnectionString { get; set; } = string.Empty;
         public TimeSpan InvisibilityTimeout { get; set; } = TimeSpan.FromHours(5);
         public TimeSpan DistributedLockTimeout { get; set; } = TimeSpan.FromHours(5);
 
-        public HangfirePostgresModuleConfig()
+        public HangfirePostgresModuleOptions()
         {
             Configure = configuration =>
             {

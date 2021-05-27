@@ -12,12 +12,12 @@ namespace Sitko.Core.Search.ElasticSearch
 {
     public class ElasticSearcher<TSearchModel> : ISearcher<TSearchModel> where TSearchModel : BaseSearchModel
     {
-        private readonly IOptionsMonitor<ElasticSearchModuleConfig> _optionsMonitor;
+        private readonly IOptionsMonitor<ElasticSearchModuleOptions> _optionsMonitor;
         private readonly ILogger<ElasticSearcher<TSearchModel>> _logger;
-        private ElasticSearchModuleConfig Options => _optionsMonitor.CurrentValue;
+        private ElasticSearchModuleOptions Options => _optionsMonitor.CurrentValue;
         private ElasticClient? _client;
 
-        public ElasticSearcher(IOptionsMonitor<ElasticSearchModuleConfig> optionsMonitor,
+        public ElasticSearcher(IOptionsMonitor<ElasticSearchModuleOptions> optionsMonitor,
             ILogger<ElasticSearcher<TSearchModel>> logger)
         {
             _optionsMonitor = optionsMonitor;

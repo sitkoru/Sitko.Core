@@ -15,14 +15,14 @@ namespace Sitko.Core.Email.Smtp
     /// </summary>
     public class MailKitSender : ISender
     {
-        private readonly IOptionsMonitor<SmtpEmailModuleConfig> _smtpClientOptionsMonitor;
-        private SmtpEmailModuleConfig SmtpClientOptions => _smtpClientOptionsMonitor.CurrentValue;
+        private readonly IOptionsMonitor<SmtpEmailModuleOptions> _smtpClientOptionsMonitor;
+        private SmtpEmailModuleOptions SmtpClientOptions => _smtpClientOptionsMonitor.CurrentValue;
 
         /// <summary>
         /// Creates a sender that uses the given SmtpClientOptions when sending with MailKit. Since the client is internal this will dispose of the client.
         /// </summary>
         /// <param name="smtpClientOptions">The SmtpClientOptions to use to create the MailKit client</param>
-        public MailKitSender(IOptionsMonitor<SmtpEmailModuleConfig> smtpClientOptions)
+        public MailKitSender(IOptionsMonitor<SmtpEmailModuleOptions> smtpClientOptions)
         {
             _smtpClientOptionsMonitor = smtpClientOptions;
         }

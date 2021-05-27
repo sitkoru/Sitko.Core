@@ -1,4 +1,5 @@
 using System;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,20 +14,26 @@ namespace Sitko.Core.Db
 
     public abstract class BaseDbModule<TDbContext, TConfig> : BaseApplicationModule<TConfig>, IDbModule
         where TDbContext : DbContext
-        where TConfig : BaseDbModuleConfig<TDbContext>, new()
+        where TConfig : BaseDbModuleOptions<TDbContext>, new()
     {
-        public override void ConfigureServices(ApplicationContext context, IServiceCollection services, TConfig startupConfig)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            TConfig startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddHealthChecks().AddDbContextCheck<TDbContext>($"DB {typeof(TDbContext)} check");
         }
     }
 
-    public abstract class BaseDbModuleConfig<TDbContext> : BaseModuleConfig where TDbContext : DbContext
+    public abstract class BaseDbModuleOptions<TDbContext> : BaseModuleOptions where TDbContext : DbContext
     {
         public string Database { get; set; } = "dbname";
 
         public Action<DbContextOptionsBuilder<TDbContext>, IServiceProvider, IConfiguration, IHostEnvironment>?
             Configure { get; set; }
+    }
+
+    public abstract class BaseDbModuleOptionsValidator<TOptions, TDbContext> : AbstractValidator<TOptions>
+        where TOptions : BaseDbModuleOptions<TDbContext> where TDbContext : DbContext
+    {
     }
 }

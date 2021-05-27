@@ -13,12 +13,12 @@ namespace Sitko.Core.Search
     }
 
     public abstract class SearchModule<TConfig> : BaseApplicationModule<TConfig>, ISearchModule
-        where TConfig : SearchModuleConfig, new()
+        where TConfig : SearchModuleOptions, new()
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TConfig startupConfig)
+            TConfig startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             ConfigureSearch(services);
         }
 
@@ -61,7 +61,7 @@ namespace Sitko.Core.Search
         }
     }
 
-    public abstract class SearchModuleConfig : BaseModuleConfig
+    public abstract class SearchModuleOptions : BaseModuleOptions
     {
     }
 }

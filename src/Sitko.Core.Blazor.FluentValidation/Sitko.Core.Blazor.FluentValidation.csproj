@@ -20,10 +20,6 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="10.2.3" />
-  </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App.Blazor\Sitko.Core.App.Blazor.csproj" />

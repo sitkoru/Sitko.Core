@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 namespace Sitko.Core.Queue.Nats.Tests
 {
     public class
-        BasicQueueTests : BasicQueueTests<NatsQueueTestScope, NatsQueueModule, NatsQueue, NatsQueueModuleConfig>
+        BasicQueueTests : BasicQueueTests<NatsQueueTestScope, NatsQueueModule, NatsQueue, NatsQueueModuleOptions>
     {
         public BasicQueueTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {

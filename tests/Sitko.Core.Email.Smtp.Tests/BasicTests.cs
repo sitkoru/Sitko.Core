@@ -31,7 +31,7 @@ namespace Sitko.Core.Email.Smtp.Tests
     {
         public TestApplication(string[] args) : base(args)
         {
-            AddModule<SmtpEmailModule, SmtpEmailModuleConfig>();
+            AddModule<SmtpEmailModule, SmtpEmailModuleOptions>();
         }
     }
 }

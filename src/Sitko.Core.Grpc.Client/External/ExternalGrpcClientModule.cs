@@ -7,23 +7,23 @@ namespace Sitko.Core.Grpc.Client.External
 {
     public class ExternalGrpcClientModule<TClient> : GrpcClientModule<TClient,
         ExternalGrpcServiceAddressResolver<TClient>,
-        GrpcClientStaticModuleConfig>
+        GrpcClientStaticModuleOptions>
         where TClient : ClientBase<TClient>
     {
         protected override void RegisterResolver(IServiceCollection services,
-            GrpcClientStaticModuleConfig config)
+            GrpcClientStaticModuleOptions options)
         {
             services.AddSingleton<IGrpcServiceAddressResolver<TClient>>(
-                new ExternalGrpcServiceAddressResolver<TClient>(config.Address));
+                new ExternalGrpcServiceAddressResolver<TClient>(options.Address));
         }
 
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Grpc:Client:External";
         }
     }
 
-    public class GrpcClientStaticModuleConfig : GrpcClientModuleConfig
+    public class GrpcClientStaticModuleOptions : GrpcClientModuleOptions
     {
         public Uri Address { get; set; } = new("http://localhost");
     }

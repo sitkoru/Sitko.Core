@@ -13,61 +13,61 @@ namespace Sitko.Core.Auth.IdentityServer
 {
     public class OidcIdentityServerModule : IdentityServerModule<OidcAuthOptions>
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Auth:IdentityServer:Oidc";
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            OidcAuthOptions startupConfig)
+            OidcAuthOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
 
             services.AddAuthentication(options =>
                 {
-                    options.DefaultScheme = startupConfig.SignInScheme;
-                    options.DefaultChallengeScheme = startupConfig.ChallengeScheme;
+                    options.DefaultScheme = startupOptions.SignInScheme;
+                    options.DefaultChallengeScheme = startupOptions.ChallengeScheme;
                 })
-                .AddCookie(startupConfig.SignInScheme, options =>
+                .AddCookie(startupOptions.SignInScheme, options =>
                 {
-                    options.ExpireTimeSpan = startupConfig.ExpireTimeSpan;
-                    options.SlidingExpiration = startupConfig.SlidingExpiration;
+                    options.ExpireTimeSpan = startupOptions.ExpireTimeSpan;
+                    options.SlidingExpiration = startupOptions.SlidingExpiration;
                 })
-                .AddOpenIdConnect(startupConfig.ChallengeScheme, options =>
+                .AddOpenIdConnect(startupOptions.ChallengeScheme, options =>
                 {
-                    options.SignInScheme = startupConfig.SignInScheme;
+                    options.SignInScheme = startupOptions.SignInScheme;
 
-                    options.Authority = startupConfig.OidcServerUrl;
-                    options.RequireHttpsMetadata = startupConfig.RequireHttps;
+                    options.Authority = startupOptions.OidcServerUrl;
+                    options.RequireHttpsMetadata = startupOptions.RequireHttps;
 
-                    options.ClientId = startupConfig.OidcClientId;
-                    options.ClientSecret = startupConfig.OidcClientSecret;
-                    options.ResponseType = startupConfig.ResponseType;
-                    options.UsePkce = startupConfig.UsePkce;
+                    options.ClientId = startupOptions.OidcClientId;
+                    options.ClientSecret = startupOptions.OidcClientSecret;
+                    options.ResponseType = startupOptions.ResponseType;
+                    options.UsePkce = startupOptions.UsePkce;
 
-                    options.SaveTokens = startupConfig.SaveTokens;
-                    options.GetClaimsFromUserInfoEndpoint = startupConfig.GetClaimsFromUserInfoEndpoint;
+                    options.SaveTokens = startupOptions.SaveTokens;
+                    options.GetClaimsFromUserInfoEndpoint = startupOptions.GetClaimsFromUserInfoEndpoint;
 
                     options.Scope.Add(OidcConstants.StandardScopes.OfflineAccess);
-                    if (startupConfig.OidcScopes.Any())
+                    if (startupOptions.OidcScopes.Any())
                     {
-                        foreach (string scope in startupConfig.OidcScopes)
+                        foreach (string scope in startupOptions.OidcScopes)
                         {
                             options.Scope.Add(scope);
                         }
                     }
                 });
 
-            if (startupConfig.EnableRedisDataProtection)
+            if (startupOptions.EnableRedisDataProtection)
             {
                 services.AddDataProtection().PersistKeysToStackExchangeRedis(() =>
                     {
                         var redis = ConnectionMultiplexer
-                            .Connect($"{startupConfig.RedisHost}:{startupConfig.RedisPort}");
-                        return redis.GetDatabase(startupConfig.RedisDb);
+                            .Connect($"{startupOptions.RedisHost}:{startupOptions.RedisPort}");
+                        return redis.GetDatabase(startupOptions.RedisDb);
                     }, $"{context.Environment.ApplicationName}-DP")
                     .SetApplicationName(context.Environment.ApplicationName)
-                    .SetDefaultKeyLifetime(startupConfig.DataProtectionLifeTime);
+                    .SetDefaultKeyLifetime(startupOptions.DataProtectionLifeTime);
             }
         }
 

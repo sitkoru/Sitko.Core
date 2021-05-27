@@ -5,25 +5,25 @@ using Sitko.Core.Queue.Tests;
 
 namespace Sitko.Core.Queue.Nats.Tests
 {
-    public class NatsQueueTestScope : BaseQueueTestScope<NatsQueueModule, NatsQueue, NatsQueueModuleConfig>
+    public class NatsQueueTestScope : BaseQueueTestScope<NatsQueueModule, NatsQueue, NatsQueueModuleOptions>
     {
-        protected virtual void ConfigureQueue(NatsQueueModuleConfig config, IConfiguration configuration,
+        protected virtual void ConfigureQueue(NatsQueueModuleOptions options, IConfiguration configuration,
             IHostEnvironment environment)
         {
         }
 
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
-            NatsQueueModuleConfig config, string name)
+            NatsQueueModuleOptions options, string name)
         {
-            if (string.IsNullOrEmpty(config.ClusterName))
+            if (string.IsNullOrEmpty(options.ClusterName))
             {
-                config.ClusterName = "tests";
+                options.ClusterName = "tests";
             }
 
-            config.Verbose = true;
-            config.ConnectionTimeout = TimeSpan.FromSeconds(5);
-            config.QueueNamePrefix = name.Replace(".", "_");
-            ConfigureQueue(config, configuration, environment);
+            options.Verbose = true;
+            options.ConnectionTimeout = TimeSpan.FromSeconds(5);
+            options.QueueNamePrefix = name.Replace(".", "_");
+            ConfigureQueue(options, configuration, environment);
         }
     }
 }

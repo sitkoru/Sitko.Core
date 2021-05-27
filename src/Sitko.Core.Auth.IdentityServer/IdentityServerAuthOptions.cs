@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using FluentValidation;
 
 namespace Sitko.Core.Auth.IdentityServer
 {
@@ -6,19 +6,14 @@ namespace Sitko.Core.Auth.IdentityServer
     {
         public string OidcServerUrl { get; set; } = "https://localhost";
         public bool RequireHttps { get; set; }
+    }
 
-        public override (bool isSuccess, IEnumerable<string> errors) CheckConfig()
+    public class IdentityServerAuthOptionsValidator<TOptions> : AuthOptionsValidator<TOptions>
+        where TOptions : IdentityServerAuthOptions
+    {
+        public IdentityServerAuthOptionsValidator()
         {
-            var result = base.CheckConfig();
-            if (result.isSuccess)
-            {
-                if (string.IsNullOrEmpty(OidcServerUrl))
-                {
-                    return (false, new[] {"Oidc server url can't be empty"});
-                }
-            }
-
-            return result;
+            RuleFor(o => o.OidcServerUrl).NotEmpty().WithMessage("Oidc server url can't be empty");
         }
     }
 }

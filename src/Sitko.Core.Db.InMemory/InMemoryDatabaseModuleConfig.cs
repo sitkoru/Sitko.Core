@@ -1,22 +1,27 @@
-using System.Collections.Generic;
+using System;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Sitko.Core.App;
 
 namespace Sitko.Core.Db.InMemory
 {
-    public class InMemoryDatabaseModuleConfig<TDbContext> : BaseDbModuleConfig<TDbContext> where TDbContext : DbContext
+    public class InMemoryDatabaseModuleOptions<TDbContext> : BaseDbModuleOptions<TDbContext>,
+        IModuleOptionsWithValidation
+        where TDbContext : DbContext
     {
-        public override (bool isSuccess, IEnumerable<string> errors) CheckConfig()
+        public Type GetValidatorType()
         {
-            var result = base.CheckConfig();
-            if (result.isSuccess)
-            {
-                if (string.IsNullOrEmpty(Database))
-                {
-                    return (false, new[] {"Empty inmemory database name"});
-                }
-            }
+            return typeof(InMemoryDatabaseModuleOptionsValidator<TDbContext>);
+        }
+    }
 
-            return result;
+    public class
+        InMemoryDatabaseModuleOptionsValidator<TDbContext> : BaseDbModuleOptionsValidator<
+            InMemoryDatabaseModuleOptions<TDbContext>, TDbContext> where TDbContext : DbContext
+    {
+        public InMemoryDatabaseModuleOptionsValidator()
+        {
+            RuleFor(o => o.Database).NotEmpty().WithMessage("Empty InMemory database name");
         }
     }
 }

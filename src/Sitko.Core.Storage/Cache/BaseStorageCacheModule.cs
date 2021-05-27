@@ -10,9 +10,9 @@ namespace Sitko.Core.Storage.Cache
         where TStorageOptions : StorageOptions
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TCacheOptions startupConfig)
+            TCacheOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddSingleton<IStorageCache<TStorageOptions>, TCache>();
         }
     }
@@ -22,7 +22,7 @@ namespace Sitko.Core.Storage.Cache
             FileStorageCache<TStorageOptions>,
             FileStorageCacheOptions> where TStorageOptions : StorageOptions
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return $"Storage:Cache:FileSystem:{typeof(TStorageOptions).Name}";
         }
@@ -33,7 +33,7 @@ namespace Sitko.Core.Storage.Cache
             InMemoryStorageCache<TStorageOptions>,
             InMemoryStorageCacheOptions> where TStorageOptions : StorageOptions
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return $"Storage:Cache:InMemory:{typeof(TStorageOptions).Name}";
         }

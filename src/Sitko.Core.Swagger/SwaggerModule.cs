@@ -8,21 +8,21 @@ using Sitko.Core.App.Web;
 
 namespace Sitko.Core.Swagger
 {
-    public class SwaggerModule : BaseApplicationModule<SwaggerModuleConfig>, IWebApplicationModule
+    public class SwaggerModule : BaseApplicationModule<SwaggerModuleOptions>, IWebApplicationModule
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Swagger";
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            SwaggerModuleConfig startupConfig)
+            SwaggerModuleOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo {Title = startupConfig.Title, Version = startupConfig.Version});
-                if (startupConfig.EnableTokenAuth)
+                c.SwaggerDoc("v1", new OpenApiInfo {Title = startupOptions.Title, Version = startupOptions.Version});
+                if (startupOptions.EnableTokenAuth)
                 {
                     c.AddSecurityDefinition("Bearer",
                         new OpenApiSecurityScheme()
@@ -44,12 +44,12 @@ namespace Sitko.Core.Swagger
         public void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
-            var config = GetConfig(appBuilder.ApplicationServices);
+            var config = GetOptions(appBuilder.ApplicationServices);
             appBuilder.UseSwaggerAuthorized($"{config.Title} ({config.Version})", "v1/swagger.json");
         }
     }
 
-    public class SwaggerModuleConfig : BaseModuleConfig
+    public class SwaggerModuleOptions : BaseModuleOptions
     {
         public string Title { get; set; } = "App";
         public string Version { get; set; } = "v1";

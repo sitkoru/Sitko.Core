@@ -4,20 +4,20 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.IdProvider.SonyFlake
 {
-    public class SonyFlakeModule : BaseApplicationModule<SonyFlakeModuleConfig>
+    public class SonyFlakeModule : BaseApplicationModule<SonyFlakeModuleOptions>
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "SonyFlake";
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            SonyFlakeModuleConfig startupConfig)
+            SonyFlakeModuleOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddHttpClient<IIdProvider, SonyFlakeIdProvider>((serviceProvider, client) =>
             {
-                client.BaseAddress = new Uri(GetConfig(serviceProvider).Uri);
+                client.BaseAddress = new Uri(GetOptions(serviceProvider).Uri);
             });
         }
     }

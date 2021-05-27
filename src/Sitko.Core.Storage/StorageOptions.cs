@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,26 +10,21 @@ using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage
 {
-    public abstract class StorageOptions : BaseModuleConfig
+    public abstract class StorageOptions : BaseModuleOptions
     {
         public Uri? PublicUri { get; set; }
 
         public string? Prefix { get; set; }
 
         public abstract string Name { get; set; }
+    }
 
-        public override (bool isSuccess, IEnumerable<string> errors) CheckConfig()
+    public abstract class StorageOptionsValidator<TStorageOptions> : AbstractValidator<TStorageOptions>
+        where TStorageOptions : StorageOptions
+    {
+        public StorageOptionsValidator()
         {
-            var result = base.CheckConfig();
-            if (result.isSuccess)
-            {
-                if (string.IsNullOrEmpty(Name))
-                {
-                    return (false, new[] {"Storage name is empty"});
-                }
-            }
-
-            return result;
+            RuleFor(o => o.Name).NotEmpty().WithMessage($"Storage {typeof(TStorageOptions)} name is empty");
         }
     }
 }

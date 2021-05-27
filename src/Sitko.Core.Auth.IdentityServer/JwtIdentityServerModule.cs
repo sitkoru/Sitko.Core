@@ -7,21 +7,21 @@ namespace Sitko.Core.Auth.IdentityServer
 {
     public class JwtIdentityServerModule : IdentityServerModule<JwtAuthOptions>
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Auth:IdentityServer:Jwt";
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            JwtAuthOptions startupConfig)
+            JwtAuthOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
-                options.Authority = startupConfig.OidcServerUrl;
-                options.Audience = startupConfig.JwtAudience;
-                options.RequireHttpsMetadata = startupConfig.RequireHttps;
+                options.Authority = startupOptions.OidcServerUrl;
+                options.Audience = startupOptions.JwtAudience;
+                options.RequireHttpsMetadata = startupOptions.RequireHttps;
             });
         }
     }

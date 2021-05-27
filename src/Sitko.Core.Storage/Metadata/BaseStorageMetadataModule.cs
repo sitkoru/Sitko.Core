@@ -12,9 +12,9 @@ namespace Sitko.Core.Storage.Metadata
         where TProviderOptions : StorageMetadataProviderOptions, new()
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TProviderOptions startupConfig)
+            TProviderOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddSingleton<IStorageMetadataProvider<TStorageOptions>, TProvider>();
         }
 

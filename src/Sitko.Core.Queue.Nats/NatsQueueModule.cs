@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 namespace Sitko.Core.Queue.Nats
 {
-    public class NatsQueueModule : QueueModule<NatsQueue, NatsQueueModuleConfig>
+    public class NatsQueueModule : QueueModule<NatsQueue, NatsQueueModuleOptions>
     {
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Queue:Nats";
         }
     }
 
-    public class NatsQueueModuleConfig : QueueModuleConfig
+    public class NatsQueueModuleOptions : QueueModuleOptions
     {
         public List<Uri> Servers { get; set; } = new();
         public string ClusterName { get; set; } = string.Empty;
@@ -22,7 +22,7 @@ namespace Sitko.Core.Queue.Nats
 
         public string? QueueNamePrefix { get; set; }
 
-        public NatsQueueModuleConfig AddServer(string host, int port)
+        public NatsQueueModuleOptions AddServer(string host, int port)
         {
             Servers.Add(new Uri($"nats://{host}:{port}"));
             return this;

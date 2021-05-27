@@ -10,7 +10,7 @@ using Sitko.Core.Queue.Internal;
 
 namespace Sitko.Core.Queue
 {
-    public abstract class BaseQueue<TConfig> : IQueue where TConfig : QueueModuleConfig
+    public abstract class BaseQueue<TConfig> : IQueue where TConfig : QueueModuleOptions
     {
         private readonly IOptionsMonitor<TConfig> _config;
         protected TConfig Config => _config.CurrentValue;

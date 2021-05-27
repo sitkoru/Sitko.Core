@@ -14,9 +14,9 @@ namespace Sitko.Core.Storage
         IStorageModule
         where TStorage : Storage<TStorageOptions> where TStorageOptions : StorageOptions, new()
     {
-        public override void ConfigureServices(ApplicationContext context, IServiceCollection services, TStorageOptions startupConfig)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services, TStorageOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddSingleton<IStorage<TStorageOptions>, TStorage>();
             services.AddSingleton<TStorage>();
         }

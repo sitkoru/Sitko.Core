@@ -1,46 +1,37 @@
 using System.Collections.Generic;
 using FluentEmail.Mailgun;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Sitko.Core.Email.MailGun
 {
-    public class MailGunEmailModule : FluentEmailModule<MailGunEmailModuleConfig>
+    public class MailGunEmailModule : FluentEmailModule<MailGunEmailModuleOptions>
     {
         protected override void ConfigureBuilder(FluentEmailServicesBuilder builder,
-            MailGunEmailModuleConfig config)
+            MailGunEmailModuleOptions options)
         {
-            builder.AddMailGunSender(config.Domain, config.ApiKey, config.Region);
+            builder.AddMailGunSender(options.Domain, options.ApiKey, options.Region);
         }
 
-        public override string GetConfigKey()
+        public override string GetOptionsKey()
         {
             return "Email:Mailgun";
         }
     }
 
-    public class MailGunEmailModuleConfig : FluentEmailModuleConfig
+    public class MailGunEmailModuleOptions : FluentEmailModuleOptions
     {
         public string Domain { get; set; } = "mg.localhost";
         public string ApiKey { get; set; } = string.Empty;
         public MailGunRegion Region { get; set; } = MailGunRegion.USA;
+    }
 
-        public override (bool isSuccess, IEnumerable<string> errors) CheckConfig()
+    public class MailGunEmailModuleOptionsValidator : FluentEmailModuleOptionsValidator<MailGunEmailModuleOptions>
+    {
+        public MailGunEmailModuleOptionsValidator()
         {
-            var result = base.CheckConfig();
-            if (result.isSuccess)
-            {
-                if (string.IsNullOrEmpty(Domain))
-                {
-                    return (false, new[] {"Provide domain registered in mailgun"});
-                }
-
-                if (string.IsNullOrEmpty(ApiKey))
-                {
-                    return (false, new[] {"Provide mailgun apikey"});
-                }
-            }
-
-            return result;
+            RuleFor(o => o.Domain).NotEmpty().WithMessage("Provide domain registered in mailgun");
+            RuleFor(o => o.ApiKey).NotEmpty().WithMessage("Provide mailgun apikey");
         }
     }
 }

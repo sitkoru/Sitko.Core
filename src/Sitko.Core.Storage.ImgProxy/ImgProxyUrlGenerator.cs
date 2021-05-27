@@ -8,11 +8,11 @@ namespace Sitko.Core.Storage.ImgProxy
         where TStorageOptions : StorageOptions
     {
         private readonly IStorage<TStorageOptions> _storage;
-        private readonly StorageImgProxyModuleConfig<TStorageOptions> _options;
+        private readonly StorageImgProxyModuleOptions<TStorageOptions> _options;
         private readonly ILogger<ImgProxyUrlGenerator<TStorageOptions>> _logger;
 
         public ImgProxyUrlGenerator(IStorage<TStorageOptions> storage,
-            StorageImgProxyModuleConfig<TStorageOptions> options,
+            StorageImgProxyModuleOptions<TStorageOptions> options,
             ILogger<ImgProxyUrlGenerator<TStorageOptions>> logger)
         {
             _storage = storage;

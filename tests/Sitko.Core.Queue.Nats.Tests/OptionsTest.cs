@@ -41,11 +41,11 @@ namespace Sitko.Core.Queue.Nats.Tests
 
     public class NatsQueueTestScopeWithOptions : NatsQueueTestScope
     {
-        protected override void ConfigureQueue(NatsQueueModuleConfig config, IConfiguration configuration,
+        protected override void ConfigureQueue(NatsQueueModuleOptions options, IConfiguration configuration,
             IHostEnvironment environment)
         {
-            base.ConfigureQueue(config, configuration, environment);
-            config.ConfigureMessage(new NatsMessageOptions<TestMessage>
+            base.ConfigureQueue(options, configuration, environment);
+            options.ConfigureMessage(new NatsMessageOptions<TestMessage>
             {
                 StartAt = TimeSpan.FromMinutes(30), ManualAck = true
             });

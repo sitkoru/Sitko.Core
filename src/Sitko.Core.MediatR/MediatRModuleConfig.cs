@@ -4,7 +4,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.MediatR
 {
-    public class MediatRModuleConfig<TAssembly> : BaseModuleConfig
+    public class MediatRModuleOptions<TAssembly> : BaseModuleOptions
     {
         public List<Assembly> Assemblies { get; } = new List<Assembly> {typeof(TAssembly).Assembly};
 

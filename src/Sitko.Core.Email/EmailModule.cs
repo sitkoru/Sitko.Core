@@ -12,13 +12,13 @@ namespace Sitko.Core.Email
     }
 
     public abstract class EmailModule<TEmailConfig> : BaseApplicationModule<TEmailConfig>, IEmailModule
-        where TEmailConfig : EmailModuleConfig, new()
+        where TEmailConfig : EmailModuleOptions, new()
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TEmailConfig startupConfig)
+            TEmailConfig startupOptions)
         {
-            base.ConfigureServices(context, services, startupConfig);
-            services.AddViewToStringRenderer<EmailModuleConfig>();
+            base.ConfigureServices(context, services, startupOptions);
+            services.AddViewToStringRenderer<EmailModuleOptions>();
         }
     }
 }
