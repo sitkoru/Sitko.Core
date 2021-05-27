@@ -10,12 +10,13 @@ namespace Sitko.Core.Grpc.Client.Consul
         GrpcClientConsulModuleConfig>
         where TClient : ClientBase<TClient>
     {
-        public GrpcClientConsulModule(GrpcClientConsulModuleConfig config, Application application) :
-            base(config, application)
+        public override string GetConfigKey()
         {
+            return "Grpc:Client:Consul";
         }
 
-        public override List<Type> GetRequiredModules()
+        public override IEnumerable<Type> GetRequiredModules(ApplicationContext context,
+            GrpcClientConsulModuleConfig config)
         {
             return new List<Type> {typeof(IConsulModule)};
         }

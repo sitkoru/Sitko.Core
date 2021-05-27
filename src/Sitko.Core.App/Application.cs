@@ -272,11 +272,12 @@ namespace Sitko.Core.App
             await host.RunAsync();
         }
 
-        public async Task StartAsync()
+        public async Task<IHost> StartAsync()
         {
             var host = await BuildAndInitAsync();
 
             await host.StartAsync();
+            return host;
         }
 
         public async Task StopAsync()

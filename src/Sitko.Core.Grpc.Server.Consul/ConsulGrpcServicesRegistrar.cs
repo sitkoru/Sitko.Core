@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sitko.Core.App;
 using Sitko.Core.App.Helpers;
 using Sitko.Core.Grpc.Server.Discovery;
@@ -18,12 +19,13 @@ namespace Sitko.Core.Grpc.Server.Consul
 {
     public class ConsulGrpcServicesRegistrar : IGrpcServicesRegistrar, IAsyncDisposable
     {
+        private readonly IOptionsMonitor<GrpcServerConsulModuleConfig> _optionsMonitor;
         private readonly IApplication _application;
         private readonly IConsulClient? _consulClient;
         private readonly string _host = "127.0.0.1";
         private readonly bool _inContainer = DockerHelper.IsRunningInDocker();
         private readonly ILogger<ConsulGrpcServicesRegistrar> _logger;
-        private readonly GrpcServerConsulModuleConfig _options;
+        private GrpcServerConsulModuleConfig Options => _optionsMonitor.CurrentValue;
         private readonly int _port;
 
         private readonly ConcurrentDictionary<string, string> _registeredServices = new();
@@ -31,19 +33,19 @@ namespace Sitko.Core.Grpc.Server.Consul
         private bool _disposed;
         private IScheduledTask? _updateTtlTask;
 
-        public ConsulGrpcServicesRegistrar(GrpcServerConsulModuleConfig options,
+        public ConsulGrpcServicesRegistrar(IOptionsMonitor<GrpcServerConsulModuleConfig> optionsMonitor,
             IApplication application,
             IServer server, IScheduler scheduler, ILogger<ConsulGrpcServicesRegistrar> logger,
             IConsulClient? consulClient = null)
         {
-            _options = options;
+            _optionsMonitor = optionsMonitor;
             _application = application;
             _consulClient = consulClient;
             _logger = logger;
-            if (!string.IsNullOrEmpty(_options.Host))
+            if (!string.IsNullOrEmpty(Options.Host))
             {
                 _logger.LogInformation("Use grpc host from config");
-                _host = _options.Host;
+                _host = Options.Host;
             }
             else if (_inContainer)
             {
@@ -58,10 +60,10 @@ namespace Sitko.Core.Grpc.Server.Consul
             }
 
             _logger.LogInformation("GRPC Host: {Host}", _host);
-            if (_options.Port != null && _options.Port > 0)
+            if (Options.Port != null && Options.Port > 0)
             {
                 _logger.LogInformation("Use grpc port from config");
-                _port = _options.Port.Value;
+                _port = Options.Port.Value;
             }
             else
             {
@@ -127,8 +129,7 @@ namespace Sitko.Core.Grpc.Server.Consul
                     Port = _port,
                     Check = new AgentServiceCheck
                     {
-                        TTL = _options.ChecksInterval,
-                        DeregisterCriticalServiceAfter = _options.DeregisterTimeout
+                        TTL = Options.ChecksInterval, DeregisterCriticalServiceAfter = Options.DeregisterTimeout
                     },
                     Tags = new[] {"grpc", $"version:{_application.Version}"}
                 };
@@ -166,7 +167,7 @@ namespace Sitko.Core.Grpc.Server.Consul
                     return HealthCheckResult.Degraded($"Service {serviceName} exists but with another id");
                 }
 
-                if (_options.AutoFixRegistration)
+                if (Options.AutoFixRegistration)
                 {
                     //no services. fix registration
                     await RegisterAsync<T>();

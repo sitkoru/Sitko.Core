@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Consul;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sitko.Core.Grpc.Client.Discovery;
 
 namespace Sitko.Core.Grpc.Client.Consul
@@ -14,7 +15,8 @@ namespace Sitko.Core.Grpc.Client.Consul
         where TClient : ClientBase<TClient>
     {
         private readonly IConsulClient _consulClient;
-        private readonly GrpcClientConsulModuleConfig _config;
+        private readonly IOptionsMonitor<GrpcClientConsulModuleConfig> _optionsMonitor;
+        private GrpcClientConsulModuleConfig Config => _optionsMonitor.CurrentValue;
         private readonly ILogger<ConsulGrpcServiceAddressResolver<TClient>> _logger;
         private readonly CancellationTokenSource _cts = new();
         private Uri? _target;
@@ -26,11 +28,11 @@ namespace Sitko.Core.Grpc.Client.Consul
         private Task? _refreshTask;
 
         public ConsulGrpcServiceAddressResolver(IConsulClient consulClient,
-            GrpcClientConsulModuleConfig config,
+            IOptionsMonitor<GrpcClientConsulModuleConfig> optionsMonitor,
             ILogger<ConsulGrpcServiceAddressResolver<TClient>> logger)
         {
             _consulClient = consulClient;
-            _config = config;
+            _optionsMonitor = optionsMonitor;
             _logger = logger;
         }
 
@@ -72,7 +74,7 @@ namespace Sitko.Core.Grpc.Client.Consul
                     var service = serviceResponse.Response.First();
                     var target =
                         new Uri(
-                            $"{(_config.EnableHttp2UnencryptedSupport ? "http" : "https")}://{service.ServiceAddress}:{service.ServicePort}");
+                            $"{(Config.EnableHttp2UnencryptedSupport ? "http" : "https")}://{service.ServiceAddress}:{service.ServicePort}");
 
                     if (target == _target) return;
                     _target = target;

@@ -4,9 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.Grpc.Client.Discovery;
 
@@ -22,25 +20,21 @@ namespace Sitko.Core.Grpc.Client
         where TResolver : class, IGrpcServiceAddressResolver<TClient>
         where TConfig : GrpcClientModuleConfig, new()
     {
-        public GrpcClientModule(TConfig config, Application application) : base(config, application)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            TConfig startupConfig)
         {
-        }
-
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
-            base.ConfigureServices(services, configuration, environment);
-            if (Config.EnableHttp2UnencryptedSupport)
+            base.ConfigureServices(context, services, startupConfig);
+            if (startupConfig.EnableHttp2UnencryptedSupport)
             {
                 AppContext.SetSwitch(
                     "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
             }
 
             services.AddSingleton<IGrpcClientProvider<TClient>, GrpcClientProvider<TClient>>();
-            RegisterResolver(services);
-            if (Config.Interceptors.Any())
+            RegisterResolver(services, startupConfig);
+            if (startupConfig.Interceptors.Any())
             {
-                foreach (var type in Config.Interceptors)
+                foreach (var type in startupConfig.Interceptors)
                 {
                     services.AddSingleton(type);
                 }
@@ -48,9 +42,10 @@ namespace Sitko.Core.Grpc.Client
 
             services.AddGrpcClient<TClient>((provider, options) =>
                 {
-                    if (Config.Interceptors.Any())
+                    var config = GetConfig(provider);
+                    if (config.Interceptors.Any())
                     {
-                        foreach (var service in Config.Interceptors.Select(provider.GetService))
+                        foreach (var service in config.Interceptors.Select(provider.GetService))
                         {
                             if (service is Interceptor interceptor)
                             {
@@ -65,7 +60,7 @@ namespace Sitko.Core.Grpc.Client
                 .ConfigurePrimaryHttpMessageHandler(() =>
                 {
                     var handler = new HttpClientHandler();
-                    if (Config.DisableCertificatesValidation)
+                    if (startupConfig.DisableCertificatesValidation)
                     {
                         handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
                     }
@@ -73,21 +68,20 @@ namespace Sitko.Core.Grpc.Client
                     return handler;
                 }).ConfigureChannel(options =>
                 {
-                    Config.ConfigureChannelOptions?.Invoke(options);
+                    startupConfig.ConfigureChannelOptions?.Invoke(options);
                 });
             services.AddHealthChecks()
                 .AddCheck<GrpcClientHealthCheck<TClient>>($"GRPC Client check: {typeof(TClient)}");
         }
 
-        public override async Task InitAsync(IServiceProvider serviceProvider, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override async Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider)
         {
-            await base.InitAsync(serviceProvider, configuration, environment);
+            await base.InitAsync(context, serviceProvider);
             var resolver = serviceProvider.GetRequiredService<IGrpcServiceAddressResolver<TClient>>();
             await resolver.InitAsync();
         }
 
-        protected virtual void RegisterResolver(IServiceCollection services)
+        protected virtual void RegisterResolver(IServiceCollection services, TConfig config)
         {
             services.AddSingleton<IGrpcServiceAddressResolver<TClient>, TResolver>();
         }

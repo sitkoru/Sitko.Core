@@ -1,7 +1,6 @@
 using System;
 using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
-using Sitko.Core.App;
 using Sitko.Core.Grpc.Client.Discovery;
 
 namespace Sitko.Core.Grpc.Client.External
@@ -11,15 +10,16 @@ namespace Sitko.Core.Grpc.Client.External
         GrpcClientStaticModuleConfig>
         where TClient : ClientBase<TClient>
     {
-        public ExternalGrpcClientModule(GrpcClientStaticModuleConfig config, Application application) :
-            base(config, application)
-        {
-        }
-
-        protected override void RegisterResolver(IServiceCollection services)
+        protected override void RegisterResolver(IServiceCollection services,
+            GrpcClientStaticModuleConfig config)
         {
             services.AddSingleton<IGrpcServiceAddressResolver<TClient>>(
-                new ExternalGrpcServiceAddressResolver<TClient>(Config.Address));
+                new ExternalGrpcServiceAddressResolver<TClient>(config.Address));
+        }
+
+        public override string GetConfigKey()
+        {
+            return "Grpc:Client:External";
         }
     }
 
