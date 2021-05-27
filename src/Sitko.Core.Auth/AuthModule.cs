@@ -12,21 +12,15 @@ namespace Sitko.Core.Auth
     {
     }
 
-    public abstract class AuthModule<T> : BaseApplicationModule<T>, IWebApplicationModule, IAuthModule
-        where T : AuthOptions, new()
+    public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOptions>, IWebApplicationModule, IAuthModule
+        where TAuthOptions : AuthOptions, new()
     {
-        protected AuthModule(T config, Application application) : base(config, application)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services, TAuthOptions startupConfig)
         {
-        }
-
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
-            base.ConfigureServices(services, configuration, environment);
-            services.AddSingleton<AuthOptions>(Config);
+            base.ConfigureServices(context, services, startupConfig);
             services.AddAuthorization(options =>
             {
-                foreach ((string name, AuthorizationPolicy policy) in Config.Policies)
+                foreach ((string name, AuthorizationPolicy policy) in startupConfig.Policies)
                 {
                     options.AddPolicy(name, policy);
                 }

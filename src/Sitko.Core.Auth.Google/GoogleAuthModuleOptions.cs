@@ -13,5 +13,34 @@ namespace Sitko.Core.Auth.Google
         public string SignInScheme { get; set; } = "Cookies";
         public string ChallengeScheme { get; set; } = "Google";
         public Action<CookieBuilder>? ConfigureCookie { get; set; }
+
+        public override (bool isSuccess, IEnumerable<string> errors) CheckConfig()
+        {
+            var result = base.CheckConfig();
+            if (result.isSuccess)
+            {
+                if (string.IsNullOrEmpty(ClientId))
+                {
+                    return (false, new[] {"ClientId can't be empty"});
+                }
+
+                if (string.IsNullOrEmpty(ClientSecret))
+                {
+                    return (false, new[] {"ClientSecret can't be empty"});
+                }
+
+                if (string.IsNullOrEmpty(SignInScheme))
+                {
+                    return (false, new[] {"SignInScheme can't be empty"});
+                }
+
+                if (string.IsNullOrEmpty(ChallengeScheme))
+                {
+                    return (false, new[] {"ChallengeScheme can't be empty"});
+                }
+            }
+
+            return result;
+        }
     }
 }

@@ -3,16 +3,18 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 
 namespace Sitko.Core.Auth
 {
     public class AuthorizationMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly AuthOptions _options;
+        private readonly IOptionsMonitor<AuthOptions> _options;
         private readonly IPolicyEvaluator _policyEvaluator;
 
-        public AuthorizationMiddleware(RequestDelegate next, AuthOptions options, IPolicyEvaluator policyEvaluator)
+        public AuthorizationMiddleware(RequestDelegate next, IOptionsMonitor<AuthOptions> options,
+            IPolicyEvaluator policyEvaluator)
         {
             _next = next;
             _options = options;
@@ -21,13 +23,13 @@ namespace Sitko.Core.Auth
 
         public async Task Invoke(HttpContext httpContext)
         {
-            if (!_options.IgnoreUrls.Any() ||
-                _options.IgnoreUrls.All(u => !httpContext.Request.Path.StartsWithSegments(u))
+            if (!_options.CurrentValue.IgnoreUrls.Any() ||
+                _options.CurrentValue.IgnoreUrls.All(u => !httpContext.Request.Path.StartsWithSegments(u))
             )
             {
-                if (!string.IsNullOrEmpty(_options.ForcePolicy))
+                if (!string.IsNullOrEmpty(_options.CurrentValue.ForcePolicy))
                 {
-                    var policy = _options.Policies[_options.ForcePolicy];
+                    var policy = _options.CurrentValue.Policies[_options.CurrentValue.ForcePolicy];
                     var authenticateResult =
                         await _policyEvaluator.AuthenticateAsync(policy, httpContext);
                     var authorizationResult =
