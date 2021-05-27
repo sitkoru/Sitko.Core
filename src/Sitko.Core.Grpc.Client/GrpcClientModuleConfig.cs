@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using Grpc.Core.Interceptors;
 using Grpc.Net.Client;
+using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Client
 {
-    public class GrpcClientModuleConfig
+    public class GrpcClientModuleConfig : BaseModuleConfig
     {
         public bool EnableHttp2UnencryptedSupport { get; set; }
         public bool DisableCertificatesValidation { get; set; }

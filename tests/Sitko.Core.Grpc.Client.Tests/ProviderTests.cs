@@ -66,9 +66,9 @@ namespace Sitko.Core.Grpc.Client.Tests
             TestGrpcClientModuleConfig>
         where TClient : ClientBase<TClient>
     {
-        public TestGrpcClientModule(TestGrpcClientModuleConfig config, Application application) : base(
-            config, application)
+        public override string GetConfigKey()
         {
+            return "Grpc:Client:Test";
         }
     }
 
