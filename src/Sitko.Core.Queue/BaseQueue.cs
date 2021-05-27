@@ -5,29 +5,30 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sitko.Core.Queue.Internal;
 
 namespace Sitko.Core.Queue
 {
     public abstract class BaseQueue<TConfig> : IQueue where TConfig : QueueModuleConfig
     {
-        protected readonly TConfig _config;
+        private readonly IOptionsMonitor<TConfig> _config;
+        protected TConfig Config => _config.CurrentValue;
 
-        private QueuePipeline _pipeline;
+        private readonly QueuePipeline _pipeline;
 
         //private readonly IList<IQueueMiddleware> _middlewares;
         private readonly IList<IQueueMessageOptions> _messageOptions;
 
-        protected readonly ILogger<BaseQueue<TConfig>> _logger;
+        protected readonly ILogger<BaseQueue<TConfig>> Logger;
         protected bool IsStarted { get; private set; }
 
-        private readonly ConcurrentDictionary<Guid, QueueSubscription> _subscriptions =
-            new ConcurrentDictionary<Guid, QueueSubscription>();
+        private readonly ConcurrentDictionary<Guid, QueueSubscription> _subscriptions = new();
 
-        protected BaseQueue(TConfig config, QueueContext context, ILogger<BaseQueue<TConfig>> logger)
+        protected BaseQueue(IOptionsMonitor<TConfig> config, QueueContext context, ILogger<BaseQueue<TConfig>> logger)
         {
             _config = config;
-            _logger = logger;
+            Logger = logger;
             //_middlewares = context.Middleware;
             _pipeline = new QueuePipeline();
             foreach (var middleware in context.Middleware)
@@ -57,7 +58,7 @@ namespace Sitko.Core.Queue
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error while processing message {MessageType}: {ErrorText}",
+                        Logger.LogError(ex, "Error while processing message {MessageType}: {ErrorText}",
                             message.GetType(),
                             ex.ToString());
                     }
