@@ -15,26 +15,27 @@ using Sitko.Core.App.Web;
 
 namespace Sitko.Core.HangFire
 {
-    public class HangfireModule<T> : BaseApplicationModule<T>, IWebApplicationModule
-        where T : HangfireModuleConfig, new()
+    public class HangfireModule<THangfireConfig> : BaseApplicationModule<THangfireConfig>, IWebApplicationModule
+        where THangfireConfig : HangfireModuleConfig, new()
     {
-        public HangfireModule(T config, Application application) : base(config, application)
+        public override string GetConfigKey()
         {
+            return "Hangfire";
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            THangfireConfig startupConfig)
         {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupConfig);
             services.AddHangfire(config =>
             {
-                Config.Configure?.Invoke(config);
+                startupConfig.Configure?.Invoke(config);
             });
-            if (Config.IsHealthChecksEnabled)
+            if (startupConfig.IsHealthChecksEnabled)
             {
                 services.AddHealthChecks().AddHangfire(options =>
                 {
-                    Config.ConfigureHealthChecks?.Invoke(options);
+                    startupConfig.ConfigureHealthChecks?.Invoke(options);
                 });
             }
         }
@@ -42,12 +43,13 @@ namespace Sitko.Core.HangFire
         public virtual void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
-            if (Config.IsDashboardEnabled)
+            var config = GetConfig(appBuilder.ApplicationServices);
+            if (config.IsDashboardEnabled)
             {
                 var authFilters = new List<IDashboardAuthorizationFilter>();
-                if (Config.DashboardAuthorizationCheck != null)
+                if (config.DashboardAuthorizationCheck != null)
                 {
-                    authFilters.Add(new HangfireDashboardAuthorizationFilter(Config.DashboardAuthorizationCheck));
+                    authFilters.Add(new HangfireDashboardAuthorizationFilter(config.DashboardAuthorizationCheck));
                 }
 
                 appBuilder.UseHangfireDashboard(options: new DashboardOptions {Authorization = authFilters});
@@ -57,17 +59,18 @@ namespace Sitko.Core.HangFire
         public virtual void ConfigureBeforeUseRouting(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
-            if (Config.IsWorkersEnabled)
+            var config = GetConfig(appBuilder.ApplicationServices);
+            if (config.IsWorkersEnabled)
             {
                 appBuilder.UseHangfireServer(new BackgroundJobServerOptions
                 {
-                    WorkerCount = Config.Workers, Queues = Config.Queues
+                    WorkerCount = config.Workers, Queues = config.Queues
                 });
             }
         }
     }
 
-    public abstract class HangfireModuleConfig
+    public abstract class HangfireModuleConfig : BaseModuleConfig
     {
         public Action<IGlobalConfiguration>? Configure { get; set; }
 
