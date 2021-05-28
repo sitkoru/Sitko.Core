@@ -2,19 +2,35 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sitko.Core.App.Json;
 
 namespace Sitko.Core.IdProvider.SonyFlake
 {
     public class SonyFlakeIdProvider : IIdProvider
     {
+        private readonly IOptionsMonitor<SonyFlakeModuleOptions> _optionsMonitor;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<SonyFlakeIdProvider> _logger;
-        private readonly HttpClient _httpClient;
+        private HttpClient _httpClient;
 
-        public SonyFlakeIdProvider(HttpClient httpClient, ILogger<SonyFlakeIdProvider> logger)
+        public SonyFlakeIdProvider(IOptionsMonitor<SonyFlakeModuleOptions> optionsMonitor,
+            IHttpClientFactory httpClientFactory, ILogger<SonyFlakeIdProvider> logger)
         {
+            _optionsMonitor = optionsMonitor;
+            _httpClientFactory = httpClientFactory;
             _logger = logger;
-            _httpClient = httpClient;
+            CreateHttpClient();
+            _optionsMonitor.OnChange(options =>
+            {
+                CreateHttpClient();
+            });
+        }
+
+        private void CreateHttpClient()
+        {
+            _httpClient = _httpClientFactory.CreateClient(nameof(SonyFlakeIdProvider));
+            _httpClient.BaseAddress = new Uri(_optionsMonitor.CurrentValue.Uri);
         }
 
         public async Task<long> NextAsync()
