@@ -15,10 +15,12 @@ namespace Sitko.Core.IdProvider.SonyFlake
             SonyFlakeModuleOptions startupOptions)
         {
             base.ConfigureServices(context, services, startupOptions);
-            services.AddHttpClient<IIdProvider, SonyFlakeIdProvider>((serviceProvider, client) =>
-            {
-                client.BaseAddress = new Uri(GetOptions(serviceProvider).Uri);
-            });
+            services.AddHttpClient();
+            services.AddSingleton<IIdProvider, SonyFlakeIdProvider>();
+            // services.AddHttpClient<IIdProvider, SonyFlakeIdProvider>((serviceProvider, client) =>
+            // {
+            //     client.BaseAddress = new Uri(GetOptions(serviceProvider).Uri);
+            // });
         }
     }
 }
