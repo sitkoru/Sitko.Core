@@ -22,7 +22,7 @@ namespace Sitko.Core.Queue.Nats.Tests
             var queue = scope.Get<IQueue>();
 
             var msg = new TestMessage();
-            var timeout = TimeSpan.FromMilliseconds(1);
+            var timeout = TimeSpan.FromMilliseconds(500);
             var subResult = await queue.ReplyAsync<TestMessage, TestResponse>(async (message, _) =>
             {
                 await Task.Delay(TimeSpan.FromSeconds(1));
