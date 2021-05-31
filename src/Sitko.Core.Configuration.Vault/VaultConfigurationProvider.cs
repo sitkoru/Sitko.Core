@@ -12,59 +12,73 @@ namespace Sitko.Core.Configuration.Vault
 {
     public static class ApplicationExtensions
     {
-        private static bool _serviceRegistered;
-        private static bool _hasSecrets;
-        private static bool _isEnabled;
+        private static bool s_serviceRegistered;
+        private static bool s_requireWatcher;
 
         public static Application AddVaultConfiguration(this Application application,
-            Action<HostBuilderContext, VaultConfigurationOptions>? configureOptions = null,
-            Func<HostBuilderContext, bool>? isEnabled = null)
+            Action<HostBuilderContext, VaultConfigurationOptions>? configureOptions = null)
         {
             application.ConfigureAppConfiguration((context, builder) =>
             {
-                if (isEnabled is not null && !isEnabled(context))
-                {
-                    return;
-                }
-
-                _isEnabled = true;
-
                 var options = new VaultConfigurationOptions();
                 context.Configuration.Bind("vault", options);
                 configureOptions?.Invoke(context, options);
 
-
                 if (string.IsNullOrEmpty(options.Uri))
                 {
+                    if (options.IsOptional)
+                    {
+                        return;
+                    }
+
                     throw new Exception("Empty Vault uri");
                 }
 
                 if (string.IsNullOrEmpty(options.Token))
                 {
+                    if (options.IsOptional)
+                    {
+                        return;
+                    }
+
                     throw new Exception("Empty Vault token");
                 }
 
                 if (string.IsNullOrEmpty(options.MountPoint))
                 {
+                    if (options.IsOptional)
+                    {
+                        return;
+                    }
+
                     throw new Exception("Empty Vault mount point");
                 }
 
                 if (!options.Secrets.Any())
                 {
+                    if (options.IsOptional)
+                    {
+                        return;
+                    }
+
                     throw new Exception("Empty Vault secrets list");
                 }
 
-                _hasSecrets = true;
                 foreach (var secret in options.Secrets)
                 {
                     builder.AddVaultConfiguration(options.GetOptions,
                         secret,
                         options.MountPoint);
                 }
+
+                if (options.ReloadOnChange)
+                {
+                    s_requireWatcher = true;
+                }
             });
             application.ConfigureServices((context, services) =>
             {
-                if (!_isEnabled || !_hasSecrets || _serviceRegistered)
+                if (!s_requireWatcher || s_serviceRegistered)
                 {
                     return;
                 }
@@ -72,7 +86,7 @@ namespace Sitko.Core.Configuration.Vault
                 services.TryAddSingleton((IConfigurationRoot)context.Configuration);
                 services.AddHostedService<VaultChangeWatcher>();
 
-                _serviceRegistered = true;
+                s_serviceRegistered = true;
             });
             return application;
         }
@@ -89,6 +103,8 @@ namespace Sitko.Core.Configuration.Vault
         public bool ReloadOnChange { get; set; } = true;
         public int ReloadCheckIntervalSeconds { get; set; } = 60;
         public bool OmitVaultKeyName { get; set; } = false;
+
+        public bool IsOptional { get; set; } = true;
         public IEnumerable<char>? AdditionalCharactersForConfigurationPath { get; set; } = null;
 
         public VaultOptions GetOptions()
