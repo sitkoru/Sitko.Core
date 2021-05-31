@@ -39,9 +39,10 @@ namespace Sitko.Core.Xunit
             {
                 application.AddModule<PostgresModule<TDbContext>, PostgresDatabaseModuleOptions<TDbContext>>((
                     configuration,
-                    environment, moduleConfig) =>
+                    environment, moduleOptions) =>
                 {
-                    GetPostgresConfig(configuration, environment, moduleConfig, application.Id, name);
+                    moduleOptions.Database = $"{application.Id}_{name}";
+                    ConfigurePostgresDatabaseModule(configuration, environment, moduleOptions, application.Id, name);
                 });
             }
 
@@ -81,17 +82,10 @@ namespace Sitko.Core.Xunit
             return Task.CompletedTask;
         }
 
-        protected virtual void GetPostgresConfig(IConfiguration configuration,
+        protected virtual void ConfigurePostgresDatabaseModule(IConfiguration configuration,
             IHostEnvironment environment, PostgresDatabaseModuleOptions<TDbContext> moduleOptions, Guid applicationId,
             string dbName)
         {
-            throw new NotImplementedException("You need to implement postgres configuration in your scope");
-        }
-
-        protected void GetDefaultPostgresConfig(IConfiguration configuration, IHostEnvironment environment,
-            PostgresDatabaseModuleOptions<TDbContext> moduleOptions, Guid applicationId, string dbName)
-        {
-            moduleOptions.Database = $"{applicationId}_{dbName}";
         }
 
         public override async ValueTask DisposeAsync()

@@ -267,7 +267,8 @@ namespace Sitko.Core.Repository.Tests
     public class TestRepository : EFRepository<TestModel, Guid, TestDbContext>
     {
         public TestRepository(IOptionsMonitor<EfRepositoriesModuleOptions> optionsMonitor,
-            EFRepositoryContext<TestModel, Guid, TestDbContext> repositoryContext) : base(optionsMonitor, repositoryContext)
+            EFRepositoryContext<TestModel, Guid, TestDbContext> repositoryContext) : base(optionsMonitor,
+            repositoryContext)
         {
         }
     }
@@ -275,7 +276,8 @@ namespace Sitko.Core.Repository.Tests
     public class BarRepository : EFRepository<BarModel, Guid, TestDbContext>
     {
         public BarRepository(IOptionsMonitor<EfRepositoriesModuleOptions> optionsMonitor,
-            EFRepositoryContext<BarModel, Guid, TestDbContext> repositoryContext) : base(optionsMonitor, repositoryContext)
+            EFRepositoryContext<BarModel, Guid, TestDbContext> repositoryContext) : base(optionsMonitor,
+            repositoryContext)
         {
         }
     }
@@ -283,18 +285,14 @@ namespace Sitko.Core.Repository.Tests
     public class FooRepository : EFRepository<FooModel, Guid, TestDbContext>
     {
         public FooRepository(IOptionsMonitor<EfRepositoriesModuleOptions> optionsMonitor,
-            EFRepositoryContext<FooModel, Guid, TestDbContext> repositoryContext) : base(optionsMonitor, repositoryContext)
+            EFRepositoryContext<FooModel, Guid, TestDbContext> repositoryContext) : base(optionsMonitor,
+            repositoryContext)
         {
         }
     }
 
     public abstract class BaseEFTestScope : DbBaseTestScope<BaseEFTestScope, TestDbContext>
     {
-        protected override void GetPostgresConfig(IConfiguration configuration, IHostEnvironment environment,
-            PostgresDatabaseModuleOptions<TestDbContext> moduleOptions, Guid applicationId, string dbName)
-        {
-            GetDefaultPostgresConfig(configuration, environment, moduleOptions, applicationId, dbName);
-        }
     }
 
     public class EFTestScope : BaseEFTestScope
