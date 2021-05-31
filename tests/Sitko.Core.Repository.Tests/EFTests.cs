@@ -266,24 +266,24 @@ namespace Sitko.Core.Repository.Tests
 
     public class TestRepository : EFRepository<TestModel, Guid, TestDbContext>
     {
-        public TestRepository(IOptionsMonitor<EfRepositoriesModuleOptions> config,
-            EFRepositoryContext<TestModel, Guid, TestDbContext> repositoryContext) : base(config, repositoryContext)
+        public TestRepository(IOptionsMonitor<EfRepositoriesModuleOptions> optionsMonitor,
+            EFRepositoryContext<TestModel, Guid, TestDbContext> repositoryContext) : base(optionsMonitor, repositoryContext)
         {
         }
     }
 
     public class BarRepository : EFRepository<BarModel, Guid, TestDbContext>
     {
-        public BarRepository(IOptionsMonitor<EfRepositoriesModuleOptions> config,
-            EFRepositoryContext<BarModel, Guid, TestDbContext> repositoryContext) : base(config, repositoryContext)
+        public BarRepository(IOptionsMonitor<EfRepositoriesModuleOptions> optionsMonitor,
+            EFRepositoryContext<BarModel, Guid, TestDbContext> repositoryContext) : base(optionsMonitor, repositoryContext)
         {
         }
     }
 
     public class FooRepository : EFRepository<FooModel, Guid, TestDbContext>
     {
-        public FooRepository(IOptionsMonitor<EfRepositoriesModuleOptions> config,
-            EFRepositoryContext<FooModel, Guid, TestDbContext> repositoryContext) : base(config, repositoryContext)
+        public FooRepository(IOptionsMonitor<EfRepositoriesModuleOptions> optionsMonitor,
+            EFRepositoryContext<FooModel, Guid, TestDbContext> repositoryContext) : base(optionsMonitor, repositoryContext)
         {
         }
     }
