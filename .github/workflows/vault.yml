@@ -38,7 +38,6 @@ jobs:
                     dotnet-version: '5.0.x'
             -   name: Install Vault
                 run: |
-                    export VAULT_ADDR='http://127.0.0.1:8200'
                     curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
                     apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
                     apt-get update && apt-get install -y vault
@@ -48,6 +47,7 @@ jobs:
                     vault server -dev -dev-root-token-id="${VAULT__TOKEN}" &
             -   name: Seed Vault
                 run: |
+                    export VAULT_ADDR=${VAULT__URL}
                     json='{"test": {"Foo": "123","Bar": 123}}'
                     echo $json > data.json
                     vault kv put ${VAULT__MOUNTPOINT}/${VAULT__SECRETS__0} @data.json 
