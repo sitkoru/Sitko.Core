@@ -139,5 +139,11 @@ namespace Sitko.Core.Xunit
             base.ConfigureLogging(loggerConfiguration, logLevelSwitcher);
             logLevelSwitcher.Switch.MinimumLevel = LogEventLevel.Debug;
         }
+        
+        protected override void ConfigureHostConfiguration(IConfigurationBuilder configurationBuilder)
+        {
+            base.ConfigureHostConfiguration(configurationBuilder);
+            configurationBuilder.AddEnvironmentVariables();
+        }
     }
 }
