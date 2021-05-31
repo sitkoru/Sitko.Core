@@ -42,10 +42,14 @@ jobs:
                     curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
                     apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
                     apt-get update && apt-get install -y vault
+            -   name: Start Vault
+                run: |
                     vault server -dev -dev-root-token-id="${VAULT__TOKEN}" &
+            -   name: Seed Vault
+                run: |
                     json='{"test": {"Foo": "123","Bar": 123}}'
                     echo $json > data.json
-                    vault kv put ${VAULT__MOUNTPOINT}/${VAULT__SECRETS__0} @data.json
+                    vault kv put ${VAULT__MOUNTPOINT}/${VAULT__SECRETS__0} @data.json 
             -   name: Add Github Actions logger
                 run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
             -   name: Run tests
