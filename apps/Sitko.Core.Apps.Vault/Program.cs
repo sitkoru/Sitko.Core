@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.App.Blazor;
 using Sitko.Core.Configuration.Vault;
 using Sitko.Core.IdProvider.SonyFlake;
@@ -16,8 +17,8 @@ namespace Sitko.Core.Apps.Vault
             await CreateApplication(args).RunAsync();
         }
 
-        // public static IHostBuilder CreateHostBuilder(string[] args) =>
-        //     CreateApplication(args).
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            CreateApplication(args).GetHostBuilder();
 
         private static VaultApplication CreateApplication(string[] args) => new(args);
     }

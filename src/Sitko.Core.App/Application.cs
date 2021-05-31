@@ -61,13 +61,8 @@ namespace Sitko.Core.App
             throw new ArgumentException($"Application {id} is not registered", nameof(id));
         }
 
-        protected IHost Build(Action<IHostBuilder>? configure = null)
+        private IHostBuilder PrepareHostBuilder(Action<IHostBuilder>? configure = null)
         {
-            if (_appHost is not null)
-            {
-                return _appHost;
-            }
-
             var logLevelSwitcher = new LogLevelSwitcher();
 
             using var tmpHost = CreateHostBuilder(_args)
@@ -202,17 +197,19 @@ namespace Sitko.Core.App
 
             configure?.Invoke(hostBuilder);
 
-            IHost? host = null;
-            try
+            return hostBuilder;
+        }
+
+        protected IHost Build(Action<IHostBuilder>? configure = null)
+        {
+            if (_appHost is not null)
             {
-                //Init();
-                host = hostBuilder.Build();
+                return _appHost;
             }
-            catch (Exception e)
-            {
-                tmpLogger.LogError("Host build error: {ErrorText}", e.ToString());
-                Environment.Exit(255);
-            }
+
+            var hostBuilder = PrepareHostBuilder(configure);
+
+            var host = hostBuilder.Build();
 
             if (_check)
             {
@@ -301,6 +298,11 @@ namespace Sitko.Core.App
             }
         }
 
+        public IHostBuilder GetHostBuilder()
+        {
+            return PrepareHostBuilder();
+        }
+
         public IServiceProvider GetServices()
         {
             return Build().Services;
@@ -311,7 +313,8 @@ namespace Sitko.Core.App
 
 
         protected void RegisterModule<TModule, TModuleOptions>(
-            Action<IConfiguration, IHostEnvironment, TModuleOptions>? configureOptions = null, string? optionsKey = null)
+            Action<IConfiguration, IHostEnvironment, TModuleOptions>? configureOptions = null,
+            string? optionsKey = null)
             where TModule : IApplicationModule<TModuleOptions>, new() where TModuleOptions : BaseModuleOptions, new()
         {
             if (_moduleRegistrations.ContainsKey(typeof(TModule)))
