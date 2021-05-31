@@ -21,7 +21,7 @@ jobs:
         runs-on: ubuntu-latest
         container: ghcr.io/sitkoru/actions-container
         env:
-            VAULT__URL: http://127.0.0.1:8200
+            VAULT__URI: http://127.0.0.1:8200
             VAULT__TOKEN: twit3itPSAD0yok
             VAULT__MOUNTPOINT: secret
             VAULT__SECRETS__0: tests
