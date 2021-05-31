@@ -1,6 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
+using Sitko.Core.App;
 using Sitko.Core.Xunit;
-using VaultSharp.Extensions.Configuration;
 using Xunit.Abstractions;
 
 namespace Sitko.Core.Configuration.Vault.Tests
@@ -18,14 +19,22 @@ namespace Sitko.Core.Configuration.Vault.Tests
         {
             base.ConfigureApplication(application, name);
 
-            application.AddVaultConfiguration(() => new VaultOptions(
-                System.Environment.GetEnvironmentVariable("VAULT_URI")!,
-                System.Environment.GetEnvironmentVariable("VAULT_TOKEN"), reloadOnChange: true,
-                reloadCheckIntervalSeconds: 5), "Tests", "kv-v2");
+            application.AddVaultConfiguration();
             application.ConfigureServices((context, collection) =>
             {
-                collection.Configure<TestConfig>(context.Configuration.GetSection("Test"));
+                collection.Configure<TestConfig>(context.Configuration.GetSection("test"));
             });
+            application.AddModule<TestModule, TestModuleConfig>();
+            return application;
+        }
+    }
+
+    public class VaultTestScopeWithValidationFailure : VaultTestScope
+    {
+        protected override TestApplication ConfigureApplication(TestApplication application, string name)
+        {
+            base.ConfigureApplication(application, name);
+            application.AddModule<TestModuleWithValidation, TestModuleWithValidationConfig>();
             return application;
         }
     }
@@ -35,5 +44,41 @@ namespace Sitko.Core.Configuration.Vault.Tests
     {
         public string Foo { get; set; }
         public int Bar { get; set; }
+    }
+
+    public class TestModule : BaseApplicationModule<TestModuleConfig>
+    {
+        public override string GetOptionsKey()
+        {
+            return "Test";
+        }
+    }
+
+    public class TestModuleConfig : BaseModuleOptions
+    {
+        public string Foo { get; set; }
+        public int Bar { get; set; }
+    }
+
+    public class TestModuleWithValidation : BaseApplicationModule<TestModuleWithValidationConfig>
+    {
+        public override string GetOptionsKey()
+        {
+            return "Test";
+        }
+    }
+
+    public class TestModuleWithValidationConfig : BaseModuleOptions
+    {
+        public string Foo { get; set; }
+        public int Bar { get; set; }
+    }
+
+    public class TestModuleWithValidationConfigValidator : AbstractValidator<TestModuleWithValidationConfig>
+    {
+        public TestModuleWithValidationConfigValidator()
+        {
+            RuleFor(o => o.Bar).Equal(0).WithMessage("Bar must equals zero!");
+        }
     }
 }
