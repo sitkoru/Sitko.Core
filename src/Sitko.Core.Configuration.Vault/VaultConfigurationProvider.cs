@@ -32,9 +32,26 @@ namespace Sitko.Core.Configuration.Vault
                 var options = new VaultConfigurationOptions();
                 context.Configuration.Bind("vault", options);
                 configureOptions?.Invoke(context, options);
+
+
+                if (string.IsNullOrEmpty(options.Uri))
+                {
+                    throw new Exception("Empty Vault uri");
+                }
+
+                if (string.IsNullOrEmpty(options.Token))
+                {
+                    throw new Exception("Empty Vault token");
+                }
+
+                if (string.IsNullOrEmpty(options.MountPoint))
+                {
+                    throw new Exception("Empty Vault mount point");
+                }
+
                 if (!options.Secrets.Any())
                 {
-                    return;
+                    throw new Exception("Empty Vault secrets list");
                 }
 
                 _hasSecrets = true;
