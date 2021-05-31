@@ -142,6 +142,7 @@ ProjectSection(SolutionItems) = preProject
 	.github\workflows\repository.yml = .github\workflows\repository.yml
 	.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
 	.github\workflows\grpc.yml = .github\workflows\grpc.yml
+	.github\workflows\vault.yml = .github\workflows\vault.yml
 	.github\workflows\blazor.yml = .github\workflows\blazor.yml
 	.github\workflows\apps.yml = .github\workflows\apps.yml
 EndProjectSection
