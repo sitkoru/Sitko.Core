@@ -135,13 +135,14 @@ namespace Sitko.Core.Xunit
         {
         }
 
-        protected override void ConfigureLogging(LoggerConfiguration loggerConfiguration,
+        protected override void ConfigureLogging(ApplicationContext applicationContext,
+            LoggerConfiguration loggerConfiguration,
             LogLevelSwitcher logLevelSwitcher)
         {
-            base.ConfigureLogging(loggerConfiguration, logLevelSwitcher);
+            base.ConfigureLogging(applicationContext, loggerConfiguration, logLevelSwitcher);
             logLevelSwitcher.Switch.MinimumLevel = LogEventLevel.Debug;
         }
-        
+
         protected override void ConfigureHostConfiguration(IConfigurationBuilder configurationBuilder)
         {
             base.ConfigureHostConfiguration(configurationBuilder);

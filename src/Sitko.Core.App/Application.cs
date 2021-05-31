@@ -171,7 +171,8 @@ namespace Sitko.Core.App
                                 levelSwitch: logLevelSwitcher.Switch);
                     }
 
-                    ConfigureLogging(loggerConfiguration, logLevelSwitcher);
+                    ConfigureLogging(GetContext(context.HostingEnvironment, context.Configuration), loggerConfiguration,
+                        logLevelSwitcher);
                     foreach ((var key, LogEventLevel value) in LogEventLevels)
                     {
                         loggerConfiguration.MinimumLevel.Override(key, value);
@@ -251,7 +252,8 @@ namespace Sitko.Core.App
         protected virtual bool LoggingEnableConsole(HostBuilderContext context) =>
             context.HostingEnvironment.IsDevelopment();
 
-        protected virtual void ConfigureLogging(LoggerConfiguration loggerConfiguration,
+        protected virtual void ConfigureLogging(ApplicationContext applicationContext,
+            LoggerConfiguration loggerConfiguration,
             LogLevelSwitcher logLevelSwitcher)
         {
         }
