@@ -47,7 +47,7 @@ jobs:
                     vault server -dev -dev-root-token-id="${VAULT__TOKEN}" &
             -   name: Seed Vault
                 run: |
-                    export VAULT_ADDR=${VAULT__URL}
+                    export VAULT_ADDR=${VAULT__URI}
                     json='{"test": {"Foo": "123","Bar": 123}}'
                     echo $json > data.json
                     vault kv put ${VAULT__MOUNTPOINT}/${VAULT__SECRETS__0} @data.json 
