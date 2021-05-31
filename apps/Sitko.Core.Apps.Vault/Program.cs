@@ -2,15 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Blazor;
 using Sitko.Core.Configuration.Vault;
 using Sitko.Core.IdProvider.SonyFlake;
-using VaultSharp.Extensions.Configuration;
 
 namespace Sitko.Core.Apps.Vault
 {
@@ -31,11 +26,8 @@ namespace Sitko.Core.Apps.Vault
     {
         public VaultApplication(string[] args) : base(args)
         {
-            this.AddVaultConfiguration(() => new VaultOptions(
-                System.Environment.GetEnvironmentVariable("VAULT_URI")!,
-                System.Environment.GetEnvironmentVariable("VAULT_TOKEN"), reloadOnChange: true,
-                reloadCheckIntervalSeconds: 5), "Tests", "kv-v2");
-            this.ConfigureServices((context, collection) =>
+            this.AddVaultConfiguration();
+            ConfigureServices((context, collection) =>
             {
                 collection.Configure<TestConfig>(context.Configuration.GetSection("Test"));
             });
