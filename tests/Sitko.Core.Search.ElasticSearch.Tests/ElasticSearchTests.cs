@@ -59,12 +59,12 @@ namespace Sitko.Core.Search.ElasticSearch.Tests
         {
             base.ConfigureApplication(application, name)
                 .AddModule<TestApplication, ElasticSearchModule, ElasticSearchModuleOptions>(
-                    (configuration, _, moduleConfig) =>
+                    (_, _, moduleConfig) =>
                     {
                         moduleConfig.Prefix = name.ToLower();
                         moduleConfig.EnableClientLogging = true;
                     })
-                .ConfigureServices((context, services) =>
+                .ConfigureServices((_, _, services) =>
                 {
                     services.AddSingleton<TestModelProvider>();
                     services.RegisterSearchProvider<TestSearchProvider, TestModel, Guid>();
