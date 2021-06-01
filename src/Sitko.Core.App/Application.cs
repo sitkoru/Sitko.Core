@@ -26,7 +26,7 @@ namespace Sitko.Core.App
 
         private static readonly ConcurrentDictionary<Guid, Application> _apps = new();
 
-        public readonly bool IsPostBuildCheckRun;
+        public readonly bool IsCheckRun;
 
         private readonly List<Action<ApplicationContext, LoggerConfiguration, LogLevelSwitcher>>
             _loggerConfigurationActions = new();
@@ -49,6 +49,8 @@ namespace Sitko.Core.App
         private static readonly string BaseConsoleLogFormat =
             "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}]{NewLine}\t{Message:lj}{NewLine}{Exception}";
 
+        private readonly LogLevelSwitcher _logLevelSwitcher = new();
+
         protected virtual string ConsoleLogFormat => BaseConsoleLogFormat;
 
         private ILogger<Application> InternalLogger { get; set; }
@@ -60,7 +62,7 @@ namespace Sitko.Core.App
             Console.OutputEncoding = Encoding.UTF8;
             if (args.Length > 0 && args[0] == "check")
             {
-                IsPostBuildCheckRun = true;
+                IsCheckRun = true;
             }
 
             var loggerConfiguration = new LoggerConfiguration();
@@ -80,9 +82,19 @@ namespace Sitko.Core.App
             throw new ArgumentException($"Application {id} is not registered", nameof(id));
         }
 
-        private IHostBuilder PrepareHostBuilder(Action<IHostBuilder>? configure = null)
+        private void LogCheck(string message)
         {
-            var logLevelSwitcher = new LogLevelSwitcher();
+            if (IsCheckRun)
+            {
+                InternalLogger.LogInformation("Check log: {Message}", message);
+            }
+        }
+
+        private IHostBuilder ConfigureHostBuilder(Action<IHostBuilder>? configure = null)
+        {
+            LogCheck("Configure host builder start");
+
+            LogCheck("Create tmp host builder");
 
             using var tmpHost = CreateHostBuilder(_args)
                 .UseDefaultServiceProvider(options =>
@@ -106,7 +118,11 @@ namespace Sitko.Core.App
 
             var tmpApplicationContext = GetContext(tmpEnvironment, tmpConfiguration);
 
+            LogCheck("Init application");
+
             InitApplication();
+
+            LogCheck("Create main host builder");
 
             var hostBuilder = CreateHostBuilder(_args)
                 .UseDefaultServiceProvider(options =>
@@ -116,6 +132,7 @@ namespace Sitko.Core.App
                 })
                 .ConfigureAppConfiguration((context, builder) =>
                 {
+                    LogCheck("Configure app configuration");
                     var appContext = GetContext(context.HostingEnvironment, context.Configuration);
                     foreach (var appConfigurationAction in _appConfigurationActions)
                     {
@@ -124,7 +141,8 @@ namespace Sitko.Core.App
                 })
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddSingleton(logLevelSwitcher);
+                    LogCheck("Configure app services");
+                    services.AddSingleton(_logLevelSwitcher);
                     services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
                     services.AddSingleton(typeof(IApplication), this);
                     services.AddSingleton(typeof(Application), this);
@@ -145,14 +163,15 @@ namespace Sitko.Core.App
                     }
                 }).ConfigureLogging((context, _) =>
                 {
+                    LogCheck("Configure logging");
                     var loggerConfiguration = new LoggerConfiguration();
-                    loggerConfiguration.MinimumLevel.ControlledBy(logLevelSwitcher.Switch);
+                    loggerConfiguration.MinimumLevel.ControlledBy(_logLevelSwitcher.Switch);
                     loggerConfiguration
                         .Enrich.FromLogContext()
                         .Enrich.WithMachineName()
                         .Enrich.WithProperty("App", Name)
                         .Enrich.WithProperty("AppVersion", Version);
-                    logLevelSwitcher.Switch.MinimumLevel =
+                    _logLevelSwitcher.Switch.MinimumLevel =
                         context.HostingEnvironment.IsDevelopment() ? LogEventLevel.Debug : LogEventLevel.Information;
 
                     if (LoggingEnableConsole(context))
@@ -160,13 +179,13 @@ namespace Sitko.Core.App
                         loggerConfiguration
                             .WriteTo.Console(
                                 outputTemplate: ConsoleLogFormat,
-                                levelSwitch: logLevelSwitcher.Switch);
+                                levelSwitch: _logLevelSwitcher.Switch);
                     }
 
                     var appContext = GetContext(context.HostingEnvironment, context.Configuration);
                     ConfigureLogging(appContext,
                         loggerConfiguration,
-                        logLevelSwitcher);
+                        _logLevelSwitcher);
                     foreach ((var key, LogEventLevel value) in LogEventLevels)
                     {
                         loggerConfiguration.MinimumLevel.Override(key, value);
@@ -175,40 +194,49 @@ namespace Sitko.Core.App
                     foreach (var moduleRegistration in _moduleRegistrations)
                     {
                         moduleRegistration.Value.ConfigureLogging(tmpApplicationContext, loggerConfiguration,
-                            logLevelSwitcher);
+                            _logLevelSwitcher);
                     }
 
                     foreach (var loggerConfigurationAction in _loggerConfigurationActions)
                     {
-                        loggerConfigurationAction(appContext, loggerConfiguration, logLevelSwitcher);
+                        loggerConfigurationAction(appContext, loggerConfiguration, _logLevelSwitcher);
                     }
 
                     Log.Logger = loggerConfiguration.CreateLogger();
                 });
 
-
+            LogCheck("Configure host builder in modules");
             foreach (var moduleRegistration in _moduleRegistrations)
             {
                 moduleRegistration.Value.ConfigureHostBuilder(tmpApplicationContext, hostBuilder);
             }
 
+            LogCheck("Configure host builder");
             configure?.Invoke(hostBuilder);
-
+            LogCheck("Create host builder done");
             return hostBuilder;
         }
 
         protected IHost CreateAppHost(Action<IHostBuilder>? configure = null)
         {
+            LogCheck("Create app host start");
+
             if (_appHost is not null)
             {
+                LogCheck("App host is already built");
+
                 return _appHost;
             }
 
-            var hostBuilder = PrepareHostBuilder(configure);
+            LogCheck("Configure host builder");
 
+            var hostBuilder = ConfigureHostBuilder(configure);
+
+            LogCheck("Build host");
             var host = hostBuilder.Build();
 
             _appHost = host;
+            LogCheck("Create app host done");
             return _appHost;
         }
 
@@ -254,6 +282,8 @@ namespace Sitko.Core.App
 
         public async Task RunAsync()
         {
+            LogCheck("Run app start");
+            LogCheck("Build and init");
             var host = await BuildAndInitAsync();
 
             InternalLogger.LogInformation("Check required modules");
@@ -282,9 +312,9 @@ namespace Sitko.Core.App
                 return;
             }
 
-            if (IsPostBuildCheckRun)
+            if (IsCheckRun)
             {
-                InternalLogger.LogInformation("Check run is successful");
+                LogCheck("Check run is successful. Exit");
                 return;
             }
 
@@ -324,7 +354,7 @@ namespace Sitko.Core.App
 
         public IHostBuilder GetHostBuilder()
         {
-            return PrepareHostBuilder();
+            return ConfigureHostBuilder();
         }
 
         public IServiceProvider GetServiceProvider()
@@ -368,9 +398,11 @@ namespace Sitko.Core.App
 
         public async Task<IHost> BuildAndInitAsync(Action<IHostBuilder>? configure = null)
         {
+            LogCheck("Build and init async start");
+
             var host = CreateAppHost(configure);
 
-            if (!IsPostBuildCheckRun)
+            if (!IsCheckRun)
             {
                 using var scope = host.Services.CreateScope();
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<Application>>();
@@ -382,6 +414,8 @@ namespace Sitko.Core.App
                         GetContext(scope.ServiceProvider), scope.ServiceProvider);
                 }
             }
+
+            LogCheck("Build and init async done");
 
             return host;
         }
