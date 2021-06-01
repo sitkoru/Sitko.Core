@@ -9,15 +9,15 @@ namespace Sitko.Core.ElasticStack
 {
     public class ElasticStackModuleOptions : BaseModuleOptions
     {
-        public bool LoggingEnabled { get; private set; }
-        public bool ApmEnabled { get; private set; }
-        public List<Uri>? ElasticSearchUrls { get; protected set; }
+        public bool LoggingEnabled => ElasticSearchUrls.Any();
+        public bool ApmEnabled => ApmServerUrls.Any();
+        public List<Uri> ElasticSearchUrls { get; set; } = new();
         public double ApmTransactionSampleRate { get; set; } = 1.0;
         public int ApmTransactionMaxSpans { get; set; } = 500;
         public bool ApmCentralConfig { get; set; } = true;
         public List<string>? ApmSanitizeFieldNames { get; set; }
         public readonly Dictionary<string, string> ApmGlobalLabels = new();
-        public List<Uri>? ApmServerUrls { get; private set; }
+        public List<Uri> ApmServerUrls { get; set; } = new();
         public string? ApmSecretToken { get; set; }
         public string? ApmApiKey { get; set; }
         public bool ApmVerifyServerCert { get; set; } = true;
@@ -38,31 +38,6 @@ namespace Sitko.Core.ElasticStack
         public int? LoggingNumberOfReplicas { get; set; }
         public string? LoggingLifeCycleName { get; set; }
         public string? LoggingLiferRolloverAlias { get; set; }
-
-
-        public ElasticStackModuleOptions EnableLogging(Uri elasticSearchUri)
-        {
-            return EnableLogging(new[] {elasticSearchUri});
-        }
-
-        public ElasticStackModuleOptions EnableLogging(IEnumerable<Uri> elasticSearchUrls)
-        {
-            LoggingEnabled = true;
-            ElasticSearchUrls = elasticSearchUrls.ToList();
-            return this;
-        }
-
-        public ElasticStackModuleOptions EnableApm(Uri apmUri)
-        {
-            return EnableApm(new[] {apmUri});
-        }
-
-        public ElasticStackModuleOptions EnableApm(IEnumerable<Uri> apmUrls)
-        {
-            ApmEnabled = true;
-            ApmServerUrls = apmUrls.ToList();
-            return this;
-        }
     }
 
     public class ElasticStackModuleOptionsValidator : AbstractValidator<ElasticStackModuleOptions>

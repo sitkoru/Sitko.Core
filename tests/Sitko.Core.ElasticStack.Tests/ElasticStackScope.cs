@@ -22,15 +22,7 @@ namespace Sitko.Core.ElasticStack.Tests
     {
         public ElasticApplication(string[] args) : base(args)
         {
-            AddModule<ElasticStackModule, ElasticStackModuleOptions>(
-                (configuration, environment, moduleConfig) =>
-                {
-                    moduleConfig.EnableLogging(new Uri(configuration["ELASTICSTACK_ES_URL"]));
-                    moduleConfig.LoggingLifeCycleName = "apm-rollover-30-days";
-                    moduleConfig.LoggingNumberOfReplicas = 0;
-
-                    moduleConfig.EnableApm(new Uri(configuration["ELASTICSTACK_APM_URL"]));
-                });
+            AddModule<ElasticStackModule, ElasticStackModuleOptions>();
         }
     }
 }
