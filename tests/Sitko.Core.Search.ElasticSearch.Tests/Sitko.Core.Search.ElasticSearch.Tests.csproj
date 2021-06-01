@@ -4,11 +4,12 @@
     <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Sitko.Core.Xunit\Sitko.Core.Xunit.csproj" />
-    <ProjectReference Include="..\..\src\Sitko.Core.Search.ElasticSearch\Sitko.Core.Search.ElasticSearch.csproj" />
+    <ProjectReference Include="..\..\src\Sitko.Core.Xunit\Sitko.Core.Xunit.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.Search.ElasticSearch\Sitko.Core.Search.ElasticSearch.csproj"/>
   </ItemGroup>
 
 </Project>

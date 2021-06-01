@@ -37,16 +37,15 @@ namespace Sitko.Core.Xunit
             Name = name;
             _application = CreateApplication();
 
-            _application.ConfigureServices((context, services) =>
+            _application.ConfigureServices((_, context, services) =>
             {
                 ConfigureServices(context.Configuration, context.HostingEnvironment, services, name);
             });
 
-            _application.ConfigureLogging((configuration, logLevelSwitcher) =>
+            _application.ConfigureLogging((_, loggerConfiguration, logLevelSwitcher) =>
             {
-                configuration.WriteTo.TestOutput(testOutputHelper, levelSwitch: logLevelSwitcher.Switch);
+                loggerConfiguration.WriteTo.TestOutput(testOutputHelper, levelSwitch: logLevelSwitcher.Switch);
             });
-
 
             _application = ConfigureApplication(_application, name);
             var host = await _application.BuildAndInitAsync();

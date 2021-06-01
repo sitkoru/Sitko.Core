@@ -28,9 +28,9 @@ namespace Sitko.Core.Apps.Vault
         public VaultApplication(string[] args) : base(args)
         {
             this.AddVaultConfiguration();
-            ConfigureServices((context, collection) =>
+             ConfigureServices((_, hostBuilderContext, services) =>
             {
-                collection.Configure<TestConfig>(context.Configuration.GetSection("Test"));
+                services.Configure<TestConfig>(hostBuilderContext.Configuration.GetSection("Test"));
             });
             AddModule<SonyFlakeModule, SonyFlakeModuleOptions>();
         }
