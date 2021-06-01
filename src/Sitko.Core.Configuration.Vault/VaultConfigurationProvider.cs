@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Sitko.Core.App;
 using VaultSharp.Extensions.Configuration;
 
@@ -18,70 +21,48 @@ namespace Sitko.Core.Configuration.Vault
         public static Application AddVaultConfiguration(this Application application,
             Action<HostBuilderContext, VaultConfigurationOptions>? configureOptions = null)
         {
-            application.ConfigureAppConfiguration((context, builder) =>
+            application.ConfigureAppConfiguration((applicationContext, hostBuilderContext, configurationBuilder) =>
             {
                 var options = new VaultConfigurationOptions();
-                context.Configuration.Bind("vault", options);
+                hostBuilderContext.Configuration.Bind("vault", options);
                 if (!options.Secrets.Any())
                 {
                     options.Secrets.Add(application.Name);
                 }
 
-                configureOptions?.Invoke(context, options);
+                configureOptions?.Invoke(hostBuilderContext, options);
 
-                if (string.IsNullOrEmpty(options.Uri))
+                var isOptional = options.IsOptional || application.IsPostBuildCheckRun;
+                var validator = new VaultConfigurationOptionsValidator();
+                var result = validator.Validate(options);
+                if (!result.IsValid)
                 {
-                    if (options.IsOptional)
+                    foreach (var error in result.Errors)
                     {
-                        return;
+                        applicationContext.Logger.LogError("Vault config error: {ErrorMessage}", error.ErrorMessage);
                     }
 
-                    throw new Exception("Empty Vault uri");
-                }
-
-                if (string.IsNullOrEmpty(options.Token))
-                {
-                    if (options.IsOptional)
+                    if (!isOptional)
                     {
-                        return;
+                        throw new Exception("Vault configuration failed");
+                    }
+                }
+                else
+                {
+                    foreach (var secret in options.Secrets)
+                    {
+                        configurationBuilder.AddVaultConfiguration(options.GetOptions,
+                            secret,
+                            options.MountPoint);
                     }
 
-                    throw new Exception("Empty Vault token");
-                }
-
-                if (string.IsNullOrEmpty(options.MountPoint))
-                {
-                    if (options.IsOptional)
+                    if (options.ReloadOnChange)
                     {
-                        return;
+                        s_requireWatcher = true;
                     }
-
-                    throw new Exception("Empty Vault mount point");
-                }
-
-                if (!options.Secrets.Any())
-                {
-                    if (options.IsOptional)
-                    {
-                        return;
-                    }
-
-                    throw new Exception("Empty Vault secrets list");
-                }
-
-                foreach (var secret in options.Secrets)
-                {
-                    builder.AddVaultConfiguration(options.GetOptions,
-                        secret,
-                        options.MountPoint);
-                }
-
-                if (options.ReloadOnChange)
-                {
-                    s_requireWatcher = true;
                 }
             });
-            application.ConfigureServices((context, services) =>
+            application.ConfigureServices((_, context, services) =>
             {
                 if (!s_requireWatcher || s_serviceRegistered)
                 {
@@ -116,6 +97,17 @@ namespace Sitko.Core.Configuration.Vault
         {
             return new(Uri, Token, VaultSecret, VaultRoleId, ReloadOnChange, ReloadCheckIntervalSeconds,
                 OmitVaultKeyName, AdditionalCharactersForConfigurationPath);
+        }
+    }
+
+    public class VaultConfigurationOptionsValidator : AbstractValidator<VaultConfigurationOptions>
+    {
+        public VaultConfigurationOptionsValidator()
+        {
+            RuleFor(o => o.Uri).NotEmpty().WithMessage("Vault url is empty");
+            RuleFor(o => o.Token).NotEmpty().WithMessage("Vault token is empty");
+            RuleFor(o => o.MountPoint).NotEmpty().WithMessage("Vault mount point is empty");
+            RuleFor(o => o.Secrets).NotEmpty().WithMessage("Vault secrets list is empty");
         }
     }
 }
