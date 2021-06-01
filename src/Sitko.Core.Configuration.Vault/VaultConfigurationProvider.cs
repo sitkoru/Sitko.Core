@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
@@ -81,8 +80,8 @@ namespace Sitko.Core.Configuration.Vault
     public class VaultConfigurationOptions
     {
         public List<string> Secrets { get; set; } = new();
-        public string Uri { get; set; }
-        public string Token { get; set; }
+        public string Uri { get; set; } = string.Empty;
+        public string Token { get; set; } = string.Empty;
         public string MountPoint { get; set; } = "secret";
         public string? VaultSecret { get; set; } = null;
         public string? VaultRoleId { get; set; } = null;
