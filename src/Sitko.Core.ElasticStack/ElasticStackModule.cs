@@ -44,11 +44,8 @@ namespace Sitko.Core.ElasticStack
                         string.Join(",", startupOptions.ApmGlobalLabels.Select(kv => $"{kv.Key}={kv.Value}")));
                 }
 
-                if (startupOptions.ApmServerUrls != null && startupOptions.ApmServerUrls.Any())
-                {
-                    Environment.SetEnvironmentVariable("ElasticApm:ServerUrls",
-                        string.Join(",", startupOptions.ApmServerUrls));
-                }
+                Environment.SetEnvironmentVariable("ElasticApm:ServerUrls",
+                    string.Join(",", startupOptions.ApmServerUrls));
 
                 Environment.SetEnvironmentVariable("ElasticApm:SecretToken", startupOptions.ApmSecretToken);
                 Environment.SetEnvironmentVariable("ElasticApm:ApiKey", startupOptions.ApmApiKey);
