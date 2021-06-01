@@ -31,7 +31,7 @@ namespace Sitko.Core.Configuration.Vault
 
                 configureOptions?.Invoke(hostBuilderContext, options);
 
-                var isOptional = options.IsOptional || application.IsPostBuildCheckRun;
+                var isOptional = options.IsOptional || application.IsCheckRun;
                 var validator = new VaultConfigurationOptionsValidator();
                 var result = validator.Validate(options);
                 if (!result.IsValid)
