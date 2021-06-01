@@ -101,13 +101,13 @@ namespace Sitko.Core.App.Web
 
         public WebApplication<TStartup> Run()
         {
-            Build().Start();
+            CreateAppHost().Start();
             return this;
         }
 
         public WebApplication<TStartup> Run(int port)
         {
-            Build(builder =>
+            CreateAppHost(builder =>
                 builder.ConfigureWebHostDefaults(
                     webHostBuilder => webHostBuilder.UseUrls($"http://*:{port.ToString()}"))).Start();
             return this;

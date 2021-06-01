@@ -223,7 +223,7 @@ namespace Sitko.Core.App
             return hostBuilder;
         }
 
-        protected IHost Build(Action<IHostBuilder>? configure = null)
+        protected IHost CreateAppHost(Action<IHostBuilder>? configure = null)
         {
             if (_appHost is not null)
             {
@@ -302,7 +302,7 @@ namespace Sitko.Core.App
 
         public async Task StopAsync()
         {
-            await Build().StopAsync();
+            await CreateAppHost().StopAsync();
         }
 
         public async Task ExecuteAsync(Func<IServiceProvider, Task> command)
@@ -328,9 +328,14 @@ namespace Sitko.Core.App
             return PrepareHostBuilder();
         }
 
-        public IServiceProvider GetServices()
+        public IServiceProvider GetServiceProvider()
         {
-            return Build().Services;
+            return CreateAppHost().Services;
+        }
+
+        public T? GetService<T>()
+        {
+            return GetServiceProvider().GetService<T>();
         }
 
 
@@ -364,7 +369,7 @@ namespace Sitko.Core.App
 
         public async Task<IHost> BuildAndInitAsync(Action<IHostBuilder>? configure = null)
         {
-            var host = Build(configure);
+            var host = CreateAppHost(configure);
 
             using var scope = host.Services.CreateScope();
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<Application>>();
