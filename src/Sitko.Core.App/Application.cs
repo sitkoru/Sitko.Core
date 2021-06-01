@@ -371,14 +371,17 @@ namespace Sitko.Core.App
         {
             var host = CreateAppHost(configure);
 
-            using var scope = host.Services.CreateScope();
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Application>>();
-            logger.LogInformation("Init modules");
-            foreach (var module in _moduleRegistrations)
+            if (!IsPostBuildCheckRun)
             {
-                logger.LogInformation("Init module {Module}", module.Key);
-                await module.Value.InitAsync(
-                    GetContext(scope.ServiceProvider), scope.ServiceProvider);
+                using var scope = host.Services.CreateScope();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<Application>>();
+                logger.LogInformation("Init modules");
+                foreach (var module in _moduleRegistrations)
+                {
+                    logger.LogInformation("Init module {Module}", module.Key);
+                    await module.Value.InitAsync(
+                        GetContext(scope.ServiceProvider), scope.ServiceProvider);
+                }
             }
 
             return host;
