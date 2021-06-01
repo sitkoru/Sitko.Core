@@ -22,6 +22,11 @@ namespace Sitko.Core.Configuration.Vault
             {
                 var options = new VaultConfigurationOptions();
                 context.Configuration.Bind("vault", options);
+                if (!options.Secrets.Any())
+                {
+                    options.Secrets.Add(application.Name);
+                }
+
                 configureOptions?.Invoke(context, options);
 
                 if (string.IsNullOrEmpty(options.Uri))
@@ -97,7 +102,7 @@ namespace Sitko.Core.Configuration.Vault
         public List<string> Secrets { get; set; } = new();
         public string Uri { get; set; }
         public string Token { get; set; }
-        public string MountPoint { get; set; }
+        public string MountPoint { get; set; } = "secret";
         public string? VaultSecret { get; set; } = null;
         public string? VaultRoleId { get; set; } = null;
         public bool ReloadOnChange { get; set; } = true;
