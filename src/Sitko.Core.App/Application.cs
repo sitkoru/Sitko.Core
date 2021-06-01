@@ -104,33 +104,7 @@ namespace Sitko.Core.App
                 Version = version;
             }
 
-            var tmpLogger = tmpHost.Services.GetRequiredService<ILogger<Application>>();
             var tmpApplicationContext = GetContext(tmpEnvironment, tmpConfiguration);
-
-            tmpLogger.LogInformation("Check required modules");
-            var modulesCheckSuccess = true;
-            foreach (var registration in _moduleRegistrations)
-            {
-                var result =
-                    registration.Value.CheckRequiredModules(tmpApplicationContext, _moduleRegistrations.Keys.ToArray());
-                if (!result.isSuccess)
-                {
-                    foreach (var missingModule in result.missingModules)
-                    {
-                        tmpLogger.LogCritical("Required module {MissingModule} for module {Module} is not registered",
-                            missingModule, registration.Key);
-                    }
-
-                    modulesCheckSuccess = false;
-                }
-            }
-
-            if (!modulesCheckSuccess)
-            {
-                tmpLogger.LogInformation("Check required modules failed");
-                Environment.Exit(1);
-            }
-
 
             InitApplication();
 
@@ -282,14 +256,39 @@ namespace Sitko.Core.App
         {
             var host = await BuildAndInitAsync();
 
+            InternalLogger.LogInformation("Check required modules");
+            var context = GetContext(host.Services);
+            var modulesCheckSuccess = true;
+            foreach (var registration in _moduleRegistrations)
+            {
+                var result =
+                    registration.Value.CheckRequiredModules(context, _moduleRegistrations.Keys.ToArray());
+                if (!result.isSuccess)
+                {
+                    foreach (var missingModule in result.missingModules)
+                    {
+                        InternalLogger.LogCritical(
+                            "Required module {MissingModule} for module {Module} is not registered",
+                            missingModule, registration.Key);
+                    }
+
+                    modulesCheckSuccess = false;
+                }
+            }
+
+            if (!modulesCheckSuccess)
+            {
+                InternalLogger.LogError("Check required modules failed");
+                return;
+            }
+
             if (IsPostBuildCheckRun)
             {
-                Console.WriteLine("Check run is successful");
+                InternalLogger.LogInformation("Check run is successful");
+                return;
             }
-            else
-            {
-                await host.RunAsync();
-            }
+
+            await host.RunAsync();
         }
 
         public async Task<IHost> StartAsync()
