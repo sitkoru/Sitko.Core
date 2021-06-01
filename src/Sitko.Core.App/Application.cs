@@ -236,12 +236,6 @@ namespace Sitko.Core.App
 
             var host = hostBuilder.Build();
 
-            if (IsPostBuildCheckRun)
-            {
-                Console.WriteLine("Check run is successful");
-                Environment.Exit(0);
-            }
-
             _appHost = host;
             return _appHost;
         }
@@ -290,7 +284,14 @@ namespace Sitko.Core.App
         {
             var host = await BuildAndInitAsync();
 
-            await host.RunAsync();
+            if (IsPostBuildCheckRun)
+            {
+                Console.WriteLine("Check run is successful");
+            }
+            else
+            {
+                await host.RunAsync();
+            }
         }
 
         public async Task<IHost> StartAsync()
