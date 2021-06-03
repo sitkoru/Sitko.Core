@@ -9,14 +9,15 @@ namespace Sitko.Core.Pdf
 {
     internal class PdfRenderer : IPdfRenderer, IAsyncDisposable
     {
-        private readonly IOptionsMonitor<PdfRendererModuleOptions> _config;
+        private readonly IOptionsMonitor<PdfRendererModuleOptions> _optionsMonitor;
+        private PdfRendererModuleOptions Options => _optionsMonitor.CurrentValue;
         private readonly ILogger<PdfRenderer> _logger;
         private Browser? _browser;
         private readonly AsyncLock _lock = new();
 
-        public PdfRenderer(IOptionsMonitor<PdfRendererModuleOptions> config, ILogger<PdfRenderer> logger)
+        public PdfRenderer(IOptionsMonitor<PdfRendererModuleOptions> optionsMonitor, ILogger<PdfRenderer> logger)
         {
-            _config = config;
+            _optionsMonitor = optionsMonitor;
             _logger = logger;
         }
 
@@ -127,16 +128,13 @@ namespace Sitko.Core.Pdf
             {
                 using (await _lock.LockAsync())
                 {
-                    if (_browser is null)
+                    _browser ??= await Puppeteer.LaunchAsync(new LaunchOptions
                     {
-                        _browser = await Puppeteer.LaunchAsync(new LaunchOptions
-                        {
-                            Headless = true,
-                            Args = new[] {"--no-sandbox"},
-                            IgnoreHTTPSErrors = _config.CurrentValue.IgnoreHTTPSErrors,
-                            DefaultViewport = _config.CurrentValue.ViewPortOptions
-                        });
-                    }
+                        Headless = true,
+                        Args = new[] {"--no-sandbox"},
+                        IgnoreHTTPSErrors = Options.IgnoreHTTPSErrors,
+                        DefaultViewport = Options.ViewPortOptions
+                    });
                 }
             }
 
