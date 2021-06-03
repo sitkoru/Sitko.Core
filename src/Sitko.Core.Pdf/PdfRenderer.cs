@@ -9,11 +9,15 @@ namespace Sitko.Core.Pdf
 {
     internal class PdfRenderer : IPdfRenderer, IAsyncDisposable
     {
-        private readonly IOptionsMonitor<PdfRendererModuleOptions> _optionsMonitor;
-        private PdfRendererModuleOptions Options => _optionsMonitor.CurrentValue;
-        private readonly ILogger<PdfRenderer> _logger;
-        private Browser? _browser;
+        private readonly PdfOptions _defaultOptions = new() {PrintBackground = true};
+
+        private readonly ScreenshotOptions _defaultScreenshotOptions =
+            new() {FullPage = true, Type = ScreenshotType.Png};
+
         private readonly AsyncLock _lock = new();
+        private readonly ILogger<PdfRenderer> _logger;
+        private readonly IOptionsMonitor<PdfRendererModuleOptions> _optionsMonitor;
+        private Browser? _browser;
 
         public PdfRenderer(IOptionsMonitor<PdfRendererModuleOptions> optionsMonitor, ILogger<PdfRenderer> logger)
         {
@@ -21,14 +25,75 @@ namespace Sitko.Core.Pdf
             _logger = logger;
         }
 
+        private PdfRendererModuleOptions Options => _optionsMonitor.CurrentValue;
+
+        public ValueTask DisposeAsync()
+        {
+            if (_browser is not null)
+            {
+                _logger.LogInformation("Dispose browser");
+                return _browser.DisposeAsync();
+            }
+
+            return new ValueTask();
+        }
+
         public async Task<byte[]> GetPdfByUrlAsync(string url, PdfOptions? options = null, TimeSpan? delay = null)
         {
             try
             {
                 await using var page = await GetPageByUrl(url, delay);
-                options ??= GetDefaultOptions();
+                options ??= _defaultOptions;
                 var pdf = await page.PdfDataAsync(options);
                 return pdf;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
+                throw new Exception(ex.Message, ex);
+            }
+        }
+
+        public async Task<byte[]> GetPdfByHtmlAsync(string html, PdfOptions? options = null, TimeSpan? delay = null)
+        {
+            try
+            {
+                await using var page = await GetPageWithHtml(html, delay);
+                options ??= _defaultOptions;
+                var pdf = await page.PdfDataAsync(options);
+                return pdf;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while generating pdf from html: {ErrorText}", ex.ToString());
+                throw new Exception(ex.Message, ex);
+            }
+        }
+
+        public async Task<byte[]> GetScreenshotByUrlAsync(string url, ScreenshotOptions? options = null,
+            TimeSpan? delay = null)
+        {
+            try
+            {
+                await using var page = await GetPageByUrl(url, delay);
+                options ??= _defaultScreenshotOptions;
+                return await page.ScreenshotDataAsync(options);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
+                throw new Exception(ex.Message, ex);
+            }
+        }
+
+        public async Task<byte[]> GetScreenshotByHtmlAsync(string html, ScreenshotOptions? options = null,
+            TimeSpan? delay = null)
+        {
+            try
+            {
+                await using var page = await GetPageWithHtml(html, delay);
+                options ??= _defaultScreenshotOptions;
+                return await page.ScreenshotDataAsync(options);
             }
             catch (Exception ex)
             {
@@ -63,71 +128,13 @@ namespace Sitko.Core.Pdf
             return page;
         }
 
-        public async Task<byte[]> GetPdfByHtmlAsync(string html, PdfOptions? options = null, TimeSpan? delay = null)
-        {
-            try
-            {
-                await using var page = await GetPageWithHtml(html, delay);
-                options ??= GetDefaultOptions();
-                var pdf = await page.PdfDataAsync(options);
-                return pdf;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while generating pdf from html: {ErrorText}", ex.ToString());
-                throw new Exception(ex.Message, ex);
-            }
-        }
-
-        public async Task<byte[]> GetScreenshotByUrlAsync(string url, ScreenshotOptions? options = null,
-            TimeSpan? delay = null)
-        {
-            try
-            {
-                await using var page = await GetPageByUrl(url, delay);
-                options ??= GetDefaultScreenshotOptions();
-                return await page.ScreenshotDataAsync(options);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
-                throw new Exception(ex.Message, ex);
-            }
-        }
-
-        public async Task<byte[]> GetScreenshotByHtmlAsync(string html, ScreenshotOptions? options = null,
-            TimeSpan? delay = null)
-        {
-            try
-            {
-                await using var page = await GetPageWithHtml(html, delay);
-                options ??= GetDefaultScreenshotOptions();
-                return await page.ScreenshotDataAsync(options);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
-                throw new Exception(ex.Message, ex);
-            }
-        }
-
-
-        private PdfOptions GetDefaultOptions()
-        {
-            return new() {PrintBackground = true};
-        }
-
-        private ScreenshotOptions GetDefaultScreenshotOptions()
-        {
-            return new() {FullPage = true, Type = ScreenshotType.Png};
-        }
-
         private async Task<Browser> GetBrowserAsync()
         {
             if (_browser is null)
             {
                 using (await _lock.LockAsync())
                 {
+                    _logger.LogInformation("Start new Browser");
                     _browser ??= await Puppeteer.LaunchAsync(new LaunchOptions
                     {
                         Headless = true,
@@ -139,16 +146,6 @@ namespace Sitko.Core.Pdf
             }
 
             return _browser;
-        }
-
-        public ValueTask DisposeAsync()
-        {
-            if (_browser is not null)
-            {
-                return _browser.DisposeAsync();
-            }
-
-            return new ValueTask();
         }
     }
 }
