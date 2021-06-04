@@ -21,6 +21,7 @@ namespace Sitko.Core.Pdf
 
     public class PdfRendererModuleOptions : BaseModuleOptions
     {
+        public string? BrowserWsEndpoint { get; set; }
         public bool IgnoreHTTPSErrors { get; set; } = false;
         public ViewPortOptions ViewPortOptions { get; set; } = ViewPortOptions.Default;
     }
