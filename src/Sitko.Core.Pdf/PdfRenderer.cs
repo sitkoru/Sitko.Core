@@ -130,7 +130,13 @@ namespace Sitko.Core.Pdf
             _logger.LogInformation("Start new Browser");
             if (!string.IsNullOrEmpty(Options.BrowserWsEndpoint))
             {
-                return await Puppeteer.ConnectAsync(new ConnectOptions {BrowserWSEndpoint = Options.BrowserWsEndpoint},
+                return await Puppeteer.ConnectAsync(
+                    new ConnectOptions
+                    {
+                        BrowserWSEndpoint = Options.BrowserWsEndpoint,
+                        IgnoreHTTPSErrors = Options.IgnoreHTTPSErrors,
+                        DefaultViewport = Options.ViewPortOptions
+                    },
                     _loggerFactory);
             }
 
