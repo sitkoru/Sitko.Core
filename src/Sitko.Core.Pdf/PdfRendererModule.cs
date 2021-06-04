@@ -15,7 +15,7 @@ namespace Sitko.Core.Pdf
             PdfRendererModuleOptions startupOptions)
         {
             base.ConfigureServices(context, services, startupOptions);
-            services.AddScoped<IPdfRenderer, PdfRenderer>();
+            services.AddTransient<IPdfRenderer, PdfRenderer>();
         }
     }
 
