@@ -11,16 +11,16 @@ using Sitko.Core.App.Web.Razor;
 
 namespace Sitko.Core.Email
 {
-    public class FluentMailSender : IMailSender
+    public class FluentMailSender<TOptions> : IMailSender where TOptions : EmailModuleOptions
     {
         private readonly IFluentEmailFactory _emailFactory;
-        private readonly ViewToStringRendererService<EmailModuleOptions> _renderer;
-        private readonly ILogger<FluentMailSender> _logger;
+        private readonly ViewToStringRendererService<TOptions> _renderer;
+        private readonly ILogger<FluentMailSender<TOptions>> _logger;
         private readonly IBackgroundJobClient? _backgroundJobClient;
 
         public FluentMailSender(IFluentEmailFactory emailFactory,
-            ViewToStringRendererService<EmailModuleOptions> renderer,
-            ILogger<FluentMailSender> logger, IBackgroundJobClient? backgroundJobClient = null)
+            ViewToStringRendererService<TOptions> renderer,
+            ILogger<FluentMailSender<TOptions>> logger, IBackgroundJobClient? backgroundJobClient = null)
         {
             _emailFactory = emailFactory;
             _renderer = renderer;
