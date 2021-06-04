@@ -19,41 +19,35 @@ namespace Sitko.Core.App
 {
     public abstract class Application : IApplication, IAsyncDisposable
     {
-        private readonly string[] _args;
-        public readonly Guid Id = Guid.NewGuid();
-        public string Name { get; private set; } = "App";
-        public string Version { get; private set; } = "dev";
-
         private static readonly ConcurrentDictionary<Guid, Application> _apps = new();
-
-        public readonly bool IsCheckRun;
-
-        private readonly List<Action<ApplicationContext, LoggerConfiguration, LogLevelSwitcher>>
-            _loggerConfigurationActions = new();
-
-        private readonly List<Action<ApplicationContext, HostBuilderContext, IServiceCollection>>
-            _servicesConfigurationActions = new();
-
-        private readonly List<Action<ApplicationContext, HostBuilderContext, IConfigurationBuilder>>
-            _appConfigurationActions = new();
-
-        private readonly Dictionary<string, object> _store = new();
-
-        protected readonly Dictionary<string, LogEventLevel> LogEventLevels = new();
-
-        private readonly Dictionary<Type, ApplicationModuleRegistration> _moduleRegistrations =
-            new();
-
-        private IHost? _appHost;
 
         private static readonly string BaseConsoleLogFormat =
             "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}]{NewLine}\t{Message:lj}{NewLine}{Exception}";
 
+        private readonly List<Action<ApplicationContext, HostBuilderContext, IConfigurationBuilder>>
+            _appConfigurationActions = new();
+
+        private readonly string[] _args;
+
+        private readonly List<Action<ApplicationContext, LoggerConfiguration, LogLevelSwitcher>>
+            _loggerConfigurationActions = new();
+
         private readonly LogLevelSwitcher _logLevelSwitcher = new();
 
-        protected virtual string ConsoleLogFormat => BaseConsoleLogFormat;
+        private readonly Dictionary<Type, ApplicationModuleRegistration> _moduleRegistrations =
+            new();
 
-        private ILogger<Application> InternalLogger { get; set; }
+        private readonly List<Action<ApplicationContext, HostBuilderContext, IServiceCollection>>
+            _servicesConfigurationActions = new();
+
+        private readonly Dictionary<string, object> _store = new();
+        public readonly Guid Id = Guid.NewGuid();
+
+        public readonly bool IsCheckRun;
+
+        protected readonly Dictionary<string, LogEventLevel> LogEventLevels = new();
+
+        private IHost? _appHost;
 
         protected Application(string[] args)
         {
@@ -70,6 +64,24 @@ namespace Sitko.Core.App
                 .WriteTo.Console(outputTemplate: BaseConsoleLogFormat,
                     restrictedToMinimumLevel: LogEventLevel.Debug);
             InternalLogger = new SerilogLoggerFactory(loggerConfiguration.CreateLogger()).CreateLogger<Application>();
+        }
+
+        protected virtual string ConsoleLogFormat => BaseConsoleLogFormat;
+
+        private ILogger<Application> InternalLogger { get; set; }
+
+        public string Name { get; private set; } = "App";
+        public string Version { get; private set; } = "dev";
+
+        public virtual ValueTask DisposeAsync()
+        {
+            _appHost?.Dispose();
+            return new ValueTask();
+        }
+
+        protected IReadOnlyList<ApplicationModuleRegistration> GetEnabledModuleRegistrations(ApplicationContext context)
+        {
+            return _moduleRegistrations.Where(r => r.Value.IsEnabled(context)).Select(r => r.Value).ToList();
         }
 
         public static Application GetApp(Guid id)
@@ -156,10 +168,10 @@ namespace Sitko.Core.App
                         servicesConfigurationAction(appContext, context, services);
                     }
 
-                    foreach (var moduleRegistration in _moduleRegistrations)
+                    foreach (var moduleRegistration in GetEnabledModuleRegistrations(appContext))
                     {
-                        moduleRegistration.Value.ConfigureOptions(appContext, services);
-                        moduleRegistration.Value.ConfigureServices(appContext, services);
+                        moduleRegistration.ConfigureOptions(appContext, services);
+                        moduleRegistration.ConfigureServices(appContext, services);
                     }
                 }).ConfigureLogging((context, _) =>
                 {
@@ -191,9 +203,9 @@ namespace Sitko.Core.App
                         loggerConfiguration.MinimumLevel.Override(key, value);
                     }
 
-                    foreach (var moduleRegistration in _moduleRegistrations)
+                    foreach (var moduleRegistration in GetEnabledModuleRegistrations(appContext))
                     {
-                        moduleRegistration.Value.ConfigureLogging(tmpApplicationContext, loggerConfiguration,
+                        moduleRegistration.ConfigureLogging(tmpApplicationContext, loggerConfiguration,
                             _logLevelSwitcher);
                     }
 
@@ -206,9 +218,9 @@ namespace Sitko.Core.App
                 });
 
             LogCheck("Configure host builder in modules");
-            foreach (var moduleRegistration in _moduleRegistrations)
+            foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpApplicationContext))
             {
-                moduleRegistration.Value.ConfigureHostBuilder(tmpApplicationContext, hostBuilder);
+                moduleRegistration.ConfigureHostBuilder(tmpApplicationContext, hostBuilder);
             }
 
             LogCheck("Configure host builder");
@@ -239,9 +251,6 @@ namespace Sitko.Core.App
             LogCheck("Create app host done");
             return _appHost;
         }
-
-        protected IApplicationModule[] RegisteredModules =>
-            _moduleRegistrations.Values.Select(r => r.GetInstance()).ToArray();
 
         private IHostBuilder CreateHostBuilder(string[] args)
         {
@@ -274,12 +283,6 @@ namespace Sitko.Core.App
         {
         }
 
-        public virtual ValueTask DisposeAsync()
-        {
-            _appHost?.Dispose();
-            return new ValueTask();
-        }
-
         public async Task RunAsync()
         {
             LogCheck("Run app start");
@@ -289,17 +292,18 @@ namespace Sitko.Core.App
             InternalLogger.LogInformation("Check required modules");
             var context = GetContext(host.Services);
             var modulesCheckSuccess = true;
-            foreach (var registration in _moduleRegistrations)
+            foreach (var registration in GetEnabledModuleRegistrations(context))
             {
                 var result =
-                    registration.Value.CheckRequiredModules(context, _moduleRegistrations.Keys.ToArray());
+                    registration.CheckRequiredModules(context,
+                        GetEnabledModuleRegistrations(context).Select(r => r.Type).ToArray());
                 if (!result.isSuccess)
                 {
                     foreach (var missingModule in result.missingModules)
                     {
                         InternalLogger.LogCritical(
                             "Required module {MissingModule} for module {Module} is not registered",
-                            missingModule, registration.Key);
+                            missingModule, registration.Type);
                     }
 
                     modulesCheckSuccess = false;
@@ -407,10 +411,10 @@ namespace Sitko.Core.App
                 using var scope = host.Services.CreateScope();
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<Application>>();
                 logger.LogInformation("Init modules");
-                foreach (var module in _moduleRegistrations)
+                foreach (var module in GetEnabledModuleRegistrations(GetContext(scope.ServiceProvider)))
                 {
-                    logger.LogInformation("Init module {Module}", module.Key);
-                    await module.Value.InitAsync(
+                    logger.LogInformation("Init module {Module}", module.Type);
+                    await module.InitAsync(
                         GetContext(scope.ServiceProvider), scope.ServiceProvider);
                 }
             }
@@ -438,16 +442,16 @@ namespace Sitko.Core.App
         {
             var logger = serviceProvider.GetRequiredService<ILogger<Application>>();
             await OnStartedAsync(configuration, environment, serviceProvider);
-            foreach (var moduleRegistration in _moduleRegistrations)
+            foreach (var moduleRegistration in GetEnabledModuleRegistrations(GetContext(serviceProvider)))
             {
                 try
                 {
-                    await moduleRegistration.Value.ApplicationStarted(configuration, environment, serviceProvider);
+                    await moduleRegistration.ApplicationStarted(configuration, environment, serviceProvider);
                 }
                 catch (Exception ex)
                 {
                     logger.LogError(ex, "Error on application started hook in module {Module}: {ErrorText}",
-                        moduleRegistration.Key,
+                        moduleRegistration.Type,
                         ex.ToString());
                 }
             }
@@ -464,16 +468,16 @@ namespace Sitko.Core.App
         {
             var logger = serviceProvider.GetRequiredService<ILogger<Application>>();
             await OnStoppingAsync(configuration, environment, serviceProvider);
-            foreach (var moduleRegistration in _moduleRegistrations)
+            foreach (var moduleRegistration in GetEnabledModuleRegistrations(GetContext(serviceProvider)))
             {
                 try
                 {
-                    await moduleRegistration.Value.ApplicationStopping(configuration, environment, serviceProvider);
+                    await moduleRegistration.ApplicationStopping(configuration, environment, serviceProvider);
                 }
                 catch (Exception ex)
                 {
                     logger.LogError(ex, "Error on application stopping hook in module {Module}: {ErrorText}",
-                        moduleRegistration.Key,
+                        moduleRegistration.Type,
                         ex.ToString());
                 }
             }
@@ -490,16 +494,16 @@ namespace Sitko.Core.App
         {
             var logger = serviceProvider.GetRequiredService<ILogger<Application>>();
             await OnStoppedAsync(configuration, environment, serviceProvider);
-            foreach (var moduleRegistration in _moduleRegistrations)
+            foreach (var moduleRegistration in GetEnabledModuleRegistrations(GetContext(serviceProvider)))
             {
                 try
                 {
-                    await moduleRegistration.Value.ApplicationStopped(configuration, environment, serviceProvider);
+                    await moduleRegistration.ApplicationStopped(configuration, environment, serviceProvider);
                 }
                 catch (Exception ex)
                 {
                     logger.LogError(ex, "Error on application stopped hook in module {Module}: {ErrorText}",
-                        moduleRegistration.Key,
+                        moduleRegistration.Type,
                         ex.ToString());
                 }
             }
@@ -624,12 +628,6 @@ namespace Sitko.Core.App
 
     public class ApplicationContext
     {
-        public string Name { get; }
-        public string Version { get; }
-        public IHostEnvironment Environment { get; }
-        public IConfiguration Configuration { get; }
-        public ILogger Logger { get; }
-
         public ApplicationContext(string name, string version, IHostEnvironment environment,
             IConfiguration configuration, ILogger logger)
         {
@@ -639,5 +637,11 @@ namespace Sitko.Core.App
             Configuration = configuration;
             Logger = logger;
         }
+
+        public string Name { get; }
+        public string Version { get; }
+        public IHostEnvironment Environment { get; }
+        public IConfiguration Configuration { get; }
+        public ILogger Logger { get; }
     }
 }

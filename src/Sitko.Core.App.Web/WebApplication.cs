@@ -15,15 +15,16 @@ namespace Sitko.Core.App.Web
         {
         }
 
-        protected List<IWebApplicationModule> GetWebModules()
+        protected List<IWebApplicationModule> GetWebModules(ApplicationContext context)
         {
-            return RegisteredModules.OfType<IWebApplicationModule>().ToList();
+            return GetEnabledModuleRegistrations(context).Select(r => r.GetInstance()).OfType<IWebApplicationModule>()
+                .ToList();
         }
 
         public virtual void AppBuilderHook(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
-            foreach (var webModule in GetWebModules())
+            foreach (var webModule in GetWebModules(GetContext(environment, configuration)))
             {
                 webModule.ConfigureAppBuilder(configuration, environment, appBuilder);
             }
@@ -32,7 +33,7 @@ namespace Sitko.Core.App.Web
         public virtual void BeforeRoutingHook(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
-            foreach (var webModule in GetWebModules())
+            foreach (var webModule in GetWebModules(GetContext(environment, configuration)))
             {
                 webModule.ConfigureBeforeUseRouting(configuration, environment, appBuilder);
             }
@@ -41,7 +42,7 @@ namespace Sitko.Core.App.Web
         public virtual void AfterRoutingHook(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
-            foreach (var webModule in GetWebModules())
+            foreach (var webModule in GetWebModules(GetContext(environment, configuration)))
             {
                 webModule.ConfigureAfterUseRouting(configuration, environment, appBuilder);
             }
@@ -50,7 +51,7 @@ namespace Sitko.Core.App.Web
         public virtual void EndpointsHook(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
         {
-            foreach (var webModule in GetWebModules())
+            foreach (var webModule in GetWebModules(GetContext(environment, configuration)))
             {
                 webModule.ConfigureEndpoints(configuration, environment, appBuilder, endpoints);
             }

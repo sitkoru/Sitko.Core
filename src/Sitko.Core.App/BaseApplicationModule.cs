@@ -75,6 +75,7 @@ namespace Sitko.Core.App
 
     public abstract class BaseModuleOptions
     {
+        public virtual bool Enabled { get; set; } = true;
     }
 
     public interface IHostBuilderModule<in TModuleOptions> : IApplicationModule<TModuleOptions>
