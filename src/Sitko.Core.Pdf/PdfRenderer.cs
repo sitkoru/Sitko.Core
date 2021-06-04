@@ -15,10 +15,13 @@ namespace Sitko.Core.Pdf
 
         private readonly ILogger<PdfRenderer> _logger;
         private readonly IOptionsMonitor<PdfRendererModuleOptions> _optionsMonitor;
+        private readonly ILoggerFactory _loggerFactory;
 
-        public PdfRenderer(IOptionsMonitor<PdfRendererModuleOptions> optionsMonitor, ILogger<PdfRenderer> logger)
+        public PdfRenderer(IOptionsMonitor<PdfRendererModuleOptions> optionsMonitor, ILoggerFactory loggerFactory,
+            ILogger<PdfRenderer> logger)
         {
             _optionsMonitor = optionsMonitor;
+            _loggerFactory = loggerFactory;
             _logger = logger;
         }
 
@@ -125,6 +128,12 @@ namespace Sitko.Core.Pdf
         private async Task<Browser> GetBrowserAsync()
         {
             _logger.LogInformation("Start new Browser");
+            if (!string.IsNullOrEmpty(Options.BrowserWsEndpoint))
+            {
+                return await Puppeteer.ConnectAsync(new ConnectOptions {BrowserWSEndpoint = Options.BrowserWsEndpoint},
+                    _loggerFactory);
+            }
+
             return await Puppeteer.LaunchAsync(new LaunchOptions
             {
                 Headless = true,
