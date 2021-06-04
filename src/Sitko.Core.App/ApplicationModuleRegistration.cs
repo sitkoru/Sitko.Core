@@ -15,8 +15,8 @@ namespace Sitko.Core.App
     internal class ApplicationModuleRegistration<TModule, TModuleOptions> : ApplicationModuleRegistration
         where TModule : IApplicationModule<TModuleOptions>, new() where TModuleOptions : BaseModuleOptions, new()
     {
-        private readonly Action<IConfiguration, IHostEnvironment, TModuleOptions>? _configureOptions;
         private readonly string? _configKey;
+        private readonly Action<IConfiguration, IHostEnvironment, TModuleOptions>? _configureOptions;
         private readonly TModule _instance;
 
         public ApplicationModuleRegistration(
@@ -27,6 +27,8 @@ namespace Sitko.Core.App
             _configureOptions = configureOptions;
             _configKey = optionsKey ?? _instance.GetOptionsKey();
         }
+
+        public override Type Type => typeof(TModule);
 
         public override IApplicationModule GetInstance()
         {
@@ -69,7 +71,7 @@ namespace Sitko.Core.App
             ApplicationContext context,
             LoggerConfiguration loggerConfiguration, LogLevelSwitcher logLevelSwitcher)
         {
-            var options = CreateOptions(context.Configuration, context.Environment);
+            var options = CreateOptions(context);
             _instance.ConfigureLogging(context, options, loggerConfiguration, logLevelSwitcher);
             return this;
         }
@@ -79,7 +81,7 @@ namespace Sitko.Core.App
         {
             if (_instance is IHostBuilderModule<TModuleOptions> hostBuilderModule)
             {
-                var options = CreateOptions(context.Configuration, context.Environment);
+                var options = CreateOptions(context);
                 hostBuilderModule.ConfigureHostBuilder(context, hostBuilder, options);
             }
 
@@ -90,7 +92,7 @@ namespace Sitko.Core.App
             ApplicationContext context,
             Type[] registeredModules)
         {
-            var options = CreateOptions(context.Configuration, context.Environment);
+            var options = CreateOptions(context);
             var missingModules = new List<Type>();
             foreach (var requiredModule in _instance.GetRequiredModules(context, options))
             {
@@ -103,11 +105,16 @@ namespace Sitko.Core.App
             return (!missingModules.Any(), missingModules);
         }
 
-        private TModuleOptions CreateOptions(IConfiguration configuration, IHostEnvironment environment)
+        public override bool IsEnabled(ApplicationContext context)
+        {
+            return CreateOptions(context).Enabled;
+        }
+
+        private TModuleOptions CreateOptions(ApplicationContext applicationContext)
         {
             var options = Activator.CreateInstance<TModuleOptions>();
-            configuration.Bind(_configKey, options);
-            _configureOptions?.Invoke(configuration, environment, options);
+            applicationContext.Configuration.Bind(_configKey, options);
+            _configureOptions?.Invoke(applicationContext.Configuration, applicationContext.Environment, options);
             return options;
         }
 
@@ -115,7 +122,7 @@ namespace Sitko.Core.App
             ApplicationContext context,
             IServiceCollection services)
         {
-            var options = CreateOptions(context.Configuration, context.Environment);
+            var options = CreateOptions(context);
             _instance.ConfigureServices(context, services, options);
             return this;
         }
@@ -144,8 +151,9 @@ namespace Sitko.Core.App
         }
     }
 
-    internal abstract class ApplicationModuleRegistration
+    public abstract class ApplicationModuleRegistration
     {
+        public abstract Type Type { get; }
         public abstract IApplicationModule GetInstance();
 
         public abstract ApplicationModuleRegistration ConfigureOptions(ApplicationContext context,
@@ -174,5 +182,7 @@ namespace Sitko.Core.App
         public abstract (bool isSuccess, IEnumerable<Type> missingModules) CheckRequiredModules(
             ApplicationContext context,
             Type[] registeredModules);
+
+        public abstract bool IsEnabled(ApplicationContext context);
     }
 }
