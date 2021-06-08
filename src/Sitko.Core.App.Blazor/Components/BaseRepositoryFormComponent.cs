@@ -13,23 +13,28 @@ namespace Sitko.Core.App.Blazor.Components
 
         protected IRepository<TEntity, TEntityPk> Repository => GetService<IRepository<TEntity, TEntityPk>>();
 
-        protected override async Task<(bool isNew, TEntity entity)> GetEntityAsync()
+        protected override async Task<TEntity> GetEntityAsync()
         {
-            if (EntityId is null)
+            if (IsNew)
             {
                 var entity = new TEntity();
                 await InitializeEntityAsync(entity);
-                return (true, entity);
+                return entity;
             }
             else
             {
+                if (EntityId is null)
+                {
+                    throw new ArgumentException("EntityId is null");
+                }
+
                 var entity = await Repository.GetByIdAsync(EntityId);
                 if (entity is null)
                 {
                     throw new Exception($"Entity {EntityId} not found");
                 }
 
-                return (false, entity);
+                return entity;
             }
         }
 

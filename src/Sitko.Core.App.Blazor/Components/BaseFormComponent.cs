@@ -19,7 +19,9 @@ namespace Sitko.Core.App.Blazor.Components
         where TFormModel : BaseFormModel<TEntity>
     {
         protected TFormModel FormModel { get; set; }
-        protected bool IsNew { get; private set; }
+        
+        [Parameter]
+        public bool IsNew { get; set; }
 
         protected TEntity Entity { get; private set; }
 
@@ -28,14 +30,12 @@ namespace Sitko.Core.App.Blazor.Components
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
-            (bool isNew, var entity) = await GetEntityAsync();
-            IsNew = isNew;
-            Entity = entity;
+            Entity = await GetEntityAsync();
             FormModel = await CreateFormModelAsync();
             MarkAsInitialized();
         }
 
-        protected abstract Task<(bool isNew, TEntity entity)> GetEntityAsync();
+        protected abstract Task<TEntity> GetEntityAsync();
 
         protected abstract Task<TFormModel> CreateFormModelAsync();
 
