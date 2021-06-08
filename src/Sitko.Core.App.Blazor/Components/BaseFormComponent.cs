@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.App.Blazor.Components
 {
@@ -20,21 +21,21 @@ namespace Sitko.Core.App.Blazor.Components
         protected TFormModel FormModel { get; set; }
         protected bool IsNew { get; private set; }
 
-        [Parameter] public TEntity? Entity { get; set; }
+        protected TEntity Entity { get; private set; }
 
         [Parameter] public Func<TEntity, Task>? OnSave { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
-            if (Entity is null)
-            {
-                IsNew = true;
-            }
-
+            (bool isNew, var entity) = await GetEntityAsync();
+            IsNew = isNew;
+            Entity = entity;
             FormModel = await CreateFormModelAsync();
             MarkAsInitialized();
         }
+
+        protected abstract Task<(bool isNew, TEntity entity)> GetEntityAsync();
 
         protected abstract Task<TFormModel> CreateFormModelAsync();
 
@@ -44,41 +45,43 @@ namespace Sitko.Core.App.Blazor.Components
         {
             StartLoading();
             await BeforeSaveAsync();
-            var entity = FormModel.GetEntity();
-            await BeforeEntitySaveAsync(entity);
+            FormModel.GetEntity(Entity);
+            await BeforeEntitySaveAsync(Entity);
             try
             {
                 var result = IsNew
-                    ? await AddAsync(entity)
-                    : await UpdateAsync(entity);
+                    ? await AddAsync(Entity)
+                    : await UpdateAsync(Entity);
                 StopLoading();
                 if (result.IsSuccess)
                 {
-                    await ResetFormAsync();
                     if (IsNew)
                     {
-                        await OnCreatedAsync(entity);
-                        if (OnSave is not null)
-                        {
-                            await OnSave(entity);
-                        }
-
-                        StateHasChanged();
+                        await OnCreatedAsync(Entity);
                     }
                     else
                     {
-                        await OnUpdatedAsync(entity);
-                        await NotifySuccessAsync();
+                        await OnUpdatedAsync(Entity);
                     }
+
+                    if (OnSave is not null)
+                    {
+                        await OnSave(Entity);
+                    }
+                    await ResetFormAsync();
+                    await NotifySuccessAsync();
+                    StateHasChanged();
                 }
                 else
                 {
+                    Logger.LogError("Error saving model {Entity}: {ErrorText}", typeof(TEntity), result.Error!);
                     await NotifyErrorAsync(result.Error!);
                 }
             }
             catch (Exception ex)
             {
                 StopLoading();
+                Logger.LogError(ex, "Error saving model {Entity}: {ErrorText}", typeof(TEntity), ex.ToString());
                 await NotifyExceptionAsync(ex);
             }
         }
@@ -128,7 +131,7 @@ namespace Sitko.Core.App.Blazor.Components
 
     public abstract class BaseFormModel<TEntity> where TEntity : class
     {
-        public abstract TEntity GetEntity();
+        public abstract TEntity GetEntity(TEntity entity);
     }
 
     public class FormSaveResult
