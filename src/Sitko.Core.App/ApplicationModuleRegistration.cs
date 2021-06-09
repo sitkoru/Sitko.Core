@@ -43,6 +43,7 @@ namespace Sitko.Core.App
                 .PostConfigure(
                     options =>
                     {
+                        options.Configure(context);
                         _configureOptions?.Invoke(context.Configuration, context.Environment, options);
                     });
             var optionsInstance = Activator.CreateInstance<TModuleOptions>();
@@ -122,6 +123,7 @@ namespace Sitko.Core.App
         {
             var options = Activator.CreateInstance<TModuleOptions>();
             applicationContext.Configuration.Bind(_configKey, options);
+            options.Configure(applicationContext);
             _configureOptions?.Invoke(applicationContext.Configuration, applicationContext.Environment, options);
             return options;
         }
