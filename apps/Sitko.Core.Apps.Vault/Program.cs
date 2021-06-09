@@ -27,8 +27,8 @@ namespace Sitko.Core.Apps.Vault
     {
         public VaultApplication(string[] args) : base(args)
         {
-            this.AddVaultConfiguration();
-             ConfigureServices((_, hostBuilderContext, services) =>
+            this.AddModule<VaultConfigurationModule, VaultConfigurationModuleOptions>();
+            ConfigureServices((_, hostBuilderContext, services) =>
             {
                 services.Configure<TestConfig>(hostBuilderContext.Configuration.GetSection("Test"));
             });
