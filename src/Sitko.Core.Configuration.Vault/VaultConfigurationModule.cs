@@ -22,10 +22,6 @@ namespace Sitko.Core.Configuration.Vault
             IConfigurationBuilder configurationBuilder, VaultConfigurationModuleOptions startupOptions)
         {
             base.ConfigureAppConfiguration(context, hostBuilderContext, configurationBuilder, startupOptions);
-            if (!startupOptions.Secrets.Any())
-            {
-                startupOptions.Secrets.Add(context.Name);
-            }
 
             foreach (var secret in startupOptions.Secrets)
             {
@@ -75,6 +71,14 @@ namespace Sitko.Core.Configuration.Vault
         {
             return new(Uri, Token, VaultSecret, VaultRoleId, ReloadOnChange, ReloadCheckIntervalSeconds,
                 OmitVaultKeyName, AdditionalCharactersForConfigurationPath);
+        }
+
+        public override void Configure(ApplicationContext applicationContext)
+        {
+            if (!Secrets.Any())
+            {
+                Secrets.Add(applicationContext.Name);
+            }
         }
     }
 
