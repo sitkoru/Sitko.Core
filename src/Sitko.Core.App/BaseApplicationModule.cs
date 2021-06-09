@@ -26,6 +26,11 @@ namespace Sitko.Core.App
         {
         }
 
+        public virtual void ConfigureAppConfiguration(ApplicationContext context, HostBuilderContext hostBuilderContext,
+            IConfigurationBuilder configurationBuilder, TModuleOptions startupOptions)
+        {
+        }
+
         public virtual void ConfigureLogging(ApplicationContext context, TModuleOptions options,
             LoggerConfiguration loggerConfiguration,
             LogLevelSwitcher logLevelSwitcher)

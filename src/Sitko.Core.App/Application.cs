@@ -151,6 +151,11 @@ namespace Sitko.Core.App
                     {
                         appConfigurationAction(appContext, context, builder);
                     }
+                    LogCheck("Configure app configuration in modules");
+                    foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpApplicationContext))
+                    {
+                        moduleRegistration.ConfigureAppConfiguration(appContext, context, builder);
+                    }
                 })
                 .ConfigureServices((context, services) =>
                 {
@@ -619,13 +624,13 @@ namespace Sitko.Core.App
             return application;
         }
 
-        public static TApplication ConfigureAppConfiguration<TApplication>(this TApplication application,
-            Action<ApplicationContext, HostBuilderContext, IConfigurationBuilder> action)
-            where TApplication : Application
-        {
-            application.ConfigureAppConfiguration(action);
-            return application;
-        }
+        // public static TApplication ConfigureAppConfiguration<TApplication>(this TApplication application,
+        //     Action<ApplicationContext, HostBuilderContext, IConfigurationBuilder> action)
+        //     where TApplication : Application
+        // {
+        //     application.ConfigureAppConfiguration(action);
+        //     return application;
+        // }
     }
 
     public class ApplicationContext
