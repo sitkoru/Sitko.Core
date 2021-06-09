@@ -88,6 +88,14 @@ namespace Sitko.Core.App
             return this;
         }
 
+        public override ApplicationModuleRegistration ConfigureAppConfiguration(ApplicationContext context,
+            HostBuilderContext hostBuilderContext, IConfigurationBuilder configurationBuilder)
+        {
+            var options = CreateOptions(context);
+            _instance.ConfigureAppConfiguration(context, hostBuilderContext, configurationBuilder, options);
+            return this;
+        }
+
         public override (bool isSuccess, IEnumerable<Type> missingModules) CheckRequiredModules(
             ApplicationContext context,
             Type[] registeredModules)
@@ -178,6 +186,9 @@ namespace Sitko.Core.App
 
         public abstract ApplicationModuleRegistration ConfigureHostBuilder(ApplicationContext context,
             IHostBuilder hostBuilder);
+
+        public abstract ApplicationModuleRegistration ConfigureAppConfiguration(ApplicationContext context,
+            HostBuilderContext hostBuilderContext, IConfigurationBuilder configurationBuilder);
 
         public abstract (bool isSuccess, IEnumerable<Type> missingModules) CheckRequiredModules(
             ApplicationContext context,

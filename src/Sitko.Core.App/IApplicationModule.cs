@@ -13,10 +13,15 @@ namespace Sitko.Core.App
     {
         string GetOptionsKey();
 
-        void ConfigureLogging(ApplicationContext context, TModuleOptions options, LoggerConfiguration loggerConfiguration,
+        void ConfigureLogging(ApplicationContext context, TModuleOptions options,
+            LoggerConfiguration loggerConfiguration,
             LogLevelSwitcher logLevelSwitcher);
 
         void ConfigureServices(ApplicationContext context, IServiceCollection services, TModuleOptions startupOptions);
+
+        void ConfigureAppConfiguration(ApplicationContext context,
+            HostBuilderContext hostBuilderContext, IConfigurationBuilder configurationBuilder,
+            TModuleOptions startupOptions);
 
         IEnumerable<Type> GetRequiredModules(ApplicationContext context, TModuleOptions config);
     }
