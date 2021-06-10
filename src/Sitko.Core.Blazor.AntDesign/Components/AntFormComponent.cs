@@ -7,14 +7,14 @@ using Sitko.Core.App.Blazor.Components;
 
 namespace Sitko.Core.Blazor.AntDesign.Components
 {
-    public abstract class AntFormComponent<TEntity, TFormModel> : BaseFormComponent<TEntity, TFormModel>
+    public abstract partial class AntFormComponent<TEntity, TFormModel> : BaseFormComponent<TEntity, TFormModel>
         where TFormModel : BaseFormModel<TEntity> where TEntity : class, new()
     {
         [Inject] protected NotificationService NotificationService { get; set; }
 
-        protected Form<TFormModel>? Form { get; set; }
+        public Form<TFormModel>? Form { get; set; }
 
-        protected override Task OnFormErrorAsync(EditContext editContext)
+        public override Task OnFormErrorAsync(EditContext editContext)
         {
             return NotificationService.Error(new NotificationConfig
             {

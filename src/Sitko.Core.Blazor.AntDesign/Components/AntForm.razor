@@ -1,0 +1,31 @@
+@typeparam TEntity
+@using global::AntDesign
+@typeparam TFormModel
+
+<AntDesign.Form ValidateOnChange="ValidateOnChange" Model="Form.FormModel" Loading="Form.IsLoading"
+                OnFinish="Form.SaveEntityAsync" @ref="_frm" OnFinishFailed="Form.OnFormErrorAsync">
+    <Validator>
+        <Sitko.Core.Blazor.FluentValidation.FluentValidator/>
+        <Sitko.Core.App.Blazor.Components.ChangesDetector Form="Form"/>
+    </Validator>
+    <ChildContent>
+        @ChildContent(context)
+    </ChildContent>
+</AntDesign.Form>
+
+@code
+{
+    [Parameter]
+    public AntFormComponent<TEntity, TFormModel> Form { get; set; }
+
+    [Parameter]
+    public RenderFragment<TFormModel> ChildContent { get; set; }
+
+    [Parameter]
+    public bool ValidateOnChange { get; set; } = true;
+
+    private Form<TFormModel>? _frm
+    {
+        set { Form.Form = value; }
+    }
+}

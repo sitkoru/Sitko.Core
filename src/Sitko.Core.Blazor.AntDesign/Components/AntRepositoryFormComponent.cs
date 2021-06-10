@@ -17,7 +17,7 @@ namespace Sitko.Core.Blazor.AntDesign.Components
 
         protected Form<TFormModel>? Form { get; set; }
 
-        protected override Task OnFormErrorAsync(EditContext editContext)
+        public override Task OnFormErrorAsync(EditContext editContext)
         {
             return NotificationService.Error(new NotificationConfig
             {
@@ -60,7 +60,7 @@ namespace Sitko.Core.Blazor.AntDesign.Components
 
         protected override bool CanSave()
         {
-            if (Form == null)
+            if  (Form == null)
             {
                 return false;
             }

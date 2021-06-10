@@ -18,10 +18,9 @@ namespace Sitko.Core.App.Blazor.Components
         where TEntity : class, new()
         where TFormModel : BaseFormModel<TEntity>
     {
-        protected TFormModel FormModel { get; set; }
-        
-        [Parameter]
-        public bool IsNew { get; set; }
+        public TFormModel FormModel { get; set; }
+
+        [Parameter] public bool IsNew { get; set; }
 
         protected TEntity Entity { get; private set; }
 
@@ -38,10 +37,10 @@ namespace Sitko.Core.App.Blazor.Components
         protected abstract Task<TEntity> GetEntityAsync();
 
         protected abstract Task<TFormModel> CreateFormModelAsync();
-
-        protected abstract Task OnFormErrorAsync(EditContext editContext);
-
-        protected async Task SaveEntityAsync()
+        
+        public abstract Task OnFormErrorAsync(EditContext editContext);
+        
+        public virtual async Task SaveEntityAsync()
         {
             StartLoading();
             await BeforeSaveAsync();
