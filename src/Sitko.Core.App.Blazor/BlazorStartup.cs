@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Reflection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Sitko.Core.App.Blazor.Components;
+using Sitko.Core.App.Blazor.Forms;
 using Sitko.Core.App.Web;
 
 namespace Sitko.Core.App.Blazor
@@ -22,6 +25,19 @@ namespace Sitko.Core.App.Blazor
             {
                 options.DetailedErrors = Environment.IsDevelopment();
             });
+            AddForms(services, GetType().Assembly);
+        }
+
+        protected void AddForms<TAssembly>(IServiceCollection services)
+        {
+            AddForms(services, typeof(TAssembly).Assembly);
+        }
+
+        protected void AddForms(IServiceCollection services, Assembly assembly)
+        {
+            services.Scan(s =>
+                s.FromAssemblies(assembly).AddClasses(c => c.AssignableTo<BaseForm>()).AsSelf()
+                    .WithTransientLifetime());
         }
 
         protected void ForceAuthorization(IServiceCollection services)

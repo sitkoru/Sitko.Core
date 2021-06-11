@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -37,6 +38,11 @@ namespace Sitko.Core.App.Blazor.Components
         {
             IsLoading = false;
             StateHasChanged();
+        }
+
+        public Task NotifyStateChangeAsync()
+        {
+            return InvokeAsync(StateHasChanged);
         }
     }
 }
