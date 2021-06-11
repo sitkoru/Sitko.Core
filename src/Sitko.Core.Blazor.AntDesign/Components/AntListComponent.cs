@@ -5,7 +5,7 @@ using AntDesign;
 using AntDesign.TableModels;
 using Sitko.Core.App.Blazor.Components;
 
-namespace Sitko.Core.Blazor.AntDesign.Components
+namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
     public abstract class AntListComponent<TItem> : BaseComponent where TItem : class
     {

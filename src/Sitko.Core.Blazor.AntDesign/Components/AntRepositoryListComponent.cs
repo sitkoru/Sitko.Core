@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Sitko.Core.Repository;
 
-namespace Sitko.Core.Blazor.AntDesign.Components
+namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
     public abstract class AntRepositoryListComponent<TEntity, TEntityPk> : AntListComponent<TEntity>
         where TEntity : class, IEntity<TEntityPk>, new()

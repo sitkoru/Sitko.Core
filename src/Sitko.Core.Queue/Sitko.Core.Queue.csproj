@@ -24,7 +24,6 @@
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
     <ProjectReference Include="..\Sitko.Core.MediatR\Sitko.Core.MediatR.csproj" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
-    <PackageReference Include="Scrutor" Version="3.3.0" />
   </ItemGroup>
 
   <ItemGroup>
