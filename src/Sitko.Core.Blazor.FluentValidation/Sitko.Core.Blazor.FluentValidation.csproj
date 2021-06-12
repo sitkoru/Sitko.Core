@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="10.2.0" />
+    <PackageReference Include="FluentValidation" Version="10.2.3" />
   </ItemGroup>
   
   <ItemGroup>
