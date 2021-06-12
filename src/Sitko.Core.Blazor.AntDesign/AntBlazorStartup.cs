@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App.Blazor;
 
-namespace Sitko.Core.Blazor.AntDesign
+namespace Sitko.Core.Blazor.AntDesignComponents
 {
     public class AntBlazorStartup : BlazorStartup
     {

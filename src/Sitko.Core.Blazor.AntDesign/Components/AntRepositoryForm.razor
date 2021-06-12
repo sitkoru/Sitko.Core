@@ -1,0 +1,26 @@
+@typeparam TEntity
+@typeparam TEntityPk
+@typeparam TForm
+@inherits BaseAntForm<TEntity, TForm>
+
+@if (IsInitialized)
+{
+    <AntDesign.Form ValidateOnChange="ValidateOnChange" Model="Form" Loading="Form.IsLoading"
+                    OnFinish="Form.SaveEntityAsync" @ref="_antForm" OnFinishFailed="OnFormErrorAsync">
+        <Validator>
+            <Sitko.Core.Blazor.FluentValidation.FluentValidator/>
+            <Sitko.Core.App.Blazor.Components.ChangesDetector Form="this"/>
+        </Validator>
+        <ChildContent>
+            @ChildContent(context)
+            @if (Footer is not null)
+            {
+                @Footer(this)
+            }
+            else
+            {
+                <AntDesign.Button Type="submit" OnClick="@Save" Disabled="!CanSave()">Save</AntDesign.Button>
+            }
+        </ChildContent>
+    </AntDesign.Form>
+}
