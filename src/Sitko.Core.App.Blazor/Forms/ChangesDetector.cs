@@ -20,7 +20,7 @@ namespace Sitko.Core.App.Blazor.Forms
                                                     $"inside an EditForm.");
             }
         
-            CurrentEditContext.OnFieldChanged += async (sender, args) =>
+            CurrentEditContext.OnFieldChanged += async (_, _) =>
             {
                 await Form.NotifyStateChangeAsync();
             };

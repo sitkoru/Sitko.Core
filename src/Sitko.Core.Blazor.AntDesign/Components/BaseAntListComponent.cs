@@ -49,13 +49,13 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
                             Count = itemsCount;
                             await StopLoadingAsync();
                         }
-                        catch (OperationCanceledException ex)
+                        catch (OperationCanceledException)
                         {
                         }
                     }
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException)
             {
             }
         }
