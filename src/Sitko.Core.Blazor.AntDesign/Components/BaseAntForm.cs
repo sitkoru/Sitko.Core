@@ -2,7 +2,6 @@
 using AntDesign;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Sitko.Core.App.Blazor.Components;
 using Sitko.Core.App.Blazor.Forms;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
@@ -11,14 +10,13 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         where TForm : BaseForm<TEntity>
         where TEntity : class, new()
     {
-        protected Form<TForm>? _antForm;
+        protected Form<TForm>? AntForm;
 
         [Parameter] public RenderFragment<TForm> ChildContent { get; set; }
-        [Parameter] public RenderFragment<BaseAntForm<TEntity, TForm>>? Footer { get; set; }
 
         [Parameter] public bool ValidateOnChange { get; set; } = true;
 
-        [Inject] private NotificationService NotificationService { get; set; }
+        [Inject] protected NotificationService NotificationService { get; set; }
 
         protected override Task ConfigureFormAsync()
         {
@@ -49,19 +47,14 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             });
         }
 
-        public void Save()
+        public override bool IsValid()
         {
-            _antForm?.Submit();
+            return AntForm != null && AntForm.Validate();
         }
 
-        public bool CanSave()
+        public override void Save()
         {
-            if (_antForm == null)
-            {
-                return false;
-            }
-
-            return _antForm.Validate();
+            AntForm?.Submit();
         }
     }
 }
