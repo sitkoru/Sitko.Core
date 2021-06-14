@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Sitko.Core.App.Blazor.Components;
 
 namespace Sitko.Core.App.Blazor.Forms
 {
@@ -19,21 +18,20 @@ namespace Sitko.Core.App.Blazor.Forms
         }
 
         public bool IsNew { get; protected set; }
-        protected TEntity _entity;
-        private BaseComponent? _parent;
-        public Func<TEntity, Task>? OnSave { get; set; }
+        protected TEntity? Entity;
+        private BaseFormComponent? _parent;
+        public Func<TEntity, Task>? OnAfterSave { get; set; }
+        public Func<TEntity, Task>? OnAfterCreate { get; set; }
+        public Func<TEntity, Task>? OnAfterUpdate { get; set; }
         public Func<string, Task>? OnError { get; set; }
         public Func<Task>? OnSuccess { get; set; }
         public Func<Exception, Task>? OnException { get; set; }
 
         public bool IsLoading { get; set; }
 
-        public Func<TEntity, Task>? AfterSaveAsync { get; set; }
-        public Action<TEntity>? AfterSave { get; set; }
+        protected abstract Task MapEntityAsync(TEntity entity);
 
-        protected abstract TEntity MapEntity(TEntity entity);
-
-        public void SetParent(BaseComponent parent)
+        public void SetParent(BaseFormComponent parent)
         {
             _parent = parent;
         }
@@ -46,8 +44,8 @@ namespace Sitko.Core.App.Blazor.Forms
                 entity = await CreateEntityAsync();
             }
 
-            _entity = entity;
-            await MapFormAsync(_entity);
+            Entity = entity;
+            await MapFormAsync(Entity);
         }
 
         protected virtual async Task<TEntity> CreateEntityAsync()
@@ -56,7 +54,7 @@ namespace Sitko.Core.App.Blazor.Forms
             await InitializeEntityAsync(entity);
             return entity;
         }
-        
+
         protected virtual Task InitializeEntityAsync(TEntity entity)
         {
             return Task.CompletedTask;
@@ -66,30 +64,43 @@ namespace Sitko.Core.App.Blazor.Forms
 
         public virtual async Task SaveEntityAsync()
         {
+            if (Entity is null)
+            {
+                throw new Exception("Entity can't be null");
+            }
+
             await StartLoadingAsync();
             await BeforeSaveAsync();
-            MapEntity(_entity);
-            await BeforeEntitySaveAsync(_entity);
+            await MapEntityAsync(Entity);
+            await BeforeEntitySaveAsync(Entity);
             try
             {
                 var result = IsNew
-                    ? await AddAsync(_entity)
-                    : await UpdateAsync(_entity);
+                    ? await AddAsync(Entity)
+                    : await UpdateAsync(Entity);
                 await StopLoadingAsync();
                 if (result.IsSuccess)
                 {
                     if (IsNew)
                     {
-                        await OnCreatedAsync(_entity);
+                        await OnCreatedAsync(Entity);
+                        if (OnAfterCreate is not null)
+                        {
+                            await OnAfterCreate(Entity);
+                        }
                     }
                     else
                     {
-                        await OnUpdatedAsync(_entity);
+                        await OnUpdatedAsync(Entity);
+                        if (OnAfterUpdate is not null)
+                        {
+                            await OnAfterUpdate(Entity);
+                        }
                     }
 
-                    if (OnSave is not null)
+                    if (OnAfterSave is not null)
                     {
-                        await OnSave(_entity);
+                        await OnAfterSave(Entity);
                     }
 
                     await ResetFormAsync();
@@ -166,6 +177,36 @@ namespace Sitko.Core.App.Blazor.Forms
         protected virtual Task OnUpdatedAsync(TEntity entity)
         {
             return Task.CompletedTask;
+        }
+
+        public virtual bool CanSave()
+        {
+            if (_parent == null)
+            {
+                return false;
+            }
+
+            if (!HasChanges())
+            {
+                return false;
+            }
+
+            return IsValid();
+        }
+
+        public virtual bool IsValid()
+        {
+            return _parent is not null && _parent.IsValid();
+        }
+
+        public virtual void Save()
+        {
+            _parent?.Save();
+        }
+
+        public virtual bool HasChanges()
+        {
+            return true;
         }
     }
 

@@ -40,6 +40,18 @@ namespace Sitko.Core.App.Blazor.Components
             StateHasChanged();
         }
 
+        protected Task StartLoadingAsync()
+        {
+            IsLoading = true;
+            return NotifyStateChangeAsync();
+        }
+
+        protected Task StopLoadingAsync()
+        {
+            IsLoading = false;
+            return NotifyStateChangeAsync();
+        }
+
         public Task NotifyStateChangeAsync()
         {
             return InvokeAsync(StateHasChanged);

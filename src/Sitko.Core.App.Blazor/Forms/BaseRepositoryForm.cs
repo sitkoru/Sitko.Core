@@ -21,7 +21,7 @@ namespace Sitko.Core.App.Blazor.Forms
         public async Task InitializeAsync(TEntityPk? entityId)
         {
             TEntity? entity = null;
-            if (entityId is not null)
+            if (entityId is not null && default(TEntityPk)?.Equals(entityId) == false)
             {
                 EntityId = entityId;
                 entity = await Repository.GetByIdAsync(entityId);
@@ -33,7 +33,7 @@ namespace Sitko.Core.App.Blazor.Forms
 
             await InitializeAsync(entity);
         }
-        
+
         protected override async Task<FormSaveResult> AddAsync(TEntity entity)
         {
             var result = await Repository.AddAsync(entity);
@@ -44,6 +44,11 @@ namespace Sitko.Core.App.Blazor.Forms
         {
             var result = await Repository.UpdateAsync(entity);
             return new FormSaveResult(result.IsSuccess, result.ErrorsString);
+        }
+
+        public virtual bool HasChanges()
+        {
+            return Repository.GetChanges(Entity, new TEntity()).Length > 0;
         }
     }
 }
