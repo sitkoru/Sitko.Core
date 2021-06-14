@@ -46,7 +46,7 @@ namespace Sitko.Core.App.Blazor.Forms
             return new FormSaveResult(result.IsSuccess, result.ErrorsString);
         }
 
-        public virtual bool HasChanges()
+        public override bool HasChanges()
         {
             return Repository.GetChanges(Entity, new TEntity()).Length > 0;
         }
