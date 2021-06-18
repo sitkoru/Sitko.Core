@@ -9,7 +9,7 @@ namespace Sitko.Core.App.Blazor.Forms
     {
         [CascadingParameter] public EditContext CurrentEditContext { get; set; }
 
-        [Parameter] public BaseComponent Form { get; set; }
+        [Parameter] public BaseFormComponent Form { get; set; }
         
         protected override void OnInitialized()
         {
@@ -20,9 +20,9 @@ namespace Sitko.Core.App.Blazor.Forms
                                                     $"inside an EditForm.");
             }
         
-            CurrentEditContext.OnFieldChanged += async (_, _) =>
+            CurrentEditContext.OnFieldChanged += async (_, args) =>
             {
-                await Form.NotifyStateChangeAsync();
+                await Form.OnFieldChangeAsync(args.FieldIdentifier);
             };
         }
     }

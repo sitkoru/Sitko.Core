@@ -46,9 +46,15 @@ namespace Sitko.Core.App.Blazor.Forms
             return new FormSaveResult(result.IsSuccess, result.ErrorsString);
         }
 
-        public override bool HasChanges()
+        protected override async Task<bool> DetectChangesAsync()
         {
-            return Repository.GetChanges(Entity, new TEntity()).Length > 0;
+            if (Entity is not null && !IsNew)
+            {
+                await MapEntityAsync(Entity);
+                return Repository.GetChanges(Entity, new TEntity()).Length > 0;
+            }
+
+            return true;
         }
     }
 }

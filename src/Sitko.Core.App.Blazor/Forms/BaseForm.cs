@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.App.Blazor.Forms
@@ -20,6 +21,7 @@ namespace Sitko.Core.App.Blazor.Forms
         public bool IsNew { get; protected set; }
         protected TEntity? Entity;
         private BaseFormComponent? _parent;
+        protected bool HasChanges { get; private set; }
         public Func<TEntity, Task>? OnAfterSave { get; set; }
         public Func<TEntity, Task>? OnAfterCreate { get; set; }
         public Func<TEntity, Task>? OnAfterUpdate { get; set; }
@@ -103,6 +105,7 @@ namespace Sitko.Core.App.Blazor.Forms
                         await OnAfterSave(Entity);
                     }
 
+                    HasChanges = false;
                     await ResetFormAsync();
                     if (OnSuccess is not null)
                     {
@@ -186,7 +189,7 @@ namespace Sitko.Core.App.Blazor.Forms
                 return false;
             }
 
-            if (!HasChanges())
+            if (!HasChanges)
             {
                 return false;
             }
@@ -204,9 +207,20 @@ namespace Sitko.Core.App.Blazor.Forms
             _parent?.Save();
         }
 
-        public virtual bool HasChanges()
+        public async Task FieldChangedAsync(FieldIdentifier fieldIdentifier)
         {
-            return true;
+            await OnFieldChangeAsync(fieldIdentifier);
+            HasChanges = await DetectChangesAsync();
+        }
+
+        protected virtual Task<bool> DetectChangesAsync()
+        {
+            return Task.FromResult(true);
+        }
+
+        protected virtual Task OnFieldChangeAsync(FieldIdentifier fieldIdentifier)
+        {
+            return Task.CompletedTask;
         }
     }
 

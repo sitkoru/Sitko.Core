@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Sitko.Core.App.Blazor.Components;
 
 namespace Sitko.Core.App.Blazor.Forms
@@ -11,6 +12,7 @@ namespace Sitko.Core.App.Blazor.Forms
         protected abstract Task ConfigureFormAsync();
         public abstract bool IsValid();
         public abstract void Save();
+        public abstract Task OnFieldChangeAsync(FieldIdentifier fieldIdentifier);
     }
 
     public abstract class BaseFormComponent<TEntity, TForm> : BaseFormComponent where TForm : BaseForm<TEntity>
@@ -33,6 +35,12 @@ namespace Sitko.Core.App.Blazor.Forms
             await ConfigureFormAsync();
             await InitializeForm();
             MarkAsInitialized();
+        }
+
+        public override async Task OnFieldChangeAsync(FieldIdentifier fieldIdentifier)
+        {
+            await Form.FieldChangedAsync(fieldIdentifier);
+            await NotifyStateChangeAsync();
         }
     }
 }
