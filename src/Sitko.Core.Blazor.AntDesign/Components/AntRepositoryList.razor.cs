@@ -10,7 +10,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
     public partial class AntRepositoryList<TItem, TEntityPk>
         where TItem : class, Repository.IEntity<TEntityPk>, new()
     {
-        [Parameter] public RenderFragment<TItem> ChildContent { get; set; }
+        [Parameter] public RenderFragment<TItem>? ChildContent { get; set; }
 
         [Parameter] public RenderFragment<TItem>? RowTemplate { get; set; }
 

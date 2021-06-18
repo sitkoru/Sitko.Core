@@ -1,72 +1,44 @@
 ﻿@typeparam TItem
 @typeparam TEntityPk
 @inherits BaseAntRepositoryListComponent<TItem, TEntityPk>
-<AntDesign.Table TItem="TItem"
-                 DataSource="@Items"
-                 Total="@Count"
-                 OnChange="@OnChange"
-                 Loading="@IsLoading"
-                 @ref="Table"
-                 @bind-PageSize="@PageSize"
-                 @bind-PageIndex="@PageIndex"
-                 RowExpandable="@RowExpandable"
-                 TreeChildren="@TreeChildren"
-                 OnRow="@OnRow"
-                 OnHeaderRow="@OnHeaderRow"
-                 Title="@Title"
-                 Footer="@Footer"
-                 Size="@Size"
-                 Locale="@Locale"
-                 Bordered="@Bordered"
-                 ScrollX="@ScrollX"
-                 ScrollY="@ScrollY"
-                 ScrollBarWidth="@ScrollBarWidth"
-                 IndentSize="@IndentSize"
-                 ExpandIconColumnIndex="@ExpandIconColumnIndex"
-                 RowClassName="@RowClassName"
-                 ExpandedRowClassName="@ExpandedRowClassName"
-                 OnExpand="@OnExpand"
-                 SortDirections="@SortDirections"
-                 TableLayout="@TableLayout"
-                 OnRowClick="@OnRowClick"
-                 HidePagination="@HidePagination"
-                 PaginationPosition="@PaginationPosition"
-                 TotalChanged="@TotalChanged"
-                 OnPageIndexChange="@OnPageIndexChange"
-                 OnPageSizeChange="@OnPageSizeChange"
-                 SelectedRows="@SelectedRows"
-                 SelectedRowsChanged="@SelectedRowsChanged">
-    <ChildContent>
-        @ChildContent(context)
-    </ChildContent>
-    @* @if (RowTemplate is not null) *@
-    @* { *@
-    @* <RowTemplate> *@
-    @* *@
-    @*     @RowTemplate(context) *@
-    @* *@
-    @* </RowTemplate> *@
-    @*         } *@
-    @* @if (ExpandTemplate is not null) *@
-    @* { *@
-    @* <ExpandTemplate> *@
-    @* *@
-    @*     @ExpandTemplate(context) *@
-    @* *@
-    @* </ExpandTemplate> *@
-    @*         } *@
-    @* @if (TitleTemplate is not null) *@
-    @* { *@
-    @* <TitleTemplate> *@
-    @* *@
-    @*     @TitleTemplate *@
-    @* *@
-    @* </TitleTemplate> *@
-    @*         } *@
-    @* @if (FooterTemplate is not null) *@
-    @* { *@
-    @* <FooterTemplate> *@
-    @*     @FooterTemplate *@
-    @* </FooterTemplate> *@
-    @*         } *@
-</AntDesign.Table>
+@if (ChildContent is not null)
+{
+    <AntDesign.Table TItem="TItem" DataSource="@Items" Total="@Count" OnChange="OnChange" @bind-PageSize="@PageSize" Loading="@IsLoading" @ref="Table" @bind-PageIndex="@PageIndex"
+                     RowExpandable="@RowExpandable"
+                     TreeChildren="@TreeChildren"
+                     OnRow="@OnRow"
+                     OnHeaderRow="@OnHeaderRow"
+                     Title="@Title"
+                     Footer="@Footer"
+                     Size="@Size"
+                     Locale="@Locale"
+                     Bordered="@Bordered"
+                     ScrollX="@ScrollX"
+                     ScrollY="@ScrollY"
+                     ScrollBarWidth="@ScrollBarWidth"
+                     IndentSize="@IndentSize"
+                     ExpandIconColumnIndex="@ExpandIconColumnIndex"
+                     RowClassName="@RowClassName"
+                     ExpandedRowClassName="@ExpandedRowClassName"
+                     OnExpand="@OnExpand"
+                     SortDirections="@SortDirections"
+                     TableLayout="@TableLayout"
+                     OnRowClick="@OnRowClick"
+                     HidePagination="@HidePagination"
+                     PaginationPosition="@PaginationPosition"
+                     TotalChanged="@TotalChanged"
+                     OnPageIndexChange="@OnPageIndexChange"
+                     OnPageSizeChange="@OnPageSizeChange"
+                     SelectedRows="@SelectedRows"
+                     SelectedRowsChanged="@SelectedRowsChanged">
+        <ChildContent>
+
+            @ChildContent(context)
+
+        </ChildContent>
+    </AntDesign.Table>
+}
+else
+{
+    <p>Please specify list columns</p>
+}

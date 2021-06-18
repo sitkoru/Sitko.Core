@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AntDesign;
 using AntDesign.TableModels;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Blazor.Components;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
@@ -16,12 +17,12 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         protected IEnumerable<TItem> Items = new TItem[0];
         public int Count { get; protected set; }
 
-        private readonly Channel<(string orderBy, int page)>
-            _loadChannel = Channel.CreateUnbounded<(string orderBy, int page)>();
+        private readonly Channel<LoadRequest>
+            _loadChannel = Channel.CreateUnbounded<LoadRequest>();
 
         private readonly CancellationTokenSource _cts = new();
-        private Task? _loadTask;
         private QueryModel<TItem>? _lastQueryModel;
+        private Task? _loadingTask;
 
         [Parameter] public int PageSize { get; set; } = 50;
         [Parameter] public int PageIndex { get; set; } = 1;
@@ -29,7 +30,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         protected override void OnInitialized()
         {
             base.OnInitialized();
-            _loadTask = LoadDataAsync();
+            _loadingTask = LoadDataAsync();
             MarkAsInitialized();
         }
 
@@ -39,13 +40,13 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             {
                 while (await _loadChannel.Reader.WaitToReadAsync(_cts.Token).ConfigureAwait(false))
                 {
-                    while (_loadChannel.Reader.TryRead(out (string orderBy, int page) item))
+                    while (_loadChannel.Reader.TryRead(out var item))
                     {
                         try
                         {
                             await StartLoadingAsync();
                             (var items, int itemsCount) =
-                                await GetDataAsync(item.orderBy, item.page, _cts.Token);
+                                await GetDataAsync(item.OrderBy, item.Page, _cts.Token);
                             Items = items;
                             Count = itemsCount;
                             await StopLoadingAsync();
@@ -71,8 +72,19 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
                         .Select(s =>
                             $"{(s.Sort == SortDirection.Descending.Name ? "-" : "")}{s.FieldName.ToLowerInvariant()}"))
                 : "";
-            _loadChannel.Writer.TryWrite((string.IsNullOrEmpty(orderBy) ? "" : orderBy,
-                queryModel?.PageIndex ?? PageIndex));
+            if (string.IsNullOrEmpty(orderBy))
+            {
+                orderBy = "";
+            }
+
+            var page = queryModel?.PageIndex ?? PageIndex;
+            Logger.LogDebug("Load page {Page} with order {OrderBy}", page, orderBy);
+            var result = _loadChannel.Writer.TryWrite(new LoadRequest(orderBy, page));
+            if (!result)
+            {
+                throw new Exception("Bla");
+            }
+
             _lastQueryModel = queryModel;
         }
 
@@ -92,10 +104,22 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         public async ValueTask DisposeAsync()
         {
             _cts.Cancel();
-            if (_loadTask is not null)
+            if (_loadingTask is not null)
             {
-                await _loadTask;
+                await _loadingTask;
             }
         }
+    }
+
+    internal class LoadRequest
+    {
+        public LoadRequest(string orderBy, int page)
+        {
+            OrderBy = orderBy;
+            Page = page;
+        }
+
+        public string OrderBy { get; }
+        public int Page { get; }
     }
 }
