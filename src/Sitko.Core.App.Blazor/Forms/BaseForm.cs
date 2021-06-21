@@ -138,7 +138,6 @@ namespace Sitko.Core.App.Blazor.Forms
                     }
 
                     HasChanges = false;
-                    await ResetFormAsync();
                     if (OnSuccess is not null)
                     {
                         await OnSuccess();
@@ -178,7 +177,7 @@ namespace Sitko.Core.App.Blazor.Forms
             await NotifyStateChangeAsync();
         }
 
-        private async Task NotifyStateChangeAsync()
+        protected async Task NotifyStateChangeAsync()
         {
             if (_parent is not null)
             {
@@ -194,11 +193,11 @@ namespace Sitko.Core.App.Blazor.Forms
             return Task.CompletedTask;
         }
 
-        protected virtual Task ResetFormAsync()
+        public virtual Task ResetAsync()
         {
-            return Task.CompletedTask;
+            return InitializeAsync(Entity);
         }
-
+        
         protected virtual Task BeforeSaveAsync()
         {
             return Task.CompletedTask;

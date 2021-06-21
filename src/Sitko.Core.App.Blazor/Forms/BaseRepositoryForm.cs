@@ -24,6 +24,10 @@ namespace Sitko.Core.App.Blazor.Forms
             if (entityId is not null && default(TEntityPk)?.Equals(entityId) == false)
             {
                 EntityId = entityId;
+                if (Entity is not null)
+                {
+                    await Repository.RefreshAsync(Entity);
+                }
                 entity = await Repository.GetAsync(async q =>
                 {
                     q.Where(e => e.Id!.Equals(EntityId));
@@ -58,6 +62,12 @@ namespace Sitko.Core.App.Blazor.Forms
         protected override Task<bool> DetectChangesAsync(TEntity entity)
         {
             return Repository.HasChangesAsync(entity);
+        }
+
+        public override async Task ResetAsync()
+        {
+            await InitializeAsync(EntityId);
+            await NotifyStateChangeAsync();
         }
     }
 }
