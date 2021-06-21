@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using AntDesign;
 using AntDesign.TableModels;
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Blazor.Components;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
@@ -25,6 +25,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         private readonly CancellationTokenSource _cts = new();
         private QueryModel<TItem>? _lastQueryModel;
         private Task? _loadingTask;
+        private MethodInfo? _sortMethod;
 
         [Parameter] public int PageSize { get; set; } = 50;
         [Parameter] public int PageIndex { get; set; } = 1;
@@ -33,6 +34,13 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         {
             base.OnInitialized();
             _loadingTask = LoadDataAsync();
+            var method = typeof(ITableSortModel).GetMethod("SortList", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (method is null)
+            {
+                throw new Exception("Method SortList not found");
+            }
+
+            _sortMethod = method.MakeGenericMethod(typeof(TItem));
             MarkAsInitialized();
         }
 
@@ -48,7 +56,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
                         {
                             await StartLoadingAsync();
                             (var items, int itemsCount) =
-                                await GetDataAsync(item.OrderBy, item.Page, _cts.Token);
+                                await GetDataAsync(item, _cts.Token);
                             Items = items;
                             Count = itemsCount;
                             await StopLoadingAsync();
@@ -66,22 +74,34 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         protected void OnChange(QueryModel<TItem>? queryModel)
         {
-            var orderBy = queryModel is not null
-                ? string.Join(",",
-                    queryModel.SortModel
-                        .Where(s => s.Sort is not null)
-                        .OrderBy(s => s.Priority)
-                        .Select(s =>
-                            $"{(s.Sort == SortDirection.Descending.Name ? "-" : "")}{s.FieldName.ToLowerInvariant()}"))
-                : "";
-            if (string.IsNullOrEmpty(orderBy))
+            List<Func<IQueryable<TItem>, IQueryable<TItem>>> filters = new();
+            List<Func<IQueryable<TItem>, IOrderedQueryable<TItem>>> sorts = new();
+            if (queryModel is not null)
             {
-                orderBy = "";
+                if (_sortMethod is not null)
+                {
+                    foreach (var sortEntry in queryModel.SortModel.Where(s =>
+                        s.Sort is not null))
+                    {
+                        sorts.Add(items =>
+                        {
+                            var sortResult = _sortMethod.Invoke(sortEntry, new object?[] {items});
+                            if (sortResult is IOrderedQueryable<TItem> orderedQueryable)
+                            {
+                                return orderedQueryable;
+                            }
+
+                            throw new Exception("Error sorting model");
+                        });
+                    }
+                }
+
+                filters.AddRange(queryModel.FilterModel.Select(filterEntry =>
+                    (Func<IQueryable<TItem>, IQueryable<TItem>>)(filterEntry.FilterList)));
             }
 
             var page = queryModel?.PageIndex ?? PageIndex;
-            Logger.LogDebug("Load page {Page} with order {OrderBy}", page, orderBy);
-            var result = _loadChannel.Writer.TryWrite(new LoadRequest(orderBy, page));
+            var result = _loadChannel.Writer.TryWrite(new LoadRequest<TItem>(page, filters, sorts));
             if (!result)
             {
                 throw new Exception("Bla");
@@ -100,7 +120,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             OnChange(_lastQueryModel);
         }
 
-        protected abstract Task<(TItem[] items, int itemsCount)> GetDataAsync(string orderBy, int page = 1,
+        protected abstract Task<(TItem[] items, int itemsCount)> GetDataAsync(LoadRequest<TItem> request,
             CancellationToken cancellationToken = default);
 
         public async ValueTask DisposeAsync()
@@ -113,15 +133,18 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         }
     }
 
-    internal class LoadRequest
+    public class LoadRequest<TItem> where TItem : class
     {
-        public LoadRequest(string orderBy, int page)
+        public LoadRequest(int page, List<Func<IQueryable<TItem>, IQueryable<TItem>>> filters,
+            List<Func<IQueryable<TItem>, IOrderedQueryable<TItem>>> sort)
         {
-            OrderBy = orderBy;
             Page = page;
+            Filters = filters;
+            Sort = sort;
         }
 
-        public string OrderBy { get; }
         public int Page { get; }
+        public List<Func<IQueryable<TItem>, IQueryable<TItem>>> Filters { get; }
+        public List<Func<IQueryable<TItem>, IOrderedQueryable<TItem>>> Sort { get; }
     }
 }

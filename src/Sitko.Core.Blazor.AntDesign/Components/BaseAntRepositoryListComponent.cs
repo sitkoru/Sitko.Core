@@ -13,8 +13,8 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         [Parameter] public Func<IRepositoryQuery<TEntity>, Task>? ConfigureQuery { get; set; }
 
-        protected override Task<(TEntity[] items, int itemsCount)> GetDataAsync(string orderBy,
-            int page = 1, CancellationToken cancellationToken = default)
+        protected override Task<(TEntity[] items, int itemsCount)> GetDataAsync(LoadRequest<TEntity> request,
+            CancellationToken cancellationToken = default)
         {
             return Repository.GetAllAsync(async query =>
             {
@@ -23,8 +23,18 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
                     await ConfigureQuery(query);
                 }
 
+                foreach (var filter in request.Filters)
+                {
+                    query = query.Where(filter);
+                }
+
                 await ConfigureQueryAsync(query);
-                query.OrderByString(orderBy).Paginate(page, PageSize);
+                foreach (var sort in request.Sort)
+                {
+                    query = query.Order(sort);
+                }
+
+                query.Paginate(request.Page, PageSize);
             }, cancellationToken);
         }
 
