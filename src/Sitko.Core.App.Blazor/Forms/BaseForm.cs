@@ -38,6 +38,17 @@ namespace Sitko.Core.App.Blazor.Forms
             _parent = parent;
         }
 
+        public void SetEditContext(EditContext editContext)
+        {
+            EditContext = editContext;
+        }
+
+        public void NotifyChange()
+        {
+            EditContext?.NotifyFieldChanged(new FieldIdentifier(Entity, "Id"));
+        }
+
+      
         public async Task InitializeAsync(TEntity? entity = null)
         {
             if (entity is null)

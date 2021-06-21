@@ -13,6 +13,8 @@ namespace Sitko.Core.App.Blazor.Forms
         public abstract bool IsValid();
         public abstract void Save();
         public abstract Task OnFieldChangeAsync(FieldIdentifier fieldIdentifier);
+
+        public abstract void SetEditContext(EditContext editContext);
     }
 
     public abstract class BaseFormComponent<TEntity, TForm> : BaseFormComponent where TForm : BaseForm<TEntity>
@@ -23,6 +25,18 @@ namespace Sitko.Core.App.Blazor.Forms
         [Parameter] public Func<TEntity, Task>? OnAfterSave { get; set; }
         [Parameter] public Func<TEntity, Task>? OnAfterCreate { get; set; }
         [Parameter] public Func<TEntity, Task>? OnAfterUpdate { get; set; }
+        
+        public override void SetEditContext(EditContext editContext)
+        {
+            EditContext = editContext;
+            Form.SetEditContext(editContext);
+            EditContext.OnFieldChanged += async (_, args) =>
+            {
+                await OnFieldChangeAsync(args.FieldIdentifier);
+            };
+        }
+
+        public EditContext EditContext { get; private set; }
 
         protected override async Task OnInitializedAsync()
         {
