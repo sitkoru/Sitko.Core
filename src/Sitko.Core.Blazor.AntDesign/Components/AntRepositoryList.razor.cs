@@ -76,7 +76,5 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         [Parameter] public IEnumerable<TItem> SelectedRows { get; set; }
 
         [Parameter] public EventCallback<IEnumerable<TItem>> SelectedRowsChanged { get; set; }
-
-        protected Table<TItem> Table { get; set; }
     }
 }
