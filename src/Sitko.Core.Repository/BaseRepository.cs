@@ -53,6 +53,12 @@ namespace Sitko.Core.Repository
 
         public abstract Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default);
 
+        public async Task<bool> HasChangesAsync(TEntity entity)
+        {
+            var changesResult = await GetChangesAsync(entity);
+            return changesResult.changes.Length > 0;
+        }
+
 
         public virtual Task<bool> BeginBatchAsync(CancellationToken cancellationToken = default)
         {
@@ -73,8 +79,8 @@ namespace Sitko.Core.Repository
                 return false;
             }
 
-            await DoSaveAsync();
-            await AfterSaveAsync(_batch);
+            await DoSaveAsync(cancellationToken);
+            await AfterSaveAsync(_batch, cancellationToken);
 
             _batch = null;
             return true;
@@ -297,7 +303,7 @@ namespace Sitko.Core.Repository
             query.Where(i => i.Id!.Equals(id));
             await query.ConfigureAsync(configureQuery, cancellationToken);
 
-            return await DoGetAsync(query);
+            return await DoGetAsync(query, cancellationToken);
         }
 
         public virtual async Task<TEntity?> GetByIdAsync(TEntityPk id, Action<IRepositoryQuery<TEntity>> configureQuery,

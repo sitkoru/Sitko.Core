@@ -69,5 +69,6 @@ namespace Sitko.Core.Repository
         Task<bool> RollbackBatchAsync(CancellationToken cancellationToken = default);
         
         Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default);
+        Task<bool> HasChangesAsync(TEntity entity);
     }
 }
