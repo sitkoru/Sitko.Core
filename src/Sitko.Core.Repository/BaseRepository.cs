@@ -44,7 +44,7 @@ namespace Sitko.Core.Repository
 
         protected abstract Task DoSaveAsync(CancellationToken cancellationToken = default);
 
-        public abstract PropertyChange[] GetChanges(TEntity item, TEntity oldEntity);
+        protected abstract Task<(PropertyChange[] changes, TEntity oldEntity)> GetChangesAsync(TEntity item);
 
         public abstract Task<bool> BeginTransactionAsync(CancellationToken cancellationToken = default);
 
@@ -94,7 +94,6 @@ namespace Sitko.Core.Repository
         protected abstract Task DoAddAsync(TEntity item, CancellationToken cancellationToken = default);
         protected abstract Task DoUpdateAsync(TEntity item, CancellationToken cancellationToken = default);
         protected abstract Task DoDeleteAsync(TEntity item, CancellationToken cancellationToken = default);
-        protected abstract Task<TEntity> GetOldItemAsync(TEntityPk id, CancellationToken cancellationToken = default);
 
         public virtual async Task<TEntity> NewAsync(CancellationToken cancellationToken = default)
         {
@@ -145,12 +144,13 @@ namespace Sitko.Core.Repository
         public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity item,
             CancellationToken cancellationToken = default)
         {
-            var oldItem = await GetOldItemAsync(item.Id, cancellationToken);
             PropertyChange[] changes = new PropertyChange[0];
             (bool isValid, IList<ValidationFailure> errors) validationResult = (false, new List<ValidationFailure>());
             if (await BeforeValidateAsync(item, validationResult, false, cancellationToken))
             {
-                changes = GetChanges(item, oldItem);
+                var changesResult = await GetChangesAsync(item);
+                changes = changesResult.changes;
+                var oldItem = changesResult.oldEntity;
                 if (changes.Any())
                 {
                     validationResult = await ValidateAsync(item, false, changes, cancellationToken);
