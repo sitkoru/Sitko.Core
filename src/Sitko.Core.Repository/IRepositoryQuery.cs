@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ namespace Sitko.Core.Repository
         IRepositoryQuery<TEntity> Take(int take);
         IRepositoryQuery<TEntity> Skip(int skip);
         IRepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> where);
+        IRepositoryQuery<TEntity> Where(Func<IQueryable<TEntity>, IQueryable<TEntity>> where);
         IRepositoryQuery<TEntity> Where(string whereStr, object[] values);
         IRepositoryQuery<TEntity> Where(string property, object value);
         IRepositoryQuery<TEntity> Where(QueryContextCondition condition);
@@ -24,6 +26,7 @@ namespace Sitko.Core.Repository
         IRepositoryQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> orderBy);
         IRepositoryQuery<TEntity> OrderBy(string property, bool isDescending);
         IRepositoryQuery<TEntity> OrderByString(string orderBy);
+        IRepositoryQuery<TEntity> Order(Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> order);
         IRepositoryQuery<TEntity> Configure(Action<IRepositoryQuery<TEntity>>? configureQuery = null);
 
         Task<IRepositoryQuery<TEntity>> ConfigureAsync(Func<IRepositoryQuery<TEntity>, Task>? configureQuery = null,

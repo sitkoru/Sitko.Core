@@ -27,11 +27,13 @@ namespace Sitko.Core.Repository
             return this;
         }
 
-        public abstract IRepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> @where);
+        public abstract IRepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> where);
+        public abstract IRepositoryQuery<TEntity> Where(Func<IQueryable<TEntity>, IQueryable<TEntity>> where);
         public abstract IRepositoryQuery<TEntity> Where(string whereStr, object?[] values);
         public abstract IRepositoryQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> orderBy);
         public abstract IRepositoryQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> orderBy);
 
+        public abstract IRepositoryQuery<TEntity> Order(Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> order);
         public abstract IRepositoryQuery<TEntity> Configure(Action<IRepositoryQuery<TEntity>>? configureQuery = null);
 
         public abstract Task<IRepositoryQuery<TEntity>> ConfigureAsync(

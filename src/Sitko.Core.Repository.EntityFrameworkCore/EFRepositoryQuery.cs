@@ -24,11 +24,9 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
     {
         internal EFRepositoryQuerySource<TEntity> QuerySource;
 
-        internal readonly List<Func<IQueryable<TEntity>, IQueryable<TEntity>>> WhereExpressions =
-            new List<Func<IQueryable<TEntity>, IQueryable<TEntity>>>();
+        internal readonly List<Func<IQueryable<TEntity>, IQueryable<TEntity>>> WhereExpressions = new();
 
-        internal readonly List<(Expression<Func<TEntity, object>> expression, bool desc)> OrderByExpressions =
-            new List<(Expression<Func<TEntity, object>> expression, bool desc)>();
+        internal readonly List<Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>> OrderExpressions = new();
 
         public EFRepositoryQuery(IQueryable<TEntity> query)
         {
@@ -37,25 +35,23 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         internal EFRepositoryQuery(EFRepositoryQuerySource<TEntity> source,
             List<Func<IQueryable<TEntity>, IQueryable<TEntity>>> whereExpressions,
-            List<(Expression<Func<TEntity, object>> expression, bool desc)> orderByExpressions)
+            List<Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>> orderExpressions)
         {
             QuerySource = source;
             WhereExpressions = whereExpressions;
-            OrderByExpressions = orderByExpressions;
+            OrderExpressions = orderExpressions;
         }
 
         public IQueryable<TEntity> BuildQuery()
         {
             foreach (var func in WhereExpressions)
             {
-                QuerySource.Query = func.Invoke(QuerySource.Query);
+                QuerySource.Query = func(QuerySource.Query);
             }
 
-            foreach (var orderBy in OrderByExpressions)
+            foreach (var orderBy in OrderExpressions)
             {
-                QuerySource.Query = orderBy.desc
-                    ? QuerySource.Query.OrderByDescending(orderBy.expression)
-                    : QuerySource.Query.OrderBy(orderBy.expression);
+                QuerySource.Query = orderBy(QuerySource.Query);
             }
 
             return QuerySource.Query;
@@ -68,6 +64,12 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return this;
         }
 
+        public override IRepositoryQuery<TEntity> Where(Func<IQueryable<TEntity>, IQueryable<TEntity>> where)
+        {
+            WhereExpressions.Add(where);
+            return this;
+        }
+
         public override IRepositoryQuery<TEntity> Where(string whereStr, object?[] values)
         {
             WhereExpressions.Add(query => query.Where(whereStr, values));
@@ -76,13 +78,19 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         public override IRepositoryQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> orderBy)
         {
-            OrderByExpressions.Add((orderBy, true));
+            OrderExpressions.Add(entities => entities.OrderByDescending(orderBy));
             return this;
         }
 
         public override IRepositoryQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> orderBy)
         {
-            OrderByExpressions.Add((orderBy, false));
+            OrderExpressions.Add(entities => entities.OrderBy(orderBy));
+            return this;
+        }
+
+        public override IRepositoryQuery<TEntity> Order(Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> order)
+        {
+            OrderExpressions.Add(order);
             return this;
         }
 
@@ -117,7 +125,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             QuerySource.Query = QuerySource.Query.Include(navigationPropertyPath);
             var query = new EFIncludableRepositoryQuery<TEntity, TProperty>(QuerySource,
                 WhereExpressions,
-                OrderByExpressions);
+                OrderExpressions);
             return query;
         }
 
@@ -145,9 +153,9 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
     {
         internal EFIncludableRepositoryQuery(EFRepositoryQuerySource<TEntity> source,
             List<Func<IQueryable<TEntity>, IQueryable<TEntity>>> whereExpressions,
-            List<(Expression<Func<TEntity, object>> expression, bool desc)> orderByExpressions) : base(source,
+            List<Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>> orderExpressions) : base(source,
             whereExpressions,
-            orderByExpressions)
+            orderExpressions)
         {
         }
 
@@ -156,13 +164,13 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             IIncludableRepositoryQuery<TEntity, IEnumerable<TPreviousProperty>> source,
             Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath)
         {
-            var efQuery = (EFRepositoryQuery<TEntity>) source;
-            var querySource = (IIncludableQueryable<TEntity, IEnumerable<TPreviousProperty>>) efQuery.QuerySource.Query;
+            var efQuery = (EFRepositoryQuery<TEntity>)source;
+            var querySource = (IIncludableQueryable<TEntity, IEnumerable<TPreviousProperty>>)efQuery.QuerySource.Query;
             efQuery.QuerySource.Query = querySource.ThenInclude(navigationPropertyPath);
             var query = new EFIncludableRepositoryQuery<TEntity, TNextProperty>(
                 efQuery.QuerySource,
                 efQuery.WhereExpressions,
-                efQuery.OrderByExpressions);
+                efQuery.OrderExpressions);
             return query;
         }
 
@@ -171,13 +179,13 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             IIncludableRepositoryQuery<TEntity, TPreviousProperty> source,
             Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath)
         {
-            var efQuery = (EFRepositoryQuery<TEntity>) source;
-            var querySource = (IIncludableQueryable<TEntity, TPreviousProperty>) efQuery.QuerySource.Query;
+            var efQuery = (EFRepositoryQuery<TEntity>)source;
+            var querySource = (IIncludableQueryable<TEntity, TPreviousProperty>)efQuery.QuerySource.Query;
             efQuery.QuerySource.Query = querySource.ThenInclude(navigationPropertyPath);
             var query = new EFIncludableRepositoryQuery<TEntity, TNextProperty>(
                 efQuery.QuerySource,
                 efQuery.WhereExpressions,
-                efQuery.OrderByExpressions);
+                efQuery.OrderExpressions);
             return query;
         }
     }
