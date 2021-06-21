@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Sitko.Core.App.Blazor.Forms
 {
@@ -13,6 +14,15 @@ namespace Sitko.Core.App.Blazor.Forms
     {
         protected readonly ILogger<BaseForm<TEntity>> Logger;
 
+        private JsonSerializerSettings _jsonSettings = new()
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            TypeNameHandling = TypeNameHandling.Auto,
+            MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead
+        };
+
+        private string? _oldEntityJson;
+
         protected BaseForm(ILogger<BaseForm<TEntity>> logger)
         {
             Logger = logger;
@@ -21,6 +31,7 @@ namespace Sitko.Core.App.Blazor.Forms
         public bool IsNew { get; protected set; }
         protected TEntity? Entity;
         private BaseFormComponent? _parent;
+        protected EditContext? EditContext;
         protected bool HasChanges { get; private set; }
         public Func<TEntity, Task>? OnAfterSave { get; set; }
         public Func<TEntity, Task>? OnAfterCreate { get; set; }
@@ -48,7 +59,16 @@ namespace Sitko.Core.App.Blazor.Forms
             EditContext?.NotifyFieldChanged(new FieldIdentifier(Entity, "Id"));
         }
 
-      
+        private string Serialize(TEntity entity)
+        {
+            return JsonConvert.SerializeObject(entity, _jsonSettings);
+        }
+
+        private TEntity Deserialize(string json)
+        {
+            return JsonConvert.DeserializeObject<TEntity>(json, _jsonSettings)!;
+        }
+
         public async Task InitializeAsync(TEntity? entity = null)
         {
             if (entity is null)
@@ -58,6 +78,7 @@ namespace Sitko.Core.App.Blazor.Forms
             }
 
             Entity = entity;
+            _oldEntityJson = Serialize(entity);
             await MapFormAsync(Entity);
         }
 
@@ -224,9 +245,21 @@ namespace Sitko.Core.App.Blazor.Forms
             HasChanges = await DetectChangesAsync();
         }
 
-        protected virtual Task<bool> DetectChangesAsync()
+        private async Task<bool> DetectChangesAsync()
         {
-            return Task.FromResult(true);
+            if (Entity is not null && !IsNew)
+            {
+                await MapEntityAsync(Entity);
+                return await DetectChangesAsync(Entity);
+            }
+
+            return true;
+        }
+
+        protected virtual Task<bool> DetectChangesAsync(TEntity entity)
+        {
+            var newJson = Serialize(entity);
+            return Task.FromResult(!newJson.Equals(_oldEntityJson));
         }
 
         protected virtual Task OnFieldChangeAsync(FieldIdentifier fieldIdentifier)
