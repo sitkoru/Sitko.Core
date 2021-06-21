@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <PackageReference Include="AntDesign" Version="0.8.2" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
