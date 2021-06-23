@@ -1,0 +1,12 @@
+﻿@typeparam TStorageOptions
+@inherits Sitko.Core.Blazor.FileUpload.BaseStorageFileInputComponent<TStorageOptions>
+<AntDesign.Spin Spinning="IsLoading">
+    <div class="ant-upload ant-upload-select">
+        <Input type="file" style="display: none;" accept="@ContentTypes" multiple="@IsMultiple" @ref="InputRef"/>
+        <span class="ant-upload">
+            <AntDesign.Button Icon="upload" OnClick="OpenFilesDialogAsync">
+                <span>Upload</span>
+            </AntDesign.Button>
+        </span>
+    </div>
+</AntDesign.Spin>

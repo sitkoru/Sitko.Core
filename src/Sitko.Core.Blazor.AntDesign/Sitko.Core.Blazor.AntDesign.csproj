@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App.Blazor\Sitko.Core.App.Blazor.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Blazor.FileUpload\Sitko.Core.Blazor.FileUpload.csproj" />
     <ProjectReference Include="..\Sitko.Core.Blazor.FluentValidation\Sitko.Core.Blazor.FluentValidation.csproj" />
   </ItemGroup>
 
