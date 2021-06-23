@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AntDesign;
+using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using Sitko.Core.Apps.Blazor.Components;
 using Sitko.Core.Apps.Blazor.Data;
@@ -11,6 +12,7 @@ using Sitko.Core.Apps.Blazor.Data.Entities;
 using Sitko.Core.Apps.Blazor.Data.Repositories;
 using Sitko.Core.Blazor.AntDesignComponents.Components;
 using Sitko.Core.Blazor.FileUpload;
+using Sitko.Core.Storage;
 
 namespace Sitko.Core.Apps.Blazor.Pages
 {
@@ -19,6 +21,7 @@ namespace Sitko.Core.Apps.Blazor.Pages
         private BarAntRepositoryList _barList;
         private TableFilter<string>[] _barFilter;
         private AntRepositoryForm<BarModel, Guid, BarForm> _frm;
+        [Inject] public IStorage<TestBlazorStorageOptions> Storage { get; set; }
 
         protected override async Task OnInitializedAsync()
         {

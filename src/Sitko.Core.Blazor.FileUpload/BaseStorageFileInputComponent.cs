@@ -2,16 +2,14 @@
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Sitko.Core.App.Blazor.Forms;
 using Sitko.Core.Storage;
 
 namespace Sitko.Core.Blazor.FileUpload
 {
     public abstract class
-        BaseStorageFileInputComponent<TStorageOptions> : BaseFileInputComponent<StorageFileUploadResult>
-        where TStorageOptions : StorageOptions
+        BaseStorageFileInputComponent : BaseFileInputComponent<StorageFileUploadResult>
     {
-        [Inject] private IStorage<TStorageOptions> Storage { get; set; } = null!;
+        [Parameter] public IStorage Storage { get; set; } = null!;
         [Parameter] public string UploadPath { get; set; } = "";
         [Parameter] public Func<FileUploadRequest, FileStream, Task<object>>? GenerateMetadata { get; set; }
 

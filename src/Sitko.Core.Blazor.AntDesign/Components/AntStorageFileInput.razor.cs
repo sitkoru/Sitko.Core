@@ -7,7 +7,7 @@ using Sitko.Core.Storage;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
-    public partial class AntStorageFileInput<TStorageOptions> : IDisposable where TStorageOptions : StorageOptions
+    public partial class AntStorageFileInput: IDisposable
     {
         private IDisposable? _thisReference;
 
