@@ -138,6 +138,7 @@ namespace Sitko.Core.App.Blazor.Forms
                     }
 
                     HasChanges = false;
+                    _oldEntityJson = Serialize(Entity);
                     if (OnSuccess is not null)
                     {
                         await OnSuccess();
