@@ -81,5 +81,24 @@ namespace Sitko.Core.Db.Postgres
                     json => Deserialize<TData[]>(json) ?? new TData[0])
                 .Metadata.SetValueComparer(valueComparer);
         }
+        
+        public static void RegisterJsonEnumerableConversion<TEntity, TData, TEnumerable>(this ModelBuilder modelBuilder,
+            Expression<Func<TEntity, TEnumerable>> getProperty, string name)
+            where TEntity : class
+            where TEnumerable : IEnumerable<TData>, new()
+        {
+            var valueComparer = new ValueComparer<TEnumerable>(
+                (c1, c2) => c1.SequenceEqual(c2),
+                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v!.GetHashCode())),
+                c => Deserialize<TEnumerable>(Serialize(c)!)!);
+            modelBuilder
+                .Entity<TEntity>()
+                .Property(getProperty)
+                .HasColumnType("jsonb")
+                .HasColumnName(name)
+                .HasConversion(data => Serialize(data),
+                    json => Deserialize<TEnumerable>(json) ?? new TEnumerable())
+                .Metadata.SetValueComparer(valueComparer);
+        }
     }
 }
