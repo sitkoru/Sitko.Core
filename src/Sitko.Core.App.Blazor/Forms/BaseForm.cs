@@ -8,6 +8,37 @@ namespace Sitko.Core.App.Blazor.Forms
 {
     public abstract class BaseForm
     {
+        protected BaseFormComponent? Parent;
+        protected EditContext? EditContext;
+
+        public void SetParent(BaseFormComponent parent)
+        {
+            Parent = parent;
+        }
+
+        public void SetEditContext(EditContext editContext)
+        {
+            EditContext = editContext;
+        }
+
+        public abstract void NotifyChange();
+        public abstract void NotifyChange(FieldIdentifier fieldIdentifier);
+
+        public abstract Task ResetAsync();
+        public abstract bool CanSave();
+
+        public virtual bool IsValid()
+        {
+            return Parent is not null && Parent.IsValid();
+        }
+
+        public virtual void Save()
+        {
+            Parent?.Save();
+        }
+
+        public abstract Task FieldChangedAsync(FieldIdentifier fieldIdentifier);
+        public abstract Task SaveEntityAsync();
     }
 
     public abstract class BaseForm<TEntity> : BaseForm where TEntity : class
@@ -30,8 +61,7 @@ namespace Sitko.Core.App.Blazor.Forms
 
         public bool IsNew { get; protected set; }
         protected TEntity? Entity;
-        private BaseFormComponent? _parent;
-        protected EditContext? EditContext;
+
         protected bool HasChanges { get; private set; }
         public Func<TEntity, Task>? OnAfterSave { get; set; }
         public Func<TEntity, Task>? OnAfterCreate { get; set; }
@@ -44,29 +74,19 @@ namespace Sitko.Core.App.Blazor.Forms
 
         protected abstract Task MapEntityAsync(TEntity entity);
 
-        public void SetParent(BaseFormComponent parent)
+        public override void NotifyChange(FieldIdentifier fieldIdentifier)
         {
-            _parent = parent;
+            EditContext?.NotifyFieldChanged(fieldIdentifier);
         }
 
-        public void SetEditContext(EditContext editContext)
+        public override void NotifyChange()
         {
-            EditContext = editContext;
-        }
-
-        public void NotifyChange()
-        {
-            EditContext?.NotifyFieldChanged(new FieldIdentifier(Entity, "Id"));
+            NotifyChange(new FieldIdentifier(Entity!, "Id"));
         }
 
         private string Serialize(TEntity entity)
         {
             return JsonConvert.SerializeObject(entity, _jsonSettings);
-        }
-
-        private TEntity Deserialize(string json)
-        {
-            return JsonConvert.DeserializeObject<TEntity>(json, _jsonSettings)!;
         }
 
         public async Task InitializeAsync(TEntity? entity = null)
@@ -96,7 +116,7 @@ namespace Sitko.Core.App.Blazor.Forms
 
         protected abstract Task MapFormAsync(TEntity entity);
 
-        public virtual async Task SaveEntityAsync()
+        public override async Task SaveEntityAsync()
         {
             if (Entity is null)
             {
@@ -180,9 +200,9 @@ namespace Sitko.Core.App.Blazor.Forms
 
         protected async Task NotifyStateChangeAsync()
         {
-            if (_parent is not null)
+            if (Parent is not null)
             {
-                await _parent.NotifyStateChangeAsync();
+                await Parent.NotifyStateChangeAsync();
             }
         }
 
@@ -194,11 +214,11 @@ namespace Sitko.Core.App.Blazor.Forms
             return Task.CompletedTask;
         }
 
-        public virtual Task ResetAsync()
+        public override Task ResetAsync()
         {
             return InitializeAsync(Entity);
         }
-        
+
         protected virtual Task BeforeSaveAsync()
         {
             return Task.CompletedTask;
@@ -214,9 +234,9 @@ namespace Sitko.Core.App.Blazor.Forms
             return Task.CompletedTask;
         }
 
-        public virtual bool CanSave()
+        public override bool CanSave()
         {
-            if (_parent == null)
+            if (Parent == null)
             {
                 return false;
             }
@@ -229,17 +249,7 @@ namespace Sitko.Core.App.Blazor.Forms
             return IsValid();
         }
 
-        public virtual bool IsValid()
-        {
-            return _parent is not null && _parent.IsValid();
-        }
-
-        public virtual void Save()
-        {
-            _parent?.Save();
-        }
-
-        public async Task FieldChangedAsync(FieldIdentifier fieldIdentifier)
+        public override async Task FieldChangedAsync(FieldIdentifier fieldIdentifier)
         {
             await OnFieldChangeAsync(fieldIdentifier);
             HasChanges = await DetectChangesAsync();
