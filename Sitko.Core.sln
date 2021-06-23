@@ -41,6 +41,7 @@ ProjectSection(SolutionItems) = preProject
 	docker-compose.yml = docker-compose.yml
 	LICENSE.md = LICENSE.md
 	packageIcon.png = packageIcon.png
+	nightly.cmd = nightly.cmd
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Db", "src\Sitko.Core.Db\Sitko.Core.Db.csproj", "{0CA239FF-3A6F-4C39-9A1A-A573E61A9A63}"
@@ -174,6 +175,14 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.App.Blazor", "src\Sitko.Core.App.Blazor\Sitko.Core.App.Blazor.csproj", "{8ABB50D6-101D-43F2-809B-FB60D5D27BDB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Blazor.AntDesign", "src\Sitko.Core.Blazor.AntDesign\Sitko.Core.Blazor.AntDesign.csproj", "{F570ACCF-3B22-4AFF-93C8-659FF28205E2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "apps", "apps", "{F626F7B7-70BB-4D3B-A803-68ADA8BA4234}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Apps.Blazor", "apps\Sitko.Core.Apps.Blazor\Sitko.Core.Apps.Blazor.csproj", "{FD711E57-272D-436C-991C-62D317920DD0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "external", "external", "{C4890B36-5B17-4201-AC17-9689F53019AE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Blazor.FileUpload", "src\Sitko.Core.Blazor.FileUpload\Sitko.Core.Blazor.FileUpload.csproj", "{7D53D3F8-A9B8-4403-ADFE-C6AFC2E84B0D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1028,6 +1037,30 @@ Global
 		{F570ACCF-3B22-4AFF-93C8-659FF28205E2}.Release|x64.Build.0 = Release|Any CPU
 		{F570ACCF-3B22-4AFF-93C8-659FF28205E2}.Release|x86.ActiveCfg = Release|Any CPU
 		{F570ACCF-3B22-4AFF-93C8-659FF28205E2}.Release|x86.Build.0 = Release|Any CPU
+		{FD711E57-272D-436C-991C-62D317920DD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD711E57-272D-436C-991C-62D317920DD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD711E57-272D-436C-991C-62D317920DD0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FD711E57-272D-436C-991C-62D317920DD0}.Debug|x64.Build.0 = Debug|Any CPU
+		{FD711E57-272D-436C-991C-62D317920DD0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FD711E57-272D-436C-991C-62D317920DD0}.Debug|x86.Build.0 = Debug|Any CPU
+		{FD711E57-272D-436C-991C-62D317920DD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD711E57-272D-436C-991C-62D317920DD0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD711E57-272D-436C-991C-62D317920DD0}.Release|x64.ActiveCfg = Release|Any CPU
+		{FD711E57-272D-436C-991C-62D317920DD0}.Release|x64.Build.0 = Release|Any CPU
+		{FD711E57-272D-436C-991C-62D317920DD0}.Release|x86.ActiveCfg = Release|Any CPU
+		{FD711E57-272D-436C-991C-62D317920DD0}.Release|x86.Build.0 = Release|Any CPU
+		{7D53D3F8-A9B8-4403-ADFE-C6AFC2E84B0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D53D3F8-A9B8-4403-ADFE-C6AFC2E84B0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D53D3F8-A9B8-4403-ADFE-C6AFC2E84B0D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7D53D3F8-A9B8-4403-ADFE-C6AFC2E84B0D}.Debug|x64.Build.0 = Debug|Any CPU
+		{7D53D3F8-A9B8-4403-ADFE-C6AFC2E84B0D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7D53D3F8-A9B8-4403-ADFE-C6AFC2E84B0D}.Debug|x86.Build.0 = Debug|Any CPU
+		{7D53D3F8-A9B8-4403-ADFE-C6AFC2E84B0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D53D3F8-A9B8-4403-ADFE-C6AFC2E84B0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D53D3F8-A9B8-4403-ADFE-C6AFC2E84B0D}.Release|x64.ActiveCfg = Release|Any CPU
+		{7D53D3F8-A9B8-4403-ADFE-C6AFC2E84B0D}.Release|x64.Build.0 = Release|Any CPU
+		{7D53D3F8-A9B8-4403-ADFE-C6AFC2E84B0D}.Release|x86.ActiveCfg = Release|Any CPU
+		{7D53D3F8-A9B8-4403-ADFE-C6AFC2E84B0D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6677865F-C349-4D25-9E19-3DEC43E92DD5} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
@@ -1101,5 +1134,7 @@ Global
 		{5EE348EF-6386-469B-8E24-4E2D5341B45D} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 		{8ABB50D6-101D-43F2-809B-FB60D5D27BDB} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 		{F570ACCF-3B22-4AFF-93C8-659FF28205E2} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
+		{FD711E57-272D-436C-991C-62D317920DD0} = {F626F7B7-70BB-4D3B-A803-68ADA8BA4234}
+		{7D53D3F8-A9B8-4403-ADFE-C6AFC2E84B0D} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 	EndGlobalSection
 EndGlobal
