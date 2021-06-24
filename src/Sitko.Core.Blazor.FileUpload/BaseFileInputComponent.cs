@@ -18,8 +18,7 @@ namespace Sitko.Core.Blazor.FileUpload
         [Parameter] public Func<IEnumerable<TUploadResult>, Task>? OnFilesUpload { get; set; }
         [Inject] private IFileReaderService FileReaderService { get; set; } = null!;
         public ElementReference InputRef;
-        [CascadingParameter]
-        public BaseComponent? Parent { get; set; }
+        [CascadingParameter] public BaseComponent? Parent { get; set; }
 
         private static readonly string[] _units = {"bytes", "KB", "MB", "GB", "TB", "PB"};
 
@@ -42,19 +41,34 @@ namespace Sitko.Core.Blazor.FileUpload
             return $"{Math.Round(size, 2):N}{_units[unit]}";
         }
 
-        protected async Task UploadFilesAsync()
+        protected override async Task OnStartLoadingAsync()
         {
-            await StartLoadingAsync();
+            await base.OnStartLoadingAsync();
             if (Parent is not null)
             {
                 await Parent.NotifyStateChangeAsync();
             }
+        }
+
+        protected override async Task OnStopLoadingAsync()
+        {
+            await base.OnStopLoadingAsync();
+            if (Parent is not null)
+            {
+                await Parent.NotifyStateChangeAsync();
+            }
+        }
+
+        protected async Task UploadFilesAsync()
+        {
+            await StartLoadingAsync();
             var results = new List<TUploadResult>();
             var files = (await FileReaderService.CreateReference(InputRef).EnumerateFilesAsync()).ToArray();
             if (MaxAllowedFiles > 0 && files.Length > MaxAllowedFiles)
             {
                 Logger.LogError("Max files count is {Count}", MaxAllowedFiles);
                 await NotifyMaxFilesCountExceededAsync(files.Length);
+                await StopLoadingAsync();
                 return;
             }
 
@@ -114,10 +128,6 @@ namespace Sitko.Core.Blazor.FileUpload
             }
 
             await StopLoadingAsync();
-            if (Parent is not null)
-            {
-                await Parent.NotifyStateChangeAsync();
-            }
         }
 
 
