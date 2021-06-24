@@ -22,6 +22,14 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         [Parameter] public string PreviewText { get; set; } = "Preview";
         [Parameter] public string RemoveText { get; set; } = "Remove";
         [Parameter] public IStorage Storage { get; set; } = null!;
+        [Parameter] public bool EnableOrdering { get; set; } = true;
+        protected bool ShowOrdering => EnableOrdering && ItemsCount > 1;
+        protected AntStorageFileInput? FileInput { get; set; }
+        protected bool IsSpinning => FileInput?.IsLoading ?? false;
+
+        protected bool ShowUpload => MaxAllowedFiles is null || MaxAllowedFiles < 1 || ItemsCount < MaxAllowedFiles;
+        protected int? MaxFilesToUpload => MaxAllowedFiles is not null ? MaxAllowedFiles - ItemsCount : null;
+        protected abstract int ItemsCount { get; }
 
         protected Task<object> GenerateMetadataAsync(FileUploadRequest request, FileStream stream)
         {
@@ -59,7 +67,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         protected abstract Task UpdateStorageItems();
     }
-    
+
     public abstract class UploadedItem : IOrdered
     {
         protected UploadedItem(StorageItem storageItem)
@@ -69,7 +77,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         public StorageItem StorageItem { get; }
         public abstract string Url { get; }
-        
+
         public int Position { get; set; }
     }
 }

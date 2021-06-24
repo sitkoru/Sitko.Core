@@ -13,9 +13,9 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         [Parameter] public Func<IEnumerable<StorageItem>, Task> OnUpdate { get; set; } = null!;
         [Parameter] public string UpText { get; set; } = "Move up";
         [Parameter] public string DownText { get; set; } = "Move down";
-        [Parameter] public bool EnableOrdering { get; set; } = true;
-        private readonly OrderedCollection<UploadedFile> _files = new();
         
+        private readonly OrderedCollection<UploadedFile> _files = new();
+        protected override int ItemsCount => _files.Count();
 
         [Parameter]
         public IEnumerable<StorageItem>? InitialFiles

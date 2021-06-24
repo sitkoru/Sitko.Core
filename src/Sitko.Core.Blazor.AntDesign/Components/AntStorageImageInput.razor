@@ -1,51 +1,57 @@
 ﻿@inherits BaseAntStoragePictureInput
-<div class="ant-upload-list ant-upload-list-picture-card ant-upload-list-big">
-    @if (_image is not null)
-    {
-        <div Class="ant-upload-list-picture-card-container">
+<AntDesign.Spin Spinning="IsSpinning">
+    <div class="ant-upload-list ant-upload-list-picture-card ant-upload-list-big">
+        @if (_image is not null)
+        {
+            <div Class="ant-upload-list-picture-card-container">
 
-            <div class="ant-upload-list-item ant-upload-list-item-done  ant-upload-list-item-list-type-picture-card">
-                <div class="ant-upload-list-item-info">
-                    <span class="ant-upload-span">
-                        @{
-                            <a class="ant-upload-list-item-thumbnail" href="@_image.Url" target="_blank" rel="noopener noreferrer">
-                                <img src="@_image.SmallPreviewUrl" alt="@_image.StorageItem.FileName" class="ant-upload-list-item-image"/>
-                            </a>
-                        }
-                        <a target="_blank" rel="noopener noreferrer" class="ant-upload-list-item-name" title="@_image.StorageItem.FileName" href="@_image.Url">@_image.StorageItem.FileName</a>
+                <div class="ant-upload-list-item ant-upload-list-item-done  ant-upload-list-item-list-type-picture-card">
+                    <div class="ant-upload-list-item-info">
+                        <span class="ant-upload-span">
+                            @{
+                                <a class="ant-upload-list-item-thumbnail" href="@_image.Url" target="_blank" rel="noopener noreferrer">
+                                    <img src="@_image.SmallPreviewUrl" alt="@_image.StorageItem.FileName" class="ant-upload-list-item-image"/>
+                                </a>
+                            }
+                            <a target="_blank" rel="noopener noreferrer" class="ant-upload-list-item-name" title="@_image.StorageItem.FileName" href="@_image.Url">@_image.StorageItem.FileName</a>
+                        </span>
+                    </div>
+
+                    <span class="ant-upload-list-item-actions">
+                        <a target="_blank" rel="noopener noreferrer" title="@PreviewText" @onclick="() => PreviewFile(_image)">
+                            <AntDesign.Icon Type="eye"/>
+                        </a>
+                        <button title="@RemoveText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="async () => await RemoveFileAsync(_image)">
+                            <AntDesign.Icon Type="delete"/>
+                        </button>
                     </span>
                 </div>
-
-                <span class="ant-upload-list-item-actions">
-                    <a target="_blank" rel="noopener noreferrer" title="@PreviewText" @onclick="() => PreviewFile(_image)">
-                        <AntDesign.Icon Type="eye"/>
-                    </a>
-                    <button title="@RemoveText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="async () => await RemoveFileAsync(_image)">
-                        <AntDesign.Icon Type="delete"/>
-                    </button>
-                </span>
             </div>
-        </div>
-    }
-    else
-    {
-        <AntStorageFileInput Storage="@Storage"
-                             MaxFileSize="MaxFileSize"
-                             MaxAllowedFiles="1"
-                             ContentTypes="@ContentTypes"
-                             ListType="picture-card"
-                             GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
-                             OnFilesUpload="@(results => FilesUploadedAsync(results))"
-                             UploadPath="@UploadPath">
-            <div>
-                <AntDesign.Icon Spin="IsLoading" Type="@(IsLoading ? "Loading" : "plus")"></AntDesign.Icon>
-                <div className="ant-upload-text">@UploadText</div>
-            </div>
-        </AntStorageFileInput>
-    }
-    <AntDesign.Modal Visible="PreviewVisible"
-                     Title="@PreviewTitle"
-                     Footer="null" OnCancel="@(() => PreviewVisible = false)">
-        <img style="width: 100%" src="@ImgUrl" alt="@PreviewTitle"/>
-    </AntDesign.Modal>
-</div>
+        }
+        else
+        {
+            <CascadingValue Value="this" IsFixed="true">
+                <AntStorageFileInput
+                    @ref="FileInput"
+                    Storage="@Storage"
+                    MaxFileSize="MaxFileSize"
+                    MaxAllowedFiles="1"
+                    ContentTypes="@ContentTypes"
+                    ListType="picture-card"
+                    GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
+                    OnFilesUpload="@(results => FilesUploadedAsync(results))"
+                    UploadPath="@UploadPath">
+                    <div>
+                        <AntDesign.Icon Spin="IsLoading" Type="@(IsLoading ? "Loading" : "plus")"></AntDesign.Icon>
+                        <div className="ant-upload-text">@UploadText</div>
+                    </div>
+                </AntStorageFileInput>
+            </CascadingValue>
+        }
+        <AntDesign.Modal Visible="PreviewVisible"
+                         Title="@PreviewTitle"
+                         Footer="null" OnCancel="@(() => PreviewVisible = false)">
+            <img style="width: 100%" src="@ImgUrl" alt="@PreviewTitle"/>
+        </AntDesign.Modal>
+    </div>
+</AntDesign.Spin>

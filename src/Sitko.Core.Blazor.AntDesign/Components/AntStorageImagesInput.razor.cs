@@ -14,8 +14,8 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         [Parameter] public Func<IEnumerable<StorageItem>, Task> OnUpdate { get; set; } = null!;
         [Parameter] public string LeftText { get; set; } = "Move left";
         [Parameter] public string RightText { get; set; } = "Move right";
-        [Parameter] public bool EnableOrdering { get; set; } = true;
         private readonly OrderedCollection<UploadedImage> _images = new();
+        protected override int ItemsCount => _images.Count();
 
         [Parameter]
         public IEnumerable<StorageItem>? InitialImages
@@ -32,7 +32,6 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
                 }
             }
         }
-
 
         protected override void AddFiles(IEnumerable<UploadedImage> items)
         {

@@ -11,6 +11,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
     {
         [Parameter] public Func<StorageItem?, Task> OnUpdate { get; set; } = null!;
         private UploadedImage? _image;
+        protected override int ItemsCount => 1;
 
         [Parameter]
         public StorageItem? InitialImage
