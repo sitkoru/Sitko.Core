@@ -59,6 +59,18 @@ namespace Sitko.Core.App.Collections
             FillPositions();
         }
 
+        protected void AddItem(TItem item, TItem? neighbor = null, bool after = true)
+        {
+            var position = 0;
+            if (neighbor != null)
+            {
+                position = after ? neighbor.Position + 1 : neighbor.Position;
+            }
+
+            _items.Insert(position, item);
+            FillPositions();
+        }
+
         public void SetItems(IEnumerable<TItem> items)
         {
             _items = new ObservableCollection<TItem>(items);
