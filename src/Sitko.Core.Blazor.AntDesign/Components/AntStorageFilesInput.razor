@@ -1,0 +1,41 @@
+﻿@inherits BaseAntStorageFileInput
+@if (_files.Count < MaxAllowedFiles)
+{
+    <AntStorageFileInput Storage="@Storage"
+                         MaxFileSize="MaxFileSize"
+                         MaxAllowedFiles="@(MaxAllowedFiles - _files.Count)"
+                         ContentTypes="@ContentTypes"
+                         ListType="text"
+                         GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
+                         OnFilesUpload="@(results => FilesUploadedAsync(results))"
+                         UploadPath="@UploadPath">
+    </AntStorageFileInput>
+}
+<div class="ant-upload-list ant-upload-list-text">
+    @foreach (var file in _files)
+    {
+        var tips = file.StorageItem.FileName;
+        <AntDesign.Tooltip Title="tips">
+            <Unbound Context="tooltipRef">
+                <div Class="ant-upload-list-text-container">
+
+                    <div class="ant-upload-list-item ant-upload-list-item-done ant-upload-list-item-list-type-text">
+                        <div class="ant-upload-list-item-info">
+                            <span class="ant-upload-span">
+                                <div class="ant-upload-text-icon">
+                                    <AntDesign.Icon Type="paper-clip"/>
+                                </div>
+                                <span class="ant-upload-list-item-card-actions">
+                                    <button title="@RemoveText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="async () => await RemoveFileAsync(file)">
+                                        <AntDesign.Icon Type="delete"/>
+                                    </button>
+                                </span>
+                                <a target="_blank" rel="noopener noreferrer" class="ant-upload-list-item-name" title="@file.StorageItem.FileName" href="@file.Url">@file.StorageItem.FileName</a>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </Unbound>
+        </AntDesign.Tooltip>
+    }
+</div>

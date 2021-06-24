@@ -15,7 +15,7 @@ const config = {
     plugins: [
         new webpack.ProvidePlugin({}),
         new MiniCssExtractPlugin({
-            filename: "Sitko.Blockly.AntDesign.css"
+            filename: "Sitko.Core.Blazor.AntDesign.css"
         }),
         new CssoWebpackPlugin()
     ],
