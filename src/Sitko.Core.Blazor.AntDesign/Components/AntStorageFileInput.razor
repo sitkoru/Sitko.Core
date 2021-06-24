@@ -1,22 +1,21 @@
 ﻿@inherits Sitko.Core.Blazor.FileUpload.BaseStorageFileInputComponent
-<AntDesign.Spin Spinning="IsLoading">
-    <div class="ant-upload ant-upload-select ant-upload-select-@(ListType)">
-        <span tabindex="0" class="ant-upload" @ref="_btn" role="button">
-            <Input type="file" style="display: none;" accept="@ContentTypes" multiple="@IsMultiple" @ref="InputRef"/>
-            @if (ChildContent is null)
-            {
-                <div class="ant-upload ant-upload-select">
-                    <span class="ant-upload">
-                        <AntDesign.Button Icon="upload">
-                            <span>@ButtonText</span>
-                        </AntDesign.Button>
-                    </span>
-                </div>
-            }
-            else
-            {
-                @ChildContent
-            }
-        </span>
-    </div>
-</AntDesign.Spin>
+<div class="ant-upload ant-upload-select ant-upload-select-@(ListType)">
+    <span tabindex="0" class="ant-upload" @ref="_btn" role="button">
+        <Input type="file" style="display: none;" accept="@ContentTypes" multiple="@IsMultiple" @ref="InputRef"/>
+        @if (ChildContent is null)
+        {
+            <div class="ant-upload ant-upload-select">
+                <span class="ant-upload">
+                    <AntDesign.Button Icon="upload">
+                        <span>@ButtonText</span>
+                    </AntDesign.Button>
+                </span>
+            </div>
+        }
+        else
+        {
+            @ChildContent
+        }
+    </span>
+</div>
+
