@@ -13,5 +13,7 @@ namespace Sitko.Core.Apps.Blazor.Data.Entities
         public List<FooModel> Foos { get; set; } = new();
 
         public StorageItem? StorageItem { get; set; }
+        
+        public List<StorageItem> StorageItems { get; set; } = new();
     }
 }

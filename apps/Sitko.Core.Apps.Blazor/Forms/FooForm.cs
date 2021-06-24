@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Blazor.Forms;
 using Sitko.Core.Apps.Blazor.Data.Entities;
 
-namespace Sitko.Core.Apps.Blazor.Pages
+namespace Sitko.Core.Apps.Blazor.Forms
 {
     public class FooForm : BaseForm<FooModel>
     {

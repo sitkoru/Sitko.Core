@@ -10,6 +10,7 @@ using Sitko.Core.Apps.Blazor.Components;
 using Sitko.Core.Apps.Blazor.Data;
 using Sitko.Core.Apps.Blazor.Data.Entities;
 using Sitko.Core.Apps.Blazor.Data.Repositories;
+using Sitko.Core.Apps.Blazor.Forms;
 using Sitko.Core.Blazor.AntDesignComponents.Components;
 using Sitko.Core.Blazor.FileUpload;
 using Sitko.Core.Storage;
@@ -37,9 +38,15 @@ namespace Sitko.Core.Apps.Blazor.Pages
 
         public BarModel[] Bars { get; set; }
 
-        public async Task FilesUploadedAsync(BarForm bar, IEnumerable<StorageFileUploadResult> results)
+        public async Task FileUploadedAsync(BarForm bar, IEnumerable<StorageFileUploadResult> results)
         {
             bar.StorageItem = results.FirstOrDefault()?.StorageItem;
+            await NotifyStateChangeAsync();
+        }
+
+        public async Task FilesUploadedAsync(BarForm bar, IEnumerable<StorageFileUploadResult> results)
+        {
+            bar.StorageItems.AddRange(results.Select(r => r.StorageItem));
             await NotifyStateChangeAsync();
         }
 
@@ -47,6 +54,16 @@ namespace Sitko.Core.Apps.Blazor.Pages
         {
             var metadata = new BarStorageMetadata();
             return Task.FromResult<object>(metadata);
+        }
+
+        private void PreviewFile(StorageItem file)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void RemoveFile(StorageItem file)
+        {
+            throw new NotImplementedException();
         }
     }
 

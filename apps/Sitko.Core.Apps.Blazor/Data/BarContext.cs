@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using Sitko.Core.Apps.Blazor.Data.Entities;
 using Sitko.Core.Db.Postgres;
 using Sitko.Core.Storage;
@@ -19,6 +20,8 @@ namespace Sitko.Core.Apps.Blazor.Data
             base.OnModelCreating(modelBuilder);
             modelBuilder.RegisterJsonConversion<BarModel, StorageItem?>(model => model.StorageItem,
                 nameof(BarModel.StorageItem));
+            modelBuilder.RegisterJsonEnumerableConversion<BarModel, StorageItem, List<StorageItem>>(model => model.StorageItems,
+                nameof(BarModel.StorageItems));
         }
     }
 }

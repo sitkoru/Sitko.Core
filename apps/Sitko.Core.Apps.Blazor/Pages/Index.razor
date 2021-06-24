@@ -36,37 +36,48 @@
     @*     </ActionColumn> *@
     @* </BarAntRepositoryList> *@
     @* *@
-    <AntRepositoryForm TEntity="BarModel" TEntityPk="Guid" TForm="BarForm" EntityId="Bars.First().Id" @ref="_frm">
+    <AntRepositoryForm TEntity="BarModel" TEntityPk="Guid" TForm="BarForm" EntityId="Bars.OrderBy(b => b.Id).First().Id" @ref="_frm">
+        @if (context.StorageItem is not null)
+        {
+            <p>Storage item: @context.StorageItem</p>
+        }
+        @foreach (var file in context.StorageItems)
+        {
+            <p>Storage item: @file</p>
+        }
         <AntDesign.FormItem Label="Bar">
             <AntDesign.Input @bind-Value="@context.Bar"/>
         </AntDesign.FormItem>
-        <AntDesign.FormItem Label="StorageItem">
-            @if (context.StorageItem is not null)
-            {
-                <p>Storage item: @context.StorageItem</p>
-            }
-            <AntStorageFileInput Storage="@Storage"
-                                 MaxFileSize="@(2 * 1024 * 1024)"
-                                 MaxAllowedFiles="1"
-                                 ContentTypes="image/png,image/jpeg"
-                                 GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
-                                 OnFilesUpload="@(results => FilesUploadedAsync(context, results))"
-                                 UploadPath="bars">
-            </AntStorageFileInput>
-            <AntStorageFileInput Storage="@Storage"
-                                 MaxFileSize="@(2 * 1024 * 1024)"
-                                 MaxAllowedFiles="1"
-                                 ContentTypes="image/png,image/jpeg"
-                                 ListType="picture-card"
-                                 GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
-                                 OnFilesUpload="@(results => FilesUploadedAsync(context, results))"
-                                 UploadPath="bars">
-                <div>
-                    <Icon Type="plus"></Icon>
-                    <div className="ant-upload-text">Upload</div>
-                </div>
-            </AntStorageFileInput>
+        <AntDesign.FormItem>
+            <AntStorageImageInput Storage="@Storage"
+                                  MaxFileSize="@(2 * 1024 * 1024)"
+                                  MaxAllowedFiles="10"
+                                  UploadPath="bars"
+                                  GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
+                                  InitialImage="@context.StorageItem"
+                                  OnUpdate="@(result => { context.StorageItem = result; context.NotifyChange(); return Task.CompletedTask;})">
+            </AntStorageImageInput>
         </AntDesign.FormItem>
+        <FormItem>
+            <AntStorageImagesInput Storage="@Storage"
+                                   MaxFileSize="@(2 * 1024 * 1024)"
+                                   MaxAllowedFiles="10"
+                                   UploadPath="bars"
+                                   GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
+                                   InitialImages="@context.StorageItems"
+                                   OnUpdate="@(results => { context.StorageItems = results.ToList(); context.NotifyChange(); return Task.CompletedTask;})">
+            </AntStorageImagesInput>
+        </FormItem>
+        <FormItem>
+            <AntStorageFilesInput Storage="@Storage"
+                                   MaxFileSize="@(2 * 1024 * 1024)"
+                                   MaxAllowedFiles="10"
+                                   UploadPath="bars"
+                                   GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
+                                   InitialFiles="@context.StorageItems"
+                                   OnUpdate="@(results => { context.StorageItems = results.ToList(); context.NotifyChange(); return Task.CompletedTask;})">
+            </AntStorageFilesInput>
+        </FormItem>
         @foreach (var foo in context.Foos)
         {
             <AntDesign.FormItem Label="Foo">

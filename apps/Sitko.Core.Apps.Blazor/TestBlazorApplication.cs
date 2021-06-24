@@ -21,9 +21,9 @@ namespace Sitko.Core.Apps.Blazor
             AddModule<FileSystemStorageModule<TestBlazorStorageOptions>, TestBlazorStorageOptions>(
                 (configuration, environment, moduleConfig) =>
                 {
-                    moduleConfig.PublicUri = new Uri("http://localhost");
+                    moduleConfig.PublicUri = new Uri("https://localhost:5001/static/");
                     moduleConfig.Name = "Test";
-                    moduleConfig.StoragePath = Path.Combine(Path.GetTempPath(), "test-blazor-upload");
+                    moduleConfig.StoragePath = Path.Combine(Path.GetFullPath("wwwroot"), "static");
                 });
             ConfigureLogLevel("System.Net.Http.HttpClient.health-checks",
                 LogEventLevel.Error).ConfigureLogLevel("Microsoft.AspNetCore.Components", LogEventLevel.Warning);
