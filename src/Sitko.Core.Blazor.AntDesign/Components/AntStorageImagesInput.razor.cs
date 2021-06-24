@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AntDesign;
 using Microsoft.AspNetCore.Components;
+using Sitko.Core.App.Collections;
 using Sitko.Core.Storage;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
@@ -10,7 +12,10 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
     public partial class AntStorageImagesInput
     {
         [Parameter] public Func<IEnumerable<StorageItem>, Task> OnUpdate { get; set; } = null!;
-        private List<UploadedImage> _images = new();
+        [Parameter] public string LeftText { get; set; } = "Move left";
+        [Parameter] public string RightText { get; set; } = "Move right";
+        [Parameter] public bool EnableOrdering { get; set; } = true;
+        private readonly OrderedCollection<UploadedImage> _images = new();
 
         [Parameter]
         public IEnumerable<StorageItem>? InitialImages
@@ -23,24 +28,47 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             {
                 if (value is not null)
                 {
-                    _images = value.Select(CreateUploadedItem).ToList();
+                    _images.SetItems(value.Select(CreateUploadedItem));
                 }
             }
         }
 
+
         protected override void AddFiles(IEnumerable<UploadedImage> items)
         {
-            _images.AddRange(items);
+            _images.AddItems(items);
         }
 
         protected override void RemoveFile(UploadedImage file)
         {
-            _images.Remove(file);
+            _images.RemoveItem(file);
         }
 
         protected override Task UpdateStorageItems()
         {
-            return OnUpdate(_images.Select(image => image.StorageItem));
+            return OnUpdate(_images.OrderBy(i => i.Position).Select(image => image.StorageItem));
+        }
+
+        private bool CanMoveLeft(UploadedImage image)
+        {
+            return _images.CanMoveUp(image);
+        }
+
+        private bool CanMoveRight(UploadedImage image)
+        {
+            return _images.CanMoveDown(image);
+        }
+
+        private Task MoveLeftAsync(UploadedImage image)
+        {
+            _images.MoveUp(image);
+            return UpdateFilesAsync();
+        }
+
+        private Task MoveRightAsync(UploadedImage image)
+        {
+            _images.MoveDown(image);
+            return UpdateFilesAsync();
         }
     }
 }

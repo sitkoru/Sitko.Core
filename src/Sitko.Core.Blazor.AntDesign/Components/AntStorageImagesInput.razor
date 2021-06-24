@@ -20,23 +20,35 @@
                         </div>
 
                         <span class="ant-upload-list-item-actions">
+                            @if (EnableOrdering)
+                            {
+                                <button title="@LeftText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="async () => await MoveLeftAsync(file)" disabled="@(!CanMoveLeft(file))">
+                                    <AntDesign.Icon Type="left"/>
+                                </button>
+                            }
                             <a target="_blank" rel="noopener noreferrer" title="@PreviewText" @onclick="() => PreviewFile(file)">
                                 <AntDesign.Icon Type="eye"/>
                             </a>
                             <button title="@RemoveText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="async () => await RemoveFileAsync(file)">
                                 <AntDesign.Icon Type="delete"/>
                             </button>
+                            @if (EnableOrdering)
+                            {
+                                <button title="@RightText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="async () => await MoveRightAsync(file)" disabled="@(!CanMoveRight(file))">
+                                    <AntDesign.Icon Type="right"/>
+                                </button>
+                            }
                         </span>
                     </div>
                 </div>
             </Unbound>
         </AntDesign.Tooltip>
     }
-    @if (_images.Count < MaxAllowedFiles)
+    @if (_images.Count() < MaxAllowedFiles)
     {
         <AntStorageFileInput Storage="@Storage"
                              MaxFileSize="MaxFileSize"
-                             MaxAllowedFiles="@(MaxAllowedFiles - _images.Count)"
+                             MaxAllowedFiles="@(MaxAllowedFiles - _images.Count())"
                              ContentTypes="@ContentTypes"
                              ListType="picture-card"
                              GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"

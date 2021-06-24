@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Sitko.Core.App.Blazor.Components;
+using Sitko.Core.App.Collections;
 using Sitko.Core.Blazor.FileUpload;
 using Sitko.Core.Storage;
 
@@ -50,7 +51,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         protected abstract void RemoveFile(TUploadedItem file);
 
-        private async Task UpdateFilesAsync()
+        protected async Task UpdateFilesAsync()
         {
             await UpdateStorageItems();
             await NotifyStateChangeAsync();
@@ -59,7 +60,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         protected abstract Task UpdateStorageItems();
     }
     
-    public abstract class UploadedItem
+    public abstract class UploadedItem : IOrdered
     {
         protected UploadedItem(StorageItem storageItem)
         {
@@ -68,5 +69,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         public StorageItem StorageItem { get; }
         public abstract string Url { get; }
+        
+        public int Position { get; set; }
     }
 }

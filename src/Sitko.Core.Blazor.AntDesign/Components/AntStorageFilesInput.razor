@@ -1,9 +1,9 @@
 ﻿@inherits BaseAntStorageFileInput
-@if (_files.Count < MaxAllowedFiles)
+@if (_files.Count() < MaxAllowedFiles)
 {
     <AntStorageFileInput Storage="@Storage"
                          MaxFileSize="MaxFileSize"
-                         MaxAllowedFiles="@(MaxAllowedFiles - _files.Count)"
+                         MaxAllowedFiles="@(MaxAllowedFiles - _files.Count())"
                          ContentTypes="@ContentTypes"
                          ListType="text"
                          GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
@@ -26,6 +26,15 @@
                                     <AntDesign.Icon Type="paper-clip"/>
                                 </div>
                                 <span class="ant-upload-list-item-card-actions">
+                                    @if (EnableOrdering)
+                                    {
+                                        <button title="@UpText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="async () => await MoveUpAsync(file)" disabled="@(!CanMoveUp(file))">
+                                            <AntDesign.Icon Type="up"/>
+                                        </button>
+                                        <button title="@DownText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="async () => await MoveDownAsync(file)" disabled="@(!CanMoveDown(file))">
+                                            <AntDesign.Icon Type="down"/>
+                                        </button>
+                                    }
                                     <button title="@RemoveText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="async () => await RemoveFileAsync(file)">
                                         <AntDesign.Icon Type="delete"/>
                                     </button>
