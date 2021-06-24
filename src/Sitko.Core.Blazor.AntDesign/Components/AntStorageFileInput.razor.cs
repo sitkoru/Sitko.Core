@@ -7,13 +7,20 @@ using Sitko.Core.Storage;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
-    public partial class AntStorageFileInput: IDisposable
+    public partial class AntStorageFileInput : IDisposable
     {
         private IDisposable? _thisReference;
+        private ElementReference _btn;
 
         [Inject] private NotificationService NotificationService { get; set; } = null!;
         [Inject] private IJSRuntime JsRuntime { get; set; } = null!;
         private bool IsMultiple => MaxAllowedFiles is null || MaxAllowedFiles > 1;
+
+        [Parameter] public RenderFragment? ChildContent { get; set; }
+
+        [Parameter] public string ButtonText { get; set; } = "Upload";
+
+        [Parameter] public string ListType { get; set; } = "text";
 
         [JSInvokable]
         public Task NotifyChange()
@@ -72,13 +79,9 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             if (firstRender)
             {
                 _thisReference = DotNetObjectReference.Create(this);
-                await JsRuntime.InvokeVoidAsync("SitkoCoreBlazorAntDesign.FileUpload.init", InputRef, _thisReference);
+                await JsRuntime.InvokeVoidAsync("SitkoCoreBlazorAntDesign.FileUpload.init", InputRef, _btn,
+                    _thisReference);
             }
-        }
-
-        private Task OpenFilesDialogAsync()
-        {
-            return JsRuntime.InvokeVoidAsync("SitkoCoreBlazorAntDesign.FileUpload.open", InputRef).AsTask();
         }
 
         public virtual void Dispose()

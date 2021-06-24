@@ -53,6 +53,19 @@
                                  OnFilesUpload="@(results => FilesUploadedAsync(context, results))"
                                  UploadPath="bars">
             </AntStorageFileInput>
+            <AntStorageFileInput Storage="@Storage"
+                                 MaxFileSize="@(2 * 1024 * 1024)"
+                                 MaxAllowedFiles="1"
+                                 ContentTypes="image/png,image/jpeg"
+                                 ListType="picture-card"
+                                 GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
+                                 OnFilesUpload="@(results => FilesUploadedAsync(context, results))"
+                                 UploadPath="bars">
+                <div>
+                    <Icon Type="plus"></Icon>
+                    <div className="ant-upload-text">Upload</div>
+                </div>
+            </AntStorageFileInput>
         </AntDesign.FormItem>
         @foreach (var foo in context.Foos)
         {
