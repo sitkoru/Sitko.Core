@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Sitko.Core.App.Collections
 {
@@ -49,23 +50,25 @@ namespace Sitko.Core.App.Collections
             }
         }
 
-        public void AddItems(IEnumerable<TItem> items)
+        public void AddItems(IEnumerable<TItem> items, TItem? neighbor = null, bool after = true)
         {
             foreach (var item in items)
             {
-                _items.Insert(_items.Count, item);
+                AddItem(item, neighbor, after);
+                // to add all new items in original order we need to insert them one after another   
+                neighbor = item;
+                if (!after)
+                {
+                    after = true;
+                }
             }
-
-            FillPositions();
         }
 
-        protected void AddItem(TItem item, TItem? neighbor = null, bool after = true)
+        public void AddItem(TItem item, TItem? neighbor = null, bool after = true)
         {
-            var position = 0;
-            if (neighbor != null)
-            {
-                position = after ? neighbor.Position + 1 : neighbor.Position;
-            }
+            neighbor ??= _items.LastOrDefault();
+
+            var position = neighbor is not null ? after ? neighbor.Position + 1 : neighbor.Position : 0;
 
             _items.Insert(position, item);
             FillPositions();
