@@ -29,7 +29,7 @@ namespace Sitko.Core.Blazor.FileUpload
 
         [Inject] private IFileReaderService FileReaderService { get; set; } = null!;
         [Inject] private ILogger<BaseFileInputComponent<TUploadResult, TValue>> Logger { get; set; } = null!;
-        [CascadingParameter] public BaseComponent? Parent { get; set; }
+        [CascadingParameter] public IBaseComponent? Parent { get; set; }
 
         public bool IsLoading { get; private set; }
 

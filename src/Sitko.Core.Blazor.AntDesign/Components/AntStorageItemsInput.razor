@@ -7,7 +7,7 @@
         {
             <div class="ant-upload ant-upload-select">
                 <span class="ant-upload">
-                    <AntDesign.Button Icon="upload">
+                    <AntDesign.Button Disabled="IsLoading" Loading="IsLoading" Icon="@(IsLoading ? "Loading" : "upload")">
                         <span>@ButtonText</span>
                     </AntDesign.Button>
                 </span>
@@ -19,4 +19,3 @@
         }
     </span>
 </div>
-

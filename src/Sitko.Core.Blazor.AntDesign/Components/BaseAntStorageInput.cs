@@ -3,13 +3,14 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Sitko.Core.App.Blazor.Components;
 using Sitko.Core.App.Collections;
 using Sitko.Core.Blazor.FileUpload;
 using Sitko.Core.Storage;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
-    public abstract class BaseAntStorageInput<TUploadedItem, TValue> : InputBase<TValue>
+    public abstract class BaseAntStorageInput<TUploadedItem, TValue> : InputBase<TValue>, IBaseComponent
         where TUploadedItem : UploadedItem
     {
         [Parameter] public string UploadPath { get; set; } = "";
@@ -37,7 +38,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             {
                 return OnChange(value);
             }
-            
+
             return Task.CompletedTask;
         }
 
@@ -74,6 +75,11 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             result = default!;
             validationErrorMessage = "";
             return false;
+        }
+
+        public Task NotifyStateChangeAsync()
+        {
+            return InvokeAsync(StateHasChanged);
         }
     }
 
