@@ -5,9 +5,9 @@ using Sitko.Core.Storage;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
-    public abstract class BaseAntStoragePictureInput : BaseAntStorageInput<UploadedImage>
+    public abstract class BaseAntStoragePictureInput<TValue> : BaseAntStorageInput<UploadedImage, TValue>
     {
-        protected bool PreviewVisible = false;
+        protected bool PreviewVisible;
         protected string PreviewTitle = string.Empty;
         protected string ImgUrl = string.Empty;
 

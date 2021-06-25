@@ -3,23 +3,21 @@ using System.Threading.Tasks;
 using AntDesign;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using Sitko.Core.Storage;
+using Sitko.Core.App.Helpers;
+using Sitko.Core.Blazor.FileUpload;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
-    public partial class AntStorageFileInput : IDisposable
+    public abstract class BastAntStorageFileInputComponent<TInput> : BaseStorageFileInputComponent<TInput>, IDisposable
     {
         private IDisposable? _thisReference;
-        private ElementReference _btn;
+        protected ElementReference _btn;
 
         [Inject] private NotificationService NotificationService { get; set; } = null!;
         [Inject] private IJSRuntime JsRuntime { get; set; } = null!;
-        private bool IsMultiple => MaxAllowedFiles is null || MaxAllowedFiles > 1;
 
         [Parameter] public RenderFragment? ChildContent { get; set; }
-
         [Parameter] public string ButtonText { get; set; } = "Upload";
-
         [Parameter] public string ListType { get; set; } = "text";
 
         [JSInvokable]
@@ -34,18 +32,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             {
                 Message = "Error",
                 Description =
-                    $"File {fileName} is too big — {HumanSize(fileSize)}. Files up to {HumanSize(MaxFileSize)} are allowed.",
-                Placement = NotificationPlacement.BottomRight
-            });
-            return Task.CompletedTask;
-        }
-
-        protected override Task NotifyMaxFilesCountExceededAsync(int filesCount)
-        {
-            NotificationService.Error(new NotificationConfig
-            {
-                Message = "Error",
-                Description = $"Maximum of {MaxAllowedFiles} files is allowed. Selected: {filesCount}",
+                    $"File {fileName} is too big — {FilesHelper.HumanSize(fileSize)}. Files up to {FilesHelper.HumanSize(MaxFileSize)} are allowed.",
                 Placement = NotificationPlacement.BottomRight
             });
             return Task.CompletedTask;
@@ -63,6 +50,16 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             return Task.CompletedTask;
         }
 
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                _thisReference = DotNetObjectReference.Create(this);
+                await JsRuntime.InvokeVoidAsync("SitkoCoreBlazorAntDesign.FileUpload.init", InputRef, _btn,
+                    _thisReference);
+            }
+        }
+
         protected override Task NotifyUploadAsync(int resultsCount)
         {
             NotificationService.Success(new NotificationConfig
@@ -73,15 +70,16 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             });
             return Task.CompletedTask;
         }
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
+        
+        protected override Task NotifyMaxFilesCountExceededAsync(int filesCount)
         {
-            if (firstRender)
+            NotificationService.Error(new NotificationConfig
             {
-                _thisReference = DotNetObjectReference.Create(this);
-                await JsRuntime.InvokeVoidAsync("SitkoCoreBlazorAntDesign.FileUpload.init", InputRef, _btn,
-                    _thisReference);
-            }
+                Message = "Error",
+                Description = $"Maximum of {MaxAllowedFiles} files is allowed. Selected: {filesCount}",
+                Placement = NotificationPlacement.BottomRight
+            });
+            return Task.CompletedTask;
         }
 
         public virtual void Dispose()

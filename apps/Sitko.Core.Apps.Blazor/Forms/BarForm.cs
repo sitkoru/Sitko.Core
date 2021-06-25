@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Blazor.Forms;
+using Sitko.Core.App.Collections;
 using Sitko.Core.Apps.Blazor.Data.Entities;
 using Sitko.Core.Repository;
 using Sitko.Core.Storage;
@@ -15,7 +16,7 @@ namespace Sitko.Core.Apps.Blazor.Forms
         public string Bar { get; set; }
         public List<FooModel> Foos { get; set; }
         public StorageItem? StorageItem { get; set; }
-        public List<StorageItem> StorageItems { get; set; }
+        public ValueCollection<StorageItem> StorageItems { get; set; }
 
         public BarForm(IRepository<BarModel, Guid> repository, ILogger<BarForm> logger) : base(
             repository, logger)

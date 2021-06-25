@@ -2,7 +2,7 @@ using Sitko.Core.Storage;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
-    public abstract class BaseAntStorageFileInput : BaseAntStorageInput<UploadedFile>
+    public abstract class BaseAntStorageFileInput<TValue> : BaseAntStorageInput<UploadedFile, TValue>
     {
         protected override UploadedFile CreateUploadedItem(StorageItem storageItem)
         {

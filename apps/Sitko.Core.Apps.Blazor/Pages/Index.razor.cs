@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -37,18 +36,6 @@ namespace Sitko.Core.Apps.Blazor.Pages
         }
 
         public BarModel[] Bars { get; set; }
-
-        public async Task FileUploadedAsync(BarForm bar, IEnumerable<StorageFileUploadResult> results)
-        {
-            bar.StorageItem = results.FirstOrDefault()?.StorageItem;
-            await NotifyStateChangeAsync();
-        }
-
-        public async Task FilesUploadedAsync(BarForm bar, IEnumerable<StorageFileUploadResult> results)
-        {
-            bar.StorageItems.AddRange(results.Select(r => r.StorageItem));
-            await NotifyStateChangeAsync();
-        }
 
         private Task<object> GenerateMetadataAsync(FileUploadRequest request, FileStream stream)
         {

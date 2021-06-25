@@ -4,55 +4,49 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Blazor.Components;
 using Tewr.Blazor.FileReader;
 
 namespace Sitko.Core.Blazor.FileUpload
 {
-    public abstract class BaseFileInputComponent<TUploadResult> : BaseComponent where TUploadResult : IFileUploadResult
+    public interface IBaseFileInputComponent
     {
+        bool IsLoading { get; }
+    }
+
+    public abstract class BaseFileInputComponent<TUploadResult, TValue> : InputBase<TValue?>, IBaseFileInputComponent
+        where TUploadResult : IFileUploadResult
+    {
+        
+        public ElementReference InputRef;
         [Parameter] public string ContentTypes { get; set; } = "";
         [Parameter] public long MaxFileSize { get; set; }
+
         [Parameter] public int? MaxAllowedFiles { get; set; }
-        [Parameter] public Func<IEnumerable<TUploadResult>, Task>? OnFilesUpload { get; set; }
+        [Parameter] public Func<TValue?, Task>? OnChange { get; set; }
+
         [Inject] private IFileReaderService FileReaderService { get; set; } = null!;
-        public ElementReference InputRef;
+        [Inject] private ILogger<BaseFileInputComponent<TUploadResult, TValue>> Logger { get; set; } = null!;
         [CascadingParameter] public BaseComponent? Parent { get; set; }
 
-        private static readonly string[] _units = {"bytes", "KB", "MB", "GB", "TB", "PB"};
+        public bool IsLoading { get; private set; }
 
-        protected static string HumanSize(long fileSize)
+        private async Task StartLoadingAsync()
         {
-            if (fileSize < 1)
-            {
-                return "-";
-            }
-
-            var unit = 0;
-
-            double size = fileSize;
-            while (size >= 1024)
-            {
-                size /= 1024;
-                unit++;
-            }
-
-            return $"{Math.Round(size, 2):N}{_units[unit]}";
-        }
-
-        protected override async Task OnStartLoadingAsync()
-        {
-            await base.OnStartLoadingAsync();
+            IsLoading = true;
+            await InvokeAsync(StateHasChanged);
             if (Parent is not null)
             {
                 await Parent.NotifyStateChangeAsync();
             }
         }
 
-        protected override async Task OnStopLoadingAsync()
+        private async Task StopLoadingAsync()
         {
-            await base.OnStopLoadingAsync();
+            IsLoading = false;
+            await InvokeAsync(StateHasChanged);
             if (Parent is not null)
             {
                 await Parent.NotifyStateChangeAsync();
@@ -121,14 +115,17 @@ namespace Sitko.Core.Blazor.FileUpload
             {
                 Logger.LogDebug("Uploaded {Count} files", results.Count);
                 await NotifyUploadAsync(results.Count);
-                if (OnFilesUpload is not null)
+                CurrentValue = GetResult(results);
+                if (OnChange is not null)
                 {
-                    await OnFilesUpload(results);
+                    await OnChange(CurrentValue);
                 }
             }
 
             await StopLoadingAsync();
         }
+
+        protected abstract TValue? GetResult(IEnumerable<TUploadResult> results);
 
 
         protected abstract Task<TUploadResult> SaveFileAsync(FileUploadRequest file, FileStream stream);
@@ -152,6 +149,14 @@ namespace Sitko.Core.Blazor.FileUpload
         protected virtual Task NotifyFileExceedMaxSizeAsync(string fileName, long fileSize)
         {
             return Task.CompletedTask;
+        }
+
+        protected override bool TryParseValueFromString(string? value, out TValue result,
+            out string validationErrorMessage)
+        {
+            result = default!;
+            validationErrorMessage = "";
+            return false;
         }
     }
 }

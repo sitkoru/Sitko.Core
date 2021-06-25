@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AntDesign;
 using Microsoft.AspNetCore.Components;
 using Sitko.Core.App.Collections;
 using Sitko.Core.Storage;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
-    public partial class AntStorageImagesInput
+    public partial class AntStorageImagesInput<TCollection> where TCollection : ICollection<StorageItem>, new()
     {
         [Parameter] public Func<IEnumerable<StorageItem>, Task> OnUpdate { get; set; } = null!;
         [Parameter] public string LeftText { get; set; } = "Move left";
@@ -17,35 +16,42 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         private readonly OrderedCollection<UploadedImage> _images = new();
         protected override int ItemsCount => _images.Count();
 
-        [Parameter]
-        public IEnumerable<StorageItem>? InitialImages
+        private TCollection Items
         {
             get
             {
-                return Array.Empty<StorageItem>();
+                return CurrentValue;
             }
             set
             {
-                if (value is not null)
-                {
-                    _images.SetItems(value.Select(CreateUploadedItem));
-                }
+                _images.AddItems(value.Select(CreateUploadedItem));
+                UpdateCurrentValue();
             }
         }
 
-        protected override void AddFiles(IEnumerable<UploadedImage> items)
+        protected override void OnParametersSet()
         {
-            _images.AddItems(items);
+            base.OnParametersSet();
+            if (CurrentValue is not null && CurrentValue.Any())
+            {
+                _images.SetItems(CurrentValue.Select(CreateUploadedItem));
+            }
         }
 
-        protected override void RemoveFile(UploadedImage file)
+        protected override void DoRemoveFile(UploadedImage file)
         {
             _images.RemoveItem(file);
         }
 
-        protected override Task UpdateStorageItems()
+        protected override TCollection GetValue()
         {
-            return OnUpdate(_images.OrderBy(i => i.Position).Select(image => image.StorageItem));
+            var collection = new TCollection();
+            foreach (var result in _images)
+            {
+                collection.Add(result.StorageItem);
+            }
+
+            return collection;
         }
 
         private bool CanMoveLeft(UploadedImage image)
@@ -58,16 +64,16 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             return _images.CanMoveDown(image);
         }
 
-        private Task MoveLeftAsync(UploadedImage image)
+        private void MoveLeft(UploadedImage image)
         {
             _images.MoveUp(image);
-            return UpdateFilesAsync();
+            UpdateCurrentValue();
         }
 
-        private Task MoveRightAsync(UploadedImage image)
+        private void MoveRight(UploadedImage image)
         {
             _images.MoveDown(image);
-            return UpdateFilesAsync();
+            UpdateCurrentValue();
         }
     }
 }

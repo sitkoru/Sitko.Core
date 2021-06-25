@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sitko.Core.Apps.Blazor.Pages;
+using Sitko.Core.App.Collections;
 using Sitko.Core.Repository;
 using Sitko.Core.Storage;
 
@@ -14,6 +14,6 @@ namespace Sitko.Core.Apps.Blazor.Data.Entities
 
         public StorageItem? StorageItem { get; set; }
         
-        public List<StorageItem> StorageItems { get; set; } = new();
+        public ValueCollection<StorageItem> StorageItems { get; set; } = new();
     }
 }

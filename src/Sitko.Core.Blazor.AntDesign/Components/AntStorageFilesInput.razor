@@ -1,9 +1,11 @@
-﻿@inherits BaseAntStorageFileInput
+﻿@typeparam TCollection
+@inherits BaseAntStorageFileInput<TCollection>
 <AntDesign.Spin Spinning="IsSpinning">
     @if (ShowUpload)
     {
         <CascadingValue Value="this" IsFixed="true">
-            <AntStorageFileInput
+            <AntStorageItemsInput
+                TCollection="TCollection"
                 @ref="FileInput"
                 Storage="@Storage"
                 MaxFileSize="MaxFileSize"
@@ -11,9 +13,10 @@
                 ContentTypes="@ContentTypes"
                 ListType="text"
                 GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
-                OnFilesUpload="@(results => FilesUploadedAsync(results))"
-                UploadPath="@UploadPath">
-            </AntStorageFileInput>
+                @bind-Value="Items"
+                UploadPath="@UploadPath"
+                OnChange="@OnChangeAsync">
+            </AntStorageItemsInput>
         </CascadingValue>
     }
     <div>
@@ -35,14 +38,14 @@
                                         <span class="ant-upload-list-item-card-actions">
                                             @if (ShowOrdering)
                                             {
-                                                <button title="@UpText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="async () => await MoveUpAsync(file)" disabled="@(!CanMoveUp(file))">
+                                                <button title="@UpText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => MoveUp(file)" disabled="@(!CanMoveUp(file))">
                                                     <AntDesign.Icon Type="up"/>
                                                 </button>
-                                                <button title="@DownText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="async () => await MoveDownAsync(file)" disabled="@(!CanMoveDown(file))">
+                                                <button title="@DownText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => MoveDown(file)" disabled="@(!CanMoveDown(file))">
                                                     <AntDesign.Icon Type="down"/>
                                                 </button>
                                             }
-                                            <button title="@RemoveText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="async () => await RemoveFileAsync(file)">
+                                            <button title="@RemoveText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => RemoveFile(file)">
                                                 <AntDesign.Icon Type="delete"/>
                                             </button>
                                         </span>

@@ -8,45 +8,51 @@ using Sitko.Core.Storage;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
-    public partial class AntStorageFilesInput
+    public partial class AntStorageFilesInput<TCollection> where TCollection : ICollection<StorageItem>, new()
     {
         [Parameter] public Func<IEnumerable<StorageItem>, Task> OnUpdate { get; set; } = null!;
         [Parameter] public string UpText { get; set; } = "Move up";
         [Parameter] public string DownText { get; set; } = "Move down";
-        
+
         private readonly OrderedCollection<UploadedFile> _files = new();
         protected override int ItemsCount => _files.Count();
 
-        [Parameter]
-        public IEnumerable<StorageItem>? InitialFiles
+        private TCollection Items
         {
             get
             {
-                return Array.Empty<StorageItem>();
+                return CurrentValue;
             }
             set
             {
-                if (value is not null)
-                {
-                    _files.SetItems(value.Select(CreateUploadedItem));
-                }
+                _files.AddItems(value.Select(CreateUploadedItem));
+                UpdateCurrentValue();
             }
         }
 
-
-        protected override void AddFiles(IEnumerable<UploadedFile> items)
+        protected override void OnParametersSet()
         {
-            _files.AddItems(items);
+            base.OnParametersSet();
+            if (CurrentValue is not null && CurrentValue.Any())
+            {
+                _files.SetItems(CurrentValue.Select(CreateUploadedItem));
+            }
         }
 
-        protected override void RemoveFile(UploadedFile file)
+        protected override void DoRemoveFile(UploadedFile file)
         {
             _files.RemoveItem(file);
         }
 
-        protected override Task UpdateStorageItems()
+        protected override TCollection GetValue()
         {
-            return OnUpdate(_files.OrderBy(i => i.Position).Select(file => file.StorageItem));
+            var collection = new TCollection();
+            foreach (var result in _files)
+            {
+                collection.Add(result.StorageItem);
+            }
+
+            return collection;
         }
 
         private bool CanMoveUp(UploadedFile file)
@@ -59,16 +65,16 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             return _files.CanMoveDown(file);
         }
 
-        private Task MoveUpAsync(UploadedFile file)
+        private void MoveUp(UploadedFile file)
         {
             _files.MoveUp(file);
-            return UpdateFilesAsync();
+            UpdateCurrentValue();
         }
 
-        private Task MoveDownAsync(UploadedFile file)
+        private void MoveDown(UploadedFile file)
         {
             _files.MoveDown(file);
-            return UpdateFilesAsync();
+            UpdateCurrentValue();
         }
     }
 }

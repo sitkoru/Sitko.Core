@@ -1,20 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Sitko.Core.App.Blazor.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Sitko.Core.App.Collections;
 using Sitko.Core.Blazor.FileUpload;
 using Sitko.Core.Storage;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
-    public abstract class BaseAntStorageInput<TUploadedItem> : BaseComponent where TUploadedItem : UploadedItem
+    public abstract class BaseAntStorageInput<TUploadedItem, TValue> : InputBase<TValue>
+        where TUploadedItem : UploadedItem
     {
         [Parameter] public string UploadPath { get; set; } = "";
         [Parameter] public Func<FileUploadRequest, FileStream, Task<object>>? GenerateMetadata { get; set; }
+        [Parameter] public Func<TValue?, Task>? OnChange { get; set; }
         [Parameter] public virtual string ContentTypes { get; set; } = "";
         [Parameter] public long MaxFileSize { get; set; }
         [Parameter] public int? MaxAllowedFiles { get; set; }
@@ -24,12 +24,22 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         [Parameter] public IStorage Storage { get; set; } = null!;
         [Parameter] public bool EnableOrdering { get; set; } = true;
         protected bool ShowOrdering => EnableOrdering && ItemsCount > 1;
-        protected AntStorageFileInput? FileInput { get; set; }
+        protected IBaseFileInputComponent? FileInput { get; set; }
         protected bool IsSpinning => FileInput?.IsLoading ?? false;
 
         protected bool ShowUpload => MaxAllowedFiles is null || MaxAllowedFiles < 1 || ItemsCount < MaxAllowedFiles;
         protected int? MaxFilesToUpload => MaxAllowedFiles is not null ? MaxAllowedFiles - ItemsCount : null;
         protected abstract int ItemsCount { get; }
+
+        protected Task OnChangeAsync(TValue value)
+        {
+            if (OnChange is not null)
+            {
+                return OnChange(value);
+            }
+            
+            return Task.CompletedTask;
+        }
 
         protected Task<object> GenerateMetadataAsync(FileUploadRequest request, FileStream stream)
         {
@@ -41,31 +51,30 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             return Task.FromResult((object)null!);
         }
 
-        protected Task FilesUploadedAsync(IEnumerable<StorageFileUploadResult> results)
+        protected void RemoveFile(TUploadedItem file)
         {
-            AddFiles(results.Select(r => CreateUploadedItem(r.StorageItem)));
-            return UpdateFilesAsync();
+            DoRemoveFile(file);
+            UpdateCurrentValue();
         }
 
-        protected abstract void AddFiles(IEnumerable<TUploadedItem> items);
+        protected void UpdateCurrentValue()
+        {
+            CurrentValue = GetValue();
+            OnChangeAsync(CurrentValue);
+        }
 
+        protected abstract void DoRemoveFile(TUploadedItem file);
         protected abstract TUploadedItem CreateUploadedItem(StorageItem storageItem);
 
-        protected Task RemoveFileAsync(TUploadedItem file)
+        protected abstract TValue GetValue();
+
+        protected override bool TryParseValueFromString(string? value, out TValue result,
+            out string validationErrorMessage)
         {
-            RemoveFile(file);
-            return UpdateFilesAsync();
+            result = default!;
+            validationErrorMessage = "";
+            return false;
         }
-
-        protected abstract void RemoveFile(TUploadedItem file);
-
-        protected async Task UpdateFilesAsync()
-        {
-            await UpdateStorageItems();
-            await NotifyStateChangeAsync();
-        }
-
-        protected abstract Task UpdateStorageItems();
     }
 
     public abstract class UploadedItem : IOrdered

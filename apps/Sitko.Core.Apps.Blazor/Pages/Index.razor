@@ -1,5 +1,8 @@
 @page "/"
 @using Sitko.Core.Apps.Blazor.Data.Entities
+@using Sitko.Core.Storage
+@using Sitko.Core.App.Collections
+@using Microsoft.Extensions.Logging
 @inherits BaseComponent
 <h1>Hello, world!</h1>
 @if (IsInitialized)
@@ -48,34 +51,42 @@
         <AntDesign.FormItem Label="Bar">
             <AntDesign.Input @bind-Value="@context.Bar"/>
         </AntDesign.FormItem>
-        <AntDesign.FormItem>
+        <AntDesign.FormItem Label="Simple file input">
+            <AntStorageItemInput Storage="Storage" @bind-Value="context.StorageItem" UploadPath="bars" MaxFileSize="@(2 * 1024 * 1024)" GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"></AntStorageItemInput>
+        </AntDesign.FormItem>
+        <AntDesign.FormItem Label="Multiple file input">
+            <AntStorageItemsInput TCollection="ValueCollection<StorageItem>" Storage="Storage" MaxAllowedFiles="10" @bind-Value="context.StorageItems" UploadPath="bars" MaxFileSize="@(2 * 1024 * 1024)" GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"></AntStorageItemsInput>
+        </AntDesign.FormItem>
+        <AntDesign.FormItem Label="Single image">
             <AntStorageImageInput Storage="@Storage"
                                   MaxFileSize="@(2 * 1024 * 1024)"
                                   MaxAllowedFiles="10"
                                   UploadPath="bars"
                                   GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
-                                  InitialImage="@context.StorageItem"
-                                  OnUpdate="@(result => { context.StorageItem = result; context.NotifyChange(); return Task.CompletedTask;})">
+                                  @bind-Value="context.StorageItem"
+                                  OnChange="@(value => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
             </AntStorageImageInput>
         </AntDesign.FormItem>
-        <FormItem>
-            <AntStorageImagesInput Storage="@Storage"
-                                   MaxFileSize="@(2 * 1024 * 1024)"
-                                   MaxAllowedFiles="10"
-                                   UploadPath="bars"
-                                   GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
-                                   InitialImages="@context.StorageItems"
-                                   OnUpdate="@(results => { context.StorageItems = results.ToList(); context.NotifyChange(); return Task.CompletedTask;})">
+        <FormItem Label="Multiple images">
+            <AntStorageImagesInput
+                TCollection="ValueCollection<StorageItem>"
+                Storage="@Storage"
+                MaxFileSize="@(2 * 1024 * 1024)"
+                UploadPath="bars"
+                GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
+                @bind-Value="context.StorageItems"
+                OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values.Count()); return Task.CompletedTask;})">
             </AntStorageImagesInput>
         </FormItem>
-        <FormItem>
+        <FormItem Label="Multiple files">
             <AntStorageFilesInput Storage="@Storage"
-                                   MaxFileSize="@(2 * 1024 * 1024)"
-                                   MaxAllowedFiles="10"
-                                   UploadPath="bars"
-                                   GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
-                                   InitialFiles="@context.StorageItems"
-                                   OnUpdate="@(results => { context.StorageItems = results.ToList(); context.NotifyChange(); return Task.CompletedTask;})">
+                                  TCollection="ValueCollection<StorageItem>"
+                                  MaxFileSize="@(2 * 1024 * 1024)"
+                                  MaxAllowedFiles="10"
+                                  UploadPath="bars"
+                                  GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
+                                  @bind-Value="context.StorageItems"
+                                  OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values.Count()); return Task.CompletedTask;})">
             </AntStorageFilesInput>
         </FormItem>
         @foreach (var foo in context.Foos)

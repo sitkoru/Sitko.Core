@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Sitko.Core.Storage;
@@ -7,7 +9,7 @@ using Sitko.Core.Storage;
 namespace Sitko.Core.Blazor.FileUpload
 {
     public abstract class
-        BaseStorageFileInputComponent : BaseFileInputComponent<StorageFileUploadResult>
+        BaseStorageFileInputComponent<TInput> : BaseFileInputComponent<StorageFileUploadResult, TInput>
     {
         [Parameter] public IStorage Storage { get; set; } = null!;
         [Parameter] public string UploadPath { get; set; } = "";
@@ -23,6 +25,22 @@ namespace Sitko.Core.Blazor.FileUpload
 
             var item = await Storage.SaveAsync(stream, file.Name, UploadPath, metadata);
             return new StorageFileUploadResult(item, Storage.PublicUri(item).ToString());
+        }
+    }
+
+    public abstract class BaseStorageItemInputComponent : BaseStorageFileInputComponent<StorageItem>
+    {
+        protected override StorageItem? GetResult(IEnumerable<StorageFileUploadResult> results)
+        {
+            return results.FirstOrDefault()?.StorageItem;
+        }
+    }
+
+    public abstract class BaseStorageItemsInputComponent : BaseStorageFileInputComponent<IEnumerable<StorageItem>>
+    {
+        protected override IEnumerable<StorageItem> GetResult(IEnumerable<StorageFileUploadResult> results)
+        {
+            return results.Select(r => r.StorageItem);
         }
     }
 
