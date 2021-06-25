@@ -5,7 +5,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.App.Blazor.Components
 {
-    public abstract class BaseComponent : OwningComponentBase
+    public interface IBaseComponent
+    {
+        Task NotifyStateChangeAsync();
+    }
+
+    public abstract class BaseComponent : OwningComponentBase, IBaseComponent
     {
         protected bool IsInitialized { get; private set; }
         public bool IsLoading { get; private set; }
