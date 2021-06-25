@@ -52,10 +52,35 @@
             <AntDesign.Input @bind-Value="@context.Bar"/>
         </AntDesign.FormItem>
         <AntDesign.FormItem Label="Simple file input">
-            <AntStorageItemInput Storage="Storage" @bind-Value="context.StorageItem" UploadPath="bars" MaxFileSize="@(2 * 1024 * 1024)" GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"></AntStorageItemInput>
+            <AntStorageItemInput
+                Storage="Storage"
+                @bind-Value="context.StorageItem"
+                UploadPath="bars"
+                MaxFileSize="@(2 * 1024 * 1024)"
+                GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))">
+            </AntStorageItemInput>
+        </AntDesign.FormItem>
+        <AntDesign.FormItem Label="Simple custom file input">
+            <AntStorageItemInput
+                Storage="Storage"
+                @bind-Value="context.StorageItem"
+                UploadPath="bars"
+                MaxFileSize="@(2 * 1024 * 1024)"
+                GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))">
+                <div>PRESS ME</div>
+            </AntStorageItemInput>
         </AntDesign.FormItem>
         <AntDesign.FormItem Label="Multiple file input">
-            <AntStorageItemsInput TCollection="ValueCollection<StorageItem>" Storage="Storage" MaxAllowedFiles="10" @bind-Value="context.StorageItems" UploadPath="bars" MaxFileSize="@(2 * 1024 * 1024)" GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"></AntStorageItemsInput>
+            <AntStorageItemsInput
+                TCollection="ValueCollection<StorageItem>"
+                Storage="Storage"
+                MaxAllowedFiles="10"
+                @bind-Value="context.StorageItems"
+                UploadPath="bars"
+                MaxFileSize="@(2 * 1024 * 1024)"
+                GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))">
+
+            </AntStorageItemsInput>
         </AntDesign.FormItem>
         <AntDesign.FormItem Label="Single image">
             <AntStorageImageInput Storage="@Storage"
