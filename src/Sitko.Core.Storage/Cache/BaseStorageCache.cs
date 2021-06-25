@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Sitko.Core.App.Helpers;
 using CacheExtensions = Sitko.Core.Caching.CacheExtensions;
 using MemoryCache = Sitko.Core.Caching.MemoryCache;
 using MemoryCacheOptions = Sitko.Core.Caching.MemoryCacheOptions;
@@ -82,7 +83,7 @@ namespace Sitko.Core.Storage.Cache
                             Logger.LogWarning(
                                 "File {Key} exceed maximum cache file size. File size: {FleSize}. Maximum size: {MaximumSize}",
                                 key, result.FileSize,
-                                Helpers.HumanSize(Options.MaxFileSizeToStore));
+                                FilesHelper.HumanSize(Options.MaxFileSizeToStore));
                             return result;
                         }
 
@@ -148,7 +149,7 @@ namespace Sitko.Core.Storage.Cache
         }
 
         Task<StorageItemDownloadInfo?> IStorageCache.GetItemAsync(string path,
-            CancellationToken? cancellationToken = null)
+            CancellationToken? cancellationToken)
         {
             if (_cache == null)
             {

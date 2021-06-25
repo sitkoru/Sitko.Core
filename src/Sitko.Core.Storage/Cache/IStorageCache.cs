@@ -8,13 +8,13 @@ namespace Sitko.Core.Storage.Cache
 {
     public interface IStorageCache : IAsyncDisposable
     {
-        internal Task<StorageItemDownloadInfo?> GetItemAsync(string path, CancellationToken? cancellationToken = null);
+        internal Task<StorageItemDownloadInfo?> GetItemAsync(string path, CancellationToken? cancellationToken = default);
 
         internal Task<StorageItemDownloadInfo?> GetOrAddItemAsync(string path, Func<Task<StorageItemDownloadInfo?>> addItem,
-            CancellationToken? cancellationToken = null);
+            CancellationToken? cancellationToken = default);
 
-        Task RemoveItemAsync(string path, CancellationToken? cancellationToken = null);
-        Task ClearAsync(CancellationToken? cancellationToken = null);
+        Task RemoveItemAsync(string path, CancellationToken? cancellationToken = default);
+        Task ClearAsync(CancellationToken? cancellationToken = default);
     }
 
     public interface IStorageCache<T> : IStorageCache where T : StorageCacheOptions
