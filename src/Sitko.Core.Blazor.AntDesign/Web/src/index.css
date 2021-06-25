@@ -3,6 +3,11 @@
     height: 256px;
 }
 
+.ant-upload-list-small .ant-upload-list-picture-card-container, .ant-upload-list-small .ant-upload.ant-upload-select-picture-card {
+    width: 256px;
+    height: 256px;
+}
+
 .ant-upload-list-picture-card .ant-upload-list-item-actions .anticon-delete, .ant-upload-list-picture-card .ant-upload-list-item-actions .anticon-download, .ant-upload-list-picture-card .ant-upload-list-item-actions .anticon-eye, .ant-upload-list-picture-card .ant-upload-list-item-actions .anticon-left, .ant-upload-list-picture-card .ant-upload-list-item-actions .anticon-right {
     z-index: 10;
     width: 16px;

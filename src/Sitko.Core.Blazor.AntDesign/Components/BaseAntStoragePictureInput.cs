@@ -13,6 +13,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         [Parameter] public Func<StorageItem, ImageSize, string>? GeneratePreviewUrl { get; set; }
         [Parameter] public override string ContentTypes { get; set; } = "image/jpeg,image/png,image/svg+xml";
+        [Parameter] public string Size { get; set; } = "default";
 
         protected override UploadedImage CreateUploadedItem(StorageItem storageItem)
         {

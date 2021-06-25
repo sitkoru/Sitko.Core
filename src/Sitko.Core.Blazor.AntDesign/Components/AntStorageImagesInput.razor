@@ -1,7 +1,7 @@
 ﻿@typeparam TCollection
 @inherits BaseAntStoragePictureInput<TCollection>
 <AntDesign.Spin Spinning="IsSpinning">
-    <div class="ant-upload-list ant-upload-list-picture-card">
+    <div class="ant-upload-list ant-upload-list-picture-card ant-upload-list-@Size">
         @foreach (var file in _images)
         {
             var tips = file.StorageItem.FileName;

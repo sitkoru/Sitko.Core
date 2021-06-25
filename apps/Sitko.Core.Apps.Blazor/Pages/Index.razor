@@ -92,6 +92,28 @@
                                   OnChange="@(value => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
             </AntStorageImageInput>
         </AntDesign.FormItem>
+        <AntDesign.FormItem Label="Single small image">
+            <AntStorageImageInput Storage="@Storage"
+                                  Size="small"
+                                  MaxFileSize="@(2 * 1024 * 1024)"
+                                  MaxAllowedFiles="10"
+                                  UploadPath="bars"
+                                  GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
+                                  @bind-Value="context.StorageItem"
+                                  OnChange="@(value => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
+            </AntStorageImageInput>
+        </AntDesign.FormItem>
+        <AntDesign.FormItem Label="Single big image">
+            <AntStorageImageInput Storage="@Storage"
+                                  Size="big"
+                                  MaxFileSize="@(2 * 1024 * 1024)"
+                                  MaxAllowedFiles="10"
+                                  UploadPath="bars"
+                                  GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
+                                  @bind-Value="context.StorageItem"
+                                  OnChange="@(value => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
+            </AntStorageImageInput>
+        </AntDesign.FormItem>
         <FormItem Label="Multiple images">
             <AntStorageImagesInput
                 TCollection="ValueCollection<StorageItem>"
