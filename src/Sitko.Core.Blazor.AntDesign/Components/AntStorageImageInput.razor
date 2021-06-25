@@ -10,7 +10,14 @@
                         <span class="ant-upload-span">
                             @{
                                 <a class="ant-upload-list-item-thumbnail" href="@Image.Url" target="_blank" rel="noopener noreferrer">
-                                    <img src="@Image.SmallPreviewUrl" alt="@Image.StorageItem.FileName" class="ant-upload-list-item-image"/>
+                                    @if (Avatar)
+                                    {
+                                        <AntDesign.Avatar Size="@AvatarSize" Src="@Image.SmallPreviewUrl" Alt="@Image.StorageItem.FileName" Class="ant-upload-list-item-image"/>
+                                    }
+                                    else
+                                    {
+                                        <img src="@Image.SmallPreviewUrl" alt="@Image.StorageItem.FileName" class="ant-upload-list-item-image"/>
+                                    }
                                 </a>
                             }
                             <a target="_blank" rel="noopener noreferrer" class="ant-upload-list-item-name" title="@Image.StorageItem.FileName" href="@Image.Url">@Image.StorageItem.FileName</a>

@@ -1,4 +1,4 @@
-.ant-upload-list-big .ant-upload-list-picture-card-container, .ant-upload-list-big .ant-upload.ant-upload-select-picture-card {
+.ant-upload-list-large .ant-upload-list-picture-card-container, .ant-upload-list-large .ant-upload.ant-upload-select-picture-card {
     width: 256px;
     height: 256px;
 }
@@ -20,4 +20,12 @@
 
 .ant-upload-list-item-card-actions-btn.ant-btn-sm {
     width: 20px;
+}
+
+.ant-upload-list-item-image.ant-avatar.ant-avatar-image {
+    display: block;
+}
+
+.ant-upload-list-item-image.ant-avatar.ant-avatar-image img {
+    object-fit: cover;
 }

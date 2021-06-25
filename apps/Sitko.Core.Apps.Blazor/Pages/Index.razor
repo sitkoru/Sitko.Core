@@ -103,9 +103,9 @@
                                   OnChange="@(value => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
             </AntStorageImageInput>
         </AntDesign.FormItem>
-        <AntDesign.FormItem Label="Single big image">
+        <AntDesign.FormItem Label="Single large image">
             <AntStorageImageInput Storage="@Storage"
-                                  Size="big"
+                                  Size="large"
                                   MaxFileSize="@(2 * 1024 * 1024)"
                                   MaxAllowedFiles="10"
                                   UploadPath="bars"
@@ -125,6 +125,55 @@
                 OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values.Count()); return Task.CompletedTask;})">
             </AntStorageImagesInput>
         </FormItem>
+        @* AVATARS *@
+        <AntDesign.FormItem Label="Single avatar">
+            <AntStorageImageInput Storage="@Storage"
+                                  Avatar="true"
+                                          MaxFileSize="@(2 * 1024 * 1024)"
+                                          MaxAllowedFiles="10"
+                                          UploadPath="bars"
+                                          GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
+                                          @bind-Value="context.StorageItem"
+                                          OnChange="@(value => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
+                    </AntStorageImageInput>
+                </AntDesign.FormItem>
+                <AntDesign.FormItem Label="Single small avatar">
+                    <AntStorageImageInput Storage="@Storage"
+                                          Avatar="true"
+                                          Size="small"
+                                          MaxFileSize="@(2 * 1024 * 1024)"
+                                          MaxAllowedFiles="10"
+                                          UploadPath="bars"
+                                          GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
+                                          @bind-Value="context.StorageItem"
+                                          OnChange="@(value => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
+                    </AntStorageImageInput>
+                </AntDesign.FormItem>
+                <AntDesign.FormItem Label="Single large avatar">
+                    <AntStorageImageInput Storage="@Storage"
+                                          Avatar="true"
+                                          Size="large"
+                                          MaxFileSize="@(2 * 1024 * 1024)"
+                                          MaxAllowedFiles="10"
+                                          UploadPath="bars"
+                                          GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
+                                          @bind-Value="context.StorageItem"
+                                          OnChange="@(value => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
+                    </AntStorageImageInput>
+                </AntDesign.FormItem>
+                <FormItem Label="Multiple avatars">
+                    <AntStorageImagesInput
+                        TCollection="ValueCollection<StorageItem>"
+                        Avatar="true"
+                        Storage="@Storage"
+                        MaxFileSize="@(2 * 1024 * 1024)"
+                        UploadPath="bars"
+                        GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
+                        @bind-Value="context.StorageItems"
+                        OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values.Count()); return Task.CompletedTask;})">
+                    </AntStorageImagesInput>
+                </FormItem>
+        @* AVATARS END *@
         <FormItem Label="Multiple files">
             <AntStorageFilesInput Storage="@Storage"
                                   TCollection="ValueCollection<StorageItem>"
