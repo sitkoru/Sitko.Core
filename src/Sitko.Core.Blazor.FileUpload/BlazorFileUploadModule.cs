@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Tewr.Blazor.FileReader;
 
@@ -8,15 +6,15 @@ namespace Sitko.Core.Blazor.FileUpload
 {
     public class BlazorFileUploadModule : BaseApplicationModule
     {
-        public BlazorFileUploadModule(BaseApplicationModuleConfig config, Application application) : base(config,
-            application)
+        public override string GetOptionsKey()
         {
+            return "Blazor:FileUpload";
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            BaseApplicationModuleOptions startupOptions)
         {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddFileReaderService();
         }
     }

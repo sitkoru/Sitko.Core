@@ -13,8 +13,8 @@ namespace Sitko.Core.Apps.Blazor
     {
         public TestBlazorApplication(string[] args) : base(args)
         {
-            AddModule<PostgresModule<BarContext>, PostgresDatabaseModuleConfig<BarContext>>();
-            AddModule<EFRepositoriesModule<BarContext>, EFRepositoriesModuleConfig>();
+            AddModule<PostgresModule<BarContext>, PostgresDatabaseModuleOptions<BarContext>>();
+            AddModule<EFRepositoriesModule<BarContext>, EfRepositoriesModuleOptions>();
             AddModule<FileSystemStorageModule<TestBlazorStorageOptions>, TestBlazorStorageOptions>(
                 (configuration, environment, moduleConfig) =>
                 {
