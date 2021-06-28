@@ -5,18 +5,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.App.Blazor.Components
 {
-    public abstract class BaseComponent : OwningComponentBase
+    public interface IBaseComponent
+    {
+        Task NotifyStateChangeAsync();
+    }
+
+    public abstract class BaseComponent : OwningComponentBase, IBaseComponent
     {
         protected bool IsInitialized { get; private set; }
         public bool IsLoading { get; private set; }
-        [Inject] protected NavigationManager NavigationManager { get; set; }
-        protected ILogger<BaseComponent> Logger { get; private set; }
-
-        protected override void OnInitialized()
-        {
-            base.OnInitialized();
-            Logger = GetService<ILogger<BaseComponent>>();
-        }
+        [Inject] protected NavigationManager NavigationManager { get; set; } = null!;
+        protected ILogger<BaseComponent> Logger => GetService<ILogger<BaseComponent>>();
 
         protected void MarkAsInitialized()
         {
@@ -31,30 +30,54 @@ namespace Sitko.Core.App.Blazor.Components
         protected void StartLoading()
         {
             IsLoading = true;
+            OnStartLoading();
             StateHasChanged();
         }
 
         protected void StopLoading()
         {
             IsLoading = false;
+            OnStopLoading();
             StateHasChanged();
         }
 
-        protected Task StartLoadingAsync()
+        protected async Task StartLoadingAsync()
         {
             IsLoading = true;
-            return NotifyStateChangeAsync();
+            await OnStartLoadingAsync();
+            await NotifyStateChangeAsync();
         }
 
-        protected Task StopLoadingAsync()
+        protected async Task StopLoadingAsync()
         {
             IsLoading = false;
-            return NotifyStateChangeAsync();
+            await OnStopLoadingAsync();
+            await NotifyStateChangeAsync();
         }
 
         public Task NotifyStateChangeAsync()
         {
             return InvokeAsync(StateHasChanged);
+        }
+
+        protected virtual void OnStartLoading()
+        {
+        }
+
+        protected virtual void OnStopLoading()
+        {
+        }
+
+        protected virtual Task OnStartLoadingAsync()
+        {
+            OnStartLoading();
+            return Task.CompletedTask;
+        }
+
+        protected virtual Task OnStopLoadingAsync()
+        {
+            OnStopLoading();
+            return Task.CompletedTask;
         }
     }
 }

@@ -24,7 +24,15 @@ namespace Sitko.Core.App.Blazor.Forms
             if (entityId is not null && default(TEntityPk)?.Equals(entityId) == false)
             {
                 EntityId = entityId;
-                entity = await Repository.GetByIdAsync(entityId);
+                if (Entity is not null)
+                {
+                    await Repository.RefreshAsync(Entity);
+                }
+                entity = await Repository.GetAsync(async q =>
+                {
+                    q.Where(e => e.Id!.Equals(EntityId));
+                    await ConfigureQueryAsync(q);
+                });
                 if (entity is null)
                 {
                     throw new Exception($"Entity {EntityId} not found");
@@ -32,6 +40,11 @@ namespace Sitko.Core.App.Blazor.Forms
             }
 
             await InitializeAsync(entity);
+        }
+
+        protected virtual Task ConfigureQueryAsync(IRepositoryQuery<TEntity> query)
+        {
+            return Task.CompletedTask;
         }
 
         protected override async Task<FormSaveResult> AddAsync(TEntity entity)
@@ -46,9 +59,15 @@ namespace Sitko.Core.App.Blazor.Forms
             return new FormSaveResult(result.IsSuccess, result.ErrorsString);
         }
 
-        public override bool HasChanges()
+        protected override Task<bool> DetectChangesAsync(TEntity entity)
         {
-            return Repository.GetChanges(Entity, new TEntity()).Length > 0;
+            return Repository.HasChangesAsync(entity);
+        }
+
+        public override async Task ResetAsync()
+        {
+            await InitializeAsync(EntityId);
+            await NotifyStateChangeAsync();
         }
     }
 }

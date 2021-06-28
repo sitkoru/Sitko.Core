@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -14,6 +15,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext
     {
         private readonly IOptionsMonitor<EfRepositoriesModuleOptions> _optionsMonitor;
+        private readonly EFRepositoryContext<TEntity, TEntityPk, TDbContext> _repositoryContext;
         private readonly TDbContext _dbContext;
         private readonly EFRepositoryLock? _lock;
 
@@ -22,6 +24,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             repositoryContext)
         {
             _optionsMonitor = optionsMonitor;
+            _repositoryContext = repositoryContext;
             _dbContext = repositoryContext.DbContext;
             _lock = repositoryContext.RepositoryLock;
         }
@@ -187,8 +190,11 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 cancellationToken);
         }
 
-        public override PropertyChange[] GetChanges(TEntity item, TEntity oldEntity)
+        protected override async Task<(PropertyChange[] changes, TEntity oldEntity)> GetChangesAsync(TEntity item)
         {
+            using var scope = _repositoryContext.CreateScope();
+            var oldDbContext = scope.ServiceProvider.GetRequiredService<TDbContext>();
+            var oldEntity = await oldDbContext.Set<TEntity>().FirstOrDefaultAsync(e => e.Id!.Equals(item.Id));
             var entry = _dbContext.Entry(item);
             var entityChanges = entry
                 .Properties
@@ -199,6 +205,16 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             {
                 foreach (var collection in entry.Collections)
                 {
+                    var oldCollection = oldDbContext.Entry(oldEntity).Collections
+                        .First(c => c.Metadata.Name == collection.Metadata.Name);
+                    await oldCollection.LoadAsync();
+                    if (oldCollection.CurrentValue.Cast<object>().Count() !=
+                        collection.CurrentValue.Cast<object>().Count())
+                    {
+                        entityChanges.Add(new PropertyChange(collection.Metadata.Name, oldCollection, collection));
+                        continue;
+                    }
+
                     if (collection.CurrentValue.Cast<object>().Any(collectionEntry =>
                         _dbContext.Entry(collectionEntry).State != EntityState.Unchanged))
                     {
@@ -216,19 +232,12 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 }
             }
 
-            return entityChanges.ToArray();
+            return (entityChanges.ToArray(), oldEntity);
         }
 
         public DbSet<T> Set<T>() where T : class
         {
             return _dbContext.Set<T>();
-        }
-
-        protected override Task<TEntity> GetOldItemAsync(TEntityPk id, CancellationToken cancellationToken = default)
-        {
-            return ExecuteDbContextOperationAsync(_ =>
-                    GetBaseQuery().Where(e => e.Id!.Equals(id)).AsNoTracking().FirstAsync(cancellationToken),
-                cancellationToken);
         }
 
         protected override Task DoUpdateAsync(TEntity item, CancellationToken cancellationToken = default)

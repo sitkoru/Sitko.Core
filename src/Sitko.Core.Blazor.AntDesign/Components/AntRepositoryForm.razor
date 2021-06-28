@@ -9,7 +9,7 @@
                     OnFinish="Form.SaveEntityAsync" @ref="AntForm" OnFinishFailed="OnFormErrorAsync">
         <Validator>
             <Sitko.Core.Blazor.FluentValidation.FluentValidator/>
-            <Sitko.Core.App.Blazor.Forms.ChangesDetector Form="this"/>
+            <Sitko.Core.App.Blazor.Forms.FormEditContextCatcher Form="this"/>
         </Validator>
         <ChildContent>
             @ChildContent(Form)

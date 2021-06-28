@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Sitko.Core.App.Helpers;
 
 namespace Sitko.Core.Storage
 {
@@ -126,7 +127,7 @@ namespace Sitko.Core.Storage
         {
             get
             {
-                return Helpers.HumanSize(Size);
+                return FilesHelper.HumanSize(Size);
             }
         }
     }

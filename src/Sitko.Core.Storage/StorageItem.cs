@@ -1,5 +1,6 @@
 using System;
 using System.Text.Json;
+using Sitko.Core.App.Helpers;
 using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage
@@ -58,7 +59,7 @@ namespace Sitko.Core.Storage
         {
             get
             {
-                return Helpers.HumanSize(FileSize);
+                return FilesHelper.HumanSize(FileSize);
             }
         }
 

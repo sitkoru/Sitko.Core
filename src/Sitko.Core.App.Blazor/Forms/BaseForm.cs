@@ -1,16 +1,58 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Sitko.Core.App.Blazor.Forms
 {
     public abstract class BaseForm
     {
+        protected BaseFormComponent? Parent;
+        protected EditContext? EditContext;
+
+        public void SetParent(BaseFormComponent parent)
+        {
+            Parent = parent;
+        }
+
+        public void SetEditContext(EditContext editContext)
+        {
+            EditContext = editContext;
+        }
+
+        public abstract void NotifyChange();
+        public abstract void NotifyChange(FieldIdentifier fieldIdentifier);
+
+        public abstract Task ResetAsync();
+        public abstract bool CanSave();
+
+        public virtual bool IsValid()
+        {
+            return Parent is not null && Parent.IsValid();
+        }
+
+        public virtual void Save()
+        {
+            Parent?.Save();
+        }
+
+        public abstract Task FieldChangedAsync(FieldIdentifier fieldIdentifier);
+        public abstract Task SaveEntityAsync();
     }
 
     public abstract class BaseForm<TEntity> : BaseForm where TEntity : class
     {
         protected readonly ILogger<BaseForm<TEntity>> Logger;
+
+        private JsonSerializerSettings _jsonSettings = new()
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            TypeNameHandling = TypeNameHandling.Auto,
+            MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead
+        };
+
+        private string? _oldEntityJson;
 
         protected BaseForm(ILogger<BaseForm<TEntity>> logger)
         {
@@ -19,7 +61,8 @@ namespace Sitko.Core.App.Blazor.Forms
 
         public bool IsNew { get; protected set; }
         protected TEntity? Entity;
-        private BaseFormComponent? _parent;
+
+        protected bool HasChanges { get; private set; }
         public Func<TEntity, Task>? OnAfterSave { get; set; }
         public Func<TEntity, Task>? OnAfterCreate { get; set; }
         public Func<TEntity, Task>? OnAfterUpdate { get; set; }
@@ -31,9 +74,19 @@ namespace Sitko.Core.App.Blazor.Forms
 
         protected abstract Task MapEntityAsync(TEntity entity);
 
-        public void SetParent(BaseFormComponent parent)
+        public override void NotifyChange(FieldIdentifier fieldIdentifier)
         {
-            _parent = parent;
+            EditContext?.NotifyFieldChanged(fieldIdentifier);
+        }
+
+        public override void NotifyChange()
+        {
+            NotifyChange(new FieldIdentifier(Entity!, "Id"));
+        }
+
+        private string Serialize(TEntity entity)
+        {
+            return JsonConvert.SerializeObject(entity, _jsonSettings);
         }
 
         public async Task InitializeAsync(TEntity? entity = null)
@@ -45,6 +98,7 @@ namespace Sitko.Core.App.Blazor.Forms
             }
 
             Entity = entity;
+            _oldEntityJson = Serialize(entity);
             await MapFormAsync(Entity);
         }
 
@@ -62,7 +116,7 @@ namespace Sitko.Core.App.Blazor.Forms
 
         protected abstract Task MapFormAsync(TEntity entity);
 
-        public virtual async Task SaveEntityAsync()
+        public override async Task SaveEntityAsync()
         {
             if (Entity is null)
             {
@@ -103,7 +157,8 @@ namespace Sitko.Core.App.Blazor.Forms
                         await OnAfterSave(Entity);
                     }
 
-                    await ResetFormAsync();
+                    HasChanges = false;
+                    _oldEntityJson = Serialize(Entity);
                     if (OnSuccess is not null)
                     {
                         await OnSuccess();
@@ -143,11 +198,11 @@ namespace Sitko.Core.App.Blazor.Forms
             await NotifyStateChangeAsync();
         }
 
-        private async Task NotifyStateChangeAsync()
+        protected async Task NotifyStateChangeAsync()
         {
-            if (_parent is not null)
+            if (Parent is not null)
             {
-                await _parent.NotifyStateChangeAsync();
+                await Parent.NotifyStateChangeAsync();
             }
         }
 
@@ -159,9 +214,9 @@ namespace Sitko.Core.App.Blazor.Forms
             return Task.CompletedTask;
         }
 
-        protected virtual Task ResetFormAsync()
+        public override Task ResetAsync()
         {
-            return Task.CompletedTask;
+            return InitializeAsync(Entity);
         }
 
         protected virtual Task BeforeSaveAsync()
@@ -179,14 +234,14 @@ namespace Sitko.Core.App.Blazor.Forms
             return Task.CompletedTask;
         }
 
-        public virtual bool CanSave()
+        public override bool CanSave()
         {
-            if (_parent == null)
+            if (Parent == null)
             {
                 return false;
             }
 
-            if (!HasChanges())
+            if (!HasChanges)
             {
                 return false;
             }
@@ -194,19 +249,32 @@ namespace Sitko.Core.App.Blazor.Forms
             return IsValid();
         }
 
-        public virtual bool IsValid()
+        public override async Task FieldChangedAsync(FieldIdentifier fieldIdentifier)
         {
-            return _parent is not null && _parent.IsValid();
+            await OnFieldChangeAsync(fieldIdentifier);
+            HasChanges = await DetectChangesAsync();
         }
 
-        public virtual void Save()
+        private async Task<bool> DetectChangesAsync()
         {
-            _parent?.Save();
-        }
+            if (Entity is not null && !IsNew)
+            {
+                await MapEntityAsync(Entity);
+                return await DetectChangesAsync(Entity);
+            }
 
-        public virtual bool HasChanges()
-        {
             return true;
+        }
+
+        protected virtual Task<bool> DetectChangesAsync(TEntity entity)
+        {
+            var newJson = Serialize(entity);
+            return Task.FromResult(!newJson.Equals(_oldEntityJson));
+        }
+
+        protected virtual Task OnFieldChangeAsync(FieldIdentifier fieldIdentifier)
+        {
+            return Task.CompletedTask;
         }
     }
 

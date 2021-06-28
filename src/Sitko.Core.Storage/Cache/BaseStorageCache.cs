@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Sitko.Core.App.Helpers;
 using Microsoft.Extensions.Options;
 using CacheExtensions = Sitko.Core.Caching.CacheExtensions;
 using MemoryCache = Sitko.Core.Caching.MemoryCache;
@@ -87,7 +88,7 @@ namespace Sitko.Core.Storage.Cache
                             Logger.LogWarning(
                                 "File {Key} exceed maximum cache file size. File size: {FleSize}. Maximum size: {MaximumSize}",
                                 key, result.FileSize,
-                                Helpers.HumanSize(Options.CurrentValue.MaxFileSizeToStore));
+                                FilesHelper.HumanSize(Options.CurrentValue.MaxFileSizeToStore));
                             return result;
                         }
 

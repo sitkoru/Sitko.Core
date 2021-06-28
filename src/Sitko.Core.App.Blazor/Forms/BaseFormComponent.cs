@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Sitko.Core.App.Blazor.Components;
 
 namespace Sitko.Core.App.Blazor.Forms
@@ -11,6 +12,9 @@ namespace Sitko.Core.App.Blazor.Forms
         protected abstract Task ConfigureFormAsync();
         public abstract bool IsValid();
         public abstract void Save();
+        public abstract Task OnFieldChangeAsync(FieldIdentifier fieldIdentifier);
+
+        public abstract void SetEditContext(EditContext editContext);
     }
 
     public abstract class BaseFormComponent<TEntity, TForm> : BaseFormComponent where TForm : BaseForm<TEntity>
@@ -21,6 +25,18 @@ namespace Sitko.Core.App.Blazor.Forms
         [Parameter] public Func<TEntity, Task>? OnAfterSave { get; set; }
         [Parameter] public Func<TEntity, Task>? OnAfterCreate { get; set; }
         [Parameter] public Func<TEntity, Task>? OnAfterUpdate { get; set; }
+        
+        public override void SetEditContext(EditContext editContext)
+        {
+            EditContext = editContext;
+            Form.SetEditContext(editContext);
+            EditContext.OnFieldChanged += async (_, args) =>
+            {
+                await OnFieldChangeAsync(args.FieldIdentifier);
+            };
+        }
+
+        public EditContext EditContext { get; private set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -33,6 +49,12 @@ namespace Sitko.Core.App.Blazor.Forms
             await ConfigureFormAsync();
             await InitializeForm();
             MarkAsInitialized();
+        }
+
+        public override async Task OnFieldChangeAsync(FieldIdentifier fieldIdentifier)
+        {
+            await Form.FieldChangedAsync(fieldIdentifier);
+            await NotifyStateChangeAsync();
         }
     }
 }

@@ -24,10 +24,6 @@ namespace Sitko.Core.Storage.FileSystem
             CancellationToken? cancellationToken = null)
         {
             var dirName = Path.GetDirectoryName(path);
-            if (string.IsNullOrEmpty(dirName))
-            {
-                return false;
-            }
 
             var dirPath = Path.Combine(Options.StoragePath, dirName);
             if (!Directory.Exists(dirPath))

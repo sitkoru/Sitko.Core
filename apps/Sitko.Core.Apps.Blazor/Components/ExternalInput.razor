@@ -1,0 +1,11 @@
+﻿@using Microsoft.AspNetCore.Components
+<AntDesign.FormItem Label="Название домена">
+    <AntDesign.Input @bind-Value="@Context.Foo"/>
+</AntDesign.FormItem>
+
+@code {
+
+    [Parameter]
+    public FooForm Context { get; set; }
+
+}

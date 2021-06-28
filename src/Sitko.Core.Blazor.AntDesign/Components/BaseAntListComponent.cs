@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -13,14 +14,18 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
     public abstract class BaseAntListComponent<TItem> : BaseComponent, IAsyncDisposable where TItem : class
     {
-        protected IEnumerable<TItem> Items;
+        protected IEnumerable<TItem> Items = new TItem[0];
         public int Count { get; protected set; }
 
-        private readonly Channel<(string orderBy, int page)>
-            _loadChannel = Channel.CreateUnbounded<(string orderBy, int page)>();
+        protected Table<TItem> Table { get; set; }
+
+        private readonly Channel<LoadRequest<TItem>>
+            _loadChannel = Channel.CreateUnbounded<LoadRequest<TItem>>();
 
         private readonly CancellationTokenSource _cts = new();
-        private Task? _loadTask;
+        private QueryModel<TItem>? _lastQueryModel;
+        private Task? _loadingTask;
+        private MethodInfo? _sortMethod;
 
         [Parameter] public int PageSize { get; set; } = 50;
         [Parameter] public int PageIndex { get; set; } = 1;
@@ -28,7 +33,14 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         protected override void OnInitialized()
         {
             base.OnInitialized();
-            _loadTask = LoadDataAsync();
+            _loadingTask = LoadDataAsync();
+            var method = typeof(ITableSortModel).GetMethod("SortList", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (method is null)
+            {
+                throw new Exception("Method SortList not found");
+            }
+
+            _sortMethod = method.MakeGenericMethod(typeof(TItem));
             MarkAsInitialized();
         }
 
@@ -38,13 +50,13 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             {
                 while (await _loadChannel.Reader.WaitToReadAsync(_cts.Token).ConfigureAwait(false))
                 {
-                    while (_loadChannel.Reader.TryRead(out (string orderBy, int page) item))
+                    while (_loadChannel.Reader.TryRead(out var item))
                     {
                         try
                         {
                             await StartLoadingAsync();
                             (var items, int itemsCount) =
-                                await GetDataAsync(item.orderBy, item.page, _cts.Token);
+                                await GetDataAsync(item, _cts.Token);
                             Items = items;
                             Count = itemsCount;
                             await StopLoadingAsync();
@@ -60,27 +72,79 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             }
         }
 
-        protected void OnChange(QueryModel<TItem> queryModel)
+        protected void OnChange(QueryModel<TItem>? queryModel)
         {
-            var orderBy = string.Join(",",
-                queryModel.SortModel
-                    .Where(s => s.Sort is not null)
-                    .OrderBy(s => s.Priority)
-                    .Select(s =>
-                        $"{(s.Sort == SortDirection.Descending.Name ? "-" : "")}{s.FieldName.ToLowerInvariant()}"));
-            _loadChannel.Writer.TryWrite((string.IsNullOrEmpty(orderBy) ? "" : orderBy, queryModel.PageIndex));
+            List<Func<IQueryable<TItem>, IQueryable<TItem>>> filters = new();
+            List<Func<IQueryable<TItem>, IOrderedQueryable<TItem>>> sorts = new();
+            if (queryModel is not null)
+            {
+                if (_sortMethod is not null)
+                {
+                    foreach (var sortEntry in queryModel.SortModel.Where(s =>
+                        s.Sort is not null))
+                    {
+                        sorts.Add(items =>
+                        {
+                            var sortResult = _sortMethod.Invoke(sortEntry, new object?[] {items});
+                            if (sortResult is IOrderedQueryable<TItem> orderedQueryable)
+                            {
+                                return orderedQueryable;
+                            }
+
+                            throw new Exception("Error sorting model");
+                        });
+                    }
+                }
+
+                filters.AddRange(queryModel.FilterModel.Select(filterEntry =>
+                    (Func<IQueryable<TItem>, IQueryable<TItem>>)(filterEntry.FilterList)));
+            }
+
+            var page = queryModel?.PageIndex ?? PageIndex;
+            var result = _loadChannel.Writer.TryWrite(new LoadRequest<TItem>(page, filters, sorts));
+            if (!result)
+            {
+                throw new Exception("Bla");
+            }
+
+            _lastQueryModel = queryModel;
         }
 
-        protected abstract Task<(TItem[] items, int itemsCount)> GetDataAsync(string orderBy, int page = 1,
+        public void Refresh(int? page = null)
+        {
+            if (page is not null)
+            {
+                PageIndex = page.Value;
+            }
+
+            OnChange(_lastQueryModel);
+        }
+
+        protected abstract Task<(TItem[] items, int itemsCount)> GetDataAsync(LoadRequest<TItem> request,
             CancellationToken cancellationToken = default);
 
         public async ValueTask DisposeAsync()
         {
             _cts.Cancel();
-            if (_loadTask is not null)
+            if (_loadingTask is not null)
             {
-                await _loadTask;
+                await _loadingTask;
             }
         }
+    }
+
+    public class LoadRequest<TItem> where TItem : class
+    {
+        public LoadRequest(int page, List<Func<IQueryable<TItem>, IQueryable<TItem>>> filters,
+            List<Func<IQueryable<TItem>, IOrderedQueryable<TItem>>> sort)
+        {
+            Page = page;
+            Filters = filters;
+            Sort = sort;
+        }
+
+        public int Page { get; }
+        public List<Func<IQueryable<TItem>, IQueryable<TItem>>> Filters { get; }
+        public List<Func<IQueryable<TItem>, IOrderedQueryable<TItem>>> Sort { get; }
     }
 }

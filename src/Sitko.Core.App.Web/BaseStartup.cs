@@ -241,7 +241,7 @@ namespace Sitko.Core.App.Web
             appBuilder.UseStaticFiles();
         }
 
-        protected void AddCorsPolicy(string name, CorsPolicy policy, bool isDefault = false)
+        public void AddCorsPolicy(string name, CorsPolicy policy, bool isDefault = false)
         {
             if (_corsPolicies.ContainsKey(name))
             {
@@ -256,14 +256,14 @@ namespace Sitko.Core.App.Web
             _corsPolicies.Add(name, (policy, isDefault));
         }
 
-        protected void AddCorsPolicy(string name, Action<CorsPolicyBuilder> buildPolicy, bool isDefault = false)
+        public void AddCorsPolicy(string name, Action<CorsPolicyBuilder> buildPolicy, bool isDefault = false)
         {
             var builder = new CorsPolicyBuilder();
             buildPolicy(builder);
             AddCorsPolicy(name, builder.Build(), isDefault);
         }
 
-        protected void SetDefaultCulture(string culture)
+        public void SetDefaultCulture(string culture)
         {
             _defaultCulture = culture;
         }

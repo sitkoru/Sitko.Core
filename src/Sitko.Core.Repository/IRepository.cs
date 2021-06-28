@@ -60,8 +60,6 @@ namespace Sitko.Core.Repository
 
         Task<bool> DeleteAsync(TEntityPk id, CancellationToken cancellationToken = default);
         Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
-        PropertyChange[] GetChanges(TEntity entity, TEntity oldEntity);
-
         Task<bool> BeginTransactionAsync(CancellationToken cancellationToken = default);
         Task<bool> CommitTransactionAsync(CancellationToken cancellationToken = default);
         Task<bool> RollbackTransactionAsync(CancellationToken cancellationToken = default);
@@ -71,5 +69,6 @@ namespace Sitko.Core.Repository
         Task<bool> RollbackBatchAsync(CancellationToken cancellationToken = default);
         
         Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default);
+        Task<bool> HasChangesAsync(TEntity entity);
     }
 }

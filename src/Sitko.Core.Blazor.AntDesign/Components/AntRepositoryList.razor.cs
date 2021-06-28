@@ -10,7 +10,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
     public partial class AntRepositoryList<TItem, TEntityPk>
         where TItem : class, Repository.IEntity<TEntityPk>, new()
     {
-        [Parameter] public RenderFragment<TItem> ChildContent { get; set; }
+        [Parameter] public RenderFragment<TItem>? ChildContent { get; set; }
 
         [Parameter] public RenderFragment<TItem>? RowTemplate { get; set; }
 
@@ -37,7 +37,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         [Parameter] public TableSize Size { get; set; }
 
-        [Parameter] public TableLocale Locale { get; set; } = LocaleProvider.CurrentLocale.Table;
+        [Parameter] public TableLocale Locale { get; set; } = LocaleProvider.GetLocale("en-US").Table;
 
         [Parameter] public bool Bordered { get; set; } = false;
 
@@ -76,7 +76,5 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         [Parameter] public IEnumerable<TItem> SelectedRows { get; set; }
 
         [Parameter] public EventCallback<IEnumerable<TItem>> SelectedRowsChanged { get; set; }
-
-        protected Table<TItem> Table { get; set; }
     }
 }

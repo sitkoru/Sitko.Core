@@ -16,6 +16,16 @@ jobs:
                 run: |
                     VERSION=${GITHUB_REF#refs/tags/}
                     echo ::set-output name=version::${VERSION}
+            -   name: Install node.js
+                uses: actions/setup-node@v2.1.5
+                with:
+                    node-version: '15'
+            -   name: Build Sitko.Core.Blazor.AntDesign js
+                working-directory: src/Sitko.Core.Blazor.AntDesign/Web
+                shell: bash
+                run: |
+                    npm ci
+                    npm run prod
             -   name: Create packages
                 run: dotnet pack -c Release /p:Version=${{ steps.prep.outputs.version }} -o $(pwd)/packages
             -   name: Push to Nuget
