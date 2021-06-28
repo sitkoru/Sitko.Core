@@ -29,7 +29,7 @@ jobs:
             -   name: Create packages
                 run: dotnet pack -c Release /p:Version=${{ steps.prep.outputs.version }} -o $(pwd)/packages
             -   name: Push to Nuget
-                run: find packages -name *.nupkg -exec dotnet nuget push {} -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} \;
+                run: find packages -type f -name '*.nupkg' -print0 |  xargs -0 -n 10 -P 4 dotnet nuget push -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
             -   name: Download Sitko.Core
                 uses: actions/checkout@v2.3.4
                 with:
