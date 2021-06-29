@@ -39,12 +39,48 @@ namespace Sitko.Core.App.Tests
         }
 
         [Fact]
-        public async Task DefaultFallback()
+        public async Task InvariantFallback()
         {
             var scope = await GetScopeAsync();
             var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
             var localized = provider["Baz"];
             Assert.Equal("DefaultBaz", localized);
+        }
+        
+        [Fact]
+        public async Task DefaultLocalize()
+        {
+            var scope = await GetScopeAsync();
+            var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
+            var localized = provider["DefaultBar"];
+            Assert.Equal("БарБар", localized);
+        }
+
+        [Fact]
+        public async Task DefaultParentFallback()
+        {
+            var scope = await GetScopeAsync();
+            var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
+            var localized = provider["DefaultFoo"];
+            Assert.Equal("ФуФу", localized);
+        }
+
+        [Fact]
+        public async Task DefaultInvariantFallback()
+        {
+            var scope = await GetScopeAsync();
+            var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
+            var localized = provider["DefaultBaz"];
+            Assert.Equal("Default", localized);
+        }
+        
+        [Fact]
+        public async Task DefaultNonExistent()
+        {
+            var scope = await GetScopeAsync();
+            var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
+            var localized = provider["DefaultFooBar"];
+            Assert.Equal("DefaultFooBar", localized);
         }
 
         [Fact]
@@ -96,6 +132,10 @@ namespace Sitko.Core.App.Tests
     {
     }
 
+    public class Default
+    {
+    }
+
     public class LocalizationTestScope : BaseTestScope
     {
         protected override IServiceCollection ConfigureServices(IConfiguration configuration,
@@ -103,7 +143,10 @@ namespace Sitko.Core.App.Tests
             IServiceCollection services, string name)
         {
             base.ConfigureServices(configuration, environment, services, name);
-            return services.AddJsonLocalization();
+            return services.AddJsonLocalization(options =>
+            {
+                options.AddDefaultResource<Default>();
+            });
         }
     }
 }
