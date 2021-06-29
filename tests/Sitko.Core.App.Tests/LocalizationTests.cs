@@ -55,6 +55,45 @@ namespace Sitko.Core.App.Tests
             var localized = provider["FooBar"];
             Assert.Equal("FooBar", localized);
         }
+
+        [Fact]
+        public async Task Generic()
+        {
+            var scope = await GetScopeAsync();
+            var provider = scope.Get<ILocalizationProvider<LocalizationTests<string>>>();
+            var localized = provider["Bar"];
+            Assert.Equal("Бар", localized);
+        }
+        
+        [Fact]
+        public async Task GenericMultipleParameters()
+        {
+            var scope = await GetScopeAsync();
+            var provider = scope.Get<ILocalizationProvider<LocalizationTests<string, double>>>();
+            var localized = provider["Bar"];
+            Assert.Equal("Бар", localized);
+        }
+        
+        [Fact]
+        public async Task GenericInterface()
+        {
+            var scope = await GetScopeAsync();
+            var provider = scope.Get<ILocalizationProvider<LocalizationTests<string, double, int>>>();
+            var localized = provider["Bar"];
+            Assert.Equal("Бар", localized);
+        }
+    }
+
+    public class LocalizationTests<T>
+    {
+    }
+
+    public class LocalizationTests<T, T2>
+    {
+    }
+
+    public interface LocalizationTests<T, T2, T3>
+    {
     }
 
     public class LocalizationTestScope : BaseTestScope

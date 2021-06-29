@@ -21,7 +21,13 @@ namespace Sitko.Core.App.Localization
         {
             TypeInfo resourceType = resourceSource.GetTypeInfo();
             CultureInfo cultureInfo = CultureInfo.CurrentUICulture;
-            string resourceName = $"{resourceType.Name}.json";
+            var typeName = resourceType.Name;
+            if (resourceType.IsGenericType)
+            {
+                typeName = typeName.Remove(typeName.IndexOf('`'));
+            }
+
+            string resourceName = $"{typeName}.json";
             return GetCachedLocalizer(resourceName, resourceType.Assembly, cultureInfo);
         }
 
