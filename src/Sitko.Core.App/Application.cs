@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
+using Sitko.Core.App.Localization;
 using Sitko.Core.App.Logging;
 using Tempus;
 
@@ -19,7 +20,10 @@ namespace Sitko.Core.App
     public abstract class Application : IApplication, IAsyncDisposable
     {
         public readonly Guid Id = Guid.NewGuid();
-        private static readonly ConcurrentDictionary<Guid, Application> _apps = new ConcurrentDictionary<Guid, Application>();
+
+        private static readonly ConcurrentDictionary<Guid, Application> _apps =
+            new ConcurrentDictionary<Guid, Application>();
+
         private readonly bool _check;
         private readonly LoggerConfiguration _loggerConfiguration = new LoggerConfiguration();
         private readonly LogLevelSwitcher _logLevelSwitcher = new LogLevelSwitcher();
@@ -71,11 +75,12 @@ namespace Sitko.Core.App
                 {
                     services.AddSingleton(_logLevelSwitcher);
                     services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
-                    services.AddSingleton(typeof(IApplication), this);
-                    services.AddSingleton(typeof(Application), this);
+                    services.AddSingleton(this);
+                    services.AddSingleton<IApplication>(this);
                     services.AddSingleton(GetType(), this);
                     services.AddHostedService<ApplicationLifetimeService>();
                     services.AddTransient<IScheduler, Scheduler>();
+                    services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
                 });
         }
 
