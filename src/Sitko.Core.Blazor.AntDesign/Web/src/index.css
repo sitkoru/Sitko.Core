@@ -1,9 +1,9 @@
-.ant-upload-list-large .ant-upload-list-picture-card-container, .ant-upload-list-large .ant-upload.ant-upload-select-picture-card {
+.ant-upload-list-large .ant-upload-list-picture-card-container, .ant-upload-list-large .ant-upload.ant-upload-select-picture-card, .ant-upload-list-large.ant-upload-list-picture-card .ant-upload-list-item {
     width: 256px;
     height: 256px;
 }
 
-.ant-upload-list-small .ant-upload-list-picture-card-container, .ant-upload-list-small .ant-upload.ant-upload-select-picture-card {
+.ant-upload-list-small .ant-upload-list-picture-card-container, .ant-upload-list-small .ant-upload.ant-upload-select-picture-card, .ant-upload-list-small.ant-upload-list-picture-card .ant-upload-list-item {
     width: 64px;
     height: 64px;
 }
