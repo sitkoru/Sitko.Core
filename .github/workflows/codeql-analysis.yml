@@ -41,10 +41,10 @@ jobs:
         # By default, queries listed here will override any specified in a config file.
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
-    -   uses: actions/setup-dotnet@v1.8.0
+    -   uses: actions/setup-dotnet@v1.8.1
         with:
             dotnet-version: '3.1.x'
-    -   uses: actions/setup-dotnet@v1.8.0
+    -   uses: actions/setup-dotnet@v1.8.1
         with:
             dotnet-version: '5.0.x'
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
