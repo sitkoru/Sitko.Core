@@ -5,65 +5,129 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
-using System.Threading;
-using LazyCache;
-using Microsoft.Extensions.Caching.Memory;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
+using Tempus;
 
 namespace Sitko.Core.App.Localization
 {
-    public class JsonStringLocalizerFactory : IStringLocalizerFactory
+    public class JsonStringLocalizerFactory : IStringLocalizerFactory, IDisposable
     {
-        private readonly IOptions<JsonStringLocalizerOptions> _options;
-        private readonly ILogger<JsonStringLocalizerFactory> _logger;
-        private readonly CachingService _cache;
+        private static ILogger<JsonStringLocalizerFactory> _logger = null!;
+        private static Type[] s_defaultResources = new Type[0];
+        private readonly IScheduledTask _clearCacheTask;
 
-        public JsonStringLocalizerFactory(IOptions<JsonStringLocalizerOptions> options,
+        private readonly Dictionary<int, Dictionary<string, string>> _data = new();
+
+        private readonly Dictionary<int, JsonStringLocalizer> _instances = new();
+        private readonly IDisposable _onChange;
+
+        private TimeSpan _cacheTimout;
+        private const char GenericSeparator = '`';
+
+        public JsonStringLocalizerFactory(IOptionsMonitor<JsonStringLocalizerOptions> options, IScheduler scheduler,
             ILogger<JsonStringLocalizerFactory> logger)
         {
-            _options = options;
             _logger = logger;
-            _cache = new CachingService();
+            ReadOptions(options.CurrentValue);
+            _onChange = options.OnChange(ReadOptions);
+            _clearCacheTask = scheduler.Schedule(_cacheTimout, _ => ClearCache(), (context, _) =>
+            {
+                _logger.LogError(context.Exception, "Error clear localization cache: {ErrorText}",
+                    context.Exception.ToString());
+                return Task.CompletedTask;
+            });
+        }
+
+
+        public void Dispose()
+        {
+            _onChange.Dispose();
+            _clearCacheTask.Cancel();
         }
 
         public IStringLocalizer Create(Type resourceSource)
         {
-            CultureInfo cultureInfo = CultureInfo.CurrentUICulture;
-            var resource = new LocalizationResource(resourceSource);
-            return GetLocalizer(resource, cultureInfo);
+            return GetLocalizer(resourceSource);
         }
 
-        private Dictionary<string, string> GetCompliedResourceData(LocalizationResource resource,
-            CultureInfo cultureInfo)
+        public IStringLocalizer Create(string baseName, string location)
         {
-            return _cache.GetOrAdd(GetCompiledCacheKey(resource, cultureInfo), entry =>
-            {
-                ConfigureCacheEntry(entry);
-                var data = new Dictionary<string, string>();
-                FillData(data, resource, cultureInfo);
-                FillData(data, resource, cultureInfo.Parent);
-                FillData(data, resource, CultureInfo.InvariantCulture);
-                FillDefaultData(data, cultureInfo);
-                FillDefaultData(data, cultureInfo.Parent);
-                FillDefaultData(data, CultureInfo.InvariantCulture);
-                return data;
-            });
+            return GetLocalizer(null, baseName, Assembly.GetEntryAssembly()!);
         }
 
-        private void FillDefaultData(Dictionary<string, string> data, CultureInfo cultureInfo)
+        private Task ClearCache()
         {
-            foreach (var localizationResource in _options.Value.LocalizationResources)
+            _logger.LogDebug("Clear localization cache");
+            _instances.Clear();
+            _data.Clear();
+            return Task.CompletedTask;
+        }
+
+        private void ReadOptions(JsonStringLocalizerOptions localizerOptions)
+        {
+            _cacheTimout = TimeSpan.FromMinutes(localizerOptions.CacheTimeInMinutes);
+            s_defaultResources = localizerOptions.DefaultResources;
+        }
+
+        private int GetCacheKey(string name, Assembly assembly, CultureInfo cultureInfo)
+        {
+            unchecked // Overflow is fine, just wrap
             {
-                FillData(data, localizationResource, cultureInfo);
+                int hash = 17;
+                hash = hash * 23 + name.GetHashCode();
+                hash = hash * 23 + assembly.GetHashCode();
+                hash = hash * 23 + cultureInfo.GetHashCode();
+                return hash;
             }
         }
 
-        private void FillData(Dictionary<string, string> data, LocalizationResource resource, CultureInfo cultureInfo)
+        private JsonStringLocalizer GetLocalizer(Type? type, string? baseName = null, Assembly? baseAssembly = null)
         {
-            var resourceData = GetResourceData(resource, cultureInfo);
+            var cultureInfo = CultureInfo.CurrentUICulture;
+            var typeName = type?.Name ?? baseName!;
+            if (type?.IsGenericType == true)
+            {
+                typeName = typeName.Remove(typeName.IndexOf(GenericSeparator));
+            }
+
+            var assembly = type?.Assembly ?? baseAssembly!;
+            var cacheKey = GetCacheKey(typeName, assembly, cultureInfo);
+            if (_instances.TryGetValue(cacheKey, out var instance))
+            {
+                return instance;
+            }
+
+            lock (_instances)
+            {
+                instance = new JsonStringLocalizer(GetResourceData(cacheKey, typeName, assembly, cultureInfo));
+                _instances.TryAdd(cacheKey, instance);
+            }
+
+            return instance;
+        }
+
+        private Dictionary<string, string> GetResourceData(int cacheKey, string name, Assembly assembly,
+            CultureInfo cultureInfo)
+        {
+            if (_data.TryGetValue(cacheKey, out var data))
+            {
+                return data;
+            }
+
+            lock (_data)
+            {
+                data = LoadResourcesData(name, assembly, cultureInfo);
+                _data.TryAdd(cacheKey, data);
+            }
+
+            return data;
+        }
+
+        private static void FillData(Dictionary<string, string> data, Dictionary<string, string> resourceData)
+        {
             foreach ((string key, string value) in resourceData)
             {
                 if (!data.ContainsKey(key))
@@ -73,47 +137,38 @@ namespace Sitko.Core.App.Localization
             }
         }
 
-        private Dictionary<string, string> GetResourceData(LocalizationResource resource,
+        private Dictionary<string, string> LoadResourcesData(string name, Assembly assembly,
             CultureInfo cultureInfo)
         {
-            return _cache.GetOrAdd(GetCacheKey(resource, cultureInfo), entry =>
+            var data = new Dictionary<string, string>();
+            FillData(data, LoadResourceData(name, assembly, cultureInfo));
+            FillData(data, LoadResourceData(name, assembly, cultureInfo.Parent));
+            FillData(data, LoadResourceData(name, assembly, CultureInfo.InvariantCulture));
+            foreach (var defaultResource in s_defaultResources)
             {
-                ConfigureCacheEntry(entry);
-                return LoadResourceData(resource, cultureInfo);
-            });
+                var typeName = defaultResource.Name;
+                if (defaultResource.IsGenericType)
+                {
+                    typeName = typeName.Remove(typeName.IndexOf(GenericSeparator));
+                }
+
+                FillData(data, LoadResourceData(typeName, defaultResource.Assembly, cultureInfo));
+                FillData(data, LoadResourceData(typeName, defaultResource.Assembly, cultureInfo.Parent));
+                FillData(data, LoadResourceData(typeName, defaultResource.Assembly, CultureInfo.InvariantCulture));
+            }
+
+            return data;
         }
 
-        private void ConfigureCacheEntry(ICacheEntry entry)
-        {
-            var expirationTime = DateTime.Now.Add(TimeSpan.FromMinutes(_options.Value.CacheTimeInMinutes));
-            var expirationToken = new CancellationChangeToken(
-                new CancellationTokenSource(TimeSpan.FromMinutes(_options.Value.CacheTimeInMinutes)
-                    .Add(TimeSpan.FromSeconds(1))).Token);
-            entry
-                // Pin to cache.
-                .SetPriority(CacheItemPriority.NeverRemove)
-                // Set the actual expiration time
-                .SetAbsoluteExpiration(expirationTime)
-                // Force eviction to run
-                .AddExpirationToken(expirationToken)
-                // Add eviction callback
-                .RegisterPostEvictionCallback(callback: CacheItemRemoved, state: this);
-        }
-
-        private void CacheItemRemoved(object key, object value, EvictionReason reason, object state)
-        {
-            _logger.LogDebug("Cache entry with key {Key} is expired. Reason: {Reason}", key, reason);
-        }
-
-        private Dictionary<string, string> LoadResourceData(LocalizationResource resource,
+        private static Dictionary<string, string> LoadResourceData(string name, Assembly assembly,
             CultureInfo cultureInfo)
         {
             Assembly satelliteAssembly;
             try
             {
                 satelliteAssembly = !Equals(cultureInfo, CultureInfo.InvariantCulture)
-                    ? resource.Assembly.GetSatelliteAssembly(cultureInfo)
-                    : resource.Assembly;
+                    ? assembly.GetSatelliteAssembly(cultureInfo)
+                    : assembly;
             }
             catch (FileNotFoundException exception)
             {
@@ -123,23 +178,23 @@ namespace Sitko.Core.App.Localization
                 return new Dictionary<string, string>();
             }
 
-            var resourceFileName = $"{resource.Name}.json";
-            var names = satelliteAssembly.GetManifestResourceNames();
-            var name = names.FirstOrDefault(n => n.EndsWith(resourceFileName));
-            if (string.IsNullOrEmpty(name))
+            var resourceFileName = $"{name}.json";
+            var resourceNames = satelliteAssembly.GetManifestResourceNames();
+            var resourceName = resourceNames.FirstOrDefault(n => n.EndsWith(resourceFileName));
+            if (string.IsNullOrEmpty(resourceName))
             {
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "Resource '{ResourceName}' not found for '{CultureInfoName}'",
-                    resource.Name, cultureInfo.Name);
+                    name, cultureInfo.Name);
                 return new Dictionary<string, string>();
             }
 
-            var stream = satelliteAssembly.GetManifestResourceStream(name);
+            var stream = satelliteAssembly.GetManifestResourceStream(resourceName);
             if (stream == null)
             {
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "Resource '{ResourceName}' not found for '{CultureInfoName}'",
-                    resource.Name, cultureInfo.Name);
+                    name, cultureInfo.Name);
                 return new Dictionary<string, string>();
             }
 
@@ -148,61 +203,12 @@ namespace Sitko.Core.App.Localization
 
             return JsonSerializer.Deserialize<Dictionary<string, string>>(json)!;
         }
-
-        public IStringLocalizer Create(string baseName, string location)
-        {
-            CultureInfo cultureInfo = CultureInfo.CurrentUICulture;
-            var resource = new LocalizationResource(baseName, Assembly.GetEntryAssembly()!);
-            return GetLocalizer(resource, cultureInfo);
-        }
-
-        private IStringLocalizer GetLocalizer(LocalizationResource resource, CultureInfo cultureInfo)
-        {
-            var data = GetCompliedResourceData(resource, cultureInfo);
-            return new JsonStringLocalizer(data);
-        }
-
-        private string GetCacheKey(LocalizationResource resource, CultureInfo cultureInfo)
-        {
-            return resource.Name + ';' + resource.Assembly.FullName + ';' + cultureInfo.Name;
-        }
-
-        private string GetCompiledCacheKey(LocalizationResource resource, CultureInfo cultureInfo)
-        {
-            return GetCacheKey(resource, cultureInfo) + "_compiled";
-        }
     }
-
-    public class LocalizationResource
-    {
-        public Assembly Assembly { get; }
-
-        public string Name { get; }
-
-        public LocalizationResource(Type resource)
-        {
-            TypeInfo resourceType = resource.GetTypeInfo();
-            var typeName = resourceType.Name;
-            if (resourceType.IsGenericType)
-            {
-                typeName = typeName.Remove(typeName.IndexOf('`'));
-            }
-
-            Name = typeName;
-            Assembly = resourceType.Assembly;
-        }
-
-        public LocalizationResource(string name, Assembly assembly)
-        {
-            Name = name;
-            Assembly = assembly;
-        }
-    };
 
     public class JsonStringLocalizerOptions
     {
-        private readonly List<LocalizationResource> _localizationResources = new();
-        public LocalizationResource[] LocalizationResources => _localizationResources.ToArray();
+        private readonly HashSet<Type> _defaultResources = new();
+        public Type[] DefaultResources => _defaultResources.ToArray();
 
         public int CacheTimeInMinutes { get; set; } = 60;
 
@@ -213,7 +219,7 @@ namespace Sitko.Core.App.Localization
 
         public JsonStringLocalizerOptions AddDefaultResource(Type resourceType)
         {
-            _localizationResources.Add(new LocalizationResource(resourceType));
+            _defaultResources.Add(resourceType);
             return this;
         }
     }

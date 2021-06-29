@@ -1,8 +1,5 @@
 ﻿using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App.Localization;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -46,7 +43,7 @@ namespace Sitko.Core.App.Tests
             var localized = provider["Baz"];
             Assert.Equal("DefaultBaz", localized);
         }
-        
+
         [Fact]
         public async Task DefaultLocalize()
         {
@@ -73,7 +70,7 @@ namespace Sitko.Core.App.Tests
             var localized = provider["DefaultBaz"];
             Assert.Equal("Default", localized);
         }
-        
+
         [Fact]
         public async Task DefaultNonExistent()
         {
@@ -100,7 +97,7 @@ namespace Sitko.Core.App.Tests
             var localized = provider["Bar"];
             Assert.Equal("Бар", localized);
         }
-        
+
         [Fact]
         public async Task GenericMultipleParameters()
         {
@@ -109,7 +106,7 @@ namespace Sitko.Core.App.Tests
             var localized = provider["Bar"];
             Assert.Equal("Бар", localized);
         }
-        
+
         [Fact]
         public async Task GenericInterface()
         {
@@ -136,17 +133,21 @@ namespace Sitko.Core.App.Tests
     {
     }
 
-    public class LocalizationTestScope : BaseTestScope
+    public class LocalizationTestApplication : TestApplication
     {
-        protected override IServiceCollection ConfigureServices(IConfiguration configuration,
-            IHostEnvironment environment,
-            IServiceCollection services, string name)
+        public LocalizationTestApplication(string[] args) : base(args)
         {
-            base.ConfigureServices(configuration, environment, services, name);
-            return services.AddJsonLocalization(options =>
+            this.ConfigureServices(services =>
             {
-                options.AddDefaultResource<Default>();
+                services.AddJsonLocalization(options =>
+                {
+                    options.AddDefaultResource<Default>();
+                });
             });
         }
+    }
+
+    public class LocalizationTestScope : BaseTestScope<LocalizationTestApplication>
+    {
     }
 }
