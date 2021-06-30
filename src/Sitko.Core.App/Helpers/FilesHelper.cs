@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace Sitko.Core.App.Helpers
 {
@@ -22,7 +23,8 @@ namespace Sitko.Core.App.Helpers
                 unit++;
             }
 
-            return $"{Math.Round(size, 2):N}{s_units[unit]}";
+            var sizeStr = Math.Round(size, 2).ToString("N2", CultureInfo.InvariantCulture);
+            return $"{sizeStr} {s_units[unit]}";
         }
     }
 }
