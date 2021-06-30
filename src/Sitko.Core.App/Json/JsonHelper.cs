@@ -3,7 +3,7 @@ using Serilog;
 
 namespace Sitko.Core.App.Json
 {
-    public class JsonNetExtensions
+    public class JsonHelper
     {
         private static JsonSerializerSettings GetJsonSettings(bool throwOnError)
         {
@@ -23,13 +23,13 @@ namespace Sitko.Core.App.Json
                 }
             };
         }
-        
-        public static string SerializeWithMetadata(object obj, bool throwOnError)
+
+        public static string SerializeWithMetadata(object obj, bool throwOnError = true)
         {
             return JsonConvert.SerializeObject(obj, GetJsonSettings(throwOnError));
         }
 
-        public static T? DeserializeWithMetadata<T>(string json, bool throwOnError)
+        public static T? DeserializeWithMetadata<T>(string json, bool throwOnError = true)
         {
             return JsonConvert.DeserializeObject<T>(json, GetJsonSettings(throwOnError));
         }
