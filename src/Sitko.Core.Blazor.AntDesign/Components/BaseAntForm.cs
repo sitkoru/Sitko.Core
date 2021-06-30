@@ -59,38 +59,19 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         [Parameter] public bool ValidateOnChange { get; set; } = true;
 
-        [Inject] protected NotificationService NotificationService { get; set; }
+        [Inject] protected MessageService MessageService { get; set; }
 
         protected override Task ConfigureFormAsync()
         {
-            Form.OnSuccess = () => NotificationService.Success(new NotificationConfig
-            {
-                Message = LocalizationProvider["Success"],
-                Description = LocalizationProvider["Entity saved successfully"],
-                Placement = NotificationPlacement.BottomRight
-            });
-            Form.OnError = error => NotificationService.Error(new NotificationConfig
-            {
-                Message = LocalizationProvider["Error"],
-                Description = error,
-                Placement = NotificationPlacement.BottomRight
-            });
-            Form.OnException = exception => NotificationService.Error(new NotificationConfig
-            {
-                Message = LocalizationProvider["Critical error"],
-                Description = exception.ToString(),
-                Placement = NotificationPlacement.BottomRight
-            });
+            Form.OnSuccess = () => MessageService.Success(LocalizationProvider["Entity saved successfully"]);
+            Form.OnError = error => MessageService.Error(error);
+            Form.OnException = exception => MessageService.Error(exception.ToString());
             return Task.CompletedTask;
         }
 
         public Task OnFormErrorAsync(EditContext editContext)
         {
-            return NotificationService.Error(new NotificationConfig
-            {
-                Message = LocalizationProvider["Error"],
-                Description = string.Join(". ", editContext.GetValidationMessages())
-            });
+            return MessageService.Error(string.Join(". ", editContext.GetValidationMessages()));
         }
 
         public override bool IsValid()

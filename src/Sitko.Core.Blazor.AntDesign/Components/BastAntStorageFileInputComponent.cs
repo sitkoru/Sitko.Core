@@ -14,7 +14,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         private IDisposable? _thisReference;
         protected ElementReference _btn;
 
-        [Inject] private NotificationService NotificationService { get; set; } = null!;
+        [Inject] private MessageService MessageService { get; set; } = null!;
 
         [Inject]
         protected ILocalizationProvider<BastAntStorageFileInputComponent<TInput>> LocalizationProvider { get; set; } =
@@ -43,28 +43,17 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         protected override Task NotifyFileExceedMaxSizeAsync(string fileName, long fileSize)
         {
-            NotificationService.Error(new NotificationConfig
-            {
-                Message = LocalizationProvider["Error"],
-                Description =
-                    LocalizationProvider[
-                        "File {0} is too big — {1}. Files up to {2} are allowed.",
-                        fileName, FilesHelper.HumanSize(fileSize), FilesHelper.HumanSize(MaxFileSize)],
-                Placement = NotificationPlacement.BottomRight
-            });
+            MessageService.Error(LocalizationProvider[
+                "File {0} is too big — {1}. Files up to {2} are allowed.",
+                fileName, FilesHelper.HumanSize(fileSize), FilesHelper.HumanSize(MaxFileSize)]);
             return Task.CompletedTask;
         }
 
         protected override Task NotifyFileContentTypeNotAllowedAsync(string fileName, string fileContentType)
         {
-            NotificationService.Error(new NotificationConfig
-            {
-                Message = LocalizationProvider["Error"],
-                Description =
-                    LocalizationProvider["File {0} content type {1} is not in allowed list. Allowed types: {2}",
-                        fileName, fileContentType, ContentTypes],
-                Placement = NotificationPlacement.BottomRight
-            });
+            MessageService.Error(LocalizationProvider[
+                "File {0} content type {1} is not in allowed list. Allowed types: {2}",
+                fileName, fileContentType, ContentTypes]);
             return Task.CompletedTask;
         }
 
@@ -80,23 +69,15 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         protected override Task NotifyUploadAsync(int resultsCount)
         {
-            NotificationService.Success(new NotificationConfig
-            {
-                Message = LocalizationProvider["Success"],
-                Description = LocalizationProvider["{0} files were uploaded", resultsCount],
-                Placement = NotificationPlacement.BottomRight
-            });
+            MessageService.Success(LocalizationProvider["{0} files were uploaded", resultsCount]);
             return Task.CompletedTask;
         }
 
         protected override Task NotifyMaxFilesCountExceededAsync(int filesCount)
         {
-            NotificationService.Error(new NotificationConfig
-            {
-                Message = LocalizationProvider["Error"],
-                Description = LocalizationProvider["Maximum of {0} files is allowed. Selected: {1}", MaxAllowedFiles!, filesCount],
-                Placement = NotificationPlacement.BottomRight
-            });
+            MessageService.Error(LocalizationProvider["Maximum of {0} files is allowed. Selected: {1}",
+                MaxAllowedFiles!,
+                filesCount]);
             return Task.CompletedTask;
         }
 
