@@ -4,8 +4,11 @@
 
 @if (IsInitialized)
 {
-    <AntDesign.Form ValidateOnChange="ValidateOnChange" Model="Form" Loading="Form.IsLoading"
-                    OnFinish="Form.SaveEntityAsync" @ref="AntForm" OnFinishFailed="OnFormErrorAsync">
+    <Form ValidateOnChange="ValidateOnChange" Model="Form" Loading="Form.IsLoading"
+          OnFinish="Form.SaveEntityAsync" @ref="AntForm" OnFinishFailed="OnFormErrorAsync"
+          Layout="@Layout" Name="@Name" Size="@Size" LabelCol="@LabelCol" LabelAlign="@LabelAlign"
+          LabelColSpan="@LabelColSpan" LabelColOffset="@LabelColOffset" WrapperCol="@WrapperCol"
+          WrapperColSpan="@WrapperColSpan" WrapperColOffset="@WrapperColOffset">
         <Validator>
             <Sitko.Core.Blazor.FluentValidation.FluentValidator/>
             <Sitko.Core.App.Blazor.Forms.FormEditContextCatcher Form="this"/>
@@ -13,5 +16,5 @@
         <ChildContent>
             @ChildContent(Form)
         </ChildContent>
-    </AntDesign.Form>
+    </Form>
 }
