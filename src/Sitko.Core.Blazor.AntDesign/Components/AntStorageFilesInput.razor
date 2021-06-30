@@ -12,6 +12,7 @@
                 MaxAllowedFiles="@MaxFilesToUpload"
                 ContentTypes="@ContentTypes"
                 ListType="text"
+                ButtonText="@UploadText"
                 GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
                 @bind-Value="Items"
                 UploadPath="@UploadPath"

@@ -11,8 +11,8 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
     public partial class AntStorageImagesInput<TCollection> where TCollection : ICollection<StorageItem>, new()
     {
         [Parameter] public Func<IEnumerable<StorageItem>, Task> OnUpdate { get; set; } = null!;
-        [Parameter] public string LeftText { get; set; } = "Move left";
-        [Parameter] public string RightText { get; set; } = "Move right";
+        [Parameter] public string LeftText { get; set; } = "";
+        [Parameter] public string RightText { get; set; } = "";
         private readonly OrderedCollection<UploadedImage> _images = new();
         protected override int ItemsCount => _images.Count();
 
@@ -32,6 +32,14 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         protected override void OnParametersSet()
         {
             base.OnParametersSet();
+            if (string.IsNullOrEmpty(LeftText))
+            {
+                LeftText = LocalizationProvider["Move left"];
+            }
+            if (string.IsNullOrEmpty(RightText))
+            {
+                RightText = LocalizationProvider["Move right"];
+            }
             if (CurrentValue is not null && CurrentValue.Any())
             {
                 _images.SetItems(CurrentValue.Select(CreateUploadedItem));
