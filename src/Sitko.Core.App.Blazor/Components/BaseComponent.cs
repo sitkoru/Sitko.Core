@@ -32,7 +32,9 @@ namespace Sitko.Core.App.Blazor.Components
 
         protected TService GetService<TService>()
         {
+#pragma warning disable 8714
             return ScopedServices.GetRequiredService<TService>();
+#pragma warning restore 8714
         }
 
         protected void StartLoading()

@@ -98,6 +98,8 @@ namespace Sitko.Core.Storage
             CancellationToken? cancellationToken = null);
     }
 
+    // Generic interface is required for dependency injection
+    // ReSharper disable once UnusedTypeParameter
     public interface IStorage<T> : IStorage where T : StorageOptions
     {
     }

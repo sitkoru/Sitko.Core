@@ -81,7 +81,9 @@ namespace Sitko.Core.Xunit
 
         public T Get<T>()
         {
+#pragma warning disable 8714
             return ServiceProvider!.GetRequiredService<T>();
+#pragma warning restore 8714
         }
 
         public IEnumerable<T> GetAll<T>()

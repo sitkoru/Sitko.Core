@@ -25,15 +25,17 @@ namespace Sitko.Core.Storage.ImgProxy
 
         public override List<Type> GetRequiredModules()
         {
-            return new() {typeof(IStorageModule)};
+            return new() { typeof(IStorageModule) };
         }
     }
 
+    // Generic parameter is required for dependency injection
+    // ReSharper disable once UnusedTypeParameter
     public class StorageImgProxyModuleConfig<TStorageOptions> where TStorageOptions : StorageOptions
     {
-        public string Host { get; set; }
-        public string Key { get; set; }
-        public string Salt { get; set; }
+        public string Host { get; set; } = "";
+        public string Key { get; set; } = "";
+        public string Salt { get; set; } = "";
         public bool EncodeUrls { get; set; } = false;
     }
 }

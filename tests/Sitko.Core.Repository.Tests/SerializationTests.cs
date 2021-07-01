@@ -16,11 +16,11 @@ namespace Sitko.Core.Repository.Tests
             var where = JsonConvert.DeserializeObject<List<QueryContextConditionsGroup>>(json);
 
             Assert.NotNull(where);
-            Assert.NotEmpty(where);
-            Assert.Single(where);
-            Assert.Equal("projectId", where.First().Conditions.First().Property);
-            Assert.Equal(QueryContextOperator.Equal, where.First().Conditions.First().Operator);
-            Assert.Equal(1L, where.First().Conditions.First().Value);
+            Assert.NotEmpty(where!);
+            Assert.Single(where!);
+            Assert.Equal("projectId", where!.First().Conditions.First().Property);
+            Assert.Equal(QueryContextOperator.Equal, where!.First().Conditions.First().Operator);
+            Assert.Equal(1L, where!.First().Conditions.First().Value);
         }
 
         [Fact]
@@ -29,12 +29,12 @@ namespace Sitko.Core.Repository.Tests
             var model = new Model() {SubModels = new List<SubModel> {new SubModelA(), new SubModelB()}};
             var json = Serialize(model);
             var deserialized = Deserialize<Model>(json);
-            Assert.NotNull(deserialized.SubModels);
+            Assert.NotNull(deserialized!.SubModels);
             Assert.NotEmpty(deserialized.SubModels);
             var modifiedJson = json.Replace("Sitko.Core.Repository.Tests.SubModelA",
                 "Sitko.Core.Repository.Tests.SubModelC");
             var modifiedDeserialized = Deserialize<Model>(modifiedJson);
-            Assert.NotNull(modifiedDeserialized.SubModels);
+            Assert.NotNull(modifiedDeserialized!.SubModels);
             Assert.NotEmpty(modifiedDeserialized.SubModels);
         }
         

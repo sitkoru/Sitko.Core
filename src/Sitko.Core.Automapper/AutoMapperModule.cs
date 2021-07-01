@@ -25,7 +25,7 @@ namespace Sitko.Core.Automapper
 
     public class AutoMapperModuleConfig
     {
-        public Action<IMapperConfigurationExpression> Configure { get; set; } = expression => { };
-        public readonly List<Assembly> Assemblies = new List<Assembly> {typeof(AutoMapperModule).Assembly};
+        public Action<IMapperConfigurationExpression> Configure { get; set; } = _ => { };
+        public readonly List<Assembly> Assemblies = new() {typeof(AutoMapperModule).Assembly};
     }
 }

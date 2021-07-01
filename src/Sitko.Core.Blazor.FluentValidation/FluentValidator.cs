@@ -124,9 +124,11 @@ namespace Sitko.Core.Blazor.FluentValidation
             var messages = new ValidationMessageStore(CurrentEditContext!);
 
             // Perform object-level validation on request
+            // ReSharper disable once AsyncVoidLambda
             CurrentEditContext!.OnValidationRequested += async (sender, _) => await ValidateModel((EditContext)sender!, messages);
 
             // Perform per-field validation on each field edit
+            // ReSharper disable once AsyncVoidLambda
             CurrentEditContext.OnFieldChanged += async (_, eventArgs) => await ValidateField(CurrentEditContext, messages, eventArgs.FieldIdentifier);
         }
 

@@ -29,7 +29,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
         {
             return dbContext.Records.FirstOrDefaultAsync(r =>
                     r.Storage == StorageOptions.Name && r.FilePath == filePath,
-                cancellationToken ?? CancellationToken.None);
+                cancellationToken ?? CancellationToken.None)!;
         }
 
         protected override async Task DoDeleteMetadataAsync(string filePath, CancellationToken? cancellationToken)
@@ -108,7 +108,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
                 await dbContext.Records.AddAsync(record);
             }
 
-            if (metadata is not null)
+            if (metadata?.FileName != null)
             {
                 record.FileName = metadata.FileName;
             }
@@ -132,7 +132,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
 
     public class PostgresStorageMetadataProviderOptions : StorageMetadataProviderOptions
     {
-        public string ConnectionString { get; set; }
+        public string ConnectionString { get; set; } = "";
         public string Schema { get; set; } = "public";
     }
 }

@@ -18,7 +18,7 @@ namespace Sitko.Core.Apps.Blazor
             AddModule<PostgresModule<BarContext>, PostgresDatabaseModuleConfig<BarContext>>();
             AddModule<EFRepositoriesModule<BarContext>, EFRepositoriesModuleConfig>();
             AddModule<FileSystemStorageModule<TestBlazorStorageOptions>, TestBlazorStorageOptions>(
-                (configuration, environment, moduleConfig) =>
+                (_, _, moduleConfig) =>
                 {
                     moduleConfig.PublicUri = new Uri("https://localhost:5001/static/");
                     moduleConfig.Name = "Test";

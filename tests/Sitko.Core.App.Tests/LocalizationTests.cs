@@ -4,6 +4,7 @@ using Sitko.Core.App.Localization;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
+// ReSharper disable UnusedTypeParameter
 
 namespace Sitko.Core.App.Tests
 {
@@ -125,6 +126,7 @@ namespace Sitko.Core.App.Tests
     {
     }
 
+    
     public interface LocalizationTests<T, T2, T3>
     {
     }

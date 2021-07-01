@@ -35,7 +35,7 @@ namespace Sitko.Core.Storage
             {
                 Type = StorageNodeType.StorageItem,
                 Name = storageItem.FileName!,
-                FullPath = storageItem.FilePath!,
+                FullPath = storageItem.FilePath,
                 Size = storageItem.FileSize,
                 LastModified = storageItem.LastModified,
                 StorageItem = storageItem

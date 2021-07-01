@@ -126,6 +126,7 @@ namespace Sitko.Core.Queue.Nats
             var queue = GetQueueName<TMessage>();
             var id = Guid.NewGuid();
             var sub = conn.SubscribeAsync(queue,
+                // ReSharper disable once AsyncVoidLambda
                 async (_, args) =>
                 {
                     var request = deserializer(args.Message.Data);
@@ -302,12 +303,14 @@ namespace Sitko.Core.Queue.Nats
             {
                 sub = GetConnection().Subscribe(queueName,
                     _config.ConsumerGroupName, stanOptions,
+                    // ReSharper disable once AsyncVoidLambda
                     async (_, args) =>
                         await ProcessStanMessage(deserializer, args.Message, stanOptions.ManualAcks));
             }
             else
             {
                 sub = GetConnection().Subscribe(queueName, stanOptions,
+                    // ReSharper disable once AsyncVoidLambda
                     async (_, args) =>
                         await ProcessStanMessage(deserializer, args.Message, stanOptions.ManualAcks));
             }
@@ -365,7 +368,7 @@ namespace Sitko.Core.Queue.Nats
         {
             var jsonMsg = new QueueJsonMsg();
             jsonMsg.MergeFrom(data);
-            return (JsonConvert.DeserializeObject<T>(jsonMsg.Data), DeserializeContext(jsonMsg.Context));
+            return (JsonConvert.DeserializeObject<T>(jsonMsg.Data), DeserializeContext(jsonMsg.Context))!;
         }
 
         private (T message, QueueMessageContext messageContext) DeserializeBinaryPayload<T>(byte[] data)

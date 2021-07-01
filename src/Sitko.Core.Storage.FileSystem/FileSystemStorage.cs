@@ -20,8 +20,7 @@ namespace Sitko.Core.Storage.FileSystem
         protected override async Task<bool> DoSaveAsync(string path, Stream file,
             CancellationToken? cancellationToken = null)
         {
-            var dirName = Path.GetDirectoryName(path);
-
+            var dirName = Path.GetDirectoryName(path) ?? "";
             var dirPath = Path.Combine(Options.StoragePath, dirName);
             if (!Directory.Exists(dirPath))
             {

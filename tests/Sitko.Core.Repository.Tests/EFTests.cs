@@ -35,7 +35,7 @@ namespace Sitko.Core.Repository.Tests
             var item = await repository.GetAsync();
 
             Assert.NotNull(item);
-            var oldValue = item.Status;
+            var oldValue = item!.Status;
             item.Status = TestStatus.Disabled;
 
             var result = await repository.UpdateAsync(item);
@@ -63,7 +63,7 @@ namespace Sitko.Core.Repository.Tests
             var item = await repository.GetAsync();
 
             Assert.NotNull(item);
-            item.Status = TestStatus.Error;
+            item!.Status = TestStatus.Error;
 
             var result = await repository.UpdateAsync(item);
             Assert.False(result.IsSuccess);
@@ -83,7 +83,7 @@ namespace Sitko.Core.Repository.Tests
             var item = await repository.GetAsync();
 
             Assert.NotNull(item);
-            var oldValue = item.Status;
+            var oldValue = item!.Status;
             item.Status = TestStatus.Disabled;
 
             Assert.NotEqual(oldValue, item.Status);
@@ -119,7 +119,7 @@ namespace Sitko.Core.Repository.Tests
 
             var item = await repository.GetAsync(query => query.Include(e => e.Test));
             Assert.NotNull(item);
-            Assert.NotNull(item.Test);
+            Assert.NotNull(item!.Test);
             Assert.Equal(1, item.Test.FooId);
         }
 
@@ -134,7 +134,7 @@ namespace Sitko.Core.Repository.Tests
 
             var item = await repository.GetAsync(query => query.Include(e => e.Bars));
             Assert.NotNull(item);
-            Assert.NotNull(item.Bars);
+            Assert.NotNull(item!.Bars);
             Assert.NotEmpty(item.Bars);
             Assert.Single(item.Bars);
             Assert.Equal(item.Id, item.Bars.First().TestId);
@@ -152,7 +152,7 @@ namespace Sitko.Core.Repository.Tests
                 .Include(e => e.Bars)
                 .ThenInclude(e => e.Foos).ThenInclude(f => f.Bar).ThenInclude(b => b.Test));
             Assert.NotNull(item);
-            Assert.NotNull(item.Bars);
+            Assert.NotNull(item!.Bars);
             Assert.NotEmpty(item.Bars);
             Assert.Single(item.Bars);
             var bar = item.Bars.First();
@@ -184,7 +184,7 @@ namespace Sitko.Core.Repository.Tests
 
     public class TestDbContext : DbContext
     {
-        public DbSet<TestModel> TestModels { get; set; }
+        public DbSet<TestModel> TestModels => Set<TestModel>();
 
         public TestDbContext(DbContextOptions<TestDbContext> options) : base(options)
         {
@@ -216,7 +216,7 @@ namespace Sitko.Core.Repository.Tests
         public TestStatus Status { get; set; } = TestStatus.Enabled;
 
         [InverseProperty(nameof(BarModel.Test))]
-        public List<BarModel> Bars { get; set; }
+        public List<BarModel> Bars { get; set; } = new();
     }
 
     public class TestModelValidator : AbstractValidator<TestModel>
@@ -235,16 +235,16 @@ namespace Sitko.Core.Repository.Tests
     public class BarModel : Entity<Guid>
     {
         public Guid TestId { get; set; }
-        [ForeignKey(nameof(TestId))] public TestModel Test { get; set; }
+        [ForeignKey(nameof(TestId))] public TestModel Test { get; set; } = null!;
 
         [InverseProperty(nameof(FooModel.Bar))]
-        public List<FooModel> Foos { get; set; }
+        public List<FooModel> Foos { get; set; } = new();
     }
 
     public class FooModel : Entity<Guid>
     {
         public Guid BarId { get; set; }
-        [ForeignKey(nameof(BarId))] public BarModel Bar { get; set; }
+        [ForeignKey(nameof(BarId))] public BarModel Bar { get; set; } = null!;
     }
 
     public class TestRepository : EFRepository<TestModel, Guid, TestDbContext>

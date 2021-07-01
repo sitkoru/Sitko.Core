@@ -38,6 +38,7 @@ namespace Sitko.Core.Repository
             Expression<Func<TEntity, TProperty>> navigationPropertyPath);
     }
 
+    // ReSharper disable once UnusedTypeParameter
     public interface IIncludableRepositoryQuery<TEntity, out TProperty> : IRepositoryQuery<TEntity>
         where TEntity : class
     {

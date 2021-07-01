@@ -3,6 +3,8 @@ using ImgProxy;
 
 namespace Sitko.Core.Storage.ImgProxy
 {
+    // Generic interface is required for dependency injection
+    // ReSharper disable once UnusedTypeParameter
     public interface IImgProxyUrlGenerator<TStorageOptions> where TStorageOptions : StorageOptions
     {
         /// <summary>

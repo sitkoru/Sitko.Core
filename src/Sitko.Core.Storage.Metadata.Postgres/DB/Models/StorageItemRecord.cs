@@ -7,10 +7,6 @@ namespace Sitko.Core.Storage.Metadata.Postgres.DB.Models
     [Table("StorageItemRecords")]
     public class StorageItemRecord
     {
-        public StorageItemRecord()
-        {
-        }
-
         public StorageItemRecord(string storage, StorageItem storageItem)
         {
             Storage = storage;
@@ -28,7 +24,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres.DB.Models
         public long FileSize { get; set; }
         public string FileName { get; set; }
         public string MimeType { get; set; }
-        public DateTimeOffset LastModified { get; set; } = DateTimeOffset.Now;
+        public DateTimeOffset LastModified { get; set; }
         public string Path { get; set; }
 
         [Column(TypeName = "jsonb")] public StorageItemMetadata? Metadata { get; set; }

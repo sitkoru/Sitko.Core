@@ -54,7 +54,7 @@ namespace Sitko.Core.Storage.Metadata
         protected abstract Task DoDeleteAllMetadataAsync(CancellationToken? cancellationToken);
 
         Task<IEnumerable<StorageNode>> IStorageMetadataProvider.GetDirectoryContentAsync(string path,
-            CancellationToken? cancellationToken = null)
+            CancellationToken? cancellationToken)
         {
             return DoGetDirectoryContentsAsync(path, cancellationToken);
         }

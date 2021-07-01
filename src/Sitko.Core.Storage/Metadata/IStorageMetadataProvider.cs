@@ -25,6 +25,8 @@ namespace Sitko.Core.Storage.Metadata
         internal Task<StorageItemMetadata?> GetMetadataAsync(string path, CancellationToken? cancellationToken = null);
     }
 
+    // Generic interface is required for dependency injection
+    // ReSharper disable once UnusedTypeParameter
     public interface IStorageMetadataProvider<TOptions> : IStorageMetadataProvider
         where TOptions : StorageMetadataProviderOptions
     {

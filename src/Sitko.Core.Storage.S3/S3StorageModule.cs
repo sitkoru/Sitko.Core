@@ -22,6 +22,7 @@ namespace Sitko.Core.Storage.S3
         {
             base.ConfigureServices(services, configuration, environment);
             services.AddSingleton(_ => new S3ClientProvider<T>(Config));
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (Config.Server != null)
             {
                 services.AddHealthChecks().AddS3(options =>

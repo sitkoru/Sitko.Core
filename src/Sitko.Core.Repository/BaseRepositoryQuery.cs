@@ -126,7 +126,7 @@ namespace Sitko.Core.Repository
         {
             var where = JsonConvert.DeserializeObject<List<QueryContextConditionsGroup>>(whereJson);
 
-            if (where.Any())
+            if (where?.Any() == true)
             {
                 var conditionsGroups = new List<QueryContextConditionsGroup>();
                 foreach (var conditionsGroup in where)

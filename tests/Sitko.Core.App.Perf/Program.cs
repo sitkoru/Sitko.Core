@@ -9,9 +9,9 @@ namespace Sitko.Core.App.Perf
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            var summary = BenchmarkRunner.Run<LocalizationTest>();
+            BenchmarkRunner.Run<LocalizationTest>();
         }
     }
 

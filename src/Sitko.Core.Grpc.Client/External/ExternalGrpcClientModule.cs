@@ -6,7 +6,8 @@ using Sitko.Core.Grpc.Client.Discovery;
 
 namespace Sitko.Core.Grpc.Client.External
 {
-    public class ExternalGrpcClientModule<TClient> : GrpcClientModule<TClient, ExternalGrpcServiceAddressResolver<TClient>,
+    public class ExternalGrpcClientModule<TClient> : GrpcClientModule<TClient,
+        ExternalGrpcServiceAddressResolver<TClient>,
         GrpcClientStaticModuleConfig>
         where TClient : ClientBase<TClient>
     {
@@ -24,6 +25,6 @@ namespace Sitko.Core.Grpc.Client.External
 
     public class GrpcClientStaticModuleConfig : GrpcClientModuleConfig
     {
-        public Uri Address { get; set; }
+        public Uri Address { get; set; } = new("http://localhost");
     }
 }

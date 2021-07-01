@@ -18,7 +18,7 @@ namespace Sitko.Core.Db.Postgres
                 (c1, c2) => c1!.Equals(c2),
                 c => c!.GetHashCode(),
                 c => JsonHelper.DeserializeWithMetadata<TData>(
-                    JsonHelper.SerializeWithMetadata(c!, throwOnError)!, throwOnError)!);
+                    JsonHelper.SerializeWithMetadata(c!, throwOnError), throwOnError)!);
             modelBuilder
                 .Entity<TEntity>()
                 .Property(getProperty)
@@ -37,7 +37,7 @@ namespace Sitko.Core.Db.Postgres
                 (c1, c2) => c1.SequenceEqual(c2),
                 c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v!.GetHashCode())),
                 c => JsonHelper.DeserializeWithMetadata<ICollection<TData>>(
-                    JsonHelper.SerializeWithMetadata(c, throwOnError)!, throwOnError)!);
+                    JsonHelper.SerializeWithMetadata(c, throwOnError), throwOnError)!);
             modelBuilder
                 .Entity<TEntity>()
                 .Property(getProperty)
@@ -57,7 +57,7 @@ namespace Sitko.Core.Db.Postgres
                 (c1, c2) => c1.SequenceEqual(c2),
                 c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v!.GetHashCode())),
                 c => JsonHelper.DeserializeWithMetadata<TData[]>(
-                    JsonHelper.SerializeWithMetadata(c, throwOnError)!, throwOnError)!);
+                    JsonHelper.SerializeWithMetadata(c, throwOnError), throwOnError)!);
             modelBuilder
                 .Entity<TEntity>()
                 .Property(getProperty)
@@ -77,7 +77,7 @@ namespace Sitko.Core.Db.Postgres
                 (c1, c2) => c1.SequenceEqual(c2),
                 c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v!.GetHashCode())),
                 c => JsonHelper.DeserializeWithMetadata<TEnumerable>(
-                    JsonHelper.SerializeWithMetadata(c, throwOnError)!, throwOnError)!);
+                    JsonHelper.SerializeWithMetadata(c, throwOnError), throwOnError)!);
             modelBuilder
                 .Entity<TEntity>()
                 .Property(getProperty)

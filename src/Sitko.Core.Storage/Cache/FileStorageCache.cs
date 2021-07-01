@@ -123,7 +123,7 @@ namespace Sitko.Core.Storage.Cache
 
     public class FileStorageCacheOptions : StorageCacheOptions
     {
-        public string? CacheDirectoryPath { get; set; }
+        public string CacheDirectoryPath { get; set; } = "";
         public TimeSpan CleanupInterval { get; set; } = TimeSpan.FromHours(1);
     }
 

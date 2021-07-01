@@ -17,6 +17,8 @@ namespace Sitko.Core.Storage.Cache
         Task ClearAsync(CancellationToken? cancellationToken = default);
     }
 
+    // Generic interface is required for dependency injection
+    // ReSharper disable once UnusedTypeParameter
     public interface IStorageCache<T> : IStorageCache where T : StorageCacheOptions
     {
     }

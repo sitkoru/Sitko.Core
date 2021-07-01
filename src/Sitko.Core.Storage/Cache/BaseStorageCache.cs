@@ -53,7 +53,7 @@ namespace Sitko.Core.Storage.Cache
         }
 
         async Task<StorageItemDownloadInfo?> IStorageCache.GetOrAddItemAsync(string path,
-            Func<Task<StorageItemDownloadInfo?>> addItem, CancellationToken? cancellationToken = null)
+            Func<Task<StorageItemDownloadInfo?>> addItem, CancellationToken? cancellationToken)
         {
             if (_cache == null)
             {

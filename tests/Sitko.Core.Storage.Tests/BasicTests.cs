@@ -164,7 +164,7 @@ namespace Sitko.Core.Storage.Tests
                 {
                     var itemMetaData = fileNode.StorageItem.GetMetadata<FileMetaData>();
                     Assert.NotNull(itemMetaData);
-                    Assert.Equal(metaData.Id, itemMetaData.Id);
+                    Assert.Equal(metaData.Id, itemMetaData!.Id);
                 }
             }
         }
