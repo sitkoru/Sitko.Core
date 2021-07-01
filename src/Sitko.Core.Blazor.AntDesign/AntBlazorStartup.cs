@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App.Blazor;
+using Sitko.Core.App.Localization;
 
 namespace Sitko.Core.Blazor.AntDesignComponents
 {
@@ -16,6 +17,10 @@ namespace Sitko.Core.Blazor.AntDesignComponents
         {
             base.ConfigureAppServices(services);
             services.AddAntDesign();
+            services.Configure<JsonStringLocalizerOptions>(options =>
+            {
+                options.AddDefaultResource(typeof(AntBlazorApplication<>));
+            });
         }
     }
 }

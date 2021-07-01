@@ -7,10 +7,11 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
     public partial class AntForm<TEntity, TForm> where TForm : BaseForm<TEntity>
         where TEntity : class, new()
     {
-        [Parameter] public TEntity Entity { get; set; }
-        protected override async Task InitializeForm()
+        [Parameter] public TEntity? Entity { get; set; }
+
+        protected override async Task InitializeForm(TForm form)
         {
-            await Form.InitializeAsync(Entity);
+            await form.InitializeAsync(Entity);
         }
     }
 }

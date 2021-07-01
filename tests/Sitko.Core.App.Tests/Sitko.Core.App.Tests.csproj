@@ -10,5 +10,7 @@
     <ProjectReference Include="..\..\src\Sitko.Core.App\Sitko.Core.App.csproj" />
     <ProjectReference Include="..\..\src\Sitko.Core.Xunit\Sitko.Core.Xunit.csproj" />
   </ItemGroup>
-
+  <ItemGroup>
+    <EmbeddedResource Include="Resources/*.json" />
+  </ItemGroup>
 </Project>

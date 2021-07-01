@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
+using Sitko.Core.App.Localization;
 using Sitko.Core.App.Logging;
 using Tempus;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -161,11 +162,12 @@ namespace Sitko.Core.App
                     LogCheck("Configure app services");
                     services.AddSingleton(_logLevelSwitcher);
                     services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
-                    services.AddSingleton(typeof(IApplication), this);
-                    services.AddSingleton(typeof(Application), this);
+                    services.AddSingleton(this);
+                    services.AddSingleton<IApplication>(this);
                     services.AddSingleton(GetType(), this);
                     services.AddHostedService<ApplicationLifetimeService>();
                     services.AddTransient<IScheduler, Scheduler>();
+                    services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
 
                     var appContext = GetContext(context.HostingEnvironment, context.Configuration);
                     foreach (var servicesConfigurationAction in _servicesConfigurationActions)

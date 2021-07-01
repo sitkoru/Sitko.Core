@@ -1,9 +1,9 @@
-.ant-upload-list-large .ant-upload-list-picture-card-container, .ant-upload-list-large .ant-upload.ant-upload-select-picture-card {
+.ant-upload-list-large .ant-upload-list-picture-card-container, .ant-upload-list-large .ant-upload.ant-upload-select-picture-card, .ant-upload-list-large.ant-upload-list-picture-card .ant-upload-list-item {
     width: 256px;
     height: 256px;
 }
 
-.ant-upload-list-small .ant-upload-list-picture-card-container, .ant-upload-list-small .ant-upload.ant-upload-select-picture-card {
+.ant-upload-list-small .ant-upload-list-picture-card-container, .ant-upload-list-small .ant-upload.ant-upload-select-picture-card, .ant-upload-list-small.ant-upload-list-picture-card .ant-upload-list-item {
     width: 64px;
     height: 64px;
 }
@@ -28,4 +28,12 @@
 
 .ant-upload-list-item-image.ant-avatar.ant-avatar-image img {
     object-fit: cover;
+}
+
+.ant-upload-list-item-name .ant-list-item-meta-description {
+    font-size: 0.9em;
+}
+
+.ant-upload-list-text .ant-upload-text-icon .anticon{
+    vertical-align: middle;
 }

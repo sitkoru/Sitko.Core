@@ -11,9 +11,9 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
     {
         [Parameter] public TEntityPk? EntityId { get; set; }
 
-        protected override async Task InitializeForm()
+        protected override async Task InitializeForm(TForm form)
         {
-            await Form.InitializeAsync(EntityId);
+            await form.InitializeAsync(EntityId);
         }
     }
 }

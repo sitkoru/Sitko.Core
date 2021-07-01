@@ -19,7 +19,7 @@ namespace Sitko.Core.App.Blazor.Forms
                                                     $"inside an EditForm.");
             }
 
-            Form.SetEditContext(CurrentEditContext);
+            Form.EditContext = CurrentEditContext;
         }
     }
 }

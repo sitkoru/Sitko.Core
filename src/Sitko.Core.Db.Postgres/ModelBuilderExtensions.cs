@@ -17,15 +17,15 @@ namespace Sitko.Core.Db.Postgres
             var valueComparer = new ValueComparer<TData>(
                 (c1, c2) => c1!.Equals(c2),
                 c => c!.GetHashCode(),
-                c => JsonNetExtensions.DeserializeWithMetadata<TData>(
-                    JsonNetExtensions.SerializeWithMetadata(c!, throwOnError)!, throwOnError)!);
+                c => JsonHelper.DeserializeWithMetadata<TData>(
+                    JsonHelper.SerializeWithMetadata(c!, throwOnError)!, throwOnError)!);
             modelBuilder
                 .Entity<TEntity>()
                 .Property(getProperty)
                 .HasColumnType("jsonb")
                 .HasColumnName(name)
-                .HasConversion(data => JsonNetExtensions.SerializeWithMetadata(data!, throwOnError),
-                    json => JsonNetExtensions.DeserializeWithMetadata<TData>(json, throwOnError) ?? new TData())
+                .HasConversion(data => JsonHelper.SerializeWithMetadata(data!, throwOnError),
+                    json => JsonHelper.DeserializeWithMetadata<TData>(json, throwOnError) ?? new TData())
                 .Metadata.SetValueComparer(valueComparer);
         }
 
@@ -36,15 +36,15 @@ namespace Sitko.Core.Db.Postgres
             var valueComparer = new ValueComparer<ICollection<TData>>(
                 (c1, c2) => c1.SequenceEqual(c2),
                 c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v!.GetHashCode())),
-                c => JsonNetExtensions.DeserializeWithMetadata<ICollection<TData>>(
-                    JsonNetExtensions.SerializeWithMetadata(c, throwOnError)!, throwOnError)!);
+                c => JsonHelper.DeserializeWithMetadata<ICollection<TData>>(
+                    JsonHelper.SerializeWithMetadata(c, throwOnError)!, throwOnError)!);
             modelBuilder
                 .Entity<TEntity>()
                 .Property(getProperty)
                 .HasColumnType("jsonb")
                 .HasColumnName(name)
-                .HasConversion(data => JsonNetExtensions.SerializeWithMetadata(data, throwOnError),
-                    json => JsonNetExtensions.DeserializeWithMetadata<ICollection<TData>>(json, throwOnError) ??
+                .HasConversion(data => JsonHelper.SerializeWithMetadata(data, throwOnError),
+                    json => JsonHelper.DeserializeWithMetadata<ICollection<TData>>(json, throwOnError) ??
                             new List<TData>())
                 .Metadata.SetValueComparer(valueComparer);
         }
@@ -56,15 +56,15 @@ namespace Sitko.Core.Db.Postgres
             var valueComparer = new ValueComparer<TData[]>(
                 (c1, c2) => c1.SequenceEqual(c2),
                 c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v!.GetHashCode())),
-                c => JsonNetExtensions.DeserializeWithMetadata<TData[]>(
-                    JsonNetExtensions.SerializeWithMetadata(c, throwOnError)!, throwOnError)!);
+                c => JsonHelper.DeserializeWithMetadata<TData[]>(
+                    JsonHelper.SerializeWithMetadata(c, throwOnError)!, throwOnError)!);
             modelBuilder
                 .Entity<TEntity>()
                 .Property(getProperty)
                 .HasColumnType("jsonb")
                 .HasColumnName(name)
-                .HasConversion(data => JsonNetExtensions.SerializeWithMetadata(data, throwOnError),
-                    json => JsonNetExtensions.DeserializeWithMetadata<TData[]>(json, throwOnError) ?? new TData[0])
+                .HasConversion(data => JsonHelper.SerializeWithMetadata(data, throwOnError),
+                    json => JsonHelper.DeserializeWithMetadata<TData[]>(json, throwOnError) ?? new TData[0])
                 .Metadata.SetValueComparer(valueComparer);
         }
 
@@ -76,15 +76,15 @@ namespace Sitko.Core.Db.Postgres
             var valueComparer = new ValueComparer<TEnumerable>(
                 (c1, c2) => c1.SequenceEqual(c2),
                 c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v!.GetHashCode())),
-                c => JsonNetExtensions.DeserializeWithMetadata<TEnumerable>(
-                    JsonNetExtensions.SerializeWithMetadata(c, throwOnError)!, throwOnError)!);
+                c => JsonHelper.DeserializeWithMetadata<TEnumerable>(
+                    JsonHelper.SerializeWithMetadata(c, throwOnError)!, throwOnError)!);
             modelBuilder
                 .Entity<TEntity>()
                 .Property(getProperty)
                 .HasColumnType("jsonb")
                 .HasColumnName(name)
-                .HasConversion(data => JsonNetExtensions.SerializeWithMetadata(data, throwOnError),
-                    json => JsonNetExtensions.DeserializeWithMetadata<TEnumerable>(json, throwOnError) ??
+                .HasConversion(data => JsonHelper.SerializeWithMetadata(data, throwOnError),
+                    json => JsonHelper.DeserializeWithMetadata<TEnumerable>(json, throwOnError) ??
                             new TEnumerable())
                 .Metadata.SetValueComparer(valueComparer);
         }

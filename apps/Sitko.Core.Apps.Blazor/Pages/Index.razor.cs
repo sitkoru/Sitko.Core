@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AntDesign;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
+using Sitko.Core.App.Localization;
 using Sitko.Core.Apps.Blazor.Components;
 using Sitko.Core.Apps.Blazor.Data;
 using Sitko.Core.Apps.Blazor.Data.Entities;
@@ -22,6 +23,7 @@ namespace Sitko.Core.Apps.Blazor.Pages
         private TableFilter<string>[] _barFilter;
         private AntRepositoryForm<BarModel, Guid, BarForm> _frm;
         [Inject] public IStorage<TestBlazorStorageOptions> Storage { get; set; }
+        [Inject] public ILocalizationProvider<App> LocalizationProvider { get; set; }
 
         protected override async Task OnInitializedAsync()
         {

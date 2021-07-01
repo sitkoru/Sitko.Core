@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Sitko.Core.App.Blazor.Components;
 using Sitko.Core.App.Collections;
+using Sitko.Core.App.Localization;
 using Sitko.Core.Blazor.FileUpload;
 using Sitko.Core.Storage;
 
@@ -19,9 +20,9 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         [Parameter] public virtual string ContentTypes { get; set; } = "";
         [Parameter] public long MaxFileSize { get; set; }
         [Parameter] public int? MaxAllowedFiles { get; set; }
-        [Parameter] public string UploadText { get; set; } = "Upload";
-        [Parameter] public string PreviewText { get; set; } = "Preview";
-        [Parameter] public string RemoveText { get; set; } = "Remove";
+        [Parameter] public string UploadText { get; set; } = "";
+        [Parameter] public string PreviewText { get; set; } = "";
+        [Parameter] public string RemoveText { get; set; } = "";
         [Parameter] public IStorage Storage { get; set; } = null!;
         [Parameter] public bool EnableOrdering { get; set; } = true;
         protected bool ShowOrdering => EnableOrdering && ItemsCount > 1;
@@ -31,6 +32,28 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         protected bool ShowUpload => MaxAllowedFiles is null || MaxAllowedFiles < 1 || ItemsCount < MaxAllowedFiles;
         protected int? MaxFilesToUpload => MaxAllowedFiles is not null ? MaxAllowedFiles - ItemsCount : null;
         protected abstract int ItemsCount { get; }
+
+        [Inject]
+        protected ILocalizationProvider<BaseAntStorageInput<TUploadedItem, TValue>> LocalizationProvider { get; set; }
+
+        protected override void OnParametersSet()
+        {
+            base.OnParametersSet();
+            if (string.IsNullOrEmpty(UploadText))
+            {
+                UploadText = LocalizationProvider["Upload"];
+            }
+
+            if (string.IsNullOrEmpty(PreviewText))
+            {
+                PreviewText = LocalizationProvider["Preview"];
+            }
+
+            if (string.IsNullOrEmpty(RemoveText))
+            {
+                RemoveText = LocalizationProvider["Remove"];
+            }
+        }
 
         protected Task OnChangeAsync(TValue value)
         {

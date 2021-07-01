@@ -12,6 +12,7 @@
                 MaxAllowedFiles="@MaxFilesToUpload"
                 ContentTypes="@ContentTypes"
                 ListType="text"
+                ButtonText="@UploadText"
                 GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
                 @bind-Value="Items"
                 UploadPath="@UploadPath"
@@ -34,7 +35,9 @@
                                         <div class="ant-upload-text-icon">
                                             <AntDesign.Icon Type="paper-clip"/>
                                         </div>
-                                        <a target="_blank" rel="noopener noreferrer" class="ant-upload-list-item-name" title="@file.StorageItem.FileName" href="@file.Url">@file.StorageItem.FileName</a>
+                                        <span class="ant-upload-list-item-name">
+                                            <a target="_blank" rel="noopener noreferrer" title="@file.StorageItem.FileName" href="@file.Url">@file.StorageItem.FileName</a> <span class="ant-list-item-meta-description">( @file.StorageItem.HumanSize )</span>
+                                        </span>
                                         <span class="ant-upload-list-item-card-actions">
                                             @if (ShowOrdering)
                                             {

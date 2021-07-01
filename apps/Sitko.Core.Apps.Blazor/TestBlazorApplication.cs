@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using Serilog.Events;
+using Sitko.Core.App;
+using Sitko.Core.App.Localization;
 using Sitko.Core.Apps.Blazor.Data;
 using Sitko.Core.Blazor.AntDesignComponents;
 using Sitko.Core.Db.Postgres;
@@ -26,6 +28,10 @@ namespace Sitko.Core.Apps.Blazor
                 LogEventLevel.Error).ConfigureLogLevel("Microsoft.AspNetCore.Components", LogEventLevel.Warning);
             ConfigureLogLevel("Microsoft.AspNetCore.SignalR", LogEventLevel.Warning);
             ConfigureLogLevel("Microsoft.EntityFrameworkCore.ChangeTracking", LogEventLevel.Warning);
+            this.ConfigureServices(collection =>
+            {
+                collection.AddJsonLocalization();
+            });
         }
     }
 }

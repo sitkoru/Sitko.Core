@@ -11,8 +11,8 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
     public partial class AntStorageFilesInput<TCollection> where TCollection : ICollection<StorageItem>, new()
     {
         [Parameter] public Func<IEnumerable<StorageItem>, Task> OnUpdate { get; set; } = null!;
-        [Parameter] public string UpText { get; set; } = "Move up";
-        [Parameter] public string DownText { get; set; } = "Move down";
+        [Parameter] public string UpText { get; set; } = "";
+        [Parameter] public string DownText { get; set; } = "";
 
         private readonly OrderedCollection<UploadedFile> _files = new();
         protected override int ItemsCount => _files.Count();
@@ -33,6 +33,14 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         protected override void OnParametersSet()
         {
             base.OnParametersSet();
+            if (string.IsNullOrEmpty(UpText))
+            {
+                UpText = LocalizationProvider["Move up"];
+            }
+            if (string.IsNullOrEmpty(DownText))
+            {
+                DownText = LocalizationProvider["Move down"];
+            }
             if (CurrentValue is not null && CurrentValue.Any())
             {
                 _files.SetItems(CurrentValue.Select(CreateUploadedItem));

@@ -2,7 +2,7 @@
 @inherits BastAntStorageFileInputComponent<TCollection>
 <div class="ant-upload ant-upload-select ant-upload-select-@(ListType)">
     <span tabindex="0" class="ant-upload" @ref="_btn" role="button">
-        <Input type="file" style="display: none;" accept="@ContentTypes" multiple="@IsMultiple" @ref="InputRef"/>
+        <input type="file" style="display: none;" accept="@ContentTypes" multiple="@IsMultiple" @ref="InputRef"/>
         @if (ChildContent is null)
         {
             <div class="ant-upload ant-upload-select">
