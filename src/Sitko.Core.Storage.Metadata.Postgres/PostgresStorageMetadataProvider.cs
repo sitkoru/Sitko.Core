@@ -134,11 +134,11 @@ namespace Sitko.Core.Storage.Metadata.Postgres
 
     public class PostgresStorageMetadataProviderOptions : StorageMetadataProviderOptions
     {
-        public string? Host { get; set; }
-        public string? Username { get; set; }
-        public string? Password { get; set; }
+        public string Host { get; set; } = "localhost";
+        public int Port { get; set; } = 5432;
+        public string Username { get; set; } = "postgres";
+        public string Password { get; set; } = string.Empty;
         public string? Database { get; set; }
-        public int Port { get; set; }
 
         public string GetConnectionString()
         {
