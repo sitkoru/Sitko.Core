@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.UserSecrets;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Sitko.Core.App;
 using Sitko.Core.Repository.EntityFrameworkCore;
 using Sitko.Core.Xunit;
