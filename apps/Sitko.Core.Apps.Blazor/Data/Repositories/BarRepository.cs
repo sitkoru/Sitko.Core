@@ -7,7 +7,7 @@ namespace Sitko.Core.Apps.Blazor.Data.Repositories
 {
     public class BarRepository : EFRepository<BarModel, Guid, BarContext>
     {
-        public BarRepository(IOptionsMonitor<EfRepositoriesModuleOptions> optionsMonitor,
+        public BarRepository(IOptionsMonitor<EFRepositoriesModuleOptions> optionsMonitor,
             EFRepositoryContext<BarModel, Guid, BarContext> repositoryContext) : base(optionsMonitor,
             repositoryContext)
         {

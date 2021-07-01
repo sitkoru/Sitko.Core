@@ -263,7 +263,7 @@ namespace Sitko.Core.Repository.Tests
 
     public class TestRepository : EFRepository<TestModel, Guid, TestDbContext>
     {
-        public TestRepository(IOptionsMonitor<EfRepositoriesModuleOptions> optionsMonitor,
+        public TestRepository(IOptionsMonitor<EFRepositoriesModuleOptions> optionsMonitor,
             EFRepositoryContext<TestModel, Guid, TestDbContext> repositoryContext) : base(optionsMonitor,
             repositoryContext)
         {
@@ -272,7 +272,7 @@ namespace Sitko.Core.Repository.Tests
 
     public class BarRepository : EFRepository<BarModel, Guid, TestDbContext>
     {
-        public BarRepository(IOptionsMonitor<EfRepositoriesModuleOptions> optionsMonitor,
+        public BarRepository(IOptionsMonitor<EFRepositoriesModuleOptions> optionsMonitor,
             EFRepositoryContext<BarModel, Guid, TestDbContext> repositoryContext) : base(optionsMonitor,
             repositoryContext)
         {
@@ -281,7 +281,7 @@ namespace Sitko.Core.Repository.Tests
 
     public class FooRepository : EFRepository<FooModel, Guid, TestDbContext>
     {
-        public FooRepository(IOptionsMonitor<EfRepositoriesModuleOptions> optionsMonitor,
+        public FooRepository(IOptionsMonitor<EFRepositoriesModuleOptions> optionsMonitor,
             EFRepositoryContext<FooModel, Guid, TestDbContext> repositoryContext) : base(optionsMonitor,
             repositoryContext)
         {
@@ -297,7 +297,7 @@ namespace Sitko.Core.Repository.Tests
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, EFRepositoriesModule<EFTestScope>, EfRepositoriesModuleOptions>();
+                .AddModule<TestApplication, EFRepositoriesModule<EFTestScope>, EFRepositoriesModuleOptions>();
         }
     }
 
@@ -306,7 +306,7 @@ namespace Sitko.Core.Repository.Tests
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, EFRepositoriesModule<EFTestScopeThreadSafe>, EfRepositoriesModuleOptions>(
+                .AddModule<TestApplication, EFRepositoriesModule<EFTestScopeThreadSafe>, EFRepositoriesModuleOptions>(
                     (_, _, moduleConfig) => moduleConfig.EnableThreadSafeOperations = true);
         }
     }
