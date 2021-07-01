@@ -28,19 +28,6 @@ namespace Sitko.Core.Storage.Cache
                     await Task.Delay(Options.CurrentValue.CleanupInterval);
                     Logger.LogInformation("Start deleting obsolete files");
                     Expire();
-                    var files = Directory.GetFiles(options.CurrentValue.CacheDirectoryPath, "*.*",
-                        SearchOption.AllDirectories);
-                    var items = this.Select(i => i).ToList();
-                    foreach (string file in files)
-                    {
-                        if (items.Any(i => i.PhysicalPath == file))
-                        {
-                            continue;
-                        }
-
-                        DeleteFile(file);
-                    }
-
                     Logger.LogInformation("Done deleting obsolete files");
                 }
             }, _cts.Token);
