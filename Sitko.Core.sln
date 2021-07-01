@@ -182,8 +182,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "apps", "apps", "{F626F7B7-7
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Apps.Blazor", "apps\Sitko.Core.Apps.Blazor\Sitko.Core.Apps.Blazor.csproj", "{FD711E57-272D-436C-991C-62D317920DD0}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "external", "external", "{C4890B36-5B17-4201-AC17-9689F53019AE}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Blazor.FileUpload", "src\Sitko.Core.Blazor.FileUpload\Sitko.Core.Blazor.FileUpload.csproj", "{7D53D3F8-A9B8-4403-ADFE-C6AFC2E84B0D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.App.Tests", "tests\Sitko.Core.App.Tests\Sitko.Core.App.Tests.csproj", "{C0480749-9319-4E2B-8EF7-C568C0EE1A52}"
