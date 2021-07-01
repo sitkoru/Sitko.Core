@@ -14,8 +14,10 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
     {
         protected Form<TForm>? AntForm;
 
-        [Inject] protected ILocalizationProvider<BaseAntForm<TEntity, TForm>> LocalizationProvider { get; set; }
-        [Parameter] public RenderFragment<TForm> ChildContent { get; set; }
+        [Inject]
+        protected ILocalizationProvider<BaseAntForm<TEntity, TForm>> LocalizationProvider { get; set; } = null!;
+
+        [Parameter] public RenderFragment<TForm> ChildContent { get; set; } = null!;
 
         [Parameter] public string Layout { get; set; } = FormLayout.Horizontal;
 
@@ -59,24 +61,19 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         [Parameter] public bool ValidateOnChange { get; set; } = true;
 
-        [Inject] protected MessageService MessageService { get; set; }
+        [Inject] protected MessageService MessageService { get; set; } = null!;
 
-        protected override Task ConfigureFormAsync()
+        protected override Task ConfigureFormAsync(TForm form)
         {
-            Form.OnSuccess = () => MessageService.Success(LocalizationProvider["Entity saved successfully"]);
-            Form.OnError = error => MessageService.Error(error);
-            Form.OnException = exception => MessageService.Error(exception.ToString());
+            form.OnSuccess = () => MessageService.Success(LocalizationProvider["Entity saved successfully"]);
+            form.OnError = error => MessageService.Error(error);
+            form.OnException = exception => MessageService.Error(exception.ToString());
             return Task.CompletedTask;
         }
 
-        public Task OnFormErrorAsync(EditContext editContext)
+        protected Task OnFormErrorAsync(EditContext editContext)
         {
             return MessageService.Error(string.Join(". ", editContext.GetValidationMessages()));
-        }
-
-        public override bool IsValid()
-        {
-            return AntForm != null && AntForm.Validate();
         }
 
         public override void Save()

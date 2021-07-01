@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,10 @@ namespace Sitko.Core.App.Blazor.Forms
         public void SetEditContext(EditContext editContext)
         {
             EditContext = editContext;
+            EditContext.OnValidationStateChanged += (_, _) =>
+            {
+                IsValid = !EditContext.GetValidationMessages().Any();
+            };
         }
 
         public abstract void NotifyChange();
@@ -27,10 +32,7 @@ namespace Sitko.Core.App.Blazor.Forms
         public abstract Task ResetAsync();
         public abstract bool CanSave();
 
-        public virtual bool IsValid()
-        {
-            return Parent is not null && Parent.IsValid();
-        }
+        public virtual bool IsValid { get; protected set; }
 
         public virtual void Save()
         {
@@ -229,12 +231,7 @@ namespace Sitko.Core.App.Blazor.Forms
                 return false;
             }
 
-            if (!HasChanges)
-            {
-                return false;
-            }
-
-            return IsValid();
+            return HasChanges && IsValid;
         }
 
         public override async Task FieldChangedAsync(FieldIdentifier fieldIdentifier)

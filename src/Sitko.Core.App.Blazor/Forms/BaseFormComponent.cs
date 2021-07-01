@@ -8,35 +8,36 @@ namespace Sitko.Core.App.Blazor.Forms
 {
     public abstract class BaseFormComponent : BaseComponent
     {
-        protected abstract Task InitializeForm();
-        protected abstract Task ConfigureFormAsync();
-        public abstract bool IsValid();
         public abstract void Save();
-        public abstract Task OnFieldChangeAsync(FieldIdentifier fieldIdentifier);
-
-        public abstract void SetEditContext(EditContext editContext);
+        public abstract EditContext EditContext { set; }
     }
 
     public abstract class BaseFormComponent<TEntity, TForm> : BaseFormComponent where TForm : BaseForm<TEntity>
         where TEntity : class, new()
     {
-        public TForm Form { get; private set; }
+        public TForm? Form { get; private set; }
 
         [Parameter] public Func<TEntity, Task>? OnAfterSave { get; set; }
         [Parameter] public Func<TEntity, Task>? OnAfterCreate { get; set; }
         [Parameter] public Func<TEntity, Task>? OnAfterUpdate { get; set; }
-        
-        public override void SetEditContext(EditContext editContext)
-        {
-            EditContext = editContext;
-            Form.SetEditContext(editContext);
-            EditContext.OnFieldChanged += async (_, args) =>
-            {
-                await OnFieldChangeAsync(args.FieldIdentifier);
-            };
-        }
 
-        public EditContext EditContext { get; private set; }
+        public override EditContext EditContext
+        {
+            set
+            {
+                if (Form is not null)
+                {
+                    Form.SetEditContext(value);
+                    value.OnFieldChanged += async (_, args) =>
+                    {
+                        await OnFieldChangeAsync(args.FieldIdentifier);
+                    };
+                }
+            }
+        }
+        
+        protected abstract Task ConfigureFormAsync(TForm form);
+        protected abstract Task InitializeForm(TForm form);
 
         protected override async Task OnInitializedAsync()
         {
@@ -46,15 +47,18 @@ namespace Sitko.Core.App.Blazor.Forms
             Form.OnAfterSave = entity => OnAfterSave is not null ? OnAfterSave(entity) : Task.CompletedTask;
             Form.OnAfterCreate = entity => OnAfterCreate is not null ? OnAfterCreate(entity) : Task.CompletedTask;
             Form.OnAfterUpdate = entity => OnAfterUpdate is not null ? OnAfterUpdate(entity) : Task.CompletedTask;
-            await ConfigureFormAsync();
-            await InitializeForm();
+            await ConfigureFormAsync(Form);
+            await InitializeForm(Form);
             MarkAsInitialized();
         }
 
-        public override async Task OnFieldChangeAsync(FieldIdentifier fieldIdentifier)
+        protected virtual async Task OnFieldChangeAsync(FieldIdentifier fieldIdentifier)
         {
-            await Form.FieldChangedAsync(fieldIdentifier);
-            await NotifyStateChangeAsync();
+            if (Form is not null)
+            {
+                await Form.FieldChangedAsync(fieldIdentifier);
+                await NotifyStateChangeAsync();
+            }
         }
     }
 }
