@@ -125,6 +125,9 @@ namespace Sitko.Core.App.Blazor.Forms
                 await StopLoadingAsync();
                 if (result.IsSuccess)
                 {
+                    HasChanges = false;
+                    _oldEntityJson = JsonHelper.SerializeWithMetadata(Entity);
+                    await NotifyStateChangeAsync();
                     if (IsNew)
                     {
                         await OnCreatedAsync(Entity);
@@ -141,19 +144,14 @@ namespace Sitko.Core.App.Blazor.Forms
                             await OnAfterUpdate(Entity);
                         }
                     }
-
                     if (OnAfterSave is not null)
                     {
                         await OnAfterSave(Entity);
                     }
-
-                    HasChanges = false;
-                    _oldEntityJson = JsonHelper.SerializeWithMetadata(Entity);
                     if (OnSuccess is not null)
                     {
                         await OnSuccess();
                     }
-
                     await NotifyStateChangeAsync();
                 }
                 else
