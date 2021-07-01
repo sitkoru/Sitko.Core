@@ -28,6 +28,7 @@ namespace Sitko.Core.App.Blazor.Forms
                 if (Form is not null)
                 {
                     Form.SetEditContext(value);
+                    // ReSharper disable once AsyncVoidLambda
                     value.OnFieldChanged += async (_, args) =>
                     {
                         await OnFieldChangeAsync(args.FieldIdentifier);
@@ -35,7 +36,7 @@ namespace Sitko.Core.App.Blazor.Forms
                 }
             }
         }
-        
+
         protected abstract Task ConfigureFormAsync(TForm form);
         protected abstract Task InitializeForm(TForm form);
 

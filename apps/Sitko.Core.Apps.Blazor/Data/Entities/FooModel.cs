@@ -5,6 +5,6 @@ namespace Sitko.Core.Apps.Blazor.Data.Entities
 {
     public class FooModel : Entity<Guid>
     {
-        public string Foo { get; set; }
+        public string Foo { get; set; } = "";
     }
 }

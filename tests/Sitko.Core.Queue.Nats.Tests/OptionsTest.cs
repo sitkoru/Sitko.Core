@@ -23,18 +23,14 @@ namespace Sitko.Core.Queue.Nats.Tests
             var scope = await GetScopeAsync();
 
             var queue = scope.Get<IQueue>();
-            var messageOptions = scope.Get<IEnumerable<IQueueMessageOptions>>();
+            var messageOptions = scope.Get<IEnumerable<IQueueMessageOptions>>().ToArray();
             Assert.NotNull(messageOptions);
             Assert.NotEmpty(messageOptions);
 
             var testMessageOptions = messageOptions.FirstOrDefault(o => o is IQueueMessageOptions<TestMessage>);
             Assert.NotNull(testMessageOptions);
 
-            var subResult = await queue.SubscribeAsync<TestMessage>((message, _) =>
-            {
-                if (message == null) throw new ArgumentNullException(nameof(message));
-                return Task.FromResult(true);
-            });
+            var subResult = await queue.SubscribeAsync<TestMessage>((_, _) => Task.FromResult(true));
             Assert.True(subResult.IsSuccess);
 
             Assert.NotNull(subResult.Options);

@@ -60,7 +60,7 @@ namespace Sitko.Core.Storage.Tests
             Assert.NotNull(uploaded);
             Assert.NotNull(uploaded.FilePath);
 
-            var downloaded = await storage.DownloadAsync(uploaded!.FilePath!);
+            var downloaded = await storage.DownloadAsync(uploaded.FilePath);
 
             Assert.NotNull(downloaded);
             await using (downloaded)
@@ -89,7 +89,7 @@ namespace Sitko.Core.Storage.Tests
 
             Assert.NotNull(uploaded);
 
-            var result = await storage.DeleteAsync(uploaded.FilePath!);
+            var result = await storage.DeleteAsync(uploaded.FilePath);
 
             Assert.True(result);
         }
@@ -133,7 +133,7 @@ namespace Sitko.Core.Storage.Tests
         protected static async Task CheckFoldersContent(IStorage<TSettings> storage, StorageItem uploaded,
             FileMetaData? metaData)
         {
-            var uploadDirectoryContent = await storage.GetDirectoryContentsAsync("upload");
+            var uploadDirectoryContent = (await storage.GetDirectoryContentsAsync("upload")).ToArray();
             Assert.NotEmpty(uploadDirectoryContent);
             Assert.Single(uploadDirectoryContent);
             var first = uploadDirectoryContent.First();
@@ -192,9 +192,9 @@ namespace Sitko.Core.Storage.Tests
 
             Assert.NotNull(item);
 
-            var itemMetaData = item.GetMetadata<FileMetaData>();
+            var itemMetaData = item!.GetMetadata<FileMetaData>();
             Assert.NotNull(itemMetaData);
-            Assert.Equal(metaData.Id, itemMetaData.Id);
+            Assert.Equal(metaData.Id, itemMetaData!.Id);
         }
 
         [Fact]
@@ -219,10 +219,10 @@ namespace Sitko.Core.Storage.Tests
 
             var newItem = await storage.GetAsync(uploaded.FilePath);
             Assert.NotNull(newItem);
-            Assert.Equal(newFileName, newItem.FileName);
+            Assert.Equal(newFileName, newItem!.FileName);
             var itemMetaData = newItem.GetMetadata<FileMetaData>();
             Assert.NotNull(itemMetaData);
-            Assert.Equal(newMetaData.Id, itemMetaData.Id);
+            Assert.Equal(newMetaData.Id, itemMetaData!.Id);
         }
     }
 

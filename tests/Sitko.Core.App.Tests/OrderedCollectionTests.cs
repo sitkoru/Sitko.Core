@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Sitko.Core.App.Collections;
 using Sitko.Core.Xunit;
 using Xunit;

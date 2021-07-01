@@ -8,7 +8,7 @@ namespace Sitko.Core.Apps.Blazor.Data.Entities
 {
     public class BarModel : Entity<Guid>
     {
-        public string Bar { get; set; }
+        public string Bar { get; set; } = "";
 
         public List<FooModel> Foos { get; set; } = new();
 

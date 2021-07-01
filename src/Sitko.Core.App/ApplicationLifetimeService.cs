@@ -27,10 +27,13 @@ namespace Sitko.Core.App
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            // ReSharper disable once AsyncVoidLambda
             _hostApplicationLifetime.ApplicationStarted.Register(async () =>
                 await _application.OnStarted(_configuration, _environment, _serviceProvider));
+            // ReSharper disable once AsyncVoidLambda
             _hostApplicationLifetime.ApplicationStopping.Register(async () =>
                 await _application.OnStopping(_configuration, _environment, _serviceProvider));
+            // ReSharper disable once AsyncVoidLambda
             _hostApplicationLifetime.ApplicationStopped.Register(async () =>
                 await _application.OnStopped(_configuration, _environment, _serviceProvider));
 

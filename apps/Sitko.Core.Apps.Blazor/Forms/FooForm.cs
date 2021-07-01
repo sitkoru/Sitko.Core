@@ -8,7 +8,7 @@ namespace Sitko.Core.Apps.Blazor.Forms
 {
     public class FooForm : BaseForm<FooModel>
     {
-        public string Foo { get; set; }
+        public string Foo { get; set; } = "";
 
 
         public FooForm(ILogger<FooForm> logger) : base(logger)

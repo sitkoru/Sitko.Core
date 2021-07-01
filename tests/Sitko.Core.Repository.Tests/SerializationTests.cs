@@ -43,7 +43,7 @@ namespace Sitko.Core.Repository.Tests
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
             TypeNameHandling = TypeNameHandling.Auto,
             MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead,
-            Error = (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs e) =>
+            Error = (_, e) =>
             {
                 Log.Logger.Error(e.ErrorContext.Error, "Error deserializing json content: {ErrorText}",
                     e.ErrorContext.Error.ToString());

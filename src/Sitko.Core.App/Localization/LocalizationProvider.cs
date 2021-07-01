@@ -12,6 +12,7 @@ namespace Sitko.Core.App.Localization
         IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures);
     }
 
+    // ReSharper disable once UnusedTypeParameter
     public interface ILocalizationProvider<T> : ILocalizationProvider
     {
     }
