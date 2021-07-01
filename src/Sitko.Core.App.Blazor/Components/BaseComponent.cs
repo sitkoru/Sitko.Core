@@ -15,7 +15,15 @@ namespace Sitko.Core.App.Blazor.Components
         protected bool IsInitialized { get; private set; }
         public bool IsLoading { get; private set; }
         [Inject] protected NavigationManager NavigationManager { get; set; } = null!;
-        protected ILogger<BaseComponent> Logger => GetService<ILogger<BaseComponent>>();
+        protected ILogger Logger
+        {
+            get
+            {
+                var validatorType = typeof(ILogger<>);
+                var formValidatorType = validatorType.MakeGenericType(GetType());
+                return (ScopedServices.GetRequiredService(formValidatorType) as ILogger)!;
+            }
+        }
 
         protected void MarkAsInitialized()
         {
