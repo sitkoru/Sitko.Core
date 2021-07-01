@@ -1,11 +1,11 @@
-﻿@typeparam TCollection
-@inherits BaseAntStorageFileInput<TCollection>
+﻿@typeparam TValue
+@inherits BaseAntStorageFileInput<TValue>
 <AntDesign.Spin Spinning="IsSpinning">
     @if (ShowUpload)
     {
         <CascadingValue Value="this" IsFixed="true">
             <AntStorageItemsInput
-                TCollection="TCollection"
+                TValue="TValue"
                 @ref="FileInput"
                 Storage="@Storage"
                 MaxFileSize="MaxFileSize"

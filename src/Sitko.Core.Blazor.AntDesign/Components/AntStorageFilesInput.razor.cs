@@ -8,7 +8,7 @@ using Sitko.Core.Storage;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
-    public partial class AntStorageFilesInput<TCollection> where TCollection : ICollection<StorageItem>, new()
+    public partial class AntStorageFilesInput<TValue> where TValue : ICollection<StorageItem>, new()
     {
         [Parameter] public Func<IEnumerable<StorageItem>, Task> OnUpdate { get; set; } = null!;
         [Parameter] public string UpText { get; set; } = "";
@@ -17,7 +17,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         private readonly OrderedCollection<UploadedFile> _files = new();
         protected override int ItemsCount => _files.Count();
 
-        private TCollection Items
+        private TValue? Items
         {
             get
             {
@@ -25,7 +25,15 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             }
             set
             {
-                _files.AddItems(value.Select(CreateUploadedItem));
+                if (value is not null)
+                {
+                    _files.AddItems(value.Select(CreateUploadedItem));
+                }
+                else
+                {
+                    _files.SetItems(Array.Empty<UploadedFile>());
+                }
+
                 UpdateCurrentValue();
             }
         }
@@ -37,10 +45,12 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             {
                 UpText = LocalizationProvider["Move up"];
             }
+
             if (string.IsNullOrEmpty(DownText))
             {
                 DownText = LocalizationProvider["Move down"];
             }
+
             if (CurrentValue is not null && CurrentValue.Any())
             {
                 _files.SetItems(CurrentValue.Select(CreateUploadedItem));
@@ -52,9 +62,9 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             _files.RemoveItem(file);
         }
 
-        protected override TCollection GetValue()
+        protected override TValue GetValue()
         {
-            var collection = new TCollection();
+            var collection = new TValue();
             foreach (var result in _files)
             {
                 collection.Add(result.StorageItem);

@@ -1,5 +1,5 @@
-﻿@typeparam TCollection
-@inherits BaseAntStorageImageInput<TCollection>
+﻿@typeparam TValue
+@inherits BaseAntStorageImageInput<TValue>
 <AntDesign.Spin Spinning="IsSpinning">
     <div class="ant-upload-list ant-upload-list-picture-card ant-upload-list-@Size">
         @foreach (var file in _images)
@@ -58,7 +58,7 @@
             <CascadingValue Value="this" IsFixed="true">
                 <AntStorageItemsInput
                     @ref="FileInput"
-                    TCollection="TCollection"
+                    TValue="TValue"
                     Storage="@Storage"
                     MaxFileSize="MaxFileSize"
                     MaxAllowedFiles="@MaxFilesToUpload"
