@@ -27,7 +27,7 @@ namespace Sitko.Core.App.Localization
         private TimeSpan _cacheTimout;
         private const char GenericSeparator = '`';
 
-        public JsonStringLocalizerFactory(IOptionsMonitor<JsonStringLocalizerOptions> options, IScheduler scheduler,
+        public JsonStringLocalizerFactory(IOptionsMonitor<JsonLocalizationModuleOptions> options, IScheduler scheduler,
             ILogger<JsonStringLocalizerFactory> logger)
         {
             _logger = logger;
@@ -66,7 +66,7 @@ namespace Sitko.Core.App.Localization
             return Task.CompletedTask;
         }
 
-        private void ReadOptions(JsonStringLocalizerOptions localizerOptions)
+        private void ReadOptions(JsonLocalizationModuleOptions localizerOptions)
         {
             _cacheTimout = TimeSpan.FromMinutes(localizerOptions.CacheTimeInMinutes);
             s_defaultResources = localizerOptions.DefaultResources;
@@ -164,28 +164,34 @@ namespace Sitko.Core.App.Localization
             CultureInfo cultureInfo)
         {
             Assembly satelliteAssembly;
-            try
+            var cultureInfoName = cultureInfo.Name;
+            if (Equals(cultureInfo, CultureInfo.InvariantCulture))
             {
-                satelliteAssembly = !Equals(cultureInfo, CultureInfo.InvariantCulture)
-                    ? assembly.GetSatelliteAssembly(cultureInfo)
-                    : assembly;
+                satelliteAssembly = assembly;
+                cultureInfoName = "Invariant";
             }
-            catch (FileNotFoundException exception)
+            else
             {
-                _logger.LogInformation(exception,
-                    "Could not find satellite assembly for '{CultureInfoName}': {Message}",
-                    cultureInfo.Name, exception.Message);
-                return new Dictionary<string, string>();
+                try
+                {
+                    satelliteAssembly = assembly.GetSatelliteAssembly(cultureInfo);
+                }
+                catch (FileNotFoundException exception)
+                {
+                    _logger.LogInformation(exception,
+                        "Could not find satellite assembly for '{CultureInfoName}': {Message}",
+                        cultureInfoName, exception.Message);
+                    return new Dictionary<string, string>();
+                }
             }
 
-            var resourceFileName = $"{name}.json";
-            var resourceNames = satelliteAssembly.GetManifestResourceNames();
-            var resourceName = resourceNames.FirstOrDefault(n => n.EndsWith(resourceFileName));
+            var resourceName = satelliteAssembly.GetManifestResourceNames()
+                .FirstOrDefault(n => n.EndsWith($"{name}.json"));
             if (string.IsNullOrEmpty(resourceName))
             {
                 _logger.LogDebug(
                     "Resource '{ResourceName}' not found for '{CultureInfoName}'",
-                    name, cultureInfo.Name);
+                    name, cultureInfoName);
                 return new Dictionary<string, string>();
             }
 
@@ -194,7 +200,7 @@ namespace Sitko.Core.App.Localization
             {
                 _logger.LogDebug(
                     "Resource '{ResourceName}' not found for '{CultureInfoName}'",
-                    name, cultureInfo.Name);
+                    name, cultureInfoName);
                 return new Dictionary<string, string>();
             }
 
@@ -202,25 +208,6 @@ namespace Sitko.Core.App.Localization
             string json = reader.ReadToEnd();
 
             return JsonSerializer.Deserialize<Dictionary<string, string>>(json)!;
-        }
-    }
-
-    public class JsonStringLocalizerOptions
-    {
-        private readonly HashSet<Type> _defaultResources = new();
-        public Type[] DefaultResources => _defaultResources.ToArray();
-
-        public int CacheTimeInMinutes { get; set; } = 60;
-
-        public JsonStringLocalizerOptions AddDefaultResource<T>()
-        {
-            return AddDefaultResource(typeof(T));
-        }
-
-        public JsonStringLocalizerOptions AddDefaultResource(Type resourceType)
-        {
-            _defaultResources.Add(resourceType);
-            return this;
         }
     }
 }
