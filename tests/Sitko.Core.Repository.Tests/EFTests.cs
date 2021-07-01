@@ -275,7 +275,7 @@ namespace Sitko.Core.Repository.Tests
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, EFRepositoriesModule<EFTestScope>, EfRepositoriesModuleOptions>();
+                .AddModule<TestApplication, EFRepositoriesModule<EFTestScope>, EFRepositoriesModuleOptions>();
         }
     }
 }

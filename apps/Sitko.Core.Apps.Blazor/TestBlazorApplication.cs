@@ -13,7 +13,7 @@ namespace Sitko.Core.Apps.Blazor
         public TestBlazorApplication(string[] args) : base(args)
         {
             AddModule<PostgresModule<BarContext>, PostgresDatabaseModuleOptions<BarContext>>();
-            AddModule<EFRepositoriesModule<BarContext>, EfRepositoriesModuleOptions>();
+            AddModule<EFRepositoriesModule<BarContext>, EFRepositoriesModuleOptions>();
             AddModule<FileSystemStorageModule<TestBlazorStorageOptions>, TestBlazorStorageOptions>();
             ConfigureLogLevel("System.Net.Http.HttpClient.health-checks", LogEventLevel.Error)
                 .ConfigureLogLevel("Microsoft.AspNetCore", LogEventLevel.Warning)

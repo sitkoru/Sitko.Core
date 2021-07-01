@@ -3,7 +3,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore
 {
-    public class EFRepositoriesModule<T> : RepositoriesModule<T, EfRepositoriesModuleOptions>
+    public class EFRepositoriesModule<T> : RepositoriesModule<T, EFRepositoriesModuleOptions>
     {
         public override string GetOptionsKey()
         {
@@ -11,7 +11,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            EfRepositoriesModuleOptions startupOptions)
+            EFRepositoriesModuleOptions startupOptions)
         {
             base.ConfigureServices(context, services, startupOptions);
             services.AddScoped(typeof(EFRepositoryContext<,,>));
@@ -22,7 +22,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         }
     }
 
-    public class EfRepositoriesModuleOptions : BaseModuleOptions
+    public class EFRepositoriesModuleOptions : BaseModuleOptions
     {
     }
 }
