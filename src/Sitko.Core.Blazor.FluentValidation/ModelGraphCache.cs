@@ -11,12 +11,12 @@ namespace Sitko.Core.Blazor.FluentValidation
         /// <summary>
         /// Gets or sets the cached path to object mapping.
         /// </summary>
-        private Dictionary<string, object> Cache { set; get; } = new Dictionary<string, object>();
+        private Dictionary<string, object?> Cache { set; get; } = new();
 
         /// <summary>
         /// Gets or sets the root model object.
         /// </summary>
-        public object Model { get; }
+        private object Model { get; }
 
         /// <summary>
         /// Constructs an instance of <see cref="ModelGraphCache"/> for a model object.
@@ -30,11 +30,9 @@ namespace Sitko.Core.Blazor.FluentValidation
         /// <summary>
         /// Get object property value by string path separated by dot, supports array (IList) syntax.
         /// </summary>
-        /// <param name="model"></param>
         /// <param name="propertyPath"></param>
-        /// <param name="cache"></param>
         /// <returns></returns>
-        public (object propertyValue, string propertyName) EvalObjectProperty(string propertyPath)
+        public (object? walker, string fieldName) EvalObjectProperty(string propertyPath)
         {
             if (propertyPath.Contains(".") == false)
             {
