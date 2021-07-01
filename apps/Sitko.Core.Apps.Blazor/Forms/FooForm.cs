@@ -39,7 +39,15 @@ namespace Sitko.Core.Apps.Blazor.Forms
         }
     }
     
-    public class FooValidator : AbstractValidator<FooForm>
+    public class FooFormValidator : AbstractValidator<FooForm>
+    {
+        public FooFormValidator()
+        {
+            RuleFor(m => m.Foo).NotEmpty().WithMessage("Blaaaaa");
+        }
+    }
+    
+    public class FooValidator : AbstractValidator<FooModel>
     {
         public FooValidator()
         {
