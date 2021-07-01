@@ -7,6 +7,13 @@ namespace Sitko.Core.Storage.Metadata.Postgres.DB.Models
     [Table("StorageItemRecords")]
     public class StorageItemRecord
     {
+        // Used for EF
+        // ReSharper disable once UnusedMember.Global
+        public StorageItemRecord()
+        {
+            LastModified = DateTimeOffset.UtcNow;
+        }
+
         public StorageItemRecord(string storage, StorageItem storageItem)
         {
             Storage = storage;
@@ -19,13 +26,13 @@ namespace Sitko.Core.Storage.Metadata.Postgres.DB.Models
         }
 
         [Key] public Guid Id { get; set; } = Guid.NewGuid();
-        public string Storage { get; set; }
-        public string FilePath { get; set; }
+        public string Storage { get; set; } = "";
+        public string FilePath { get; set; } = "";
         public long FileSize { get; set; }
-        public string FileName { get; set; }
-        public string MimeType { get; set; }
+        public string FileName { get; set; } = "";
+        public string MimeType { get; set; } = "";
         public DateTimeOffset LastModified { get; set; }
-        public string Path { get; set; }
+        public string Path { get; set; } = "";
 
         [Column(TypeName = "jsonb")] public StorageItemMetadata? Metadata { get; set; }
     }
