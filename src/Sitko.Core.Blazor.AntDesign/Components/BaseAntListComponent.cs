@@ -3,28 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using AntDesign;
 using AntDesign.TableModels;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Blazor.Components;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
-    public abstract class BaseAntListComponent<TItem> : BaseComponent, IAsyncDisposable where TItem : class
+    public abstract class BaseAntListComponent<TItem> : BaseComponent where TItem : class
     {
-        protected IEnumerable<TItem> Items = new TItem[0];
+        protected IEnumerable<TItem> Items { get; private set; } = Array.Empty<TItem>();
         public int Count { get; protected set; }
 
         protected Table<TItem> Table { get; set; } = null!;
 
-        private readonly Channel<LoadRequest<TItem>>
-            _loadChannel = Channel.CreateUnbounded<LoadRequest<TItem>>();
-
-        private readonly CancellationTokenSource _cts = new();
         private QueryModel<TItem>? _lastQueryModel;
-        private Task? _loadingTask;
+
         private MethodInfo? _sortMethod;
 
         [Parameter] public int PageSize { get; set; } = 50;
@@ -33,7 +29,6 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         protected override void OnInitialized()
         {
             base.OnInitialized();
-            _loadingTask = LoadDataAsync();
             var method = typeof(ITableSortModel).GetMethod("SortList", BindingFlags.NonPublic | BindingFlags.Instance);
             if (method is null)
             {
@@ -44,36 +39,9 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             MarkAsInitialized();
         }
 
-        private async Task LoadDataAsync()
-        {
-            try
-            {
-                while (await _loadChannel.Reader.WaitToReadAsync(_cts.Token).ConfigureAwait(false))
-                {
-                    while (_loadChannel.Reader.TryRead(out var item))
-                    {
-                        try
-                        {
-                            await StartLoadingAsync();
-                            (var items, int itemsCount) =
-                                await GetDataAsync(item, _cts.Token);
-                            Items = items;
-                            Count = itemsCount;
-                            await StopLoadingAsync();
-                        }
-                        catch (OperationCanceledException)
-                        {
-                        }
-                    }
-                }
-            }
-            catch (OperationCanceledException)
-            {
-            }
-        }
-
         protected void OnChange(QueryModel<TItem>? queryModel)
         {
+            StartLoading();
             List<Func<IQueryable<TItem>, IQueryable<TItem>>> filters = new();
             List<Func<IQueryable<TItem>, IOrderedQueryable<TItem>>> sorts = new();
             if (queryModel is not null)
@@ -85,7 +53,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
                     {
                         sorts.Add(items =>
                         {
-                            var sortResult = _sortMethod.Invoke(sortEntry, new object?[] {items});
+                            var sortResult = _sortMethod.Invoke(sortEntry, new object?[] { items });
                             if (sortResult is IOrderedQueryable<TItem> orderedQueryable)
                             {
                                 return orderedQueryable;
@@ -101,13 +69,28 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             }
 
             var page = queryModel?.PageIndex ?? PageIndex;
-            var result = _loadChannel.Writer.TryWrite(new LoadRequest<TItem>(page, filters, sorts));
-            if (!result)
+            var request = new LoadRequest<TItem>(page, filters, sorts);
+            _lastQueryModel = queryModel;
+#pragma warning disable 4014
+            // It's awful but Ant table can't load data asynchronously, so all we can do is start loading and pray
+            LoadDataAsync(request);
+#pragma warning restore 4014
+        }
+
+        private async Task LoadDataAsync(LoadRequest<TItem> request)
+        {
+            try
             {
-                throw new Exception("Bla");
+                (var items, int itemsCount) = await GetDataAsync(request);
+                Items = items;
+                Count = itemsCount;
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error loading list data: {ErrorText}", e.ToString());
             }
 
-            _lastQueryModel = queryModel;
+            await StopLoadingAsync();
         }
 
         public void Refresh(int? page = null)
@@ -122,15 +105,6 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         protected abstract Task<(TItem[] items, int itemsCount)> GetDataAsync(LoadRequest<TItem> request,
             CancellationToken cancellationToken = default);
-
-        public async ValueTask DisposeAsync()
-        {
-            _cts.Cancel();
-            if (_loadingTask is not null)
-            {
-                await _loadingTask;
-            }
-        }
     }
 
     public class LoadRequest<TItem> where TItem : class
