@@ -1,18 +1,30 @@
+@using Layout = AntDesign.ProLayout.Layout
 @inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<BasicLayout MenuData="_menuData" Theme="MenuTheme.Dark" Layout="Layout.Side" Logo="@("/logo.png")">
+    <ChildContent>
+        @Body
+    </ChildContent>
+    <FooterRender>
+        <GlobalFooter>
+            <Copyright>
+                <div>
+                    Sitko.ru <Icon Type="copyright"/> @DateTimeOffset.UtcNow.Year
+                </div>
+            </Copyright>
+        </GlobalFooter>
+    </FooterRender>
+</BasicLayout>
 
-    <div class="main">
-        <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
-
-        <div class="content px-4">
-            @Body
-        </div>
-    </div>
-</div>
-
+@code
+{
+    private readonly MenuDataItem[] _menuData =
+    {
+        new()
+        {
+            Path = "/",
+            Name = "Demo",
+            Key = "Demo"
+        }
+    };
+}
