@@ -18,10 +18,7 @@ namespace Sitko.Core.Apps.Blazor
             ConfigureLogLevel("System.Net.Http.HttpClient.health-checks", LogEventLevel.Error)
                 .ConfigureLogLevel("Microsoft.AspNetCore", LogEventLevel.Warning)
                 .ConfigureLogLevel("Microsoft.EntityFrameworkCore", LogEventLevel.Warning);
-            ConfigureServices((_, _, services) =>
-            {
-                services.AddJsonLocalization();
-            });
+            AddModule<JsonLocalizationModule, JsonLocalizationModuleOptions>();
         }
     }
 }

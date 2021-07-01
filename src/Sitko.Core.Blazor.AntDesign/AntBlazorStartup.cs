@@ -17,7 +17,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents
         {
             base.ConfigureAppServices(services);
             services.AddAntDesign();
-            services.Configure<JsonStringLocalizerOptions>(options =>
+            services.Configure<JsonLocalizationModuleOptions>(options =>
             {
                 options.AddDefaultResource(typeof(AntBlazorApplication<>));
             });
