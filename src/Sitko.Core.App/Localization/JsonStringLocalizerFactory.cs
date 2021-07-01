@@ -141,9 +141,9 @@ namespace Sitko.Core.App.Localization
             CultureInfo cultureInfo)
         {
             var data = new Dictionary<string, string>();
-            FillData(data, LoadResourceData(name, assembly, cultureInfo));
-            FillData(data, LoadResourceData(name, assembly, cultureInfo.Parent));
-            FillData(data, LoadResourceData(name, assembly, CultureInfo.InvariantCulture));
+            var cultures = new[] { cultureInfo, cultureInfo.Parent, CultureInfo.InvariantCulture };
+            bool loaded = LoadResourceData(data, name, assembly, cultures);
+
             foreach (var defaultResource in s_defaultResources)
             {
                 var typeName = defaultResource.Name;
@@ -152,23 +152,43 @@ namespace Sitko.Core.App.Localization
                     typeName = typeName.Remove(typeName.IndexOf(GenericSeparator));
                 }
 
-                FillData(data, LoadResourceData(typeName, defaultResource.Assembly, cultureInfo));
-                FillData(data, LoadResourceData(typeName, defaultResource.Assembly, cultureInfo.Parent));
-                FillData(data, LoadResourceData(typeName, defaultResource.Assembly, CultureInfo.InvariantCulture));
+                if (!LoadResourceData(data, typeName, defaultResource.Assembly, cultures))
+                {
+                    loaded = false;
+                }
+            }
+
+            if (!loaded)
+            {
+                _logger.LogWarning("No resources found for '{ResourceName}'", name);
             }
 
             return data;
         }
 
+        private static bool LoadResourceData(Dictionary<string, string> data, string name, Assembly assembly,
+            CultureInfo[] cultures)
+        {
+            var loaded = false;
+            foreach (var cultureInfo in cultures)
+            {
+                FillData(data, LoadResourceData(name, assembly, cultureInfo, out var cultureLoaded));
+                if (cultureLoaded)
+                {
+                    loaded = true;
+                }
+            }
+
+            return loaded;
+        }
+
         private static Dictionary<string, string> LoadResourceData(string name, Assembly assembly,
-            CultureInfo cultureInfo)
+            CultureInfo cultureInfo, out bool loaded)
         {
             Assembly satelliteAssembly;
-            var cultureInfoName = cultureInfo.Name;
             if (Equals(cultureInfo, CultureInfo.InvariantCulture))
             {
                 satelliteAssembly = assembly;
-                cultureInfoName = "Invariant";
             }
             else
             {
@@ -178,9 +198,10 @@ namespace Sitko.Core.App.Localization
                 }
                 catch (FileNotFoundException exception)
                 {
-                    _logger.LogInformation(exception,
+                    _logger.LogWarning(exception,
                         "Could not find satellite assembly for '{CultureInfoName}': {Message}",
-                        cultureInfoName, exception.Message);
+                        cultureInfo.Name, exception.Message);
+                    loaded = false;
                     return new Dictionary<string, string>();
                 }
             }
@@ -189,24 +210,20 @@ namespace Sitko.Core.App.Localization
                 .FirstOrDefault(n => n.EndsWith($"{name}.json"));
             if (string.IsNullOrEmpty(resourceName))
             {
-                _logger.LogDebug(
-                    "Resource '{ResourceName}' not found for '{CultureInfoName}'",
-                    name, cultureInfoName);
+                loaded = false;
                 return new Dictionary<string, string>();
             }
 
             var stream = satelliteAssembly.GetManifestResourceStream(resourceName);
             if (stream == null)
             {
-                _logger.LogDebug(
-                    "Resource '{ResourceName}' not found for '{CultureInfoName}'",
-                    name, cultureInfoName);
+                loaded = false;
                 return new Dictionary<string, string>();
             }
 
             using StreamReader reader = new(stream);
             string json = reader.ReadToEnd();
-
+            loaded = true;
             return JsonSerializer.Deserialize<Dictionary<string, string>>(json)!;
         }
     }
