@@ -28,7 +28,7 @@ namespace Sitko.Core.Repository.Tests
         [Fact]
         public async Task Update()
         {
-            var scope = await GetScopeAsync<EFTestScopeThreadSafe>();
+            var scope = await GetScopeAsync();
 
             var repository = scope.Get<IRepository<TestModel, Guid>>();
 
@@ -51,7 +51,7 @@ namespace Sitko.Core.Repository.Tests
         [Fact]
         public async Task Validation()
         {
-            var scope = await GetScopeAsync<EFTestScopeThreadSafe>();
+            var scope = await GetScopeAsync();
             var validator = scope.GetAll<IValidator>();
             Assert.NotEmpty(validator);
 
@@ -76,7 +76,7 @@ namespace Sitko.Core.Repository.Tests
         [Fact]
         public async Task Refresh()
         {
-            var scope = await GetScopeAsync<EFTestScopeThreadSafe>();
+            var scope = await GetScopeAsync();
 
             var repository = scope.Get<IRepository<TestModel, Guid>>();
 
@@ -163,27 +163,11 @@ namespace Sitko.Core.Repository.Tests
             Assert.NotNull(foo.Bar);
             Assert.NotNull(foo.Bar.Test);
         }
-
+        
         [Fact]
-        public async Task ThreadSafeFail()
+        public async Task ThreadSafe()
         {
             var scope = await GetScopeAsync();
-
-            var repository = scope.Get<IRepository<TestModel, Guid>>();
-
-            var tasks = new List<Task>();
-            for (var i = 0; i < 10; i++)
-            {
-                tasks.Add(repository.GetAllAsync());
-            }
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => Task.WhenAll(tasks));
-        }
-
-        [Fact]
-        public async Task ThreadSafeSuccess()
-        {
-            var scope = await GetScopeAsync<EFTestScopeThreadSafe>();
 
             var threadSafeRepository = scope.Get<IRepository<TestModel, Guid>>();
 
@@ -265,24 +249,21 @@ namespace Sitko.Core.Repository.Tests
 
     public class TestRepository : EFRepository<TestModel, Guid, TestDbContext>
     {
-        public TestRepository(EFRepositoryContext<TestModel, Guid, TestDbContext> repositoryContext) : base(
-            repositoryContext)
+        public TestRepository(EFRepositoryContext<TestModel, Guid, TestDbContext> repositoryContext) : base(repositoryContext)
         {
         }
     }
 
     public class BarRepository : EFRepository<BarModel, Guid, TestDbContext>
     {
-        public BarRepository(EFRepositoryContext<BarModel, Guid, TestDbContext> repositoryContext) : base(
-            repositoryContext)
+        public BarRepository(EFRepositoryContext<BarModel, Guid, TestDbContext> repositoryContext) : base(repositoryContext)
         {
         }
     }
 
     public class FooRepository : EFRepository<FooModel, Guid, TestDbContext>
     {
-        public FooRepository(EFRepositoryContext<FooModel, Guid, TestDbContext> repositoryContext) : base(
-            repositoryContext)
+        public FooRepository(EFRepositoryContext<FooModel, Guid, TestDbContext> repositoryContext) : base(repositoryContext)
         {
         }
     }
@@ -302,16 +283,6 @@ namespace Sitko.Core.Repository.Tests
         {
             return base.ConfigureApplication(application, name)
                 .AddModule<TestApplication, EFRepositoriesModule<EFTestScope>, EFRepositoriesModuleConfig>();
-        }
-    }
-
-    public class EFTestScopeThreadSafe : BaseEFTestScope
-    {
-        protected override TestApplication ConfigureApplication(TestApplication application, string name)
-        {
-            return base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, EFRepositoriesModule<EFTestScopeThreadSafe>, EFRepositoriesModuleConfig>(
-                    (_, _, moduleConfig) => moduleConfig.EnableThreadSafeOperations = true);
         }
     }
 }

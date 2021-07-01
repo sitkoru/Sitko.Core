@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Nito.AsyncEx;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore
 {
@@ -15,101 +16,21 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
     {
         private readonly EFRepositoryContext<TEntity, TEntityPk, TDbContext> _repositoryContext;
         private readonly TDbContext _dbContext;
-        private readonly EFRepositoryLock? _lock;
+        private readonly AsyncLock _asyncLock = new();
 
         protected EFRepository(EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext) : base(
             repositoryContext)
         {
             _repositoryContext = repositoryContext;
             _dbContext = repositoryContext.DbContext;
-            _lock = repositoryContext.RepositoryLock;
         }
 
         protected async Task<T> ExecuteDbContextOperationAsync<T>(Func<TDbContext, Task<T>> operation,
             CancellationToken cancellationToken = default)
         {
-            if (_lock == null)
+            using (await _asyncLock.LockAsync(cancellationToken))
             {
                 return await operation(_dbContext);
-            }
-
-            using (await _lock.WaitAsync(cancellationToken))
-            {
-                return await operation(_dbContext);
-            }
-        }
-
-        protected async Task ExecuteDbContextOperationAsync(Func<TDbContext, Task> operation,
-            CancellationToken cancellationToken = default)
-        {
-            if (_lock == null)
-            {
-                await operation(_dbContext);
-                return;
-            }
-
-            using (await _lock.WaitAsync(cancellationToken))
-            {
-                await operation(_dbContext);
-            }
-        }
-
-
-        protected async Task<T> ExecuteDbContextOperationAsync<T>(Func<Task<T>> operation,
-            CancellationToken cancellationToken = default)
-        {
-            if (_lock == null)
-            {
-                return await operation();
-            }
-
-            using (await _lock.WaitAsync(cancellationToken))
-            {
-                return await operation();
-            }
-        }
-
-        protected async Task ExecuteDbContextOperationAsync(Func<Task> operation,
-            CancellationToken cancellationToken = default)
-        {
-            if (_lock == null)
-            {
-                await operation();
-                return;
-            }
-
-            using (await _lock.WaitAsync(cancellationToken))
-            {
-                await operation();
-            }
-        }
-
-        protected T ExecuteDbContextOperation<T>(Func<TDbContext, T> operation,
-            CancellationToken cancellationToken = default)
-        {
-            if (_lock == null)
-            {
-                return operation(_dbContext);
-            }
-
-            using (_lock.Wait(cancellationToken))
-            {
-                return operation(_dbContext);
-            }
-        }
-
-        protected void ExecuteDbContextOperation(Action<TDbContext> operation,
-            CancellationToken cancellationToken = default)
-        {
-            if (_lock == null)
-            {
-                operation(_dbContext);
-                return;
-            }
-
-            using (_lock.Wait(cancellationToken))
-            {
-                operation(_dbContext);
             }
         }
 
@@ -130,19 +51,19 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 needCount = true;
             }
 
-            var result = await ExecuteDbContextOperationAsync(
-                () => AddIncludes(dbQuery).ToArrayAsync(cancellationToken),
+            var result = await ExecuteDbContextOperationAsync(_ => AddIncludes(dbQuery).ToArrayAsync(cancellationToken),
                 cancellationToken);
 
             return (result, needCount);
         }
+
 
         protected override async Task<TEntity?> DoGetAsync(EFRepositoryQuery<TEntity> query,
             CancellationToken cancellationToken = default)
         {
             var dbQuery = query.BuildQuery();
             var item = await ExecuteDbContextOperationAsync(
-                () => AddIncludes(dbQuery).FirstOrDefaultAsync(cancellationToken), cancellationToken);
+                _ => AddIncludes(dbQuery).FirstOrDefaultAsync(cancellationToken), cancellationToken);
             if (item != null)
             {
                 await AfterLoadAsync(item, cancellationToken);
@@ -154,7 +75,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         protected override Task<int> DoCountAsync(EFRepositoryQuery<TEntity> query,
             CancellationToken cancellationToken = default)
         {
-            return ExecuteDbContextOperationAsync(() => query.BuildQuery().CountAsync(cancellationToken),
+            return ExecuteDbContextOperationAsync(_ => query.BuildQuery().CountAsync(cancellationToken),
                 cancellationToken);
         }
 
@@ -227,8 +148,11 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         protected override Task DoDeleteAsync(TEntity item, CancellationToken cancellationToken = default)
         {
-            ExecuteDbContextOperation(dbContext => dbContext.Remove(item));
-            return Task.CompletedTask;
+            return ExecuteDbContextOperationAsync(dbContext =>
+            {
+                dbContext.Remove(item);
+                return Task.FromResult(true);
+            }, cancellationToken);
         }
 
 
