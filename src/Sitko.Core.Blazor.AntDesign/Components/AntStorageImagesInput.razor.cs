@@ -8,7 +8,7 @@ using Sitko.Core.Storage;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
-    public partial class AntStorageImagesInput<TCollection> where TCollection : ICollection<StorageItem>, new()
+    public partial class AntStorageImagesInput<TValue> where TValue : ICollection<StorageItem>, new()
     {
         [Parameter] public Func<IEnumerable<StorageItem>, Task> OnUpdate { get; set; } = null!;
         [Parameter] public string LeftText { get; set; } = "";
@@ -16,7 +16,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         private readonly OrderedCollection<UploadedImage> _images = new();
         protected override int ItemsCount => _images.Count();
 
-        private TCollection Items
+        private TValue? Items
         {
             get
             {
@@ -24,7 +24,15 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             }
             set
             {
-                _images.AddItems(value.Select(CreateUploadedItem));
+                if (value is not null)
+                {
+                    _images.AddItems(value.Select(CreateUploadedItem));
+                }
+                else
+                {
+                    _images.SetItems(Array.Empty<UploadedImage>());
+                }
+
                 UpdateCurrentValue();
             }
         }
@@ -36,10 +44,12 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             {
                 LeftText = LocalizationProvider["Move left"];
             }
+
             if (string.IsNullOrEmpty(RightText))
             {
                 RightText = LocalizationProvider["Move right"];
             }
+
             if (CurrentValue is not null && CurrentValue.Any())
             {
                 _images.SetItems(CurrentValue.Select(CreateUploadedItem));
@@ -51,9 +61,9 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             _images.RemoveItem(file);
         }
 
-        protected override TCollection GetValue()
+        protected override TValue GetValue()
         {
-            var collection = new TCollection();
+            var collection = new TValue();
             foreach (var result in _images)
             {
                 collection.Add(result.StorageItem);

@@ -34,7 +34,8 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         protected abstract int ItemsCount { get; }
 
         [Inject]
-        protected ILocalizationProvider<BaseAntStorageInput<TUploadedItem, TValue>> LocalizationProvider { get; set; }
+        protected ILocalizationProvider<BaseAntStorageInput<TUploadedItem, TValue>> LocalizationProvider { get; set; } =
+            null!;
 
         protected override void OnParametersSet()
         {

@@ -72,13 +72,12 @@
         </AntDesign.FormItem>
         <AntDesign.FormItem Label="Multiple file input">
             <AntStorageItemsInput
-                TCollection="ValueCollection<StorageItem>"
+                TValue="ValueCollection<StorageItem>"
                 Storage="Storage"
                 MaxAllowedFiles="10"
                 @bind-Value="context.StorageItems"
                 UploadPath="bars"
                 MaxFileSize="@(2 * 1024 * 1024)"
-                Ьфч
                 GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))">
 
             </AntStorageItemsInput>
@@ -117,7 +116,7 @@
         </AntDesign.FormItem>
         <FormItem Label="Multiple images">
             <AntStorageImagesInput
-                TCollection="ValueCollection<StorageItem>"
+                TValue="ValueCollection<StorageItem>"
                 Storage="@Storage"
                 MaxFileSize="@(2 * 1024 * 1024)"
                 UploadPath="bars"
@@ -164,7 +163,7 @@
         </AntDesign.FormItem>
         <FormItem Label="Multiple avatars">
             <AntStorageImagesInput
-                TCollection="ValueCollection<StorageItem>"
+                TValue="ValueCollection<StorageItem>"
                 Avatar="true"
                 Storage="@Storage"
                 MaxFileSize="@(2 * 1024 * 1024)"
@@ -177,7 +176,7 @@
         @* AVATARS END *@
         <FormItem Label="Multiple files">
             <AntStorageFilesInput Storage="@Storage"
-                                  TCollection="ValueCollection<StorageItem>"
+                                  TValue="ValueCollection<StorageItem>"
                                   MaxFileSize="@(2 * 1024 * 1024)"
                                   MaxAllowedFiles="10"
                                   UploadPath="bars"

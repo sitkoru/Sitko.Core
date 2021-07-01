@@ -55,7 +55,7 @@ namespace Sitko.Core.Blazor.FileUpload
         }
 
         public string FileName => StorageItem.FileName!;
-        public string FilePath => StorageItem.FilePath!;
+        public string FilePath => StorageItem.FilePath;
         public long FileSize => StorageItem.FileSize;
         public string Url { get; }
     }

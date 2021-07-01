@@ -17,7 +17,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         protected IEnumerable<TItem> Items = new TItem[0];
         public int Count { get; protected set; }
 
-        protected Table<TItem> Table { get; set; }
+        protected Table<TItem> Table { get; set; } = null!;
 
         private readonly Channel<LoadRequest<TItem>>
             _loadChannel = Channel.CreateUnbounded<LoadRequest<TItem>>();

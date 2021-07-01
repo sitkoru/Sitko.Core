@@ -35,11 +35,11 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         [Parameter] public RenderFragment? FooterTemplate { get; set; }
 
-        [Parameter] public TableSize Size { get; set; }
+        [Parameter] public TableSize? Size { get; set; }
 
         [Parameter] public TableLocale Locale { get; set; } = LocaleProvider.GetLocale("en-US").Table;
 
-        [Parameter] public bool Bordered { get; set; } = false;
+        [Parameter] public bool Bordered { get; set; }
 
         [Parameter] public string? ScrollX { get; set; }
 
@@ -73,7 +73,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         [Parameter] public EventCallback<PaginationEventArgs> OnPageSizeChange { get; set; }
 
-        [Parameter] public IEnumerable<TItem> SelectedRows { get; set; }
+        [Parameter] public IEnumerable<TItem>? SelectedRows { get; set; }
 
         [Parameter] public EventCallback<IEnumerable<TItem>> SelectedRowsChanged { get; set; }
     }
