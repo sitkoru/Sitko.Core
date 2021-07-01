@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using Serilog.Events;
-using Sitko.Core.App;
+﻿using Serilog.Events;
 using Sitko.Core.App.Localization;
 using Sitko.Core.Apps.Blazor.Data;
 using Sitko.Core.Blazor.AntDesignComponents;
@@ -17,20 +14,13 @@ namespace Sitko.Core.Apps.Blazor
         {
             AddModule<PostgresModule<BarContext>, PostgresDatabaseModuleOptions<BarContext>>();
             AddModule<EFRepositoriesModule<BarContext>, EfRepositoriesModuleOptions>();
-            AddModule<FileSystemStorageModule<TestBlazorStorageOptions>, TestBlazorStorageOptions>(
-                (configuration, environment, moduleConfig) =>
-                {
-                    moduleConfig.PublicUri = new Uri("https://localhost:5001/static/");
-                    moduleConfig.Name = "Test";
-                    moduleConfig.StoragePath = Path.Combine(Path.GetFullPath("wwwroot"), "static");
-                });
-            ConfigureLogLevel("System.Net.Http.HttpClient.health-checks",
-                LogEventLevel.Error).ConfigureLogLevel("Microsoft.AspNetCore.Components", LogEventLevel.Warning);
-            ConfigureLogLevel("Microsoft.AspNetCore.SignalR", LogEventLevel.Warning);
-            ConfigureLogLevel("Microsoft.EntityFrameworkCore.ChangeTracking", LogEventLevel.Warning);
-            this.ConfigureServices(collection =>
+            AddModule<FileSystemStorageModule<TestBlazorStorageOptions>, TestBlazorStorageOptions>();
+            ConfigureLogLevel("System.Net.Http.HttpClient.health-checks", LogEventLevel.Error)
+                .ConfigureLogLevel("Microsoft.AspNetCore", LogEventLevel.Warning)
+                .ConfigureLogLevel("Microsoft.EntityFrameworkCore", LogEventLevel.Warning);
+            ConfigureServices((_, _, services) =>
             {
-                collection.AddJsonLocalization();
+                services.AddJsonLocalization();
             });
         }
     }
