@@ -31,7 +31,9 @@ namespace Sitko.Core.Search
             var logger = serviceProvider.GetService<ILogger<SearchModule<TConfig>>>();
             if (searchProviders.Any())
             {
+#pragma warning disable 4014
                 Task.Run(async () =>
+#pragma warning restore 4014
                 {
                     foreach (var searchProvider in searchProviders)
                     {

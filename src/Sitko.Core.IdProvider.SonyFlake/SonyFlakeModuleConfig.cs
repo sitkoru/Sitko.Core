@@ -5,7 +5,7 @@ namespace Sitko.Core.IdProvider.SonyFlake
 {
     public class SonyFlakeModuleOptions : BaseModuleOptions
     {
-        public string? Uri { get; set; }
+        public string Uri { get; set; } = "http://localhost:9200";
     }
 
     public class SonyFlakeModuleConfigValidator : AbstractValidator<SonyFlakeModuleOptions>

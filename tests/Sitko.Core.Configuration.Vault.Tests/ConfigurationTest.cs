@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Xunit;
 using Xunit.Abstractions;
 
+#pragma warning disable VSTHRD200
 namespace Sitko.Core.Configuration.Vault.Tests
 {
     public class ConfigurationTest : BaseVaultTest
@@ -12,6 +13,7 @@ namespace Sitko.Core.Configuration.Vault.Tests
         }
 
         [Fact]
+
         public async Task Get()
         {
             var scope = await GetScopeAsync();
@@ -41,3 +43,4 @@ namespace Sitko.Core.Configuration.Vault.Tests
         }
     }
 }
+#pragma warning restore VSTHRD200

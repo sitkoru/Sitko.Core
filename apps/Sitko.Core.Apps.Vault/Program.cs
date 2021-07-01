@@ -30,13 +30,13 @@ namespace Sitko.Core.Apps.Vault
             this.AddModule<VaultConfigurationModule, VaultConfigurationModuleOptions>();
             ConfigureServices((_, hostBuilderContext, services) =>
             {
-                services.Configure<TestConfig>(hostBuilderContext.Configuration.GetSection("Test"));
+                services.Configure<TestOptions>(hostBuilderContext.Configuration.GetSection("Test"));
             });
             AddModule<SonyFlakeModule, SonyFlakeModuleOptions>();
         }
     }
 
-    public class TestConfig
+    public class TestOptions
     {
         public string Foo { get; set; }
         public int Bar { get; set; }
@@ -64,7 +64,7 @@ namespace Sitko.Core.Apps.Vault
 
         private string GetSenderType()
         {
-            return new List<string>() {"email", "telegram"}.OrderBy(r => Guid.NewGuid()).First();
+            return new List<string>() {"email", "telegram"}.OrderBy(_ => Guid.NewGuid()).First();
         }
     }
 

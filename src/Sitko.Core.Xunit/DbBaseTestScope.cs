@@ -10,8 +10,8 @@ using Sitko.Core.Db.Postgres;
 
 namespace Sitko.Core.Xunit
 {
-    public abstract class DbBaseTestScope<TApplication, TScope, TDbContext> : BaseTestScope<TApplication>
-        where TScope : class where TDbContext : DbContext where TApplication : Application
+    public abstract class DbBaseTestScope<TApplication, TDbContext> : BaseTestScope<TApplication>
+        where TDbContext : DbContext where TApplication : Application
     {
         private TDbContext? _dbContext;
 
@@ -99,8 +99,8 @@ namespace Sitko.Core.Xunit
         }
     }
 
-    public abstract class DbBaseTestScope<TScope, TDbContext> : DbBaseTestScope<TestApplication, TScope, TDbContext>
-        where TScope : class where TDbContext : DbContext
+    public abstract class DbBaseTestScope<TDbContext> : DbBaseTestScope<TestApplication, TDbContext>
+        where TDbContext : DbContext
     {
     }
 }

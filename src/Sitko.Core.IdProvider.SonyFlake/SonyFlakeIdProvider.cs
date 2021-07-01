@@ -20,17 +20,18 @@ namespace Sitko.Core.IdProvider.SonyFlake
             _optionsMonitor = optionsMonitor;
             _httpClientFactory = httpClientFactory;
             _logger = logger;
-            CreateHttpClient();
-            _optionsMonitor.OnChange(options =>
+            _httpClient = CreateHttpClient();
+            _optionsMonitor.OnChange(_ =>
             {
-                CreateHttpClient();
+                _httpClient = CreateHttpClient();
             });
         }
 
-        private void CreateHttpClient()
+        private HttpClient CreateHttpClient()
         {
-            _httpClient = _httpClientFactory.CreateClient(nameof(SonyFlakeIdProvider));
-            _httpClient.BaseAddress = new Uri(_optionsMonitor.CurrentValue.Uri);
+            var httpClient = _httpClientFactory.CreateClient(nameof(SonyFlakeIdProvider));
+            httpClient.BaseAddress = new Uri(_optionsMonitor.CurrentValue.Uri);
+            return httpClient;
         }
 
         public async Task<long> NextAsync()

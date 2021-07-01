@@ -9,6 +9,8 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.Metadata
 {
+    // Generic parameter is required for dependency injection
+    // ReSharper disable once UnusedTypeParameter
     public interface IStorageMetadataProvider<TStorageOptions> : IAsyncDisposable where TStorageOptions : StorageOptions
     {
         internal Task InitAsync();

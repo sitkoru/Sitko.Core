@@ -7,6 +7,8 @@ using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.Cache
 {
+    // Generic parameter is required for dependency injection
+    // ReSharper disable once UnusedTypeParameter
     public interface IStorageCache<TStorageOptions> : IAsyncDisposable where TStorageOptions : StorageOptions
     {
         internal Task<StorageItemDownloadInfo?> GetItemAsync(string path,

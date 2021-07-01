@@ -36,10 +36,8 @@ namespace Sitko.Core.Queue.Nats
         private readonly ConcurrentDictionary<string, IStanSubscription> _stanSubscriptions = new();
 
         private bool _disposed;
-        private IConnection? _natsConn;
         private readonly string _consumerGroupName;
         private readonly string _clientName;
-
 
         public NatsQueue(IOptionsMonitor<NatsQueueModuleOptions> config, QueueContext context,
             IHostEnvironment environment,
@@ -162,7 +160,7 @@ namespace Sitko.Core.Queue.Nats
                     });
                 });
             _natsSubscriptions.TryAdd(id, sub);
-            return Task.FromResult(new QueueSubscribeResult() {SubscriptionId = id});
+            return Task.FromResult(new QueueSubscribeResult() { SubscriptionId = id });
         }
 
         protected override Task<bool> DoStopReplyAsync<TMessage, TResponse>(Guid id)
@@ -208,11 +206,11 @@ namespace Sitko.Core.Queue.Nats
             IMessage msg;
             if (message is IMessage protoMessage)
             {
-                msg = new QueueBinaryMsg {Context = contextMsg, Data = Any.Pack(protoMessage)};
+                msg = new QueueBinaryMsg { Context = contextMsg, Data = Any.Pack(protoMessage) };
             }
             else
             {
-                msg = new QueueJsonMsg {Context = contextMsg, Data = JsonConvert.SerializeObject(message)};
+                msg = new QueueJsonMsg { Context = contextMsg, Data = JsonConvert.SerializeObject(message) };
             }
 
             return msg.ToByteArray();
@@ -367,7 +365,7 @@ namespace Sitko.Core.Queue.Nats
                 }
 
                 deserializer = bytes =>
-                    ((T message, QueueMessageContext messageContext))processMethod.Invoke(this, new object[] {bytes});
+                    ((T message, QueueMessageContext messageContext))processMethod.Invoke(this, new object[] { bytes });
             }
             else
             {
@@ -554,7 +552,7 @@ namespace Sitko.Core.Queue.Nats
         private IStanConnection GetConnection()
         {
             var isNew = false;
-            var clientId = $"{_clientName}_{Guid.NewGuid()}";
+
             if (_connection == null || _connection.NATSConnection.State != ConnState.CONNECTED)
             {
                 Logger.LogWarning("Nats connection is null or not connected");
@@ -580,7 +578,7 @@ namespace Sitko.Core.Queue.Nats
 
             if (_connection == null)
             {
-                var clientId = $"{_config.ClientName}_{Guid.NewGuid()}";
+                var clientId = $"{_clientName}_{Guid.NewGuid()}";
                 Logger.LogWarning("Stan connection is not established");
                 _connection = CreateConnection(clientId, CreateNatsConnection(clientId));
             }

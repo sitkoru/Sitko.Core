@@ -31,7 +31,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
         {
             return dbContext.Records.FirstOrDefaultAsync(r =>
                     r.Storage == StorageOptions.CurrentValue.Name && r.FilePath == filePath,
-                cancellationToken ?? CancellationToken.None);
+                cancellationToken ?? CancellationToken.None)!;
         }
 
         protected override async Task DoDeleteMetadataAsync(string filePath, CancellationToken? cancellationToken)

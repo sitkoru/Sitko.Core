@@ -140,7 +140,7 @@ namespace Sitko.Core.App.Tests
         public LocalizationTestApplication(string[] args) : base(args)
         {
             AddModule<JsonLocalizationModule, JsonLocalizationModuleOptions>(
-                (configuration, environment, moduleConfig) =>
+                (_, _, moduleConfig) =>
                 {
                     moduleConfig.AddDefaultResource<Default>();
                 });

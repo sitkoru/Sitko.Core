@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.UserSecrets;
-using Microsoft.Extensions.Options;
 using Sitko.Core.App;
 using Sitko.Core.Repository.EntityFrameworkCore;
 using Sitko.Core.Xunit;
@@ -266,7 +265,7 @@ namespace Sitko.Core.Repository.Tests
         }
     }
 
-    public abstract class BaseEFTestScope : DbBaseTestScope<BaseEFTestScope, TestDbContext>
+    public abstract class BaseEFTestScope : DbBaseTestScope<TestDbContext>
     {
     }
 
