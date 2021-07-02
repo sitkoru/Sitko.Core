@@ -41,8 +41,26 @@
 /* tile uploaded pictures */
 .upload-list-inline .ant-upload-list-item {
     float: left;
-    width: 200px;
+    width: auto;
     margin-right: 8px;
+}
+
+.upload-list-inline .ant-upload-list-item-file {
+    width: 2em;
+}
+
+.upload-list-inline .ant-upload-list-item-card-actions-btn {
+    opacity: .5;
+}
+
+.ant-upload-list-picture .ant-upload-list-item-name,
+.ant-upload-list-picture-card .ant-upload-list-item-name {
+    max-width: 300px;
+    word-break: break-word;
+    display: inline-block;
+    white-space: pre-wrap;
+    line-height: 1em;
+    padding: 1em 0;
 }
 
 .upload-list-inline [class*='-upload-list-rtl'] .ant-upload-list-item {
