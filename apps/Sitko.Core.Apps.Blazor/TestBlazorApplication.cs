@@ -1,4 +1,5 @@
-﻿using Serilog.Events;
+﻿using Microsoft.Extensions.Hosting;
+using Serilog.Events;
 using Sitko.Core.App.Localization;
 using Sitko.Core.Apps.Blazor.Data;
 using Sitko.Core.Blazor.AntDesignComponents;
@@ -19,6 +20,11 @@ namespace Sitko.Core.Apps.Blazor
                 .ConfigureLogLevel("Microsoft.AspNetCore", LogEventLevel.Warning)
                 .ConfigureLogLevel("Microsoft.EntityFrameworkCore", LogEventLevel.Warning);
             AddModule<JsonLocalizationModule, JsonLocalizationModuleOptions>();
+        }
+
+        protected override bool LoggingEnableConsole(HostBuilderContext context)
+        {
+            return true;
         }
     }
 }
