@@ -20,43 +20,45 @@
             </AntStorageItemsInput>
         </CascadingValue>
     }
-    <div>
-        <div class="ant-upload-list ant-upload-list-text" style="display: inline-block">
-            @foreach (var file in _files)
-            {
-                var tips = file.StorageItem.FileName;
-                <AntDesign.Tooltip Title="tips">
-                        <div Class="ant-upload-list-text-container">
+    <div class="ant-upload-list ant-upload-list-picture upload-list-inline ant-upload-list-@Size">
+        @foreach (var file in _files)
+        {
+            var tips = file.StorageItem.FileName;
+            <AntDesign.Tooltip Title="tips">
+                <div Class="ant-upload-list-picture-container">
 
-                            <div class="ant-upload-list-item ant-upload-list-item-done ant-upload-list-item-list-type-text">
-                                <div class="ant-upload-list-item-info">
-                                    <span class="ant-upload-span">
-                                        <div class="ant-upload-text-icon">
-                                            <AntDesign.Icon Type="paper-clip"/>
-                                        </div>
-                                        <span class="ant-upload-list-item-name">
-                                            <a target="_blank" rel="noopener noreferrer" title="@file.StorageItem.FileName" href="@file.Url">@file.StorageItem.FileName</a> <span class="ant-list-item-meta-description">( @file.StorageItem.HumanSize )</span>
-                                        </span>
-                                        <span class="ant-upload-list-item-card-actions">
-                                            @if (ShowOrdering)
-                                            {
-                                                <button title="@UpText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => MoveUp(file)" disabled="@(!CanMoveUp(file))">
-                                                    <AntDesign.Icon Type="up"/>
-                                                </button>
-                                                <button title="@DownText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => MoveDown(file)" disabled="@(!CanMoveDown(file))">
-                                                    <AntDesign.Icon Type="down"/>
-                                                </button>
-                                            }
-                                            <button title="@RemoveText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => RemoveFile(file)">
-                                                <AntDesign.Icon Type="delete"/>
-                                            </button>
-                                        </span>
-                                    </span>
+                    <div class="ant-upload-list-item ant-upload-list-item-done  ant-upload-list-item-list-type-picture">
+                        <div class="ant-upload-list-item-info">
+                            <span class="ant-upload-span">
+                                <div class="ant-upload-list-item-thumbnail ant-upload-list-item-file">
+                                    <Icon Type="paper-clip"/>
                                 </div>
-                            </div>
+                                <a target="_blank" rel="noopener noreferrer" class="ant-upload-list-item-name" title="@file.StorageItem.FileName" href="@file.Url">@file.StorageItem.FileName</a>
+                                <span class="ant-upload-list-item-actions picture">
+                                    @if (ShowOrdering)
+                                    {
+                                        <button title="@LeftText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => MoveLeft(file)" disabled="@(!CanMoveLeft(file))">
+                                            <AntDesign.Icon Type="left"/>
+                                        </button>
+                                    }
+                                    <a href="@file.Url" target="_blank" rel="noopener noreferrer" title="@DownloadText">
+                                        <AntDesign.Icon Type="download"/>
+                                    </a>
+                                    <button title="@RemoveText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => RemoveFile(file)">
+                                        <AntDesign.Icon Type="delete"/>
+                                    </button>
+                                    @if (ShowOrdering)
+                                    {
+                                        <button title="@RightText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => MoveRight(file)" disabled="@(!CanMoveRight(file))">
+                                            <AntDesign.Icon Type="right"/>
+                                        </button>
+                                    }
+                                </span>
+                            </span>
                         </div>
-                </AntDesign.Tooltip>
-            }
-        </div>
+                    </div>
+                </div>
+            </AntDesign.Tooltip>
+        }
     </div>
 </AntDesign.Spin>

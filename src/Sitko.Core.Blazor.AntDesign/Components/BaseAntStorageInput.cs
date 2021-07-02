@@ -22,6 +22,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         [Parameter] public int? MaxAllowedFiles { get; set; }
         [Parameter] public string UploadText { get; set; } = "";
         [Parameter] public string PreviewText { get; set; } = "";
+        [Parameter] public string DownloadText { get; set; } = "";
         [Parameter] public string RemoveText { get; set; } = "";
         [Parameter] public IStorage Storage { get; set; } = null!;
         [Parameter] public bool EnableOrdering { get; set; } = true;
@@ -32,6 +33,9 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         protected bool ShowUpload => MaxAllowedFiles is null || MaxAllowedFiles < 1 || ItemsCount < MaxAllowedFiles;
         protected int? MaxFilesToUpload => MaxAllowedFiles is not null ? MaxAllowedFiles - ItemsCount : null;
         protected abstract int ItemsCount { get; }
+        [Parameter] public string Size { get; set; } = "default";
+        [Parameter] public string LeftText { get; set; } = "";
+        [Parameter] public string RightText { get; set; } = "";
 
         [Inject]
         protected ILocalizationProvider<BaseAntStorageInput<TUploadedItem, TValue>> LocalizationProvider { get; set; } =
@@ -49,10 +53,25 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             {
                 PreviewText = LocalizationProvider["Preview"];
             }
+            
+            if (string.IsNullOrEmpty(DownloadText))
+            {
+                PreviewText = LocalizationProvider["Download"];
+            }
 
             if (string.IsNullOrEmpty(RemoveText))
             {
                 RemoveText = LocalizationProvider["Remove"];
+            }
+            
+            if (string.IsNullOrEmpty(LeftText))
+            {
+                LeftText = LocalizationProvider["Move left"];
+            }
+
+            if (string.IsNullOrEmpty(RightText))
+            {
+                RightText = LocalizationProvider["Move right"];
             }
         }
 
