@@ -25,9 +25,9 @@
                     </div>
 
                     <span class="ant-upload-list-item-actions">
-                        <a target="_blank" rel="noopener noreferrer" title="@PreviewText" @onclick="() => PreviewFile(Image)">
+                        <button title="@PreviewText" type="button" @onclick="() => PreviewFile(Image)" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn">
                             <AntDesign.Icon Type="eye"/>
-                        </a>
+                        </button>
                         <button title="@RemoveText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => RemoveFile(Image)">
                             <AntDesign.Icon Type="delete"/>
                         </button>

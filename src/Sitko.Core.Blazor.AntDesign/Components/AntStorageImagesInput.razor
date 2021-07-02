@@ -2,46 +2,46 @@
 @inherits BaseAntStorageImageInput<TValue>
 <AntDesign.Spin Spinning="IsSpinning">
     <div class="ant-upload-list ant-upload-list-picture-card ant-upload-list-@Size">
-        @foreach (var file in _images)
+        @foreach (var image in _images)
         {
-            var tips = file.StorageItem.FileName;
+            var tips = image.StorageItem.FileName;
             <div Class="ant-upload-list-picture-card-container" title="@tips">
 
                 <div class="ant-upload-list-item ant-upload-list-item-done  ant-upload-list-item-list-type-picture-card">
                     <div class="ant-upload-list-item-info">
                         <span class="ant-upload-span">
                             @{
-                                <a class="ant-upload-list-item-thumbnail" href="@file.Url" target="_blank" rel="noopener noreferrer">
+                                <a class="ant-upload-list-item-thumbnail" href="@image.Url" target="_blank" rel="noopener noreferrer">
                                     @if (Avatar)
                                     {
-                                        <AntDesign.Avatar Size="@AvatarSize" Src="@file.SmallPreviewUrl" Alt="@file.StorageItem.FileName" Class="ant-upload-list-item-image"/>
+                                        <AntDesign.Avatar Size="@AvatarSize" Src="@image.SmallPreviewUrl" Alt="@image.StorageItem.FileName" Class="ant-upload-list-item-image"/>
                                     }
                                     else
                                     {
-                                        <img src="@file.SmallPreviewUrl" alt="@file.StorageItem.FileName" class="ant-upload-list-item-image"/>
+                                        <img src="@image.SmallPreviewUrl" alt="@image.StorageItem.FileName" class="ant-upload-list-item-image"/>
                                     }
                                 </a>
                             }
-                            <a target="_blank" rel="noopener noreferrer" class="ant-upload-list-item-name" title="@file.StorageItem.FileName" href="@file.Url">@file.StorageItem.FileName</a>
+                            <a target="_blank" rel="noopener noreferrer" class="ant-upload-list-item-name" title="@image.StorageItem.FileName" href="@image.Url">@image.StorageItem.FileName</a>
                         </span>
                     </div>
 
                     <span class="ant-upload-list-item-actions">
                         @if (ShowOrdering)
                         {
-                            <button title="@LeftText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => MoveLeft(file)" disabled="@(!CanMoveLeft(file))">
+                            <button title="@LeftText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => MoveLeft(image)" disabled="@(!CanMoveLeft(image))">
                                 <AntDesign.Icon Type="left"/>
                             </button>
                         }
-                        <a target="_blank" rel="noopener noreferrer" title="@PreviewText" @onclick="() => PreviewFile(file)">
+                        <button title="@PreviewText" type="button" @onclick="() => PreviewFile(image)" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn">
                             <AntDesign.Icon Type="eye"/>
-                        </a>
-                        <button title="@RemoveText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => RemoveFile(file)">
+                        </button>
+                        <button title="@RemoveText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => RemoveFile(image)">
                             <AntDesign.Icon Type="delete"/>
                         </button>
                         @if (ShowOrdering)
                         {
-                            <button title="@RightText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => MoveRight(file)" disabled="@(!CanMoveRight(file))">
+                            <button title="@RightText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => MoveRight(image)" disabled="@(!CanMoveRight(image))">
                                 <AntDesign.Icon Type="right"/>
                             </button>
                         }

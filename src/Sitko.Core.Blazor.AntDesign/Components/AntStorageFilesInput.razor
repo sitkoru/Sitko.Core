@@ -41,7 +41,9 @@
                                     </button>
                                 }
                                 <a href="@file.Url" target="_blank" rel="noopener noreferrer" title="@DownloadText">
-                                    <AntDesign.Icon Type="download"/>
+                                    <button title="@DownloadText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn">
+                                        <AntDesign.Icon Type="download"/>
+                                    </button>
                                 </a>
                                 <button title="@RemoveText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => RemoveFile(file)">
                                     <AntDesign.Icon Type="delete"/>

@@ -56,7 +56,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             
             if (string.IsNullOrEmpty(DownloadText))
             {
-                PreviewText = LocalizationProvider["Download"];
+                DownloadText = LocalizationProvider["Download"];
             }
 
             if (string.IsNullOrEmpty(RemoveText))
