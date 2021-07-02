@@ -30,7 +30,8 @@ namespace Sitko.Core.Storage.ImgProxy
 
     // Generic parameter is required for dependency injection
     // ReSharper disable once UnusedTypeParameter
-    public class StorageImgProxyModuleOptions<TStorageOptions> : BaseModuleOptions where TStorageOptions : StorageOptions
+    public class StorageImgProxyModuleOptions<TStorageOptions> : BaseModuleOptions
+        where TStorageOptions : StorageOptions
     {
         public string Host { get; set; } = "";
         public string Key { get; set; } = "";

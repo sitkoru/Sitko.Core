@@ -29,7 +29,7 @@ namespace Sitko.Core.Storage.Metadata
 
         public override IEnumerable<Type> GetRequiredModules(ApplicationContext context, TProviderOptions config)
         {
-            return new[] { typeof(IStorageModule) };
+            return new[] {typeof(IStorageModule)};
         }
     }
 }

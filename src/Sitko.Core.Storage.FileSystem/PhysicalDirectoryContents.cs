@@ -47,13 +47,8 @@ namespace Sitko.Core.Storage.FileSystem
                     .Select<FileSystemInfo, IFileInfo>(info =>
                     {
                         if (info is FileInfo file)
-                        {
                             return new PhysicalFileInfo(file);
-                        }
-                        else if (info is DirectoryInfo dir)
-                        {
-                            return new PhysicalDirectoryInfo(dir);
-                        }
+                        else if (info is DirectoryInfo dir) return new PhysicalDirectoryInfo(dir);
 
                         // shouldn't happen unless BCL introduces new implementation of base type
                         throw new InvalidOperationException("Unexpected type of FileSystemInfo");

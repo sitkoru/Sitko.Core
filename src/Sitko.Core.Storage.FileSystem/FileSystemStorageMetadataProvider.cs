@@ -29,10 +29,7 @@ namespace Sitko.Core.Storage.FileSystem
         {
             var fullPath = Path.Combine(StorageOptions.CurrentValue.StoragePath, filePath);
             var metaDataPath = GetMetaDataPath(fullPath);
-            if (File.Exists(metaDataPath))
-            {
-                File.Delete(metaDataPath);
-            }
+            if (File.Exists(metaDataPath)) File.Delete(metaDataPath);
 
             return Task.CompletedTask;
         }
@@ -51,10 +48,7 @@ namespace Sitko.Core.Storage.FileSystem
             if (metaDataInfo.Exists)
             {
                 var json = await File.ReadAllTextAsync(metaDataPath, cancellationToken);
-                if (!string.IsNullOrEmpty(json))
-                {
-                    return JsonSerializer.Deserialize<StorageItemMetadata>(json);
-                }
+                if (!string.IsNullOrEmpty(json)) return JsonSerializer.Deserialize<StorageItemMetadata>(json);
             }
 
             return null;

@@ -72,10 +72,8 @@ namespace Sitko.Core.Storage.Metadata
             IEnumerable<StorageItemInfo> storageItems,
             CancellationToken cancellationToken = default)
         {
-            foreach (var storageItem in storageItems)
-            {
+            foreach (StorageItemInfo storageItem in storageItems)
                 await DoSaveMetadataAsync(new StorageItem(storageItem, StorageOptions.CurrentValue.Prefix));
-            }
         }
 
         Task<StorageItemMetadata?> IStorageMetadataProvider<TStorageOptions>.GetMetadataAsync(string path,

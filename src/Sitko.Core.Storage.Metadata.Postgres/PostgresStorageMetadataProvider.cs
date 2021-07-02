@@ -43,7 +43,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             CancellationToken cancellationToken = default)
         {
             await using var dbContext = GetDbContext();
-            var record = await GetItemRecordAsync(dbContext, filePath, cancellationToken);
+            StorageItemRecord? record = await GetItemRecordAsync(dbContext, filePath, cancellationToken);
             if (record is not null)
             {
                 dbContext.Records.Remove(record);
@@ -62,10 +62,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             CancellationToken cancellationToken = default)
         {
             await using var dbContext = GetDbContext();
-            if (path.StartsWith("/"))
-            {
-                path = path.Substring(1);
-            }
+            if (path.StartsWith("/")) path = path.Substring(1);
 
             var records = await dbContext.Records
                 .Where(r => r.Storage == StorageOptions.CurrentValue.Name && r.Path.StartsWith(path))
@@ -83,10 +80,8 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             var parts = PreparePath(path.Trim('/'))!.Split("/");
             var current = root;
             foreach (var part in parts)
-            {
                 current = current?.Children.Where(n => n.Type == StorageNodeType.Directory)
                     .FirstOrDefault(f => f.Name == part);
-            }
 
             return current?.Children ?? new StorageNode[0];
         }
@@ -100,7 +95,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             CancellationToken cancellationToken = default)
         {
             await using var dbContext = GetDbContext();
-            var record = await GetItemRecordAsync(dbContext, path, cancellationToken);
+            StorageItemRecord? record = await GetItemRecordAsync(dbContext, path, cancellationToken);
             return record?.Metadata;
         }
 
@@ -108,17 +103,14 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             CancellationToken cancellationToken = default)
         {
             await using var dbContext = GetDbContext();
-            var record = await GetItemRecordAsync(dbContext, storageItem.FilePath, cancellationToken);
+            StorageItemRecord? record = await GetItemRecordAsync(dbContext, storageItem.FilePath, cancellationToken);
             if (record is null)
             {
                 record = new StorageItemRecord(StorageOptions.CurrentValue.Name, storageItem);
                 await dbContext.Records.AddAsync(record);
             }
 
-            if (metadata?.FileName != null)
-            {
-                record.FileName = metadata.FileName;
-            }
+            if (metadata?.FileName != null) record.FileName = metadata.FileName;
 
             record.Metadata = metadata;
             await dbContext.SaveChangesAsync(cancellationToken);

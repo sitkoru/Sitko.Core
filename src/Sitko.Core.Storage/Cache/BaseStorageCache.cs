@@ -31,7 +31,7 @@ namespace Sitko.Core.Storage.Cache
 
         private MemoryCache CreateCache()
         {
-            return new MemoryCache(new MemoryCacheOptions { SizeLimit = Options.CurrentValue.MaxCacheSize });
+            return new(new MemoryCacheOptions {SizeLimit = Options.CurrentValue.MaxCacheSize});
         }
 
         protected void Expire()
@@ -42,15 +42,12 @@ namespace Sitko.Core.Storage.Cache
         Task<StorageItemDownloadInfo?> IStorageCache<TStorageOptions>.GetOrAddItemAsync(string path,
             Func<Task<StorageItemDownloadInfo?>> addItem, CancellationToken cancellationToken)
         {
-            if (_cache == null)
-            {
-                throw new Exception("Cache is not initialized");
-            }
+            if (_cache == null) throw new Exception("Cache is not initialized");
 
             var key = NormalizePath(path);
             return _cache.GetOrCreateAsync(key, async cacheEntry =>
             {
-                var result = await addItem();
+                StorageItemDownloadInfo? result = await addItem();
                 if (result == null)
                 {
                     Logger.LogDebug("File {File} not found", key);
@@ -74,10 +71,7 @@ namespace Sitko.Core.Storage.Cache
                     Logger.LogDebug("Download file {Key}", key);
                     var record = await GetEntryAsync(result, stream, cancellationToken);
                     ConfigureCacheEntry(cacheEntry);
-                    if (Options.CurrentValue.MaxCacheSize > 0)
-                    {
-                        cacheEntry.Size = result.FileSize;
-                    }
+                    if (Options.CurrentValue.MaxCacheSize > 0) cacheEntry.Size = result.FileSize;
 
                     Logger.LogDebug("Add file {Key} to cache", key);
                     return new StorageItemDownloadInfo(record.FileSize, record.Date,
@@ -88,7 +82,7 @@ namespace Sitko.Core.Storage.Cache
 
         protected virtual void ConfigureCacheEntry(ICacheEntry entry)
         {
-            var expirationTime = DateTime.Now.Add(Options.CurrentValue.Ttl);
+            DateTime expirationTime = DateTime.Now.Add(Options.CurrentValue.Ttl);
             var expirationToken = new CancellationChangeToken(
                 new CancellationTokenSource(Options.CurrentValue.Ttl.Add(TimeSpan.FromSeconds(1))).Token);
             entry
@@ -99,15 +93,12 @@ namespace Sitko.Core.Storage.Cache
                 // Force eviction to run
                 .AddExpirationToken(expirationToken)
                 // Add eviction callback
-                .RegisterPostEvictionCallback(callback: CacheItemRemoved, state: this);
+                .RegisterPostEvictionCallback(CacheItemRemoved, this);
         }
 
         private void CacheItemRemoved(object key, object value, EvictionReason reason, object state)
         {
-            if (value is TRecord deletedRecord)
-            {
-                DisposeItem(deletedRecord);
-            }
+            if (value is TRecord deletedRecord) DisposeItem(deletedRecord);
 
             Logger.LogDebug("Remove file {ObjKey} from cache", key);
         }
@@ -121,10 +112,7 @@ namespace Sitko.Core.Storage.Cache
         private string NormalizePath(string path)
         {
             path = new Uri(path, UriKind.Relative).ToString();
-            if (!path.StartsWith("/"))
-            {
-                path = $"/{path}";
-            }
+            if (!path.StartsWith("/")) path = $"/{path}";
 
             return path;
         }
@@ -132,12 +120,9 @@ namespace Sitko.Core.Storage.Cache
         Task<StorageItemDownloadInfo?> IStorageCache<TStorageOptions>.GetItemAsync(string path,
             CancellationToken cancellationToken)
         {
-            if (_cache == null)
-            {
-                throw new Exception("Cache is not initialized");
-            }
+            if (_cache == null) throw new Exception("Cache is not initialized");
 
-            var cacheEntry = CacheExtensions.Get<TRecord?>(_cache, NormalizePath(path));
+            TRecord? cacheEntry = CacheExtensions.Get<TRecord?>(_cache, NormalizePath(path));
 
             return Task.FromResult<StorageItemDownloadInfo?>(cacheEntry is null
                 ? null
@@ -147,10 +132,7 @@ namespace Sitko.Core.Storage.Cache
 
         public Task RemoveItemAsync(string path, CancellationToken cancellationToken = default)
         {
-            if (_cache == null)
-            {
-                throw new Exception("Cache is not initialized");
-            }
+            if (_cache == null) throw new Exception("Cache is not initialized");
 
             _cache.Remove(NormalizePath(path));
             return Task.CompletedTask;
@@ -159,7 +141,7 @@ namespace Sitko.Core.Storage.Cache
         public Task ClearAsync(CancellationToken cancellationToken = default)
         {
             _cache?.Dispose();
-            _cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = Options.CurrentValue.MaxCacheSize });
+            _cache = new MemoryCache(new MemoryCacheOptions {SizeLimit = Options.CurrentValue.MaxCacheSize});
             Logger.LogDebug("Cache cleared");
             return Task.CompletedTask;
         }

@@ -24,10 +24,7 @@ namespace Sitko.Core.Storage.Metadata
         {
             get
             {
-                if (_storage is null)
-                {
-                    _storage = _serviceProvider.GetRequiredService<TStorage>();
-                }
+                if (_storage is null) _storage = _serviceProvider.GetRequiredService<TStorage>();
 
                 return _storage;
             }
@@ -44,9 +41,7 @@ namespace Sitko.Core.Storage.Metadata
             filePath = filePath + MetaDataExtension;
             if (!string.IsNullOrEmpty(StorageOptions.CurrentValue.Prefix) &&
                 !filePath.StartsWith(StorageOptions.CurrentValue.Prefix))
-            {
                 filePath = Helpers.PreparePath($"{StorageOptions.CurrentValue.Prefix}/{filePath}")!;
-            }
 
             return filePath;
         }
@@ -64,19 +59,15 @@ namespace Sitko.Core.Storage.Metadata
         {
             if (_tree == null || _treeLastBuild <
                 DateTimeOffset.UtcNow.Subtract(Options.CurrentValue.StorageTreeCacheTimeout))
-            {
                 await BuildStorageTreeAsync(cancellationToken);
-            }
 
-            if (_tree == null) { return new List<StorageNode>(); }
+            if (_tree == null) return new List<StorageNode>();
 
             var parts = Helpers.PreparePath(path.Trim('/'))!.Split("/");
-            var current = _tree;
+            StorageNode? current = _tree;
             foreach (var part in parts)
-            {
                 current = current?.Children.Where(n => n.Type == StorageNodeType.Directory)
                     .FirstOrDefault(f => f.Name == part);
-            }
 
             return current?.Children ?? new StorageNode[0];
         }
@@ -97,14 +88,11 @@ namespace Sitko.Core.Storage.Metadata
                 _treeBuildTaskSource = new TaskCompletionSource<bool>();
                 _tree = StorageNode.CreateDirectory("/", "/");
                 var items = await Storage.GetAllItemsAsync("/", cancellationToken);
-                foreach (var info in items)
+                foreach (StorageItemInfo info in items)
                 {
-                    if (info.Path.EndsWith(MetaDataExtension))
-                    {
-                        continue;
-                    }
+                    if (info.Path.EndsWith(MetaDataExtension)) continue;
 
-                    var metadata = await DoGetMetadataAsync(info.Path, cancellationToken);
+                    StorageItemMetadata? metadata = await DoGetMetadataAsync(info.Path, cancellationToken);
                     var item = new StorageItem(info, StorageOptions.CurrentValue.Prefix, metadata);
 
                     _tree.AddItem(item);

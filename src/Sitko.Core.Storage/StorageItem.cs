@@ -55,13 +55,7 @@ namespace Sitko.Core.Storage
         /// <summary>
         /// Uploaded file size in human-readable format
         /// </summary>
-        public string HumanSize
-        {
-            get
-            {
-                return FilesHelper.HumanSize(FileSize);
-            }
-        }
+        public string HumanSize => FilesHelper.HumanSize(FileSize);
 
         public StorageItem()
         {
@@ -72,7 +66,7 @@ namespace Sitko.Core.Storage
             long fileSize, string? prefix, StorageItemMetadata? metadata = null)
         {
             destinationPath = Helpers.GetPathWithoutPrefix(prefix, destinationPath);
-            var fileName = metadata?.FileName ?? System.IO.Path.GetFileName(destinationPath);
+            string? fileName = metadata?.FileName ?? System.IO.Path.GetFileName(destinationPath);
             Path = Helpers.PreparePath(System.IO.Path.GetDirectoryName(destinationPath))!;
             FileName = fileName;
             LastModified = date;

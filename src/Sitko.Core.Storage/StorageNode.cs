@@ -21,10 +21,7 @@ namespace Sitko.Core.Storage
             IEnumerable<StorageNode>? children = null)
         {
             var node = new StorageNode {Type = StorageNodeType.Directory, Name = name, FullPath = fullPath};
-            if (children?.Any() == true)
-            {
-                node.SetChildren(children);
-            }
+            if (children?.Any() == true) node.SetChildren(children);
 
             return node;
         }
@@ -66,7 +63,6 @@ namespace Sitko.Core.Storage
             var parts = item.FilePath.Split("/");
             var current = this;
             foreach (var part in parts)
-            {
                 if (part == parts.Last())
                 {
                     current.AddChild(CreateStorageItem(item));
@@ -83,7 +79,6 @@ namespace Sitko.Core.Storage
 
                     current = child;
                 }
-            }
         }
 
         public void RemoveItem(StorageItem item)
@@ -96,26 +91,18 @@ namespace Sitko.Core.Storage
             var parts = filePath.Split("/");
             var current = this;
             foreach (var part in parts)
-            {
                 if (part == parts.Last())
                 {
                     var children = current._children.FirstOrDefault(c =>
                         c.Type == StorageNodeType.StorageItem && c.StorageItem!.FilePath == filePath);
-                    if (children != null)
-                    {
-                        current._children.Remove(children);
-                    }
+                    if (children != null) current._children.Remove(children);
                 }
                 else
                 {
                     var child = current.Children.Where(n => n.Type == StorageNodeType.Directory)
                         .FirstOrDefault(f => f.Name == part);
-                    if (child == null)
-                    {
-                        return;
-                    }
+                    if (child == null) return;
                 }
-            }
         }
 
         private string PreparePath(string path)
@@ -123,13 +110,7 @@ namespace Sitko.Core.Storage
             return path.Replace("\\", "/").Replace("//", "/");
         }
 
-        public string HumanSize
-        {
-            get
-            {
-                return FilesHelper.HumanSize(Size);
-            }
-        }
+        public string HumanSize => FilesHelper.HumanSize(Size);
     }
 
 

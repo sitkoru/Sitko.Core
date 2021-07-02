@@ -97,7 +97,7 @@ namespace Sitko.Core.Storage
         internal Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
             CancellationToken cancellationToken = default);
     }
-    
+
     // Generic interface is required for dependency injection
     // ReSharper disable once UnusedTypeParameter
     public interface IStorage<TStorageOptions> : IStorage where TStorageOptions : StorageOptions

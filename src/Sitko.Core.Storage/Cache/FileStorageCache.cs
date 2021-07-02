@@ -14,7 +14,7 @@ namespace Sitko.Core.Storage.Cache
         FileStorageCache<TStorageOptions> : BaseStorageCache<TStorageOptions, FileStorageCacheOptions,
             FileStorageCacheRecord> where TStorageOptions : StorageOptions
     {
-        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cts = new();
         private readonly Task _cleanupTask;
 
         public FileStorageCache(IOptionsMonitor<FileStorageCacheOptions> options,
@@ -35,10 +35,7 @@ namespace Sitko.Core.Storage.Cache
 
         protected override void DisposeItem(FileStorageCacheRecord deletedRecord)
         {
-            if (!string.IsNullOrEmpty(deletedRecord.PhysicalPath))
-            {
-                DeleteFile(deletedRecord.PhysicalPath);
-            }
+            if (!string.IsNullOrEmpty(deletedRecord.PhysicalPath)) DeleteFile(deletedRecord.PhysicalPath);
         }
 
         private void DeleteFile(string path)
@@ -63,11 +60,8 @@ namespace Sitko.Core.Storage.Cache
                 byte[] hashBytes = md5.ComputeHash(inputBytes);
 
                 // Convert the byte array to hexadecimal string
-                StringBuilder sb = new StringBuilder();
-                foreach (var t in hashBytes)
-                {
-                    sb.Append(t.ToString("X2"));
-                }
+                StringBuilder sb = new();
+                foreach (byte t in hashBytes) sb.Append(t.ToString("X2"));
 
                 return sb.ToString();
             }
@@ -84,18 +78,12 @@ namespace Sitko.Core.Storage.Cache
             var dirPath = Path.Combine(split);
             var directoryPath = Path.Combine(Options.CurrentValue.CacheDirectoryPath, dirPath);
 
-            if (!Directory.Exists(directoryPath))
-            {
-                Directory.CreateDirectory(directoryPath);
-            }
+            if (!Directory.Exists(directoryPath)) Directory.CreateDirectory(directoryPath);
 
             var filePath = Path.Combine(directoryPath, Guid.NewGuid().ToString());
 
             var fileStream = File.OpenWrite(filePath);
-            if (!fileStream.CanWrite)
-            {
-                throw new Exception($"Can't write to file {filePath}");
-            }
+            if (!fileStream.CanWrite) throw new Exception($"Can't write to file {filePath}");
 
             await stream.CopyToAsync(fileStream, cancellationToken);
             fileStream.Close();
@@ -107,9 +95,7 @@ namespace Sitko.Core.Storage.Cache
             _cts.Cancel();
             await _cleanupTask;
             if (Directory.Exists(Options.CurrentValue.CacheDirectoryPath))
-            {
                 Directory.Delete(Options.CurrentValue.CacheDirectoryPath, true);
-            }
         }
     }
 
@@ -139,10 +125,7 @@ namespace Sitko.Core.Storage.Cache
         public Stream OpenRead()
         {
             var fileInfo = new FileInfo(PhysicalPath);
-            if (fileInfo.Exists)
-            {
-                return fileInfo.OpenRead();
-            }
+            if (fileInfo.Exists) return fileInfo.OpenRead();
 
             throw new Exception($"File {PhysicalPath} doesn't exists");
         }
