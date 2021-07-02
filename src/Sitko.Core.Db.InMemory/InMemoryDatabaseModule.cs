@@ -22,7 +22,7 @@ namespace Sitko.Core.Db.InMemory
                 var config = GetOptions(serviceProvider);
                 options.ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
                     .UseInMemoryDatabase(config.Database);
-                config.Configure?.Invoke((DbContextOptionsBuilder<TDbContext>)options, serviceProvider,
+                config.ConfigureDbContextOptions?.Invoke((DbContextOptionsBuilder<TDbContext>)options, serviceProvider,
                     context.Configuration,
                     context.Environment);
             });

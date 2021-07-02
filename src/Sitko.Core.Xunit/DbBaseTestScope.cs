@@ -29,7 +29,7 @@ namespace Sitko.Core.Xunit
                     (_, _, moduleConfig) =>
                     {
                         moduleConfig.Database = name;
-                        moduleConfig.Configure = (builder, _, conf, env) =>
+                        moduleConfig.ConfigureDbContextOptions = (builder, _, conf, env) =>
                         {
                             ConfigureInMemoryDatabaseModule(builder, conf, env);
                         };

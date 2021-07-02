@@ -104,7 +104,7 @@ namespace Sitko.Core.Db.Postgres
                 options.EnableSensitiveDataLogging();
             }
 
-            config.Configure?.Invoke((DbContextOptionsBuilder<TDbContext>)options, serviceProvider, configuration,
+            config.ConfigureDbContextOptions?.Invoke((DbContextOptionsBuilder<TDbContext>)options, serviceProvider, configuration,
                 environment);
         }
     }
