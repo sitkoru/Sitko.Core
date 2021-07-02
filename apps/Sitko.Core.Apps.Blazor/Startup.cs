@@ -20,7 +20,7 @@ namespace Sitko.Core.Apps.Blazor
             services.AddValidatorsFromAssemblyContaining<Startup>();
             services.Configure<ProSettings>(settings =>
             {
-                settings.Title = "Blazor App Demo";
+                settings.Title = "Blazor Demo";
                 settings.NavTheme = "dark";
             });
         }
