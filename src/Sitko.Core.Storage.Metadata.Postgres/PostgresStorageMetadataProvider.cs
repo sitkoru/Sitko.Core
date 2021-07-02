@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sitko.Core.Storage.Metadata.Postgres.DB;
 using Sitko.Core.Storage.Metadata.Postgres.DB.Models;
+using Z.EntityFramework.Plus;
 
 namespace Sitko.Core.Storage.Metadata.Postgres
 {
@@ -53,9 +54,8 @@ namespace Sitko.Core.Storage.Metadata.Postgres
         protected override async Task DoDeleteAllMetadataAsync(CancellationToken? cancellationToken)
         {
             await using var dbContext = GetDbContext();
-            await dbContext.Database.ExecuteSqlRawAsync(
-                $"DELETE FROM \"StorageItemRecords\" WHERE \"Storage\" = '{StorageOptions.CurrentValue.Name}';",
-                cancellationToken ?? CancellationToken.None);
+            await dbContext.Records.Where(r => r.Storage == StorageOptions.CurrentValue.Name)
+                .DeleteAsync(cancellationToken);
         }
 
         protected override async Task<IEnumerable<StorageNode>> DoGetDirectoryContentsAsync(string path,

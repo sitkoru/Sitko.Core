@@ -27,4 +27,7 @@
     <ProjectReference Include="..\Sitko.Core.Db.Postgres\Sitko.Core.Db.Postgres.csproj" />
     <ProjectReference Include="..\Sitko.Core.Storage\Sitko.Core.Storage.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Z.EntityFramework.Plus.EFCore" Version="5.2.1" />
+  </ItemGroup>
 </Project>
