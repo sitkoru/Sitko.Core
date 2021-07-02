@@ -140,10 +140,9 @@ ProjectSection(SolutionItems) = preProject
 	.github\workflows\repository.yml = .github\workflows\repository.yml
 	.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
 	.github\workflows\grpc.yml = .github\workflows\grpc.yml
-	.github\workflows\vault.yml = .github\workflows\vault.yml
 	.github\workflows\blazor.yml = .github\workflows\blazor.yml
 	.github\workflows\apps.yml = .github\workflows\apps.yml
-	.github\workflows\vault.yml = .github\workflows\vault.yml
+	.github\workflows\demo.yml = .github\workflows\demo.yml
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Email.Tests", "tests\Sitko.Core.Email.Tests\Sitko.Core.Email.Tests.csproj", "{60D9CB93-B38D-4A39-8FEB-F81FE1852DF3}"
