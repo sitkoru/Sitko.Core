@@ -164,7 +164,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             }
 
             builder.Database = Database;
-            builder.SearchPath = $"{Schema},public";
+            // builder.SearchPath = $"{Schema},public";
             return builder.ConnectionString;
         }
 
