@@ -5,51 +5,49 @@
         @foreach (var file in _images)
         {
             var tips = file.StorageItem.FileName;
-            <AntDesign.Tooltip Title="tips">
-                    <div Class="ant-upload-list-picture-card-container">
+            <div Class="ant-upload-list-picture-card-container" title="@tips">
 
-                        <div class="ant-upload-list-item ant-upload-list-item-done  ant-upload-list-item-list-type-picture-card">
-                            <div class="ant-upload-list-item-info">
-                                <span class="ant-upload-span">
-                                    @{
-                                        <a class="ant-upload-list-item-thumbnail" href="@file.Url" target="_blank" rel="noopener noreferrer">
-                                            @if (Avatar)
-                                            {
-                                                <AntDesign.Avatar Size="@AvatarSize" Src="@file.SmallPreviewUrl" Alt="@file.StorageItem.FileName" Class="ant-upload-list-item-image"/>
-                                            }
-                                            else
-                                            {
-                                                <img src="@file.SmallPreviewUrl" alt="@file.StorageItem.FileName" class="ant-upload-list-item-image"/>
-                                            }
-                                        </a>
+                <div class="ant-upload-list-item ant-upload-list-item-done  ant-upload-list-item-list-type-picture-card">
+                    <div class="ant-upload-list-item-info">
+                        <span class="ant-upload-span">
+                            @{
+                                <a class="ant-upload-list-item-thumbnail" href="@file.Url" target="_blank" rel="noopener noreferrer">
+                                    @if (Avatar)
+                                    {
+                                        <AntDesign.Avatar Size="@AvatarSize" Src="@file.SmallPreviewUrl" Alt="@file.StorageItem.FileName" Class="ant-upload-list-item-image"/>
                                     }
-                                    <a target="_blank" rel="noopener noreferrer" class="ant-upload-list-item-name" title="@file.StorageItem.FileName" href="@file.Url">@file.StorageItem.FileName</a>
-                                </span>
-                            </div>
-
-                            <span class="ant-upload-list-item-actions">
-                                @if (ShowOrdering)
-                                {
-                                    <button title="@LeftText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => MoveLeft(file)" disabled="@(!CanMoveLeft(file))">
-                                        <AntDesign.Icon Type="left"/>
-                                    </button>
-                                }
-                                <a target="_blank" rel="noopener noreferrer" title="@PreviewText" @onclick="() => PreviewFile(file)">
-                                    <AntDesign.Icon Type="eye"/>
+                                    else
+                                    {
+                                        <img src="@file.SmallPreviewUrl" alt="@file.StorageItem.FileName" class="ant-upload-list-item-image"/>
+                                    }
                                 </a>
-                                <button title="@RemoveText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => RemoveFile(file)">
-                                    <AntDesign.Icon Type="delete"/>
-                                </button>
-                                @if (ShowOrdering)
-                                {
-                                    <button title="@RightText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => MoveRight(file)" disabled="@(!CanMoveRight(file))">
-                                        <AntDesign.Icon Type="right"/>
-                                    </button>
-                                }
-                            </span>
-                        </div>
+                            }
+                            <a target="_blank" rel="noopener noreferrer" class="ant-upload-list-item-name" title="@file.StorageItem.FileName" href="@file.Url">@file.StorageItem.FileName</a>
+                        </span>
                     </div>
-            </AntDesign.Tooltip>
+
+                    <span class="ant-upload-list-item-actions">
+                        @if (ShowOrdering)
+                        {
+                            <button title="@LeftText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => MoveLeft(file)" disabled="@(!CanMoveLeft(file))">
+                                <AntDesign.Icon Type="left"/>
+                            </button>
+                        }
+                        <a target="_blank" rel="noopener noreferrer" title="@PreviewText" @onclick="() => PreviewFile(file)">
+                            <AntDesign.Icon Type="eye"/>
+                        </a>
+                        <button title="@RemoveText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => RemoveFile(file)">
+                            <AntDesign.Icon Type="delete"/>
+                        </button>
+                        @if (ShowOrdering)
+                        {
+                            <button title="@RightText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => MoveRight(file)" disabled="@(!CanMoveRight(file))">
+                                <AntDesign.Icon Type="right"/>
+                            </button>
+                        }
+                    </span>
+                </div>
+            </div>
         }
         @if (ShowUpload)
         {
