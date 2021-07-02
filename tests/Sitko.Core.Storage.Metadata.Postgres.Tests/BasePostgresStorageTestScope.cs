@@ -20,7 +20,6 @@ namespace Sitko.Core.Storage.Metadata.Postgres.Tests
                     PostgresStorageMetadataProviderOptions>((_, _, moduleConfig) =>
                 {
                     moduleConfig.Database = name;
-                    moduleConfig.Schema = "storage";
                 });
             return application;
         }

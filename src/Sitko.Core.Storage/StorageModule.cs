@@ -1,8 +1,5 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
-using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage
 {

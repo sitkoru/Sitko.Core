@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.Options;
 using Sitko.Core.Storage;
+using Sitko.Core.Storage.Metadata.Postgres.DB;
 
 namespace Sitko.Core.Storage.Metadata.Postgres.Migrations
 {
@@ -10,6 +12,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres.Migrations
         {
             migrationBuilder.CreateTable(
                 name: "StorageItemRecords",
+                schema: StorageDbContext.Schema,
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Sitko.Core.Storage.Metadata.Postgres.DB.Models
 {
-    [Table("StorageItemRecords")]
+    [Table("StorageItemRecords", Schema = StorageDbContext.Schema)]
     public class StorageItemRecord
     {
         // Used for EF

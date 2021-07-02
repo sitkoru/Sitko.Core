@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Npgsql;
 using Sitko.Core.Storage.Metadata.Postgres.DB;
 using Sitko.Core.Storage.Metadata.Postgres.DB.Models;
 
@@ -15,15 +14,21 @@ namespace Sitko.Core.Storage.Metadata.Postgres
         PostgresStorageMetadataProvider<TStorageOptions> : BaseStorageMetadataProvider<
             PostgresStorageMetadataProviderOptions, TStorageOptions> where TStorageOptions : StorageOptions
     {
+        private readonly IDbContextFactory<StorageDbContext> _dbContextFactory;
+
         public PostgresStorageMetadataProvider(IOptionsMonitor<PostgresStorageMetadataProviderOptions> options,
             IOptionsMonitor<TStorageOptions> storageOptions,
+            IDbContextFactory<StorageDbContext> dbContextFactory,
             ILogger<PostgresStorageMetadataProvider<TStorageOptions>> logger) : base(options, storageOptions, logger)
         {
+            _dbContextFactory = dbContextFactory;
         }
 
         private StorageDbContext GetDbContext()
         {
-            return new(Options.CurrentValue.GetConnectionString(), Options.CurrentValue.Schema);
+            return _dbContextFactory.CreateDbContext();
+            //return new(Options.CurrentValue.GetConnectionString(), Options.CurrentValue.Schema);
+
         }
 
         private Task<StorageItemRecord?> GetItemRecordAsync(StorageDbContext dbContext, string filePath,
@@ -122,55 +127,15 @@ namespace Sitko.Core.Storage.Metadata.Postgres
         protected override async Task DoInitAsync()
         {
             await base.DoInitAsync();
-            Logger.LogCritical("Migrate Storage metadata database");
+            Logger.LogDebug("Migrate Storage metadata database");
             await using var dbContext = GetDbContext();
             await dbContext.Database.MigrateAsync();
-            Logger.LogCritical("Storage metadata database migrated");
+            Logger.LogDebug("Storage metadata database migrated");
         }
 
         public override ValueTask DisposeAsync()
         {
             return new();
         }
-    }
-
-    public class PostgresStorageMetadataProviderOptions : StorageMetadataProviderOptions
-    {
-        public string Host { get; set; } = "localhost";
-        public int Port { get; set; } = 5432;
-        public string Username { get; set; } = "postgres";
-        public string Password { get; set; } = string.Empty;
-        public string? Database { get; set; }
-
-        public string GetConnectionString()
-        {
-            var builder = new NpgsqlConnectionStringBuilder();
-            if (!string.IsNullOrEmpty(Host))
-            {
-                builder.Host = Host;
-            }
-
-            if (Port > 0)
-            {
-                builder.Port = Port;
-            }
-
-            if (!string.IsNullOrEmpty(Username))
-            {
-                builder.Username = Username;
-            }
-
-            if (!string.IsNullOrEmpty(Password))
-            {
-                builder.Password = Password;
-            }
-
-            builder.Database = Database;
-            // builder.SearchPath = $"{Schema},public";
-            return builder.ConnectionString;
-        }
-
-
-        public string Schema { get; set; } = "public";
     }
 }

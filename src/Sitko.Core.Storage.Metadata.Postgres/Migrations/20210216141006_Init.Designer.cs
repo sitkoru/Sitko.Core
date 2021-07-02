@@ -59,7 +59,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("StorageItemRecords");
+                    b.ToTable("StorageItemRecords", StorageDbContext.Schema);
                 });
 #pragma warning restore 612, 618
         }
