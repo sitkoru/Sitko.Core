@@ -1,5 +1,9 @@
 {
     "Preview": "Предварительный просмотр",
     "Download": "Скачать",
-    "Remove": "Удалить"
+    "Remove": "Удалить",
+    "Move up": "Вверх",
+    "Move down": "Вниз",
+    "Move left": "Влево",
+    "Move right": "Вправо"
 }
