@@ -20,15 +20,5 @@ namespace Sitko.Core.Storage
             services.AddSingleton<IStorage<TStorageOptions>, TStorage>();
             services.AddSingleton<TStorage>();
         }
-
-        public override async Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider)
-        {
-            await base.InitAsync(context, serviceProvider);
-            var metadataProvider = serviceProvider.GetService<IStorageMetadataProvider<TStorageOptions>>();
-            if (metadataProvider is not null)
-            {
-                await metadataProvider.InitAsync();
-            }
-        }
     }
 }

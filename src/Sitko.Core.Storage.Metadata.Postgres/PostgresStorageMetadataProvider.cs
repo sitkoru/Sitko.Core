@@ -122,8 +122,10 @@ namespace Sitko.Core.Storage.Metadata.Postgres
         protected override async Task DoInitAsync()
         {
             await base.DoInitAsync();
+            Logger.LogCritical("Migrate Storage metadata database");
             await using var dbContext = GetDbContext();
             await dbContext.Database.MigrateAsync();
+            Logger.LogCritical("Storage metadata database migrated");
         }
 
         public override ValueTask DisposeAsync()
