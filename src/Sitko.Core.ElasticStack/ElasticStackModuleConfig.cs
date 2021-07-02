@@ -1,21 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FluentValidation;
 using Serilog.Sinks.Elasticsearch;
+using Sitko.Core.App;
 
 namespace Sitko.Core.ElasticStack
 {
-    public class ElasticStackModuleConfig
+    public class ElasticStackModuleOptions : BaseModuleOptions
     {
-        public bool LoggingEnabled { get; private set; }
-        public bool ApmEnabled { get; private set; }
-        public List<Uri>? ElasticSearchUrls { get; protected set; }
+        public bool LoggingEnabled => ElasticSearchUrls.Any();
+        public bool ApmEnabled => ApmServerUrls.Any();
+        public List<Uri> ElasticSearchUrls { get; set; } = new();
         public double ApmTransactionSampleRate { get; set; } = 1.0;
         public int ApmTransactionMaxSpans { get; set; } = 500;
         public bool ApmCentralConfig { get; set; } = true;
         public List<string>? ApmSanitizeFieldNames { get; set; }
         public readonly Dictionary<string, string> ApmGlobalLabels = new();
-        public List<Uri>? ApmServerUrls { get; private set; }
+        public List<Uri> ApmServerUrls { get; set; } = new();
         public string? ApmSecretToken { get; set; }
         public string? ApmApiKey { get; set; }
         public bool ApmVerifyServerCert { get; set; } = true;
@@ -36,30 +38,16 @@ namespace Sitko.Core.ElasticStack
         public int? LoggingNumberOfReplicas { get; set; }
         public string? LoggingLifeCycleName { get; set; }
         public string? LoggingLiferRolloverAlias { get; set; }
+    }
 
-
-        public ElasticStackModuleConfig EnableLogging(Uri elasticSearchUri)
+    public class ElasticStackModuleOptionsValidator : AbstractValidator<ElasticStackModuleOptions>
+    {
+        public ElasticStackModuleOptionsValidator()
         {
-            return EnableLogging(new[] {elasticSearchUri});
-        }
-
-        public ElasticStackModuleConfig EnableLogging(IEnumerable<Uri> elasticSearchUrls)
-        {
-            LoggingEnabled = true;
-            ElasticSearchUrls = elasticSearchUrls.ToList();
-            return this;
-        }
-
-        public ElasticStackModuleConfig EnableApm(Uri apmUri)
-        {
-            return EnableApm(new[] {apmUri});
-        }
-
-        public ElasticStackModuleConfig EnableApm(IEnumerable<Uri> apmUrls)
-        {
-            ApmEnabled = true;
-            ApmServerUrls = apmUrls.ToList();
-            return this;
+            RuleFor(o => o.ApmServerUrls).NotEmpty().When(o => o.ApmEnabled)
+                .WithMessage("ApmServerUrls can't be empty");
+            RuleFor(o => o.ElasticSearchUrls).NotEmpty().When(o => o.LoggingEnabled)
+                .WithMessage("ElasticSearchUrls can't be empty");
         }
     }
 }

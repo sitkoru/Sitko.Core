@@ -5,19 +5,21 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.FileSystem
 {
-    public class FileSystemStorageMetadataProvider<TFileSystemOptions> : EmbedStorageMetadataProvider<
-        FileSystemStorage<TFileSystemOptions>,
-        TFileSystemOptions, FileSystemStorageMetadataProviderOptions>
-        where TFileSystemOptions : StorageOptions, IFileSystemStorageOptions
+    public class FileSystemStorageMetadataProvider<TStorageOptions> : EmbedStorageMetadataProvider<
+        FileSystemStorage<TStorageOptions>,
+        TStorageOptions, FileSystemStorageMetadataProviderOptions>
+        where TStorageOptions : StorageOptions, IFileSystemStorageOptions
 
     {
-        public FileSystemStorageMetadataProvider(IServiceProvider serviceProvider, TFileSystemOptions storageOptions,
-            FileSystemStorageMetadataProviderOptions options,
-            ILogger<FileSystemStorageMetadataProvider<TFileSystemOptions>> logger) : base(serviceProvider, options,
+        public FileSystemStorageMetadataProvider(IServiceProvider serviceProvider,
+            IOptionsMonitor<TStorageOptions> storageOptions,
+            IOptionsMonitor<FileSystemStorageMetadataProviderOptions> options,
+            ILogger<FileSystemStorageMetadataProvider<TStorageOptions>> logger) : base(serviceProvider, options,
             storageOptions,
             logger)
         {
@@ -25,7 +27,7 @@ namespace Sitko.Core.Storage.FileSystem
 
         protected override Task DoDeleteMetadataAsync(string filePath, CancellationToken? cancellationToken)
         {
-            var fullPath = Path.Combine(StorageOptions.StoragePath, filePath);
+            var fullPath = Path.Combine(StorageOptions.CurrentValue.StoragePath, filePath);
             var metaDataPath = GetMetaDataPath(fullPath);
             if (File.Exists(metaDataPath))
             {
@@ -43,7 +45,7 @@ namespace Sitko.Core.Storage.FileSystem
         protected override async Task<StorageItemMetadata?> DoGetMetadataJsonAsync(string path,
             CancellationToken? cancellationToken = null)
         {
-            var fullPath = Path.Combine(StorageOptions.StoragePath, path);
+            var fullPath = Path.Combine(StorageOptions.CurrentValue.StoragePath, path);
             var metaDataPath = GetMetaDataPath(fullPath);
             var metaDataInfo = new FileInfo(metaDataPath);
             if (metaDataInfo.Exists)
@@ -63,7 +65,7 @@ namespace Sitko.Core.Storage.FileSystem
         {
             if (metadata is not null)
             {
-                var fullPath = Path.Combine(StorageOptions.StoragePath, storageItem.FilePath);
+                var fullPath = Path.Combine(StorageOptions.CurrentValue.StoragePath, storageItem.FilePath);
                 await using var metaDataStream = File.Create(GetMetaDataPath(fullPath));
                 await metaDataStream.WriteAsync(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(metadata)),
                     cancellationToken ?? CancellationToken.None);

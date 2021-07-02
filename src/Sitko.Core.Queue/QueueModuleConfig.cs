@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediatR;
+using Sitko.Core.App;
 using Sitko.Core.Queue.MediatR;
 
 namespace Sitko.Core.Queue
 {
-    public class QueueModuleConfig
+    public class QueueModuleOptions : BaseModuleOptions
     {
         public HashSet<Type> Middlewares { get; } = new HashSet<Type>();
 

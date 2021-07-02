@@ -24,7 +24,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             _repositoryContext = repositoryContext;
             _dbContext = repositoryContext.DbContext;
         }
-
+        
         protected async Task<T> ExecuteDbContextOperationAsync<T>(Func<TDbContext, Task<T>> operation,
             CancellationToken cancellationToken = default)
         {

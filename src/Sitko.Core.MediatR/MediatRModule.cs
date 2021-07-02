@@ -1,7 +1,5 @@
 using MediatR;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
 namespace Sitko.Core.MediatR
@@ -10,19 +8,19 @@ namespace Sitko.Core.MediatR
     {
     }
 
-    public class MediatRModule<TAssembly> : BaseApplicationModule<MediatRModuleConfig<TAssembly>>,
+    public class MediatRModule<TAssembly> : BaseApplicationModule<MediatRModuleOptions<TAssembly>>,
         IMediatRModule
     {
-        public MediatRModule(MediatRModuleConfig<TAssembly> config, Application application) : base(config,
-            application)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            MediatRModuleOptions<TAssembly> startupOptions)
         {
+            base.ConfigureServices(context, services, startupOptions);
+            services.AddMediatR(startupOptions.Assemblies.ToArray());
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override string GetOptionsKey()
         {
-            base.ConfigureServices(services, configuration, environment);
-            services.AddMediatR(Config.Assemblies.ToArray());
+            return "MediatR";
         }
     }
 }

@@ -57,19 +57,19 @@ namespace Sitko.Core.Search.ElasticSearch.Tests
     {
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
-            return base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, ElasticSearchModule, ElasticSearchModuleConfig>(
-                    (configuration, _, moduleConfig) =>
+            base.ConfigureApplication(application, name)
+                .AddModule<TestApplication, ElasticSearchModule, ElasticSearchModuleOptions>(
+                    (_, _, moduleConfig) =>
                     {
-                        moduleConfig.Url = configuration["ELASTICSEARCH_URL"];
                         moduleConfig.Prefix = name.ToLower();
                         moduleConfig.EnableClientLogging = true;
                     })
-                .ConfigureServices(collection =>
+                .ConfigureServices((_, _, services) =>
                 {
-                    collection.AddSingleton<TestModelProvider>();
-                    collection.RegisterSearchProvider<TestSearchProvider, TestModel, Guid>();
+                    services.AddSingleton<TestModelProvider>();
+                    services.RegisterSearchProvider<TestSearchProvider, TestModel, Guid>();
                 });
+            return application;
         }
     }
 

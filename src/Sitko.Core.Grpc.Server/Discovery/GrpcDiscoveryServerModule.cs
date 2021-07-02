@@ -11,15 +11,10 @@ namespace Sitko.Core.Grpc.Server.Discovery
     public abstract class GrpcDiscoveryServerModule<TRegistrar, TConfig> : BaseGrpcServerModule<TConfig>
         where TRegistrar : class, IGrpcServicesRegistrar where TConfig : GrpcServerOptions, new()
     {
-        protected GrpcDiscoveryServerModule(TConfig config, Application application) : base(
-            config, application)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            TConfig startupOptions)
         {
-        }
-
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddSingleton<IGrpcServicesRegistrar, TRegistrar>();
             var healthChecksBuilder = services.AddHealthChecks();
             foreach (var healthChecksRegistration in _healthChecksRegistrations)

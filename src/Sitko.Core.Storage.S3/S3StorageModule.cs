@@ -1,65 +1,71 @@
 using System;
+using Amazon;
 using Amazon.S3;
-using Microsoft.Extensions.Configuration;
+using FluentValidation;
+using HealthChecks.Aws.S3;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.S3
 {
-    public class S3StorageModule<T> : StorageModule<S3Storage<T>, T> where T : StorageOptions, IS3StorageOptions, new()
+    public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3StorageOptions>, TS3StorageOptions>
+        where TS3StorageOptions : S3StorageOptions, new()
     {
-        public S3StorageModule(T config, Application application) : base(config, application)
+        public override string GetOptionsKey()
         {
-            if (config.ConfigureMetadata is null)
-            {
-                config.UseMetadata<S3StorageMetadataProvider<T>, S3StorageMetadataProviderOptions>();
-            }
+            return $"Storage:S3:{typeof(TS3StorageOptions).Name}";
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            TS3StorageOptions startupOptions)
         {
-            base.ConfigureServices(services, configuration, environment);
-            services.AddSingleton(_ => new S3ClientProvider<T>(Config));
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if (Config.Server != null)
-            {
-                services.AddHealthChecks().AddS3(options =>
+            base.ConfigureServices(context, services, startupOptions);
+            services.AddSingleton<S3ClientProvider<TS3StorageOptions>>();
+            services.AddHealthChecks().Add(new HealthCheckRegistration(GetType().Name,
+                serviceProvider =>
                 {
-                    options.AccessKey = Config.AccessKey;
-                    options.BucketName = Config.Bucket;
-                    options.SecretKey = Config.SecretKey;
-                    options.S3Config = new AmazonS3Config
+                    var config = GetOptions(serviceProvider);
+                    var options = new S3BucketOptions
                     {
-                        RegionEndpoint = Config.Region, ServiceURL = Config.Server.ToString(), ForcePathStyle = true
+                        AccessKey = config.AccessKey,
+                        BucketName = config.Bucket,
+                        SecretKey = config.SecretKey,
+                        S3Config = new AmazonS3Config
+                        {
+                            RegionEndpoint = config.Region,
+                            ServiceURL = config.Server?.ToString(),
+                            ForcePathStyle = true
+                        }
                     };
-                });
-            }
+                    return new S3HealthCheck(options);
+                }, null, null, null));
         }
+    }
 
-        public override void CheckConfig()
+    public class S3StorageOptions : StorageOptions, IModuleOptionsWithValidation
+    {
+        public Uri? Server { get; set; }
+        public string Bucket { get; set; } = string.Empty;
+        public string AccessKey { get; set; } = string.Empty;
+        public string SecretKey { get; set; } = string.Empty;
+        public RegionEndpoint Region { get; set; } = RegionEndpoint.USEast1;
+        public override string Name { get; set; } = string.Empty;
+
+        public Type GetValidatorType()
         {
-            base.CheckConfig();
-            if (Config.Server is null)
-            {
-                throw new ArgumentException("S3 server url is empty");
-            }
+            return typeof(S3StorageOptionsValidator);
+        }
+    }
 
-            if (string.IsNullOrEmpty(Config.Bucket))
-            {
-                throw new ArgumentException("S3 bucketName is empty");
-            }
-
-            if (string.IsNullOrEmpty(Config.AccessKey))
-            {
-                throw new ArgumentException("S3 access key is empty");
-            }
-
-            if (string.IsNullOrEmpty(Config.SecretKey))
-            {
-                throw new ArgumentException("S3 secret key is empty");
-            }
+    public class S3StorageOptionsValidator : StorageOptionsValidator<S3StorageOptions>
+    {
+        public S3StorageOptionsValidator()
+        {
+            RuleFor(o => o.Server).NotEmpty().WithMessage("S3 server url is empty");
+            RuleFor(o => o.Bucket).NotEmpty().WithMessage("S3 bucketName is empty");
+            RuleFor(o => o.AccessKey).NotEmpty().WithMessage("S3 access key is empty");
+            RuleFor(o => o.SecretKey).NotEmpty().WithMessage("S3 secret key is empty");
         }
     }
 }

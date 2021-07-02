@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Nito.AsyncEx;
 
 namespace Sitko.Core.Storage.Metadata
@@ -41,16 +42,17 @@ namespace Sitko.Core.Storage.Metadata
         protected string GetMetaDataPath(string filePath)
         {
             filePath = filePath + MetaDataExtension;
-            if (!string.IsNullOrEmpty(StorageOptions.Prefix) && !filePath.StartsWith(StorageOptions.Prefix))
+            if (!string.IsNullOrEmpty(StorageOptions.CurrentValue.Prefix) &&
+                !filePath.StartsWith(StorageOptions.CurrentValue.Prefix))
             {
-                filePath = Helpers.PreparePath($"{StorageOptions.Prefix}/{filePath}")!;
+                filePath = Helpers.PreparePath($"{StorageOptions.CurrentValue.Prefix}/{filePath}")!;
             }
 
             return filePath;
         }
 
-        protected EmbedStorageMetadataProvider(IServiceProvider serviceProvider, TOptions options,
-            TStorageOptions storageOptions,
+        protected EmbedStorageMetadataProvider(IServiceProvider serviceProvider, IOptionsMonitor<TOptions> options,
+            IOptionsMonitor<TStorageOptions> storageOptions,
             ILogger<EmbedStorageMetadataProvider<TStorage, TStorageOptions, TOptions>> logger)
             : base(options, storageOptions, logger)
         {
@@ -60,7 +62,8 @@ namespace Sitko.Core.Storage.Metadata
         protected override async Task<IEnumerable<StorageNode>> DoGetDirectoryContentsAsync(string path,
             CancellationToken? cancellationToken = null)
         {
-            if (_tree == null || _treeLastBuild < DateTimeOffset.UtcNow.Subtract(Options.StorageTreeCacheTimeout))
+            if (_tree == null || _treeLastBuild <
+                DateTimeOffset.UtcNow.Subtract(Options.CurrentValue.StorageTreeCacheTimeout))
             {
                 await BuildStorageTreeAsync(cancellationToken);
             }
@@ -102,7 +105,7 @@ namespace Sitko.Core.Storage.Metadata
                     }
 
                     var metadata = await DoGetMetadataAsync(info.Path, cancellationToken);
-                    var item = new StorageItem(info, StorageOptions.Prefix, metadata);
+                    var item = new StorageItem(info, StorageOptions.CurrentValue.Prefix, metadata);
 
                     _tree.AddItem(item);
                 }

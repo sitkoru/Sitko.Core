@@ -12,6 +12,10 @@ services:
             - POSTGRES_HOST_AUTH_METHOD=trust
         ports:
             - 5432:5432
+    sonyflake:
+        image: titpetric/sonyflake
+        ports:
+            - 8987:80
     elastic-es:
         image: docker.elastic.co/elasticsearch/elasticsearch:7.6.0
         restart: always

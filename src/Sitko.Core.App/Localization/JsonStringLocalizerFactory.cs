@@ -27,7 +27,7 @@ namespace Sitko.Core.App.Localization
         private TimeSpan _cacheTimout;
         private const char GenericSeparator = '`';
 
-        public JsonStringLocalizerFactory(IOptionsMonitor<JsonStringLocalizerOptions> options, IScheduler scheduler,
+        public JsonStringLocalizerFactory(IOptionsMonitor<JsonLocalizationModuleOptions> options, IScheduler scheduler,
             ILogger<JsonStringLocalizerFactory> logger)
         {
             _logger = logger;
@@ -66,7 +66,7 @@ namespace Sitko.Core.App.Localization
             return Task.CompletedTask;
         }
 
-        private void ReadOptions(JsonStringLocalizerOptions localizerOptions)
+        private void ReadOptions(JsonLocalizationModuleOptions localizerOptions)
         {
             _cacheTimout = TimeSpan.FromMinutes(localizerOptions.CacheTimeInMinutes);
             s_defaultResources = localizerOptions.DefaultResources;
@@ -141,9 +141,9 @@ namespace Sitko.Core.App.Localization
             CultureInfo cultureInfo)
         {
             var data = new Dictionary<string, string>();
-            FillData(data, LoadResourceData(name, assembly, cultureInfo));
-            FillData(data, LoadResourceData(name, assembly, cultureInfo.Parent));
-            FillData(data, LoadResourceData(name, assembly, CultureInfo.InvariantCulture));
+            var cultures = new[] { cultureInfo, cultureInfo.Parent, CultureInfo.InvariantCulture };
+            bool loaded = LoadResourceData(data, name, assembly, cultures);
+
             foreach (var defaultResource in s_defaultResources)
             {
                 var typeName = defaultResource.Name;
@@ -152,75 +152,79 @@ namespace Sitko.Core.App.Localization
                     typeName = typeName.Remove(typeName.IndexOf(GenericSeparator));
                 }
 
-                FillData(data, LoadResourceData(typeName, defaultResource.Assembly, cultureInfo));
-                FillData(data, LoadResourceData(typeName, defaultResource.Assembly, cultureInfo.Parent));
-                FillData(data, LoadResourceData(typeName, defaultResource.Assembly, CultureInfo.InvariantCulture));
+                if (!LoadResourceData(data, typeName, defaultResource.Assembly, cultures))
+                {
+                    loaded = false;
+                }
+            }
+
+            if (!loaded)
+            {
+                _logger.LogWarning("No resources found for '{ResourceName}'", name);
             }
 
             return data;
         }
 
-        private static Dictionary<string, string> LoadResourceData(string name, Assembly assembly,
-            CultureInfo cultureInfo)
+        private static bool LoadResourceData(Dictionary<string, string> data, string name, Assembly assembly,
+            CultureInfo[] cultures)
         {
-            Assembly satelliteAssembly;
-            try
+            var loaded = false;
+            foreach (var cultureInfo in cultures)
             {
-                satelliteAssembly = !Equals(cultureInfo, CultureInfo.InvariantCulture)
-                    ? assembly.GetSatelliteAssembly(cultureInfo)
-                    : assembly;
-            }
-            catch (FileNotFoundException exception)
-            {
-                _logger.LogInformation(exception,
-                    "Could not find satellite assembly for '{CultureInfoName}': {Message}",
-                    cultureInfo.Name, exception.Message);
-                return new Dictionary<string, string>();
+                FillData(data, LoadResourceData(name, assembly, cultureInfo, out var cultureLoaded));
+                if (cultureLoaded)
+                {
+                    loaded = true;
+                }
             }
 
-            var resourceFileName = $"{name}.json";
-            var resourceNames = satelliteAssembly.GetManifestResourceNames();
-            var resourceName = resourceNames.FirstOrDefault(n => n.EndsWith(resourceFileName));
+            return loaded;
+        }
+
+        private static Dictionary<string, string> LoadResourceData(string name, Assembly assembly,
+            CultureInfo cultureInfo, out bool loaded)
+        {
+            Assembly satelliteAssembly;
+            if (Equals(cultureInfo, CultureInfo.InvariantCulture))
+            {
+                satelliteAssembly = assembly;
+            }
+            else
+            {
+                try
+                {
+                    satelliteAssembly = assembly.GetSatelliteAssembly(cultureInfo);
+                }
+                catch (FileNotFoundException exception)
+                {
+                    _logger.LogWarning(exception,
+                        "Could not find satellite assembly for '{CultureInfoName}': {Message}",
+                        cultureInfo.Name, exception.Message);
+                    loaded = false;
+                    return new Dictionary<string, string>();
+                }
+            }
+
+            var resourceName = satelliteAssembly.GetManifestResourceNames()
+                .FirstOrDefault(n => n.EndsWith($"{name}.json"));
             if (string.IsNullOrEmpty(resourceName))
             {
-                _logger.LogDebug(
-                    "Resource '{ResourceName}' not found for '{CultureInfoName}'",
-                    name, cultureInfo.Name);
+                loaded = false;
                 return new Dictionary<string, string>();
             }
 
             var stream = satelliteAssembly.GetManifestResourceStream(resourceName);
             if (stream == null)
             {
-                _logger.LogDebug(
-                    "Resource '{ResourceName}' not found for '{CultureInfoName}'",
-                    name, cultureInfo.Name);
+                loaded = false;
                 return new Dictionary<string, string>();
             }
 
             using StreamReader reader = new(stream);
             string json = reader.ReadToEnd();
-
+            loaded = true;
             return JsonSerializer.Deserialize<Dictionary<string, string>>(json)!;
-        }
-    }
-
-    public class JsonStringLocalizerOptions
-    {
-        private readonly HashSet<Type> _defaultResources = new();
-        public Type[] DefaultResources => _defaultResources.ToArray();
-
-        public int CacheTimeInMinutes { get; set; } = 60;
-
-        public JsonStringLocalizerOptions AddDefaultResource<T>()
-        {
-            return AddDefaultResource(typeof(T));
-        }
-
-        public JsonStringLocalizerOptions AddDefaultResource(Type resourceType)
-        {
-            _defaultResources.Add(resourceType);
-            return this;
         }
     }
 }

@@ -3,12 +3,13 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Sitko.Core.Storage.S3\Sitko.Core.Storage.S3.csproj" />
-    <ProjectReference Include="..\..\src\Sitko.Core.Xunit\Sitko.Core.Xunit.csproj" />
-    <ProjectReference Include="..\Sitko.Core.Storage.Tests\Sitko.Core.Storage.Tests.csproj" />
+    <ProjectReference Include="..\..\src\Sitko.Core.Storage.S3\Sitko.Core.Storage.S3.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.Xunit\Sitko.Core.Xunit.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.Storage.Tests\Sitko.Core.Storage.Tests.csproj"/>
   </ItemGroup>
 
   <ItemGroup>

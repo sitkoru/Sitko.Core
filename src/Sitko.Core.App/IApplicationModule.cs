@@ -9,24 +9,26 @@ using Sitko.Core.App.Logging;
 
 namespace Sitko.Core.App
 {
-    public interface IApplicationModule<TConfig> : IApplicationModule where TConfig : class, new()
+    public interface IApplicationModule<in TModuleOptions> : IApplicationModule where TModuleOptions : class, new()
     {
-        TConfig? GetConfig();
-        void CheckConfig();
+        string GetOptionsKey();
+
+        void ConfigureLogging(ApplicationContext context, TModuleOptions options,
+            LoggerConfiguration loggerConfiguration,
+            LogLevelSwitcher logLevelSwitcher);
+
+        void ConfigureServices(ApplicationContext context, IServiceCollection services, TModuleOptions startupOptions);
+
+        void ConfigureAppConfiguration(ApplicationContext context,
+            HostBuilderContext hostBuilderContext, IConfigurationBuilder configurationBuilder,
+            TModuleOptions startupOptions);
+
+        IEnumerable<Type> GetRequiredModules(ApplicationContext context, TModuleOptions config);
     }
 
     public interface IApplicationModule
     {
-        void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment);
-
-        void ConfigureLogging(LoggerConfiguration loggerConfiguration, LogLevelSwitcher logLevelSwitcher,
-            IConfiguration configuration, IHostEnvironment environment);
-
-        Task InitAsync(IServiceProvider serviceProvider, IConfiguration configuration,
-            IHostEnvironment environment);
-
-        List<Type> GetRequiredModules();
+        Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider);
 
         Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider);

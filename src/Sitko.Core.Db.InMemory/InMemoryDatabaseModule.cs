@@ -1,38 +1,30 @@
-using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Db.InMemory
 {
-    public class InMemoryDatabaseModule<TDbContext> : BaseDbModule<TDbContext, InMemoryDatabaseModuleConfig<TDbContext>>
+    public class InMemoryDatabaseModule<TDbContext> : BaseDbModule<TDbContext, InMemoryDatabaseModuleOptions<TDbContext>>
         where TDbContext : DbContext
     {
-        public InMemoryDatabaseModule(InMemoryDatabaseModuleConfig<TDbContext> config, Application application) : base(
-            config, application)
+        public override string GetOptionsKey()
         {
+            return $"Db:InMemory:{typeof(TDbContext).Name}";
         }
 
-        public override void CheckConfig()
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            InMemoryDatabaseModuleOptions<TDbContext> startupOptions)
         {
-            base.CheckConfig();
-            if (string.IsNullOrEmpty(Config.Database))
+            base.ConfigureServices(context, services, startupOptions);
+            services.AddDbContext<TDbContext>((serviceProvider, options) =>
             {
-                throw new ArgumentException("Empty inmemory database name");
-            }
-        }
-
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
-            services.AddDbContext<TDbContext>((p, options) =>
-            {
+                var config = GetOptions(serviceProvider);
                 options.ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-                    .UseInMemoryDatabase(Config.Database);
-                Config.Configure?.Invoke((DbContextOptionsBuilder<TDbContext>) options, p, configuration, environment);
+                    .UseInMemoryDatabase(config.Database);
+                config.Configure?.Invoke((DbContextOptionsBuilder<TDbContext>)options, serviceProvider,
+                    context.Configuration,
+                    context.Environment);
             });
         }
     }

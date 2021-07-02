@@ -27,7 +27,7 @@ jobs:
         runs-on: ubuntu-latest
         container: ghcr.io/sitkoru/actions-container
         env:
-            POSTGRES_HOST: postgres
+            DB__POSTGRES__TESTDBCONTEXT__HOST: postgres
             XUNIT_USE_POSTGRES: "true"
         services:
             postgres:

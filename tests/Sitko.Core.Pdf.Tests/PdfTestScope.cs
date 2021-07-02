@@ -8,7 +8,7 @@ namespace Sitko.Core.Pdf.Tests
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             base.ConfigureApplication(application, name);
-            application.AddModule<TestApplication, PdfRendererModule, PdfRendererModuleConfig>();
+            application.AddModule<TestApplication, PdfRendererModule, PdfRendererModuleOptions>();
             return application;
         }
     }

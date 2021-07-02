@@ -28,12 +28,12 @@ jobs:
         runs-on: ubuntu-latest
         container: ghcr.io/sitkoru/actions-container
         env:
-            MINIO_SERVER_URI: http://minio:9000
-            MINIO_ACCESS_KEY: ptTYf7VkCVbUjAzn
-            MINIO_SECRET_KEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
-            POSTGRES_HOST: postgres
-            POSTGRES_USERNAME: postgres
-            POSTGRES_PASSWORD: 123
+            STORAGE__S3__TESTS3STORAGESETTINGS__SERVER: http://minio:9000
+            STORAGE__S3__TESTS3STORAGESETTINGS__ACCESSKEY: ptTYf7VkCVbUjAzn
+            STORAGE__S3__TESTS3STORAGESETTINGS__SECRETKEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
+            STORAGE__METADATA__POSTGRES__TESTS3STORAGESETTINGS__HOST: postgres
+            STORAGE__METADATA__POSTGRES__TESTS3STORAGESETTINGS__USERNAME: postgres
+            STORAGE__METADATA__POSTGRES__TESTS3STORAGESETTINGS__PASSWORD: 123
         services:
             minio:
                 image: bitnami/minio

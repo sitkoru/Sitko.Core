@@ -5,17 +5,19 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.S3
 {
-    internal class S3StorageMetadataProvider<TS3Options> : EmbedStorageMetadataProvider<S3Storage<TS3Options>,
-        TS3Options, S3StorageMetadataProviderOptions>
-        where TS3Options : StorageOptions, IS3StorageOptions, new()
+    public class S3StorageMetadataProvider<TStorageOptions> : EmbedStorageMetadataProvider<S3Storage<TStorageOptions>,
+        TStorageOptions, S3StorageMetadataProviderOptions>
+        where TStorageOptions : S3StorageOptions, new()
     {
-        public S3StorageMetadataProvider(IServiceProvider serviceProvider, S3StorageMetadataProviderOptions options,
-            TS3Options storageOptions,
-            ILogger<S3StorageMetadataProvider<TS3Options>> logger) : base(serviceProvider, options, storageOptions,
+        public S3StorageMetadataProvider(IServiceProvider serviceProvider,
+            IOptionsMonitor<S3StorageMetadataProviderOptions> options,
+            IOptionsMonitor<TStorageOptions> storageOptions,
+            ILogger<S3StorageMetadataProvider<TStorageOptions>> logger) : base(serviceProvider, options, storageOptions,
             logger)
         {
         }
@@ -62,7 +64,7 @@ namespace Sitko.Core.Storage.S3
         }
     }
 
-    internal class S3StorageMetadataProviderOptions : EmbedStorageMetadataProviderOptions
+    public class S3StorageMetadataProviderOptions : EmbedStorageMetadataProviderOptions
     {
     }
 }

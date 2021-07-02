@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
@@ -16,40 +15,36 @@ namespace Sitko.Core.Queue
 
     public abstract class QueueModule<TQueue, TConfig> : BaseApplicationModule<TConfig>, IQueueModule
         where TQueue : class, IQueue
-        where TConfig : QueueModuleConfig, new()
+        where TConfig : QueueModuleOptions, new()
     {
-        protected QueueModule(TConfig config, Application application) : base(config, application)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            TConfig startupOptions)
         {
-        }
-
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddSingleton<IQueue, TQueue>();
             services.AddSingleton<QueueContext>();
 
-            if (Config.HealthChecksEnabled)
+            if (startupOptions.HealthChecksEnabled)
             {
                 services.AddHealthChecks().AddCheck<QueueHealthCheck>("Queue health check");
             }
 
-            if (Config.Middlewares.Any())
+            if (startupOptions.Middlewares.Any())
             {
                 services.Scan(selector =>
-                    selector.AddTypes(Config.Middlewares).AsSelfWithInterfaces().WithSingletonLifetime());
+                    selector.AddTypes(startupOptions.Middlewares).AsSelfWithInterfaces().WithSingletonLifetime());
             }
 
-            foreach (var options in Config.Options)
+            foreach (var options in startupOptions.Options)
             {
                 services.AddSingleton(typeof(IQueueMessageOptions), options.Value);
             }
 
-            if (Config.ProcessorEntries.Any())
+            if (startupOptions.ProcessorEntries.Any())
             {
-                var types = Config.ProcessorEntries.Select(e => e.Type).Distinct().ToArray();
+                var types = startupOptions.ProcessorEntries.Select(e => e.Type).Distinct().ToArray();
                 services.Scan(selector => selector.AddTypes(types).AsSelfWithInterfaces().WithScopedLifetime());
-                var messageTypes = Config.ProcessorEntries.SelectMany(e => e.MessageTypes).Distinct().ToArray();
+                var messageTypes = startupOptions.ProcessorEntries.SelectMany(e => e.MessageTypes).Distinct().ToArray();
                 foreach (var messageType in messageTypes)
                 {
                     var host = typeof(QueueProcessorHost<>).MakeGenericType(messageType);
@@ -57,17 +52,17 @@ namespace Sitko.Core.Queue
                 }
             }
 
-            foreach ((Type serviceType, Type implementationType) in Config.TranslateMediatRTypes)
+            foreach ((Type serviceType, Type implementationType) in startupOptions.TranslateMediatRTypes)
             {
                 services.AddTransient(serviceType, implementationType);
             }
         }
 
-        public override List<Type> GetRequiredModules()
+        public override IEnumerable<Type> GetRequiredModules(ApplicationContext context, TConfig config)
         {
-            var modules = new List<Type>();
+            var modules = new List<Type>(base.GetRequiredModules(context, config));
 
-            if (Config.TranslateMediatRTypes.Any())
+            if (config.TranslateMediatRTypes.Any())
             {
                 modules.Add(typeof(IMediatRModule));
             }

@@ -14,7 +14,7 @@ namespace Sitko.Core.Grpc.Server.Discovery
         }
 
         public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = default)
         {
             return _registrar.CheckHealthAsync<TService>(cancellationToken);
         }

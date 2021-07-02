@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.App.Web
 {
@@ -16,15 +15,16 @@ namespace Sitko.Core.App.Web
         {
         }
 
-        protected List<IWebApplicationModule> GetWebModules()
+        protected List<IWebApplicationModule> GetWebModules(ApplicationContext context)
         {
-            return Modules.OfType<IWebApplicationModule>().ToList();
+            return GetEnabledModuleRegistrations(context).Select(r => r.GetInstance()).OfType<IWebApplicationModule>()
+                .ToList();
         }
 
         public virtual void AppBuilderHook(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
-            foreach (var webModule in GetWebModules())
+            foreach (var webModule in GetWebModules(GetContext(environment, configuration)))
             {
                 webModule.ConfigureAppBuilder(configuration, environment, appBuilder);
             }
@@ -33,7 +33,7 @@ namespace Sitko.Core.App.Web
         public virtual void BeforeRoutingHook(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
-            foreach (var webModule in GetWebModules())
+            foreach (var webModule in GetWebModules(GetContext(environment, configuration)))
             {
                 webModule.ConfigureBeforeUseRouting(configuration, environment, appBuilder);
             }
@@ -42,7 +42,7 @@ namespace Sitko.Core.App.Web
         public virtual void AfterRoutingHook(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
-            foreach (var webModule in GetWebModules())
+            foreach (var webModule in GetWebModules(GetContext(environment, configuration)))
             {
                 webModule.ConfigureAfterUseRouting(configuration, environment, appBuilder);
             }
@@ -51,7 +51,7 @@ namespace Sitko.Core.App.Web
         public virtual void EndpointsHook(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
         {
-            foreach (var webModule in GetWebModules())
+            foreach (var webModule in GetWebModules(GetContext(environment, configuration)))
             {
                 webModule.ConfigureEndpoints(configuration, environment, appBuilder, endpoints);
             }
@@ -62,27 +62,27 @@ namespace Sitko.Core.App.Web
     {
         protected WebApplication(string[] args) : base(args)
         {
-            Logger.LogInformation("Web application with startup {Startup}", typeof(TStartup));
+        }
+
+        protected override void ConfigureAppConfiguration(HostBuilderContext context,
+            IConfigurationBuilder configurationBuilder)
+        {
+            base.ConfigureAppConfiguration(context, configurationBuilder);
+
+            configurationBuilder.AddEnvironmentVariables();
+        }
+
+        protected override void ConfigureHostConfiguration(IConfigurationBuilder configurationBuilder)
+        {
+            base.ConfigureHostConfiguration(configurationBuilder);
+            configurationBuilder.AddUserSecrets<TStartup>(true);
+            configurationBuilder.AddEnvironmentVariables();
         }
 
         protected override void ConfigureHostBuilder(IHostBuilder builder)
         {
             base.ConfigureHostBuilder(builder);
             builder
-                .ConfigureHostConfiguration(configurationBuilder =>
-                {
-                    configurationBuilder.AddUserSecrets<TStartup>(true);
-                    configurationBuilder.AddEnvironmentVariables();
-                })
-                .ConfigureAppConfiguration((context, configurationBuilder) =>
-                {
-                    if (context.HostingEnvironment.IsDevelopment())
-                    {
-                        configurationBuilder.AddUserSecrets<TStartup>();
-                    }
-
-                    configurationBuilder.AddEnvironmentVariables();
-                })
                 .ConfigureServices(collection =>
                 {
                     collection.AddSingleton(typeof(WebApplication), this);
@@ -102,15 +102,15 @@ namespace Sitko.Core.App.Web
 
         public WebApplication<TStartup> Run()
         {
-            GetAppHost().Start();
+            CreateAppHost().Start();
             return this;
         }
 
         public WebApplication<TStartup> Run(int port)
         {
-            GetHostBuilder().ConfigureWebHostDefaults(builder => builder.UseUrls($"http://*:{port.ToString()}"));
-
-            GetAppHost().Start();
+            CreateAppHost(builder =>
+                builder.ConfigureWebHostDefaults(
+                    webHostBuilder => webHostBuilder.UseUrls($"http://*:{port.ToString()}"))).Start();
             return this;
         }
     }

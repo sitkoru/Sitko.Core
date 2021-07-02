@@ -9,18 +9,21 @@ using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Amazon.S3.Util;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sitko.Core.Storage.Cache;
 using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.S3
 {
-    public sealed class S3Storage<T> : Storage<T> where T : StorageOptions, IS3StorageOptions, new()
+    public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
+        where TStorageOptions : S3StorageOptions, new()
     {
         private readonly AmazonS3Client _s3Client;
 
-        public S3Storage(T options, S3ClientProvider<T> s3ClientProvider, ILogger<S3Storage<T>> logger,
-            IStorageCache? cache = null,
-            IStorageMetadataProvider? metadataProvider = null) : base(options, logger,
+        public S3Storage(IOptionsMonitor<TStorageOptions> options, S3ClientProvider<TStorageOptions> s3ClientProvider,
+            ILogger<S3Storage<TStorageOptions>> logger,
+            IStorageCache<TStorageOptions>? cache = null,
+            IStorageMetadataProvider<TStorageOptions>? metadataProvider = null) : base(options, logger,
             cache, metadataProvider)
         {
             _s3Client = s3ClientProvider.S3Client;

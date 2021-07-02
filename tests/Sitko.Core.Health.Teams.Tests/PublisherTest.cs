@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -23,7 +19,7 @@ namespace Sitko.Core.Health.Teams.Tests
         public async Task Healthy()
         {
             var scope = await GetScopeAsync();
-            var publisher = GetPublisher(scope);
+            var publisher = scope.Get<IHealthCheckPublisher>();
 
             var failReport =
                 new HealthReport(
@@ -37,7 +33,7 @@ namespace Sitko.Core.Health.Teams.Tests
                         }
                     }, TimeSpan.FromMinutes(1));
             await publisher.PublishAsync(failReport, CancellationToken.None);
-            
+
             var report =
                 new HealthReport(
                     new Dictionary<string, HealthReportEntry>
@@ -51,12 +47,12 @@ namespace Sitko.Core.Health.Teams.Tests
                     }, TimeSpan.FromMinutes(1));
             await publisher.PublishAsync(report, CancellationToken.None);
         }
-        
+
         [Fact]
         public async Task UnHealthy()
         {
             var scope = await GetScopeAsync();
-            var publisher = GetPublisher(scope);
+            var publisher = scope.Get<IHealthCheckPublisher>();
 
             try
             {
@@ -69,7 +65,8 @@ namespace Sitko.Core.Health.Teams.Tests
                         new Dictionary<string, HealthReportEntry>
                         {
                             {
-                                "test", new HealthReportEntry(HealthStatus.Unhealthy, "All bad", TimeSpan.FromMinutes(1),
+                                "test", new HealthReportEntry(HealthStatus.Unhealthy, "All bad",
+                                    TimeSpan.FromMinutes(1),
                                     ex,
                                     new Dictionary<string, object>())
                             }
@@ -82,7 +79,7 @@ namespace Sitko.Core.Health.Teams.Tests
         public async Task Degraded()
         {
             var scope = await GetScopeAsync();
-            var publisher = GetPublisher(scope);
+            var publisher = scope.Get<IHealthCheckPublisher>();
 
             var report =
                 new HealthReport(
@@ -97,29 +94,15 @@ namespace Sitko.Core.Health.Teams.Tests
                     }, TimeSpan.FromMinutes(1));
             await publisher.PublishAsync(report, CancellationToken.None);
         }
-
-        private static TeamsHealthCheckPublisher GetPublisher(TeamsPublisherTestScope scope)
-        {
-            var logger = scope.GetLogger<TeamsHealthCheckPublisher>();
-            var env = scope.Get<IHostEnvironment>();
-            var httpFactory = scope.Get<IHttpClientFactory>();
-            var options = scope.Get<TeamsHealthCheckPublisherOptions>();
-            var publisher =
-                new TeamsHealthCheckPublisher(options, logger, env, httpFactory);
-            return publisher;
-        }
     }
 
     public class TeamsPublisherTestScope : BaseTestScope
     {
-        protected override IServiceCollection ConfigureServices(IConfiguration configuration,
-            IHostEnvironment environment,
-            IServiceCollection services, string name)
+        protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
-            services.AddSingleton(
-                new TeamsHealthCheckPublisherOptions {WebHookUrl = configuration["TEAMS_WEBHOOK_URL"]});
-            services.AddHttpClient();
-            return base.ConfigureServices(configuration, environment, services, name);
+            base.ConfigureApplication(application, name);
+            application.AddModule<TeamsHealthReporterModule, TeamsHealthCheckPublisherOptions>();
+            return application;
         }
     }
 }

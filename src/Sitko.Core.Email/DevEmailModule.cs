@@ -8,23 +8,24 @@ using FluentEmail.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Sitko.Core.App;
 
 namespace Sitko.Core.Email
 {
-    public class DevEmailModule : FluentEmailModule<DevEmailModuleConfig>
+    public class DevEmailModule : FluentEmailModule<DevEmailModuleOptions>
     {
-        public DevEmailModule(DevEmailModuleConfig config, Application application) : base(config, application)
-        {
-        }
-
-        protected override void ConfigureBuilder(FluentEmailServicesBuilder builder)
+        protected override void ConfigureBuilder(FluentEmailServicesBuilder builder,
+            DevEmailModuleOptions fluentEmailModuleOptions)
         {
             builder.Services.TryAdd(ServiceDescriptor.Scoped<ISender, DevEmailSender>());
         }
+
+        public override string GetOptionsKey()
+        {
+            return "Email:Dev";
+        }
     }
 
-    public class DevEmailModuleConfig : FluentEmailModuleConfig
+    public class DevEmailModuleOptions : FluentEmailModuleOptions
     {
     }
 

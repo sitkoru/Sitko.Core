@@ -4,15 +4,18 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sitko.Core.Storage.Cache;
 using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.FileSystem
 {
-    public sealed class FileSystemStorage<T> : Storage<T> where T : StorageOptions, IFileSystemStorageOptions
+    public sealed class FileSystemStorage<TStorageOptions> : Storage<TStorageOptions>
+        where TStorageOptions : StorageOptions, IFileSystemStorageOptions
     {
-        public FileSystemStorage(T options, ILogger<FileSystemStorage<T>> logger, IStorageCache? cache = null,
-            IStorageMetadataProvider? metadataProvider = null) : base(
+        public FileSystemStorage(IOptionsMonitor<TStorageOptions> options, ILogger<FileSystemStorage<TStorageOptions>> logger,
+            IStorageCache<TStorageOptions>? cache = null,
+            IStorageMetadataProvider<TStorageOptions>? metadataProvider = null) : base(
             options, logger, cache, metadataProvider)
         {
         }

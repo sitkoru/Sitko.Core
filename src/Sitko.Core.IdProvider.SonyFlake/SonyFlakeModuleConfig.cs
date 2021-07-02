@@ -1,7 +1,18 @@
+using FluentValidation;
+using Sitko.Core.App;
+
 namespace Sitko.Core.IdProvider.SonyFlake
 {
-    public class SonyFlakeModuleConfig
+    public class SonyFlakeModuleOptions : BaseModuleOptions
     {
-        public string SonyflakeUri { get; set; } = "http://id.localhost";
+        public string Uri { get; set; } = "http://localhost:9200";
+    }
+
+    public class SonyFlakeModuleConfigValidator : AbstractValidator<SonyFlakeModuleOptions>
+    {
+        public SonyFlakeModuleConfigValidator()
+        {
+            RuleFor(c => c.Uri).NotEmpty().WithMessage("Provide SonyFlake url");
+        }
     }
 }

@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using IdentityModel;
 using Microsoft.AspNetCore.Builder;
@@ -13,59 +12,61 @@ namespace Sitko.Core.Auth.IdentityServer
 {
     public class OidcIdentityServerModule : IdentityServerModule<OidcAuthOptions>
     {
-        public OidcIdentityServerModule(OidcAuthOptions config, Application application) : base(config, application)
+        public override string GetOptionsKey()
         {
+            return "Auth:IdentityServer:Oidc";
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            OidcAuthOptions startupOptions)
         {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupOptions);
 
             services.AddAuthentication(options =>
                 {
-                    options.DefaultScheme = Config.SignInScheme;
-                    options.DefaultChallengeScheme = Config.ChallengeScheme;
+                    options.DefaultScheme = startupOptions.SignInScheme;
+                    options.DefaultChallengeScheme = startupOptions.ChallengeScheme;
                 })
-                .AddCookie(Config.SignInScheme, options =>
+                .AddCookie(startupOptions.SignInScheme, options =>
                 {
-                    options.ExpireTimeSpan = Config.ExpireTimeSpan;
-                    options.SlidingExpiration = Config.SlidingExpiration;
+                    options.ExpireTimeSpan = startupOptions.ExpireTimeSpan;
+                    options.SlidingExpiration = startupOptions.SlidingExpiration;
                 })
-                .AddOpenIdConnect(Config.ChallengeScheme, options =>
+                .AddOpenIdConnect(startupOptions.ChallengeScheme, options =>
                 {
-                    options.SignInScheme = Config.SignInScheme;
+                    options.SignInScheme = startupOptions.SignInScheme;
 
-                    options.Authority = Config.OidcServerUrl;
-                    options.RequireHttpsMetadata = Config.RequireHttps;
+                    options.Authority = startupOptions.OidcServerUrl;
+                    options.RequireHttpsMetadata = startupOptions.RequireHttps;
 
-                    options.ClientId = Config.OidcClientId;
-                    options.ClientSecret = Config.OidcClientSecret;
-                    options.ResponseType = Config.ResponseType;
-                    options.UsePkce = Config.UsePkce;
+                    options.ClientId = startupOptions.OidcClientId;
+                    options.ClientSecret = startupOptions.OidcClientSecret;
+                    options.ResponseType = startupOptions.ResponseType;
+                    options.UsePkce = startupOptions.UsePkce;
 
-                    options.SaveTokens = Config.SaveTokens;
-                    options.GetClaimsFromUserInfoEndpoint = Config.GetClaimsFromUserInfoEndpoint;
+                    options.SaveTokens = startupOptions.SaveTokens;
+                    options.GetClaimsFromUserInfoEndpoint = startupOptions.GetClaimsFromUserInfoEndpoint;
 
                     options.Scope.Add(OidcConstants.StandardScopes.OfflineAccess);
-                    if (Config.OidcScopes.Any())
+                    if (startupOptions.OidcScopes.Any())
                     {
-                        foreach (string scope in Config.OidcScopes)
+                        foreach (string scope in startupOptions.OidcScopes)
                         {
                             options.Scope.Add(scope);
                         }
                     }
                 });
 
-            if (Config.EnableRedisDataProtection)
+            if (startupOptions.EnableRedisDataProtection)
             {
                 services.AddDataProtection().PersistKeysToStackExchangeRedis(() =>
                     {
                         var redis = ConnectionMultiplexer
-                            .Connect($"{Config.RedisHost}:{Config.RedisPort}");
-                        return redis.GetDatabase(Config.RedisDb);
-                    }, $"{environment.ApplicationName}-DP").SetApplicationName(environment.ApplicationName)
-                    .SetDefaultKeyLifetime(Config.DataProtectionLifeTime);
+                            .Connect($"{startupOptions.RedisHost}:{startupOptions.RedisPort}");
+                        return redis.GetDatabase(startupOptions.RedisDb);
+                    }, $"{context.Environment.ApplicationName}-DP")
+                    .SetApplicationName(context.Environment.ApplicationName)
+                    .SetDefaultKeyLifetime(startupOptions.DataProtectionLifeTime);
             }
         }
 
@@ -74,34 +75,6 @@ namespace Sitko.Core.Auth.IdentityServer
         {
             base.ConfigureAfterUseRouting(configuration, environment, appBuilder);
             appBuilder.UseMiddleware<AuthorizationMiddleware>();
-        }
-
-        public override void CheckConfig()
-        {
-            base.CheckConfig();
-
-            if (string.IsNullOrEmpty(Config.OidcClientId))
-            {
-                throw new ArgumentException("Oidc client id can't be empty");
-            }
-
-            if (string.IsNullOrEmpty(Config.OidcClientSecret))
-            {
-                throw new ArgumentException("Oidc client secret can't be empty");
-            }
-
-            if (Config.EnableRedisDataProtection)
-            {
-                if (string.IsNullOrEmpty(Config.RedisHost))
-                {
-                    throw new ArgumentException("Redis host can't be empty when Redis Data protection enabled");
-                }
-
-                if (Config.RedisPort == 0)
-                {
-                    throw new ArgumentException("Redis port can't be empty when Redis Data protection enabled");
-                }
-            }
         }
     }
 }

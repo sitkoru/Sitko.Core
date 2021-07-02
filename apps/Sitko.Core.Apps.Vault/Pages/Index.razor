@@ -1,0 +1,31 @@
+@page "/"
+@using Microsoft.Extensions.Options
+@using Microsoft.Extensions.Logging
+@using Sitko.Core.IdProvider
+@inject IOptionsMonitor<TestOptions> _testOptions
+@inject ILogger<Index> _logger
+@inject IIdProvider _idProvider;
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+<br/>
+Foo: @_testOptions.CurrentValue.Foo<br/>
+Bar: @_testOptions.CurrentValue.Bar<br/>
+@_idProvider
+
+<SurveyPrompt Title="How is Blazor working for you?"/>
+
+@code
+{
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        _testOptions.OnChange(config =>
+        {
+            //StateHasChanged();
+            _logger.LogInformation("New config: {@Config}", config);
+            InvokeAsync(StateHasChanged);
+        });
+    }
+}

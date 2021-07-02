@@ -1,8 +1,6 @@
 using System;
 using Consul;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Consul
@@ -12,26 +10,26 @@ namespace Sitko.Core.Consul
     }
 
     public class ConsulModule<TConfig> : BaseApplicationModule<TConfig>, IConsulModule
-        where TConfig : ConsulModuleConfig, new()
+        where TConfig : ConsulModuleOptions, new()
     {
-        public ConsulModule(TConfig config, Application application) : base(config,
-            application)
+        public override string GetOptionsKey()
         {
+            return "Consul";
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            TConfig startupOptions)
         {
-            base.ConfigureServices(services, configuration, environment);
-            services.AddSingleton<IConsulClient, ConsulClient>(p =>
+            base.ConfigureServices(context, services, startupOptions);
+            services.AddSingleton<IConsulClient, ConsulClient>(serviceProvider =>
             {
-                var options = p.GetRequiredService<ConsulModuleConfig>();
+                var options = GetOptions(serviceProvider);
                 return new ConsulClient(config => { config.Address = new Uri(options.ConsulUri); });
             });
         }
     }
 
-    public class ConsulModuleConfig
+    public class ConsulModuleOptions : BaseModuleOptions
     {
         public string ConsulUri { get; set; } = "http://localhost:8500";
     }

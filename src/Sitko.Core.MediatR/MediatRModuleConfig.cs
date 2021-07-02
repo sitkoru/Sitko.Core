@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Reflection;
+using Sitko.Core.App;
 
 namespace Sitko.Core.MediatR
 {
-    public class MediatRModuleConfig<TAssembly>
+    public class MediatRModuleOptions<TAssembly> : BaseModuleOptions
     {
         public List<Assembly> Assemblies { get; } = new List<Assembly> {typeof(TAssembly).Assembly};
 

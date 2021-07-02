@@ -5,23 +5,25 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Sitko.Core.Health
 {
     public abstract class BaseHealthCheckPublisher<TOptions> : IHealthCheckPublisher
     {
-        protected readonly TOptions Options;
+        private readonly IOptionsMonitor<TOptions> _optionsMonitor;
+        protected TOptions Options => _optionsMonitor.CurrentValue;
         protected readonly ILogger<BaseHealthCheckPublisher<TOptions>> Logger;
         protected readonly IHostEnvironment HostingEnvironment;
 
         private readonly ConcurrentDictionary<string, HealthStatus> _entries =
             new ConcurrentDictionary<string, HealthStatus>();
 
-        public BaseHealthCheckPublisher(TOptions options,
+        public BaseHealthCheckPublisher(IOptionsMonitor<TOptions> options,
             ILogger<BaseHealthCheckPublisher<TOptions>> logger,
             IHostEnvironment hostingEnvironment)
         {
-            Options = options;
+            _optionsMonitor = options;
             Logger = logger;
             HostingEnvironment = hostingEnvironment;
         }

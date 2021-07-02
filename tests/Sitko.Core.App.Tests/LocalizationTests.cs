@@ -139,13 +139,11 @@ namespace Sitko.Core.App.Tests
     {
         public LocalizationTestApplication(string[] args) : base(args)
         {
-            this.ConfigureServices(services =>
-            {
-                services.AddJsonLocalization(options =>
+            AddModule<JsonLocalizationModule, JsonLocalizationModuleOptions>(
+                (_, _, moduleConfig) =>
                 {
-                    options.AddDefaultResource<Default>();
+                    moduleConfig.AddDefaultResource<Default>();
                 });
-            });
         }
     }
 

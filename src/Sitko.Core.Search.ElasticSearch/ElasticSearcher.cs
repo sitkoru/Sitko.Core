@@ -5,20 +5,23 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Nest;
 
 namespace Sitko.Core.Search.ElasticSearch
 {
     public class ElasticSearcher<TSearchModel> : ISearcher<TSearchModel> where TSearchModel : BaseSearchModel
     {
+        private readonly IOptionsMonitor<ElasticSearchModuleOptions> _optionsMonitor;
         private readonly ILogger<ElasticSearcher<TSearchModel>> _logger;
-        private readonly ElasticSearchModuleConfig _options;
+        private ElasticSearchModuleOptions Options => _optionsMonitor.CurrentValue;
         private ElasticClient? _client;
 
-        public ElasticSearcher(ElasticSearchModuleConfig options, ILogger<ElasticSearcher<TSearchModel>> logger)
+        public ElasticSearcher(IOptionsMonitor<ElasticSearchModuleOptions> optionsMonitor,
+            ILogger<ElasticSearcher<TSearchModel>> logger)
         {
+            _optionsMonitor = optionsMonitor;
             _logger = logger;
-            _options = options;
         }
 
         private ElasticClient GetClient()
@@ -26,10 +29,10 @@ namespace Sitko.Core.Search.ElasticSearch
             if (_client == null)
             {
                 _logger.LogDebug("Create elastic client");
-                var settings = new ConnectionSettings(new Uri(_options.Url)).DisableDirectStreaming()
+                var settings = new ConnectionSettings(new Uri(Options.Url)).DisableDirectStreaming()
                     .OnRequestCompleted(details =>
                     {
-                        if (_options.EnableClientLogging)
+                        if (Options.EnableClientLogging)
                         {
                             _logger.LogDebug("### ES REQEUST ###");
                             if (details.RequestBodyInBytes != null)
@@ -40,9 +43,9 @@ namespace Sitko.Core.Search.ElasticSearch
                         }
                     })
                     .PrettyJson();
-                if (!string.IsNullOrEmpty(_options.Login))
+                if (!string.IsNullOrEmpty(Options.Login))
                 {
-                    settings.BasicAuthentication(_options.Login, _options.Password);
+                    settings.BasicAuthentication(Options.Login, Options.Password);
                 }
 
                 settings.ServerCertificateValidationCallback((_, _, _, _) => true);
@@ -80,7 +83,7 @@ namespace Sitko.Core.Search.ElasticSearch
         public async Task<bool> AddOrUpdateAsync(string indexName, IEnumerable<TSearchModel> searchModels,
             CancellationToken cancellationToken = default)
         {
-            indexName = $"{_options.Prefix}_{indexName}";
+            indexName = $"{Options.Prefix}_{indexName}";
             var result = await GetClient().IndexManyAsync(searchModels, indexName.ToLowerInvariant(),
                 cancellationToken);
             if (result.Errors)
@@ -104,7 +107,7 @@ namespace Sitko.Core.Search.ElasticSearch
         public async Task<bool> DeleteAsync(string indexName, IEnumerable<TSearchModel> searchModels,
             CancellationToken cancellationToken = default)
         {
-            indexName = $"{_options.Prefix}_{indexName}";
+            indexName = $"{Options.Prefix}_{indexName}";
             var result = await GetClient().DeleteManyAsync(searchModels, indexName.ToLowerInvariant(),
                 cancellationToken);
             if (result.Errors)
@@ -128,7 +131,7 @@ namespace Sitko.Core.Search.ElasticSearch
 
         public async Task<bool> DeleteAsync(string indexName, CancellationToken cancellationToken = default)
         {
-            indexName = $"{_options.Prefix}_{indexName}";
+            indexName = $"{Options.Prefix}_{indexName}";
             var result = await GetClient()
                 .Indices.DeleteAsync(Indices.All, descriptor => descriptor.Index(indexName.ToLowerInvariant()),
                     cancellationToken);
@@ -143,7 +146,7 @@ namespace Sitko.Core.Search.ElasticSearch
 
         public async Task<long> CountAsync(string indexName, string term, CancellationToken cancellationToken = default)
         {
-            indexName = $"{_options.Prefix}_{indexName}";
+            indexName = $"{Options.Prefix}_{indexName}";
             var names = GetSearchText(term);
             var resultsCount = await GetClient().CountAsync<TSearchModel>(x =>
                 x.Query(q =>
@@ -161,7 +164,7 @@ namespace Sitko.Core.Search.ElasticSearch
         public async Task<TSearchModel[]> SearchAsync(string indexName, string term, int limit,
             CancellationToken cancellationToken = default)
         {
-            indexName = $"{_options.Prefix}_{indexName}";
+            indexName = $"{Options.Prefix}_{indexName}";
             var results = await GetClient()
                 .SearchAsync<TSearchModel>(x => GetSearchRequest(x, indexName, term, limit), cancellationToken);
             if (results.ServerError != null)
@@ -175,7 +178,7 @@ namespace Sitko.Core.Search.ElasticSearch
         public async Task<TSearchModel[]> GetSimilarAsync(string indexName, string id, int limit,
             CancellationToken cancellationToken = default)
         {
-            indexName = $"{_options.Prefix}_{indexName}";
+            indexName = $"{Options.Prefix}_{indexName}";
             var results = await GetClient()
                 .SearchAsync<TSearchModel>(x => x.Query(q =>
                         q.MoreLikeThis(qs => qs.Like(descriptor =>
@@ -197,7 +200,7 @@ namespace Sitko.Core.Search.ElasticSearch
 
         public async Task InitAsync(string indexName, CancellationToken cancellationToken = default)
         {
-            indexName = $"{_options.Prefix}_{indexName}";
+            indexName = $"{Options.Prefix}_{indexName}";
             var indexExists = await GetClient().Indices.ExistsAsync(indexName, ct: cancellationToken);
             if (indexExists.Exists)
             {

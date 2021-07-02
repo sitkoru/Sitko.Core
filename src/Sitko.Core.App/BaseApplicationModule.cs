@@ -4,55 +4,47 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Serilog;
 using Sitko.Core.App.Logging;
 
 namespace Sitko.Core.App
 {
-    public abstract class BaseApplicationModule : BaseApplicationModule<BaseApplicationModuleConfig>
-    {
-        protected BaseApplicationModule(BaseApplicationModuleConfig config, Application application) : base(
-            config, application)
-        {
-        }
-    }
-
-    public class BaseApplicationModuleConfig
+    public abstract class BaseApplicationModule : BaseApplicationModule<BaseApplicationModuleOptions>
     {
     }
 
-    public abstract class BaseApplicationModule<TConfig> : IApplicationModule<TConfig> where TConfig : class, new()
+    public class BaseApplicationModuleOptions : BaseModuleOptions
     {
-        protected TConfig Config { get; }
-        protected Application Application { get; }
+    }
 
-        protected BaseApplicationModule(TConfig config, Application application)
-        {
-            Config = config;
-            Application = application;
-        }
-
-
-        public virtual void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
-            services.AddSingleton(Config);
-        }
-
-        public virtual void ConfigureLogging(LoggerConfiguration loggerConfiguration,
-            LogLevelSwitcher logLevelSwitcher, IConfiguration configuration, IHostEnvironment environment)
+    public abstract class BaseApplicationModule<TModuleOptions> : IApplicationModule<TModuleOptions>
+        where TModuleOptions : BaseModuleOptions, new()
+    {
+        public virtual void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            TModuleOptions startupOptions)
         {
         }
 
-        public virtual Task InitAsync(IServiceProvider serviceProvider, IConfiguration configuration,
-            IHostEnvironment environment)
+        public virtual void ConfigureAppConfiguration(ApplicationContext context, HostBuilderContext hostBuilderContext,
+            IConfigurationBuilder configurationBuilder, TModuleOptions startupOptions)
+        {
+        }
+
+        public virtual void ConfigureLogging(ApplicationContext context, TModuleOptions options,
+            LoggerConfiguration loggerConfiguration,
+            LogLevelSwitcher logLevelSwitcher)
+        {
+        }
+
+        public virtual Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider)
         {
             return Task.CompletedTask;
         }
 
-        public virtual List<Type> GetRequiredModules()
+        public virtual IEnumerable<Type> GetRequiredModules(ApplicationContext context, TModuleOptions config)
         {
-            return new List<Type>();
+            return new Type[0];
         }
 
         public virtual Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
@@ -73,19 +65,32 @@ namespace Sitko.Core.App
             return Task.CompletedTask;
         }
 
-        public virtual void CheckConfig()
+        public TModuleOptions GetOptions(IServiceProvider serviceProvider)
         {
+            return serviceProvider.GetRequiredService<IOptions<TModuleOptions>>().Value;
         }
 
-        public TConfig GetConfig()
+        public abstract string GetOptionsKey();
+    }
+
+    public interface IModuleOptionsWithValidation
+    {
+        Type GetValidatorType();
+    }
+
+    public abstract class BaseModuleOptions
+    {
+        public virtual bool Enabled { get; set; } = true;
+
+        public virtual void Configure(ApplicationContext applicationContext)
         {
-            return Config;
         }
     }
 
-    public interface IHostBuilderModule<TConfig> : IApplicationModule<TConfig> where TConfig : class, new()
+    public interface IHostBuilderModule<in TModuleOptions> : IApplicationModule<TModuleOptions>
+        where TModuleOptions : class, new()
     {
-        public void ConfigureHostBuilder(IHostBuilder hostBuilder, IConfiguration configuration,
-            IHostEnvironment environment);
+        public void ConfigureHostBuilder(ApplicationContext context, IHostBuilder hostBuilder,
+            TModuleOptions startupOptions);
     }
 }

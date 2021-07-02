@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
     <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Authors>George Drak</Authors>
@@ -18,20 +18,20 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <NoWarn>8600,8601,8603,8605,8618,8625,8629</NoWarn>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="5.0.0"/>
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md"/>
-    <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\"/>
+    <PackageReference Include="VaultSharp.Extensions.Configuration" Version="0.3.3" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
+    <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\" />
+    <None Pack="true" PackagePath="buildTransitive" Include="Build\**\*.xml; Build\**\*.props; Build\**\*.targets;" />
+  </ItemGroup>
+
 </Project>

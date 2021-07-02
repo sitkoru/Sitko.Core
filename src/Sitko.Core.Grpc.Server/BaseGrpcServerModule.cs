@@ -13,25 +13,21 @@ namespace Sitko.Core.Grpc.Server
     public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TConfig>, IGrpcServerModule,
         IWebApplicationModule where TConfig : GrpcServerOptions, new()
     {
-        protected BaseGrpcServerModule(TConfig config, Application application) : base(config, application)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            TConfig startupOptions)
         {
-        }
-
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddGrpc(options =>
             {
-                options.EnableDetailedErrors = Config.EnableDetailedErrors;
-                Config.Configure?.Invoke(options);
+                options.EnableDetailedErrors = startupOptions.EnableDetailedErrors;
+                startupOptions.Configure?.Invoke(options);
             });
-            if (Config.EnableReflection)
+            if (startupOptions.EnableReflection)
             {
                 services.AddGrpcReflection();
             }
 
-            foreach (var registration in Config.ServiceRegistrations)
+            foreach (var registration in startupOptions.ServiceRegistrations)
             {
                 registration(this);
             }
@@ -40,20 +36,20 @@ namespace Sitko.Core.Grpc.Server
         public void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
         {
+            var config = GetOptions(appBuilder.ApplicationServices);
             foreach (var endpointRegistration in _endpointRegistrations)
             {
                 endpointRegistration(endpoints);
             }
 
             endpoints.MapGrpcService<HealthService>();
-            if (Config.EnableReflection)
+            if (config.EnableReflection)
             {
                 endpoints.MapGrpcReflectionService();
             }
         }
 
-        private readonly List<Action<IEndpointRouteBuilder>> _endpointRegistrations =
-            new List<Action<IEndpointRouteBuilder>>();
+        private readonly List<Action<IEndpointRouteBuilder>> _endpointRegistrations = new();
 
         public virtual void RegisterService<TService>() where TService : class
         {

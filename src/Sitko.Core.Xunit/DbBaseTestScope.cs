@@ -10,30 +10,22 @@ using Sitko.Core.Db.Postgres;
 
 namespace Sitko.Core.Xunit
 {
-    public abstract class DbBaseTestScope<TApplication, TScope, TDbContext> : BaseTestScope<TApplication>
-        where TScope : class where TDbContext : DbContext where TApplication : Application
+    public abstract class DbBaseTestScope<TApplication, TDbContext> : BaseTestScope<TApplication>
+        where TDbContext : DbContext where TApplication : Application
     {
         private TDbContext? _dbContext;
 
         protected override TApplication ConfigureApplication(TApplication application, string name)
         {
             base.ConfigureApplication(application, name);
-            application.ConfigureAppConfiguration((_, builder) =>
-            {
-                builder.AddEnvironmentVariables()
-                    .AddUserSecrets<TScope>();
-            });
-            var config = new ConfigurationBuilder()
-                .AddEnvironmentVariables()
-                .AddUserSecrets<TScope>()
-                .Build();
 
             var testInMemory =
-                string.IsNullOrEmpty(config["XUNIT_USE_POSTGRES"])
-                || !bool.TryParse(config["XUNIT_USE_POSTGRES"], out var outBool) || !outBool;
+                string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("XUNIT_USE_POSTGRES"))
+                || !bool.TryParse(System.Environment.GetEnvironmentVariable("XUNIT_USE_POSTGRES"), out var outBool) ||
+                !outBool;
             if (testInMemory)
             {
-                application.AddModule<InMemoryDatabaseModule<TDbContext>, InMemoryDatabaseModuleConfig<TDbContext>>(
+                application.AddModule<InMemoryDatabaseModule<TDbContext>, InMemoryDatabaseModuleOptions<TDbContext>>(
                     (_, _, moduleConfig) =>
                     {
                         moduleConfig.Database = name;
@@ -45,11 +37,12 @@ namespace Sitko.Core.Xunit
             }
             else
             {
-                application.AddModule<PostgresModule<TDbContext>, PostgresDatabaseModuleConfig<TDbContext>>((
+                application.AddModule<PostgresModule<TDbContext>, PostgresDatabaseModuleOptions<TDbContext>>((
                     configuration,
-                    environment, moduleConfig) =>
+                    environment, moduleOptions) =>
                 {
-                    GetPostgresConfig(configuration, environment, moduleConfig, name);
+                    moduleOptions.Database = $"{application.Id}_{name}";
+                    ConfigurePostgresDatabaseModule(configuration, environment, moduleOptions, application.Id, name);
                 });
             }
 
@@ -89,36 +82,10 @@ namespace Sitko.Core.Xunit
             return Task.CompletedTask;
         }
 
-        protected virtual void GetPostgresConfig(IConfiguration configuration,
-            IHostEnvironment environment, PostgresDatabaseModuleConfig<TDbContext> moduleConfig, string dbName)
+        protected virtual void ConfigurePostgresDatabaseModule(IConfiguration configuration,
+            IHostEnvironment environment, PostgresDatabaseModuleOptions<TDbContext> moduleOptions, Guid applicationId,
+            string dbName)
         {
-            throw new NotImplementedException("You need to implement postgres configuration in your scope");
-        }
-
-        protected void GetDefaultPostgresConfig(IConfiguration configuration, IHostEnvironment environment,
-            PostgresDatabaseModuleConfig<TDbContext> moduleConfig, string dbName)
-        {
-            if (!string.IsNullOrEmpty(configuration["POSTGRES_HOST"]))
-            {
-                moduleConfig.Host = configuration["POSTGRES_HOST"];
-            }
-
-            if (int.TryParse(configuration["POSTGRES_PORT"], out var parsedPort))
-            {
-                moduleConfig.Port = parsedPort;
-            }
-
-            if (!string.IsNullOrEmpty(configuration["POSTGRES_USERNAME"]))
-            {
-                moduleConfig.Username = configuration["POSTGRES_USERNAME"];
-            }
-
-            if (!string.IsNullOrEmpty(configuration["POSTGRES_PASSWORD"]))
-            {
-                moduleConfig.Password = configuration["POSTGRES_PASSWORD"];
-            }
-
-            moduleConfig.Database = dbName;
         }
 
         public override async ValueTask DisposeAsync()
@@ -132,8 +99,8 @@ namespace Sitko.Core.Xunit
         }
     }
 
-    public abstract class DbBaseTestScope<TScope, TDbContext> : DbBaseTestScope<TestApplication, TScope, TDbContext>
-        where TScope : class where TDbContext : DbContext
+    public abstract class DbBaseTestScope<TDbContext> : DbBaseTestScope<TestApplication, TDbContext>
+        where TDbContext : DbContext
     {
     }
 }

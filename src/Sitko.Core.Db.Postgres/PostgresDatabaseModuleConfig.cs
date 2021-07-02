@@ -1,9 +1,13 @@
+using System;
 using System.Reflection;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Sitko.Core.App;
 
 namespace Sitko.Core.Db.Postgres
 {
-    public class PostgresDatabaseModuleConfig<TDbContext> : BaseDbModuleConfig<TDbContext> where TDbContext : DbContext
+    public class PostgresDatabaseModuleOptions<TDbContext> : BaseDbModuleOptions<TDbContext>,
+        IModuleOptionsWithValidation where TDbContext : DbContext
     {
         public string Host { get; set; } = "localhost";
         public int Port { get; set; } = 5432;
@@ -15,5 +19,22 @@ namespace Sitko.Core.Db.Postgres
 
         public Assembly? MigrationsAssembly { get; set; }
         public bool AutoApplyMigrations { get; set; } = true;
+        public Type GetValidatorType()
+        {
+            return typeof(PostgresDatabaseModuleOptionsValidator<TDbContext>);
+        }
+    }
+
+    public class
+        PostgresDatabaseModuleOptionsValidator<TDbContext> : BaseDbModuleOptionsValidator<
+            PostgresDatabaseModuleOptions<TDbContext>, TDbContext> where TDbContext : DbContext
+    {
+        public PostgresDatabaseModuleOptionsValidator()
+        {
+            RuleFor(o => o.Host).NotEmpty().WithMessage("Postgres host is empty");
+            RuleFor(o => o.Username).NotEmpty().WithMessage("Postgres username is empty");
+            RuleFor(o => o.Database).NotEmpty().WithMessage("Postgres database is empty");
+            RuleFor(o => o.Port).GreaterThan(0).WithMessage("Postgres port is empty");
+        }
     }
 }

@@ -37,20 +37,19 @@ namespace Sitko.Core.Xunit
             Name = name;
             _application = CreateApplication();
 
-            _application.ConfigureServices((context, services) =>
+            _application.ConfigureServices((_, context, services) =>
             {
                 ConfigureServices(context.Configuration, context.HostingEnvironment, services, name);
             });
 
-            _application.AddModule<TestModule, TestModuleConfig>((_, _, moduleConfig) =>
+            _application.ConfigureLogging((_, loggerConfiguration, logLevelSwitcher) =>
             {
-                moduleConfig.TestOutputHelper = testOutputHelper;
+                loggerConfiguration.WriteTo.TestOutput(testOutputHelper, levelSwitch: logLevelSwitcher.Switch);
             });
 
-
             _application = ConfigureApplication(_application, name);
-            await _application.InitAsync();
-            ServiceProvider = _application.GetServices().CreateScope().ServiceProvider;
+            var host = await _application.BuildAndInitAsync();
+            ServiceProvider = host.Services.CreateScope().ServiceProvider;
             Configuration = ServiceProvider.GetService<IConfiguration>();
             Environment = ServiceProvider.GetService<IHostEnvironment>();
         }
@@ -135,34 +134,18 @@ namespace Sitko.Core.Xunit
         {
         }
 
-        protected override void ConfigureLogging(LoggerConfiguration loggerConfiguration,
+        protected override void ConfigureLogging(ApplicationContext applicationContext,
+            LoggerConfiguration loggerConfiguration,
             LogLevelSwitcher logLevelSwitcher)
         {
-            base.ConfigureLogging(loggerConfiguration, logLevelSwitcher);
+            base.ConfigureLogging(applicationContext, loggerConfiguration, logLevelSwitcher);
             logLevelSwitcher.Switch.MinimumLevel = LogEventLevel.Debug;
         }
-    }
 
-    public class TestModule : BaseApplicationModule<TestModuleConfig>
-    {
-        public TestModule(TestModuleConfig config, Application application) : base(config, application)
+        protected override void ConfigureHostConfiguration(IConfigurationBuilder configurationBuilder)
         {
+            base.ConfigureHostConfiguration(configurationBuilder);
+            configurationBuilder.AddEnvironmentVariables();
         }
-
-        public override void ConfigureLogging(LoggerConfiguration loggerConfiguration,
-            LogLevelSwitcher logLevelSwitcher,
-            IConfiguration configuration, IHostEnvironment environment)
-        {
-            base.ConfigureLogging(loggerConfiguration, logLevelSwitcher, configuration, environment);
-            if (Config.TestOutputHelper != null)
-            {
-                loggerConfiguration.WriteTo.TestOutput(Config.TestOutputHelper, levelSwitch: logLevelSwitcher.Switch);
-            }
-        }
-    }
-
-    public class TestModuleConfig
-    {
-        public ITestOutputHelper? TestOutputHelper { get; set; }
     }
 }

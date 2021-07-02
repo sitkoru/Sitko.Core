@@ -1,26 +1,22 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.FileSystem
 {
-    public class FileSystemStorageModule<T> : StorageModule<FileSystemStorage<T>, T>
-        where T : StorageOptions, IFileSystemStorageOptions, new()
+    public class
+        FileSystemStorageModule<TStorageOptions> : StorageModule<FileSystemStorage<TStorageOptions>, TStorageOptions>
+        where TStorageOptions : StorageOptions, IFileSystemStorageOptions, new()
     {
-        public FileSystemStorageModule(T config, Application application) : base(config, application)
+        public override string GetOptionsKey()
         {
-            if (config.ConfigureMetadata is null)
-            {
-                config.UseMetadata<FileSystemStorageMetadataProvider<T>, FileSystemStorageMetadataProviderOptions>();
-            }
+            return $"Storage:FileSystem:{typeof(TStorageOptions).Name}";
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            TStorageOptions startupOptions)
         {
-            base.ConfigureServices(services, configuration, environment);
-            services.AddSingleton<IStorage<T>, FileSystemStorage<T>>();
+            base.ConfigureServices(context, services, startupOptions);
+            services.AddSingleton<IStorage<TStorageOptions>, FileSystemStorage<TStorageOptions>>();
         }
     }
 }

@@ -18,21 +18,17 @@ namespace Sitko.Core.Identity
         where TDbContext : IdentityDbContext<TUser, TRole, TPk>
         where TPk : IEquatable<TPk>
     {
-        public IdentityModule(IdentityModuleOptions config, Application application) : base(config, application)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            IdentityModuleOptions startupOptions)
         {
-        }
-
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupOptions);
             var identityBuilder = services
                 .AddIdentity<TUser, TRole>(options =>
-                    options.SignIn.RequireConfirmedAccount = Config.RequireConfirmedAccount)
+                    options.SignIn.RequireConfirmedAccount = startupOptions.RequireConfirmedAccount)
                 .AddEntityFrameworkStores<TDbContext>()
                 .AddErrorDescriber<RussianIdentityErrorDescriber>()
                 .AddDefaultTokenProviders();
-            if (Config.AddDefaultUi)
+            if (startupOptions.AddDefaultUi)
             {
                 identityBuilder.AddDefaultUI();
                 services.AddRazorPages();
@@ -40,10 +36,10 @@ namespace Sitko.Core.Identity
 
             services.ConfigureApplicationCookie(options =>
             {
-                options.LoginPath = Config.LoginPath;
-                options.LogoutPath = Config.LogoutPath;
-                options.ExpireTimeSpan = Config.CookieExpireTimeSpan;
-                options.SlidingExpiration = Config.CookieSlidingExpiration;
+                options.LoginPath = startupOptions.LoginPath;
+                options.LogoutPath = startupOptions.LogoutPath;
+                options.ExpireTimeSpan = TimeSpan.FromDays(startupOptions.CookieExpireDays);
+                options.SlidingExpiration = startupOptions.CookieSlidingExpiration;
             });
         }
 
@@ -51,7 +47,8 @@ namespace Sitko.Core.Identity
             IApplicationBuilder appBuilder,
             IEndpointRouteBuilder endpoints)
         {
-            if (Config.AddDefaultUi)
+            var config = GetOptions(appBuilder.ApplicationServices);
+            if (config.AddDefaultUi)
             {
                 endpoints.MapRazorPages();
             }
@@ -63,12 +60,17 @@ namespace Sitko.Core.Identity
             appBuilder.UseAuthentication();
             appBuilder.UseAuthorization();
         }
+
+        public override string GetOptionsKey()
+        {
+            return "Identity";
+        }
     }
 
-    public class IdentityModuleOptions
+    public class IdentityModuleOptions : BaseModuleOptions
     {
         public bool AddDefaultUi { get; set; }
-        public TimeSpan CookieExpireTimeSpan { get; set; } = TimeSpan.FromDays(30);
+        public int CookieExpireDays { get; set; } = 30;
         public bool CookieSlidingExpiration { get; set; } = true;
         public bool RequireConfirmedAccount { get; set; } = true;
 

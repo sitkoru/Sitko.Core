@@ -37,3 +37,22 @@
 .ant-upload-list-text .ant-upload-text-icon .anticon{
     vertical-align: middle;
 }
+
+/* tile uploaded pictures */
+.upload-list-inline .ant-upload-list-item {
+    float: left;
+    width: 200px;
+    margin-right: 8px;
+}
+
+.upload-list-inline [class*='-upload-list-rtl'] .ant-upload-list-item {
+    float: right;
+}
+
+.upload-list-inline .ant-upload-animate-enter {
+    animation-name: uploadAnimateInlineIn;
+}
+
+.upload-list-inline .ant-upload-animate-leave {
+    animation-name: uploadAnimateInlineOut;
+}

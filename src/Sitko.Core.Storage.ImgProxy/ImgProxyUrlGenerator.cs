@@ -1,6 +1,7 @@
 ﻿using System;
 using ImgProxy;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Sitko.Core.Storage.ImgProxy
 {
@@ -8,22 +9,23 @@ namespace Sitko.Core.Storage.ImgProxy
         where TStorageOptions : StorageOptions
     {
         private readonly IStorage<TStorageOptions> _storage;
-        private readonly StorageImgProxyModuleConfig<TStorageOptions> _options;
+        private readonly IOptionsMonitor<StorageImgProxyModuleOptions<TStorageOptions>> _optionsMonitor;
+        private StorageImgProxyModuleOptions<TStorageOptions> Options => _optionsMonitor.CurrentValue;
         private readonly ILogger<ImgProxyUrlGenerator<TStorageOptions>> _logger;
 
         public ImgProxyUrlGenerator(IStorage<TStorageOptions> storage,
-            StorageImgProxyModuleConfig<TStorageOptions> options,
+            IOptionsMonitor<StorageImgProxyModuleOptions<TStorageOptions>> optionsMonitor,
             ILogger<ImgProxyUrlGenerator<TStorageOptions>> logger)
         {
             _storage = storage;
-            _options = options;
+            _optionsMonitor = optionsMonitor;
             _logger = logger;
         }
 
         private ImgProxyBuilder GetBuilder()
         {
-            return ImgProxyBuilder.New.WithEndpoint(_options.Host)
-                .WithCredentials(_options.Key, _options.Salt);
+            return ImgProxyBuilder.New.WithEndpoint(Options.Host)
+                .WithCredentials(Options.Key, Options.Salt);
         }
 
         public string Url(string url)
@@ -99,7 +101,7 @@ namespace Sitko.Core.Storage.ImgProxy
         {
             var builder = GetBuilder();
             build?.Invoke(builder);
-            return builder.Build(url, _options.EncodeUrls);
+            return builder.Build(url, Options.EncodeUrls);
         }
     }
 }

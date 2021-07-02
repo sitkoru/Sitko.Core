@@ -5,6 +5,7 @@ using FluentEmail.Core;
 using FluentEmail.Core.Interfaces;
 using FluentEmail.Core.Models;
 using MailKit.Net.Smtp;
+using Microsoft.Extensions.Options;
 using MimeKit;
 
 namespace Sitko.Core.Email.Smtp
@@ -14,15 +15,16 @@ namespace Sitko.Core.Email.Smtp
     /// </summary>
     public class MailKitSender : ISender
     {
-        private readonly SmtpEmailModuleConfig _smtpClientOptions;
+        private readonly IOptionsMonitor<SmtpEmailModuleOptions> _smtpClientOptionsMonitor;
+        private SmtpEmailModuleOptions SmtpClientOptions => _smtpClientOptionsMonitor.CurrentValue;
 
         /// <summary>
         /// Creates a sender that uses the given SmtpClientOptions when sending with MailKit. Since the client is internal this will dispose of the client.
         /// </summary>
         /// <param name="smtpClientOptions">The SmtpClientOptions to use to create the MailKit client</param>
-        public MailKitSender(SmtpEmailModuleConfig smtpClientOptions)
+        public MailKitSender(IOptionsMonitor<SmtpEmailModuleOptions> smtpClientOptions)
         {
-            _smtpClientOptions = smtpClientOptions;
+            _smtpClientOptionsMonitor = smtpClientOptions;
         }
 
         /// <summary>
@@ -47,15 +49,15 @@ namespace Sitko.Core.Email.Smtp
                 using (var client = new SmtpClient())
                 {
                     client.Connect(
-                        _smtpClientOptions.Server,
-                        _smtpClientOptions.Port,
-                        _smtpClientOptions.SocketOptions,
+                        SmtpClientOptions.Server,
+                        SmtpClientOptions.Port,
+                        SmtpClientOptions.SocketOptions,
                         token.GetValueOrDefault());
 
                     // Note: only needed if the SMTP server requires authentication
-                    if (!string.IsNullOrEmpty(_smtpClientOptions.UserName))
+                    if (!string.IsNullOrEmpty(SmtpClientOptions.UserName))
                     {
-                        client.Authenticate(_smtpClientOptions.UserName, _smtpClientOptions.Password,
+                        client.Authenticate(SmtpClientOptions.UserName, SmtpClientOptions.Password,
                             token.GetValueOrDefault());
                     }
 
@@ -93,15 +95,15 @@ namespace Sitko.Core.Email.Smtp
                 using (var client = new SmtpClient())
                 {
                     await client.ConnectAsync(
-                        _smtpClientOptions.Server,
-                        _smtpClientOptions.Port,
-                        _smtpClientOptions.SocketOptions,
+                        SmtpClientOptions.Server,
+                        SmtpClientOptions.Port,
+                        SmtpClientOptions.SocketOptions,
                         token.GetValueOrDefault());
 
                     // Note: only needed if the SMTP server requires authentication
-                    if (!string.IsNullOrEmpty(_smtpClientOptions.UserName))
+                    if (!string.IsNullOrEmpty(SmtpClientOptions.UserName))
                     {
-                        await client.AuthenticateAsync(_smtpClientOptions.UserName, _smtpClientOptions.Password,
+                        await client.AuthenticateAsync(SmtpClientOptions.UserName, SmtpClientOptions.Password,
                             token.GetValueOrDefault());
                     }
 
@@ -126,10 +128,7 @@ namespace Sitko.Core.Email.Smtp
         {
             var data = email.Data;
 
-            MimeMessage message = new MimeMessage
-            {
-                Subject = data.Subject ?? string.Empty
-            };
+            MimeMessage message = new MimeMessage {Subject = data.Subject ?? string.Empty};
 
             message.From.Add(new MailboxAddress(data.FromAddress.Name, data.FromAddress.EmailAddress));
 

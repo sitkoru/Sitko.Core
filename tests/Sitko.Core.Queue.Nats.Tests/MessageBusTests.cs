@@ -46,17 +46,17 @@ namespace Sitko.Core.Queue.Nats.Tests
 
     public class NatsMessageBusTestScope : NatsQueueTestScope
     {
-        protected override void ConfigureQueue(NatsQueueModuleConfig config, IConfiguration configuration,
+        protected override void ConfigureQueue(NatsQueueModuleOptions options, IConfiguration configuration,
             IHostEnvironment environment)
         {
-            base.ConfigureQueue(config, configuration, environment);
-            config.TranslateMediatRNotification<TestRequest>();
+            base.ConfigureQueue(options, configuration, environment);
+            options.TranslateMediatRNotification<TestRequest>();
         }
 
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, MediatRModule<MessageBusTests>, MediatRModuleConfig<MessageBusTests>>();
+                .AddModule<TestApplication, MediatRModule<MessageBusTests>, MediatRModuleOptions<MessageBusTests>>();
         }
     }
 

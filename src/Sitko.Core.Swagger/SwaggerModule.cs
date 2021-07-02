@@ -8,20 +8,21 @@ using Sitko.Core.App.Web;
 
 namespace Sitko.Core.Swagger
 {
-    public class SwaggerModule : BaseApplicationModule<SwaggerModuleConfig>, IWebApplicationModule
+    public class SwaggerModule : BaseApplicationModule<SwaggerModuleOptions>, IWebApplicationModule
     {
-        public SwaggerModule(SwaggerModuleConfig config, Application application) : base(config, application)
+        public override string GetOptionsKey()
         {
+            return "Swagger";
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            SwaggerModuleOptions startupOptions)
         {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo {Title = Config.Title, Version = Config.Version});
-                if (Config.EnableTokenAuth)
+                c.SwaggerDoc("v1", new OpenApiInfo {Title = startupOptions.Title, Version = startupOptions.Version});
+                if (startupOptions.EnableTokenAuth)
                 {
                     c.AddSecurityDefinition("Bearer",
                         new OpenApiSecurityScheme()
@@ -43,11 +44,12 @@ namespace Sitko.Core.Swagger
         public void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
         {
-            appBuilder.UseSwaggerAuthorized($"{Config.Title} ({Config.Version})", "v1/swagger.json");
+            var config = GetOptions(appBuilder.ApplicationServices);
+            appBuilder.UseSwaggerAuthorized($"{config.Title} ({config.Version})", "v1/swagger.json");
         }
     }
 
-    public class SwaggerModuleConfig
+    public class SwaggerModuleOptions : BaseModuleOptions
     {
         public string Title { get; set; } = "App";
         public string Version { get; set; } = "v1";

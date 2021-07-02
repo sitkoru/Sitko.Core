@@ -1,31 +1,41 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Nito.AsyncEx;
+using Microsoft.Extensions.Options;
 using PuppeteerSharp;
 
 namespace Sitko.Core.Pdf
 {
-    internal class PdfRenderer : IPdfRenderer, IAsyncDisposable
+    internal class PdfRenderer : IPdfRenderer
     {
-        private readonly PdfRendererModuleConfig _config;
-        private readonly ILogger<PdfRenderer> _logger;
-        private Browser? _browser;
-        private readonly AsyncLock _lock = new();
+        private readonly PdfOptions _defaultOptions = new() {PrintBackground = true};
 
-        public PdfRenderer(PdfRendererModuleConfig config, ILogger<PdfRenderer> logger)
+        private readonly ScreenshotOptions _defaultScreenshotOptions =
+            new() {FullPage = true, Type = ScreenshotType.Png};
+
+        private readonly ILogger<PdfRenderer> _logger;
+        private readonly IOptionsMonitor<PdfRendererModuleOptions> _optionsMonitor;
+        private readonly ILoggerFactory _loggerFactory;
+
+        public PdfRenderer(IOptionsMonitor<PdfRendererModuleOptions> optionsMonitor, ILoggerFactory loggerFactory,
+            ILogger<PdfRenderer> logger)
         {
-            _config = config;
+            _optionsMonitor = optionsMonitor;
+            _loggerFactory = loggerFactory;
             _logger = logger;
         }
+
+        private PdfRendererModuleOptions Options => _optionsMonitor.CurrentValue;
 
         public async Task<byte[]> GetPdfByUrlAsync(string url, PdfOptions? options = null, TimeSpan? delay = null)
         {
             try
             {
-                await using var page = await GetPageByUrl(url, delay);
-                options ??= GetDefaultOptions();
+                await using var browser = await GetBrowserAsync();
+                var page = await GetPageByUrl(browser, url, delay);
+                options ??= _defaultOptions;
                 var pdf = await page.PdfDataAsync(options);
+                await browser.CloseAsync();
                 return pdf;
             }
             catch (Exception ex)
@@ -35,39 +45,15 @@ namespace Sitko.Core.Pdf
             }
         }
 
-        private async Task<Page> GetPageByUrl(string url, TimeSpan? delay = null)
-        {
-            var browser = await GetBrowserAsync();
-            var page = await browser.NewPageAsync();
-            await page.GoToAsync(url);
-            if (delay != null)
-            {
-                await Task.Delay(delay.Value);
-            }
-
-            return page;
-        }
-
-        private async Task<Page> GetPageWithHtml(string html, TimeSpan? delay = null)
-        {
-            var browser = await GetBrowserAsync();
-            var page = await browser.NewPageAsync();
-            await page.SetContentAsync(html);
-            if (delay != null)
-            {
-                await Task.Delay(delay.Value);
-            }
-
-            return page;
-        }
-
         public async Task<byte[]> GetPdfByHtmlAsync(string html, PdfOptions? options = null, TimeSpan? delay = null)
         {
             try
             {
-                await using var page = await GetPageWithHtml(html, delay);
-                options ??= GetDefaultOptions();
+                await using var browser = await GetBrowserAsync();
+                var page = await GetPageWithHtml(browser, html, delay);
+                options ??= _defaultOptions;
                 var pdf = await page.PdfDataAsync(options);
+                await browser.CloseAsync();
                 return pdf;
             }
             catch (Exception ex)
@@ -82,9 +68,12 @@ namespace Sitko.Core.Pdf
         {
             try
             {
-                await using var page = await GetPageByUrl(url, delay);
-                options ??= GetDefaultScreenshotOptions();
-                return await page.ScreenshotDataAsync(options);
+                await using var browser = await GetBrowserAsync();
+                var page = await GetPageByUrl(browser, url, delay);
+                options ??= _defaultScreenshotOptions;
+                var screenshot = await page.ScreenshotDataAsync(options);
+                await browser.CloseAsync();
+                return screenshot;
             }
             catch (Exception ex)
             {
@@ -98,9 +87,12 @@ namespace Sitko.Core.Pdf
         {
             try
             {
-                await using var page = await GetPageWithHtml(html, delay);
-                options ??= GetDefaultScreenshotOptions();
-                return await page.ScreenshotDataAsync(options);
+                await using var browser = await GetBrowserAsync();
+                var page = await GetPageWithHtml(browser, html, delay);
+                options ??= _defaultScreenshotOptions;
+                var screenshot = await page.ScreenshotDataAsync(options);
+                await browser.CloseAsync();
+                return screenshot;
             }
             catch (Exception ex)
             {
@@ -109,47 +101,52 @@ namespace Sitko.Core.Pdf
             }
         }
 
-
-        private PdfOptions GetDefaultOptions()
+        private async Task<Page> GetPageByUrl(Browser browser, string url, TimeSpan? delay = null)
         {
-            return new() {PrintBackground = true};
+            var page = await browser.NewPageAsync();
+            await page.GoToAsync(url);
+            if (delay != null)
+            {
+                await Task.Delay(delay.Value);
+            }
+
+            return page;
         }
 
-        private ScreenshotOptions GetDefaultScreenshotOptions()
+        private async Task<Page> GetPageWithHtml(Browser browser, string html, TimeSpan? delay = null)
         {
-            return new() {FullPage = true, Type = ScreenshotType.Png};
+            var page = await browser.NewPageAsync();
+            await page.SetContentAsync(html);
+            if (delay != null)
+            {
+                await Task.Delay(delay.Value);
+            }
+
+            return page;
         }
 
         private async Task<Browser> GetBrowserAsync()
         {
-            if (_browser is null)
+            _logger.LogInformation("Start new Browser");
+            if (!string.IsNullOrEmpty(Options.BrowserWsEndpoint))
             {
-                using (await _lock.LockAsync())
-                {
-                    if (_browser is null)
+                return await Puppeteer.ConnectAsync(
+                    new ConnectOptions
                     {
-                        _browser = await Puppeteer.LaunchAsync(new LaunchOptions
-                        {
-                            Headless = true,
-                            Args = new[] {"--no-sandbox"},
-                            IgnoreHTTPSErrors = _config.IgnoreHTTPSErrors,
-                            DefaultViewport = _config.ViewPortOptions
-                        });
-                    }
-                }
+                        BrowserWSEndpoint = Options.BrowserWsEndpoint,
+                        IgnoreHTTPSErrors = Options.IgnoreHTTPSErrors,
+                        DefaultViewport = Options.ViewPortOptions
+                    },
+                    _loggerFactory);
             }
 
-            return _browser;
-        }
-
-        public ValueTask DisposeAsync()
-        {
-            if (_browser is not null)
+            return await Puppeteer.LaunchAsync(new LaunchOptions
             {
-                return _browser.DisposeAsync();
-            }
-
-            return new ValueTask();
+                Headless = true,
+                Args = new[] {"--no-sandbox"},
+                IgnoreHTTPSErrors = Options.IgnoreHTTPSErrors,
+                DefaultViewport = Options.ViewPortOptions
+            });
         }
     }
 }

@@ -2,14 +2,14 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using Sitko.Core.App;
+using Microsoft.Extensions.Options;
 using Sitko.Core.Queue.Internal;
 
 namespace Sitko.Core.Queue.Tests
 {
-    public class TestQueue : BaseQueue<TestQueueConfig>
+    public class TestQueue : BaseQueue<TestQueueOptions>
     {
-        public TestQueue(TestQueueConfig config, QueueContext context, ILogger<TestQueue> logger) :
+        public TestQueue(IOptionsMonitor<TestQueueOptions> config, QueueContext context, ILogger<TestQueue> logger) :
             base(config, context, logger)
         {
         }
@@ -55,14 +55,15 @@ namespace Sitko.Core.Queue.Tests
         }
     }
 
-    public class TestQueueModule : QueueModule<TestQueue, TestQueueConfig>
+    public class TestQueueModule : QueueModule<TestQueue, TestQueueOptions>
     {
-        public TestQueueModule(TestQueueConfig config, Application application) : base(config, application)
+        public override string GetOptionsKey()
         {
+            return "Queue:Test";
         }
     }
 
-    public class TestQueueConfig : QueueModuleConfig
+    public class TestQueueOptions : QueueModuleOptions
     {
     }
 }

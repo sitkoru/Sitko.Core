@@ -48,13 +48,13 @@ namespace Sitko.Core.Queue.Tests
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, MediatRModule<MessageBusTests>, MediatRModuleConfig<MessageBusTests>>();
+                .AddModule<TestApplication, MediatRModule<MessageBusTests>, MediatRModuleOptions<MessageBusTests>>();
         }
 
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
-            TestQueueConfig config, string name)
+            TestQueueOptions options, string name)
         {
-            config.TranslateMediatRNotification<TestRequest>();
+            options.TranslateMediatRNotification<TestRequest>();
         }
     }
 

@@ -1,9 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Scrutor;
 using Sitko.Core.App;
@@ -15,29 +13,27 @@ namespace Sitko.Core.Search
     }
 
     public abstract class SearchModule<TConfig> : BaseApplicationModule<TConfig>, ISearchModule
-        where TConfig : SearchModuleConfig, new()
+        where TConfig : SearchModuleOptions, new()
     {
-        protected SearchModule(TConfig config, Application application) : base(config, application)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            TConfig startupOptions)
         {
-        }
-
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupOptions);
             ConfigureSearch(services);
         }
 
         protected abstract void ConfigureSearch(IServiceCollection services);
 
-        public override Task InitAsync(IServiceProvider serviceProvider, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override async Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider)
         {
+            await base.InitAsync(context, serviceProvider);
             var searchProviders = serviceProvider.GetServices<ISearchProvider>();
             var logger = serviceProvider.GetService<ILogger<SearchModule<TConfig>>>();
             if (searchProviders.Any())
             {
+#pragma warning disable 4014
                 Task.Run(async () =>
+#pragma warning restore 4014
                 {
                     foreach (var searchProvider in searchProviders)
                     {
@@ -53,8 +49,6 @@ namespace Sitko.Core.Search
                     }
                 });
             }
-
-            return Task.CompletedTask;
         }
     }
 
@@ -69,7 +63,7 @@ namespace Sitko.Core.Search
         }
     }
 
-    public abstract class SearchModuleConfig
+    public abstract class SearchModuleOptions : BaseModuleOptions
     {
     }
 }

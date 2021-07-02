@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App.Web;
 using Sitko.Core.Xunit;
@@ -22,15 +21,7 @@ namespace Sitko.Core.ElasticStack.Tests
     {
         public ElasticApplication(string[] args) : base(args)
         {
-            AddModule<ElasticStackModule, ElasticStackModuleConfig>(
-                (configuration, _, moduleConfig) =>
-                {
-                    moduleConfig.EnableLogging(new Uri(configuration["ELASTICSTACK_ES_URL"]));
-                    moduleConfig.LoggingLifeCycleName = "apm-rollover-30-days";
-                    moduleConfig.LoggingNumberOfReplicas = 0;
-
-                    moduleConfig.EnableApm(new Uri(configuration["ELASTICSTACK_APM_URL"]));
-                });
+            AddModule<ElasticStackModule, ElasticStackModuleOptions>();
         }
     }
 }

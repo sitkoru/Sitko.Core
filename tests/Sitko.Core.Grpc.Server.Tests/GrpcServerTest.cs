@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Net.Client;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,10 +20,7 @@ namespace Sitko.Core.Grpc.Server.Tests
         public async Task TestResponse()
         {
             var application = new TestApplication(new string[0]);
-            using var host = await application.GetHostBuilder().ConfigureWebHostDefaults(builder =>
-            {
-                builder.UseTestServer();
-            }).StartAsync();
+            using var host = await application.StartAsync();
             var service = host.GetTestServer();
             var responseVersionHandler = new ResponseVersionHandler {InnerHandler = service.CreateHandler()};
             var client = new HttpClient(responseVersionHandler) {BaseAddress = new Uri("http://localhost")};

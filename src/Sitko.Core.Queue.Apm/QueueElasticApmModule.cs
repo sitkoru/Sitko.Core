@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.ElasticStack;
 
@@ -10,23 +8,22 @@ namespace Sitko.Core.Queue.Apm
 {
     public class QueueElasticApmModule : BaseApplicationModule
     {
-        public QueueElasticApmModule(BaseApplicationModuleConfig config, Application application) : base(config,
-            application)
+        public override string GetOptionsKey()
         {
+            return "Queue:Elastic:Apm";
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            BaseApplicationModuleOptions startupOptions)
         {
-            base.ConfigureServices(services, configuration, environment);
+            base.ConfigureServices(context, services, startupOptions);
             services.AddSingleton<IQueueMiddleware, QueueElasticApmMiddleware>();
         }
 
-        public override List<Type> GetRequiredModules()
+        public override IEnumerable<Type> GetRequiredModules(ApplicationContext context,
+            BaseApplicationModuleOptions options)
         {
-            var list = base.GetRequiredModules();
-            list.Add(typeof(ElasticStackModule));
-            return list;
+            return new List<Type>(base.GetRequiredModules(context, options)) {typeof(ElasticStackModule)};
         }
     }
 }

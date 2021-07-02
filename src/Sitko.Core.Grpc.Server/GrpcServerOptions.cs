@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using Grpc.AspNetCore.Server;
+using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Server
 {
-    public class GrpcServerOptions
+    public class GrpcServerOptions : BaseModuleOptions
     {
         public string? Host { get; set; }
         public int? Port { get; set; }
@@ -20,8 +21,7 @@ namespace Sitko.Core.Grpc.Server
 
         public Action<IGrpcServerModule>[] ServiceRegistrations => _serviceRegistrations.ToArray();
 
-        private readonly List<Action<IGrpcServerModule>> _serviceRegistrations =
-            new List<Action<IGrpcServerModule>>();
+        private readonly List<Action<IGrpcServerModule>> _serviceRegistrations = new();
 
         public GrpcServerOptions RegisterService<TService>() where TService : class
         {

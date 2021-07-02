@@ -50,7 +50,7 @@ namespace Sitko.Core.Grpc.Client.Tests
         {
             return base.ConfigureApplication(application, name)
                 .AddModule<TestApplication, TestGrpcClientModule<TestService.TestServiceClient>,
-                    TestGrpcClientModuleConfig
+                    TestGrpcClientModuleOptions
                 >(
                     (_, _, moduleConfig) =>
                     {
@@ -63,16 +63,16 @@ namespace Sitko.Core.Grpc.Client.Tests
 
     public class
         TestGrpcClientModule<TClient> : GrpcClientModule<TClient, TestGrpcClientResolver<TClient>,
-            TestGrpcClientModuleConfig>
+            TestGrpcClientModuleOptions>
         where TClient : ClientBase<TClient>
     {
-        public TestGrpcClientModule(TestGrpcClientModuleConfig config, Application application) : base(
-            config, application)
+        public override string GetOptionsKey()
         {
+            return "Grpc:Client:Test";
         }
     }
 
-    public class TestGrpcClientModuleConfig : GrpcClientModuleConfig
+    public class TestGrpcClientModuleOptions : GrpcClientModuleOptions
     {
     }
 

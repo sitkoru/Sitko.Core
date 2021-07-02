@@ -1,4 +1,6 @@
-﻿using Sitko.Core.App.Web;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Sitko.Core.App.Web;
 
 namespace Sitko.Core.Grpc.Server.Tests
 {
@@ -10,6 +12,12 @@ namespace Sitko.Core.Grpc.Server.Tests
             {
                 moduleConfig.RegisterService<TestServiceImpl>();
             });
+        }
+
+        protected override void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)
+        {
+            base.ConfigureWebHostDefaults(webHostBuilder);
+            webHostBuilder.UseTestServer();
         }
     }
 }

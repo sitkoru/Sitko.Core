@@ -1,28 +1,27 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using PuppeteerSharp;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Pdf
 {
-    public class PdfRendererModule : BaseApplicationModule<PdfRendererModuleConfig>
+    public class PdfRendererModule : BaseApplicationModule<PdfRendererModuleOptions>
     {
-        public PdfRendererModule(PdfRendererModuleConfig config, Application application) : base(config,
-            application)
+        public override string GetOptionsKey()
         {
+            return "PdfRenderer";
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            PdfRendererModuleOptions startupOptions)
         {
-            base.ConfigureServices(services, configuration, environment);
-            services.AddSingleton<IPdfRenderer, PdfRenderer>();
+            base.ConfigureServices(context, services, startupOptions);
+            services.AddTransient<IPdfRenderer, PdfRenderer>();
         }
     }
 
-    public class PdfRendererModuleConfig
+    public class PdfRendererModuleOptions : BaseModuleOptions
     {
+        public string? BrowserWsEndpoint { get; set; }
         public bool IgnoreHTTPSErrors { get; set; } = false;
         public ViewPortOptions ViewPortOptions { get; set; } = ViewPortOptions.Default;
     }

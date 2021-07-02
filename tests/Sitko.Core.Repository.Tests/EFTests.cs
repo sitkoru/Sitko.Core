@@ -5,11 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
-using Sitko.Core.Db.Postgres;
 using Sitko.Core.Repository.EntityFrameworkCore;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -268,13 +265,8 @@ namespace Sitko.Core.Repository.Tests
         }
     }
 
-    public abstract class BaseEFTestScope : DbBaseTestScope<BaseEFTestScope, TestDbContext>
+    public abstract class BaseEFTestScope : DbBaseTestScope<TestDbContext>
     {
-        protected override void GetPostgresConfig(IConfiguration configuration, IHostEnvironment environment,
-            PostgresDatabaseModuleConfig<TestDbContext> moduleConfig, string dbName)
-        {
-            GetDefaultPostgresConfig(configuration, environment, moduleConfig, dbName);
-        }
     }
 
     public class EFTestScope : BaseEFTestScope
@@ -282,7 +274,7 @@ namespace Sitko.Core.Repository.Tests
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             return base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, EFRepositoriesModule<EFTestScope>, EFRepositoriesModuleConfig>();
+                .AddModule<TestApplication, EFRepositoriesModule<EFTestScope>, EFRepositoriesModuleOptions>();
         }
     }
 }

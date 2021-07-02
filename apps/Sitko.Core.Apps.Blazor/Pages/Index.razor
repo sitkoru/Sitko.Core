@@ -105,7 +105,7 @@
                 UploadPath="bars"
                 GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
                 @bind-Value="context.StorageItems"
-                OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values.Count()); return Task.CompletedTask;})">
+                OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values?.Count ?? 0); return Task.CompletedTask;})">
             </AntStorageImagesInput>
         </FormItem>
         @* AVATARS *@
@@ -153,7 +153,7 @@
                 UploadPath="bars"
                 GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
                 @bind-Value="context.StorageItems"
-                OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values.Count()); return Task.CompletedTask;})">
+                OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values?.Count ?? 0); return Task.CompletedTask;})">
             </AntStorageImagesInput>
         </FormItem>
         @* AVATARS END *@
@@ -165,7 +165,7 @@
                                   UploadPath="bars"
                                   GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
                                   @bind-Value="context.StorageItems"
-                                  OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values.Count()); return Task.CompletedTask;})">
+                                  OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values?.Count() ?? 0); return Task.CompletedTask;})">
             </AntStorageFilesInput>
         </FormItem>
         @foreach (var foo in context.Foos)

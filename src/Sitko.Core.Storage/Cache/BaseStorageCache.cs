@@ -1,58 +1,45 @@
 using System;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Helpers;
-using CacheExtensions = Sitko.Core.Caching.CacheExtensions;
-using MemoryCache = Sitko.Core.Caching.MemoryCache;
-using MemoryCacheOptions = Sitko.Core.Caching.MemoryCacheOptions;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace Sitko.Core.Storage.Cache
 {
-    public abstract class BaseStorageCache<TOptions, TRecord> : IStorageCache<TOptions>, IEnumerable<TRecord>
-        where TOptions : StorageCacheOptions where TRecord : class, IStorageCacheRecord
+    public abstract class
+        BaseStorageCache<TStorageOptions, TOptions, TRecord> : IStorageCache<TStorageOptions, TOptions>
+        where TOptions : StorageCacheOptions
+        where TRecord : class, IStorageCacheRecord
+        where TStorageOptions : StorageOptions
     {
-        protected readonly TOptions Options;
-        protected readonly ILogger<BaseStorageCache<TOptions, TRecord>> Logger;
+        protected readonly IOptionsMonitor<TOptions> Options;
+        protected readonly ILogger<BaseStorageCache<TStorageOptions, TOptions, TRecord>> Logger;
 
         private MemoryCache? _cache;
 
-        private readonly ConcurrentDictionary<object, SemaphoreSlim> _locks =
-            new ConcurrentDictionary<object, SemaphoreSlim>();
-
-        protected BaseStorageCache(TOptions options, ILogger<BaseStorageCache<TOptions, TRecord>> logger)
+        protected BaseStorageCache(IOptionsMonitor<TOptions> options,
+            ILogger<BaseStorageCache<TStorageOptions, TOptions, TRecord>> logger)
         {
             Options = options;
             Logger = logger;
-            _cache = new MemoryCache(new MemoryCacheOptions {SizeLimit = Options.MaxCacheSize});
+            _cache = CreateCache();
+        }
+
+        private MemoryCache CreateCache()
+        {
+            return new MemoryCache(new MemoryCacheOptions { SizeLimit = Options.CurrentValue.MaxCacheSize });
         }
 
         protected void Expire()
         {
-            _cache?.Expire();
+            _cache = CreateCache();
         }
 
-        public IEnumerator<TRecord> GetEnumerator()
-        {
-            if (_cache == null)
-            {
-                throw new Exception("Cache is not initialized");
-            }
-
-            return _cache.Values<TRecord>().GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        async Task<StorageItemDownloadInfo?> IStorageCache.GetOrAddItemAsync(string path,
+        Task<StorageItemDownloadInfo?> IStorageCache<TStorageOptions>.GetOrAddItemAsync(string path,
             Func<Task<StorageItemDownloadInfo?>> addItem, CancellationToken? cancellationToken)
         {
             if (_cache == null)
@@ -61,74 +48,68 @@ namespace Sitko.Core.Storage.Cache
             }
 
             var key = NormalizePath(path);
-            if (!CacheExtensions.TryGetValue(_cache, key, out TRecord? cacheEntry)) // Look for cache key.
+            return _cache.GetOrCreateAsync(key, async cacheEntry =>
             {
-                var itemLock = _locks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
-
-                await itemLock.WaitAsync(cancellationToken ?? CancellationToken.None);
-                try
+                var result = await addItem();
+                if (result == null)
                 {
-                    if (!CacheExtensions.TryGetValue(_cache, key, out cacheEntry))
-                    {
-                        var result = await addItem();
-                        if (result == null)
-                        {
-                            Logger.LogDebug("File {File} not found", key);
-                            return null;
-                        }
-
-                        if (Options.MaxFileSizeToStore > 0 &&
-                            result.FileSize > Options.MaxFileSizeToStore)
-                        {
-                            Logger.LogWarning(
-                                "File {Key} exceed maximum cache file size. File size: {FleSize}. Maximum size: {MaximumSize}",
-                                key, result.FileSize,
-                                FilesHelper.HumanSize(Options.MaxFileSizeToStore));
-                            return result;
-                        }
-
-                        var stream = result.GetStream();
-
-                        await using (stream)
-                        {
-                            Logger.LogDebug("Download file {Key}", key);
-                            cacheEntry = await GetEntryAsync(result, stream, cancellationToken);
-
-                            var options = new MemoryCacheEntryOptions {SlidingExpiration = Options.Ttl};
-                            options.RegisterPostEvictionCallback((_, value, _, _) =>
-                            {
-                                if (value is TRecord deletedRecord)
-                                {
-                                    DisposeItem(deletedRecord);
-                                }
-
-                                Logger.LogDebug("Remove file {ObjKey} from cache", key);
-                            });
-                            if (Options.MaxCacheSize > 0)
-                            {
-                                options.Size = result.FileSize;
-                            }
-
-                            Logger.LogDebug("Add file {Key} to cache", key);
-                            _cache.Set(key, cacheEntry, options);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error caching file {File}: {ErrorText}", key, ex.ToString());
+                    Logger.LogDebug("File {File} not found", key);
                     return null;
                 }
-                finally
+
+                if (Options.CurrentValue.MaxFileSizeToStore > 0 &&
+                    result.FileSize > Options.CurrentValue.MaxFileSizeToStore)
                 {
-                    itemLock.Release();
+                    Logger.LogWarning(
+                        "File {Key} exceed maximum cache file size. File size: {FleSize}. Maximum size: {MaximumSize}",
+                        key, result.FileSize,
+                        FilesHelper.HumanSize(Options.CurrentValue.MaxFileSizeToStore));
+                    return result;
                 }
+
+                var stream = result.GetStream();
+
+                await using (stream)
+                {
+                    Logger.LogDebug("Download file {Key}", key);
+                    var record = await GetEntryAsync(result, stream, cancellationToken);
+                    ConfigureCacheEntry(cacheEntry);
+                    if (Options.CurrentValue.MaxCacheSize > 0)
+                    {
+                        cacheEntry.Size = result.FileSize;
+                    }
+
+                    Logger.LogDebug("Add file {Key} to cache", key);
+                    return new StorageItemDownloadInfo(record.FileSize, record.Date,
+                        () => record.OpenRead());
+                }
+            });
+        }
+
+        protected virtual void ConfigureCacheEntry(ICacheEntry entry)
+        {
+            var expirationTime = DateTime.Now.Add(Options.CurrentValue.Ttl);
+            var expirationToken = new CancellationChangeToken(
+                new CancellationTokenSource(Options.CurrentValue.Ttl.Add(TimeSpan.FromSeconds(1))).Token);
+            entry
+                // Pin to cache.
+                .SetPriority(CacheItemPriority.NeverRemove)
+                // Set the actual expiration time
+                .SetAbsoluteExpiration(expirationTime)
+                // Force eviction to run
+                .AddExpirationToken(expirationToken)
+                // Add eviction callback
+                .RegisterPostEvictionCallback(callback: CacheItemRemoved, state: this);
+        }
+
+        private void CacheItemRemoved(object key, object value, EvictionReason reason, object state)
+        {
+            if (value is TRecord deletedRecord)
+            {
+                DisposeItem(deletedRecord);
             }
 
-            return cacheEntry is null
-                ? null
-                : new StorageItemDownloadInfo( /*cacheEntry.Metadata, */cacheEntry.FileSize, cacheEntry.Date,
-                    () => cacheEntry.OpenRead());
+            Logger.LogDebug("Remove file {ObjKey} from cache", key);
         }
 
 
@@ -148,7 +129,7 @@ namespace Sitko.Core.Storage.Cache
             return path;
         }
 
-        Task<StorageItemDownloadInfo?> IStorageCache.GetItemAsync(string path,
+        Task<StorageItemDownloadInfo?> IStorageCache<TStorageOptions>.GetItemAsync(string path,
             CancellationToken? cancellationToken)
         {
             if (_cache == null)
@@ -178,7 +159,7 @@ namespace Sitko.Core.Storage.Cache
         public Task ClearAsync(CancellationToken? cancellationToken = null)
         {
             _cache?.Dispose();
-            _cache = new MemoryCache(new MemoryCacheOptions {SizeLimit = Options.MaxCacheSize});
+            _cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = Options.CurrentValue.MaxCacheSize });
             Logger.LogDebug("Cache cleared");
             return Task.CompletedTask;
         }

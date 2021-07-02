@@ -14,7 +14,7 @@ namespace Sitko.Core.Consul.Web
         }
 
         public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = default)
         {
             return _consulClient.CheckHealthAsync(cancellationToken);
         }

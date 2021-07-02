@@ -5,37 +5,29 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.Cache
 {
-    public class FileStorageCache : BaseStorageCache<FileStorageCacheOptions, FileStorageCacheRecord>
+    public class
+        FileStorageCache<TStorageOptions> : BaseStorageCache<TStorageOptions, FileStorageCacheOptions,
+            FileStorageCacheRecord> where TStorageOptions : StorageOptions
     {
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly Task _cleanupTask;
 
-        public FileStorageCache(FileStorageCacheOptions options, ILogger<FileStorageCache> logger) : base(options,
+        public FileStorageCache(IOptionsMonitor<FileStorageCacheOptions> options,
+            ILogger<FileStorageCache<TStorageOptions>> logger) : base(options,
             logger)
         {
             _cleanupTask = Task.Run(async () =>
             {
                 while (!_cts.IsCancellationRequested)
                 {
-                    await Task.Delay(Options.CleanupInterval);
+                    await Task.Delay(Options.CurrentValue.CleanupInterval);
                     Logger.LogInformation("Start deleting obsolete files");
                     Expire();
-                    var files = Directory.GetFiles(options.CacheDirectoryPath, "*.*", SearchOption.AllDirectories);
-                    var items = this.Select(i => i).ToList();
-                    foreach (string file in files)
-                    {
-                        if (items.Any(i => i.PhysicalPath == file))
-                        {
-                            continue;
-                        }
-
-                        DeleteFile(file);
-                    }
-
                     Logger.LogInformation("Done deleting obsolete files");
                 }
             }, _cts.Token);
@@ -90,7 +82,7 @@ namespace Sitko.Core.Storage.Cache
                 .Select(group => group.Select(elem => elem.c))
                 .Select(chars => new string(chars.ToArray())).ToArray();
             var dirPath = Path.Combine(split);
-            var directoryPath = Path.Combine(Options.CacheDirectoryPath, dirPath);
+            var directoryPath = Path.Combine(Options.CurrentValue.CacheDirectoryPath, dirPath);
 
             if (!Directory.Exists(directoryPath))
             {
@@ -114,9 +106,9 @@ namespace Sitko.Core.Storage.Cache
         {
             _cts.Cancel();
             await _cleanupTask;
-            if (Directory.Exists(Options.CacheDirectoryPath))
+            if (Directory.Exists(Options.CurrentValue.CacheDirectoryPath))
             {
-                Directory.Delete(Options.CacheDirectoryPath, true);
+                Directory.Delete(Options.CurrentValue.CacheDirectoryPath, true);
             }
         }
     }

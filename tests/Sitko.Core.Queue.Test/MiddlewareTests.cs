@@ -91,9 +91,9 @@ namespace Sitko.Core.Queue.Tests
     public class MiddlewareQueueTestScope : BaseTestQueueTestScope
     {
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
-            TestQueueConfig config, string name)
+            TestQueueOptions options, string name)
         {
-            config.RegisterMiddleware<CountMiddleware>();
+            options.RegisterMiddleware<CountMiddleware>();
         }
     }
 
@@ -107,9 +107,9 @@ namespace Sitko.Core.Queue.Tests
         }
 
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
-            TestQueueConfig config, string name)
+            TestQueueOptions options, string name)
         {
-            config.RegisterMiddlewares<MiddlewareTests>();
+            options.RegisterMiddlewares<MiddlewareTests>();
         }
     }
 
@@ -123,10 +123,10 @@ namespace Sitko.Core.Queue.Tests
         }
 
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
-            TestQueueConfig config, string name)
+            TestQueueOptions options, string name)
         {
-            config.RegisterMiddleware<ChainFooMiddleware>();
-            config.RegisterMiddleware<ChainBarMiddleware>();
+            options.RegisterMiddleware<ChainFooMiddleware>();
+            options.RegisterMiddleware<ChainBarMiddleware>();
         }
     }
 

@@ -11,45 +11,18 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Db.Postgres
 {
-    public class PostgresModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleConfig<TDbContext>>
+    public class PostgresModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleOptions<TDbContext>>
         where TDbContext : DbContext
     {
-        public PostgresModule(PostgresDatabaseModuleConfig<TDbContext> config, Application application) : base(config,
-            application)
+        public override string GetOptionsKey()
         {
+            return $"Db:Postgres:{typeof(TDbContext).Name}";
         }
 
-        public override void CheckConfig()
+        public override async Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider)
         {
-            base.CheckConfig();
-
-            if (string.IsNullOrEmpty(Config.Host))
-            {
-                throw new ArgumentException("Postgres host is empty");
-            }
-
-            if (string.IsNullOrEmpty(Config.Username))
-            {
-                throw new ArgumentException("Postgres username is empty");
-            }
-
-            if (string.IsNullOrEmpty(Config.Database))
-            {
-                throw new ArgumentException("Postgres database is empty");
-            }
-
-            if (Config.Port == 0)
-            {
-                throw new ArgumentException("Postgres host is empty");
-            }
-        }
-
-        public override async Task InitAsync(IServiceProvider serviceProvider, IConfiguration configuration,
-            IHostEnvironment environment)
-        {
-            await base.InitAsync(serviceProvider, configuration, environment);
-
-            if (Config.AutoApplyMigrations)
+            await base.InitAsync(context, serviceProvider);
+            if (GetOptions(serviceProvider).AutoApplyMigrations)
             {
                 var logger = serviceProvider.GetService<ILogger<PostgresModule<TDbContext>>>();
                 var migrated = false;
@@ -86,47 +59,53 @@ namespace Sitko.Core.Db.Postgres
             }
         }
 
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration,
-            IHostEnvironment environment)
+        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+            PostgresDatabaseModuleOptions<TDbContext> startupOptions)
         {
-            base.ConfigureServices(services, configuration, environment);
-
-            var connBuilder = new NpgsqlConnectionStringBuilder
-            {
-                Host = Config.Host,
-                Port = Config.Port,
-                Username = Config.Username,
-                Password = Config.Password,
-                Database = Config.Database,
-                Pooling = Config.EnableNpgsqlPooling
-            };
-
+            base.ConfigureServices(context, services, startupOptions);
             services.AddMemoryCache();
-            if (Config.EnableContextPooling)
+            if (startupOptions.EnableContextPooling)
             {
-                services.AddDbContextPool<TDbContext>((p, options) =>
-                    ConfigureNpgsql(options, connBuilder, p, configuration, environment));
+                services.AddDbContextPool<TDbContext>((serviceProvider, options) =>
+                    ConfigureNpgsql(options, serviceProvider, context.Configuration, context.Environment));
             }
             else
             {
-                services.AddDbContext<TDbContext>((p, options) =>
-                    ConfigureNpgsql(options, connBuilder, p, configuration, environment));
+                services.AddDbContext<TDbContext>((serviceProvider, options) =>
+                    ConfigureNpgsql(options, serviceProvider, context.Configuration, context.Environment));
             }
         }
 
-        private void ConfigureNpgsql(DbContextOptionsBuilder options, NpgsqlConnectionStringBuilder connBuilder,
-            IServiceProvider p, IConfiguration configuration, IHostEnvironment environment)
+        private NpgsqlConnectionStringBuilder CreateBuilder(
+            PostgresDatabaseModuleOptions<TDbContext> options)
         {
-            options.UseNpgsql(connBuilder.ConnectionString,
-                builder => builder.MigrationsAssembly(Config.MigrationsAssembly != null
-                    ? Config.MigrationsAssembly.FullName
+            var connBuilder = new NpgsqlConnectionStringBuilder
+            {
+                Host = options.Host,
+                Port = options.Port,
+                Username = options.Username,
+                Password = options.Password,
+                Database = options.Database,
+                Pooling = options.EnableNpgsqlPooling
+            };
+            return connBuilder;
+        }
+
+        private void ConfigureNpgsql(DbContextOptionsBuilder options,
+            IServiceProvider serviceProvider, IConfiguration configuration, IHostEnvironment environment)
+        {
+            var config = GetOptions(serviceProvider);
+            options.UseNpgsql(CreateBuilder(config).ConnectionString,
+                builder => builder.MigrationsAssembly(config.MigrationsAssembly != null
+                    ? config.MigrationsAssembly.FullName
                     : typeof(TDbContext).Assembly.FullName));
-            if (Config.EnableSensitiveLogging)
+            if (config.EnableSensitiveLogging)
             {
                 options.EnableSensitiveDataLogging();
             }
 
-            Config.Configure?.Invoke((DbContextOptionsBuilder<TDbContext>)options, p, configuration, environment);
+            config.Configure?.Invoke((DbContextOptionsBuilder<TDbContext>)options, serviceProvider, configuration,
+                environment);
         }
     }
 }

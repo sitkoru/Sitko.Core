@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using Grpc.Core.Interceptors;
 using Grpc.Net.Client;
+using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Client
 {
-    public class GrpcClientModuleConfig
+    public class GrpcClientModuleOptions : BaseModuleOptions
     {
         public bool EnableHttp2UnencryptedSupport { get; set; }
         public bool DisableCertificatesValidation { get; set; }
@@ -13,7 +14,7 @@ namespace Sitko.Core.Grpc.Client
 
         internal readonly HashSet<Type> Interceptors = new HashSet<Type>();
 
-        public GrpcClientModuleConfig AddInterceptor<TInterceptor>() where TInterceptor : Interceptor
+        public GrpcClientModuleOptions AddInterceptor<TInterceptor>() where TInterceptor : Interceptor
         {
             Interceptors.Add(typeof(TInterceptor));
             return this;
