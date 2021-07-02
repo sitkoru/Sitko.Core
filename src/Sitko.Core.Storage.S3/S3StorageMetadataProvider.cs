@@ -22,22 +22,23 @@ namespace Sitko.Core.Storage.S3
         {
         }
 
-        protected override async Task DoDeleteMetadataAsync(string filePath, CancellationToken? cancellationToken)
+        protected override async Task DoDeleteMetadataAsync(string filePath,
+            CancellationToken cancellationToken = default)
         {
             if (await Storage.IsObjectExistsAsync(filePath, cancellationToken))
             {
                 await Storage.DeleteObjectAsync(GetMetaDataPath(filePath),
-                    cancellationToken ?? CancellationToken.None);
+                    cancellationToken);
             }
         }
 
-        protected override Task DoDeleteAllMetadataAsync(CancellationToken? cancellationToken)
+        protected override Task DoDeleteAllMetadataAsync(CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }
 
         protected override async Task DoSaveMetadataAsync(StorageItem storageItem, StorageItemMetadata? metadata = null,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             if (metadata is not null)
             {
@@ -47,7 +48,7 @@ namespace Sitko.Core.Storage.S3
         }
 
         protected override async Task<StorageItemMetadata?> DoGetMetadataJsonAsync(string filePath,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             var metaDataResponse =
                 await Storage.DownloadFileAsync(GetMetaDataPath(filePath), cancellationToken);

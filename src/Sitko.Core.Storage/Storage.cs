@@ -30,7 +30,7 @@ namespace Sitko.Core.Storage
         }
 
         public async Task<StorageItem> SaveAsync(Stream file, string fileName, string path, object? metadata = null,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             string destinationPath = GetDestinationPath(fileName, path);
 
@@ -56,7 +56,7 @@ namespace Sitko.Core.Storage
 
 
         private async Task<StorageItem> SaveStorageItemAsync(Stream file, string path, string destinationPath,
-            StorageItem storageItem, CancellationToken? cancellationToken = null)
+            StorageItem storageItem, CancellationToken cancellationToken = default)
         {
             file.Seek(0, SeekOrigin.Begin);
             await DoSaveAsync(destinationPath, file, cancellationToken);
@@ -70,7 +70,7 @@ namespace Sitko.Core.Storage
         }
 
         public async Task<StorageItem> UpdateMetaDataAsync(StorageItem item, string fileName,
-            object? metadata = null, CancellationToken? cancellationToken = null)
+            object? metadata = null, CancellationToken cancellationToken = default)
         {
             if (MetadataProvider is null)
             {
@@ -103,19 +103,19 @@ namespace Sitko.Core.Storage
         }
 
         protected abstract Task<bool> DoSaveAsync(string path, Stream file,
-            CancellationToken? cancellationToken = null);
+            CancellationToken cancellationToken = default);
 
-        protected abstract Task<bool> DoDeleteAsync(string filePath, CancellationToken? cancellationToken = null);
+        protected abstract Task<bool> DoDeleteAsync(string filePath, CancellationToken cancellationToken = default);
 
         protected abstract Task<bool>
-            DoIsFileExistsAsync(StorageItem item, CancellationToken? cancellationToken = null);
+            DoIsFileExistsAsync(StorageItem item, CancellationToken cancellationToken = default);
 
-        protected abstract Task DoDeleteAllAsync(CancellationToken? cancellationToken = null);
+        protected abstract Task DoDeleteAllAsync(CancellationToken cancellationToken = default);
 
         internal abstract Task<StorageItemDownloadInfo?> DoGetFileAsync(string path,
-            CancellationToken? cancellationToken = null);
+            CancellationToken cancellationToken = default);
 
-        public async Task<DownloadResult?> DownloadAsync(string path, CancellationToken? cancellationToken = null)
+        public async Task<DownloadResult?> DownloadAsync(string path, CancellationToken cancellationToken = default)
         {
             var info = await GetStorageItemInfoAsync(path, cancellationToken);
             if (info != null)
@@ -127,7 +127,7 @@ namespace Sitko.Core.Storage
             return null;
         }
 
-        public async Task<bool> DeleteAsync(string filePath, CancellationToken? cancellationToken = null)
+        public async Task<bool> DeleteAsync(string filePath, CancellationToken cancellationToken = default)
         {
             if (_cache != null)
             {
@@ -154,13 +154,13 @@ namespace Sitko.Core.Storage
             return filePath;
         }
 
-        public Task<StorageItem?> GetAsync(string path, CancellationToken? cancellationToken = null)
+        public Task<StorageItem?> GetAsync(string path, CancellationToken cancellationToken = default)
         {
             return GetStorageItemInternalAsync(path, cancellationToken);
         }
 
         private async Task<StorageItemDownloadInfo?> GetStorageItemInfoAsync(string path,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             StorageItemDownloadInfo? result;
             if (_cache != null)
@@ -185,7 +185,7 @@ namespace Sitko.Core.Storage
         }
 
         private async Task<StorageItem?> GetStorageItemInternalAsync(string path,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             var result = await GetStorageItemInfoAsync(path, cancellationToken);
 
@@ -195,13 +195,13 @@ namespace Sitko.Core.Storage
         }
 
 
-        public async Task<bool> IsExistsAsync(string path, CancellationToken? cancellationToken = null)
+        public async Task<bool> IsExistsAsync(string path, CancellationToken cancellationToken = default)
         {
             var result = await GetStorageItemInternalAsync(path, cancellationToken);
             return result != null;
         }
 
-        public async Task DeleteAllAsync(CancellationToken? cancellationToken = null)
+        public async Task DeleteAllAsync(CancellationToken cancellationToken = default)
         {
             if (_cache != null)
             {
@@ -217,7 +217,7 @@ namespace Sitko.Core.Storage
 
 
         public Task<IEnumerable<StorageNode>> GetDirectoryContentsAsync(string path,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             if (MetadataProvider != null)
             {
@@ -228,7 +228,7 @@ namespace Sitko.Core.Storage
         }
 
         public async Task<IEnumerable<StorageNode>> RefreshDirectoryContentsAsync(string path,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             if (MetadataProvider != null)
             {
@@ -252,9 +252,10 @@ namespace Sitko.Core.Storage
         }
 
         internal abstract Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
-            CancellationToken? cancellationToken = null);
+            CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<StorageItemInfo>> IStorage.GetAllItemsAsync(string path, CancellationToken? cancellationToken)
+        Task<IEnumerable<StorageItemInfo>> IStorage.GetAllItemsAsync(string path,
+            CancellationToken cancellationToken)
         {
             return GetAllItemsAsync(path, cancellationToken);
         }
@@ -267,7 +268,7 @@ namespace Sitko.Core.Storage
 
         public virtual ValueTask DisposeAsync()
         {
-            return new ValueTask();
+            return new();
         }
     }
 }

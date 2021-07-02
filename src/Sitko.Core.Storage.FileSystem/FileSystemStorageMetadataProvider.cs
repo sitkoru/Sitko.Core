@@ -25,7 +25,7 @@ namespace Sitko.Core.Storage.FileSystem
         {
         }
 
-        protected override Task DoDeleteMetadataAsync(string filePath, CancellationToken? cancellationToken)
+        protected override Task DoDeleteMetadataAsync(string filePath, CancellationToken cancellationToken = default)
         {
             var fullPath = Path.Combine(StorageOptions.CurrentValue.StoragePath, filePath);
             var metaDataPath = GetMetaDataPath(fullPath);
@@ -37,20 +37,20 @@ namespace Sitko.Core.Storage.FileSystem
             return Task.CompletedTask;
         }
 
-        protected override Task DoDeleteAllMetadataAsync(CancellationToken? cancellationToken)
+        protected override Task DoDeleteAllMetadataAsync(CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }
 
         protected override async Task<StorageItemMetadata?> DoGetMetadataJsonAsync(string path,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             var fullPath = Path.Combine(StorageOptions.CurrentValue.StoragePath, path);
             var metaDataPath = GetMetaDataPath(fullPath);
             var metaDataInfo = new FileInfo(metaDataPath);
             if (metaDataInfo.Exists)
             {
-                var json = await File.ReadAllTextAsync(metaDataPath, cancellationToken ?? CancellationToken.None);
+                var json = await File.ReadAllTextAsync(metaDataPath, cancellationToken);
                 if (!string.IsNullOrEmpty(json))
                 {
                     return JsonSerializer.Deserialize<StorageItemMetadata>(json);
@@ -61,14 +61,14 @@ namespace Sitko.Core.Storage.FileSystem
         }
 
         protected override async Task DoSaveMetadataAsync(StorageItem storageItem, StorageItemMetadata? metadata = null,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             if (metadata is not null)
             {
                 var fullPath = Path.Combine(StorageOptions.CurrentValue.StoragePath, storageItem.FilePath);
                 await using var metaDataStream = File.Create(GetMetaDataPath(fullPath));
                 await metaDataStream.WriteAsync(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(metadata)),
-                    cancellationToken ?? CancellationToken.None);
+                    cancellationToken);
             }
         }
     }

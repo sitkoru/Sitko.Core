@@ -54,13 +54,13 @@ namespace Sitko.Core.Storage.S3
         }
 
         internal Task<bool> DoSaveInternalAsync(string path, Stream file,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             return DoSaveAsync(path, file, cancellationToken);
         }
 
         protected override async Task<bool> DoSaveAsync(string path, Stream file,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             await CreateBucketAsync(Options.Bucket, cancellationToken);
             using var fileTransferUtility = new TransferUtility(_s3Client);
@@ -70,7 +70,7 @@ namespace Sitko.Core.Storage.S3
                 {
                     InputStream = file, Key = path, BucketName = Options.Bucket
                 };
-                await fileTransferUtility.UploadAsync(request, cancellationToken ?? CancellationToken.None);
+                await fileTransferUtility.UploadAsync(request, cancellationToken);
 
                 return true;
             }
@@ -81,18 +81,19 @@ namespace Sitko.Core.Storage.S3
             }
         }
 
-        internal Task<bool> IsObjectExistsAsync(string filePath, CancellationToken? cancellationToken = null)
+        internal Task<bool> IsObjectExistsAsync(string filePath, CancellationToken cancellationToken = default)
         {
             return _s3Client.IsObjectExistsAsync(Options.Bucket, filePath, cancellationToken);
         }
 
-        internal Task DeleteObjectAsync(string filePath, CancellationToken? cancellationToken = null)
+        internal Task DeleteObjectAsync(string filePath, CancellationToken cancellationToken = default)
         {
             return _s3Client.DeleteObjectAsync(Options.Bucket, filePath,
-                cancellationToken ?? CancellationToken.None);
+                cancellationToken);
         }
 
-        protected override async Task<bool> DoDeleteAsync(string filePath, CancellationToken? cancellationToken = null)
+        protected override async Task<bool> DoDeleteAsync(string filePath,
+            CancellationToken cancellationToken = default)
         {
             if (await IsBucketExistsAsync(Options.Bucket))
             {
@@ -122,7 +123,7 @@ namespace Sitko.Core.Storage.S3
         }
 
         protected override async Task<bool> DoIsFileExistsAsync(StorageItem item,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             try
             {
@@ -145,7 +146,7 @@ namespace Sitko.Core.Storage.S3
             }
         }
 
-        protected override async Task DoDeleteAllAsync(CancellationToken? cancellationToken = null)
+        protected override async Task DoDeleteAllAsync(CancellationToken cancellationToken = default)
         {
             if (await IsBucketExistsAsync(Options.Bucket))
             {
@@ -154,7 +155,7 @@ namespace Sitko.Core.Storage.S3
                     try
                     {
                         await AmazonS3Util.DeleteS3BucketWithObjectsAsync(_s3Client, Options.Bucket,
-                            cancellationToken ?? CancellationToken.None);
+                            cancellationToken);
                     }
                     catch (AmazonS3Exception ex) when (ex.Message.Contains(
                         "A header you provided implies functionality that is not implemented"))
@@ -201,9 +202,9 @@ namespace Sitko.Core.Storage.S3
         }
 
         internal override async Task<StorageItemDownloadInfo?> DoGetFileAsync(string path,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
-            var fileResponse = await DownloadFileAsync(path, cancellationToken ?? CancellationToken.None);
+            var fileResponse = await DownloadFileAsync(path, cancellationToken);
             if (fileResponse == null)
             {
                 return null;
@@ -214,7 +215,7 @@ namespace Sitko.Core.Storage.S3
         }
 
         internal override async Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             var items = new List<StorageItemInfo>();
             try
@@ -224,7 +225,7 @@ namespace Sitko.Core.Storage.S3
                 do
                 {
                     Logger.LogDebug("Get objects list from S3. Current objects count: {Count}", items.Count);
-                    response = await _s3Client.ListObjectsV2Async(request, cancellationToken ?? CancellationToken.None);
+                    response = await _s3Client.ListObjectsV2Async(request, cancellationToken);
                     items.AddRange(response.S3Objects.Select(s3Object =>
                         new StorageItemInfo(s3Object.Key, s3Object.Size, s3Object.LastModified)));
 

@@ -23,10 +23,10 @@ namespace Sitko.Core.Storage.Cache
 
         internal override async Task<InMemoryStorageCacheRecord> GetEntryAsync(StorageItemDownloadInfo item,
             Stream stream,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             using var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream, cancellationToken ?? CancellationToken.None);
+            await stream.CopyToAsync(memoryStream, cancellationToken);
             return
                 new InMemoryStorageCacheRecord(item.Metadata, item.FileSize, item.Date, memoryStream.ToArray());
         }

@@ -29,29 +29,29 @@ namespace Sitko.Core.Storage.Metadata.Postgres
         {
             return _dbContextFactory.CreateDbContext();
             //return new(Options.CurrentValue.GetConnectionString(), Options.CurrentValue.Schema);
-
         }
 
         private Task<StorageItemRecord?> GetItemRecordAsync(StorageDbContext dbContext, string filePath,
-            CancellationToken? cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             return dbContext.Records.FirstOrDefaultAsync(r =>
                     r.Storage == StorageOptions.CurrentValue.Name && r.FilePath == filePath,
-                cancellationToken ?? CancellationToken.None)!;
+                cancellationToken)!;
         }
 
-        protected override async Task DoDeleteMetadataAsync(string filePath, CancellationToken? cancellationToken)
+        protected override async Task DoDeleteMetadataAsync(string filePath,
+            CancellationToken cancellationToken = default)
         {
             await using var dbContext = GetDbContext();
             var record = await GetItemRecordAsync(dbContext, filePath, cancellationToken);
             if (record is not null)
             {
                 dbContext.Records.Remove(record);
-                await dbContext.SaveChangesAsync(cancellationToken ?? CancellationToken.None);
+                await dbContext.SaveChangesAsync(cancellationToken);
             }
         }
 
-        protected override async Task DoDeleteAllMetadataAsync(CancellationToken? cancellationToken)
+        protected override async Task DoDeleteAllMetadataAsync(CancellationToken cancellationToken = default)
         {
             await using var dbContext = GetDbContext();
             await dbContext.Records.Where(r => r.Storage == StorageOptions.CurrentValue.Name)
@@ -59,7 +59,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
         }
 
         protected override async Task<IEnumerable<StorageNode>> DoGetDirectoryContentsAsync(string path,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             await using var dbContext = GetDbContext();
             if (path.StartsWith("/"))
@@ -69,7 +69,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
 
             var records = await dbContext.Records
                 .Where(r => r.Storage == StorageOptions.CurrentValue.Name && r.Path.StartsWith(path))
-                .ToListAsync(cancellationToken ?? CancellationToken.None);
+                .ToListAsync(cancellationToken);
 
             var root = StorageNode.CreateDirectory("/", "/");
             foreach (var itemRecord in records)
@@ -97,7 +97,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
         }
 
         protected override async Task<StorageItemMetadata?> DoGetMetadataJsonAsync(string path,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             await using var dbContext = GetDbContext();
             var record = await GetItemRecordAsync(dbContext, path, cancellationToken);
@@ -105,7 +105,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
         }
 
         protected override async Task DoSaveMetadataAsync(StorageItem storageItem, StorageItemMetadata? metadata = null,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             await using var dbContext = GetDbContext();
             var record = await GetItemRecordAsync(dbContext, storageItem.FilePath, cancellationToken);
@@ -121,7 +121,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             }
 
             record.Metadata = metadata;
-            await dbContext.SaveChangesAsync(cancellationToken ?? CancellationToken.None);
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
 
         protected override async Task DoInitAsync()

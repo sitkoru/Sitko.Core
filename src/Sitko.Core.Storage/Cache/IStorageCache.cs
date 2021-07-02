@@ -12,14 +12,14 @@ namespace Sitko.Core.Storage.Cache
     public interface IStorageCache<TStorageOptions> : IAsyncDisposable where TStorageOptions : StorageOptions
     {
         internal Task<StorageItemDownloadInfo?> GetItemAsync(string path,
-            CancellationToken? cancellationToken = default);
+            CancellationToken cancellationToken = default);
 
         internal Task<StorageItemDownloadInfo?> GetOrAddItemAsync(string path,
             Func<Task<StorageItemDownloadInfo?>> addItem,
-            CancellationToken? cancellationToken = default);
+            CancellationToken cancellationToken = default);
 
-        Task RemoveItemAsync(string path, CancellationToken? cancellationToken = default);
-        Task ClearAsync(CancellationToken? cancellationToken = default);
+        Task RemoveItemAsync(string path, CancellationToken cancellationToken = default);
+        Task ClearAsync(CancellationToken cancellationToken = default);
     }
 
     // Generic interface is required for dependency injection

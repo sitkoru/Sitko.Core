@@ -60,7 +60,7 @@ namespace Sitko.Core.Storage.Metadata
         }
 
         protected override async Task<IEnumerable<StorageNode>> DoGetDirectoryContentsAsync(string path,
-            CancellationToken? cancellationToken = null)
+            CancellationToken cancellationToken = default)
         {
             if (_tree == null || _treeLastBuild <
                 DateTimeOffset.UtcNow.Subtract(Options.CurrentValue.StorageTreeCacheTimeout))
@@ -83,7 +83,7 @@ namespace Sitko.Core.Storage.Metadata
 
         private TaskCompletionSource<bool>? _treeBuildTaskSource;
 
-        private async Task BuildStorageTreeAsync(CancellationToken? cancellationToken = null)
+        private async Task BuildStorageTreeAsync(CancellationToken cancellationToken = default)
         {
             if (_treeBuildTaskSource != null)
             {
@@ -91,7 +91,7 @@ namespace Sitko.Core.Storage.Metadata
                 return;
             }
 
-            using (await _treeLock.LockAsync(cancellationToken ?? CancellationToken.None))
+            using (await _treeLock.LockAsync(cancellationToken))
             {
                 Logger.LogInformation("Start building storage tree");
                 _treeBuildTaskSource = new TaskCompletionSource<bool>();

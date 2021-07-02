@@ -40,7 +40,7 @@ namespace Sitko.Core.Storage.Cache
         }
 
         Task<StorageItemDownloadInfo?> IStorageCache<TStorageOptions>.GetOrAddItemAsync(string path,
-            Func<Task<StorageItemDownloadInfo?>> addItem, CancellationToken? cancellationToken)
+            Func<Task<StorageItemDownloadInfo?>> addItem, CancellationToken cancellationToken)
         {
             if (_cache == null)
             {
@@ -116,7 +116,7 @@ namespace Sitko.Core.Storage.Cache
         protected abstract void DisposeItem(TRecord deletedRecord);
 
         internal abstract Task<TRecord> GetEntryAsync(StorageItemDownloadInfo item, Stream stream,
-            CancellationToken? cancellationToken = null);
+            CancellationToken cancellationToken = default);
 
         private string NormalizePath(string path)
         {
@@ -130,7 +130,7 @@ namespace Sitko.Core.Storage.Cache
         }
 
         Task<StorageItemDownloadInfo?> IStorageCache<TStorageOptions>.GetItemAsync(string path,
-            CancellationToken? cancellationToken)
+            CancellationToken cancellationToken)
         {
             if (_cache == null)
             {
@@ -145,7 +145,7 @@ namespace Sitko.Core.Storage.Cache
                     () => cacheEntry.OpenRead()));
         }
 
-        public Task RemoveItemAsync(string path, CancellationToken? cancellationToken = null)
+        public Task RemoveItemAsync(string path, CancellationToken cancellationToken = default)
         {
             if (_cache == null)
             {
@@ -156,7 +156,7 @@ namespace Sitko.Core.Storage.Cache
             return Task.CompletedTask;
         }
 
-        public Task ClearAsync(CancellationToken? cancellationToken = null)
+        public Task ClearAsync(CancellationToken cancellationToken = default)
         {
             _cache?.Dispose();
             _cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = Options.CurrentValue.MaxCacheSize });

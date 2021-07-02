@@ -74,7 +74,7 @@ namespace Sitko.Core.Storage.Cache
         }
 
         internal override async Task<FileStorageCacheRecord> GetEntryAsync(StorageItemDownloadInfo item,
-            Stream stream, CancellationToken? cancellationToken = null)
+            Stream stream, CancellationToken cancellationToken = default)
         {
             var tempFileName = CreateMD5(Guid.NewGuid().ToString());
             var split = tempFileName.Select((c, index) => new {c, index})
@@ -97,7 +97,7 @@ namespace Sitko.Core.Storage.Cache
                 throw new Exception($"Can't write to file {filePath}");
             }
 
-            await stream.CopyToAsync(fileStream, cancellationToken ?? CancellationToken.None);
+            await stream.CopyToAsync(fileStream, cancellationToken);
             fileStream.Close();
             return new FileStorageCacheRecord(item.Metadata, item.FileSize, item.Date, filePath);
         }

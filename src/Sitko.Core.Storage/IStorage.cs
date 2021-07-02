@@ -18,10 +18,10 @@ namespace Sitko.Core.Storage
         /// <param name="cancellationToken">Optional cancellation token</param>
         /// <returns>StorageItem with information about uploaded file</returns>
         Task<StorageItem> SaveAsync(Stream file, string fileName, string path,
-            object? metadata = null, CancellationToken? cancellationToken = null);
+            object? metadata = null, CancellationToken cancellationToken = default);
 
         Task<StorageItem> UpdateMetaDataAsync(StorageItem item, string fileName,
-            object? metadata = null, CancellationToken? cancellationToken = null);
+            object? metadata = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Get uploaded file info without downloading file
@@ -29,7 +29,7 @@ namespace Sitko.Core.Storage
         /// <param name="filePath">Full path to file in storage</param>
         /// <param name="cancellationToken">Optional cancellation token</param>
         /// <returns>StorageItem with information about uploaded file</returns>
-        Task<StorageItem?> GetAsync(string filePath, CancellationToken? cancellationToken = null);
+        Task<StorageItem?> GetAsync(string filePath, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Get uploaded file info and stream
@@ -37,7 +37,7 @@ namespace Sitko.Core.Storage
         /// <param name="filePath">Full path to file in storage</param>
         /// <param name="cancellationToken">Optional cancellation token</param>
         /// <returns>DownloadResult with StorageItem and Stream</returns>
-        Task<DownloadResult?> DownloadAsync(string filePath, CancellationToken? cancellationToken = null);
+        Task<DownloadResult?> DownloadAsync(string filePath, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Delete file from storage
@@ -45,7 +45,7 @@ namespace Sitko.Core.Storage
         /// <param name="filePath">Full path to file in storage</param>
         /// <param name="cancellationToken">Optional cancellation token</param>
         /// <returns>True if success</returns>
-        Task<bool> DeleteAsync(string filePath, CancellationToken? cancellationToken = null);
+        Task<bool> DeleteAsync(string filePath, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Check if file exists in storage
@@ -53,14 +53,14 @@ namespace Sitko.Core.Storage
         /// <param name="filePath">Full path to file in storage</param>
         /// <param name="cancellationToken">Optional cancellation token</param>
         /// <returns>True if file exists</returns>
-        Task<bool> IsExistsAsync(string filePath, CancellationToken? cancellationToken = null);
+        Task<bool> IsExistsAsync(string filePath, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Delete all files from storage. Specific to storage realization.
         /// </summary>
         /// <param name="cancellationToken">Optional cancellation token</param>
         /// <returns></returns>
-        Task DeleteAllAsync(CancellationToken? cancellationToken = null);
+        Task DeleteAllAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// List folders and files in specified path
@@ -69,7 +69,7 @@ namespace Sitko.Core.Storage
         /// <param name="cancellationToken">Optional cancellation token</param>
         /// <returns>List of StorageNode</returns>
         Task<IEnumerable<StorageNode>> GetDirectoryContentsAsync(string path,
-            CancellationToken? cancellationToken = null);
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Refreshes storage items tree and returns folders and files in specified path
@@ -78,7 +78,7 @@ namespace Sitko.Core.Storage
         /// <param name="cancellationToken">Optional cancellation token</param>
         /// <returns>List of StorageNode</returns>
         Task<IEnumerable<StorageNode>> RefreshDirectoryContentsAsync(string path,
-            CancellationToken? cancellationToken = null);
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Generate public uri for file
@@ -95,7 +95,7 @@ namespace Sitko.Core.Storage
         Uri PublicUri(string filePath);
 
         internal Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
-            CancellationToken? cancellationToken = null);
+            CancellationToken cancellationToken = default);
     }
     
     // Generic interface is required for dependency injection

@@ -16,18 +16,19 @@ namespace Sitko.Core.Storage.Metadata
         internal Task InitAsync();
 
         internal Task SaveMetadataAsync(StorageItem storageItem, StorageItemMetadata itemMetadata,
-            CancellationToken? cancellationToken = null);
+            CancellationToken cancellationToken = default);
 
-        internal Task DeleteMetadataAsync(string filePath, CancellationToken? cancellationToken = null);
-        internal Task DeleteAllMetadataAsync(CancellationToken? cancellationToken = null);
+        internal Task DeleteMetadataAsync(string filePath, CancellationToken cancellationToken = default);
+        internal Task DeleteAllMetadataAsync(CancellationToken cancellationToken = default);
 
         internal Task<IEnumerable<StorageNode>> GetDirectoryContentAsync(string path,
-            CancellationToken? cancellationToken = null);
+            CancellationToken cancellationToken = default);
 
         internal Task RefreshDirectoryContentsAsync(IEnumerable<StorageItemInfo> storageItems,
-            CancellationToken? cancellationToken = null);
+            CancellationToken cancellationToken = default);
 
-        internal Task<StorageItemMetadata?> GetMetadataAsync(string path, CancellationToken? cancellationToken = null);
+        internal Task<StorageItemMetadata?>
+            GetMetadataAsync(string path, CancellationToken cancellationToken = default);
     }
 
     // Generic interface is required for dependency injection
