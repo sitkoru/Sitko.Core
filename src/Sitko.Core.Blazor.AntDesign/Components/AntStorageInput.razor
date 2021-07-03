@@ -1,0 +1,140 @@
+﻿@typeparam TValue
+@inherits BaseAntStorageInput<TValue>
+@using Sitko.Core.Storage
+<AntDesign.Spin Spinning="IsSpinning">
+    @if (ShowUpload)
+    {
+        if (Mode == AntStorageInputMode.File)
+        {
+            if (UploadButton is not null)
+            {
+                @UploadButton(this)
+            }
+            else
+            {
+                <CascadingValue Value="this" IsFixed="true">
+                    <AntStorageItemsInput
+                        TValue="List<StorageItem>"
+                        @ref="FileInput"
+                        Storage="@Storage"
+                        MaxFileSize="MaxFileSize"
+                        MaxAllowedFiles="@MaxFilesToUpload"
+                        ContentTypes="@ContentTypes"
+                        ListType="text"
+                        ButtonText="@UploadText"
+                        GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
+                        @bind-Value="Items"
+                        UploadPath="@UploadPath"
+                        OnChange="@(_ => { return OnChangeAsync();})">
+                    </AntStorageItemsInput>
+                </CascadingValue>
+            }
+        }
+    }
+    <div class="ant-upload-list ant-upload-list-@ListClass upload-list-inline ant-upload-list-@Size">
+        @foreach (var file in Files)
+        {
+            var tips = file.StorageItem.FileName;
+            <div Class="ant-upload-list-@ListClass-container" title="@tips">
+
+                <div class="ant-upload-list-item ant-upload-list-item-done  ant-upload-list-item-list-type-@ListClass">
+                    <div class="ant-upload-list-item-info">
+                        <span class="ant-upload-span">
+                            @if (Mode == AntStorageInputMode.Image)
+                            {
+                                <a class="ant-upload-list-item-thumbnail" href="@file.Url" target="_blank" rel="noopener noreferrer">
+                                    @if (Avatar)
+                                    {
+                                        <AntDesign.Avatar Size="@AvatarSize" Src="@file.SmallPreviewUrl" Alt="@file.StorageItem.FileName" Class="ant-upload-list-item-image"/>
+                                    }
+                                    else
+                                    {
+                                        <AntDesign.Avatar Shape="square" Size="@AvatarSize" Src="@file.SmallPreviewUrl" Alt="@file.StorageItem.FileName" Class="ant-upload-list-item-image"/>
+                                    }
+                                </a>
+                            }
+                            @if (Mode == AntStorageInputMode.File)
+                            {
+                                <div class="ant-upload-list-item-thumbnail ant-upload-list-item-file">
+                                    <Icon Type="paper-clip"/>
+                                </div>
+                            }
+                            <a target="_blank" rel="noopener noreferrer" class="ant-upload-list-item-name" title="@file.StorageItem.FileName" href="@file.Url">@file.StorageItem.FileName</a>
+                            <span class="ant-upload-list-item-actions picture">
+                                @if (ShowOrdering)
+                                {
+                                    <button title="@LeftText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => MoveBackward(file)" disabled="@(!CanMoveBackward(file))">
+                                        <AntDesign.Icon Type="left"/>
+                                    </button>
+                                }
+                                @if (Mode == AntStorageInputMode.File)
+                                {
+                                    <a href="@file.Url" target="_blank" rel="noopener noreferrer" title="@DownloadText">
+                                        <button title="@DownloadText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn">
+                                            <AntDesign.Icon Type="download"/>
+                                        </button>
+                                    </a>
+                                }
+                                @if (Mode == AntStorageInputMode.Image)
+                                {
+                                    <button title="@PreviewText" type="button" @onclick="() => PreviewFile(file)" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn">
+                                        <AntDesign.Icon Type="eye"/>
+                                    </button>
+                                }
+                                <button title="@RemoveText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => RemoveFile(file)">
+                                    <AntDesign.Icon Type="delete"/>
+                                </button>
+                                @if (ShowOrdering)
+                                {
+                                    <button title="@RightText" type="button" class="ant-btn ant-btn-text ant-btn-sm ant-btn-icon-only ant-upload-list-item-card-actions-btn" @onclick="() => MoveForward(file)" disabled="@(!CanMoveForward(file))">
+                                        <AntDesign.Icon Type="right"/>
+                                    </button>
+                                }
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        }
+        @if (Mode == AntStorageInputMode.Image)
+        {
+            @if (ShowUpload)
+            {
+                if (UploadButton is not null)
+                {
+                    @UploadButton(this)
+                }
+                else
+                {
+                    <CascadingValue Value="this" IsFixed="true">
+                        <AntStorageItemsInput
+                            @ref="FileInput"
+                            TValue="List<StorageItem>"
+                            Storage="@Storage"
+                            MaxFileSize="MaxFileSize"
+                            MaxAllowedFiles="@MaxFilesToUpload"
+                            ContentTypes="@ContentTypes"
+                            ListType="picture-card"
+                            GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
+                            @bind-Value="Items"
+                            UploadPath="@UploadPath"
+                            OnChange="@(_ => { return OnChangeAsync();})">
+                            <div>
+                                <AntDesign.Icon Spin="IsSpinning" Type="@(IsSpinning ? "Loading" : "plus")"></AntDesign.Icon>
+                                <div className="ant-upload-text">@UploadText</div>
+                            </div>
+                        </AntStorageItemsInput>
+                    </CascadingValue>
+                }
+            }
+            if (PreviewItem is not null)
+            {
+                <AntDesign.Modal Visible="true"
+                                 Title="@PreviewItem.StorageItem.FileName"
+                                 Footer="null" OnCancel="@(() => PreviewItem = null)">
+                    <img style="width: 100%" src="@PreviewItem.LargePreviewUrl" alt="@PreviewItem.StorageItem.FileName"/>
+                </AntDesign.Modal>
+            }
+        }
+    </div>
+</AntDesign.Spin>

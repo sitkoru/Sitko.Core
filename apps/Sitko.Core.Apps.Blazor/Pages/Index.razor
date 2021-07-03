@@ -57,6 +57,7 @@
             <AntStorageItemsInput
                 TValue="ValueCollection<StorageItem>"
                 Storage="Storage"
+                Mode="AntStorageInputMode.Image"
                 MaxAllowedFiles="10"
                 @bind-Value="context.StorageItems"
                 UploadPath="bars"
@@ -68,7 +69,6 @@
         <AntDesign.FormItem Label="Single image">
             <AntStorageImageInput Storage="@Storage"
                                   MaxFileSize="@(2 * 1024 * 1024)"
-                                  MaxAllowedFiles="10"
                                   UploadPath="bars"
                                   GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
                                   @bind-Value="context.StorageItem"
@@ -79,7 +79,6 @@
             <AntStorageImageInput Storage="@Storage"
                                   Size="small"
                                   MaxFileSize="@(2 * 1024 * 1024)"
-                                  MaxAllowedFiles="10"
                                   UploadPath="bars"
                                   GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
                                   @bind-Value="context.StorageItem"
@@ -90,7 +89,6 @@
             <AntStorageImageInput Storage="@Storage"
                                   Size="large"
                                   MaxFileSize="@(2 * 1024 * 1024)"
-                                  MaxAllowedFiles="10"
                                   UploadPath="bars"
                                   GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
                                   @bind-Value="context.StorageItem"
@@ -113,7 +111,6 @@
             <AntStorageImageInput Storage="@Storage"
                                   Avatar="true"
                                   MaxFileSize="@(2 * 1024 * 1024)"
-                                  MaxAllowedFiles="10"
                                   UploadPath="bars"
                                   GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
                                   @bind-Value="context.StorageItem"
@@ -125,7 +122,6 @@
                                   Avatar="true"
                                   Size="small"
                                   MaxFileSize="@(2 * 1024 * 1024)"
-                                  MaxAllowedFiles="10"
                                   UploadPath="bars"
                                   GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
                                   @bind-Value="context.StorageItem"
@@ -137,7 +133,6 @@
                                   Avatar="true"
                                   Size="large"
                                   MaxFileSize="@(2 * 1024 * 1024)"
-                                  MaxAllowedFiles="10"
                                   UploadPath="bars"
                                   GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
                                   @bind-Value="context.StorageItem"
@@ -157,11 +152,20 @@
             </AntStorageImagesInput>
         </FormItem>
         @* AVATARS END *@
+        <FormItem Label="Single file">
+            <AntStorageFileInput Storage="@Storage"
+                                 MaxFileSize="@(2 * 1024 * 1024)"
+                                 UploadPath="bars"
+                                 GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
+                                 @bind-Value="context.StorageItem"
+                                 OnChange="@(storageItem => { Logger.LogInformation("File uploaded: {FileName}", storageItem?.FileName); return Task.CompletedTask;})">
+            </AntStorageFileInput>
+        </FormItem>
         <FormItem Label="Multiple files">
             <AntStorageFilesInput Storage="@Storage"
                                   TValue="ValueCollection<StorageItem>"
                                   MaxFileSize="@(2 * 1024 * 1024)"
-                                  MaxAllowedFiles="10"
+                                  MaxFiles="10"
                                   UploadPath="bars"
                                   GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
                                   @bind-Value="context.StorageItems"

@@ -38,6 +38,10 @@
     vertical-align: middle;
 }
 
+.ant-upload-list-picture-container {
+    display: inline-block;
+}
+
 /* tile uploaded pictures */
 .upload-list-inline .ant-upload-list-item {
     float: left;

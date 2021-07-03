@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -11,39 +13,83 @@ using Sitko.Core.Storage;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
-    public abstract class BaseAntStorageInput<TUploadedItem, TValue> : InputBase<TValue>, IBaseComponent
-        where TUploadedItem : UploadedItem
+    public abstract class BaseAntStorageInput<TValue> : InputBase<TValue>, IBaseComponent
+        where TValue : class, new()
     {
+        protected readonly OrderedCollection<UploadedItem> Files = new();
+        protected UploadedItem? PreviewItem;
+        protected string ListClass => Mode == AntStorageInputMode.File ? "picture" : "picture-card";
+
         [Parameter] public string UploadPath { get; set; } = "";
         [Parameter] public Func<FileUploadRequest, FileStream, Task<object>>? GenerateMetadata { get; set; }
         [Parameter] public Func<TValue?, Task>? OnChange { get; set; }
         [Parameter] public virtual string ContentTypes { get; set; } = "";
         [Parameter] public long MaxFileSize { get; set; }
-        [Parameter] public int? MaxAllowedFiles { get; set; }
+        protected virtual int? MaxAllowedFiles { get; set; }
         [Parameter] public string UploadText { get; set; } = "";
         [Parameter] public string PreviewText { get; set; } = "";
         [Parameter] public string DownloadText { get; set; } = "";
         [Parameter] public string RemoveText { get; set; } = "";
         [Parameter] public IStorage Storage { get; set; } = null!;
         [Parameter] public bool EnableOrdering { get; set; } = true;
+        [Parameter] public virtual AntStorageInputMode Mode { get; set; } = AntStorageInputMode.File;
+        [Parameter] public Func<StorageItem, UploadedItemUrlType, string>? GeneratePreviewUrl { get; set; }
+        [Parameter] public bool Avatar { get; set; }
+
+        protected string AvatarSize => Size switch
+        {
+            "large" => "238",
+            "small" => "46",
+            _ => "86"
+        };
+
+        [Parameter] public string Size { get; set; } = "default";
+        [Parameter] public string LeftText { get; set; } = "";
+        [Parameter] public string RightText { get; set; } = "";
+        [Parameter] public RenderFragment<AntStorageInput<TValue>>? UploadButton { get; set; }
+        protected int ItemsCount => Files.Count();
         protected bool ShowOrdering => EnableOrdering && ItemsCount > 1;
         protected IBaseFileInputComponent? FileInput { get; set; }
         protected bool IsSpinning => FileInput?.IsLoading ?? false;
 
         protected bool ShowUpload => MaxAllowedFiles is null || MaxAllowedFiles < 1 || ItemsCount < MaxAllowedFiles;
         protected int? MaxFilesToUpload => MaxAllowedFiles is not null ? MaxAllowedFiles - ItemsCount : null;
-        protected abstract int ItemsCount { get; }
-        [Parameter] public string Size { get; set; } = "default";
-        [Parameter] public string LeftText { get; set; } = "";
-        [Parameter] public string RightText { get; set; } = "";
+
+        protected List<StorageItem>? Items
+        {
+            get
+            {
+                return Files.Select(f => f.StorageItem).ToList();
+            }
+            set
+            {
+                if (value is not null)
+                {
+                    Files.AddItems(value.Select(CreateUploadedItem));
+                }
+                else
+                {
+                    Files.SetItems(Array.Empty<UploadedItem>());
+                }
+
+                UpdateCurrentValue();
+            }
+        }
+
 
         [Inject]
-        protected ILocalizationProvider<BaseAntStorageInput<TUploadedItem, TValue>> LocalizationProvider { get; set; } =
+        protected ILocalizationProvider<AntStorageInput<TValue>> LocalizationProvider { get; set; } =
             null!;
+
+        public Task NotifyStateChangeAsync()
+        {
+            return InvokeAsync(StateHasChanged);
+        }
 
         protected override void OnParametersSet()
         {
             base.OnParametersSet();
+
             if (string.IsNullOrEmpty(UploadText))
             {
                 UploadText = LocalizationProvider["Upload"];
@@ -53,7 +99,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             {
                 PreviewText = LocalizationProvider["Preview"];
             }
-            
+
             if (string.IsNullOrEmpty(DownloadText))
             {
                 DownloadText = LocalizationProvider["Download"];
@@ -63,7 +109,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             {
                 RemoveText = LocalizationProvider["Remove"];
             }
-            
+
             if (string.IsNullOrEmpty(LeftText))
             {
                 LeftText = LocalizationProvider["Move left"];
@@ -73,13 +119,21 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             {
                 RightText = LocalizationProvider["Move right"];
             }
+
+            if (CurrentValue is not null)
+            {
+                var value = ParseCurrentValue(CurrentValue);
+                Files.SetItems(value);
+            }
         }
 
-        protected Task OnChangeAsync(TValue value)
+        protected abstract IEnumerable<UploadedItem> ParseCurrentValue(TValue currentValue);
+
+        protected Task OnChangeAsync()
         {
             if (OnChange is not null)
             {
-                return OnChange(value);
+                return OnChange(CurrentValue);
             }
 
             return Task.CompletedTask;
@@ -95,47 +149,163 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             return Task.FromResult((object)null!);
         }
 
-        protected void RemoveFile(TUploadedItem file)
+        protected void RemoveFile(UploadedItem file)
         {
-            DoRemoveFile(file);
+            Files.RemoveItem(file);
             UpdateCurrentValue();
         }
 
         protected void UpdateCurrentValue()
         {
-            CurrentValue = GetValue();
-            OnChangeAsync(CurrentValue);
+            var value = UpdateCurrentValue(Files.ToList());
+            CurrentValue = value;
         }
 
-        protected abstract void DoRemoveFile(TUploadedItem file);
-        protected abstract TUploadedItem CreateUploadedItem(StorageItem storageItem);
+        protected abstract TValue? UpdateCurrentValue(ICollection<UploadedItem> items);
 
-        protected abstract TValue GetValue();
+        protected virtual UploadedItem CreateUploadedItem(StorageItem storageItem)
+        {
+            var urls = new Dictionary<UploadedItemUrlType, string>
+            {
+                {UploadedItemUrlType.Full, Storage.PublicUri(storageItem).ToString()}
+            };
+            if (Mode == AntStorageInputMode.Image)
+            {
+                if (GeneratePreviewUrl is not null)
+                {
+                    urls[UploadedItemUrlType.LargePreview] =
+                        GeneratePreviewUrl(storageItem, UploadedItemUrlType.LargePreview);
+                    urls[UploadedItemUrlType.SmallPreview] =
+                        GeneratePreviewUrl(storageItem, UploadedItemUrlType.SmallPreview);
+                }
+            }
+
+            return new UploadedItem(storageItem, urls);
+        }
+
+        protected void PreviewFile(UploadedItem file)
+        {
+            PreviewItem = file;
+        }
+
+        protected bool CanMoveBackward(UploadedItem file)
+        {
+            return Files.CanMoveUp(file);
+        }
+
+        protected bool CanMoveForward(UploadedItem file)
+        {
+            return Files.CanMoveDown(file);
+        }
+
+        protected void MoveBackward(UploadedItem file)
+        {
+            Files.MoveUp(file);
+            UpdateCurrentValue();
+        }
+
+        protected void MoveForward(UploadedItem file)
+        {
+            Files.MoveDown(file);
+            UpdateCurrentValue();
+        }
 
         protected override bool TryParseValueFromString(string? value, out TValue result,
             out string validationErrorMessage)
         {
-            result = default!;
+            result = null!;
             validationErrorMessage = "";
             return false;
         }
+    }
 
-        public Task NotifyStateChangeAsync()
+    public abstract class BaseAntMultipleStorageInput<TValue> : AntStorageInput<TValue>
+        where TValue : class, ICollection<StorageItem>, new()
+    {
+        [Parameter]
+        public int? MaxFiles
         {
-            return InvokeAsync(StateHasChanged);
+            get
+            {
+                return MaxAllowedFiles;
+            }
+            set
+            {
+                MaxAllowedFiles = value;
+            }
+        }
+
+        protected override IEnumerable<UploadedItem> ParseCurrentValue(TValue currentValue)
+        {
+            return currentValue.Select(CreateUploadedItem);
+        }
+
+        protected override TValue UpdateCurrentValue(ICollection<UploadedItem> items)
+        {
+            var collection = new TValue();
+            foreach (var item in items)
+            {
+                collection.Add(item.StorageItem);
+            }
+
+            return collection;
         }
     }
 
-    public abstract class UploadedItem : IOrdered
+    public abstract class BaseAntSingleStorageInput : AntStorageInput<StorageItem>
     {
-        protected UploadedItem(StorageItem storageItem)
+        protected override int? MaxAllowedFiles { get; set; } = 1;
+
+        protected override IEnumerable<UploadedItem> ParseCurrentValue(StorageItem currentValue)
         {
-            StorageItem = storageItem;
+            return new[] {CreateUploadedItem(currentValue)};
         }
 
+
+        protected override StorageItem? UpdateCurrentValue(ICollection<UploadedItem> items)
+        {
+            return items.FirstOrDefault()?.StorageItem;
+        }
+    }
+
+    public class UploadedItem : IOrdered
+    {
+        public UploadedItem(StorageItem storageItem, Dictionary<UploadedItemUrlType, string> urls)
+        {
+            StorageItem = storageItem;
+            Urls = urls;
+        }
+
+        private Dictionary<UploadedItemUrlType, string> Urls { get; }
+        public string SmallPreviewUrl => GetUrl(UploadedItemUrlType.SmallPreview);
+        public string LargePreviewUrl => GetUrl(UploadedItemUrlType.LargePreview);
+        public string Url => GetUrl(UploadedItemUrlType.Full);
+
         public StorageItem StorageItem { get; }
-        public abstract string Url { get; }
 
         public int Position { get; set; }
+
+        private string GetUrl(UploadedItemUrlType type)
+        {
+            if (Urls.ContainsKey(type))
+            {
+                return Urls[type];
+            }
+
+            return Urls[UploadedItemUrlType.Full];
+        }
+    }
+
+    public enum UploadedItemUrlType
+    {
+        Full,
+        SmallPreview,
+        LargePreview
+    }
+
+    public enum AntStorageInputMode
+    {
+        File,
+        Image
     }
 }
