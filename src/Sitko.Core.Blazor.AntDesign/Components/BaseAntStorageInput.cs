@@ -66,7 +66,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             {
                 if (value is not null)
                 {
-                    Files.AddItems(value.Select(CreateUploadedItem));
+                    Files.AddItems(value.Where(v => v is not null).Select(CreateUploadedItem));
                 }
                 else
                 {
@@ -243,7 +243,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         protected override IEnumerable<UploadedItem> ParseCurrentValue(TValue currentValue)
         {
-            return currentValue.Select(CreateUploadedItem);
+            return currentValue.Where(v => v is not null).Select(CreateUploadedItem);
         }
 
         protected override TValue UpdateCurrentValue(ICollection<UploadedItem> items)
@@ -262,9 +262,14 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
     {
         protected override int? MaxAllowedFiles { get; set; } = 1;
 
-        protected override IEnumerable<UploadedItem> ParseCurrentValue(StorageItem currentValue)
+        protected override IEnumerable<UploadedItem> ParseCurrentValue(StorageItem? currentValue)
         {
-            return new[] {CreateUploadedItem(currentValue)};
+            if (currentValue is not null)
+            {
+                return new[] {CreateUploadedItem(currentValue)};    
+            }
+
+            return new UploadedItem[0];
         }
 
 
