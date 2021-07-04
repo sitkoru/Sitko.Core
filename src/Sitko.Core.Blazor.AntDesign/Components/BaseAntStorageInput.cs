@@ -46,7 +46,8 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         [Parameter] public string Size { get; set; } = "default";
         [Parameter] public string LeftText { get; set; } = "";
         [Parameter] public string RightText { get; set; } = "";
-        [Parameter] public RenderFragment<AntStorageInput<TValue>>? UploadButton { get; set; }
+        [Parameter] public RenderFragment<BaseAntStorageInput<TValue>>? CustomUploadButton { get; set; }
+        [Parameter] public Func<BaseAntStorageInput<TValue>, Task<TValue>>? CustomUpload { get; set; }
         protected int ItemsCount => Files.Count();
         protected bool ShowOrdering => EnableOrdering && ItemsCount > 1;
         protected IBaseFileInputComponent? FileInput { get; set; }
@@ -216,6 +217,11 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             result = null!;
             validationErrorMessage = "";
             return false;
+        }
+
+        public void SetValue(TValue value)
+        {
+            CurrentValue = value;
         }
     }
 

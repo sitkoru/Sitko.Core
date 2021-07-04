@@ -6,9 +6,23 @@
     {
         if (Mode == AntStorageInputMode.File)
         {
-            if (UploadButton is not null)
+            if (CustomUploadButton is not null)
             {
-                @UploadButton(this)
+                @CustomUploadButton(this)
+            }
+            else if (CustomUpload is not null)
+            {
+                <div class="ant-upload ant-upload-select ant-upload-select-@ListClass">
+                    <span tabindex="0" class="ant-upload" role="button">
+                        <div class="ant-upload ant-upload-select">
+                            <span class="ant-upload">
+                                <AntDesign.Button Disabled="IsSpinning" Loading="IsSpinning" Icon="@(IsSpinning ? "loading" : "upload")" OnClick="@(async () => { CurrentValue = await CustomUpload(this); })">
+                                    <span>@UploadText</span>
+                                </AntDesign.Button>
+                            </span>
+                        </div>
+                    </span>
+                </div>
             }
             else
             {
@@ -25,7 +39,7 @@
                         GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
                         @bind-Value="Items"
                         UploadPath="@UploadPath"
-                        OnChange="@(_ => { return OnChangeAsync();})">
+                        OnChange="@(_ => { return OnChangeAsync(); })">
                     </AntStorageItemsInput>
                 </CascadingValue>
             }
@@ -100,9 +114,20 @@
         {
             @if (ShowUpload)
             {
-                if (UploadButton is not null)
+                if (CustomUploadButton is not null)
                 {
-                    @UploadButton(this)
+                    @CustomUploadButton(this)
+                }
+                else if (CustomUpload is not null)
+                {
+                    <div class="ant-upload ant-upload-select ant-upload-select-@ListClass">
+                        <span tabindex="0" class="ant-upload" role="button" @onclick="@(async () => { CurrentValue = await CustomUpload(this); })">
+                            <div>
+                                <AntDesign.Icon Spin="IsSpinning" Type="@(IsSpinning ? "Loading" : "plus")"></AntDesign.Icon>
+                                <div className="ant-upload-text">@UploadText</div>
+                            </div>
+                        </span>
+                    </div>
                 }
                 else
                 {
@@ -118,7 +143,7 @@
                             GenerateMetadata="@((request, stream) => GenerateMetadataAsync(request, stream))"
                             @bind-Value="Items"
                             UploadPath="@UploadPath"
-                            OnChange="@(_ => { return OnChangeAsync();})">
+                            OnChange="@(_ => { return OnChangeAsync(); })">
                             <div>
                                 <AntDesign.Icon Spin="IsSpinning" Type="@(IsSpinning ? "Loading" : "plus")"></AntDesign.Icon>
                                 <div className="ant-upload-text">@UploadText</div>
