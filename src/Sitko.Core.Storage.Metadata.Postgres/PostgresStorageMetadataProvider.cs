@@ -13,11 +13,13 @@ namespace Sitko.Core.Storage.Metadata.Postgres
 {
     public class
         PostgresStorageMetadataProvider<TStorageOptions> : BaseStorageMetadataProvider<
-            PostgresStorageMetadataProviderOptions, TStorageOptions> where TStorageOptions : StorageOptions
+            PostgresStorageMetadataModuleOptions<TStorageOptions>, TStorageOptions>
+        where TStorageOptions : StorageOptions
     {
         private readonly IDbContextFactory<StorageDbContext> _dbContextFactory;
 
-        public PostgresStorageMetadataProvider(IOptionsMonitor<PostgresStorageMetadataProviderOptions> options,
+        public PostgresStorageMetadataProvider(
+            IOptionsMonitor<PostgresStorageMetadataModuleOptions<TStorageOptions>> options,
             IOptionsMonitor<TStorageOptions> storageOptions,
             IDbContextFactory<StorageDbContext> dbContextFactory,
             ILogger<PostgresStorageMetadataProvider<TStorageOptions>> logger) : base(options, storageOptions, logger)

@@ -15,8 +15,8 @@ namespace Sitko.Core.Grpc.Client.Consul
         where TClient : ClientBase<TClient>
     {
         private readonly IConsulClient _consulClient;
-        private readonly IOptionsMonitor<GrpcClientConsulModuleOptions> _optionsMonitor;
-        private GrpcClientConsulModuleOptions Options => _optionsMonitor.CurrentValue;
+        private readonly IOptionsMonitor<ConsulGrpcClientModuleOptions> _optionsMonitor;
+        private ConsulGrpcClientModuleOptions Options => _optionsMonitor.CurrentValue;
         private readonly ILogger<ConsulGrpcServiceAddressResolver<TClient>> _logger;
         private readonly CancellationTokenSource _cts = new();
         private Uri? _target;
@@ -28,7 +28,7 @@ namespace Sitko.Core.Grpc.Client.Consul
         private Task? _refreshTask;
 
         public ConsulGrpcServiceAddressResolver(IConsulClient consulClient,
-            IOptionsMonitor<GrpcClientConsulModuleOptions> optionsMonitor,
+            IOptionsMonitor<ConsulGrpcClientModuleOptions> optionsMonitor,
             ILogger<ConsulGrpcServiceAddressResolver<TClient>> logger)
         {
             _consulClient = consulClient;

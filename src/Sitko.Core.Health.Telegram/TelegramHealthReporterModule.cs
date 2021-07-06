@@ -4,7 +4,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Health.Telegram
 {
-    public class TelegramHealthReporterModule : BaseApplicationModule<TelegramHealthCheckPublisherOptions>
+    public class TelegramHealthReporterModule : BaseApplicationModule<TelegramHealthReporterModuleOptions>
     {
         public override string GetOptionsKey()
         {
@@ -12,7 +12,7 @@ namespace Sitko.Core.Health.Telegram
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TelegramHealthCheckPublisherOptions startupOptions)
+            TelegramHealthReporterModuleOptions startupOptions)
         {
             base.ConfigureServices(context, services, startupOptions);
             services.Configure<HealthCheckPublisherOptions>(_ => { });

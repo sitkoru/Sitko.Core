@@ -3,7 +3,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Health.Teams
 {
-    public class TeamsHealthCheckPublisherOptions : BaseModuleOptions
+    public class TeamsHealthReporterModuleOptions : BaseModuleOptions
     {
         public string WebHookUrl { get; set; } = string.Empty;
         public string UnHealthyColor { get; set; } = "#c74f4f";
@@ -11,7 +11,7 @@ namespace Sitko.Core.Health.Teams
         public string DegradedColor { get; set; } = "#ffc107";
     }
 
-    public class TeamsHealthCheckPublisherOptionsValidator : AbstractValidator<TeamsHealthCheckPublisherOptions>
+    public class TeamsHealthCheckPublisherOptionsValidator : AbstractValidator<TeamsHealthReporterModuleOptions>
     {
         public TeamsHealthCheckPublisherOptionsValidator()
         {

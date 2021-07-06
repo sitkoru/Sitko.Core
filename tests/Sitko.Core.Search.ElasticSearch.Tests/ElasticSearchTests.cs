@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Sitko.Core.App;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -57,18 +56,18 @@ namespace Sitko.Core.Search.ElasticSearch.Tests
     {
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
-            base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, ElasticSearchModule, ElasticSearchModuleOptions>(
-                    (_, _, moduleConfig) =>
-                    {
-                        moduleConfig.Prefix = name.ToLower();
-                        moduleConfig.EnableClientLogging = true;
-                    })
-                .ConfigureServices((_, _, services) =>
-                {
-                    services.AddSingleton<TestModelProvider>();
-                    services.RegisterSearchProvider<TestSearchProvider, TestModel, Guid>();
-                });
+            base.ConfigureApplication(application, name);
+            application.AddElasticSearch(moduleOptions =>
+            {
+                moduleOptions.Prefix = name.ToLower();
+                moduleOptions.EnableClientLogging = true;
+            });
+
+            application.ConfigureServices(services =>
+            {
+                services.AddSingleton<TestModelProvider>();
+                services.RegisterSearchProvider<TestSearchProvider, TestModel, Guid>();
+            });
             return application;
         }
     }

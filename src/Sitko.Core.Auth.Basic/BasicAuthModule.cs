@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Threading.Tasks;
 using idunno.Authentication.Basic;
 using Microsoft.AspNetCore.Builder;
@@ -7,7 +7,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Auth.Basic
 {
-    public class BasicAuthModule : AuthModule<BasicAuthOptions>
+    public class BasicAuthModule : AuthModule<BasicAuthModuleOptions>
     {
         public override string GetOptionsKey()
         {
@@ -15,7 +15,7 @@ namespace Sitko.Core.Auth.Basic
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            BasicAuthOptions startupOptions)
+            BasicAuthModuleOptions startupOptions)
         {
             base.ConfigureServices(context, services, startupOptions);
             services.AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme).AddBasic(options =>

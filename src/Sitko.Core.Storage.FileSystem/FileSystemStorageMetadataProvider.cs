@@ -12,13 +12,13 @@ namespace Sitko.Core.Storage.FileSystem
 {
     public class FileSystemStorageMetadataProvider<TStorageOptions> : EmbedStorageMetadataProvider<
         FileSystemStorage<TStorageOptions>,
-        TStorageOptions, FileSystemStorageMetadataProviderOptions>
+        TStorageOptions, FileSystemStorageMetadataModuleOptions<TStorageOptions>>
         where TStorageOptions : StorageOptions, IFileSystemStorageOptions
 
     {
         public FileSystemStorageMetadataProvider(IServiceProvider serviceProvider,
             IOptionsMonitor<TStorageOptions> storageOptions,
-            IOptionsMonitor<FileSystemStorageMetadataProviderOptions> options,
+            IOptionsMonitor<FileSystemStorageMetadataModuleOptions<TStorageOptions>> options,
             ILogger<FileSystemStorageMetadataProvider<TStorageOptions>> logger) : base(serviceProvider, options,
             storageOptions,
             logger)
@@ -67,7 +67,9 @@ namespace Sitko.Core.Storage.FileSystem
         }
     }
 
-    public class FileSystemStorageMetadataProviderOptions : EmbedStorageMetadataProviderOptions
+    public class
+        FileSystemStorageMetadataModuleOptions<TStorageOptions> : EmbedStorageMetadataModuleOptions<TStorageOptions>
+        where TStorageOptions : StorageOptions
     {
     }
 }

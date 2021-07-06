@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
-using Sitko.Core.App;
 using Sitko.Core.Grpc.Client.Discovery;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -48,16 +47,17 @@ namespace Sitko.Core.Grpc.Client.Tests
     {
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
-            return base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, TestGrpcClientModule<TestService.TestServiceClient>,
+            base.ConfigureApplication(application, name)
+                .AddModule<TestGrpcClientModule<TestService.TestServiceClient>,
                     TestGrpcClientModuleOptions
                 >(
-                    (_, _, moduleConfig) =>
+                    moduleOptions =>
                     {
-                        moduleConfig.EnableHttp2UnencryptedSupport = true;
-                        moduleConfig.DisableCertificatesValidation = true;
-                        moduleConfig.AddInterceptor<test>();
+                        moduleOptions.EnableHttp2UnencryptedSupport = true;
+                        moduleOptions.DisableCertificatesValidation = true;
+                        moduleOptions.AddInterceptor<test>();
                     });
+            return application;
         }
     }
 

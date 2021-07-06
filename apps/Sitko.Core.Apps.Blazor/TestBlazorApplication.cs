@@ -14,20 +14,14 @@ namespace Sitko.Core.Apps.Blazor
     {
         public TestBlazorApplication(string[] args) : base(args)
         {
-            AddModule<PostgresModule<BarContext>, PostgresDatabaseModuleOptions<BarContext>>(
-                (configuration, environment, moduleConfig) =>
-                {
-                    moduleConfig.EnableContextPooling = true;
-                    moduleConfig.EnableNpgsqlPooling = environment.IsDevelopment();
-                });
-            AddModule<EFRepositoriesModule<BarContext>, EFRepositoriesModuleOptions>();
-            AddModule<FileSystemStorageModule<TestBlazorStorageOptions>, TestBlazorStorageOptions>();
-            AddModule<PostgresStorageMetadataModule<TestBlazorStorageOptions>,
-                PostgresStorageMetadataProviderOptions>();
+            this.AddPostgresDatabase<BarContext>()
+                .AddEFRepositories<BarContext>()
+                .AddFileSystemStorage<TestBlazorStorageOptions>()
+                .AddPostgresStorageMetadata<TestBlazorStorageOptions>()
+                .AddJsonLocalization();
             ConfigureLogLevel("System.Net.Http.HttpClient.health-checks", LogEventLevel.Error)
                 .ConfigureLogLevel("Microsoft.AspNetCore", LogEventLevel.Warning)
                 .ConfigureLogLevel("Microsoft.EntityFrameworkCore", LogEventLevel.Warning);
-            AddModule<JsonLocalizationModule, JsonLocalizationModuleOptions>();
         }
 
         protected override bool LoggingEnableConsole(HostBuilderContext context)

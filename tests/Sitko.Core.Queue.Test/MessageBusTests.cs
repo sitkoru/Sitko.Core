@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Sitko.Core.App;
 using Sitko.Core.MediatR;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -47,8 +46,9 @@ namespace Sitko.Core.Queue.Tests
     {
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
-            return base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, MediatRModule<MessageBusTests>, MediatRModuleOptions<MessageBusTests>>();
+            base.ConfigureApplication(application, name);
+            application.AddMediatR<MessageBusTests>();
+            return application;
         }
 
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,

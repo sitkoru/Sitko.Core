@@ -5,7 +5,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Server
 {
-    public class GrpcServerOptions : BaseModuleOptions
+    public class GrpcServerModuleOptions : BaseModuleOptions
     {
         public string? Host { get; set; }
         public int? Port { get; set; }
@@ -23,7 +23,7 @@ namespace Sitko.Core.Grpc.Server
 
         private readonly List<Action<IGrpcServerModule>> _serviceRegistrations = new();
 
-        public GrpcServerOptions RegisterService<TService>() where TService : class
+        public GrpcServerModuleOptions RegisterService<TService>() where TService : class
         {
             _serviceRegistrations.Add(module => module.RegisterService<TService>());
             return this;

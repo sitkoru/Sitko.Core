@@ -11,7 +11,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Db.Postgres
 {
-    public class PostgresModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleOptions<TDbContext>>
+    public class PostgresDatabaseModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleOptions<TDbContext>>
         where TDbContext : DbContext
     {
         public override string GetOptionsKey()
@@ -24,7 +24,7 @@ namespace Sitko.Core.Db.Postgres
             await base.InitAsync(context, serviceProvider);
             if (GetOptions(serviceProvider).AutoApplyMigrations)
             {
-                var logger = serviceProvider.GetService<ILogger<PostgresModule<TDbContext>>>();
+                var logger = serviceProvider.GetService<ILogger<PostgresDatabaseModule<TDbContext>>>();
                 var migrated = false;
                 for (var i = 1; i <= 10; i++)
                 {

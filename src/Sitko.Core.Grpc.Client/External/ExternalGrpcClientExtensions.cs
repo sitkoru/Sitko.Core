@@ -21,11 +21,10 @@ namespace Sitko.Core.Grpc.Client.External
             Action<GrpcClientModuleOptions>? configure = null)
             where TApplication : Application where TClient : ClientBase<TClient>
         {
-            application.AddModule<ExternalGrpcClientModule<TClient>, GrpcClientStaticModuleOptions>((_,
-                _, moduleConfig) =>
+            application.AddExternalGrpcClient<TClient>(moduleOptions =>
             {
-                moduleConfig.Address = address;
-                configure?.Invoke(moduleConfig);
+                moduleOptions.Address = address;
+                configure?.Invoke(moduleOptions);
             });
             return application;
         }
@@ -35,11 +34,10 @@ namespace Sitko.Core.Grpc.Client.External
             Action<GrpcClientModuleOptions>? configure = null)
             where TApplication : Application where TClient : ClientBase<TClient>
         {
-            application.AddModule<ExternalGrpcClientModule<TClient>, GrpcClientStaticModuleOptions>((configuration,
-                environment, moduleConfig) =>
+            application.AddExternalGrpcClient<TClient>((configuration, environment, moduleOptions) =>
             {
-                moduleConfig.Address = getAddress(configuration, environment);
-                configure?.Invoke(moduleConfig);
+                moduleOptions.Address = getAddress(configuration, environment);
+                configure?.Invoke(moduleOptions);
             });
             return application;
         }

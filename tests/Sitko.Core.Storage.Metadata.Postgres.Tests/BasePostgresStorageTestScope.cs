@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using Sitko.Core.App;
 using Sitko.Core.Storage.S3;
 using Sitko.Core.Xunit;
 
@@ -9,17 +8,16 @@ namespace Sitko.Core.Storage.Metadata.Postgres.Tests
     {
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
-            base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, S3StorageModule<TestS3StorageSettings>, TestS3StorageSettings>(
-                    (_, _, moduleConfig) =>
-                    {
-                        moduleConfig.Bucket = name.ToLowerInvariant();
-                        moduleConfig.Prefix = "test";
-                    })
-                .AddModule<PostgresStorageMetadataModule<TestS3StorageSettings>,
-                    PostgresStorageMetadataProviderOptions>((_, _, moduleConfig) =>
+            base.ConfigureApplication(application, name);
+            application.AddS3Storage<TestS3StorageSettings>(moduleOptions =>
+            {
+                moduleOptions.Bucket = name.ToLowerInvariant();
+                moduleOptions.Prefix = "test";
+            });
+            application.AddPostgresStorageMetadata<TestS3StorageSettings>(
+                moduleOptions =>
                 {
-                    moduleConfig.Database = name;
+                    moduleOptions.Database = name;
                 });
             return application;
         }

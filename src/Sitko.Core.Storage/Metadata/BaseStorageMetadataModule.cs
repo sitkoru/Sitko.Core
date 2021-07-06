@@ -10,7 +10,7 @@ namespace Sitko.Core.Storage.Metadata
         BaseStorageMetadataModule<TStorageOptions, TProvider, TProviderOptions> : BaseApplicationModule<
             TProviderOptions> where TStorageOptions : StorageOptions
         where TProvider : class, IStorageMetadataProvider<TStorageOptions, TProviderOptions>
-        where TProviderOptions : StorageMetadataProviderOptions, new()
+        where TProviderOptions : StorageMetadataModuleOptions<TStorageOptions>, new()
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             TProviderOptions startupOptions)

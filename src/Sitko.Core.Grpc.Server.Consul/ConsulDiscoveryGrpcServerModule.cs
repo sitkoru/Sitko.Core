@@ -3,7 +3,7 @@ using Sitko.Core.Grpc.Server.Discovery;
 namespace Sitko.Core.Grpc.Server.Consul
 {
     public class
-        GrpcServerConsulModule : GrpcDiscoveryServerModule<ConsulGrpcServicesRegistrar, GrpcServerConsulModuleConfig>
+        ConsulDiscoveryGrpcServerModule : DiscoveryGrpcServerModule<ConsulGrpcServicesRegistrar, ConsulDiscoveryGrpcServerModuleOptions>
     {
         public override string GetOptionsKey()
         {
@@ -11,7 +11,7 @@ namespace Sitko.Core.Grpc.Server.Consul
         }
     }
 
-    public class GrpcServerConsulModuleConfig : GrpcServerOptions
+    public class ConsulDiscoveryGrpcServerModuleOptions : GrpcServerModuleOptions
     {
     }
 }

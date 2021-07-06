@@ -6,8 +6,8 @@ using Sitko.Core.Consul;
 
 namespace Sitko.Core.Grpc.Client.Consul
 {
-    public class GrpcClientConsulModule<TClient> : GrpcClientModule<TClient, ConsulGrpcServiceAddressResolver<TClient>,
-        GrpcClientConsulModuleOptions>
+    public class ConsulGrpcClientModule<TClient> : GrpcClientModule<TClient, ConsulGrpcServiceAddressResolver<TClient>,
+        ConsulGrpcClientModuleOptions>
         where TClient : ClientBase<TClient>
     {
         public override string GetOptionsKey()
@@ -16,13 +16,13 @@ namespace Sitko.Core.Grpc.Client.Consul
         }
 
         public override IEnumerable<Type> GetRequiredModules(ApplicationContext context,
-            GrpcClientConsulModuleOptions options)
+            ConsulGrpcClientModuleOptions options)
         {
             return new List<Type> {typeof(IConsulModule)};
         }
     }
 
-    public class GrpcClientConsulModuleOptions : GrpcClientModuleOptions
+    public class ConsulGrpcClientModuleOptions : GrpcClientModuleOptions
     {
     }
 }

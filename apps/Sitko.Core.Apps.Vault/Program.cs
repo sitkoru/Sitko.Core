@@ -27,12 +27,13 @@ namespace Sitko.Core.Apps.Vault
     {
         public VaultApplication(string[] args) : base(args)
         {
-            this.AddModule<VaultConfigurationModule, VaultConfigurationModuleOptions>();
+            this
+                .AddVaultConfiguration()
+                .AddSonyFlakeIdProvider();
             ConfigureServices((_, hostBuilderContext, services) =>
             {
                 services.Configure<TestOptions>(hostBuilderContext.Configuration.GetSection("Test"));
             });
-            AddModule<SonyFlakeModule, SonyFlakeModuleOptions>();
         }
     }
 

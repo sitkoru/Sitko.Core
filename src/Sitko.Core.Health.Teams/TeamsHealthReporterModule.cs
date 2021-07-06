@@ -4,10 +4,10 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Health.Teams
 {
-    public class TeamsHealthReporterModule : BaseApplicationModule<TeamsHealthCheckPublisherOptions>
+    public class TeamsHealthReporterModule : BaseApplicationModule<TeamsHealthReporterModuleOptions>
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TeamsHealthCheckPublisherOptions startupOptions)
+            TeamsHealthReporterModuleOptions startupOptions)
         {
             base.ConfigureServices(context, services, startupOptions);
             services.Configure<HealthCheckPublisherOptions>(_ => { });

@@ -3,13 +3,13 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Health.Telegram
 {
-    public class TelegramHealthCheckPublisherOptions : BaseModuleOptions
+    public class TelegramHealthReporterModuleOptions : BaseModuleOptions
     {
         public string Token { get; set; } = string.Empty;
         public long ChatId { get; set; } = 0;
     }
 
-    public class TelegramHealthCheckPublisherOptionsValidator : AbstractValidator<TelegramHealthCheckPublisherOptions>
+    public class TelegramHealthCheckPublisherOptionsValidator : AbstractValidator<TelegramHealthReporterModuleOptions>
     {
         public TelegramHealthCheckPublisherOptionsValidator()
         {

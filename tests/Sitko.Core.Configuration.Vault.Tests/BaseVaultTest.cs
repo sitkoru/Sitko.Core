@@ -19,7 +19,7 @@ namespace Sitko.Core.Configuration.Vault.Tests
         {
             base.ConfigureApplication(application, name);
 
-            application.AddModule<VaultConfigurationModule, VaultConfigurationModuleOptions>();
+            application.AddVaultConfiguration();
             application.ConfigureServices((_, context, collection) =>
             {
                 collection.Configure<TestConfig>(context.Configuration.GetSection("test"));

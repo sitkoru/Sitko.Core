@@ -101,7 +101,7 @@ namespace Sitko.Core.Health.Telegram.Tests
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             base.ConfigureApplication(application, name);
-            application.AddModule<TelegramHealthReporterModule, TelegramHealthCheckPublisherOptions>();
+            application.AddTelegramHealthReporter();
             return application;
         }
     }

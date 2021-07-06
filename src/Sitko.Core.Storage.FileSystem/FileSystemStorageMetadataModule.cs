@@ -3,7 +3,7 @@
 namespace Sitko.Core.Storage.FileSystem
 {
     public class FileSystemStorageMetadataModule<TStorageOptions> : BaseStorageMetadataModule<TStorageOptions,
-        FileSystemStorageMetadataProvider<TStorageOptions>, FileSystemStorageMetadataProviderOptions>
+        FileSystemStorageMetadataProvider<TStorageOptions>, FileSystemStorageMetadataModuleOptions<TStorageOptions>>
         where TStorageOptions : StorageOptions, IFileSystemStorageOptions
     {
         public override string GetOptionsKey()

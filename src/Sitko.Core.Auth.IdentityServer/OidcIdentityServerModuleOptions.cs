@@ -5,7 +5,7 @@ using IdentityModel;
 
 namespace Sitko.Core.Auth.IdentityServer
 {
-    public class OidcAuthOptions : IdentityServerAuthOptions
+    public class OidcIdentityServerModuleOptions : IdentityServerAuthOptions
     {
         public string? OidcClientId { get; set; }
         public string? OidcClientSecret { get; set; }
@@ -25,7 +25,7 @@ namespace Sitko.Core.Auth.IdentityServer
         public bool SlidingExpiration { get; set; } = true;
     }
 
-    public class OidcAuthOptionsValidator : IdentityServerAuthOptionsValidator<OidcAuthOptions>
+    public class OidcAuthOptionsValidator : IdentityServerAuthOptionsValidator<OidcIdentityServerModuleOptions>
     {
         public OidcAuthOptionsValidator()
         {

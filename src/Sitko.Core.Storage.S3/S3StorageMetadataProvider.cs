@@ -12,11 +12,11 @@ using Sitko.Core.Storage.Metadata;
 namespace Sitko.Core.Storage.S3
 {
     public class S3StorageMetadataProvider<TStorageOptions> : EmbedStorageMetadataProvider<S3Storage<TStorageOptions>,
-        TStorageOptions, S3StorageMetadataProviderOptions>
+        TStorageOptions, S3StorageMetadataModuleOptions<TStorageOptions>>
         where TStorageOptions : S3StorageOptions, new()
     {
         public S3StorageMetadataProvider(IServiceProvider serviceProvider,
-            IOptionsMonitor<S3StorageMetadataProviderOptions> options,
+            IOptionsMonitor<S3StorageMetadataModuleOptions<TStorageOptions>> options,
             IOptionsMonitor<TStorageOptions> storageOptions,
             ILogger<S3StorageMetadataProvider<TStorageOptions>> logger) : base(serviceProvider, options, storageOptions,
             logger)
@@ -59,7 +59,8 @@ namespace Sitko.Core.Storage.S3
         }
     }
 
-    public class S3StorageMetadataProviderOptions : EmbedStorageMetadataProviderOptions
+    public class S3StorageMetadataModuleOptions<TStorageOptions> : EmbedStorageMetadataModuleOptions<TStorageOptions>
+        where TStorageOptions : StorageOptions
     {
     }
 }

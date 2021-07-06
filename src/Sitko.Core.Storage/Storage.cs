@@ -82,8 +82,7 @@ namespace Sitko.Core.Storage
             var destinationName = GetStorageFileName(fileName);
             if (!string.IsNullOrEmpty(Options.Prefix)) path = Path.Combine(Options.Prefix, path);
 
-            string? destinationPath = Helpers.PreparePath(Path.Combine(path, destinationName))!;
-            return destinationPath;
+            return Helpers.PreparePath(Path.Combine(path, destinationName))!;
         }
 
         protected abstract Task<bool> DoSaveAsync(string path, Stream file,

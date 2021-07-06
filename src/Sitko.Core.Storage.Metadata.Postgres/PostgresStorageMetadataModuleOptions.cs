@@ -2,7 +2,8 @@
 
 namespace Sitko.Core.Storage.Metadata.Postgres
 {
-    public class PostgresStorageMetadataProviderOptions : StorageMetadataProviderOptions
+    public class PostgresStorageMetadataModuleOptions<TStorageOptions> : StorageMetadataModuleOptions<TStorageOptions>
+        where TStorageOptions : StorageOptions
     {
         public string Host { get; set; } = "localhost";
         public int Port { get; set; } = 5432;
@@ -22,7 +23,6 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             if (!string.IsNullOrEmpty(Password)) builder.Password = Password;
 
             builder.Database = Database;
-            // builder.SearchPath = $"{Schema},public";
             return builder.ConnectionString;
         }
     }

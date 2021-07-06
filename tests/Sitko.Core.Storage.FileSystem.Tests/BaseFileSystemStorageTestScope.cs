@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Sitko.Core.App;
 using Sitko.Core.Xunit;
 
 namespace Sitko.Core.Storage.FileSystem.Tests
@@ -12,16 +11,15 @@ namespace Sitko.Core.Storage.FileSystem.Tests
 
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
-            return base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, FileSystemStorageModule<TestFileSystemStorageSettings>,
-                    TestFileSystemStorageSettings>(
-                    (_, _, moduleConfig) =>
-                    {
-                        moduleConfig.PublicUri = new Uri(_folder);
-                        moduleConfig.StoragePath = _folder;
-                    })
-                .AddModule<TestApplication, FileSystemStorageMetadataModule<TestFileSystemStorageSettings>,
-                    FileSystemStorageMetadataProviderOptions>();
+            base.ConfigureApplication(application, name);
+            application.AddFileSystemStorage<TestFileSystemStorageSettings>(
+                moduleOptions =>
+                {
+                    moduleOptions.PublicUri = new Uri(_folder);
+                    moduleOptions.StoragePath = _folder;
+                });
+            application.AddFileSystemStorageMetadata<TestFileSystemStorageSettings>();
+            return application;
         }
 
         public override async ValueTask DisposeAsync()

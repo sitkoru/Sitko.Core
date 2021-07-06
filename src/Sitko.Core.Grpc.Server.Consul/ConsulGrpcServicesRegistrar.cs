@@ -19,13 +19,13 @@ namespace Sitko.Core.Grpc.Server.Consul
 {
     public class ConsulGrpcServicesRegistrar : IGrpcServicesRegistrar, IAsyncDisposable
     {
-        private readonly IOptionsMonitor<GrpcServerConsulModuleConfig> _optionsMonitor;
+        private readonly IOptionsMonitor<ConsulDiscoveryGrpcServerModuleOptions> _optionsMonitor;
         private readonly IApplication _application;
         private readonly IConsulClient? _consulClient;
         private readonly string _host = "127.0.0.1";
         private readonly bool _inContainer = DockerHelper.IsRunningInDocker();
         private readonly ILogger<ConsulGrpcServicesRegistrar> _logger;
-        private GrpcServerConsulModuleConfig Options => _optionsMonitor.CurrentValue;
+        private ConsulDiscoveryGrpcServerModuleOptions Options => _optionsMonitor.CurrentValue;
         private readonly int _port;
 
         private readonly ConcurrentDictionary<string, string> _registeredServices = new();
@@ -33,7 +33,7 @@ namespace Sitko.Core.Grpc.Server.Consul
         private bool _disposed;
         private IScheduledTask? _updateTtlTask;
 
-        public ConsulGrpcServicesRegistrar(IOptionsMonitor<GrpcServerConsulModuleConfig> optionsMonitor,
+        public ConsulGrpcServicesRegistrar(IOptionsMonitor<ConsulDiscoveryGrpcServerModuleOptions> optionsMonitor,
             IApplication application,
             IServer server, IScheduler scheduler, ILogger<ConsulGrpcServicesRegistrar> logger,
             IConsulClient? consulClient = null)

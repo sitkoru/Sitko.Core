@@ -5,7 +5,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Auth.IdentityServer
 {
-    public class JwtIdentityServerModule : IdentityServerModule<JwtAuthOptions>
+    public class JwtIdentityServerModule : IdentityServerModule<JwtIdentityServerModuleOptions>
     {
         public override string GetOptionsKey()
         {
@@ -13,7 +13,7 @@ namespace Sitko.Core.Auth.IdentityServer
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            JwtAuthOptions startupOptions)
+            JwtIdentityServerModuleOptions startupOptions)
         {
             base.ConfigureServices(context, services, startupOptions);
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();

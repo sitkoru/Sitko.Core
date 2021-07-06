@@ -9,7 +9,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
 {
     public class
         PostgresStorageMetadataModule<TStorageOptions> : BaseStorageMetadataModule<TStorageOptions,
-            PostgresStorageMetadataProvider<TStorageOptions>, PostgresStorageMetadataProviderOptions>
+            PostgresStorageMetadataProvider<TStorageOptions>, PostgresStorageMetadataModuleOptions<TStorageOptions>>
         where TStorageOptions : StorageOptions
     {
         public override string GetOptionsKey()
@@ -18,12 +18,13 @@ namespace Sitko.Core.Storage.Metadata.Postgres
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            PostgresStorageMetadataProviderOptions startupOptions)
+            PostgresStorageMetadataModuleOptions<TStorageOptions> startupOptions)
         {
             base.ConfigureServices(context, services, startupOptions);
             services.AddDbContextFactory<StorageDbContext>((serviceProvider, builder) =>
             {
-                var options = serviceProvider.GetRequiredService<IOptions<PostgresStorageMetadataProviderOptions>>();
+                var options = serviceProvider
+                    .GetRequiredService<IOptions<PostgresStorageMetadataModuleOptions<TStorageOptions>>>();
                 var connBuilder = new NpgsqlConnectionStringBuilder
                 {
                     Host = options.Value.Host,

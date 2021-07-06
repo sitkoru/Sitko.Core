@@ -7,14 +7,14 @@ using Sitko.Core.App.Logging;
 
 namespace Sitko.Core.Graylog
 {
-    public class GraylogModule : BaseApplicationModule<GraylogLoggingOptions>
+    public class GraylogModule : BaseApplicationModule<GraylogModuleOptions>
     {
         public override string GetOptionsKey()
         {
             return "Logging:Graylog";
         }
 
-        public override void ConfigureLogging(ApplicationContext context, GraylogLoggingOptions options,
+        public override void ConfigureLogging(ApplicationContext context, GraylogModuleOptions options,
             LoggerConfiguration loggerConfiguration,
             LogLevelSwitcher logLevelSwitcher)
         {

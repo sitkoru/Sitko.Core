@@ -38,7 +38,9 @@ namespace Sitko.Core.Storage.Metadata
     {
     }
 
-    public abstract class StorageMetadataProviderOptions : BaseModuleOptions
+    // ReSharper disable once UnusedTypeParameter
+    public abstract class StorageMetadataModuleOptions<TStorageOptions> : BaseModuleOptions
+        where TStorageOptions : StorageOptions
     {
     }
 }

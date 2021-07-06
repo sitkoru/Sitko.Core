@@ -14,7 +14,7 @@ namespace Sitko.Core.Storage.Metadata
         EmbedStorageMetadataProvider<TStorage, TStorageOptions, TOptions> : BaseStorageMetadataProvider<TOptions,
             TStorageOptions>
         where TStorage : IStorage<TStorageOptions>
-        where TOptions : EmbedStorageMetadataProviderOptions
+        where TOptions : EmbedStorageMetadataModuleOptions<TStorageOptions>
         where TStorageOptions : StorageOptions
     {
         private readonly IServiceProvider _serviceProvider;
@@ -111,7 +111,8 @@ namespace Sitko.Core.Storage.Metadata
         }
     }
 
-    public class EmbedStorageMetadataProviderOptions : StorageMetadataProviderOptions
+    public class EmbedStorageMetadataModuleOptions<TStorageOptions> : StorageMetadataModuleOptions<TStorageOptions>
+        where TStorageOptions : StorageOptions
     {
         public TimeSpan StorageTreeCacheTimeout { get; set; } = TimeSpan.FromMinutes(30);
     }

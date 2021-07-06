@@ -21,7 +21,7 @@ namespace Sitko.Core.ElasticStack.Tests
     {
         public ElasticApplication(string[] args) : base(args)
         {
-            AddModule<ElasticStackModule, ElasticStackModuleOptions>();
+            this.AddElasticStack();
         }
     }
 }

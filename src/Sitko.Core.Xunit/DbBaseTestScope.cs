@@ -25,21 +25,18 @@ namespace Sitko.Core.Xunit
                 !outBool;
             if (testInMemory)
             {
-                application.AddModule<InMemoryDatabaseModule<TDbContext>, InMemoryDatabaseModuleOptions<TDbContext>>(
-                    (_, _, moduleConfig) =>
+                application.AddInMemoryDatabase<TDbContext>(moduleOptions =>
+                {
+                    moduleOptions.Database = name;
+                    moduleOptions.ConfigureDbContextOptions = (builder, _, conf, env) =>
                     {
-                        moduleConfig.Database = name;
-                        moduleConfig.ConfigureDbContextOptions = (builder, _, conf, env) =>
-                        {
-                            ConfigureInMemoryDatabaseModule(builder, conf, env);
-                        };
-                    });
+                        ConfigureInMemoryDatabaseModule(builder, conf, env);
+                    };
+                });
             }
             else
             {
-                application.AddModule<PostgresModule<TDbContext>, PostgresDatabaseModuleOptions<TDbContext>>((
-                    configuration,
-                    environment, moduleOptions) =>
+                application.AddPostgresDatabase<TDbContext>((configuration, environment, moduleOptions) =>
                 {
                     moduleOptions.Database = $"{application.Id}_{name}";
                     ConfigurePostgresDatabaseModule(configuration, environment, moduleOptions, application.Id, name);

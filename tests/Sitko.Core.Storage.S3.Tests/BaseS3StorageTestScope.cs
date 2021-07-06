@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Sitko.Core.App;
 using Sitko.Core.Xunit;
 
 namespace Sitko.Core.Storage.S3.Tests
@@ -11,14 +10,15 @@ namespace Sitko.Core.Storage.S3.Tests
 
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
-            return base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, S3StorageModule<TestS3StorageSettings>, TestS3StorageSettings>(
-                    (_, _, moduleConfig) =>
-                    {
-                        moduleConfig.Bucket = _bucketName.ToString();
-                        moduleConfig.Prefix = "test";
-                    }).AddModule<TestApplication, S3StorageMetadataModule<TestS3StorageSettings>,
-                    S3StorageMetadataProviderOptions>();
+            base.ConfigureApplication(application, name);
+            application.AddS3Storage<TestS3StorageSettings>(moduleOptions =>
+            {
+                moduleOptions.Bucket = _bucketName.ToString().ToLowerInvariant();
+                moduleOptions.Prefix = "test";
+            });
+            application.AddS3StorageMetadata<TestS3StorageSettings>();
+
+            return application;
         }
 
         public override async ValueTask DisposeAsync()

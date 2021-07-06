@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.UserSecrets;
-using Sitko.Core.App;
 using Sitko.Core.Repository.EntityFrameworkCore;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -160,7 +159,7 @@ namespace Sitko.Core.Repository.Tests
             Assert.NotNull(foo.Bar);
             Assert.NotNull(foo.Bar.Test);
         }
-        
+
         [Fact]
         public async Task ThreadSafe()
         {
@@ -246,21 +245,24 @@ namespace Sitko.Core.Repository.Tests
 
     public class TestRepository : EFRepository<TestModel, Guid, TestDbContext>
     {
-        public TestRepository(EFRepositoryContext<TestModel, Guid, TestDbContext> repositoryContext) : base(repositoryContext)
+        public TestRepository(EFRepositoryContext<TestModel, Guid, TestDbContext> repositoryContext) : base(
+            repositoryContext)
         {
         }
     }
 
     public class BarRepository : EFRepository<BarModel, Guid, TestDbContext>
     {
-        public BarRepository(EFRepositoryContext<BarModel, Guid, TestDbContext> repositoryContext) : base(repositoryContext)
+        public BarRepository(EFRepositoryContext<BarModel, Guid, TestDbContext> repositoryContext) : base(
+            repositoryContext)
         {
         }
     }
 
     public class FooRepository : EFRepository<FooModel, Guid, TestDbContext>
     {
-        public FooRepository(EFRepositoryContext<FooModel, Guid, TestDbContext> repositoryContext) : base(repositoryContext)
+        public FooRepository(EFRepositoryContext<FooModel, Guid, TestDbContext> repositoryContext) : base(
+            repositoryContext)
         {
         }
     }
@@ -273,8 +275,8 @@ namespace Sitko.Core.Repository.Tests
     {
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
-            return base.ConfigureApplication(application, name)
-                .AddModule<TestApplication, EFRepositoriesModule<EFTestScope>, EFRepositoriesModuleOptions>();
+            application.AddEFRepositories<EFTestScope>();
+            return base.ConfigureApplication(application, name);
         }
     }
 }

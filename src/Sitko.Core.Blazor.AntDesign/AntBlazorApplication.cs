@@ -7,7 +7,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents
     {
         public AntBlazorApplication(string[] args) : base(args)
         {
-            AddModule<BlazorFileUploadModule>();
+            this.AddBlazorFileUpload();
         }
     }
 }

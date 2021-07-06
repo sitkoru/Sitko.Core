@@ -6,7 +6,7 @@ using Sitko.Core.App;
 namespace Sitko.Core.Storage.ImgProxy
 {
     public class
-        StorageImgProxyModule<TStorageOptions> : BaseApplicationModule<StorageImgProxyModuleOptions<TStorageOptions>>
+        ImgProxyStorageModule<TStorageOptions> : BaseApplicationModule<ImgProxyStorageModuleOptions<TStorageOptions>>
         where TStorageOptions : StorageOptions
     {
         public override string GetOptionsKey()
@@ -15,14 +15,14 @@ namespace Sitko.Core.Storage.ImgProxy
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            StorageImgProxyModuleOptions<TStorageOptions> startupOptions)
+            ImgProxyStorageModuleOptions<TStorageOptions> startupOptions)
         {
             base.ConfigureServices(context, services, startupOptions);
             services.AddSingleton<IImgProxyUrlGenerator<TStorageOptions>, ImgProxyUrlGenerator<TStorageOptions>>();
         }
 
         public override IEnumerable<Type> GetRequiredModules(ApplicationContext context,
-            StorageImgProxyModuleOptions<TStorageOptions> options)
+            ImgProxyStorageModuleOptions<TStorageOptions> options)
         {
             return new[] {typeof(IStorageModule)};
         }
@@ -30,7 +30,7 @@ namespace Sitko.Core.Storage.ImgProxy
 
     // Generic parameter is required for dependency injection
     // ReSharper disable once UnusedTypeParameter
-    public class StorageImgProxyModuleOptions<TStorageOptions> : BaseModuleOptions
+    public class ImgProxyStorageModuleOptions<TStorageOptions> : BaseModuleOptions
         where TStorageOptions : StorageOptions
     {
         public string Host { get; set; } = "";

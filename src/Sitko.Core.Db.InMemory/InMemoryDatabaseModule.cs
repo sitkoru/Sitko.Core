@@ -5,7 +5,8 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Db.InMemory
 {
-    public class InMemoryDatabaseModule<TDbContext> : BaseDbModule<TDbContext, InMemoryDatabaseModuleOptions<TDbContext>>
+    public class
+        InMemoryDatabaseModule<TDbContext> : BaseDbModule<TDbContext, InMemoryDatabaseModuleOptions<TDbContext>>
         where TDbContext : DbContext
     {
         public override string GetOptionsKey()

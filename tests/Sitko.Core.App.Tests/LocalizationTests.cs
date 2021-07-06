@@ -35,8 +35,8 @@ namespace Sitko.Core.App.Tests
             var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
             var localized = provider["Bar: {0}", 0];
             Assert.Equal("Бар: 0", localized);
-        }      
-        
+        }
+
         [Fact]
         public async Task NoLocalizer()
         {
@@ -45,7 +45,7 @@ namespace Sitko.Core.App.Tests
             var localized = provider["Bar"];
             Assert.Equal("Bar", localized);
         }
-        
+
         [Fact]
         public async Task NoLocalizerParameters()
         {
@@ -167,11 +167,10 @@ namespace Sitko.Core.App.Tests
     {
         public LocalizationTestApplication(string[] args) : base(args)
         {
-            AddModule<JsonLocalizationModule, JsonLocalizationModuleOptions>(
-                (_, _, moduleConfig) =>
-                {
-                    moduleConfig.AddDefaultResource<Default>();
-                });
+            this.AddJsonLocalization(moduleOptions =>
+            {
+                moduleOptions.AddDefaultResource<Default>();
+            });
         }
     }
 

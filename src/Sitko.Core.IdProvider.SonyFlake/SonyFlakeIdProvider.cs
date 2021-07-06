@@ -9,12 +9,12 @@ namespace Sitko.Core.IdProvider.SonyFlake
 {
     public class SonyFlakeIdProvider : IIdProvider
     {
-        private readonly IOptionsMonitor<SonyFlakeModuleOptions> _optionsMonitor;
+        private readonly IOptionsMonitor<SonyFlakeIdProviderModuleOptions> _optionsMonitor;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<SonyFlakeIdProvider> _logger;
         private HttpClient _httpClient;
 
-        public SonyFlakeIdProvider(IOptionsMonitor<SonyFlakeModuleOptions> optionsMonitor,
+        public SonyFlakeIdProvider(IOptionsMonitor<SonyFlakeIdProviderModuleOptions> optionsMonitor,
             IHttpClientFactory httpClientFactory, ILogger<SonyFlakeIdProvider> logger)
         {
             _optionsMonitor = optionsMonitor;

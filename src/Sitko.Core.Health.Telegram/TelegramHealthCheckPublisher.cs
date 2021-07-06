@@ -12,12 +12,12 @@ using Telegram.Bot.Types.Enums;
 
 namespace Sitko.Core.Health.Telegram
 {
-    public class TelegramHealthCheckPublisher : BaseHealthCheckPublisher<TelegramHealthCheckPublisherOptions>
+    public class TelegramHealthCheckPublisher : BaseHealthCheckPublisher<TelegramHealthReporterModuleOptions>
     {
         private readonly ChatId _chatId;
         private readonly ITelegramBotClient _telegramBotClient;
 
-        public TelegramHealthCheckPublisher(IOptionsMonitor<TelegramHealthCheckPublisherOptions> options,
+        public TelegramHealthCheckPublisher(IOptionsMonitor<TelegramHealthReporterModuleOptions> options,
             ILogger<TelegramHealthCheckPublisher> logger, IHostEnvironment hostingEnvironment,
             IHttpClientFactory httpClientFactory) : base(options, logger, hostingEnvironment)
         {

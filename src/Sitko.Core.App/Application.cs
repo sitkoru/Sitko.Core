@@ -565,6 +565,15 @@ namespace Sitko.Core.App
             return this;
         }
 
+        public Application ConfigureServices(Action<IServiceCollection> configure)
+        {
+            _servicesConfigurationActions.Add((_, _, services) =>
+            {
+                configure(services);
+            });
+            return this;
+        }
+
         public Application ConfigureAppConfiguration(
             Action<ApplicationContext, HostBuilderContext, IConfigurationBuilder> configure)
         {
@@ -580,7 +589,7 @@ namespace Sitko.Core.App
         }
 
         public Application AddModule<TModule, TModuleOptions>(
-            Action<IConfiguration, IHostEnvironment, TModuleOptions>? configureOptions = null,
+            Action<IConfiguration, IHostEnvironment, TModuleOptions> configureOptions,
             string? optionsKey = null)
             where TModule : IApplicationModule<TModuleOptions>, new()
             where TModuleOptions : BaseModuleOptions, new()
@@ -588,50 +597,18 @@ namespace Sitko.Core.App
             RegisterModule<TModule, TModuleOptions>(configureOptions, optionsKey);
             return this;
         }
-    }
 
-    public static class ApplicationExtensions
-    {
-        public static TApplication ConfigureServices<TApplication>(this TApplication application,
-            Action<ApplicationContext, HostBuilderContext, IServiceCollection> configure)
-            where TApplication : Application
-        {
-            application.ConfigureServices(configure);
-            return application;
-        }
-
-        public static TApplication ConfigureLogLevel<TApplication>(this TApplication application, string source,
-            LogEventLevel level) where TApplication : Application
-        {
-            application.ConfigureLogLevel(source, level);
-            return application;
-        }
-
-        public static TApplication AddModule<TApplication, TModule, TModuleOptions>(this TApplication application,
-            Action<IConfiguration, IHostEnvironment, TModuleOptions>? configureOptions = null)
-            where TApplication : Application
+        public Application AddModule<TModule, TModuleOptions>(
+            Action<TModuleOptions>? configureOptions = null,
+            string? optionsKey = null)
             where TModule : IApplicationModule<TModuleOptions>, new()
             where TModuleOptions : BaseModuleOptions, new()
         {
-            application.AddModule<TModule, TModuleOptions>(configureOptions);
-            return application;
+            return AddModule<TModule, TModuleOptions>((_, _, moduleOptions) =>
+            {
+                configureOptions?.Invoke(moduleOptions);
+            }, optionsKey);
         }
-
-        public static TApplication AddModule<TApplication, TModule>(this TApplication application)
-            where TModule : BaseApplicationModule, new()
-            where TApplication : Application
-        {
-            application.AddModule<TModule, BaseApplicationModuleOptions>();
-            return application;
-        }
-
-        // public static TApplication ConfigureAppConfiguration<TApplication>(this TApplication application,
-        //     Action<ApplicationContext, HostBuilderContext, IConfigurationBuilder> action)
-        //     where TApplication : Application
-        // {
-        //     application.ConfigureAppConfiguration(action);
-        //     return application;
-        // }
     }
 
     public class ApplicationContext

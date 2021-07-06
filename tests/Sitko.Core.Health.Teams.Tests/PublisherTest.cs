@@ -101,7 +101,7 @@ namespace Sitko.Core.Health.Teams.Tests
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             base.ConfigureApplication(application, name);
-            application.AddModule<TeamsHealthReporterModule, TeamsHealthCheckPublisherOptions>();
+            application.AddTeamsHealthReporter();
             return application;
         }
     }

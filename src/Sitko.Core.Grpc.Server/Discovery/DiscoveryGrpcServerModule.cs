@@ -8,8 +8,8 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Server.Discovery
 {
-    public abstract class GrpcDiscoveryServerModule<TRegistrar, TConfig> : BaseGrpcServerModule<TConfig>
-        where TRegistrar : class, IGrpcServicesRegistrar where TConfig : GrpcServerOptions, new()
+    public abstract class DiscoveryGrpcServerModule<TRegistrar, TConfig> : BaseGrpcServerModule<TConfig>
+        where TRegistrar : class, IGrpcServicesRegistrar where TConfig : GrpcServerModuleOptions, new()
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             TConfig startupOptions)

@@ -10,7 +10,7 @@ using StackExchange.Redis;
 
 namespace Sitko.Core.Auth.IdentityServer
 {
-    public class OidcIdentityServerModule : IdentityServerModule<OidcAuthOptions>
+    public class OidcIdentityServerModule : IdentityServerModule<OidcIdentityServerModuleOptions>
     {
         public override string GetOptionsKey()
         {
@@ -18,7 +18,7 @@ namespace Sitko.Core.Auth.IdentityServer
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            OidcAuthOptions startupOptions)
+            OidcIdentityServerModuleOptions startupOptions)
         {
             base.ConfigureServices(context, services, startupOptions);
 

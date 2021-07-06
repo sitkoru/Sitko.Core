@@ -8,9 +8,9 @@ namespace Sitko.Core.Grpc.Server.Tests
     {
         public TestApplication(string[] args) : base(args)
         {
-            AddModule<GrpcServerModule, GrpcServerOptions>((_, _, moduleConfig) =>
+            this.AddGrpcServer(moduleOptions =>
             {
-                moduleConfig.RegisterService<TestServiceImpl>();
+                moduleOptions.RegisterService<TestServiceImpl>();
             });
         }
 

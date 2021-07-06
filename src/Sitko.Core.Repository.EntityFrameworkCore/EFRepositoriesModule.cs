@@ -3,11 +3,11 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore
 {
-    public class EFRepositoriesModule<T> : RepositoriesModule<T, EFRepositoriesModuleOptions>
+    public class EFRepositoriesModule<TAssembly> : RepositoriesModule<TAssembly, EFRepositoriesModuleOptions>
     {
         public override string GetOptionsKey()
         {
-            return $"Repositories:EF:{typeof(T).Name}";
+            return $"Repositories:EF:{typeof(TAssembly).Name}";
         }
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
@@ -17,7 +17,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             services.AddScoped(typeof(EFRepositoryContext<,,>));
 
             services.Scan(s =>
-                s.FromAssemblyOf<T>().AddClasses(classes => classes.AssignableTo(typeof(EFRepository<,,>)))
+                s.FromAssemblyOf<TAssembly>().AddClasses(classes => classes.AssignableTo(typeof(EFRepository<,,>)))
                     .AsSelfWithInterfaces().WithScopedLifetime());
         }
     }

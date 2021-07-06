@@ -11,11 +11,11 @@ using TeamsHook.NET;
 
 namespace Sitko.Core.Health.Teams
 {
-    public class TeamsHealthCheckPublisher : BaseHealthCheckPublisher<TeamsHealthCheckPublisherOptions>
+    public class TeamsHealthCheckPublisher : BaseHealthCheckPublisher<TeamsHealthReporterModuleOptions>
     {
         private readonly IHttpClientFactory _httpClientFactory;
 
-        public TeamsHealthCheckPublisher(IOptionsMonitor<TeamsHealthCheckPublisherOptions> options,
+        public TeamsHealthCheckPublisher(IOptionsMonitor<TeamsHealthReporterModuleOptions> options,
             ILogger<TeamsHealthCheckPublisher> logger, IHostEnvironment hostingEnvironment,
             IHttpClientFactory httpClientFactory) : base(options, logger, hostingEnvironment)
         {

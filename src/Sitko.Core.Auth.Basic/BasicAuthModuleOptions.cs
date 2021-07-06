@@ -1,6 +1,6 @@
 namespace Sitko.Core.Auth.Basic
 {
-    public class BasicAuthOptions : AuthOptions
+    public class BasicAuthModuleOptions : AuthOptions
     {
         public string Realm { get; set; } = "Basic Auth";
         public string Username { get; set; } = string.Empty;
