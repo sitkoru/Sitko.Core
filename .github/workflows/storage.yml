@@ -12,6 +12,7 @@ on:
             - "tests/Sitko.Core.Storage.FileSystem.Tests/**"
             - "tests/Sitko.Core.Storage.S3.Tests/**"
             - "tests/Sitko.Core.Storage.Metadata.Postgres.Tests/**"
+            - ".github/workflows/storage.yml"
     pull_request:
         paths:
             - "src/Sitko.Core.App/**"
@@ -22,6 +23,7 @@ on:
             - "tests/Sitko.Core.Storage.FileSystem.Tests/**"
             - "tests/Sitko.Core.Storage.S3.Tests/**"
             - "tests/Sitko.Core.Storage.Metadata.Postgres.Tests/**"
+            - ".github/workflows/storage.yml"
 
 jobs:
     build:

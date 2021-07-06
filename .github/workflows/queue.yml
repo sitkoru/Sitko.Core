@@ -12,6 +12,7 @@ on:
             - "tests/Sitko.Core.Queue.Tests/**"
             - "tests/Sitko.Core.Queue.InMemory.Tests/**"
             - "tests/Sitko.Core.Queue.Nats.Tests/**"
+            - ".github/workflows/queue.yml"
     pull_request:
         paths:
             - "src/Sitko.Core.App/**"
@@ -22,6 +23,7 @@ on:
             - "tests/Sitko.Core.Queue.Test/**"
             - "tests/Sitko.Core.Queue.InMemory.Tests/**"
             - "tests/Sitko.Core.Queue.Nats.Tests/**"
+            - ".github/workflows/queue.yml"
 
 jobs:
     build:

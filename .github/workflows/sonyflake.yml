@@ -7,12 +7,14 @@ on:
             - "src/Sitko.Core.App/**"
             - "src/Sitko.Core.IdProvider.SonyFlake/**"
             - "tests/Sitko.Core.SonyFlake.Tests/**"
+            - ".github/workflows/sonyflake.yml"
     pull_request:
         branches: [ master ]
         paths:
             - "src/Sitko.Core.App/**"
             - "src/Sitko.Core.IdProvider.SonyFlake/**"
             - "tests/Sitko.Core.SonyFlake.Tests/**"
+            - ".github/workflows/sonlyflake.yml"
 
 jobs:
     build:
