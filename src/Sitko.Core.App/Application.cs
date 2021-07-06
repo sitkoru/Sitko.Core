@@ -120,10 +120,10 @@ namespace Sitko.Core.App
             var tmpConfiguration = tmpHost.Services.GetRequiredService<IConfiguration>();
             var tmpEnvironment = tmpHost.Services.GetRequiredService<IHostEnvironment>();
 
-            var name = GetName();
+            var name = GetName(tmpEnvironment, tmpConfiguration);
             Name = !string.IsNullOrEmpty(name) ? name : tmpEnvironment.ApplicationName;
 
-            var version = GetVersion();
+            var version = GetVersion(tmpEnvironment, tmpConfiguration);
             if (!string.IsNullOrEmpty(version))
             {
                 Version = version;
@@ -151,6 +151,7 @@ namespace Sitko.Core.App
                     {
                         appConfigurationAction(appContext, context, builder);
                     }
+
                     LogCheck("Configure app configuration in modules");
                     foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpApplicationContext))
                     {
@@ -393,12 +394,12 @@ namespace Sitko.Core.App
                 new ApplicationModuleRegistration<TModule, TModuleOptions>(configureOptions, optionsKey));
         }
 
-        protected virtual string? GetName()
+        protected virtual string? GetName(IHostEnvironment environment, IConfiguration configuration)
         {
             return null;
         }
 
-        protected virtual string? GetVersion()
+        protected virtual string? GetVersion(IHostEnvironment environment, IConfiguration configuration)
         {
             return GetType().Assembly.GetName().Version?.ToString();
         }
