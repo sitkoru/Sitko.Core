@@ -33,7 +33,7 @@ namespace Sitko.Core.App.Localization
 
         public string Localize(string message, params object[] arguments)
         {
-            return _localizer is not null ? _localizer[message, arguments]! : message;
+            return _localizer is not null ? _localizer[message, arguments]! : string.Format(message, arguments);
         }
 
         public string this[string name] => Localize(name);

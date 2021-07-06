@@ -4,6 +4,7 @@ using Sitko.Core.App.Localization;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
+
 // ReSharper disable UnusedTypeParameter
 
 namespace Sitko.Core.App.Tests
@@ -25,6 +26,33 @@ namespace Sitko.Core.App.Tests
             var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
             var localized = provider["Bar"];
             Assert.Equal("Бар", localized);
+        }
+
+        [Fact]
+        public async Task LocalizeParameters()
+        {
+            var scope = await GetScopeAsync();
+            var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
+            var localized = provider["Bar: {0}", 0];
+            Assert.Equal("Бар: 0", localized);
+        }      
+        
+        [Fact]
+        public async Task NoLocalizer()
+        {
+            var scope = await GetScopeAsync<NoLocalizationTestScope>();
+            var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
+            var localized = provider["Bar"];
+            Assert.Equal("Bar", localized);
+        }
+        
+        [Fact]
+        public async Task NoLocalizerParameters()
+        {
+            var scope = await GetScopeAsync<NoLocalizationTestScope>();
+            var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
+            var localized = provider["Bar: {0}", 0];
+            Assert.Equal("Bar: 0", localized);
         }
 
         [Fact]
@@ -126,7 +154,7 @@ namespace Sitko.Core.App.Tests
     {
     }
 
-    
+
     public interface LocalizationTests<T, T2, T3>
     {
     }
@@ -148,6 +176,10 @@ namespace Sitko.Core.App.Tests
     }
 
     public class LocalizationTestScope : BaseTestScope<LocalizationTestApplication>
+    {
+    }
+
+    public class NoLocalizationTestScope : BaseTestScope
     {
     }
 }
