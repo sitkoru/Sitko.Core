@@ -15,7 +15,7 @@ namespace Sitko.Core.App.Blazor.Forms
     public abstract class BaseFormComponent<TEntity, TForm> : BaseFormComponent where TForm : BaseForm<TEntity>
         where TEntity : class, new()
     {
-        public TForm? Form { get; private set; }
+        [Inject] public TForm Form { get; private set; } = null!;
 
         [Parameter] public Func<TEntity, Task>? OnAfterSave { get; set; }
         [Parameter] public Func<TEntity, Task>? OnAfterCreate { get; set; }
@@ -26,15 +26,12 @@ namespace Sitko.Core.App.Blazor.Forms
         {
             set
             {
-                if (Form is not null)
+                Form.SetEditContext(value);
+                // ReSharper disable once AsyncVoidLambda
+                value.OnFieldChanged += async (_, args) =>
                 {
-                    Form.SetEditContext(value);
-                    // ReSharper disable once AsyncVoidLambda
-                    value.OnFieldChanged += async (_, args) =>
-                    {
-                        await OnFieldChangeAsync(args.FieldIdentifier);
-                    };
-                }
+                    await OnFieldChangeAsync(args.FieldIdentifier);
+                };
             }
         }
 
@@ -44,7 +41,6 @@ namespace Sitko.Core.App.Blazor.Forms
         protected override async Task InitializeAsync()
         {
             await base.InitializeAsync();
-            Form = GetService<TForm>();
             Form.SetParent(this);
             Form.OnAfterSave = entity => OnAfterSave is not null ? OnAfterSave(entity) : Task.CompletedTask;
             Form.OnAfterCreate = entity => OnAfterCreate is not null ? OnAfterCreate(entity) : Task.CompletedTask;
@@ -59,11 +55,8 @@ namespace Sitko.Core.App.Blazor.Forms
 
         protected virtual async Task OnFieldChangeAsync(FieldIdentifier fieldIdentifier)
         {
-            if (Form is not null)
-            {
-                await Form.FieldChangedAsync(fieldIdentifier);
-                await NotifyStateChangeAsync();
-            }
+            await Form.FieldChangedAsync(fieldIdentifier);
+            await NotifyStateChangeAsync();
         }
     }
 }
