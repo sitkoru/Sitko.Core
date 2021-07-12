@@ -28,9 +28,14 @@ namespace Sitko.Core.Apps.Blazor.Pages
         {
             await base.OnInitializedAsync();
             var bars = await GetService<BarRepository>().GetAllAsync();
+            if (bars.itemsCount == 0)
+            {
+                await GetService<BarRepository>().AddAsync(new BarModel {Bar = "Bar", Id = Guid.NewGuid()});
+                bars = await GetService<BarRepository>().GetAllAsync();
+            }
             Bars = bars.items;
             _barFilter = (await GetService<BarContext>().Bars.Select(a => a.Bar).Distinct().ToListAsync())
-                .Select(x => new TableFilter<string> { Text = x, Value = x }).ToArray();
+                .Select(x => new TableFilter<string> {Text = x, Value = x}).ToArray();
             MarkAsInitialized();
         }
 
@@ -44,6 +49,13 @@ namespace Sitko.Core.Apps.Blazor.Pages
         {
             var metadata = new BarStorageMetadata();
             return Task.FromResult<object>(metadata);
+        }
+
+
+        private Task InitFormModelAsync(BarForm form)
+        {
+            form.Test = Guid.NewGuid();
+            return Task.CompletedTask;
         }
     }
 

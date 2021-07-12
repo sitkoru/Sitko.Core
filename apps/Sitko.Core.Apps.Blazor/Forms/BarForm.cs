@@ -13,6 +13,7 @@ namespace Sitko.Core.Apps.Blazor.Forms
 {
     public class BarForm : BaseRepositoryForm<BarModel, Guid>
     {
+        public Guid Test { get; set; }
         public string Bar { get; set; } = "";
         public List<FooModel> Foos { get; set; } = new();
         public StorageItem? StorageItem { get; set; }

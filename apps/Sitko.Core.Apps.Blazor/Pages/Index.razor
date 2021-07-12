@@ -22,7 +22,14 @@
             </Popconfirm>
         </ActionColumn>
     </BarAntRepositoryList>
-    <AntRepositoryForm Layout="@FormLayout.Vertical" TEntity="BarModel" TEntityPk="Guid" TForm="BarForm" EntityId="Bars.OrderBy(b => b.Id).First().Id" @ref="_frm">
+    <AntRepositoryForm
+        Layout="@FormLayout.Vertical"
+        TEntity="BarModel"
+        TEntityPk="Guid"
+        TForm="BarForm"
+        EntityId="Bars.OrderBy(b => b.Id).First().Id" @ref="_frm"
+        OnInitialize="InitFormModelAsync">
+    <p>Test: @context.Test</p>
     @if (context.StorageItem is not null)
     {
         <p>Storage item: @context.StorageItem</p>

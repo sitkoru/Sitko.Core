@@ -20,6 +20,7 @@ namespace Sitko.Core.App.Blazor.Forms
         [Parameter] public Func<TEntity, Task>? OnAfterSave { get; set; }
         [Parameter] public Func<TEntity, Task>? OnAfterCreate { get; set; }
         [Parameter] public Func<TEntity, Task>? OnAfterUpdate { get; set; }
+        [Parameter] public Func<TForm, Task>? OnInitialize { get; set; }
 
         public override EditContext EditContext
         {
@@ -50,6 +51,11 @@ namespace Sitko.Core.App.Blazor.Forms
             Form.OnAfterUpdate = entity => OnAfterUpdate is not null ? OnAfterUpdate(entity) : Task.CompletedTask;
             await ConfigureFormAsync(Form);
             await InitializeForm(Form);
+            if (OnInitialize is not null)
+            {
+                await OnInitialize(Form);
+            }
+
             MarkAsInitialized();
         }
 
