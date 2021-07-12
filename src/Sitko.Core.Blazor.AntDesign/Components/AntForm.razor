@@ -2,7 +2,7 @@
 @typeparam TForm
 @inherits BaseAntForm<TEntity, TForm>
 
-@if (IsInitialized && Form is not null)
+@if (Form is not null)
 {
     <Form ValidateOnChange="ValidateOnChange" Model="Form" Loading="Form.IsLoading"
           OnFinish="Form.SaveEntityAsync" @ref="AntForm" OnFinishFailed="OnFormErrorAsync"

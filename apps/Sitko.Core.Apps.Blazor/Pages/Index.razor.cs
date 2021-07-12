@@ -21,12 +21,13 @@ namespace Sitko.Core.Apps.Blazor.Pages
         private TableFilter<string>[] _barFilter = Array.Empty<TableFilter<string>>();
         private AntRepositoryForm<BarModel, Guid, BarForm> _frm = null!;
         private BarModel[] _bars = Array.Empty<BarModel>();
+        public BarModel? Bar { get; set; }
         [Inject] public IStorage<TestBlazorStorageOptions> Storage { get; set; } = null!;
         [Inject] public ILocalizationProvider<App> LocalizationProvider { get; set; } = null!;
 
-        protected override async Task OnInitializedAsync()
+        protected override async Task InitializeAsync()
         {
-            await base.OnInitializedAsync();
+            await base.InitializeAsync();
             var bars = await GetService<BarRepository>().GetAllAsync();
             if (bars.itemsCount == 0)
             {
@@ -36,7 +37,7 @@ namespace Sitko.Core.Apps.Blazor.Pages
             Bars = bars.items;
             _barFilter = (await GetService<BarContext>().Bars.Select(a => a.Bar).Distinct().ToListAsync())
                 .Select(x => new TableFilter<string> {Text = x, Value = x}).ToArray();
-            MarkAsInitialized();
+            Bar = Bars.First();
         }
 
         public BarModel[] Bars
