@@ -209,6 +209,9 @@ namespace Sitko.Core.App.Blazor.Components
 
         protected Task InvokeAsync(Action workItem)
             => _renderHandle.Dispatcher.InvokeAsync(workItem);
+        
+        protected Task InvokeAsync(Func<Task> workItem)
+            => _renderHandle.Dispatcher.InvokeAsync(workItem);
 
         void IDisposable.Dispose()
         {
