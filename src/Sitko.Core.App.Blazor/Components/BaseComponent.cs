@@ -313,7 +313,7 @@ namespace Sitko.Core.App.Blazor.Components
             StateHasChanged();
         }
 
-        public Task HandleEventAsync(EventCallbackWorkItem callback, object arg)
+        public Task HandleEventAsync(EventCallbackWorkItem callback, object? arg)
         {
             var task = callback.InvokeAsync(arg);
             var shouldAwaitTask = task.Status != TaskStatus.RanToCompletion &&
