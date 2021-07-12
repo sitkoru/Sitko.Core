@@ -26,9 +26,9 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         [Parameter] public int PageSize { get; set; } = 50;
         [Parameter] public int PageIndex { get; set; } = 1;
 
-        protected override void OnInitialized()
+        protected override void Initialize()
         {
-            base.OnInitialized();
+            base.Initialize();
             var method = typeof(ITableSortModel).GetMethod("SortList", BindingFlags.NonPublic | BindingFlags.Instance);
             if (method is null)
             {
@@ -36,7 +36,6 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             }
 
             _sortMethod = method.MakeGenericMethod(typeof(TItem));
-            MarkAsInitialized();
         }
 
         protected void OnChange(QueryModel<TItem>? queryModel)
@@ -53,7 +52,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
                     {
                         sorts.Add(items =>
                         {
-                            var sortResult = _sortMethod.Invoke(sortEntry, new object?[] { items });
+                            var sortResult = _sortMethod.Invoke(sortEntry, new object?[] {items});
                             if (sortResult is IOrderedQueryable<TItem> orderedQueryable)
                             {
                                 return orderedQueryable;

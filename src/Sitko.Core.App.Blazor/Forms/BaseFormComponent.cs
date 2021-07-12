@@ -41,9 +41,9 @@ namespace Sitko.Core.App.Blazor.Forms
         protected abstract Task ConfigureFormAsync(TForm form);
         protected abstract Task InitializeForm(TForm form);
 
-        protected override async Task OnInitializedAsync()
+        protected override async Task InitializeAsync()
         {
-            await base.OnInitializedAsync();
+            await base.InitializeAsync();
             Form = GetService<TForm>();
             Form.SetParent(this);
             Form.OnAfterSave = entity => OnAfterSave is not null ? OnAfterSave(entity) : Task.CompletedTask;
@@ -55,8 +55,6 @@ namespace Sitko.Core.App.Blazor.Forms
             {
                 await OnInitialize(Form);
             }
-
-            MarkAsInitialized();
         }
 
         protected virtual async Task OnFieldChangeAsync(FieldIdentifier fieldIdentifier)

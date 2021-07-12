@@ -3,243 +3,240 @@
 @using Microsoft.Extensions.Logging
 @inherits BaseComponent
 <h1>@LocalizationProvider["Title"]</h1>
-@if (IsInitialized)
+<BarAntRepositoryList @ref="_barList" PageSize="2">
+    <AntDesign.Column Title="Id" @bind-Field="@context.Id" Sortable Filterable>
+        @context.Id
+    </AntDesign.Column>
+    <AntDesign.Column Title="Название" @bind-Field="@context.Bar" Sortable Filters="_barFilter">
+        @context.Bar
+    </AntDesign.Column>
+    <ActionColumn>
+        <Popconfirm Placement="@PlacementType.Left" Title="@LocalizationProvider["Delete record?"]"
+                    OnConfirm="@(() => _barList.DeleteAsync(context))"
+                    OkText="@LocalizationProvider["Delete"]"
+                    CancelText="@LocalizationProvider["Cancel"]">
+            <Button Size="small" Icon="delete">
+            </Button>
+        </Popconfirm>
+    </ActionColumn>
+</BarAntRepositoryList>
+<AntRepositoryForm
+    Layout="@FormLayout.Vertical"
+    TEntity="BarModel"
+    TEntityPk="Guid"
+    TForm="BarForm"
+    EntityId="Bar.Id" @ref="_frm"
+    OnInitialize="InitFormModelAsync">
+<p>Test: @context.Test</p>
+@if (context.StorageItem is not null)
 {
-    <BarAntRepositoryList @ref="_barList" PageSize="2">
-        <AntDesign.Column Title="Id" @bind-Field="@context.Id" Sortable Filterable>
-            @context.Id
-        </AntDesign.Column>
-        <AntDesign.Column Title="Название" @bind-Field="@context.Bar" Sortable Filters="_barFilter">
-            @context.Bar
-        </AntDesign.Column>
-        <ActionColumn>
-            <Popconfirm Placement="@PlacementType.Left" Title="@LocalizationProvider["Delete record?"]"
-                        OnConfirm="@(() => _barList.DeleteAsync(context))"
-                        OkText="@LocalizationProvider["Delete"]"
-                        CancelText="@LocalizationProvider["Cancel"]">
-                <Button Size="small" Icon="delete">
-                </Button>
-            </Popconfirm>
-        </ActionColumn>
-    </BarAntRepositoryList>
-    <AntRepositoryForm
-        Layout="@FormLayout.Vertical"
-        TEntity="BarModel"
-        TEntityPk="Guid"
-        TForm="BarForm"
-        EntityId="Bars.OrderBy(b => b.Id).First().Id" @ref="_frm"
-        OnInitialize="InitFormModelAsync">
-    <p>Test: @context.Test</p>
-    @if (context.StorageItem is not null)
-    {
-        <p>Storage item: @context.StorageItem</p>
-    }
-    @foreach (var file in context.StorageItems)
-    {
-        <p>Storage item: @file</p>
-    }
-    <AntDesign.FormItem Label="Bar">
-        <AntDesign.Input @bind-Value="@context.Bar"/>
-    </AntDesign.FormItem>
-    <AntDesign.FormItem Label="Simple file input">
-        <AntStorageItemInput
-            Storage="Storage"
-            @bind-Value="context.StorageItem"
-            UploadPath="bars"
-            MaxFileSize="@(2 * 1024 * 1024)"
-            GenerateMetadata="@((_, _) => GenerateMetadataAsync())">
-        </AntStorageItemInput>
-    </AntDesign.FormItem>
-    <AntDesign.FormItem Label="Simple custom file input">
-        <AntStorageItemInput
-            Storage="Storage"
-            @bind-Value="context.StorageItem"
-            UploadPath="bars"
-            MaxFileSize="@(2 * 1024 * 1024)"
-            GenerateMetadata="@((_, _) => GenerateMetadataAsync())">
-            <div>PRESS ME</div>
-        </AntStorageItemInput>
-    </AntDesign.FormItem>
-    <AntDesign.FormItem Label="Multiple file input">
-        <AntStorageItemsInput
-            TValue="ValueCollection<StorageItem>"
-            Storage="Storage"
-            Mode="AntStorageInputMode.Image"
-            MaxAllowedFiles="10"
-            @bind-Value="context.StorageItems"
-            UploadPath="bars"
-            MaxFileSize="@(2 * 1024 * 1024)"
-            GenerateMetadata="@((_, _) => GenerateMetadataAsync())">
-
-        </AntStorageItemsInput>
-    </AntDesign.FormItem>
-    <AntDesign.FormItem Label="Single image">
-        <AntStorageImageInput Storage="@Storage"
-                              MaxFileSize="@(2 * 1024 * 1024)"
-                              UploadPath="bars"
-                              GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
-                              @bind-Value="context.StorageItem"
-                              OnChange="@(_ => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
-        </AntStorageImageInput>
-    </AntDesign.FormItem>
-    <AntDesign.FormItem Label="Single small image">
-        <AntStorageImageInput Storage="@Storage"
-                              Size="small"
-                              MaxFileSize="@(2 * 1024 * 1024)"
-                              UploadPath="bars"
-                              GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
-                              @bind-Value="context.StorageItem"
-                              OnChange="@(_ => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
-        </AntStorageImageInput>
-    </AntDesign.FormItem>
-    <AntDesign.FormItem Label="Single large image">
-        <AntStorageImageInput Storage="@Storage"
-                              Size="large"
-                              MaxFileSize="@(2 * 1024 * 1024)"
-                              UploadPath="bars"
-                              GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
-                              @bind-Value="context.StorageItem"
-                              OnChange="@(_ => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
-        </AntStorageImageInput>
-    </AntDesign.FormItem>
-    <FormItem Label="Multiple images">
-        <AntStorageImagesInput
-            TValue="ValueCollection<StorageItem>"
-            Storage="@Storage"
-            MaxFileSize="@(2 * 1024 * 1024)"
-            UploadPath="bars"
-            GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
-            @bind-Value="context.StorageItems"
-            OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values?.Count ?? 0); return Task.CompletedTask;})">
-        </AntStorageImagesInput>
-    </FormItem>
-    <FormItem Label="Multiple images with custom upload button">
-        <AntStorageImagesInput Storage="@Storage"
-                               TValue="ValueCollection<StorageItem>"
-                               MaxFileSize="@(2 * 1024 * 1024)"
-                               MaxFiles="10"
-                               UploadPath="bars"
-                               GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
-                               @bind-Value="context.StorageItems"
-                               OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values?.Count() ?? 0); return Task.CompletedTask;})">
-            <CustomUploadButton Context="input">
-                <Button OnClick="@(_ => { input.SetValue(new ValueCollection<StorageItem> {context.StorageItem!}); })">Set items</Button>
-            </CustomUploadButton>
-        </AntStorageImagesInput>
-    </FormItem>
-    <FormItem Label="Multiple images with custom upload">
-        <AntStorageImagesInput Storage="@Storage"
-                               TValue="ValueCollection<StorageItem>"
-                               MaxFileSize="@(2 * 1024 * 1024)"
-                               MaxFiles="10"
-                               UploadPath="bars"
-                               GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
-                               @bind-Value="context.StorageItems"
-                               CustomUpload="@(_ => { return Task.FromResult(new ValueCollection<StorageItem> {context.StorageItem!}); })"
-                               OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values?.Count() ?? 0); return Task.CompletedTask;})">
-        </AntStorageImagesInput>
-    </FormItem>
-    @* AVATARS *@
-    <AntDesign.FormItem Label="Single avatar">
-        <AntStorageImageInput Storage="@Storage"
-                              Avatar="true"
-                              MaxFileSize="@(2 * 1024 * 1024)"
-                              UploadPath="bars"
-                              GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
-                              @bind-Value="context.StorageItem"
-                              OnChange="@(_ => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
-        </AntStorageImageInput>
-    </AntDesign.FormItem>
-    <AntDesign.FormItem Label="Single small avatar">
-        <AntStorageImageInput Storage="@Storage"
-                              Avatar="true"
-                              Size="small"
-                              MaxFileSize="@(2 * 1024 * 1024)"
-                              UploadPath="bars"
-                              GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
-                              @bind-Value="context.StorageItem"
-                              OnChange="@(_ => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
-        </AntStorageImageInput>
-    </AntDesign.FormItem>
-    <AntDesign.FormItem Label="Single large avatar">
-        <AntStorageImageInput Storage="@Storage"
-                              Avatar="true"
-                              Size="large"
-                              MaxFileSize="@(2 * 1024 * 1024)"
-                              UploadPath="bars"
-                              GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
-                              @bind-Value="context.StorageItem"
-                              OnChange="@(_ => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
-        </AntStorageImageInput>
-    </AntDesign.FormItem>
-    <FormItem Label="Multiple avatars">
-        <AntStorageImagesInput
-            TValue="ValueCollection<StorageItem>"
-            Avatar="true"
-            Storage="@Storage"
-            MaxFileSize="@(2 * 1024 * 1024)"
-            UploadPath="bars"
-            GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
-            @bind-Value="context.StorageItems"
-            OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values?.Count ?? 0); return Task.CompletedTask;})">
-        </AntStorageImagesInput>
-    </FormItem>
-    @* AVATARS END *@
-    <FormItem Label="Single file">
-        <AntStorageFileInput Storage="@Storage"
-                             MaxFileSize="@(2 * 1024 * 1024)"
-                             UploadPath="bars"
-                             GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
-                             @bind-Value="context.StorageItem"
-                             OnChange="@(storageItem => { Logger.LogInformation("File uploaded: {FileName}", storageItem?.FileName); return Task.CompletedTask;})">
-        </AntStorageFileInput>
-    </FormItem>
-    <FormItem Label="Multiple files">
-        <AntStorageFilesInput Storage="@Storage"
-                              TValue="ValueCollection<StorageItem>"
-                              MaxFileSize="@(2 * 1024 * 1024)"
-                              MaxFiles="10"
-                              UploadPath="bars"
-                              GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
-                              @bind-Value="context.StorageItems"
-                              OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values?.Count() ?? 0); return Task.CompletedTask;})">
-        </AntStorageFilesInput>
-    </FormItem>
-    <FormItem Label="Multiple files with custom upload button">
-        <AntStorageFilesInput Storage="@Storage"
-                              TValue="ValueCollection<StorageItem>"
-                              MaxFileSize="@(2 * 1024 * 1024)"
-                              MaxFiles="10"
-                              UploadPath="bars"
-                              GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
-                              @bind-Value="context.StorageItems"
-                              OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values?.Count() ?? 0); return Task.CompletedTask;})">
-            <CustomUploadButton Context="input">
-                <Button OnClick="@(_ => { input.SetValue(new ValueCollection<StorageItem> {context.StorageItem!}); })">Set items</Button>
-            </CustomUploadButton>
-        </AntStorageFilesInput>
-    </FormItem>
-    <FormItem Label="Multiple files with custom upload">
-        <AntStorageFilesInput Storage="@Storage"
-                              TValue="ValueCollection<StorageItem>"
-                              MaxFileSize="@(2 * 1024 * 1024)"
-                              MaxFiles="10"
-                              UploadPath="bars"
-                              GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
-                              @bind-Value="context.StorageItems"
-                              CustomUpload="@(_ => { return Task.FromResult(new ValueCollection<StorageItem> {context.StorageItem!}); })"
-                              OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values?.Count() ?? 0); return Task.CompletedTask;})">
-        </AntStorageFilesInput>
-    </FormItem>
-    @foreach (var foo in context.Foos)
-    {
-        <AntDesign.FormItem Label="Foo">
-            <AntDesign.Input @bind-Value="@foo.Foo"/>
-        </AntDesign.FormItem>
-        <Button OnClick="() => { context.Foos.Remove(foo); context.NotifyChange();}">Remove foo</Button>
-    }
-    <Button OnClick="() => context.Foos.Add(new FooModel())">Add foo</Button>
-    <Button Disabled="@(!context.CanSave())" OnClick="@context.Save">Save</Button>
-    </AntRepositoryForm>
-    <Button OnClick="async () => await _frm.Form!.ResetAsync()">Reset</Button>
+    <p>Storage item: @context.StorageItem</p>
 }
+@foreach (var file in context.StorageItems)
+{
+    <p>Storage item: @file</p>
+}
+<AntDesign.FormItem Label="Bar">
+    <AntDesign.Input @bind-Value="@context.Bar"/>
+</AntDesign.FormItem>
+<AntDesign.FormItem Label="Simple file input">
+    <AntStorageItemInput
+        Storage="Storage"
+        @bind-Value="context.StorageItem"
+        UploadPath="bars"
+        MaxFileSize="@(2 * 1024 * 1024)"
+        GenerateMetadata="@((_, _) => GenerateMetadataAsync())">
+    </AntStorageItemInput>
+</AntDesign.FormItem>
+<AntDesign.FormItem Label="Simple custom file input">
+    <AntStorageItemInput
+        Storage="Storage"
+        @bind-Value="context.StorageItem"
+        UploadPath="bars"
+        MaxFileSize="@(2 * 1024 * 1024)"
+        GenerateMetadata="@((_, _) => GenerateMetadataAsync())">
+        <div>PRESS ME</div>
+    </AntStorageItemInput>
+</AntDesign.FormItem>
+<AntDesign.FormItem Label="Multiple file input">
+    <AntStorageItemsInput
+        TValue="ValueCollection<StorageItem>"
+        Storage="Storage"
+        Mode="AntStorageInputMode.Image"
+        MaxAllowedFiles="10"
+        @bind-Value="context.StorageItems"
+        UploadPath="bars"
+        MaxFileSize="@(2 * 1024 * 1024)"
+        GenerateMetadata="@((_, _) => GenerateMetadataAsync())">
+
+    </AntStorageItemsInput>
+</AntDesign.FormItem>
+<AntDesign.FormItem Label="Single image">
+    <AntStorageImageInput Storage="@Storage"
+                          MaxFileSize="@(2 * 1024 * 1024)"
+                          UploadPath="bars"
+                          GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
+                          @bind-Value="context.StorageItem"
+                          OnChange="@(_ => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
+    </AntStorageImageInput>
+</AntDesign.FormItem>
+<AntDesign.FormItem Label="Single small image">
+    <AntStorageImageInput Storage="@Storage"
+                          Size="small"
+                          MaxFileSize="@(2 * 1024 * 1024)"
+                          UploadPath="bars"
+                          GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
+                          @bind-Value="context.StorageItem"
+                          OnChange="@(_ => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
+    </AntStorageImageInput>
+</AntDesign.FormItem>
+<AntDesign.FormItem Label="Single large image">
+    <AntStorageImageInput Storage="@Storage"
+                          Size="large"
+                          MaxFileSize="@(2 * 1024 * 1024)"
+                          UploadPath="bars"
+                          GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
+                          @bind-Value="context.StorageItem"
+                          OnChange="@(_ => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
+    </AntStorageImageInput>
+</AntDesign.FormItem>
+<FormItem Label="Multiple images">
+    <AntStorageImagesInput
+        TValue="ValueCollection<StorageItem>"
+        Storage="@Storage"
+        MaxFileSize="@(2 * 1024 * 1024)"
+        UploadPath="bars"
+        GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
+        @bind-Value="context.StorageItems"
+        OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values?.Count ?? 0); return Task.CompletedTask;})">
+    </AntStorageImagesInput>
+</FormItem>
+<FormItem Label="Multiple images with custom upload button">
+    <AntStorageImagesInput Storage="@Storage"
+                           TValue="ValueCollection<StorageItem>"
+                           MaxFileSize="@(2 * 1024 * 1024)"
+                           MaxFiles="10"
+                           UploadPath="bars"
+                           GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
+                           @bind-Value="context.StorageItems"
+                           OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values?.Count() ?? 0); return Task.CompletedTask;})">
+        <CustomUploadButton Context="input">
+            <Button OnClick="@(_ => { input.SetValue(new ValueCollection<StorageItem> {context.StorageItem!}); })">Set items</Button>
+        </CustomUploadButton>
+    </AntStorageImagesInput>
+</FormItem>
+<FormItem Label="Multiple images with custom upload">
+    <AntStorageImagesInput Storage="@Storage"
+                           TValue="ValueCollection<StorageItem>"
+                           MaxFileSize="@(2 * 1024 * 1024)"
+                           MaxFiles="10"
+                           UploadPath="bars"
+                           GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
+                           @bind-Value="context.StorageItems"
+                           CustomUpload="@(_ => { return Task.FromResult(new ValueCollection<StorageItem> {context.StorageItem!}); })"
+                           OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values?.Count() ?? 0); return Task.CompletedTask;})">
+    </AntStorageImagesInput>
+</FormItem>
+@* AVATARS *@
+<AntDesign.FormItem Label="Single avatar">
+    <AntStorageImageInput Storage="@Storage"
+                          Avatar="true"
+                          MaxFileSize="@(2 * 1024 * 1024)"
+                          UploadPath="bars"
+                          GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
+                          @bind-Value="context.StorageItem"
+                          OnChange="@(_ => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
+    </AntStorageImageInput>
+</AntDesign.FormItem>
+<AntDesign.FormItem Label="Single small avatar">
+    <AntStorageImageInput Storage="@Storage"
+                          Avatar="true"
+                          Size="small"
+                          MaxFileSize="@(2 * 1024 * 1024)"
+                          UploadPath="bars"
+                          GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
+                          @bind-Value="context.StorageItem"
+                          OnChange="@(_ => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
+    </AntStorageImageInput>
+</AntDesign.FormItem>
+<AntDesign.FormItem Label="Single large avatar">
+    <AntStorageImageInput Storage="@Storage"
+                          Avatar="true"
+                          Size="large"
+                          MaxFileSize="@(2 * 1024 * 1024)"
+                          UploadPath="bars"
+                          GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
+                          @bind-Value="context.StorageItem"
+                          OnChange="@(_ => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
+    </AntStorageImageInput>
+</AntDesign.FormItem>
+<FormItem Label="Multiple avatars">
+    <AntStorageImagesInput
+        TValue="ValueCollection<StorageItem>"
+        Avatar="true"
+        Storage="@Storage"
+        MaxFileSize="@(2 * 1024 * 1024)"
+        UploadPath="bars"
+        GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
+        @bind-Value="context.StorageItems"
+        OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values?.Count ?? 0); return Task.CompletedTask;})">
+    </AntStorageImagesInput>
+</FormItem>
+@* AVATARS END *@
+<FormItem Label="Single file">
+    <AntStorageFileInput Storage="@Storage"
+                         MaxFileSize="@(2 * 1024 * 1024)"
+                         UploadPath="bars"
+                         GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
+                         @bind-Value="context.StorageItem"
+                         OnChange="@(storageItem => { Logger.LogInformation("File uploaded: {FileName}", storageItem?.FileName); return Task.CompletedTask;})">
+    </AntStorageFileInput>
+</FormItem>
+<FormItem Label="Multiple files">
+    <AntStorageFilesInput Storage="@Storage"
+                          TValue="ValueCollection<StorageItem>"
+                          MaxFileSize="@(2 * 1024 * 1024)"
+                          MaxFiles="10"
+                          UploadPath="bars"
+                          GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
+                          @bind-Value="context.StorageItems"
+                          OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values?.Count() ?? 0); return Task.CompletedTask;})">
+    </AntStorageFilesInput>
+</FormItem>
+<FormItem Label="Multiple files with custom upload button">
+    <AntStorageFilesInput Storage="@Storage"
+                          TValue="ValueCollection<StorageItem>"
+                          MaxFileSize="@(2 * 1024 * 1024)"
+                          MaxFiles="10"
+                          UploadPath="bars"
+                          GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
+                          @bind-Value="context.StorageItems"
+                          OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values?.Count() ?? 0); return Task.CompletedTask;})">
+        <CustomUploadButton Context="input">
+            <Button OnClick="@(_ => { input.SetValue(new ValueCollection<StorageItem> {context.StorageItem!}); })">Set items</Button>
+        </CustomUploadButton>
+    </AntStorageFilesInput>
+</FormItem>
+<FormItem Label="Multiple files with custom upload">
+    <AntStorageFilesInput Storage="@Storage"
+                          TValue="ValueCollection<StorageItem>"
+                          MaxFileSize="@(2 * 1024 * 1024)"
+                          MaxFiles="10"
+                          UploadPath="bars"
+                          GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
+                          @bind-Value="context.StorageItems"
+                          CustomUpload="@(_ => { return Task.FromResult(new ValueCollection<StorageItem> {context.StorageItem!}); })"
+                          OnChange="@(values => { Logger.LogInformation("Files uploaded: {Count}", values?.Count() ?? 0); return Task.CompletedTask;})">
+    </AntStorageFilesInput>
+</FormItem>
+@foreach (var foo in context.Foos)
+{
+    <AntDesign.FormItem Label="Foo">
+        <AntDesign.Input @bind-Value="@foo.Foo"/>
+    </AntDesign.FormItem>
+    <Button OnClick="() => { context.Foos.Remove(foo); context.NotifyChange();}">Remove foo</Button>
+}
+<Button OnClick="() => context.Foos.Add(new FooModel())">Add foo</Button>
+<Button Disabled="@(!context.CanSave())" OnClick="@context.Save">Save</Button>
+</AntRepositoryForm>
+<Button OnClick="async () => await _frm.Form!.ResetAsync()">Reset</Button>
