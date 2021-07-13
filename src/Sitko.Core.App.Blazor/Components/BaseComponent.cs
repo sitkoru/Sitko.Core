@@ -13,7 +13,7 @@ namespace Sitko.Core.App.Blazor.Components
         Task NotifyStateChangeAsync();
     }
 
-    public abstract class BaseComponent : IComponent, IHandleEvent, IHandleAfterRender, IBaseComponent, IDisposable
+    public abstract class BaseComponent : IComponent, IHandleEvent, IHandleAfterRender, IBaseComponent, IAsyncDisposable
     {
         private bool _isInitialized;
 
@@ -208,24 +208,34 @@ namespace Sitko.Core.App.Blazor.Components
         }
 
         protected Task InvokeAsync(Action workItem)
-            => _renderHandle.Dispatcher.InvokeAsync(workItem);
-        
-        protected Task InvokeAsync(Func<Task> workItem)
-            => _renderHandle.Dispatcher.InvokeAsync(workItem);
+        {
+            return IsDisposed ? Task.CompletedTask : _renderHandle.Dispatcher.InvokeAsync(workItem);
+        }
 
-        void IDisposable.Dispose()
+        protected Task InvokeAsync(Func<Task> workItem)
+        {
+            return IsDisposed ? Task.CompletedTask : _renderHandle.Dispatcher.InvokeAsync(workItem);
+        }
+
+        public async ValueTask DisposeAsync()
         {
             if (!IsDisposed)
             {
+                Dispose(true);
+                await DisposeAsync(true);
                 _scope?.Dispose();
                 _scope = null;
-                Dispose(disposing: true);
                 IsDisposed = true;
             }
         }
 
         protected virtual void Dispose(bool disposing)
         {
+        }
+
+        protected virtual Task DisposeAsync(bool disposing)
+        {
+            return Task.CompletedTask;
         }
 
         public void Attach(RenderHandle renderHandle)
