@@ -32,9 +32,8 @@
                      SelectedRows="@SelectedRows"
                      SelectedRowsChanged="@SelectedRowsChanged">
         <ChildContent>
-
             @ChildContent(context)
-
+            <AntListInitializer TEntity="TItem" Table="Table" AntListComponent="this"></AntListInitializer>
         </ChildContent>
     </AntDesign.Table>
 }

@@ -17,12 +17,13 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         protected IEnumerable<TItem> Items { get; private set; } = Array.Empty<TItem>();
         public int Count { get; protected set; }
 
-        protected Table<TItem> Table { get; set; } = null!;
+        protected Table<TItem>? Table { get; set; }
 
-        private QueryModel<TItem>? _lastQueryModel;
+        private QueryModel? _lastQueryModel;
 
         private MethodInfo? _sortMethod;
         private Task<(TItem[] items, int itemsCount)>? _loadTask;
+        private bool _isTableInitialized;
 
         [Parameter] public int PageSize { get; set; } = 50;
         [Parameter] public int PageIndex { get; set; } = 1;
@@ -39,11 +40,24 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             _sortMethod = method.MakeGenericMethod(typeof(TItem));
         }
 
-        protected async Task OnChangeAsync(QueryModel<TItem>? queryModel)
+        public Task InitializeTableAsync(QueryModel queryModel)
         {
+            if (!_isTableInitialized)
+            {
+                _isTableInitialized = true;
+                return OnChangeAsync(queryModel);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        protected async Task OnChangeAsync(QueryModel? queryModel)
+        {
+            if (!_isTableInitialized) return;
             await StartLoadingAsync();
             List<Func<IQueryable<TItem>, IQueryable<TItem>>> filters = new();
             List<Func<IQueryable<TItem>, IOrderedQueryable<TItem>>> sorts = new();
+
             if (queryModel is not null)
             {
                 if (_sortMethod is not null)
@@ -73,10 +87,8 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             _lastQueryModel = queryModel;
             try
             {
-                Logger.LogInformation("Load data async");
                 _loadTask = GetDataAsync(request);
                 (var items, int itemsCount) = await _loadTask;
-                Logger.LogInformation("Data loaded");
                 Items = items;
                 Count = itemsCount;
             }
