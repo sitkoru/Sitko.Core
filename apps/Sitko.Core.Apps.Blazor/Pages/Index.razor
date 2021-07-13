@@ -2,7 +2,8 @@
 @using Sitko.Core.Apps.Blazor.Data.Entities
 @using Microsoft.Extensions.Logging
 @inherits BaseComponent
-<h1>@LocalizationProvider["Title"]</h1>
+<PageContainer Title="@LocalizationProvider["Title"]">
+<ChildContent>
 <BarAntRepositoryList @ref="_barList" PageSize="2">
     <AntDesign.Column Title="Id" @bind-Field="@context.Id" Sortable Filterable>
         @context.Id
@@ -240,3 +241,5 @@
 <Button Disabled="@(!context.CanSave())" OnClick="@context.Save">Save</Button>
 </AntRepositoryForm>
 <Button OnClick="async () => await _frm.Form!.ResetAsync()">Reset</Button>
+</ChildContent>
+</PageContainer>
