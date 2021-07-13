@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <PackageReference Include="AntDesign.ProLayout" Version="0.1.0-nightly-210618061658" />
-    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="10.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.7">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
