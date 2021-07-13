@@ -143,6 +143,12 @@ namespace Sitko.Core.App
                     options.ValidateOnBuild = true;
                     options.ValidateScopes = true;
                 })
+                .ConfigureHostConfiguration(builder =>
+                {
+                    builder.AddJsonFile("appsettings.json", true, false);
+                    builder.AddJsonFile($"appsettings.{tmpApplicationContext.Environment.EnvironmentName}.json", true,
+                        false);
+                })
                 .ConfigureAppConfiguration((context, builder) =>
                 {
                     LogCheck("Configure app configuration");
