@@ -5,7 +5,7 @@
 <PageContainer Title="@LocalizationProvider["Title"]">
 <ChildContent>
 <BarAntRepositoryList @ref="_barList" PageSize="2">
-    <AntDesign.Column Title="Id" @bind-Field="@context.Id" Sortable Filterable>
+    <AntDesign.Column Title="Id" @bind-Field="@context.Id" Sortable Filterable DefaultSortOrder="SortDirection.Ascending">
         @context.Id
     </AntDesign.Column>
     <AntDesign.Column Title="Название" @bind-Field="@context.Bar" Sortable Filters="_barFilter">
