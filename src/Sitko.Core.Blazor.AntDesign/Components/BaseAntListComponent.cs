@@ -22,6 +22,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         private QueryModel<TItem>? _lastQueryModel;
 
         private MethodInfo? _sortMethod;
+        private Task<(TItem[] items, int itemsCount)>? _loadTask;
 
         [Parameter] public int PageSize { get; set; } = 50;
         [Parameter] public int PageIndex { get; set; } = 1;
@@ -38,9 +39,9 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             _sortMethod = method.MakeGenericMethod(typeof(TItem));
         }
 
-        protected void OnChange(QueryModel<TItem>? queryModel)
+        protected async Task OnChangeAsync(QueryModel<TItem>? queryModel)
         {
-            StartLoading();
+            await StartLoadingAsync();
             List<Func<IQueryable<TItem>, IQueryable<TItem>>> filters = new();
             List<Func<IQueryable<TItem>, IOrderedQueryable<TItem>>> sorts = new();
             if (queryModel is not null)
@@ -70,17 +71,12 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             var page = queryModel?.PageIndex ?? PageIndex;
             var request = new LoadRequest<TItem>(page, filters, sorts);
             _lastQueryModel = queryModel;
-#pragma warning disable 4014
-            // It's awful but Ant table can't load data asynchronously, so all we can do is start loading and pray
-            LoadDataAsync(request);
-#pragma warning restore 4014
-        }
-
-        private async Task LoadDataAsync(LoadRequest<TItem> request)
-        {
             try
             {
-                (var items, int itemsCount) = await GetDataAsync(request);
+                Logger.LogInformation("Load data async");
+                _loadTask = GetDataAsync(request);
+                (var items, int itemsCount) = await _loadTask;
+                Logger.LogInformation("Data loaded");
                 Items = items;
                 Count = itemsCount;
             }
@@ -92,18 +88,27 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             await StopLoadingAsync();
         }
 
-        public void Refresh(int? page = null)
+        public async Task RefreshAsync(int? page = null)
         {
             if (page is not null)
             {
                 PageIndex = page.Value;
             }
 
-            OnChange(_lastQueryModel);
+            await OnChangeAsync(_lastQueryModel);
         }
 
         protected abstract Task<(TItem[] items, int itemsCount)> GetDataAsync(LoadRequest<TItem> request,
             CancellationToken cancellationToken = default);
+
+        protected override async Task DisposeAsync(bool disposing)
+        {
+            await base.DisposeAsync(disposing);
+            if (_loadTask is not null)
+            {
+                await _loadTask;
+            }
+        }
     }
 
     public class LoadRequest<TItem> where TItem : class
