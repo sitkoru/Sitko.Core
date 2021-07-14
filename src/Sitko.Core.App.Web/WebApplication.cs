@@ -108,7 +108,7 @@ namespace Sitko.Core.App.Web
         {
             CreateAppHost(builder =>
                 builder.ConfigureWebHostDefaults(
-                    webHostBuilder => webHostBuilder.UseUrls($"http://*:{port.ToString()}"))).Start();
+                    webHostBuilder => webHostBuilder.UseUrls($"http://*:{port}"))).Start();
             return this;
         }
     }
