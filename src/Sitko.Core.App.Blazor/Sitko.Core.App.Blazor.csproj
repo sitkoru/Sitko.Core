@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Automapper\Sitko.Core.Automapper.csproj" />
     <ProjectReference Include="..\Sitko.Core.Repository\Sitko.Core.Repository.csproj" />
   </ItemGroup>
   

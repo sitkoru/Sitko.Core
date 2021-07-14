@@ -29,24 +29,6 @@ namespace Sitko.Core.Apps.Blazor.Forms
             query.Include(bar => bar.Foos);
             return Task.CompletedTask;
         }
-
-        protected override Task MapEntityAsync(BarModel entity)
-        {
-            entity.Bar = Bar;
-            entity.Foos = Foos;
-            entity.StorageItem = StorageItem;
-            entity.StorageItems = StorageItems;
-            return Task.CompletedTask;
-        }
-
-        protected override Task MapFormAsync(BarModel entity)
-        {
-            Bar = entity.Bar;
-            Foos = entity.Foos;
-            StorageItem = entity.StorageItem;
-            StorageItems = entity.StorageItems;
-            return Task.CompletedTask;
-        }
     }
 
     public class BarFormValidator : AbstractValidator<BarForm>

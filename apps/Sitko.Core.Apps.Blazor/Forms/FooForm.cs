@@ -15,30 +15,15 @@ namespace Sitko.Core.Apps.Blazor.Forms
         {
         }
 
-        protected override Task MapEntityAsync(FooModel entity)
-        {
-            entity.Foo = Foo;
-            return Task.CompletedTask;
-        }
-
-        protected override Task MapFormAsync(FooModel entity)
-        {
-            Foo = entity.Foo;
-            return Task.CompletedTask;
-        }
-
         protected override Task<FormSaveResult> AddAsync(FooModel entity)
         {
             FormSaveResult result = new(true, "");
             return Task.FromResult(result);
         }
 
-        protected override Task<FormSaveResult> UpdateAsync(FooModel entity)
-        {
-            return Task.FromResult(new FormSaveResult(true, ""));
-        }
+        protected override Task<FormSaveResult> UpdateAsync(FooModel entity) => Task.FromResult(new FormSaveResult(true, ""));
     }
-    
+
     public class FooFormValidator : AbstractValidator<FooForm>
     {
         public FooFormValidator()
@@ -46,7 +31,7 @@ namespace Sitko.Core.Apps.Blazor.Forms
             RuleFor(m => m.Foo).NotEmpty().WithMessage("Blaaaaa");
         }
     }
-    
+
     public class FooValidator : AbstractValidator<FooModel>
     {
         public FooValidator()

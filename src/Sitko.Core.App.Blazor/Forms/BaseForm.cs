@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Json;
+using AutoMapper;
 
 namespace Sitko.Core.App.Blazor.Forms
 {
@@ -42,8 +43,18 @@ namespace Sitko.Core.App.Blazor.Forms
         protected ILogger<BaseForm<TEntity>> Logger { get; }
 
         private string? oldEntityJson;
+        private readonly Mapper mapper;
 
-        protected BaseForm(ILogger<BaseForm<TEntity>> logger) => Logger = logger;
+        protected BaseForm(ILogger<BaseForm<TEntity>> logger)
+        {
+            Logger = logger;
+            var mapperConfiguration = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap(typeof(TEntity), GetType());
+                cfg.CreateMap(GetType(), typeof(TEntity));
+            });
+            mapper = new Mapper(mapperConfiguration);
+        }
 
         public bool IsNew { get; protected set; }
         protected TEntity? Entity { get; private set; }
@@ -58,9 +69,14 @@ namespace Sitko.Core.App.Blazor.Forms
 
         public bool IsLoading { get; set; }
 
-        protected abstract Task MapEntityAsync(TEntity entity);
+        protected virtual Task MapEntityAsync(TEntity entity)
+        {
+            mapper.Map(this, Entity);
+            return Task.CompletedTask;
+        }
 
-        public override void NotifyChange(FieldIdentifier fieldIdentifier) => EditContext?.NotifyFieldChanged(fieldIdentifier);
+        public override void NotifyChange(FieldIdentifier fieldIdentifier) =>
+            EditContext?.NotifyFieldChanged(fieldIdentifier);
 
         public override void NotifyChange() => NotifyChange(new FieldIdentifier(Entity!, "Id"));
 
@@ -86,7 +102,11 @@ namespace Sitko.Core.App.Blazor.Forms
 
         protected virtual Task InitializeEntityAsync(TEntity entity) => Task.CompletedTask;
 
-        protected abstract Task MapFormAsync(TEntity entity);
+        protected virtual Task MapFormAsync(TEntity entity)
+        {
+            mapper.Map(Entity, this);
+            return Task.CompletedTask;
+        }
 
         public override async Task SaveEntityAsync()
         {
@@ -126,14 +146,17 @@ namespace Sitko.Core.App.Blazor.Forms
                             await OnAfterUpdate(Entity);
                         }
                     }
+
                     if (OnAfterSave is not null)
                     {
                         await OnAfterSave(Entity);
                     }
+
                     if (OnSuccess is not null)
                     {
                         await OnSuccess();
                     }
+
                     await NotifyStateChangeAsync();
                 }
                 else
