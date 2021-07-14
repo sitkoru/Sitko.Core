@@ -8,13 +8,11 @@ namespace Sitko.Core.App.Blazor.Forms
     public abstract class BaseRepositoryForm<TEntity, TEntityPk> : BaseForm<TEntity>
         where TEntity : class, IEntity<TEntityPk>, new()
     {
-        protected readonly IRepository<TEntity, TEntityPk> Repository;
+        protected IRepository<TEntity, TEntityPk> Repository { get; }
 
         protected BaseRepositoryForm(IRepository<TEntity, TEntityPk> repository,
-            ILogger<BaseRepositoryForm<TEntity, TEntityPk>> logger) : base(logger)
-        {
+            ILogger<BaseRepositoryForm<TEntity, TEntityPk>> logger) : base(logger) =>
             Repository = repository;
-        }
 
         private TEntityPk? EntityId { get; set; }
 
@@ -28,6 +26,7 @@ namespace Sitko.Core.App.Blazor.Forms
                 {
                     await Repository.RefreshAsync(Entity);
                 }
+
                 entity = await Repository.GetAsync(async q =>
                 {
                     q.Where(e => e.Id!.Equals(EntityId));
@@ -35,17 +34,14 @@ namespace Sitko.Core.App.Blazor.Forms
                 });
                 if (entity is null)
                 {
-                    throw new Exception($"Entity {EntityId} not found");
+                    throw new InvalidOperationException($"Entity {EntityId} not found");
                 }
             }
 
             await InitializeAsync(entity);
         }
 
-        protected virtual Task ConfigureQueryAsync(IRepositoryQuery<TEntity> query)
-        {
-            return Task.CompletedTask;
-        }
+        protected virtual Task ConfigureQueryAsync(IRepositoryQuery<TEntity> query) => Task.CompletedTask;
 
         protected override async Task<FormSaveResult> AddAsync(TEntity entity)
         {
@@ -59,10 +55,7 @@ namespace Sitko.Core.App.Blazor.Forms
             return new FormSaveResult(result.IsSuccess, result.ErrorsString);
         }
 
-        protected override Task<bool> DetectChangesAsync(TEntity entity)
-        {
-            return Repository.HasChangesAsync(entity);
-        }
+        protected override Task<bool> DetectChangesAsync(TEntity entity) => Repository.HasChangesAsync(entity);
 
         public override async Task ResetAsync()
         {

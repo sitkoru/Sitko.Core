@@ -219,7 +219,7 @@ namespace Sitko.Core.App.Web
         }
 
         // https://devblogs.microsoft.com/aspnet/upcoming-samesite-cookie-changes-in-asp-net-and-asp-net-core/
-        private void CheckSameSite(HttpContext httpContext, CookieOptions options)
+        private static void CheckSameSite(HttpContext httpContext, CookieOptions options)
         {
             if (options.SameSite > SameSiteMode.None)
             {
@@ -231,7 +231,7 @@ namespace Sitko.Core.App.Web
             }
         }
 
-        public static bool DisallowsSameSiteNone(string userAgent)
+        private static bool DisallowsSameSiteNone(string userAgent)
         {
             // Cover all iOS based browsers here. This includes:
             // - Safari on iOS 12 for iPhone, iPod Touch, iPad

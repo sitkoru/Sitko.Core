@@ -9,9 +9,11 @@ using Sitko.Core.App.Web;
 
 namespace Sitko.Core.App.Blazor
 {
-    public class BlazorStartup : BaseStartup
+    using JetBrains.Annotations;
+
+    public abstract class BlazorStartup : BaseStartup
     {
-        public BlazorStartup(IConfiguration configuration, IHostEnvironment environment) : base(configuration,
+        protected BlazorStartup(IConfiguration configuration, IHostEnvironment environment) : base(configuration,
             environment)
         {
         }
@@ -27,25 +29,22 @@ namespace Sitko.Core.App.Blazor
             AddForms(services, GetType().Assembly);
         }
 
-        protected void AddForms<TAssembly>(IServiceCollection services)
-        {
+        [PublicAPI]
+        protected static void AddForms<TAssembly>(IServiceCollection services) =>
             AddForms(services, typeof(TAssembly).Assembly);
-        }
 
-        protected void AddForms(IServiceCollection services, Assembly assembly)
-        {
+        [PublicAPI]
+        protected static void AddForms(IServiceCollection services, Assembly assembly) =>
             services.Scan(s =>
                 s.FromAssemblies(assembly).AddClasses(c => c.AssignableTo<BaseForm>()).AsSelf()
                     .WithTransientLifetime());
-        }
 
-        protected void ForceAuthorization(IServiceCollection services)
-        {
+        [PublicAPI]
+        protected static void ForceAuthorization(IServiceCollection services) =>
             services.AddRazorPages(options =>
             {
                 options.Conventions.AuthorizeFolder("/");
             });
-        }
 
         protected override void ConfigureEndpoints(IApplicationBuilder app, IEndpointRouteBuilder endpoints)
         {

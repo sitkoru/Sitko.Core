@@ -18,6 +18,6 @@ namespace Sitko.Core.Email
         }
 
         protected abstract void ConfigureBuilder(FluentEmailServicesBuilder builder,
-            TEmailModuleOptions config);
+            TEmailModuleOptions moduleOptions);
     }
 }

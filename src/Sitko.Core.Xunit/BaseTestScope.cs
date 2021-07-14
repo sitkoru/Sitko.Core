@@ -25,30 +25,30 @@ namespace Sitko.Core.Xunit
 
     public abstract class BaseTestScope<TApplication> : IBaseTestScope where TApplication : Application
     {
-        protected IServiceProvider? ServiceProvider;
+        protected IServiceProvider? ServiceProvider { get; set; }
         protected IConfiguration? Configuration { get; set; }
         protected IHostEnvironment? Environment { get; set; }
-        private TApplication? _application;
-        private bool _isApplicationStarted;
+        private TApplication? application;
+        private bool isApplicationStarted;
         protected string? Name { get; private set; }
 
         public async Task ConfigureAsync(string name, ITestOutputHelper testOutputHelper)
         {
             Name = name;
-            _application = CreateApplication();
+            application = CreateApplication();
 
-            _application.ConfigureServices((_, context, services) =>
+            application.ConfigureServices((_, context, services) =>
             {
                 ConfigureServices(context.Configuration, context.HostingEnvironment, services, name);
             });
 
-            _application.ConfigureLogging((_, loggerConfiguration, logLevelSwitcher) =>
+            application.ConfigureLogging((_, loggerConfiguration, logLevelSwitcher) =>
             {
                 loggerConfiguration.WriteTo.TestOutput(testOutputHelper, levelSwitch: logLevelSwitcher.Switch);
             });
 
-            _application = ConfigureApplication(_application, name);
-            var host = await _application.BuildAndInitAsync();
+            application = ConfigureApplication(application, name);
+            var host = await application.BuildAndInitAsync();
             ServiceProvider = host.Services.CreateScope().ServiceProvider;
             Configuration = ServiceProvider.GetService<IConfiguration>();
             Environment = ServiceProvider.GetService<IHostEnvironment>();
@@ -56,26 +56,21 @@ namespace Sitko.Core.Xunit
 
         protected virtual TApplication CreateApplication()
         {
-            var app = Activator.CreateInstance(typeof(TApplication), new object[] {new string[0]});
-            if (app is TApplication application)
+            var app = Activator.CreateInstance(typeof(TApplication), new object[] { Array.Empty<string>() });
+            if (app is TApplication typedApplication)
             {
-                return application;
+                return typedApplication;
             }
 
             throw new Exception($"Can't create application {typeof(TApplication)}");
         }
 
 
-        protected virtual TApplication ConfigureApplication(TApplication application, string name)
-        {
-            return application;
-        }
+        protected virtual TApplication ConfigureApplication(TApplication application, string name) => application;
 
         protected virtual IServiceCollection ConfigureServices(IConfiguration configuration,
-            IHostEnvironment environment, IServiceCollection services, string name)
-        {
-            return services;
-        }
+            IHostEnvironment environment, IServiceCollection services, string name) =>
+            services;
 
 
         public T Get<T>()
@@ -85,41 +80,32 @@ namespace Sitko.Core.Xunit
 #pragma warning restore 8714
         }
 
-        public IEnumerable<T> GetAll<T>()
-        {
-            return ServiceProvider!.GetServices<T>();
-        }
+        public IEnumerable<T> GetAll<T>() => ServiceProvider!.GetServices<T>();
 
-        public ILogger<T> GetLogger<T>()
-        {
-            return ServiceProvider!.GetRequiredService<ILogger<T>>();
-        }
+        public ILogger<T> GetLogger<T>() => ServiceProvider!.GetRequiredService<ILogger<T>>();
 
-        public virtual Task OnCreatedAsync()
-        {
-            return Task.CompletedTask;
-        }
+        public virtual Task OnCreatedAsync() => Task.CompletedTask;
 
 
         public virtual async ValueTask DisposeAsync()
         {
-            if (_application != null)
+            if (application != null)
             {
-                if (_isApplicationStarted)
+                if (isApplicationStarted)
                 {
-                    await _application.StopAsync();
+                    await application.StopAsync();
                 }
 
-                await _application.DisposeAsync();
+                await application.DisposeAsync();
             }
         }
 
         public async Task StartApplicationAsync()
         {
-            if (_application != null && !_isApplicationStarted)
+            if (application != null && !isApplicationStarted)
             {
-                await _application.StartAsync();
-                _isApplicationStarted = true;
+                await application.StartAsync();
+                isApplicationStarted = true;
             }
         }
     }

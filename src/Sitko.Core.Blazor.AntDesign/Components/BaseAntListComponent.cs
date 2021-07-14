@@ -34,7 +34,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             var method = typeof(ITableSortModel).GetMethod("SortList", BindingFlags.NonPublic | BindingFlags.Instance);
             if (method is null)
             {
-                throw new Exception("Method SortList not found");
+                throw new MissingMethodException("Method SortList not found");
             }
 
             sortMethod = method.MakeGenericMethod(typeof(TItem));
@@ -77,7 +77,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
                                 return orderedQueryable;
                             }
 
-                            throw new Exception("Error sorting model");
+                            throw new InvalidOperationException("Error sorting model");
                         });
                     }
                 }

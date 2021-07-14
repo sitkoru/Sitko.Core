@@ -11,8 +11,8 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
     public abstract class BastAntStorageFileInputComponent<TInput> : BaseStorageFileInputComponent<TInput>, IDisposable
     {
-        private IDisposable? _thisReference;
-        protected ElementReference _btn;
+        private IDisposable? thisReference;
+        protected ElementReference Btn { get; set; }
 
         [Inject] private MessageService MessageService { get; set; } = null!;
 
@@ -27,10 +27,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         [Parameter] public string ListType { get; set; } = "text";
 
         [JSInvokable]
-        public Task NotifyChange()
-        {
-            return UploadFilesAsync();
-        }
+        public Task NotifyChange() => UploadFilesAsync();
 
         protected override void OnParametersSet()
         {
@@ -61,9 +58,9 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         {
             if (firstRender)
             {
-                _thisReference = DotNetObjectReference.Create(this);
-                await JsRuntime.InvokeVoidAsync("SitkoCoreBlazorAntDesign.FileUpload.init", InputRef, _btn,
-                    _thisReference);
+                thisReference = DotNetObjectReference.Create(this);
+                await JsRuntime.InvokeVoidAsync("SitkoCoreBlazorAntDesign.FileUpload.init", InputRef, Btn,
+                    thisReference);
             }
         }
 
@@ -83,7 +80,8 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         public virtual void Dispose()
         {
-            _thisReference?.Dispose();
+            thisReference?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

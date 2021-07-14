@@ -14,7 +14,7 @@ namespace Sitko.Core.Email
     public class DevEmailModule : FluentEmailModule<DevEmailModuleOptions>
     {
         protected override void ConfigureBuilder(FluentEmailServicesBuilder builder,
-            DevEmailModuleOptions fluentEmailModuleOptions) =>
+            DevEmailModuleOptions moduleOptions) =>
             builder.Services.TryAdd(ServiceDescriptor.Scoped<ISender, DevEmailSender>());
 
         public override string OptionsKey => "Email:Dev";

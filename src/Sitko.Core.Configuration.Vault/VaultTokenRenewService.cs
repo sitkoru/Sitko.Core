@@ -21,13 +21,14 @@ namespace Sitko.Core.Configuration.Vault
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                await Task.FromResult(TimeSpan.FromMinutes(_optionsMonitor.CurrentValue.TokenRenewIntervalMinutes));
+                await Task.FromResult(TimeSpan.FromMinutes(_optionsMonitor.CurrentValue.TokenRenewIntervalMinutes))
+                    .ConfigureAwait(false);
                 if (_optionsMonitor.CurrentValue.RenewToken)
                 {
                     var authMethod = new TokenAuthMethodInfo(_optionsMonitor.CurrentValue.Token);
                     var vaultClientSettings = new VaultClientSettings(_optionsMonitor.CurrentValue.Uri, authMethod);
                     var vaultClient = new VaultClient(vaultClientSettings);
-                    await vaultClient.V1.Auth.Token.RenewSelfAsync();
+                    await vaultClient.V1.Auth.Token.RenewSelfAsync().ConfigureAwait(false);
                 }
             }
         }

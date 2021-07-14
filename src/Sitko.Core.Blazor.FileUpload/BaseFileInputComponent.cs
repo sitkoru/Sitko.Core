@@ -19,8 +19,7 @@ namespace Sitko.Core.Blazor.FileUpload
     public abstract class BaseFileInputComponent<TUploadResult, TValue> : InputBase<TValue?>, IBaseFileInputComponent
         where TUploadResult : IFileUploadResult
     {
-        
-        public ElementReference InputRef;
+        protected ElementReference InputRef { get; set; }
         [Parameter] public string ContentTypes { get; set; } = "";
         [Parameter] public long MaxFileSize { get; set; }
 
@@ -130,26 +129,14 @@ namespace Sitko.Core.Blazor.FileUpload
 
         protected abstract Task<TUploadResult> SaveFileAsync(FileUploadRequest file, FileStream stream);
 
-        protected virtual Task NotifyMaxFilesCountExceededAsync(int filesCount)
-        {
-            return Task.CompletedTask;
-        }
+        protected virtual Task NotifyMaxFilesCountExceededAsync(int filesCount) => Task.CompletedTask;
 
-        protected virtual Task NotifyUploadAsync(int resultsCount)
-        {
-            return Task.CompletedTask;
-        }
+        protected virtual Task NotifyUploadAsync(int resultsCount) => Task.CompletedTask;
 
 
-        protected virtual Task NotifyFileContentTypeNotAllowedAsync(string fileName, string fileContentType)
-        {
-            return Task.CompletedTask;
-        }
+        protected virtual Task NotifyFileContentTypeNotAllowedAsync(string fileName, string fileContentType) => Task.CompletedTask;
 
-        protected virtual Task NotifyFileExceedMaxSizeAsync(string fileName, long fileSize)
-        {
-            return Task.CompletedTask;
-        }
+        protected virtual Task NotifyFileExceedMaxSizeAsync(string fileName, long fileSize) => Task.CompletedTask;
 
         protected override bool TryParseValueFromString(string? value, out TValue result,
             out string validationErrorMessage)

@@ -52,8 +52,8 @@ namespace Sitko.Core.Blazor.FluentValidation
             if (CurrentEditContext == null)
             {
                 throw new InvalidOperationException($"{nameof(DataAnnotationsValidator)} requires a cascading " +
-                    $"parameter of type {nameof(EditContext)}. For example, you can use {nameof(DataAnnotationsValidator)} " +
-                    "inside an EditForm.");
+                                                    $"parameter of type {nameof(EditContext)}. For example, you can use {nameof(DataAnnotationsValidator)} " +
+                                                    "inside an EditForm.");
             }
 
             ServiceScope = ServiceProvider.CreateScope();
@@ -76,7 +76,7 @@ namespace Sitko.Core.Blazor.FluentValidation
             if (Validator == null)
             {
                 throw new InvalidOperationException($"FluentValidation.IValidator<{formType.FullName}> is"
-                    + " not registered in the application service provider.");
+                                                    + " not registered in the application service provider.");
             }
         }
 
@@ -105,14 +105,14 @@ namespace Sitko.Core.Blazor.FluentValidation
 
             validatorSelector ??= ValidatorOptions.Global.ValidatorSelectors.DefaultValidatorSelectorFactory();
 
-            // Don't need to use reflection to construct the context. 
-            // If you create it as a ValidationContext<object> instead of a ValidationContext<T> then FluentValidation will perform the conversion internally, assuming the types are compatible. 
+            // Don't need to use reflection to construct the context.
+            // If you create it as a ValidationContext<object> instead of a ValidationContext<T> then FluentValidation will perform the conversion internally, assuming the types are compatible.
             var context = new ValidationContext<object>(model, new PropertyChain(), validatorSelector)
             {
                 RootContextData = {["_FV_ServiceProvider"] = ServiceProvider}
             };
 
-            // InjectValidator looks for a service provider inside the ValidationContext with this key. 
+            // InjectValidator looks for a service provider inside the ValidationContext with this key.
             return context;
         }
 
@@ -125,11 +125,13 @@ namespace Sitko.Core.Blazor.FluentValidation
 
             // Perform object-level validation on request
             // ReSharper disable once AsyncVoidLambda
-            CurrentEditContext!.OnValidationRequested += async (sender, _) => await ValidateModel((EditContext)sender!, messages);
+            CurrentEditContext!.OnValidationRequested +=
+                async (sender, _) => await ValidateModel((EditContext)sender!, messages);
 
             // Perform per-field validation on each field edit
             // ReSharper disable once AsyncVoidLambda
-            CurrentEditContext.OnFieldChanged += async (_, eventArgs) => await ValidateField(CurrentEditContext, messages, eventArgs.FieldIdentifier);
+            CurrentEditContext.OnFieldChanged += async (_, eventArgs) =>
+                await ValidateField(CurrentEditContext, messages, eventArgs.FieldIdentifier);
         }
 
         /// <summary>
@@ -173,7 +175,8 @@ namespace Sitko.Core.Blazor.FluentValidation
             }
             catch (Exception ex)
             {
-                var msg = $"An unhandled exception occurred when validating <EditForm> model type: '{editContext.Model.GetType()}'";
+                var msg =
+                    $"An unhandled exception occurred when validating <EditForm> model type: '{editContext.Model.GetType()}'";
                 throw new UnhandledValidationException(msg, ex);
             }
         }
@@ -185,11 +188,12 @@ namespace Sitko.Core.Blazor.FluentValidation
         /// <param name="editContext"></param>
         /// <param name="fieldIdentifier"></param>
         /// <returns></returns>
-        private async Task<ValidationResult> TryValidateField(IValidator validator, EditContext editContext, FieldIdentifier fieldIdentifier)
+        private async Task<ValidationResult> TryValidateField(IValidator validator, EditContext editContext,
+            FieldIdentifier fieldIdentifier)
         {
             try
             {
-                var vselector = new MemberNameValidatorSelector(new[] { fieldIdentifier.FieldName });
+                var vselector = new MemberNameValidatorSelector(new[] {fieldIdentifier.FieldName});
                 var vctx = CreateValidationContext(fieldIdentifier.Model, validatorSelector: vselector);
                 return await validator.ValidateAsync(vctx);
             }
@@ -237,7 +241,8 @@ namespace Sitko.Core.Blazor.FluentValidation
         /// <param name="editContext"></param>
         /// <param name="messages"></param>
         /// <param name="fieldIdentifier"></param>
-        private async Task ValidateField(EditContext editContext, ValidationMessageStore messages, FieldIdentifier fieldIdentifier)
+        private async Task ValidateField(EditContext editContext, ValidationMessageStore messages,
+            FieldIdentifier fieldIdentifier)
         {
             var fieldValidator = TryGetFieldValidator(editContext, fieldIdentifier);
             if (fieldValidator == null)
@@ -258,11 +263,12 @@ namespace Sitko.Core.Blazor.FluentValidation
         }
 
         #region IDisposable Support
-        private bool _disposedValue = false; // To detect redundant calls
+
+        private bool disposedValue; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposedValue)
+            if (!disposedValue)
             {
                 if (disposing)
                 {
@@ -275,25 +281,18 @@ namespace Sitko.Core.Blazor.FluentValidation
                 // Set large fields to null.
                 ServiceScope = null;
                 Validator = null;
-                _disposedValue = true;
+                disposedValue = true;
             }
         }
-
-        // Override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~FluentValidator()
-        // {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //   Dispose(false);
-        // }
 
         // This code added to correctly implement the disposable pattern.
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
-            // Uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
+            GC.SuppressFinalize(this);
         }
+
         #endregion
     }
 }

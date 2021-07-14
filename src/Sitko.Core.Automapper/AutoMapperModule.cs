@@ -17,15 +17,13 @@ namespace Sitko.Core.Automapper
             AutoMapperModuleOptions startupOptions)
         {
             base.ConfigureServices(context, services, startupOptions);
-            services.AddAutoMapper(startupOptions.Configure, startupOptions.Assemblies);
+            services.AddAutoMapper(startupOptions.ConfigureMapper, startupOptions.Assemblies);
         }
     }
 
     public class AutoMapperModuleOptions : BaseModuleOptions
     {
-        [JsonIgnore]
-        public Action<IMapperConfigurationExpression> Configure { get; set; } = _ => { };
-        [JsonIgnore]
-        public readonly List<Assembly> Assemblies = new() {typeof(AutoMapperModule).Assembly};
+        [JsonIgnore] public Action<IMapperConfigurationExpression> ConfigureMapper { get; set; } = _ => { };
+        [JsonIgnore] public List<Assembly> Assemblies { get; set; } = new() {typeof(AutoMapperModule).Assembly};
     }
 }

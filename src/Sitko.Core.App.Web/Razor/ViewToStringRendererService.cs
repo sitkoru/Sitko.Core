@@ -53,7 +53,7 @@ namespace Sitko.Core.App.Web.Razor
 
             if (context == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new InvalidOperationException("Action context is null");
             }
 
             var result = new ViewResult()

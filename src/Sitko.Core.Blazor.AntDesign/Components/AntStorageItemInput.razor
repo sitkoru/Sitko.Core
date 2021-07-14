@@ -1,6 +1,6 @@
 ﻿@inherits BastAntStorageFileInputComponent<Sitko.Core.Storage.StorageItem>
 <div class="ant-upload ant-upload-select ant-upload-select-@(ListType)">
-    <span tabindex="0" class="ant-upload" @ref="_btn" role="button">
+    <span tabindex="0" class="ant-upload" @ref="Btn" role="button">
         <input type="file" style="display: none;" accept="@ContentTypes" @ref="InputRef"/>
         @if (ChildContent is null)
         {

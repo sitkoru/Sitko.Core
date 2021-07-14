@@ -12,7 +12,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         where TForm : BaseForm<TEntity>
         where TEntity : class, new()
     {
-        protected Form<TForm>? AntForm;
+        protected Form<TForm>? AntForm { get; set; }
 
         [Inject]
         protected ILocalizationProvider<BaseAntForm<TEntity, TForm>> LocalizationProvider { get; set; } = null!;
@@ -28,15 +28,15 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         [Parameter]
         public OneOf<string, int> LabelColSpan
         {
-            get { return LabelCol.Span; }
-            set { LabelCol.Span = value; }
+            get => LabelCol.Span;
+            set => LabelCol.Span = value;
         }
 
         [Parameter]
         public OneOf<string, int> LabelColOffset
         {
-            get { return LabelCol.Offset; }
-            set { LabelCol.Offset = value; }
+            get => LabelCol.Offset;
+            set => LabelCol.Offset = value;
         }
 
         [Parameter] public ColLayoutParam WrapperCol { get; set; } = new();
@@ -44,15 +44,15 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         [Parameter]
         public OneOf<string, int> WrapperColSpan
         {
-            get { return WrapperCol.Span; }
-            set { WrapperCol.Span = value; }
+            get => WrapperCol.Span;
+            set => WrapperCol.Span = value;
         }
 
         [Parameter]
         public OneOf<string, int> WrapperColOffset
         {
-            get { return WrapperCol.Offset; }
-            set { WrapperCol.Offset = value; }
+            get => WrapperCol.Offset;
+            set => WrapperCol.Offset = value;
         }
 
         [Parameter] public string? Size { get; set; }
@@ -71,14 +71,9 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             return Task.CompletedTask;
         }
 
-        protected Task OnFormErrorAsync(EditContext editContext)
-        {
-            return MessageService.Error(string.Join(". ", editContext.GetValidationMessages()));
-        }
+        protected Task OnFormErrorAsync(EditContext editContext) =>
+            MessageService.Error(string.Join(". ", editContext.GetValidationMessages()));
 
-        public override void Save()
-        {
-            AntForm?.Submit();
-        }
+        public override void Save() => AntForm?.Submit();
     }
 }

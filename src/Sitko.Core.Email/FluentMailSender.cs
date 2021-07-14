@@ -13,30 +13,30 @@ namespace Sitko.Core.Email
 {
     public class FluentMailSender<TOptions> : IMailSender where TOptions : EmailModuleOptions
     {
-        private readonly IFluentEmailFactory _emailFactory;
-        private readonly ViewToStringRendererService<TOptions> _renderer;
-        private readonly ILogger<FluentMailSender<TOptions>> _logger;
-        private readonly IBackgroundJobClient? _backgroundJobClient;
+        private readonly IFluentEmailFactory emailFactory;
+        private readonly ViewToStringRendererService<TOptions> renderer;
+        private readonly ILogger<FluentMailSender<TOptions>> logger;
+        private readonly IBackgroundJobClient? backgroundJobClient;
 
         public FluentMailSender(IFluentEmailFactory emailFactory,
             ViewToStringRendererService<TOptions> renderer,
             ILogger<FluentMailSender<TOptions>> logger, IBackgroundJobClient? backgroundJobClient = null)
         {
-            _emailFactory = emailFactory;
-            _renderer = renderer;
-            _logger = logger;
-            _backgroundJobClient = backgroundJobClient;
+            this.emailFactory = emailFactory;
+            this.renderer = renderer;
+            this.logger = logger;
+            this.backgroundJobClient = backgroundJobClient;
         }
 
-        public async Task<bool> SendHtmlMailAsync<T>(MailEntry<T> mailEntry, string template)
+        public async Task<bool> SendHtmlMailAsync<T>(MailEntry<T> mailEntry, string templatePath)
         {
-            var html = await _renderer.RenderViewToStringAsync(template, mailEntry);
+            var html = await renderer.RenderViewToStringAsync(templatePath, mailEntry);
             return await SendMailAsync(mailEntry, html);
         }
 
-        public async Task<bool> SendHtmlMailAsync(MailEntry mailEntry, string template)
+        public async Task<bool> SendHtmlMailAsync(MailEntry mailEntry, string templatePath)
         {
-            var html = await _renderer.RenderViewToStringAsync(template, mailEntry);
+            var html = await renderer.RenderViewToStringAsync(templatePath, mailEntry);
             return await SendMailAsync(mailEntry, html);
         }
 
@@ -68,7 +68,7 @@ namespace Sitko.Core.Email
             {
                 try
                 {
-                    var message = _emailFactory.Create().Subject(mailEntry.Subject);
+                    var message = emailFactory.Create().Subject(mailEntry.Subject);
                     message.Body(body, true);
                     message.PlaintextAlternativeBody(plainText);
 
@@ -84,7 +84,7 @@ namespace Sitko.Core.Email
                     {
                         foreach (var errorMessage in res.ErrorMessages)
                         {
-                            _logger.LogError("Error while sending email {Subject} to {Recipient}: {ErrorText}",
+                            logger.LogError("Error while sending email {Subject} to {Recipient}: {ErrorText}",
                                 mailEntry.Subject, recipient, errorMessage);
                         }
 
@@ -93,7 +93,7 @@ namespace Sitko.Core.Email
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error while sending email {Subject} to {Recipient}: {ErrorText}",
+                    logger.LogError(ex, "Error while sending email {Subject} to {Recipient}: {ErrorText}",
                         mailEntry.Subject, recipient, ex.ToString());
                     throw;
                 }
@@ -102,15 +102,15 @@ namespace Sitko.Core.Email
             return success;
         }
 
-        public void SendInBackground<T>(MailEntry<T> mailEntry, string template)
+        public void SendInBackground<T>(MailEntry<T> mailEntry, string templatePath)
         {
-            if (_backgroundJobClient != null)
+            if (backgroundJobClient != null)
             {
-                _backgroundJobClient.Enqueue(() => SendHtmlMailAsync(mailEntry, template));
+                backgroundJobClient.Enqueue(() => SendHtmlMailAsync(mailEntry, templatePath));
             }
             else
             {
-                throw new Exception("No background client!");
+                throw new InvalidOperationException("No background client!");
             }
         }
     }

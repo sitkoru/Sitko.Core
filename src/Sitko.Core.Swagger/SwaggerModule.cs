@@ -31,7 +31,7 @@ namespace Sitko.Core.Swagger
                         });
                     var security = new OpenApiSecurityRequirement
                     {
-                        {new OpenApiSecurityScheme {Name = "Bearer"}, new string[] { }}
+                        {new OpenApiSecurityScheme {Name = "Bearer"}, System.Array.Empty<string>()}
                     };
                     c.AddSecurityRequirement(security);
                 }

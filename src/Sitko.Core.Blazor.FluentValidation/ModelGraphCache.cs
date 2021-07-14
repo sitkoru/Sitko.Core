@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 namespace Sitko.Core.Blazor.FluentValidation
 {
+    using System.Globalization;
+
     /// <summary>
     /// Contains method for translating FluentValidation error property path string into a FieldIdentifier-compatible constructor values.
     /// </summary>
@@ -22,10 +24,7 @@ namespace Sitko.Core.Blazor.FluentValidation
         /// Constructs an instance of <see cref="ModelGraphCache"/> for a model object.
         /// </summary>
         /// <param name="model"></param>
-        public ModelGraphCache(object model)
-        {
-            this.Model = model;
-        }
+        public ModelGraphCache(object model) => Model = model;
 
         /// <summary>
         /// Get object property value by string path separated by dot, supports array (IList) syntax.
@@ -46,19 +45,19 @@ namespace Sitko.Core.Blazor.FluentValidation
             var walker = Model;
             var modelObjectPath = "";
             var objectParts = propertyPath.Split('.');
-            var fieldName = objectParts[objectParts.Length - 1];
+            var fieldName = objectParts[^1];
             for (var i = 0; i < objectParts.Length - 1; i++)
             {
                 var propertyName = objectParts[i];
-                bool isArray = false;
-                int arrayIndex = 0;
+                var isArray = false;
+                var arrayIndex = 0;
                 if (propertyName.Contains("[") && propertyName.Contains("]"))
                 {
                     // propertyName = "A[22]" --> ["A", "22"]
                     var indexedPropertyName = propertyName.Split('[', ']');
                     propertyName = indexedPropertyName[0];
                     isArray = true;
-                    arrayIndex = int.Parse(indexedPropertyName[1]);
+                    arrayIndex = int.Parse(indexedPropertyName[1], CultureInfo.InvariantCulture);
                 }
 
                 // Constructing model object path here allows capturing the same array objects without the index!

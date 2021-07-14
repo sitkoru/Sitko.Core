@@ -46,14 +46,14 @@ namespace Sitko.Core.Apps.Blazor.Pages
             set => _bars = value;
         }
 
-        private Task<object> GenerateMetadataAsync()
+        private static Task<object> GenerateMetadataAsync()
         {
             var metadata = new BarStorageMetadata();
             return Task.FromResult<object>(metadata);
         }
 
 
-        private Task InitFormModelAsync(BarForm form)
+        private static Task InitFormModelAsync(BarForm form)
         {
             form.Test = Guid.NewGuid();
             return Task.CompletedTask;

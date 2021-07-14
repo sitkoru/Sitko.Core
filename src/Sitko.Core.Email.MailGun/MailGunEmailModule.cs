@@ -7,8 +7,8 @@ namespace Sitko.Core.Email.MailGun
     public class MailGunEmailModule : FluentEmailModule<MailGunEmailModuleOptions>
     {
         protected override void ConfigureBuilder(FluentEmailServicesBuilder builder,
-            MailGunEmailModuleOptions options) =>
-            builder.AddMailGunSender(options.Domain, options.ApiKey, options.Region);
+            MailGunEmailModuleOptions moduleOptions) =>
+            builder.AddMailGunSender(moduleOptions.Domain, moduleOptions.ApiKey, moduleOptions.Region);
 
         public override string OptionsKey => "Email:Mailgun";
     }

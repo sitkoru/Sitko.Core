@@ -12,8 +12,6 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
     public class AntListInitializer<TEntity> : BaseComponent where TEntity : class
     {
-        private Task? _updateTtlTask;
-        private CancellationTokenSource? _cts;
         [Parameter] public BaseAntListComponent<TEntity> AntListComponent { get; set; } = null!;
         [Parameter] public Table<TEntity> Table { get; set; } = null!;
 

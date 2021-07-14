@@ -13,11 +13,13 @@ using Sitko.Core.Storage;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
+    using JetBrains.Annotations;
+
     public abstract class BaseAntStorageInput<TValue> : InputBase<TValue>, IBaseComponent
         where TValue : class, new()
     {
-        protected readonly OrderedCollection<UploadedItem> Files = new();
-        protected UploadedItem? PreviewItem;
+        protected OrderedCollection<UploadedItem> Files { get; } = new();
+        protected UploadedItem? PreviewItem { get; set; }
         protected string ListClass => Mode == AntStorageInputMode.File ? "picture" : "picture-card";
 
         [Parameter] public string UploadPath { get; set; } = "";
@@ -48,7 +50,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         [Parameter] public string RightText { get; set; } = "";
         [Parameter] public RenderFragment<BaseAntStorageInput<TValue>>? CustomUploadButton { get; set; }
         [Parameter] public Func<BaseAntStorageInput<TValue>, Task<TValue>>? CustomUpload { get; set; }
-        protected int ItemsCount => Files.Count();
+        [PublicAPI] protected int ItemsCount => Files.Count();
         protected bool ShowOrdering => EnableOrdering && ItemsCount > 1;
         protected IBaseFileInputComponent? FileInput { get; set; }
         protected bool IsSpinning => FileInput?.IsLoading ?? false;
@@ -58,15 +60,12 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         protected List<StorageItem>? Items
         {
-            get
-            {
-                return Files.Select(f => f.StorageItem).ToList();
-            }
+            get => Files.Select(f => f.StorageItem).ToList();
             set
             {
                 if (value is not null)
                 {
-                    Files.AddItems(value.Where(v => v is not null).Select(CreateUploadedItem));
+                    Files.AddItems(value.Select(CreateUploadedItem));
                 }
                 else
                 {
@@ -82,10 +81,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         protected ILocalizationProvider<AntStorageInput<TValue>> LocalizationProvider { get; set; } =
             null!;
 
-        public Task NotifyStateChangeAsync()
-        {
-            return InvokeAsync(StateHasChanged);
-        }
+        public Task NotifyStateChangeAsync() => InvokeAsync(StateHasChanged);
 
         protected override void OnParametersSet()
         {
@@ -184,20 +180,11 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             return new UploadedItem(storageItem, urls);
         }
 
-        protected void PreviewFile(UploadedItem file)
-        {
-            PreviewItem = file;
-        }
+        protected void PreviewFile(UploadedItem file) => PreviewItem = file;
 
-        protected bool CanMoveBackward(UploadedItem file)
-        {
-            return Files.CanMoveUp(file);
-        }
+        protected bool CanMoveBackward(UploadedItem file) => Files.CanMoveUp(file);
 
-        protected bool CanMoveForward(UploadedItem file)
-        {
-            return Files.CanMoveDown(file);
-        }
+        protected bool CanMoveForward(UploadedItem file) => Files.CanMoveDown(file);
 
         protected void MoveBackward(UploadedItem file)
         {
@@ -219,10 +206,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             return false;
         }
 
-        public void SetValue(TValue value)
-        {
-            CurrentValue = value;
-        }
+        public void SetValue(TValue value) => CurrentValue = value;
     }
 
     public abstract class BaseAntMultipleStorageInput<TValue> : AntStorageInput<TValue>
@@ -231,20 +215,12 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         [Parameter]
         public int? MaxFiles
         {
-            get
-            {
-                return MaxAllowedFiles;
-            }
-            set
-            {
-                MaxAllowedFiles = value;
-            }
+            get => MaxAllowedFiles;
+            set => MaxAllowedFiles = value;
         }
 
-        protected override IEnumerable<UploadedItem> ParseCurrentValue(TValue currentValue)
-        {
-            return currentValue.Where(v => v is not null).Select(CreateUploadedItem);
-        }
+        protected override IEnumerable<UploadedItem> ParseCurrentValue(TValue currentValue) =>
+            currentValue.Select(CreateUploadedItem);
 
         protected override TValue UpdateCurrentValue(ICollection<UploadedItem> items)
         {
@@ -266,17 +242,15 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         {
             if (currentValue is not null)
             {
-                return new[] {CreateUploadedItem(currentValue)};    
+                return new[] {CreateUploadedItem(currentValue)};
             }
 
-            return new UploadedItem[0];
+            return Array.Empty<UploadedItem>();
         }
 
 
-        protected override StorageItem? UpdateCurrentValue(ICollection<UploadedItem> items)
-        {
-            return items.FirstOrDefault()?.StorageItem;
-        }
+        protected override StorageItem? UpdateCurrentValue(ICollection<UploadedItem> items) =>
+            items.FirstOrDefault()?.StorageItem;
     }
 
     public class UploadedItem : IOrdered

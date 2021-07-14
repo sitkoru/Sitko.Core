@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.App.Blazor.Components
 {
+    using JetBrains.Annotations;
+
     public interface IBaseComponent
     {
         Task NotifyStateChangeAsync();
@@ -15,26 +17,22 @@ namespace Sitko.Core.App.Blazor.Components
 
     public abstract class BaseComponent : IComponent, IHandleEvent, IHandleAfterRender, IBaseComponent, IAsyncDisposable
     {
-        private bool _isInitialized;
+        private bool isInitialized;
 
-        protected BaseComponent()
-        {
-            _renderFragment = builder =>
+        protected BaseComponent() =>
+            renderFragment = builder =>
             {
-                _hasPendingQueuedRender = false;
-                _hasNeverRendered = false;
-                if (_isInitialized) // do not call BuildRenderTree before we initialized
+                hasPendingQueuedRender = false;
+                hasNeverRendered = false;
+                if (isInitialized) // do not call BuildRenderTree before we initialized
                 {
                     BuildRenderTree(builder);
                 }
             };
-        }
 
-        // ReSharper disable once MemberCanBeProtected.Global
-        public bool IsLoading { get; private set; }
+        [PublicAPI] public bool IsLoading { get; private set; }
 
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        [Inject] protected NavigationManager NavigationManager { get; set; } = null!;
+        [PublicAPI] [Inject] protected NavigationManager NavigationManager { get; set; } = null!;
 
         protected ILogger Logger
         {
@@ -46,29 +44,23 @@ namespace Sitko.Core.App.Blazor.Components
             }
         }
 
-        public Task NotifyStateChangeAsync()
-        {
-            return InvokeAsync(StateHasChanged);
-        }
+        public Task NotifyStateChangeAsync() => InvokeAsync(StateHasChanged);
 
         private async Task OnInitializedAsync()
         {
             // ReSharper disable once MethodHasAsyncOverload
             Initialize();
             await InitializeAsync();
-            _isInitialized = true;
+            isInitialized = true;
         }
 
-        protected virtual Task InitializeAsync()
-        {
-            return Task.CompletedTask;
-        }
+        protected virtual Task InitializeAsync() => Task.CompletedTask;
 
         protected virtual void Initialize()
         {
         }
 
-        protected virtual bool ShouldRender() => _isInitialized;
+        protected virtual bool ShouldRender() => isInitialized;
 
         protected TService GetService<TService>()
         {
@@ -77,11 +69,10 @@ namespace Sitko.Core.App.Blazor.Components
 #pragma warning restore 8714
         }
 
-        protected IEnumerable<TService> GetServices<TService>()
-        {
-            return ScopedServices.GetServices<TService>();
-        }
+        [PublicAPI]
+        protected IEnumerable<TService> GetServices<TService>() => ScopedServices.GetServices<TService>();
 
+        [PublicAPI]
         protected TService GetScopedService<TService>()
         {
 #pragma warning disable 8714
@@ -89,15 +80,12 @@ namespace Sitko.Core.App.Blazor.Components
 #pragma warning restore 8714
         }
 
-        protected IEnumerable<TService> GetScopedServices<TService>()
-        {
-            return ScopeFactory.CreateScope().ServiceProvider.GetServices<TService>();
-        }
+        [PublicAPI]
+        protected IEnumerable<TService> GetScopedServices<TService>() =>
+            ScopeFactory.CreateScope().ServiceProvider.GetServices<TService>();
 
-        protected IServiceScope CreateServicesScope()
-        {
-            return ScopeFactory.CreateScope();
-        }
+        [PublicAPI]
+        protected IServiceScope CreateServicesScope() => ScopeFactory.CreateScope();
 
         protected void StartLoading()
         {
@@ -151,14 +139,14 @@ namespace Sitko.Core.App.Blazor.Components
         #region BaseComponent and OwningComponentBase stuff
 
         [Inject] private IServiceScopeFactory ScopeFactory { get; set; } = null!;
-        private readonly RenderFragment _renderFragment;
-        private RenderHandle _renderHandle;
-        private bool _initialized;
-        private bool _hasNeverRendered = true;
-        private bool _hasPendingQueuedRender;
-        private bool _hasCalledOnAfterRender;
-        private IServiceScope? _scope;
-        protected bool IsDisposed { get; private set; }
+        private readonly RenderFragment renderFragment;
+        private RenderHandle componentRenderHandle;
+        private bool initialized;
+        private bool hasNeverRendered = true;
+        private bool hasPendingQueuedRender;
+        private bool hasCalledOnAfterRender;
+        private IServiceScope? scope;
+        private bool IsDisposed { get; set; }
 
         protected virtual void BuildRenderTree(RenderTreeBuilder builder)
         {
@@ -179,43 +167,42 @@ namespace Sitko.Core.App.Blazor.Components
                     throw new ObjectDisposedException(GetType().Name);
                 }
 
-                _scope ??= ScopeFactory.CreateScope();
-                return _scope.ServiceProvider;
+                scope ??= ScopeFactory.CreateScope();
+                return scope.ServiceProvider;
             }
         }
 
+        [PublicAPI]
         protected void StateHasChanged()
         {
-            if (_hasPendingQueuedRender)
+            if (hasPendingQueuedRender)
             {
                 return;
             }
 
-            if (_hasNeverRendered || ShouldRender())
+            if (hasNeverRendered || ShouldRender())
             {
-                _hasPendingQueuedRender = true;
+                hasPendingQueuedRender = true;
 
                 try
                 {
-                    _renderHandle.Render(_renderFragment);
+                    componentRenderHandle.Render(renderFragment);
                 }
                 catch
                 {
-                    _hasPendingQueuedRender = false;
+                    hasPendingQueuedRender = false;
                     throw;
                 }
             }
         }
 
-        protected Task InvokeAsync(Action workItem)
-        {
-            return IsDisposed ? Task.CompletedTask : _renderHandle.Dispatcher.InvokeAsync(workItem);
-        }
+        [PublicAPI]
+        protected Task InvokeAsync(Action workItem) =>
+            IsDisposed ? Task.CompletedTask : componentRenderHandle.Dispatcher.InvokeAsync(workItem);
 
-        protected Task InvokeAsync(Func<Task> workItem)
-        {
-            return IsDisposed ? Task.CompletedTask : _renderHandle.Dispatcher.InvokeAsync(workItem);
-        }
+        [PublicAPI]
+        protected Task InvokeAsync(Func<Task> workItem) =>
+            IsDisposed ? Task.CompletedTask : componentRenderHandle.Dispatcher.InvokeAsync(workItem);
 
         public async ValueTask DisposeAsync()
         {
@@ -223,8 +210,8 @@ namespace Sitko.Core.App.Blazor.Components
             {
                 Dispose(true);
                 await DisposeAsync(true);
-                _scope?.Dispose();
-                _scope = null;
+                scope?.Dispose();
+                scope = null;
                 IsDisposed = true;
             }
         }
@@ -233,28 +220,25 @@ namespace Sitko.Core.App.Blazor.Components
         {
         }
 
-        protected virtual Task DisposeAsync(bool disposing)
-        {
-            return Task.CompletedTask;
-        }
+        protected virtual Task DisposeAsync(bool disposing) => Task.CompletedTask;
 
         public void Attach(RenderHandle renderHandle)
         {
-            if (_renderHandle.IsInitialized)
+            if (this.componentRenderHandle.IsInitialized)
             {
                 throw new InvalidOperationException(
                     $"The render handle is already set. Cannot initialize a {nameof(ComponentBase)} more than once.");
             }
 
-            _renderHandle = renderHandle;
+            this.componentRenderHandle = renderHandle;
         }
 
         public Task SetParametersAsync(ParameterView parameters)
         {
             parameters.SetParameterProperties(this);
-            if (!_initialized)
+            if (!initialized)
             {
-                _initialized = true;
+                initialized = true;
 
                 return RunInitAndSetParametersAsync();
             }
@@ -323,9 +307,9 @@ namespace Sitko.Core.App.Blazor.Components
             StateHasChanged();
         }
 
-        public Task HandleEventAsync(EventCallbackWorkItem callback, object? arg)
+        public Task HandleEventAsync(EventCallbackWorkItem item, object? arg)
         {
-            var task = callback.InvokeAsync(arg);
+            var task = item.InvokeAsync(arg);
             var shouldAwaitTask = task.Status != TaskStatus.RanToCompletion &&
                                   task.Status != TaskStatus.Canceled;
 
@@ -336,8 +320,8 @@ namespace Sitko.Core.App.Blazor.Components
 
         public Task OnAfterRenderAsync()
         {
-            var firstRender = !_hasCalledOnAfterRender;
-            _hasCalledOnAfterRender = true;
+            var firstRender = !hasCalledOnAfterRender;
+            hasCalledOnAfterRender = true;
 
             OnAfterRender(firstRender);
 
