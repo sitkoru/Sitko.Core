@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
@@ -28,8 +27,6 @@ namespace Sitko.Core.App.Web
 
         private readonly Dictionary<string, (CorsPolicy policy, bool isDefault)> _corsPolicies =
             new Dictionary<string, (CorsPolicy policy, bool isDefault)>();
-
-        private string? _defaultCulture;
 
         protected BaseStartup(IConfiguration configuration, IHostEnvironment environment)
         {
@@ -174,14 +171,6 @@ namespace Sitko.Core.App.Web
 
         public void Configure(IApplicationBuilder appBuilder, WebApplication application)
         {
-            if (!string.IsNullOrEmpty(_defaultCulture))
-            {
-                var cultureInfo = new CultureInfo(_defaultCulture);
-
-                CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
-                CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
-            }
-
             if (Environment.IsProduction())
             {
                 appBuilder.UseForwardedHeaders();
@@ -261,11 +250,6 @@ namespace Sitko.Core.App.Web
             var builder = new CorsPolicyBuilder();
             buildPolicy(builder);
             AddCorsPolicy(name, builder.Build(), isDefault);
-        }
-
-        public void SetDefaultCulture(string culture)
-        {
-            _defaultCulture = culture;
         }
 
         // https://devblogs.microsoft.com/aspnet/upcoming-samesite-cookie-changes-in-asp-net-and-asp-net-core/
