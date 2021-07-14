@@ -29,7 +29,7 @@ namespace Sitko.Core.Apps.Blazor
         protected override void ConfigureAfterRoutingMiddleware(IApplicationBuilder app)
         {
             base.ConfigureAfterRoutingMiddleware(app);
-            app.ConfigureLocalization("ru", true, "en-US", "ru");
+            app.ConfigureLocalization(new[] {"en-US", "ru"}, "ru");
         }
     }
 }

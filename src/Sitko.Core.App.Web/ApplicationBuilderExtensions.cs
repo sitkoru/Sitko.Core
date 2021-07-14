@@ -4,38 +4,46 @@ using Microsoft.AspNetCore.Builder;
 
 namespace Sitko.Core.App.Web
 {
+    using System;
+    using System.Collections.Generic;
+
     public static class ApplicationBuilderExtensions
     {
-        public static IApplicationBuilder ConfigureLocalization(this IApplicationBuilder appBuilder, string defaultCulture,
-            bool enableRequestLocalization = false,
-            params string[] supportedCultures)
+        public static IApplicationBuilder ConfigureLocalization(this IApplicationBuilder appBuilder,
+            IEnumerable<string> supportedCultures, string? defaultCulture = null)
         {
-            if (enableRequestLocalization)
+            var supportedCulturesArray = supportedCultures.ToArray();
+            if (supportedCulturesArray.Length == 0)
             {
-                var requestLocalizationOptions = new RequestLocalizationOptions();
-                if (supportedCultures.Any())
-                {
-                    requestLocalizationOptions.AddSupportedCultures(supportedCultures.ToArray());
-                    requestLocalizationOptions.AddSupportedUICultures(supportedCultures.ToArray());
-                }
-
-                if (!string.IsNullOrEmpty(defaultCulture))
-                {
-                    requestLocalizationOptions.SetDefaultCulture(defaultCulture);
-                }
-
-                appBuilder.UseRequestLocalization(requestLocalizationOptions);
+                throw new ArgumentException("Supported cultures list is empty");
             }
-            else
+
+            var requestLocalizationOptions = new RequestLocalizationOptions();
+            requestLocalizationOptions.AddSupportedCultures(supportedCulturesArray);
+            requestLocalizationOptions.AddSupportedUICultures(supportedCulturesArray);
+
+            if (!string.IsNullOrEmpty(defaultCulture))
             {
-                if (!string.IsNullOrEmpty(defaultCulture))
-                {
-                    var cultureInfo = new CultureInfo(defaultCulture);
-
-                    CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
-                    CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
-                }
+                requestLocalizationOptions.SetDefaultCulture(defaultCulture);
             }
+
+            appBuilder.UseRequestLocalization(requestLocalizationOptions);
+
+            return appBuilder;
+        }
+
+        public static IApplicationBuilder ConfigureLocalization(this IApplicationBuilder appBuilder,
+            string defaultCulture)
+        {
+            if (string.IsNullOrEmpty(defaultCulture))
+            {
+                throw new ArgumentException("Culture name is empty", nameof(defaultCulture));
+            }
+
+            var cultureInfo = new CultureInfo(defaultCulture);
+
+            CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+            CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
             return appBuilder;
         }
