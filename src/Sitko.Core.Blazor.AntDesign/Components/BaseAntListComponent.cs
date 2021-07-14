@@ -19,11 +19,11 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         protected Table<TItem>? Table { get; set; }
 
-        private QueryModel? _lastQueryModel;
+        private QueryModel? lastQueryModel;
 
-        private MethodInfo? _sortMethod;
-        private Task<(TItem[] items, int itemsCount)>? _loadTask;
-        private bool _isTableInitialized;
+        private MethodInfo? sortMethod;
+        private Task<(TItem[] items, int itemsCount)>? loadTask;
+        private bool isTableInitialized;
 
         [Parameter] public int PageSize { get; set; } = 50;
         [Parameter] public int PageIndex { get; set; } = 1;
@@ -37,14 +37,14 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
                 throw new Exception("Method SortList not found");
             }
 
-            _sortMethod = method.MakeGenericMethod(typeof(TItem));
+            sortMethod = method.MakeGenericMethod(typeof(TItem));
         }
 
         public Task InitializeTableAsync(QueryModel queryModel)
         {
-            if (!_isTableInitialized)
+            if (!isTableInitialized)
             {
-                _isTableInitialized = true;
+                isTableInitialized = true;
                 return OnChangeAsync(queryModel);
             }
 
@@ -53,21 +53,25 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         protected async Task OnChangeAsync(QueryModel? queryModel)
         {
-            if (!_isTableInitialized) return;
+            if (!isTableInitialized)
+            {
+                return;
+            }
+
             await StartLoadingAsync();
             List<Func<IQueryable<TItem>, IQueryable<TItem>>> filters = new();
             List<Func<IQueryable<TItem>, IOrderedQueryable<TItem>>> sorts = new();
 
             if (queryModel is not null)
             {
-                if (_sortMethod is not null)
+                if (sortMethod is not null)
                 {
                     foreach (var sortEntry in queryModel.SortModel.Where(s =>
                         s.Sort is not null))
                     {
                         sorts.Add(items =>
                         {
-                            var sortResult = _sortMethod.Invoke(sortEntry, new object?[] {items});
+                            var sortResult = sortMethod.Invoke(sortEntry, new object?[] {items});
                             if (sortResult is IOrderedQueryable<TItem> orderedQueryable)
                             {
                                 return orderedQueryable;
@@ -79,16 +83,16 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
                 }
 
                 filters.AddRange(queryModel.FilterModel.Select(filterEntry =>
-                    (Func<IQueryable<TItem>, IQueryable<TItem>>)(filterEntry.FilterList)));
+                    (Func<IQueryable<TItem>, IQueryable<TItem>>)filterEntry.FilterList));
             }
 
             var page = queryModel?.PageIndex ?? PageIndex;
             var request = new LoadRequest<TItem>(page, filters, sorts);
-            _lastQueryModel = queryModel;
+            lastQueryModel = queryModel;
             try
             {
-                _loadTask = GetDataAsync(request);
-                (var items, int itemsCount) = await _loadTask;
+                loadTask = GetDataAsync(request);
+                var (items, itemsCount) = await loadTask;
                 Items = items;
                 Count = itemsCount;
             }
@@ -107,7 +111,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
                 PageIndex = page.Value;
             }
 
-            await OnChangeAsync(_lastQueryModel);
+            await OnChangeAsync(lastQueryModel);
         }
 
         protected abstract Task<(TItem[] items, int itemsCount)> GetDataAsync(LoadRequest<TItem> request,
@@ -116,9 +120,9 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         protected override async Task DisposeAsync(bool disposing)
         {
             await base.DisposeAsync(disposing);
-            if (_loadTask is not null)
+            if (loadTask is not null)
             {
-                await _loadTask;
+                await loadTask;
             }
         }
     }

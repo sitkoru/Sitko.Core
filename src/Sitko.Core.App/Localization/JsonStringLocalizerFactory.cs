@@ -15,27 +15,28 @@ namespace Sitko.Core.App.Localization
 {
     public class JsonStringLocalizerFactory : IStringLocalizerFactory, IDisposable
     {
-        private static ILogger<JsonStringLocalizerFactory> _logger = null!;
-        private static Type[] s_defaultResources = new Type[0];
-        private readonly IScheduledTask _clearCacheTask;
+        private static ILogger<JsonStringLocalizerFactory> logger = null!;
+        private static Type[] defaultResources = new Type[0];
+        private readonly IScheduledTask clearCacheTask;
 
-        private readonly Dictionary<int, Dictionary<string, string>> _data = new();
+        private readonly Dictionary<int, Dictionary<string, string>> dataCache = new();
 
-        private readonly Dictionary<int, JsonStringLocalizer> _instances = new();
-        private readonly IDisposable _onChange;
+        private readonly Dictionary<int, JsonStringLocalizer> instances = new();
+        private readonly IDisposable onChange;
 
-        private TimeSpan _cacheTimout;
+        private TimeSpan cacheTimout;
         private const char GenericSeparator = '`';
 
         public JsonStringLocalizerFactory(IOptionsMonitor<JsonLocalizationModuleOptions> options, IScheduler scheduler,
             ILogger<JsonStringLocalizerFactory> logger)
         {
-            _logger = logger;
+            JsonStringLocalizerFactory.logger = logger;
             ReadOptions(options.CurrentValue);
-            _onChange = options.OnChange(ReadOptions);
-            _clearCacheTask = scheduler.Schedule(_cacheTimout, _ => ClearCache(), (context, _) =>
+            onChange = options.OnChange(ReadOptions);
+            clearCacheTask = scheduler.Schedule(cacheTimout, _ => ClearCache(), (context, _) =>
             {
-                _logger.LogError(context.Exception, "Error clear localization cache: {ErrorText}",
+                JsonStringLocalizerFactory.logger.LogError(context.Exception,
+                    "Error clear localization cache: {ErrorText}",
                     context.Exception.ToString());
                 return Task.CompletedTask;
             });
@@ -44,42 +45,37 @@ namespace Sitko.Core.App.Localization
 
         public void Dispose()
         {
-            _onChange.Dispose();
-            _clearCacheTask.Cancel();
+            onChange.Dispose();
+            clearCacheTask.Cancel();
         }
 
-        public IStringLocalizer Create(Type resourceSource)
-        {
-            return GetLocalizer(resourceSource);
-        }
+        public IStringLocalizer Create(Type resourceSource) => GetLocalizer(resourceSource);
 
-        public IStringLocalizer Create(string baseName, string location)
-        {
-            return GetLocalizer(null, baseName, Assembly.GetEntryAssembly()!);
-        }
+        public IStringLocalizer Create(string baseName, string location) =>
+            GetLocalizer(null, baseName, Assembly.GetEntryAssembly()!);
 
         private Task ClearCache()
         {
-            _logger.LogDebug("Clear localization cache");
-            _instances.Clear();
-            _data.Clear();
+            logger.LogDebug("Clear localization cache");
+            instances.Clear();
+            dataCache.Clear();
             return Task.CompletedTask;
         }
 
         private void ReadOptions(JsonLocalizationModuleOptions localizerOptions)
         {
-            _cacheTimout = TimeSpan.FromMinutes(localizerOptions.CacheTimeInMinutes);
-            s_defaultResources = localizerOptions.DefaultResources;
+            cacheTimout = TimeSpan.FromMinutes(localizerOptions.CacheTimeInMinutes);
+            defaultResources = localizerOptions.DefaultResources;
         }
 
         private int GetCacheKey(string name, Assembly assembly, CultureInfo cultureInfo)
         {
             unchecked // Overflow is fine, just wrap
             {
-                int hash = 17;
-                hash = hash * 23 + name.GetHashCode();
-                hash = hash * 23 + assembly.GetHashCode();
-                hash = hash * 23 + cultureInfo.GetHashCode();
+                var hash = 17;
+                hash = (hash * 23) + name.GetHashCode();
+                hash = (hash * 23) + assembly.GetHashCode();
+                hash = (hash * 23) + cultureInfo.GetHashCode();
                 return hash;
             }
         }
@@ -95,15 +91,15 @@ namespace Sitko.Core.App.Localization
 
             var assembly = type?.Assembly ?? baseAssembly!;
             var cacheKey = GetCacheKey(typeName, assembly, cultureInfo);
-            if (_instances.TryGetValue(cacheKey, out var instance))
+            if (instances.TryGetValue(cacheKey, out var instance))
             {
                 return instance;
             }
 
-            lock (_instances)
+            lock (instances)
             {
                 instance = new JsonStringLocalizer(GetResourceData(cacheKey, typeName, assembly, cultureInfo));
-                _instances.TryAdd(cacheKey, instance);
+                instances.TryAdd(cacheKey, instance);
             }
 
             return instance;
@@ -112,15 +108,15 @@ namespace Sitko.Core.App.Localization
         private Dictionary<string, string> GetResourceData(int cacheKey, string name, Assembly assembly,
             CultureInfo cultureInfo)
         {
-            if (_data.TryGetValue(cacheKey, out var data))
+            if (dataCache.TryGetValue(cacheKey, out var data))
             {
                 return data;
             }
 
-            lock (_data)
+            lock (dataCache)
             {
                 data = LoadResourcesData(name, assembly, cultureInfo);
-                _data.TryAdd(cacheKey, data);
+                dataCache.TryAdd(cacheKey, data);
             }
 
             return data;
@@ -141,10 +137,10 @@ namespace Sitko.Core.App.Localization
             CultureInfo cultureInfo)
         {
             var data = new Dictionary<string, string>();
-            var cultures = new[] { cultureInfo, cultureInfo.Parent, CultureInfo.InvariantCulture };
-            bool loaded = LoadResourceData(data, name, assembly, cultures);
+            var cultures = new[] {cultureInfo, cultureInfo.Parent, CultureInfo.InvariantCulture};
+            var loaded = LoadResourceData(data, name, assembly, cultures);
 
-            foreach (var defaultResource in s_defaultResources)
+            foreach (var defaultResource in defaultResources)
             {
                 var typeName = defaultResource.Name;
                 if (defaultResource.IsGenericType)
@@ -160,7 +156,7 @@ namespace Sitko.Core.App.Localization
 
             if (!loaded)
             {
-                _logger.LogWarning("No resources found for '{ResourceName}'", name);
+                logger.LogWarning("No resources found for '{ResourceName}'", name);
             }
 
             return data;
@@ -198,7 +194,7 @@ namespace Sitko.Core.App.Localization
                 }
                 catch (FileNotFoundException exception)
                 {
-                    _logger.LogWarning(exception,
+                    logger.LogWarning(exception,
                         "Could not find satellite assembly for '{CultureInfoName}': {Message}",
                         cultureInfo.Name, exception.Message);
                     loaded = false;

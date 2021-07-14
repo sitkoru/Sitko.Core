@@ -20,44 +20,45 @@ namespace Sitko.Core.App
 {
     public abstract class Application : IApplication, IAsyncDisposable
     {
-        private static readonly ConcurrentDictionary<Guid, Application> _apps = new();
+        private static readonly ConcurrentDictionary<Guid, Application> Apps = new();
 
         private static readonly string BaseConsoleLogFormat =
             "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}]{NewLine}\t{Message:lj}{NewLine}{Exception}";
 
         private readonly List<Action<ApplicationContext, HostBuilderContext, IConfigurationBuilder>>
-            _appConfigurationActions = new();
+            appConfigurationActions = new();
 
-        private readonly string[] _args;
+        private readonly string[] args;
 
         private readonly List<Action<ApplicationContext, LoggerConfiguration, LogLevelSwitcher>>
-            _loggerConfigurationActions = new();
+            loggerConfigurationActions = new();
 
-        private readonly LogLevelSwitcher _logLevelSwitcher = new();
+        private readonly LogLevelSwitcher logLevelSwitcher = new();
 
-        private readonly Dictionary<Type, ApplicationModuleRegistration> _moduleRegistrations =
+        private readonly Dictionary<Type, ApplicationModuleRegistration> moduleRegistrations =
             new();
 
         private readonly List<Action<ApplicationContext, HostBuilderContext, IServiceCollection>>
-            _servicesConfigurationActions = new();
+            servicesConfigurationActions = new();
 
-        private readonly Dictionary<string, object> _store = new();
-        public readonly Guid Id = Guid.NewGuid();
+        private readonly Dictionary<string, object> store = new();
+        public readonly Guid ____RULE_VIOLATION____Id____RULE_VIOLATION____ = Guid.NewGuid();
 
-        public readonly bool IsCheckRun;
+        public readonly bool ____RULE_VIOLATION____IsCheckRun____RULE_VIOLATION____;
 
-        protected readonly Dictionary<string, LogEventLevel> LogEventLevels = new();
+        protected readonly Dictionary<string, LogEventLevel>
+            ____RULE_VIOLATION____LogEventLevels____RULE_VIOLATION____ = new();
 
-        private IHost? _appHost;
+        private IHost? appHost;
 
         protected Application(string[] args)
         {
-            _args = args;
-            _apps.TryAdd(Id, this);
+            this.args = args;
+            Apps.TryAdd(____RULE_VIOLATION____Id____RULE_VIOLATION____, this);
             Console.OutputEncoding = Encoding.UTF8;
             if (args.Length > 0 && args[0] == "check")
             {
-                IsCheckRun = true;
+                ____RULE_VIOLATION____IsCheckRun____RULE_VIOLATION____ = true;
             }
 
             var loggerConfiguration = new LoggerConfiguration();
@@ -76,20 +77,19 @@ namespace Sitko.Core.App
 
         public virtual ValueTask DisposeAsync()
         {
-            _appHost?.Dispose();
+            appHost?.Dispose();
             return new ValueTask();
         }
 
-        protected IReadOnlyList<ApplicationModuleRegistration> GetEnabledModuleRegistrations(ApplicationContext context)
-        {
-            return _moduleRegistrations.Where(r => r.Value.IsEnabled(context)).Select(r => r.Value).ToList();
-        }
+        protected IReadOnlyList<ApplicationModuleRegistration>
+            GetEnabledModuleRegistrations(ApplicationContext context) => moduleRegistrations
+            .Where(r => r.Value.IsEnabled(context)).Select(r => r.Value).ToList();
 
         public static Application GetApp(Guid id)
         {
-            if (_apps.ContainsKey(id))
+            if (Apps.ContainsKey(id))
             {
-                return _apps[id];
+                return Apps[id];
             }
 
             throw new ArgumentException($"Application {id} is not registered", nameof(id));
@@ -97,7 +97,7 @@ namespace Sitko.Core.App
 
         private void LogCheck(string message)
         {
-            if (IsCheckRun)
+            if (____RULE_VIOLATION____IsCheckRun____RULE_VIOLATION____)
             {
                 InternalLogger.LogInformation("Check log: {Message}", message);
             }
@@ -109,7 +109,7 @@ namespace Sitko.Core.App
 
             LogCheck("Create tmp host builder");
 
-            using var tmpHost = CreateHostBuilder(_args)
+            using var tmpHost = CreateHostBuilder(args)
                 .UseDefaultServiceProvider(options =>
                 {
                     options.ValidateOnBuild = false;
@@ -137,7 +137,7 @@ namespace Sitko.Core.App
 
             LogCheck("Create main host builder");
 
-            var hostBuilder = CreateHostBuilder(_args)
+            var hostBuilder = CreateHostBuilder(args)
                 .UseDefaultServiceProvider(options =>
                 {
                     options.ValidateOnBuild = true;
@@ -153,7 +153,7 @@ namespace Sitko.Core.App
                 {
                     LogCheck("Configure app configuration");
                     var appContext = GetContext(context.HostingEnvironment, context.Configuration);
-                    foreach (var appConfigurationAction in _appConfigurationActions)
+                    foreach (var appConfigurationAction in appConfigurationActions)
                     {
                         appConfigurationAction(appContext, context, builder);
                     }
@@ -167,7 +167,7 @@ namespace Sitko.Core.App
                 .ConfigureServices((context, services) =>
                 {
                     LogCheck("Configure app services");
-                    services.AddSingleton(_logLevelSwitcher);
+                    services.AddSingleton(logLevelSwitcher);
                     services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
                     services.AddSingleton(typeof(IApplication), this);
                     services.AddSingleton(typeof(Application), this);
@@ -177,7 +177,7 @@ namespace Sitko.Core.App
                     services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
 
                     var appContext = GetContext(context.HostingEnvironment, context.Configuration);
-                    foreach (var servicesConfigurationAction in _servicesConfigurationActions)
+                    foreach (var servicesConfigurationAction in servicesConfigurationActions)
                     {
                         servicesConfigurationAction(appContext, context, services);
                     }
@@ -191,13 +191,13 @@ namespace Sitko.Core.App
                 {
                     LogCheck("Configure logging");
                     var loggerConfiguration = new LoggerConfiguration();
-                    loggerConfiguration.MinimumLevel.ControlledBy(_logLevelSwitcher.Switch);
+                    loggerConfiguration.MinimumLevel.ControlledBy(logLevelSwitcher.Switch);
                     loggerConfiguration
                         .Enrich.FromLogContext()
                         .Enrich.WithMachineName()
                         .Enrich.WithProperty("App", Name)
                         .Enrich.WithProperty("AppVersion", Version);
-                    _logLevelSwitcher.Switch.MinimumLevel =
+                    logLevelSwitcher.Switch.MinimumLevel =
                         context.HostingEnvironment.IsDevelopment() ? LogEventLevel.Debug : LogEventLevel.Information;
 
                     if (LoggingEnableConsole(context))
@@ -205,14 +205,15 @@ namespace Sitko.Core.App
                         loggerConfiguration
                             .WriteTo.Console(
                                 outputTemplate: ConsoleLogFormat,
-                                levelSwitch: _logLevelSwitcher.Switch);
+                                levelSwitch: logLevelSwitcher.Switch);
                     }
 
                     var appContext = GetContext(context.HostingEnvironment, context.Configuration);
                     ConfigureLogging(appContext,
                         loggerConfiguration,
-                        _logLevelSwitcher);
-                    foreach ((var key, LogEventLevel value) in LogEventLevels)
+                        logLevelSwitcher);
+                    foreach (var (key, value) in
+                        ____RULE_VIOLATION____LogEventLevels____RULE_VIOLATION____)
                     {
                         loggerConfiguration.MinimumLevel.Override(key, value);
                     }
@@ -220,12 +221,12 @@ namespace Sitko.Core.App
                     foreach (var moduleRegistration in GetEnabledModuleRegistrations(appContext))
                     {
                         moduleRegistration.ConfigureLogging(tmpApplicationContext, loggerConfiguration,
-                            _logLevelSwitcher);
+                            logLevelSwitcher);
                     }
 
-                    foreach (var loggerConfigurationAction in _loggerConfigurationActions)
+                    foreach (var loggerConfigurationAction in loggerConfigurationActions)
                     {
-                        loggerConfigurationAction(appContext, loggerConfiguration, _logLevelSwitcher);
+                        loggerConfigurationAction(appContext, loggerConfiguration, logLevelSwitcher);
                     }
 
                     Log.Logger = loggerConfiguration.CreateLogger();
@@ -247,11 +248,11 @@ namespace Sitko.Core.App
         {
             LogCheck("Create app host start");
 
-            if (_appHost is not null)
+            if (appHost is not null)
             {
                 LogCheck("App host is already built");
 
-                return _appHost;
+                return appHost;
             }
 
             LogCheck("Configure host builder");
@@ -261,14 +262,14 @@ namespace Sitko.Core.App
             LogCheck("Build host");
             var host = hostBuilder.Build();
 
-            _appHost = host;
+            appHost = host;
             LogCheck("Create app host done");
-            return _appHost;
+            return appHost;
         }
 
-        private IHostBuilder CreateHostBuilder(string[] args)
+        private IHostBuilder CreateHostBuilder(string[] hostBuilderArgs)
         {
-            var builder = Host.CreateDefaultBuilder(args);
+            var builder = Host.CreateDefaultBuilder(hostBuilderArgs);
             ConfigureHostBuilder(builder);
             return builder;
         }
@@ -293,7 +294,7 @@ namespace Sitko.Core.App
 
         protected virtual void ConfigureLogging(ApplicationContext applicationContext,
             LoggerConfiguration loggerConfiguration,
-            LogLevelSwitcher logLevelSwitcher)
+            LogLevelSwitcher appLogLevelSwitcher)
         {
         }
 
@@ -330,7 +331,7 @@ namespace Sitko.Core.App
                 return;
             }
 
-            if (IsCheckRun)
+            if (____RULE_VIOLATION____IsCheckRun____RULE_VIOLATION____)
             {
                 LogCheck("Check run is successful. Exit");
                 return;
@@ -347,10 +348,7 @@ namespace Sitko.Core.App
             return host;
         }
 
-        public async Task StopAsync()
-        {
-            await CreateAppHost().StopAsync();
-        }
+        public async Task StopAsync() => await CreateAppHost().StopAsync();
 
         public async Task ExecuteAsync(Func<IServiceProvider, Task> command)
         {
@@ -370,20 +368,11 @@ namespace Sitko.Core.App
             }
         }
 
-        public IHostBuilder GetHostBuilder()
-        {
-            return ConfigureHostBuilder();
-        }
+        public IHostBuilder GetHostBuilder() => ConfigureHostBuilder();
 
-        public IServiceProvider GetServiceProvider()
-        {
-            return CreateAppHost().Services;
-        }
+        public IServiceProvider GetServiceProvider() => CreateAppHost().Services;
 
-        public T? GetService<T>()
-        {
-            return GetServiceProvider().GetService<T>();
-        }
+        public T? GetService<T>() => GetServiceProvider().GetService<T>();
 
 
         protected void RegisterModule<TModule, TModuleOptions>(
@@ -391,24 +380,19 @@ namespace Sitko.Core.App
             string? optionsKey = null)
             where TModule : IApplicationModule<TModuleOptions>, new() where TModuleOptions : BaseModuleOptions, new()
         {
-            if (_moduleRegistrations.ContainsKey(typeof(TModule)))
+            if (moduleRegistrations.ContainsKey(typeof(TModule)))
             {
                 throw new Exception($"Module {typeof(TModule)} already registered");
             }
 
-            _moduleRegistrations.Add(typeof(TModule),
+            moduleRegistrations.Add(typeof(TModule),
                 new ApplicationModuleRegistration<TModule, TModuleOptions>(configureOptions, optionsKey));
         }
 
-        protected virtual string? GetName(IHostEnvironment environment, IConfiguration configuration)
-        {
-            return null;
-        }
+        protected virtual string? GetName(IHostEnvironment environment, IConfiguration configuration) => null;
 
-        protected virtual string? GetVersion(IHostEnvironment environment, IConfiguration configuration)
-        {
-            return GetType().Assembly.GetName().Version?.ToString();
-        }
+        protected virtual string? GetVersion(IHostEnvironment environment, IConfiguration configuration) =>
+            GetType().Assembly.GetName().Version?.ToString();
 
         protected virtual void InitApplication()
         {
@@ -420,7 +404,7 @@ namespace Sitko.Core.App
 
             var host = CreateAppHost(configure);
 
-            if (!IsCheckRun)
+            if (!____RULE_VIOLATION____IsCheckRun____RULE_VIOLATION____)
             {
                 using var scope = host.Services.CreateScope();
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<Application>>();
@@ -438,18 +422,14 @@ namespace Sitko.Core.App
             return host;
         }
 
-        protected ApplicationContext GetContext(IServiceProvider serviceProvider)
-        {
-            return GetContext(serviceProvider.GetRequiredService<IHostEnvironment>(),
+        protected ApplicationContext GetContext(IServiceProvider serviceProvider) =>
+            GetContext(serviceProvider.GetRequiredService<IHostEnvironment>(),
                 serviceProvider.GetRequiredService<IConfiguration>(),
                 serviceProvider.GetRequiredService<ILogger<Application>>());
-        }
 
         protected ApplicationContext GetContext(IHostEnvironment environment, IConfiguration configuration,
-            ILogger<Application>? logger = null)
-        {
-            return new(Name, Version, environment, configuration, logger ?? InternalLogger);
-        }
+            ILogger<Application>? logger = null) =>
+            new(Name, Version, environment, configuration, logger ?? InternalLogger);
 
         public async Task OnStarted(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider)
@@ -472,10 +452,8 @@ namespace Sitko.Core.App
         }
 
         protected virtual Task OnStartedAsync(IConfiguration configuration, IHostEnvironment environment,
-            IServiceProvider serviceProvider)
-        {
-            return Task.CompletedTask;
-        }
+            IServiceProvider serviceProvider) =>
+            Task.CompletedTask;
 
         public async Task OnStopping(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider)
@@ -498,10 +476,8 @@ namespace Sitko.Core.App
         }
 
         protected virtual Task OnStoppingAsync(IConfiguration configuration, IHostEnvironment environment,
-            IServiceProvider serviceProvider)
-        {
-            return Task.CompletedTask;
-        }
+            IServiceProvider serviceProvider) =>
+            Task.CompletedTask;
 
         public async Task OnStopped(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider)
@@ -524,27 +500,20 @@ namespace Sitko.Core.App
         }
 
         protected virtual Task OnStoppedAsync(IConfiguration configuration, IHostEnvironment environment,
-            IServiceProvider serviceProvider)
-        {
-            return Task.CompletedTask;
-        }
+            IServiceProvider serviceProvider) =>
+            Task.CompletedTask;
 
-        public bool HasModule<TModule>() where TModule : IApplicationModule
-        {
-            return _moduleRegistrations.ContainsKey(typeof(TModule));
-        }
+        public bool HasModule<TModule>() where TModule : IApplicationModule =>
+            moduleRegistrations.ContainsKey(typeof(TModule));
 
 
-        public void Set(string key, object value)
-        {
-            _store[key] = value;
-        }
+        public void Set(string key, object value) => store[key] = value;
 
         public T Get<T>(string key)
         {
-            if (_store.ContainsKey(key))
+            if (store.ContainsKey(key))
             {
-                return (T)_store[key];
+                return (T)store[key];
             }
 
 #pragma warning disable 8603
@@ -554,26 +523,26 @@ namespace Sitko.Core.App
 
         public Application ConfigureLogLevel(string source, LogEventLevel level)
         {
-            LogEventLevels.Add(source, level);
+            ____RULE_VIOLATION____LogEventLevels____RULE_VIOLATION____.Add(source, level);
             return this;
         }
 
         public Application ConfigureLogging(Action<ApplicationContext, LoggerConfiguration, LogLevelSwitcher> configure)
         {
-            _loggerConfigurationActions.Add(configure);
+            loggerConfigurationActions.Add(configure);
             return this;
         }
 
         public Application ConfigureServices(
             Action<ApplicationContext, HostBuilderContext, IServiceCollection> configure)
         {
-            _servicesConfigurationActions.Add(configure);
+            servicesConfigurationActions.Add(configure);
             return this;
         }
 
         public Application ConfigureServices(Action<IServiceCollection> configure)
         {
-            _servicesConfigurationActions.Add((_, _, services) =>
+            servicesConfigurationActions.Add((_, _, services) =>
             {
                 configure(services);
             });
@@ -583,7 +552,7 @@ namespace Sitko.Core.App
         public Application ConfigureAppConfiguration(
             Action<ApplicationContext, HostBuilderContext, IConfigurationBuilder> configure)
         {
-            _appConfigurationActions.Add(configure);
+            appConfigurationActions.Add(configure);
             return this;
         }
 
@@ -608,13 +577,11 @@ namespace Sitko.Core.App
             Action<TModuleOptions>? configureOptions = null,
             string? optionsKey = null)
             where TModule : IApplicationModule<TModuleOptions>, new()
-            where TModuleOptions : BaseModuleOptions, new()
-        {
-            return AddModule<TModule, TModuleOptions>((_, _, moduleOptions) =>
+            where TModuleOptions : BaseModuleOptions, new() =>
+            AddModule<TModule, TModuleOptions>((_, _, moduleOptions) =>
             {
                 configureOptions?.Invoke(moduleOptions);
             }, optionsKey);
-        }
     }
 
     public class ApplicationContext

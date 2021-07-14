@@ -6,7 +6,7 @@ namespace Sitko.Core.App.Helpers
 {
     public static class RandomGenerator
     {
-        private static readonly UniformRandom Rnd = new UniformRandom();
+        private static readonly UniformRandom Rnd = new();
 
         private const string ValidSymbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 
@@ -26,40 +26,28 @@ namespace Sitko.Core.App.Helpers
 
     internal class UniformRandom
     {
-        private static readonly RNGCryptoServiceProvider Global = new RNGCryptoServiceProvider();
+        private static readonly RNGCryptoServiceProvider Global = new();
 
-        private readonly Random _rnd;
+        private readonly Random rnd;
 
         public UniformRandom()
         {
             var buffer = new byte[4];
             Global.GetBytes(buffer);
-            _rnd = new Random(BitConverter.ToInt32(buffer, 0));
+            rnd = new Random(BitConverter.ToInt32(buffer, 0));
         }
 
-        public int Next()
-        {
-            return _rnd.Next();
-        }
+        public int Next() => rnd.Next();
 
-        public int Next(int maxValue)
-        {
-            return _rnd.Next(maxValue);
-        }
+        public int Next(int maxValue) => rnd.Next(maxValue);
 
-        public int Next(int minValue, int maxValue)
-        {
-            return _rnd.Next(minValue, maxValue);
-        }
+        public int Next(int minValue, int maxValue) => rnd.Next(minValue, maxValue);
 
-        public double NextDouble()
-        {
-            return _rnd.NextDouble();
-        }
+        public double NextDouble() => rnd.NextDouble();
 
         public double NextDouble(double minValue, double maxValue)
         {
-            var r = _rnd.NextDouble() * (maxValue - minValue);
+            var r = rnd.NextDouble() * (maxValue - minValue);
             return minValue + r;
         }
     }

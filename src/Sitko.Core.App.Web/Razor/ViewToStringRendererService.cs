@@ -20,11 +20,11 @@ namespace Sitko.Core.App.Web.Razor
 {
     public class ViewToStringRendererService<TConfig> : ViewExecutor where TConfig : IViewToStringRendererServiceOptions
     {
-        private readonly IOptionsMonitor<TConfig> _options;
-        private readonly IActionContextAccessor _actionContextAccessor;
-        private readonly ITempDataProvider _tempDataProvider;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IOptionsMonitor<TConfig> options;
+        private readonly IActionContextAccessor actionContextAccessor;
+        private readonly ITempDataProvider tempDataProvider;
+        private readonly IHttpContextAccessor httpContextAccessor;
+        private readonly IServiceProvider serviceProvider;
 
         public ViewToStringRendererService(
             IOptionsMonitor<TConfig> options,
@@ -40,18 +40,21 @@ namespace Sitko.Core.App.Web.Razor
             IServiceProvider serviceProvider)
             : base(viewOptions, writerFactory, viewEngine, tempDataFactory, diagnosticListener, modelMetadataProvider)
         {
-            _options = options;
-            _actionContextAccessor = actionContextAccessor;
-            _tempDataProvider = tempDataProvider;
-            _httpContextAccessor = httpContextAccessor;
-            _serviceProvider = serviceProvider;
+            this.options = options;
+            this.actionContextAccessor = actionContextAccessor;
+            this.tempDataProvider = tempDataProvider;
+            this.httpContextAccessor = httpContextAccessor;
+            this.serviceProvider = serviceProvider;
         }
 
         public async Task<string> RenderViewToStringAsync<TModel>(string viewName, TModel model)
         {
             var context = GetActionContext();
 
-            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
 
             var result = new ViewResult()
             {
@@ -60,7 +63,7 @@ namespace Sitko.Core.App.Web.Razor
                     new ModelStateDictionary()) {Model = model,},
                 TempData = new TempDataDictionary(
                     context.HttpContext,
-                    _tempDataProvider),
+                    tempDataProvider),
                 ViewName = viewName,
             };
 
@@ -79,7 +82,7 @@ namespace Sitko.Core.App.Web.Razor
                         new ModelStateDictionary()) {Model = model},
                     new TempDataDictionary(
                         context.HttpContext,
-                        _tempDataProvider),
+                        tempDataProvider),
                     output,
                     new HtmlHelperOptions());
 
@@ -91,20 +94,20 @@ namespace Sitko.Core.App.Web.Razor
 
         private ActionContext GetActionContext()
         {
-            var context = _actionContextAccessor.ActionContext;
+            var context = actionContextAccessor.ActionContext;
             if (context == null)
             {
-                var httpContext = _httpContextAccessor.HttpContext;
+                var httpContext = httpContextAccessor.HttpContext;
                 if (httpContext == null)
                 {
                     httpContext = new DefaultHttpContext
                     {
-                        RequestServices = _serviceProvider.CreateScope().ServiceProvider,
+                        RequestServices = serviceProvider.CreateScope().ServiceProvider,
                         Request =
                         {
                             Protocol = "GET",
-                            Host = new HostString(_options.CurrentValue.Host),
-                            Scheme = _options.CurrentValue.Scheme
+                            Host = new HostString(options.CurrentValue.Host),
+                            Scheme = options.CurrentValue.Scheme
                         }
                     };
                 }
@@ -115,7 +118,7 @@ namespace Sitko.Core.App.Web.Razor
             return context;
         }
 
-        ViewEngineResult FindView(ActionContext actionContext, ViewResult viewResult)
+        private ViewEngineResult FindView(ActionContext actionContext, ViewResult viewResult)
         {
             if (actionContext == null)
             {
@@ -158,7 +161,9 @@ namespace Sitko.Core.App.Web.Razor
             }
 
             if (!result.Success)
-                throw new InvalidOperationException(string.Format("Couldn't find view '{0}'", viewName));
+            {
+                throw new InvalidOperationException($"Couldn't find view '{viewName}'");
+            }
 
             return result;
         }

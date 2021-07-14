@@ -15,11 +15,9 @@ namespace Sitko.Core.App.Web
         {
         }
 
-        protected List<IWebApplicationModule> GetWebModules(ApplicationContext context)
-        {
-            return GetEnabledModuleRegistrations(context).Select(r => r.GetInstance()).OfType<IWebApplicationModule>()
+        protected List<IWebApplicationModule> GetWebModules(ApplicationContext context) =>
+            GetEnabledModuleRegistrations(context).Select(r => r.GetInstance()).OfType<IWebApplicationModule>()
                 .ToList();
-        }
 
         public virtual void AppBuilderHook(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder)
@@ -90,7 +88,7 @@ namespace Sitko.Core.App.Web
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseSetting("ApplicationId", this.Id.ToString());
+                    webBuilder.UseSetting("ApplicationId", this.____RULE_VIOLATION____Id____RULE_VIOLATION____.ToString());
                     webBuilder.UseStartup<TStartup>();
                     ConfigureWebHostDefaults(webBuilder);
                 });

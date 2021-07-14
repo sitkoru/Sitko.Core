@@ -13,7 +13,7 @@ namespace Sitko.Core.Xunit
         protected ITestOutputHelper TestOutputHelper { get; }
 
         protected readonly Dictionary<string, IBaseTestScope> _scopes =
-            new Dictionary<string, IBaseTestScope>();
+            new();
 
         protected async Task<T> GetScopeAsync<T>([CallerMemberName] string name = "") where T : IBaseTestScope
         {

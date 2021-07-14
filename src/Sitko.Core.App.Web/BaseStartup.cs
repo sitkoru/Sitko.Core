@@ -16,17 +16,8 @@ namespace Sitko.Core.App.Web
 {
     public abstract class BaseStartup
     {
-        protected IConfiguration Configuration { get; }
-        protected IHostEnvironment Environment { get; }
-        protected WebApplication WebApplication { get; }
-
-        protected virtual bool EnableMvc { get; } = true;
-        protected virtual bool AddHttpContextAccessor { get; } = true;
-        protected virtual bool EnableSameSiteCookiePolicy { get; } = true;
-        protected virtual bool EnableStaticFiles { get; } = true;
-
-        private readonly Dictionary<string, (CorsPolicy policy, bool isDefault)> _corsPolicies =
-            new Dictionary<string, (CorsPolicy policy, bool isDefault)>();
+        private readonly Dictionary<string, (CorsPolicy policy, bool isDefault)> corsPolicies =
+            new();
 
         protected BaseStartup(IConfiguration configuration, IHostEnvironment environment)
         {
@@ -50,6 +41,16 @@ namespace Sitko.Core.App.Web
                 throw new Exception("ApplicationId is empty");
             }
         }
+
+        protected IConfiguration Configuration { get; }
+        protected IHostEnvironment Environment { get; }
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        protected WebApplication WebApplication { get; }
+
+        protected virtual bool EnableMvc { get; } = true;
+        protected virtual bool AddHttpContextAccessor { get; } = true;
+        protected virtual bool EnableSameSiteCookiePolicy { get; } = true;
+        protected virtual bool EnableStaticFiles { get; } = true;
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -76,11 +77,11 @@ namespace Sitko.Core.App.Web
                 });
             }
 
-            if (_corsPolicies.Any())
+            if (corsPolicies.Any())
             {
                 services.AddCors(options =>
                 {
-                    foreach ((string name, (CorsPolicy policy, _)) in _corsPolicies)
+                    foreach ((string name, (CorsPolicy policy, _)) in corsPolicies)
                     {
                         options.AddPolicy(name, policy);
                     }
@@ -102,28 +103,18 @@ namespace Sitko.Core.App.Web
             ConfigureAppServices(services);
         }
 
-        public virtual void AddRedisCache(IServiceCollection services, string redisConnectionsString)
-        {
+        public virtual void AddRedisCache(IServiceCollection services, string redisConnectionsString) =>
             services.AddStackExchangeRedisCache(
                 options => { options.Configuration = redisConnectionsString; });
-        }
 
-        public virtual void AddMemoryCache(IServiceCollection services)
-        {
-            services.AddMemoryCache();
-        }
+        public virtual void AddMemoryCache(IServiceCollection services) => services.AddMemoryCache();
 
-        private void AddDataProtection(IServiceCollection services)
-        {
-            ConfigureDataProtection(services.AddDataProtection());
-        }
+        private void AddDataProtection(IServiceCollection services) => ConfigureDataProtection(services.AddDataProtection());
 
-        protected virtual IDataProtectionBuilder ConfigureDataProtection(IDataProtectionBuilder dataProtectionBuilder)
-        {
-            return dataProtectionBuilder
+        protected virtual IDataProtectionBuilder ConfigureDataProtection(IDataProtectionBuilder dataProtectionBuilder) =>
+            dataProtectionBuilder
                 .SetApplicationName(Environment.ApplicationName)
                 .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
-        }
 
         protected virtual void ConfigureAppServices(IServiceCollection services)
         {
@@ -139,10 +130,7 @@ namespace Sitko.Core.App.Web
             return mvcBuilder;
         }
 
-        protected virtual IHealthChecksBuilder ConfigureHealthChecks(IHealthChecksBuilder healthChecksBuilder)
-        {
-            return healthChecksBuilder;
-        }
+        protected virtual IHealthChecksBuilder ConfigureHealthChecks(IHealthChecksBuilder healthChecksBuilder) => healthChecksBuilder;
 
         protected virtual void ConfigureBeforeRoutingMiddleware(IApplicationBuilder app)
         {
@@ -202,9 +190,9 @@ namespace Sitko.Core.App.Web
             application.BeforeRoutingHook(Configuration, Environment, appBuilder);
             ConfigureBeforeRoutingMiddleware(appBuilder);
             appBuilder.UseRouting();
-            if (_corsPolicies.Any())
+            if (corsPolicies.Any())
             {
-                var defaultPolicy = _corsPolicies.Where(item => item.Value.isDefault).Select(item => item.Key)
+                var defaultPolicy = corsPolicies.Where(item => item.Value.isDefault).Select(item => item.Key)
                     .FirstOrDefault();
                 if (!string.IsNullOrEmpty(defaultPolicy))
                 {
@@ -225,24 +213,21 @@ namespace Sitko.Core.App.Web
 
         protected virtual void ConfigureHook(IApplicationBuilder appBuilder) { }
 
-        protected virtual void UseStaticFiles(IApplicationBuilder appBuilder)
-        {
-            appBuilder.UseStaticFiles();
-        }
+        protected virtual void UseStaticFiles(IApplicationBuilder appBuilder) => appBuilder.UseStaticFiles();
 
         public void AddCorsPolicy(string name, CorsPolicy policy, bool isDefault = false)
         {
-            if (_corsPolicies.ContainsKey(name))
+            if (corsPolicies.ContainsKey(name))
             {
                 throw new ArgumentException($"Cors policy with name {name} already registered", nameof(name));
             }
 
-            if (isDefault && _corsPolicies.Any(c => c.Value.isDefault))
+            if (isDefault && corsPolicies.Any(c => c.Value.isDefault))
             {
                 throw new ArgumentException("Default policy already registered", nameof(isDefault));
             }
 
-            _corsPolicies.Add(name, (policy, isDefault));
+            corsPolicies.Add(name, (policy, isDefault));
         }
 
         public void AddCorsPolicy(string name, Action<CorsPolicyBuilder> buildPolicy, bool isDefault = false)
@@ -288,9 +273,9 @@ namespace Sitko.Core.App.Web
                 return true;
             }
 
-            // Cover Chrome 50-69, because some versions are broken by SameSite=None, 
+            // Cover Chrome 50-69, because some versions are broken by SameSite=None,
             // and none in this range require it.
-            // Note: this covers some pre-Chromium Edge versions, 
+            // Note: this covers some pre-Chromium Edge versions,
             // but pre-Chromium Edge does not require SameSite=None.
             if (userAgent.Contains("Chrome/5") || userAgent.Contains("Chrome/6"))
             {
