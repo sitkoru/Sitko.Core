@@ -25,7 +25,6 @@ namespace Sitko.Core.App
     {
         private const string CheckCommand = "check";
         private const string GenerateOptionsCommand = "generate-options";
-        private static readonly ConcurrentDictionary<Guid, Application> Apps = new();
 
         private static readonly string BaseConsoleLogFormat =
             "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}]{NewLine}\t{Message:lj}{NewLine}{Exception}";
@@ -58,7 +57,6 @@ namespace Sitko.Core.App
         protected Application(string[] args)
         {
             this.args = args;
-            Apps.TryAdd(Id, this);
             Console.OutputEncoding = Encoding.UTF8;
             if (args.Length > 0)
             {
@@ -101,16 +99,6 @@ namespace Sitko.Core.App
         protected IReadOnlyList<ApplicationModuleRegistration>
             GetEnabledModuleRegistrations(ApplicationContext context) => moduleRegistrations
             .Where(r => r.Value.IsEnabled(context)).Select(r => r.Value).ToList();
-
-        public static Application GetApp(Guid id)
-        {
-            if (Apps.ContainsKey(id))
-            {
-                return Apps[id];
-            }
-
-            throw new ArgumentException($"Application {id} is not registered", nameof(id));
-        }
 
         private void LogCheck(string message)
         {

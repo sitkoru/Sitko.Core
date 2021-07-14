@@ -23,29 +23,10 @@ namespace Sitko.Core.App.Web
         {
             Configuration = configuration;
             Environment = environment;
-            var appId = configuration.GetValue<Guid?>("ApplicationId");
-            if (appId is not null)
-            {
-                var app = Application.GetApp(appId.Value);
-                if (app is WebApplication webApplication)
-                {
-                    WebApplication = webApplication;
-                }
-                else
-                {
-                    throw new Exception($"App {appId} is not a WebApplication");
-                }
-            }
-            else
-            {
-                throw new Exception("ApplicationId is empty");
-            }
         }
 
         protected IConfiguration Configuration { get; }
         protected IHostEnvironment Environment { get; }
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        protected WebApplication WebApplication { get; }
 
         protected virtual bool EnableMvc { get; } = true;
         protected virtual bool AddHttpContextAccessor { get; } = true;
