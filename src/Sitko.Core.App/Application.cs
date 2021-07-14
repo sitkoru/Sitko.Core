@@ -18,6 +18,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 namespace Sitko.Core.App
 {
     using System.Text.Json;
+    using JetBrains.Annotations;
     using Microsoft.Extensions.Hosting.Internal;
 
     public abstract class Application : IApplication, IAsyncDisposable
@@ -302,42 +303,54 @@ namespace Sitko.Core.App
         {
         }
 
+        [PublicAPI]
+        public Dictionary<string, object> GetModulesOptions() => GetModulesOptions(GetContext());
+
+
+        private Dictionary<string, object> GetModulesOptions(ApplicationContext applicationContext)
+        {
+            var modulesOptions = new Dictionary<string, object>();
+            foreach (var moduleRegistration in moduleRegistrations.Values)
+            {
+                var (configKey, options) = moduleRegistration.GetOptions(applicationContext);
+                if (!string.IsNullOrEmpty(configKey))
+                {
+                    var current = modulesOptions;
+                    var parts = configKey.Split(':');
+                    for (var i = 0; i < parts.Length; i++)
+                    {
+                        if (i == parts.Length - 1)
+                        {
+                            current[parts[i]] = options;
+                        }
+                        else
+                        {
+                            if (current.ContainsKey(parts[i]))
+                            {
+                                current = (Dictionary<string, object>)current[parts[i]];
+                            }
+                            else
+                            {
+                                var part = new Dictionary<string, object>();
+                                current[parts[i]] = part;
+                                current = part;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return modulesOptions;
+        }
+
         public async Task RunAsync()
         {
             if (currentCommand == GenerateOptionsCommand)
             {
                 InternalLogger.LogInformation("Generate options");
-                var modulesOptions = new Dictionary<string, object>();
-                foreach (var moduleRegistration in moduleRegistrations.Values)
-                {
-                    var (configKey, options) = moduleRegistration.GetOptions(GetContext(new HostingEnvironment(),
-                        new ConfigurationRoot(new List<IConfigurationProvider>())));
-                    if (!string.IsNullOrEmpty(configKey))
-                    {
-                        var current = modulesOptions;
-                        var parts = configKey.Split(':');
-                        for (var i = 0; i < parts.Length; i++)
-                        {
-                            if (i == parts.Length - 1)
-                            {
-                                current[parts[i]] = options;
-                            }
-                            else
-                            {
-                                if (current.ContainsKey(parts[i]))
-                                {
-                                    current = (Dictionary<string, object>)current[parts[i]];
-                                }
-                                else
-                                {
-                                    var part = new Dictionary<string, object>();
-                                    current[parts[i]] = part;
-                                    current = part;
-                                }
-                            }
-                        }
-                    }
-                }
+
+                var modulesOptions = GetModulesOptions(GetContext(new HostingEnvironment(),
+                    new ConfigurationRoot(new List<IConfigurationProvider>())));
 
                 InternalLogger.LogInformation("Modules options:");
                 InternalLogger.LogInformation("{Options}", JsonSerializer.Serialize(modulesOptions,
@@ -469,6 +482,10 @@ namespace Sitko.Core.App
             return host;
         }
 
+        [PublicAPI]
+        protected ApplicationContext GetContext() => GetContext(CreateAppHost().Services);
+
+        [PublicAPI]
         protected ApplicationContext GetContext(IServiceProvider serviceProvider) =>
             GetContext(serviceProvider.GetRequiredService<IHostEnvironment>(),
                 serviceProvider.GetRequiredService<IConfiguration>(),
