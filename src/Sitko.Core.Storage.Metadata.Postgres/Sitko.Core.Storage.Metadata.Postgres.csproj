@@ -28,6 +28,6 @@
     <ProjectReference Include="..\Sitko.Core.Storage\Sitko.Core.Storage.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Z.EntityFramework.Plus.EFCore" Version="5.2.2" />
+    <PackageReference Include="Z.EntityFramework.Plus.EFCore" Version="5.2.3" />
   </ItemGroup>
 </Project>
