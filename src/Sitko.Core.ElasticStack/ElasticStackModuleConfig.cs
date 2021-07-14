@@ -16,22 +16,22 @@ namespace Sitko.Core.ElasticStack
         public int ApmTransactionMaxSpans { get; set; } = 500;
         public bool ApmCentralConfig { get; set; } = true;
         public List<string>? ApmSanitizeFieldNames { get; set; }
-        public readonly Dictionary<string, string> ApmGlobalLabels = new();
+        public Dictionary<string, string> ApmGlobalLabels { get; set; } = new();
         public List<Uri> ApmServerUrls { get; set; } = new();
         public string? ApmSecretToken { get; set; }
         public string? ApmApiKey { get; set; }
         public bool ApmVerifyServerCert { get; set; } = true;
-        public TimeSpan ApmFlushInterval { get; set; } = TimeSpan.FromSeconds(10);
+        public int ApmFlushIntervalInSeconds { get; set; } = 10;
         public int ApmMaxBatchEventCount { get; set; } = 10;
         public int ApmMaxQueueEventCount { get; set; } = 1000;
-        public TimeSpan ApmMetricsInterval { get; set; } = TimeSpan.FromSeconds(30);
+        public int ApmMetricsIntervalInSeconds { get; set; } = 30;
         public List<string>? ApmDisableMetrics { get; set; }
         public string ApmCaptureBody { get; set; } = "off";
         public List<string>? ApmCaptureBodyContentTypes { get; set; }
         public bool ApmCaptureHeaders { get; set; } = true;
         public bool ApmUseElasticTraceparentHeader { get; set; } = true;
         public int ApmStackTraceLimit { get; set; } = 50;
-        public TimeSpan ApmSpanFramesMinDuration { get; set; } = TimeSpan.FromSeconds(0.5);
+        public double ApmSpanFramesMinDurationInSeconds { get; set; } = 0.5;
         public string ApmLogLevel { get; set; } = "Error";
         public string? LoggingIndexFormat { get; set; }
         public AutoRegisterTemplateVersion? LoggingTemplateVersion { get; set; }

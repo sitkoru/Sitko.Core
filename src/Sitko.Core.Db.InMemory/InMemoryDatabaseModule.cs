@@ -9,10 +9,7 @@ namespace Sitko.Core.Db.InMemory
         InMemoryDatabaseModule<TDbContext> : BaseDbModule<TDbContext, InMemoryDatabaseModuleOptions<TDbContext>>
         where TDbContext : DbContext
     {
-        public override string GetOptionsKey()
-        {
-            return $"Db:InMemory:{typeof(TDbContext).Name}";
-        }
+        public override string OptionsKey => $"Db:InMemory:{typeof(TDbContext).Name}";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             InMemoryDatabaseModuleOptions<TDbContext> startupOptions)

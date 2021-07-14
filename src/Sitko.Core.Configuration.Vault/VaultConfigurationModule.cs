@@ -12,10 +12,7 @@ namespace Sitko.Core.Configuration.Vault
 {
     public class VaultConfigurationModule : BaseApplicationModule<VaultConfigurationModuleOptions>
     {
-        public override string GetOptionsKey()
-        {
-            return "Vault";
-        }
+        public override string OptionsKey => "Vault";
 
         public override void ConfigureAppConfiguration(ApplicationContext context,
             HostBuilderContext hostBuilderContext,
@@ -59,19 +56,14 @@ namespace Sitko.Core.Configuration.Vault
         public bool ReloadOnChange { get; set; } = true;
         public int ReloadCheckIntervalSeconds { get; set; } = 60;
         public bool OmitVaultKeyName { get; set; } = false;
-
-        public bool IsOptional { get; set; } = true;
-
         public bool RenewToken { get; set; } = true;
         public int TokenRenewIntervalMinutes { get; set; } = 60;
 
         public IEnumerable<char>? AdditionalCharactersForConfigurationPath { get; set; } = null;
 
-        public VaultOptions GetOptions()
-        {
-            return new(Uri, Token, VaultSecret, VaultRoleId, ReloadOnChange, ReloadCheckIntervalSeconds,
+        public VaultOptions GetOptions() =>
+            new(Uri, Token, VaultSecret, VaultRoleId, ReloadOnChange, ReloadCheckIntervalSeconds,
                 OmitVaultKeyName, AdditionalCharactersForConfigurationPath);
-        }
 
         public override void Configure(ApplicationContext applicationContext)
         {

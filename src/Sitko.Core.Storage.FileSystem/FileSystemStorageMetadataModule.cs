@@ -6,9 +6,6 @@ namespace Sitko.Core.Storage.FileSystem
         FileSystemStorageMetadataProvider<TStorageOptions>, FileSystemStorageMetadataModuleOptions<TStorageOptions>>
         where TStorageOptions : StorageOptions, IFileSystemStorageOptions
     {
-        public override string GetOptionsKey()
-        {
-            return $"Storage:Metadata:FileSystem:{typeof(TStorageOptions).Name}";
-        }
+        public override string OptionsKey => $"Storage:Metadata:FileSystem:{typeof(TStorageOptions).Name}";
     }
 }

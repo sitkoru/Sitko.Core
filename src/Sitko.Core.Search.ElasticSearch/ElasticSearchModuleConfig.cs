@@ -13,9 +13,7 @@ namespace Sitko.Core.Search.ElasticSearch
 
     public class ElasticSearchModuleOptionsValidator : AbstractValidator<ElasticSearchModuleOptions>
     {
-        public ElasticSearchModuleOptionsValidator()
-        {
+        public ElasticSearchModuleOptionsValidator() =>
             RuleFor(o => o.Url).NotEmpty().WithMessage("Elastic url is empty");
-        }
     }
 }

@@ -61,10 +61,7 @@ namespace Sitko.Core.Identity
             appBuilder.UseAuthorization();
         }
 
-        public override string GetOptionsKey()
-        {
-            return "Identity";
-        }
+        public override string OptionsKey => "Identity";
     }
 
     public class IdentityModuleOptions : BaseModuleOptions

@@ -9,10 +9,7 @@ namespace Sitko.Core.Storage.ImgProxy
         ImgProxyStorageModule<TStorageOptions> : BaseApplicationModule<ImgProxyStorageModuleOptions<TStorageOptions>>
         where TStorageOptions : StorageOptions
     {
-        public override string GetOptionsKey()
-        {
-            return $"Storage:ImgProxy:{typeof(TStorageOptions).Name}";
-        }
+        public override string OptionsKey => $"Storage:ImgProxy:{typeof(TStorageOptions).Name}";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             ImgProxyStorageModuleOptions<TStorageOptions> startupOptions)
@@ -22,10 +19,8 @@ namespace Sitko.Core.Storage.ImgProxy
         }
 
         public override IEnumerable<Type> GetRequiredModules(ApplicationContext context,
-            ImgProxyStorageModuleOptions<TStorageOptions> options)
-        {
-            return new[] {typeof(IStorageModule)};
-        }
+            ImgProxyStorageModuleOptions<TStorageOptions> options) =>
+            new[] {typeof(IStorageModule)};
     }
 
     // Generic parameter is required for dependency injection

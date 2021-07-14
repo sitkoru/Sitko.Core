@@ -41,7 +41,7 @@ namespace Sitko.Core.Storage.Cache
 
     public abstract class StorageCacheOptions : BaseModuleOptions
     {
-        public TimeSpan Ttl { get; set; } = TimeSpan.FromHours(12);
+        public int TtlInMinutes { get; set; } = 720;
         public long MaxFileSizeToStore { get; set; }
         public long? MaxCacheSize { get; set; }
     }

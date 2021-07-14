@@ -6,11 +6,8 @@ namespace Sitko.Core.MediatR
 {
     public class MediatRModuleOptions<TAssembly> : BaseModuleOptions
     {
-        public List<Assembly> Assemblies { get; } = new List<Assembly> {typeof(TAssembly).Assembly};
+        public List<Assembly> Assemblies { get; } = new() {typeof(TAssembly).Assembly};
 
-        public void AddAssemblies(params Assembly[] assemblies)
-        {
-            Assemblies.AddRange(assemblies);
-        }
+        public void AddAssemblies(params Assembly[] assemblies) => Assemblies.AddRange(assemblies);
     }
 }

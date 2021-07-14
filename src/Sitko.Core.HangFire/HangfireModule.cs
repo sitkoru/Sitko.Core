@@ -15,13 +15,12 @@ using Sitko.Core.App.Web;
 
 namespace Sitko.Core.HangFire
 {
+    using System.Text.Json.Serialization;
+
     public class HangfireModule<THangfireConfig> : BaseApplicationModule<THangfireConfig>, IWebApplicationModule
         where THangfireConfig : HangfireModuleOptions, new()
     {
-        public override string GetOptionsKey()
-        {
-            return "Hangfire";
-        }
+        public override string OptionsKey => "Hangfire";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             THangfireConfig startupOptions)
@@ -72,7 +71,7 @@ namespace Sitko.Core.HangFire
 
     public abstract class HangfireModuleOptions : BaseModuleOptions
     {
-        public Action<IGlobalConfiguration>? Configure { get; set; }
+        [JsonIgnore] public Action<IGlobalConfiguration>? Configure { get; set; }
 
         public bool IsWorkersEnabled { get; private set; }
         public int Workers { get; private set; }
@@ -88,8 +87,9 @@ namespace Sitko.Core.HangFire
             }
         }
 
-        public bool IsDashboardEnabled { get; private set; }
-        public Func<DashboardContext, bool>? DashboardAuthorizationCheck { get; private set; }
+        [JsonIgnore] public bool IsDashboardEnabled { get; private set; }
+
+        [JsonIgnore] public Func<DashboardContext, bool>? DashboardAuthorizationCheck { get; private set; }
 
         public void EnableDashboard(Func<DashboardContext, bool>? configureAuthorizationCheck = null)
         {
@@ -98,8 +98,8 @@ namespace Sitko.Core.HangFire
                 configureAuthorizationCheck == null || configureAuthorizationCheck.Invoke(context);
         }
 
-        public bool IsHealthChecksEnabled { get; private set; }
-        public Action<HangfireOptions>? ConfigureHealthChecks { get; private set; }
+        [JsonIgnore] public bool IsHealthChecksEnabled { get; private set; }
+        [JsonIgnore] public Action<HangfireOptions>? ConfigureHealthChecks { get; private set; }
 
         public void EnableHealthChecks(Action<HangfireOptions>? configure = null)
         {
@@ -114,19 +114,18 @@ namespace Sitko.Core.HangFire
     public class HangfirePostgresModuleOptions : HangfireModuleOptions
     {
         public string ConnectionString { get; set; } = string.Empty;
-        public TimeSpan InvisibilityTimeout { get; set; } = TimeSpan.FromHours(5);
-        public TimeSpan DistributedLockTimeout { get; set; } = TimeSpan.FromHours(5);
+        public int InvisibilityTimeoutInMinutes { get; set; } = 300;
+        public int DistributedLockTimeoutInMinutes { get; set; } = 300;
 
-        public HangfirePostgresModuleOptions()
-        {
+        public HangfirePostgresModuleOptions() =>
             Configure = configuration =>
             {
                 configuration.UsePostgreSqlStorage(ConnectionString,
                     new PostgreSqlStorageOptions
                     {
-                        InvisibilityTimeout = InvisibilityTimeout, DistributedLockTimeout = DistributedLockTimeout
+                        InvisibilityTimeout = TimeSpan.FromMinutes(InvisibilityTimeoutInMinutes),
+                        DistributedLockTimeout = TimeSpan.FromMinutes(DistributedLockTimeoutInMinutes)
                     });
             };
-        }
     }
 }

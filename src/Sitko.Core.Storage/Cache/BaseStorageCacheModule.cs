@@ -22,10 +22,7 @@ namespace Sitko.Core.Storage.Cache
             FileStorageCache<TStorageOptions>,
             FileStorageCacheOptions> where TStorageOptions : StorageOptions
     {
-        public override string GetOptionsKey()
-        {
-            return $"Storage:Cache:FileSystem:{typeof(TStorageOptions).Name}";
-        }
+        public override string OptionsKey => $"Storage:Cache:FileSystem:{typeof(TStorageOptions).Name}";
     }
 
     public class
@@ -33,9 +30,6 @@ namespace Sitko.Core.Storage.Cache
             InMemoryStorageCache<TStorageOptions>,
             InMemoryStorageCacheOptions> where TStorageOptions : StorageOptions
     {
-        public override string GetOptionsKey()
-        {
-            return $"Storage:Cache:InMemory:{typeof(TStorageOptions).Name}";
-        }
+        public override string OptionsKey => $"Storage:Cache:InMemory:{typeof(TStorageOptions).Name}";
     }
 }

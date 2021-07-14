@@ -15,36 +15,36 @@ namespace Sitko.Core.App
     internal class ApplicationModuleRegistration<TModule, TModuleOptions> : ApplicationModuleRegistration
         where TModule : IApplicationModule<TModuleOptions>, new() where TModuleOptions : BaseModuleOptions, new()
     {
-        private readonly string? _configKey;
-        private readonly Action<IConfiguration, IHostEnvironment, TModuleOptions>? _configureOptions;
-        private readonly TModule _instance;
+        private readonly string? optionsKey;
+        private readonly Action<IConfiguration, IHostEnvironment, TModuleOptions>? configureOptions;
+        private readonly TModule instance;
 
         public ApplicationModuleRegistration(
             Action<IConfiguration, IHostEnvironment, TModuleOptions>? configureOptions = null,
             string? optionsKey = null)
         {
-            _instance = Activator.CreateInstance<TModule>();
-            _configureOptions = configureOptions;
-            _configKey = optionsKey ?? _instance.GetOptionsKey();
+            instance = Activator.CreateInstance<TModule>();
+            this.configureOptions = configureOptions;
+            this.optionsKey = optionsKey ?? instance.OptionsKey;
         }
 
         public override Type Type => typeof(TModule);
 
-        public override IApplicationModule GetInstance()
-        {
-            return _instance;
-        }
+        public override IApplicationModule GetInstance() => instance;
+
+        public override (string? optionsKey, object options) GetOptions(ApplicationContext applicationContext) =>
+            (optionsKey, CreateOptions(applicationContext));
 
         public override ApplicationModuleRegistration ConfigureOptions(ApplicationContext context,
             IServiceCollection services)
         {
             var builder = services.AddOptions<TModuleOptions>()
-                .Bind(context.Configuration.GetSection(_configKey))
+                .Bind(context.Configuration.GetSection(optionsKey))
                 .PostConfigure(
                     options =>
                     {
                         options.Configure(context);
-                        _configureOptions?.Invoke(context.Configuration, context.Environment, options);
+                        configureOptions?.Invoke(context.Configuration, context.Environment, options);
                     });
             var optionsInstance = Activator.CreateInstance<TModuleOptions>();
             Type? validatorType;
@@ -73,14 +73,14 @@ namespace Sitko.Core.App
             LoggerConfiguration loggerConfiguration, LogLevelSwitcher logLevelSwitcher)
         {
             var options = CreateOptions(context);
-            _instance.ConfigureLogging(context, options, loggerConfiguration, logLevelSwitcher);
+            instance.ConfigureLogging(context, options, loggerConfiguration, logLevelSwitcher);
             return this;
         }
 
         public override ApplicationModuleRegistration ConfigureHostBuilder(ApplicationContext context,
             IHostBuilder hostBuilder)
         {
-            if (_instance is IHostBuilderModule<TModuleOptions> hostBuilderModule)
+            if (instance is IHostBuilderModule<TModuleOptions> hostBuilderModule)
             {
                 var options = CreateOptions(context);
                 hostBuilderModule.ConfigureHostBuilder(context, hostBuilder, options);
@@ -93,7 +93,7 @@ namespace Sitko.Core.App
             HostBuilderContext hostBuilderContext, IConfigurationBuilder configurationBuilder)
         {
             var options = CreateOptions(context);
-            _instance.ConfigureAppConfiguration(context, hostBuilderContext, configurationBuilder, options);
+            instance.ConfigureAppConfiguration(context, hostBuilderContext, configurationBuilder, options);
             return this;
         }
 
@@ -103,7 +103,7 @@ namespace Sitko.Core.App
         {
             var options = CreateOptions(context);
             var missingModules = new List<Type>();
-            foreach (var requiredModule in _instance.GetRequiredModules(context, options))
+            foreach (var requiredModule in instance.GetRequiredModules(context, options))
             {
                 if (!registeredModules.Any(t => requiredModule.IsAssignableFrom(t)))
                 {
@@ -114,17 +114,14 @@ namespace Sitko.Core.App
             return (!missingModules.Any(), missingModules);
         }
 
-        public override bool IsEnabled(ApplicationContext context)
-        {
-            return CreateOptions(context).Enabled;
-        }
+        public override bool IsEnabled(ApplicationContext context) => CreateOptions(context).Enabled;
 
         private TModuleOptions CreateOptions(ApplicationContext applicationContext)
         {
             var options = Activator.CreateInstance<TModuleOptions>();
-            applicationContext.Configuration.Bind(_configKey, options);
+            applicationContext.Configuration.Bind(optionsKey, options);
             options.Configure(applicationContext);
-            _configureOptions?.Invoke(applicationContext.Configuration, applicationContext.Environment, options);
+            configureOptions?.Invoke(applicationContext.Configuration, applicationContext.Environment, options);
             return options;
         }
 
@@ -133,38 +130,32 @@ namespace Sitko.Core.App
             IServiceCollection services)
         {
             var options = CreateOptions(context);
-            _instance.ConfigureServices(context, services, options);
+            instance.ConfigureServices(context, services, options);
             return this;
         }
 
         public override Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
-            IServiceProvider serviceProvider)
-        {
-            return _instance.ApplicationStopped(configuration, environment, serviceProvider);
-        }
+            IServiceProvider serviceProvider) =>
+            instance.ApplicationStopped(configuration, environment, serviceProvider);
 
         public override Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
-            IServiceProvider serviceProvider)
-        {
-            return _instance.ApplicationStopping(configuration, environment, serviceProvider);
-        }
+            IServiceProvider serviceProvider) =>
+            instance.ApplicationStopping(configuration, environment, serviceProvider);
 
         public override Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
-            IServiceProvider serviceProvider)
-        {
-            return _instance.ApplicationStarted(configuration, environment, serviceProvider);
-        }
+            IServiceProvider serviceProvider) =>
+            instance.ApplicationStarted(configuration, environment, serviceProvider);
 
-        public override Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider)
-        {
-            return _instance.InitAsync(context, serviceProvider);
-        }
+        public override Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider) =>
+            instance.InitAsync(context, serviceProvider);
     }
 
     public abstract class ApplicationModuleRegistration
     {
         public abstract Type Type { get; }
         public abstract IApplicationModule GetInstance();
+
+        public abstract (string? optionsKey, object options) GetOptions(ApplicationContext applicationContext);
 
         public abstract ApplicationModuleRegistration ConfigureOptions(ApplicationContext context,
             IServiceCollection services);

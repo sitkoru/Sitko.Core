@@ -13,9 +13,7 @@ namespace Sitko.Core.Health.Teams
 
     public class TeamsHealthCheckPublisherOptionsValidator : AbstractValidator<TeamsHealthReporterModuleOptions>
     {
-        public TeamsHealthCheckPublisherOptionsValidator()
-        {
+        public TeamsHealthCheckPublisherOptionsValidator() =>
             RuleFor(o => o.WebHookUrl).NotEmpty().WithMessage("Teams web hook url can't be empty");
-        }
     }
 }

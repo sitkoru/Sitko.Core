@@ -66,10 +66,7 @@ namespace Sitko.Core.Grpc.Client.Tests
             TestGrpcClientModuleOptions>
         where TClient : ClientBase<TClient>
     {
-        public override string GetOptionsKey()
-        {
-            return "Grpc:Client:Test";
-        }
+        public override string OptionsKey => "Grpc:Client:Test";
     }
 
     public class TestGrpcClientModuleOptions : GrpcClientModuleOptions

@@ -9,10 +9,7 @@ namespace Sitko.Core.Graylog
 {
     public class GraylogModule : BaseApplicationModule<GraylogModuleOptions>
     {
-        public override string GetOptionsKey()
-        {
-            return "Logging:Graylog";
-        }
+        public override string OptionsKey => "Logging:Graylog";
 
         public override void ConfigureLogging(ApplicationContext context, GraylogModuleOptions options,
             LoggerConfiguration loggerConfiguration,
@@ -34,9 +31,7 @@ namespace Sitko.Core.Graylog
     {
         public static LoggerConfiguration Graylog(this LoggerSinkConfiguration sinkConfiguration,
             GraylogSinkOptions options,
-            LoggingLevelSwitch controllerSwitch)
-        {
-            return sinkConfiguration.Sink(new GraylogSink(options), levelSwitch: controllerSwitch);
-        }
+            LoggingLevelSwitch controllerSwitch) =>
+            sinkConfiguration.Sink(new GraylogSink(options), levelSwitch: controllerSwitch);
     }
 }

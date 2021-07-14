@@ -19,51 +19,51 @@ namespace Sitko.Core.Grpc.Server.Consul
 {
     public class ConsulGrpcServicesRegistrar : IGrpcServicesRegistrar, IAsyncDisposable
     {
-        private readonly IOptionsMonitor<ConsulDiscoveryGrpcServerModuleOptions> _optionsMonitor;
-        private readonly IApplication _application;
-        private readonly IConsulClient? _consulClient;
-        private readonly string _host = "127.0.0.1";
-        private readonly bool _inContainer = DockerHelper.IsRunningInDocker();
-        private readonly ILogger<ConsulGrpcServicesRegistrar> _logger;
-        private ConsulDiscoveryGrpcServerModuleOptions Options => _optionsMonitor.CurrentValue;
-        private readonly int _port;
+        private readonly IOptionsMonitor<ConsulDiscoveryGrpcServerModuleOptions> optionsMonitor;
+        private readonly IApplication application;
+        private readonly IConsulClient? consulClient;
+        private readonly string host = "127.0.0.1";
+        private readonly bool inContainer = DockerHelper.IsRunningInDocker();
+        private readonly ILogger<ConsulGrpcServicesRegistrar> logger;
+        private ConsulDiscoveryGrpcServerModuleOptions Options => optionsMonitor.CurrentValue;
+        private readonly int port;
 
-        private readonly ConcurrentDictionary<string, string> _registeredServices = new();
+        private readonly ConcurrentDictionary<string, string> registeredServices = new();
 
-        private bool _disposed;
-        private IScheduledTask? _updateTtlTask;
+        private bool disposed;
+        private IScheduledTask? updateTtlTask;
 
         public ConsulGrpcServicesRegistrar(IOptionsMonitor<ConsulDiscoveryGrpcServerModuleOptions> optionsMonitor,
             IApplication application,
             IServer server, IScheduler scheduler, ILogger<ConsulGrpcServicesRegistrar> logger,
             IConsulClient? consulClient = null)
         {
-            _optionsMonitor = optionsMonitor;
-            _application = application;
-            _consulClient = consulClient;
-            _logger = logger;
+            this.optionsMonitor = optionsMonitor;
+            this.application = application;
+            this.consulClient = consulClient;
+            this.logger = logger;
             if (!string.IsNullOrEmpty(Options.Host))
             {
-                _logger.LogInformation("Use grpc host from config");
-                _host = Options.Host;
+                this.logger.LogInformation("Use grpc host from config");
+                host = Options.Host;
             }
-            else if (_inContainer)
+            else if (inContainer)
             {
-                _logger.LogInformation("Use docker ip as grpc host");
+                this.logger.LogInformation("Use docker ip as grpc host");
                 var dockerIp = DockerHelper.GetContainerAddress();
                 if (string.IsNullOrEmpty(dockerIp))
                 {
                     throw new Exception("Can't find host ip for grpc");
                 }
 
-                _host = dockerIp;
+                host = dockerIp;
             }
 
-            _logger.LogInformation("GRPC Host: {Host}", _host);
+            this.logger.LogInformation("GRPC Host: {Host}", host);
             if (Options.Port != null && Options.Port > 0)
             {
-                _logger.LogInformation("Use grpc port from config");
-                _port = Options.Port.Value;
+                this.logger.LogInformation("Use grpc port from config");
+                port = Options.Port.Value;
             }
             else
             {
@@ -75,17 +75,17 @@ namespace Sitko.Core.Grpc.Server.Consul
                     throw new Exception("Can't find https address for grpc service");
                 }
 
-                _port = address.Port > 0 ? address.Port : 443;
+                port = address.Port > 0 ? address.Port : 443;
             }
 
-            _logger.LogInformation("GRPC Port: {Port}", _port);
+            this.logger.LogInformation("GRPC Port: {Port}", port);
             //_updateTtlTask = UpdateChecksAsync(_updateTtlCts.Token);
-            _updateTtlTask = scheduler.Schedule(TimeSpan.FromSeconds(15), async token =>
+            updateTtlTask = scheduler.Schedule(TimeSpan.FromSeconds(15), async token =>
             {
                 await UpdateServicesTtlAsync(token);
             }, (context, _) =>
             {
-                _logger.LogError(context.Exception, "Error updating TTL for gRPC services: {ErrorText}",
+                this.logger.LogError(context.Exception, "Error updating TTL for gRPC services: {ErrorText}",
                     context.Exception.ToString());
                 return Task.CompletedTask;
             });
@@ -94,24 +94,24 @@ namespace Sitko.Core.Grpc.Server.Consul
 
         public async ValueTask DisposeAsync()
         {
-            if (!_disposed && _consulClient != null)
+            if (!disposed && consulClient != null)
             {
-                if (_updateTtlTask != null)
+                if (updateTtlTask != null)
                 {
-                    await _updateTtlTask.Cancel();
-                    _updateTtlTask = null;
+                    await updateTtlTask.Cancel();
+                    updateTtlTask = null;
                 }
 
-                foreach (var registeredService in _registeredServices)
+                foreach (var registeredService in registeredServices)
                 {
-                    _logger.LogInformation(
+                    logger.LogInformation(
                         "Application stopping. Deregister grpc service {ServiceName} on {Address}:{Port}",
-                        registeredService.Value, _host,
-                        _port);
-                    await _consulClient.Agent.ServiceDeregister(registeredService.Key);
+                        registeredService.Value, host,
+                        port);
+                    await consulClient.Agent.ServiceDeregister(registeredService.Key);
                 }
 
-                _disposed = true;
+                disposed = true;
             }
         }
 
@@ -119,34 +119,36 @@ namespace Sitko.Core.Grpc.Server.Consul
         {
             var serviceName = GetServiceName<T>();
             var id = GetServiceId<T>();
-            if (_consulClient != null)
+            if (consulClient != null)
             {
                 var registration = new AgentServiceRegistration
                 {
                     ID = id,
                     Name = serviceName,
-                    Address = _host,
-                    Port = _port,
+                    Address = host,
+                    Port = port,
                     Check = new AgentServiceCheck
                     {
-                        TTL = Options.ChecksInterval, DeregisterCriticalServiceAfter = Options.DeregisterTimeout
+                        TTL = TimeSpan.FromSeconds(Options.ChecksIntervalInSeconds),
+                        DeregisterCriticalServiceAfter =
+                            TimeSpan.FromSeconds(Options.DeregisterTimeoutInSeconds)
                     },
-                    Tags = new[] {"grpc", $"version:{_application.Version}"}
+                    Tags = new[] {"grpc", $"version:{application.Version}"}
                 };
-                _logger.LogInformation("Register grpc service {ServiceName} on {Address}:{Port}", serviceName, _host,
-                    _port);
-                await _consulClient.Agent.ServiceDeregister(id);
-                var result = await _consulClient.Agent.ServiceRegister(registration);
-                _logger.LogInformation("Consul response code: {Code}", result.StatusCode);
+                logger.LogInformation("Register grpc service {ServiceName} on {Address}:{Port}", serviceName, host,
+                    port);
+                await consulClient.Agent.ServiceDeregister(id);
+                var result = await consulClient.Agent.ServiceRegister(registration);
+                logger.LogInformation("Consul response code: {Code}", result.StatusCode);
             }
 
-            _registeredServices.TryAdd(id, serviceName);
+            registeredServices.TryAdd(id, serviceName);
         }
 
         public async Task<HealthCheckResult> CheckHealthAsync<T>(CancellationToken cancellationToken = default)
             where T : class
         {
-            if (_consulClient == null)
+            if (consulClient == null)
             {
                 return HealthCheckResult.Unhealthy("No consul client");
             }
@@ -154,7 +156,7 @@ namespace Sitko.Core.Grpc.Server.Consul
             var id = GetServiceId<T>();
             var serviceName = GetServiceName<T>();
 
-            var serviceResponse = await _consulClient.Catalog.Service(serviceName, "grpc", cancellationToken);
+            var serviceResponse = await consulClient.Catalog.Service(serviceName, "grpc", cancellationToken);
             if (serviceResponse.StatusCode == HttpStatusCode.OK)
             {
                 if (serviceResponse.Response.Any())
@@ -193,31 +195,31 @@ namespace Sitko.Core.Grpc.Server.Consul
         private string GetServiceId<T>()
         {
             var serviceName = GetServiceName<T>();
-            return _inContainer ? $"{serviceName}_{_host}_{_port}" : serviceName;
+            return inContainer ? $"{serviceName}_{host}_{port}" : serviceName;
         }
 
         private async Task UpdateServicesTtlAsync(CancellationToken token)
         {
-            if (!token.IsCancellationRequested && _consulClient != null && _registeredServices.Any())
+            if (!token.IsCancellationRequested && consulClient != null && registeredServices.Any())
             {
-                _logger.LogDebug("Update TTL for gRPC services");
-                foreach (var service in _registeredServices)
+                logger.LogDebug("Update TTL for gRPC services");
+                foreach (var service in registeredServices)
                 {
-                    _logger.LogDebug("Service: {ServiceId}/{ServiceName}", service.Key, service.Value);
+                    logger.LogDebug("Service: {ServiceId}/{ServiceName}", service.Key, service.Value);
                     try
                     {
-                        await _consulClient.Agent.UpdateTTL("service:" + service.Key,
+                        await consulClient.Agent.UpdateTTL("service:" + service.Key,
                             $"Last update: {DateTime.UtcNow:O}", TTLStatus.Pass,
                             token);
                     }
                     catch (Exception exception)
                     {
-                        _logger.LogError(exception, "Error updating TTL for {ServiceId}/{ServiceName}: {ErrorText}",
+                        logger.LogError(exception, "Error updating TTL for {ServiceId}/{ServiceName}: {ErrorText}",
                             service.Key, service.Value, exception.ToString());
                     }
                 }
 
-                _logger.LogDebug("All gRPC services TTL updated");
+                logger.LogDebug("All gRPC services TTL updated");
             }
         }
     }

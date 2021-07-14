@@ -6,10 +6,7 @@ namespace Sitko.Core.Health.Telegram
 {
     public class TelegramHealthReporterModule : BaseApplicationModule<TelegramHealthReporterModuleOptions>
     {
-        public override string GetOptionsKey()
-        {
-            return "Health:Telegram";
-        }
+        public override string OptionsKey => "Health:Telegram";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             TelegramHealthReporterModuleOptions startupOptions)

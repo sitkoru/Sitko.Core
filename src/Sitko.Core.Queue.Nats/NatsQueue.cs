@@ -22,30 +22,30 @@ namespace Sitko.Core.Queue.Nats
 {
     public class NatsQueue : BaseQueue<NatsQueueModuleOptions>
     {
-        private IStanConnection? _connection;
-        private static readonly ConnectionFactory _connectionFactory = new();
+        private IStanConnection? connection;
+        private static readonly ConnectionFactory ConnectionFactory = new();
 
-        private readonly ConcurrentDictionary<Guid, IAsyncSubscription> _natsSubscriptions = new();
+        private readonly ConcurrentDictionary<Guid, IAsyncSubscription> natsSubscriptions = new();
 
-        private readonly ConcurrentDictionary<string, Action> _subscribeActions = new();
+        private readonly ConcurrentDictionary<string, Action> subscribeActions = new();
 
-        private readonly MethodInfo _deserializeBinaryMethod =
+        private readonly MethodInfo deserializeBinaryMethod =
             typeof(NatsQueue).GetMethod(nameof(DeserializeBinaryPayload),
                 BindingFlags.NonPublic | BindingFlags.Instance)!;
 
-        private readonly ConcurrentDictionary<string, IStanSubscription> _stanSubscriptions = new();
+        private readonly ConcurrentDictionary<string, IStanSubscription> stanSubscriptions = new();
 
-        private bool _disposed;
-        private readonly string _consumerGroupName;
-        private readonly string _clientName;
+        private bool disposed;
+        private readonly string consumerGroupName;
+        private readonly string clientName;
 
         public NatsQueue(IOptionsMonitor<NatsQueueModuleOptions> config, QueueContext context,
             IHostEnvironment environment,
             ILogger<NatsQueue> logger) : base(config,
             context, logger)
         {
-            _clientName = environment.ApplicationName.Replace('.', '_');
-            _consumerGroupName = !string.IsNullOrEmpty(Config.ConsumerGroupName)
+            clientName = environment.ApplicationName.Replace('.', '_');
+            consumerGroupName = !string.IsNullOrEmpty(Config.ConsumerGroupName)
                 ? Config.ConsumerGroupName
                 : environment.ApplicationName;
         }
@@ -72,10 +72,7 @@ namespace Sitko.Core.Queue.Nats
             return queueName;
         }
 
-        private string GetQueueName<T>() where T : class
-        {
-            return GetQueueName(Activator.CreateInstance<T>());
-        }
+        private string GetQueueName<T>() where T : class => GetQueueName(Activator.CreateInstance<T>());
 
         protected override async Task<QueuePublishResult> DoPublishAsync<T>(T message, QueueMessageContext context)
         {
@@ -159,13 +156,13 @@ namespace Sitko.Core.Queue.Nats
                         return Task.FromResult(result);
                     });
                 });
-            _natsSubscriptions.TryAdd(id, sub);
-            return Task.FromResult(new QueueSubscribeResult() { SubscriptionId = id });
+            natsSubscriptions.TryAdd(id, sub);
+            return Task.FromResult(new QueueSubscribeResult() {SubscriptionId = id});
         }
 
         protected override Task<bool> DoStopReplyAsync<TMessage, TResponse>(Guid id)
         {
-            if (_natsSubscriptions.TryRemove(id, out var natsSubscription))
+            if (natsSubscriptions.TryRemove(id, out var natsSubscription))
             {
                 natsSubscription.Unsubscribe();
                 natsSubscription.Connection.Close();
@@ -206,11 +203,11 @@ namespace Sitko.Core.Queue.Nats
             IMessage msg;
             if (message is IMessage protoMessage)
             {
-                msg = new QueueBinaryMsg { Context = contextMsg, Data = Any.Pack(protoMessage) };
+                msg = new QueueBinaryMsg {Context = contextMsg, Data = Any.Pack(protoMessage)};
             }
             else
             {
-                msg = new QueueJsonMsg { Context = contextMsg, Data = JsonConvert.SerializeObject(message) };
+                msg = new QueueJsonMsg {Context = contextMsg, Data = JsonConvert.SerializeObject(message)};
             }
 
             return msg.ToByteArray();
@@ -248,10 +245,10 @@ namespace Sitko.Core.Queue.Nats
         {
             var result = new QueueSubscribeResult();
             var queueName = GetQueueName<T>();
-            if (!_stanSubscriptions.ContainsKey(queueName))
+            if (!stanSubscriptions.ContainsKey(queueName))
             {
                 DoSubscribe(queueName, options);
-                _subscribeActions.TryAdd(queueName, () => DoSubscribe(queueName, options));
+                subscribeActions.TryAdd(queueName, () => DoSubscribe(queueName, options));
             }
 
             return Task.FromResult(result);
@@ -296,11 +293,11 @@ namespace Sitko.Core.Queue.Nats
                 stanOptions.MaxInflight = queueOptions.MaxInFlight;
             }
 
-            if (queueOptions.Durable && !string.IsNullOrEmpty(_consumerGroupName))
+            if (queueOptions.Durable && !string.IsNullOrEmpty(consumerGroupName))
             {
                 Logger.LogInformation("{QueueName}: Durable name - {DurableName}", queueName,
-                    _consumerGroupName);
-                stanOptions.DurableName = _consumerGroupName;
+                    consumerGroupName);
+                stanOptions.DurableName = consumerGroupName;
             }
 
             var deserializer = GetPayloadDeserializer<T>();
@@ -313,7 +310,7 @@ namespace Sitko.Core.Queue.Nats
             if (!string.IsNullOrEmpty(stanOptions.DurableName))
             {
                 sub = GetConnection().Subscribe(queueName,
-                    _consumerGroupName, stanOptions,
+                    consumerGroupName, stanOptions,
                     // ReSharper disable once AsyncVoidLambda
                     async (_, args) =>
                         await ProcessStanMessage(deserializer, args.Message, stanOptions.ManualAcks));
@@ -328,7 +325,7 @@ namespace Sitko.Core.Queue.Nats
 
             Logger.LogInformation("{QueueName}: Subscribed", queueName);
 
-            _stanSubscriptions.TryAdd(queueName, sub);
+            stanSubscriptions.TryAdd(queueName, sub);
         }
 
         private async Task ProcessStanMessage<T>(
@@ -358,14 +355,14 @@ namespace Sitko.Core.Queue.Nats
             Func<byte[], (T message, QueueMessageContext messageContext)> deserializer;
             if (isBinary)
             {
-                var processMethod = _deserializeBinaryMethod.MakeGenericMethod(typeof(T));
+                var processMethod = deserializeBinaryMethod.MakeGenericMethod(typeof(T));
                 if (processMethod == null)
                 {
                     throw new Exception($"Can't create generic deserialize method for {typeof(T)}");
                 }
 
                 deserializer = bytes =>
-                    ((T message, QueueMessageContext messageContext))processMethod.Invoke(this, new object[] { bytes });
+                    ((T message, QueueMessageContext messageContext))processMethod.Invoke(this, new object[] {bytes});
             }
             else
             {
@@ -393,15 +390,15 @@ namespace Sitko.Core.Queue.Nats
         protected override Task DoUnsubscribeAsync<T>()
         {
             var queueName = GetQueueName<T>();
-            if (_disposed)
+            if (disposed)
             {
                 return Task.CompletedTask;
             }
 
-            if (_stanSubscriptions.TryRemove(queueName, out var stanSubscription))
+            if (stanSubscriptions.TryRemove(queueName, out var stanSubscription))
             {
                 stanSubscription.Unsubscribe();
-                _subscribeActions.Remove(queueName, out _);
+                subscribeActions.Remove(queueName, out _);
             }
 
             return Task.CompletedTask;
@@ -411,34 +408,34 @@ namespace Sitko.Core.Queue.Nats
         protected override async Task DoStopAsync()
         {
             await base.DoStopAsync();
-            if (_disposed)
+            if (disposed)
             {
                 return;
             }
 
-            foreach (var stanSubscription in _stanSubscriptions.Values)
+            foreach (var stanSubscription in stanSubscriptions.Values)
             {
                 stanSubscription.Unsubscribe();
             }
 
-            foreach (var natsSubscription in _natsSubscriptions.Values)
+            foreach (var natsSubscription in natsSubscriptions.Values)
             {
                 natsSubscription.Unsubscribe();
             }
 
-            _connection?.Close();
-            _connection?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
 
-            _disposed = true;
+            disposed = true;
         }
 
         public override Task<(HealthStatus status, string? errorMessage)> CheckHealthAsync()
         {
-            HealthStatus status = HealthStatus.Healthy;
+            var status = HealthStatus.Healthy;
             string? errorMessage = null;
-            if (_connection != null)
+            if (connection != null)
             {
-                switch (_connection.NATSConnection.State)
+                switch (connection.NATSConnection.State)
                 {
                     case ConnState.DISCONNECTED:
                         status = HealthStatus.Unhealthy;
@@ -495,7 +492,8 @@ namespace Sitko.Core.Queue.Nats
                 Logger.LogCritical(ex,
                     "Nats connection error ({ExType}): {ErrorText}. Connection error: {ConnectionError} - {ConnectionInnerError}. Nats urls: {NatsUrls}. Nats timeout: {NatsTimeout}",
                     ex.GetType(), ex.ToString(), natsConn?.LastError.ToString(),
-                    natsConn?.LastError?.InnerException?.ToString(), Config.Servers, Config.ConnectionTimeout);
+                    natsConn?.LastError?.InnerException?.ToString(), Config.Servers,
+                    TimeSpan.FromSeconds(Config.ConnectionTimeoutInSeconds));
                 try
                 {
                     natsConn?.Close();
@@ -514,12 +512,15 @@ namespace Sitko.Core.Queue.Nats
         private IStanConnection CreateConnection(string clientId, IConnection natsConn)
         {
             if (natsConn.State != ConnState.CONNECTED)
+            {
                 throw new Exception("nats conn is not connected");
+            }
+
             try
             {
                 var options = StanOptions.GetDefaultOptions();
                 options.NatsConn = natsConn;
-                options.ConnectTimeout = (int)Config.ConnectionTimeout.TotalMilliseconds;
+                options.ConnectTimeout = (int)TimeSpan.FromSeconds(Config.ConnectionTimeoutInSeconds).TotalMilliseconds;
                 options.ConnectionLostEventHandler += (_, _) =>
                 {
                     Logger.LogError("Stan connection is broken");
@@ -530,7 +531,7 @@ namespace Sitko.Core.Queue.Nats
                 var stanConnection = cf.CreateConnection(Config.ClusterName, clientId, options);
                 if (stanConnection.NATSConnection.State == ConnState.CONNECTED)
                 {
-                    foreach (var action in _subscribeActions.Values)
+                    foreach (var action in subscribeActions.Values)
                     {
                         action();
                     }
@@ -553,18 +554,18 @@ namespace Sitko.Core.Queue.Nats
         {
             var isNew = false;
 
-            if (_connection == null || _connection.NATSConnection.State != ConnState.CONNECTED)
+            if (connection == null || connection.NATSConnection.State != ConnState.CONNECTED)
             {
                 Logger.LogWarning("Nats connection is null or not connected");
                 isNew = true;
             }
 
-            if (isNew && _connection != null)
+            if (isNew && connection != null)
             {
                 try
                 {
-                    _connection.Close();
-                    _connection.Dispose();
+                    connection.Close();
+                    connection.Dispose();
                 }
                 catch (Exception ex)
                 {
@@ -572,25 +573,25 @@ namespace Sitko.Core.Queue.Nats
                 }
                 finally
                 {
-                    _connection = null;
+                    connection = null;
                 }
             }
 
-            if (_connection == null)
+            if (connection == null)
             {
-                var clientId = $"{_clientName}_{Guid.NewGuid()}";
+                var clientId = $"{clientName}_{Guid.NewGuid()}";
                 Logger.LogWarning("Stan connection is not established");
-                _connection = CreateConnection(clientId, CreateNatsConnection(clientId));
+                connection = CreateConnection(clientId, CreateNatsConnection(clientId));
             }
 
-            return _connection;
+            return connection;
         }
 
         private IConnection GetNatsConnection(string clientId)
         {
             var opts = GetOptions();
             opts.Name = clientId;
-            return _connectionFactory.CreateConnection(opts);
+            return ConnectionFactory.CreateConnection(opts);
         }
 
         private Options GetOptions()
@@ -644,14 +645,19 @@ namespace Sitko.Core.Queue.Nats
                 }
 
                 if (Config.Verbose)
+                {
                     Logger.LogInformation("Nats urls: {Urls}", servers);
+                }
+
                 opts.Servers = servers.ToArray();
             }
 
             opts.Verbose = Config.Verbose;
-            opts.Timeout = (int)Config.ConnectionTimeout.TotalMilliseconds;
+            opts.Timeout = (int)TimeSpan.FromSeconds(Config.ConnectionTimeoutInSeconds).TotalMilliseconds;
             if (Config.Verbose)
-                Logger.LogInformation("Nats timeout: {Timeout}", Config.ConnectionTimeout);
+            {
+                Logger.LogInformation("Nats timeout: {Timeout}", Config.ConnectionTimeoutInSeconds);
+            }
 
             return opts;
         }

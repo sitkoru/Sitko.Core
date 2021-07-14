@@ -8,10 +8,7 @@ namespace Sitko.Core.Queue.Apm
 {
     public class QueueElasticApmModule : BaseApplicationModule
     {
-        public override string GetOptionsKey()
-        {
-            return "Queue:Elastic:Apm";
-        }
+        public override string OptionsKey => "Queue:Elastic:Apm";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             BaseApplicationModuleOptions startupOptions)
@@ -21,9 +18,7 @@ namespace Sitko.Core.Queue.Apm
         }
 
         public override IEnumerable<Type> GetRequiredModules(ApplicationContext context,
-            BaseApplicationModuleOptions options)
-        {
-            return new List<Type>(base.GetRequiredModules(context, options)) {typeof(ElasticStackModule)};
-        }
+            BaseApplicationModuleOptions options) =>
+            new List<Type>(base.GetRequiredModules(context, options)) {typeof(ElasticStackModule)};
     }
 }

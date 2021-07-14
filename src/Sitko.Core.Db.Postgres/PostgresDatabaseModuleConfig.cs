@@ -6,6 +6,8 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Db.Postgres
 {
+    using System.Text.Json.Serialization;
+
     public class PostgresDatabaseModuleOptions<TDbContext> : BaseDbModuleOptions<TDbContext>,
         IModuleOptionsWithValidation where TDbContext : DbContext
     {
@@ -17,12 +19,10 @@ namespace Sitko.Core.Db.Postgres
         public bool EnableContextPooling { get; set; } = true;
         public bool EnableSensitiveLogging { get; set; } = false;
 
+        [JsonIgnore]
         public Assembly? MigrationsAssembly { get; set; }
         public bool AutoApplyMigrations { get; set; } = true;
-        public Type GetValidatorType()
-        {
-            return typeof(PostgresDatabaseModuleOptionsValidator<TDbContext>);
-        }
+        public Type GetValidatorType() => typeof(PostgresDatabaseModuleOptionsValidator<TDbContext>);
     }
 
     public class

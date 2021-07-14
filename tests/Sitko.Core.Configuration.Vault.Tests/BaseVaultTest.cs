@@ -48,10 +48,7 @@ namespace Sitko.Core.Configuration.Vault.Tests
 
     public class TestModule : BaseApplicationModule<TestModuleConfig>
     {
-        public override string GetOptionsKey()
-        {
-            return "Test";
-        }
+        public override string OptionsKey => "Test";
     }
 
     public class TestModuleConfig : BaseModuleOptions
@@ -62,10 +59,7 @@ namespace Sitko.Core.Configuration.Vault.Tests
 
     public class TestModuleWithValidation : BaseApplicationModule<TestModuleWithValidationConfig>
     {
-        public override string GetOptionsKey()
-        {
-            return "Test";
-        }
+        public override string OptionsKey => "Test";
     }
 
     public class TestModuleWithValidationConfig : BaseModuleOptions

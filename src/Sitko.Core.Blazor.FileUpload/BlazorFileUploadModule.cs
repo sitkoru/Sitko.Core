@@ -6,10 +6,7 @@ namespace Sitko.Core.Blazor.FileUpload
 {
     public class BlazorFileUploadModule : BaseApplicationModule
     {
-        public override string GetOptionsKey()
-        {
-            return "Blazor:FileUpload";
-        }
+        public override string OptionsKey => "Blazor:FileUpload";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             BaseApplicationModuleOptions startupOptions)

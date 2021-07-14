@@ -8,6 +8,8 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Db
 {
+    using System.Text.Json.Serialization;
+
     public interface IDbModule : IApplicationModule
     {
     }
@@ -28,6 +30,7 @@ namespace Sitko.Core.Db
     {
         public string Database { get; set; } = "dbname";
 
+        [JsonIgnore]
         public Action<DbContextOptionsBuilder<TDbContext>, IServiceProvider, IConfiguration, IHostEnvironment>?
             ConfigureDbContextOptions { get; set; }
     }

@@ -8,12 +8,11 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Auth.Google
 {
+    using System;
+
     public class GoogleAuthModule : AuthModule<GoogleAuthModuleOptions>
     {
-        public override string GetOptionsKey()
-        {
-            return "Auth:Google";
-        }
+        public override string OptionsKey => "Auth:Google";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             GoogleAuthModuleOptions startupOptions)
@@ -27,7 +26,7 @@ namespace Sitko.Core.Auth.Google
                 })
                 .AddCookie(startupOptions.SignInScheme, options =>
                 {
-                    options.ExpireTimeSpan = startupOptions.CookieExpire;
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(startupOptions.CookieExpireInMinutes);
                     options.SlidingExpiration = true;
                     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                     options.Cookie.SameSite = SameSiteMode.None;

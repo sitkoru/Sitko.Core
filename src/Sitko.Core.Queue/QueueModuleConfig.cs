@@ -7,28 +7,25 @@ using Sitko.Core.Queue.MediatR;
 
 namespace Sitko.Core.Queue
 {
+    using System.Text.Json.Serialization;
+
     public class QueueModuleOptions : BaseModuleOptions
     {
-        public HashSet<Type> Middlewares { get; } = new HashSet<Type>();
+        [JsonIgnore] public HashSet<Type> Middlewares { get; } = new HashSet<Type>();
 
+        [JsonIgnore]
         public List<(Type serviceType, Type implementationType)> TranslateMediatRTypes { get; } =
-            new List<(Type serviceType, Type implementationType)>();
+            new();
 
-        public HashSet<QueueProcessorEntry> ProcessorEntries { get; } = new HashSet<QueueProcessorEntry>();
-        public Dictionary<Type, IQueueMessageOptions> Options { get; } = new Dictionary<Type, IQueueMessageOptions>();
+        [JsonIgnore] public HashSet<QueueProcessorEntry> ProcessorEntries { get; } = new();
 
-        public bool HealthChecksEnabled { get; private set; }
+        [JsonIgnore] public Dictionary<Type, IQueueMessageOptions> Options { get; } = new();
 
-        public void EnableHealthChecks()
-        {
-            HealthChecksEnabled = true;
-        }
+        public bool HealthChecksEnabled { get; set; }
 
-        public void TranslateMediatRNotification<TNotification>() where TNotification : class, INotification
-        {
+        public void TranslateMediatRNotification<TNotification>() where TNotification : class, INotification =>
             TranslateMediatRTypes.Add((typeof(INotificationHandler<TNotification>),
                 typeof(MediatRTranslator<TNotification>)));
-        }
 
         public void ConfigureMessage<T>(IQueueMessageOptions<T> options) where T : class
         {
@@ -40,10 +37,7 @@ namespace Sitko.Core.Queue
             Options.Add(typeof(T), options);
         }
 
-        public void RegisterMiddleware<TMiddleware>() where TMiddleware : IQueueMiddleware
-        {
-            Middlewares.Add(typeof(TMiddleware));
-        }
+        public void RegisterMiddleware<TMiddleware>() where TMiddleware : IQueueMiddleware => Middlewares.Add(typeof(TMiddleware));
 
         public void RegisterMiddlewares<TAssembly>()
         {
@@ -118,22 +112,13 @@ namespace Sitko.Core.Queue
 
     public class QueueProcessorEntry
     {
-        public QueueProcessorEntry(Type type)
-        {
-            Type = type;
-        }
+        public QueueProcessorEntry(Type type) => Type = type;
 
         public Type Type { get; }
         public List<Type> MessageTypes { get; } = new List<Type>();
 
-        public override int GetHashCode()
-        {
-            return Type.GetHashCode();
-        }
+        public override int GetHashCode() => Type.GetHashCode();
 
-        public override bool Equals(object? obj)
-        {
-            return obj is QueueProcessorEntry entry && entry.Type == Type;
-        }
+        public override bool Equals(object? obj) => obj is QueueProcessorEntry entry && entry.Type == Type;
     }
 }

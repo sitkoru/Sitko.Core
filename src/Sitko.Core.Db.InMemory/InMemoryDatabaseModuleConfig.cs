@@ -9,10 +9,7 @@ namespace Sitko.Core.Db.InMemory
         IModuleOptionsWithValidation
         where TDbContext : DbContext
     {
-        public Type GetValidatorType()
-        {
-            return typeof(InMemoryDatabaseModuleOptionsValidator<TDbContext>);
-        }
+        public Type GetValidatorType() => typeof(InMemoryDatabaseModuleOptionsValidator<TDbContext>);
     }
 
     public class

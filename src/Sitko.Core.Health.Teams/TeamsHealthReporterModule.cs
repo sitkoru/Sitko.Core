@@ -16,9 +16,6 @@ namespace Sitko.Core.Health.Teams
             services.AddSingleton<IHealthCheckPublisher, TeamsHealthCheckPublisher>();
         }
 
-        public override string GetOptionsKey()
-        {
-            return "Health:Teams";
-        }
+        public override string OptionsKey => "Health:Teams";
     }
 }

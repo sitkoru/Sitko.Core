@@ -5,10 +5,7 @@ namespace Sitko.Core.IdProvider.SonyFlake
 {
     public class SonyFlakeIdProviderModule : BaseIdProviderModule<SonyFlakeIdProvider, SonyFlakeIdProviderModuleOptions>
     {
-        public override string GetOptionsKey()
-        {
-            return "IdProvider:SonyFlake";
-        }
+        public override string OptionsKey => "IdProvider:SonyFlake";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             SonyFlakeIdProviderModuleOptions startupOptions)

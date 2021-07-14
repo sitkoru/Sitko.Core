@@ -12,10 +12,7 @@ namespace Sitko.Core.Storage.S3
     public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3StorageOptions>, TS3StorageOptions>
         where TS3StorageOptions : S3StorageOptions, new()
     {
-        public override string GetOptionsKey()
-        {
-            return $"Storage:S3:{typeof(TS3StorageOptions).Name}";
-        }
+        public override string OptionsKey => $"Storage:S3:{typeof(TS3StorageOptions).Name}";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             TS3StorageOptions startupOptions)
@@ -50,12 +47,8 @@ namespace Sitko.Core.Storage.S3
         public string AccessKey { get; set; } = string.Empty;
         public string SecretKey { get; set; } = string.Empty;
         public RegionEndpoint Region { get; set; } = RegionEndpoint.USEast1;
-        public override string Name { get; set; } = string.Empty;
 
-        public Type GetValidatorType()
-        {
-            return typeof(S3StorageOptionsValidator);
-        }
+        public Type GetValidatorType() => typeof(S3StorageOptionsValidator);
     }
 
     public class S3StorageOptionsValidator : StorageOptionsValidator<S3StorageOptions>

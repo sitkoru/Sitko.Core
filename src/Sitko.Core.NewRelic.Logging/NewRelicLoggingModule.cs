@@ -7,10 +7,7 @@ namespace Sitko.Core.NewRelic.Logging
 {
     public class NewRelicLoggingModule : BaseApplicationModule<NewRelicLoggingModuleOptions>
     {
-        public override string GetOptionsKey()
-        {
-            return "Logging:NewRelic";
-        }
+        public override string OptionsKey => "Logging:NewRelic";
 
         public override void ConfigureLogging(ApplicationContext context, NewRelicLoggingModuleOptions options,
             LoggerConfiguration loggerConfiguration, LogLevelSwitcher logLevelSwitcher)

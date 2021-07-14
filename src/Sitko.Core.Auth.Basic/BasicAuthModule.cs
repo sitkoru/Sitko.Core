@@ -9,10 +9,7 @@ namespace Sitko.Core.Auth.Basic
 {
     public class BasicAuthModule : AuthModule<BasicAuthModuleOptions>
     {
-        public override string GetOptionsKey()
-        {
-            return "Auth:Basic";
-        }
+        public override string OptionsKey => "Auth:Basic";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             BasicAuthModuleOptions startupOptions)

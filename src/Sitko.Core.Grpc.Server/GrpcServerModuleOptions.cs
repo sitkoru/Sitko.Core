@@ -5,23 +5,25 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Server
 {
+    using System.Text.Json.Serialization;
+
     public class GrpcServerModuleOptions : BaseModuleOptions
     {
+        private readonly List<Action<IGrpcServerModule>> _serviceRegistrations = new();
         public string? Host { get; set; }
         public int? Port { get; set; }
 
-        public TimeSpan ChecksInterval { get; set; } = TimeSpan.FromSeconds(60);
-        public TimeSpan DeregisterTimeout { get; set; } = TimeSpan.FromSeconds(60);
+        public int ChecksIntervalInSeconds { get; set; } = 60;
+        public int DeregisterTimeoutInSeconds { get; set; } = 60;
 
         public bool EnableReflection { get; set; } = false;
         public bool EnableDetailedErrors { get; set; } = false;
-        public Action<GrpcServiceOptions>? Configure { get; set; }
+
+        [JsonIgnore] public Action<GrpcServiceOptions>? Configure { get; set; }
 
         public bool AutoFixRegistration { get; set; } = false;
 
-        public Action<IGrpcServerModule>[] ServiceRegistrations => _serviceRegistrations.ToArray();
-
-        private readonly List<Action<IGrpcServerModule>> _serviceRegistrations = new();
+        [JsonIgnore] public Action<IGrpcServerModule>[] ServiceRegistrations => _serviceRegistrations.ToArray();
 
         public GrpcServerModuleOptions RegisterService<TService>() where TService : class
         {

@@ -10,10 +10,7 @@ namespace Sitko.Core.Swagger
 {
     public class SwaggerModule : BaseApplicationModule<SwaggerModuleOptions>, IWebApplicationModule
     {
-        public override string GetOptionsKey()
-        {
-            return "Swagger";
-        }
+        public override string OptionsKey => "Swagger";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             SwaggerModuleOptions startupOptions)

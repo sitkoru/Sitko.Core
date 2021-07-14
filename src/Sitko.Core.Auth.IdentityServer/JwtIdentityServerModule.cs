@@ -7,10 +7,7 @@ namespace Sitko.Core.Auth.IdentityServer
 {
     public class JwtIdentityServerModule : IdentityServerModule<JwtIdentityServerModuleOptions>
     {
-        public override string GetOptionsKey()
-        {
-            return "Auth:IdentityServer:Jwt";
-        }
+        public override string OptionsKey => "Auth:IdentityServer:Jwt";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             JwtIdentityServerModuleOptions startupOptions)

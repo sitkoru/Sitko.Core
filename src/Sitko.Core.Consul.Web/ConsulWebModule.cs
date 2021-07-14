@@ -11,10 +11,7 @@ namespace Sitko.Core.Consul.Web
 {
     public class ConsulWebModule : ConsulModule<ConsulWebModuleOptions>
     {
-        public override string GetOptionsKey()
-        {
-            return "Consul:Web";
-        }
+        public override string OptionsKey => "Consul:Web";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             ConsulWebModuleOptions startupOptions)

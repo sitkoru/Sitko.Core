@@ -70,7 +70,7 @@ namespace Sitko.Core.App
             return serviceProvider.GetRequiredService<IOptions<TModuleOptions>>().Value;
         }
 
-        public abstract string GetOptionsKey();
+        public abstract string OptionsKey { get; }
     }
 
     public interface IModuleOptionsWithValidation

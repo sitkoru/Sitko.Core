@@ -10,12 +10,11 @@ using StackExchange.Redis;
 
 namespace Sitko.Core.Auth.IdentityServer
 {
+    using System;
+
     public class OidcIdentityServerModule : IdentityServerModule<OidcIdentityServerModuleOptions>
     {
-        public override string GetOptionsKey()
-        {
-            return "Auth:IdentityServer:Oidc";
-        }
+        public override string OptionsKey => "Auth:IdentityServer:Oidc";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             OidcIdentityServerModuleOptions startupOptions)
@@ -29,7 +28,7 @@ namespace Sitko.Core.Auth.IdentityServer
                 })
                 .AddCookie(startupOptions.SignInScheme, options =>
                 {
-                    options.ExpireTimeSpan = startupOptions.ExpireTimeSpan;
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(startupOptions.ExpireTimeSpanInMinutes);
                     options.SlidingExpiration = startupOptions.SlidingExpiration;
                 })
                 .AddOpenIdConnect(startupOptions.ChallengeScheme, options =>
@@ -66,7 +65,7 @@ namespace Sitko.Core.Auth.IdentityServer
                         return redis.GetDatabase(startupOptions.RedisDb);
                     }, $"{context.Environment.ApplicationName}-DP")
                     .SetApplicationName(context.Environment.ApplicationName)
-                    .SetDefaultKeyLifetime(startupOptions.DataProtectionLifeTime);
+                    .SetDefaultKeyLifetime(TimeSpan.FromMinutes(startupOptions.DataProtectionLifeTimeInMinutes));
             }
         }
 

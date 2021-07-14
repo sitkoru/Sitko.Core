@@ -14,13 +14,25 @@ namespace Sitko.Core.Storage.Metadata.Postgres
         public string GetConnectionString()
         {
             var builder = new NpgsqlConnectionStringBuilder();
-            if (!string.IsNullOrEmpty(Host)) builder.Host = Host;
+            if (!string.IsNullOrEmpty(Host))
+            {
+                builder.Host = Host;
+            }
 
-            if (Port > 0) builder.Port = Port;
+            if (Port > 0)
+            {
+                builder.Port = Port;
+            }
 
-            if (!string.IsNullOrEmpty(Username)) builder.Username = Username;
+            if (!string.IsNullOrEmpty(Username))
+            {
+                builder.Username = Username;
+            }
 
-            if (!string.IsNullOrEmpty(Password)) builder.Password = Password;
+            if (!string.IsNullOrEmpty(Password))
+            {
+                builder.Password = Password;
+            }
 
             builder.Database = Database;
             return builder.ConnectionString;

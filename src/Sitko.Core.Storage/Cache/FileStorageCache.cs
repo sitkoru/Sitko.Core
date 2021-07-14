@@ -14,28 +14,29 @@ namespace Sitko.Core.Storage.Cache
         FileStorageCache<TStorageOptions> : BaseStorageCache<TStorageOptions, FileStorageCacheOptions,
             FileStorageCacheRecord> where TStorageOptions : StorageOptions
     {
-        private readonly CancellationTokenSource _cts = new();
-        private readonly Task _cleanupTask;
+        private readonly CancellationTokenSource cts = new();
+        private readonly Task cleanupTask;
 
         public FileStorageCache(IOptionsMonitor<FileStorageCacheOptions> options,
             ILogger<FileStorageCache<TStorageOptions>> logger) : base(options,
-            logger)
-        {
-            _cleanupTask = Task.Run(async () =>
+            logger) =>
+            cleanupTask = Task.Run(async () =>
             {
-                while (!_cts.IsCancellationRequested)
+                while (!cts.IsCancellationRequested)
                 {
-                    await Task.Delay(Options.CurrentValue.CleanupInterval);
+                    await Task.Delay(TimeSpan.FromMinutes(Options.CurrentValue.CleanupIntervalInMinutes));
                     Logger.LogInformation("Start deleting obsolete files");
                     Expire();
                     Logger.LogInformation("Done deleting obsolete files");
                 }
-            }, _cts.Token);
-        }
+            }, cts.Token);
 
         protected override void DisposeItem(FileStorageCacheRecord deletedRecord)
         {
-            if (!string.IsNullOrEmpty(deletedRecord.PhysicalPath)) DeleteFile(deletedRecord.PhysicalPath);
+            if (!string.IsNullOrEmpty(deletedRecord.PhysicalPath))
+            {
+                DeleteFile(deletedRecord.PhysicalPath);
+            }
         }
 
         private void DeleteFile(string path)
@@ -51,20 +52,21 @@ namespace Sitko.Core.Storage.Cache
             }
         }
 
-        public static string CreateMD5(string input)
+        private static string CreateMD5(string input)
         {
             // Use input string to calculate MD5 hash
-            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+            using System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create();
+            byte[] inputBytes = Encoding.ASCII.GetBytes(input);
+            byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+            // Convert the byte array to hexadecimal string
+            StringBuilder sb = new();
+            foreach (var t in hashBytes)
             {
-                byte[] inputBytes = Encoding.ASCII.GetBytes(input);
-                byte[] hashBytes = md5.ComputeHash(inputBytes);
-
-                // Convert the byte array to hexadecimal string
-                StringBuilder sb = new();
-                foreach (byte t in hashBytes) sb.Append(t.ToString("X2"));
-
-                return sb.ToString();
+                sb.Append(t.ToString("X2"));
             }
+
+            return sb.ToString();
         }
 
         internal override async Task<FileStorageCacheRecord> GetEntryAsync(StorageItemDownloadInfo item,
@@ -78,12 +80,18 @@ namespace Sitko.Core.Storage.Cache
             var dirPath = Path.Combine(split);
             var directoryPath = Path.Combine(Options.CurrentValue.CacheDirectoryPath, dirPath);
 
-            if (!Directory.Exists(directoryPath)) Directory.CreateDirectory(directoryPath);
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
 
             var filePath = Path.Combine(directoryPath, Guid.NewGuid().ToString());
 
             var fileStream = File.OpenWrite(filePath);
-            if (!fileStream.CanWrite) throw new Exception($"Can't write to file {filePath}");
+            if (!fileStream.CanWrite)
+            {
+                throw new Exception($"Can't write to file {filePath}");
+            }
 
             await stream.CopyToAsync(fileStream, cancellationToken);
             fileStream.Close();
@@ -92,17 +100,19 @@ namespace Sitko.Core.Storage.Cache
 
         public override async ValueTask DisposeAsync()
         {
-            _cts.Cancel();
-            await _cleanupTask;
+            cts.Cancel();
+            await cleanupTask;
             if (Directory.Exists(Options.CurrentValue.CacheDirectoryPath))
+            {
                 Directory.Delete(Options.CurrentValue.CacheDirectoryPath, true);
+            }
         }
     }
 
     public class FileStorageCacheOptions : StorageCacheOptions
     {
         public string CacheDirectoryPath { get; set; } = "";
-        public TimeSpan CleanupInterval { get; set; } = TimeSpan.FromHours(1);
+        public int CleanupIntervalInMinutes { get; set; } = 60;
     }
 
     public class FileStorageCacheRecord : IStorageCacheRecord
@@ -125,7 +135,10 @@ namespace Sitko.Core.Storage.Cache
         public Stream OpenRead()
         {
             var fileInfo = new FileInfo(PhysicalPath);
-            if (fileInfo.Exists) return fileInfo.OpenRead();
+            if (fileInfo.Exists)
+            {
+                return fileInfo.OpenRead();
+            }
 
             throw new Exception($"File {PhysicalPath} doesn't exists");
         }

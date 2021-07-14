@@ -57,10 +57,8 @@ namespace Sitko.Core.Search
         public static IServiceCollection RegisterSearchProvider<TSearchProvider, TEntity, TEntityPk>(
             this IServiceCollection serviceCollection)
             where TSearchProvider : class, ISearchProvider<TEntity, TEntityPk>
-            where TEntity : class
-        {
-            return serviceCollection.Scan(a => a.AddType<TSearchProvider>().AsSelfWithInterfaces());
-        }
+            where TEntity : class =>
+            serviceCollection.Scan(a => a.AddType<TSearchProvider>().AsSelfWithInterfaces());
     }
 
     public abstract class SearchModuleOptions : BaseModuleOptions

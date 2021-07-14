@@ -13,9 +13,6 @@ namespace Sitko.Core.Repository.Search
             services.AddScoped<RepositoryIndexer>();
         }
 
-        public override string GetOptionsKey()
-        {
-            return "Search:Repository";
-        }
+        public override string OptionsKey => "Search:Repository";
     }
 }

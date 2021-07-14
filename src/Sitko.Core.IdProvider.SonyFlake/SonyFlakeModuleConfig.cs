@@ -9,9 +9,7 @@ namespace Sitko.Core.IdProvider.SonyFlake
 
     public class SonyFlakeIdProviderModuleOptionsValidator : AbstractValidator<SonyFlakeIdProviderModuleOptions>
     {
-        public SonyFlakeIdProviderModuleOptionsValidator()
-        {
+        public SonyFlakeIdProviderModuleOptionsValidator() =>
             RuleFor(c => c.Uri).NotEmpty().WithMessage("Provide SonyFlake url");
-        }
     }
 }

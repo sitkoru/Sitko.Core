@@ -5,10 +5,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 {
     public class EFRepositoriesModule<TAssembly> : RepositoriesModule<TAssembly, EFRepositoriesModuleOptions>
     {
-        public override string GetOptionsKey()
-        {
-            return $"Repositories:EF:{typeof(TAssembly).Name}";
-        }
+        public override string OptionsKey => $"Repositories:EF:{typeof(TAssembly).Name}";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             EFRepositoriesModuleOptions startupOptions)

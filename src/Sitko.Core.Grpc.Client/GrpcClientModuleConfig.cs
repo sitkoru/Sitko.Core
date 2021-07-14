@@ -6,13 +6,15 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Client
 {
+    using System.Text.Json.Serialization;
+
     public class GrpcClientModuleOptions : BaseModuleOptions
     {
         public bool EnableHttp2UnencryptedSupport { get; set; }
         public bool DisableCertificatesValidation { get; set; }
-        public Action<GrpcChannelOptions>? ConfigureChannelOptions { get; set; }
+        [JsonIgnore] public Action<GrpcChannelOptions>? ConfigureChannelOptions { get; set; }
 
-        internal readonly HashSet<Type> Interceptors = new HashSet<Type>();
+        internal HashSet<Type> Interceptors { get; } = new();
 
         public GrpcClientModuleOptions AddInterceptor<TInterceptor>() where TInterceptor : Interceptor
         {

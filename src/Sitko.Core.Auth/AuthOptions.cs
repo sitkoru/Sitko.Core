@@ -5,12 +5,14 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Auth
 {
+    using Newtonsoft.Json;
+
     public abstract class AuthOptions : BaseModuleOptions
     {
-        public readonly Dictionary<string, AuthorizationPolicy> Policies = new();
+        [JsonIgnore] public Dictionary<string, AuthorizationPolicy> Policies { get; } = new();
 
         public string? ForcePolicy { get; set; }
-        public readonly List<string> IgnoreUrls = new() {"/health", "/metrics"};
+        public List<string> IgnoreUrls { get; set; } = new() {"/health", "/metrics"};
     }
 
     public abstract class AuthOptionsValidator<TOptions> : AbstractValidator<TOptions> where TOptions : AuthOptions

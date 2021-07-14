@@ -8,10 +8,7 @@ namespace Sitko.Core.App.Localization
         where TModuleOptions : LocalizationModuleOptions, new()
         where TFactory : class, IStringLocalizerFactory
     {
-        public override string GetOptionsKey()
-        {
-            return "Localization";
-        }
+        public override string OptionsKey => "Localization";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             TModuleOptions startupOptions)
@@ -21,7 +18,7 @@ namespace Sitko.Core.App.Localization
             services.TryAddTransient(typeof(IStringLocalizer<>), typeof(StringLocalizer<>));
         }
     }
-    
+
     public class LocalizationModuleOptions : BaseModuleOptions
     {
     }

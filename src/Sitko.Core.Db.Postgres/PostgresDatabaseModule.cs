@@ -14,10 +14,7 @@ namespace Sitko.Core.Db.Postgres
     public class PostgresDatabaseModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleOptions<TDbContext>>
         where TDbContext : DbContext
     {
-        public override string GetOptionsKey()
-        {
-            return $"Db:Postgres:{typeof(TDbContext).Name}";
-        }
+        public override string OptionsKey => $"Db:Postgres:{typeof(TDbContext).Name}";
 
         public override async Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider)
         {

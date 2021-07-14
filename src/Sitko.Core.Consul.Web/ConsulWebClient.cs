@@ -17,29 +17,29 @@ namespace Sitko.Core.Consul.Web
 {
     public class ConsulWebClient
     {
-        private readonly IConsulClient _consulClient;
-        private readonly IOptionsMonitor<ConsulWebModuleOptions> _configMonitor;
-        private ConsulWebModuleOptions Options => _configMonitor.CurrentValue;
-        private readonly IApplication _application;
-        private readonly ILogger<ConsulWebClient> _logger;
+        private readonly IConsulClient consulClient;
+        private readonly IOptionsMonitor<ConsulWebModuleOptions> configMonitor;
+        private ConsulWebModuleOptions Options => configMonitor.CurrentValue;
+        private readonly IApplication application;
+        private readonly ILogger<ConsulWebClient> logger;
 
-        private readonly Uri _uri;
-        private readonly string _healthUrl;
-        private readonly string _name;
+        private readonly Uri uri;
+        private readonly string healthUrl;
+        private readonly string name;
 
         public ConsulWebClient(IServer server, IConsulClient consulClient,
             IOptionsMonitor<ConsulWebModuleOptions> config,
             IHostEnvironment environment, IApplication application, ILogger<ConsulWebClient> logger)
         {
-            _consulClient = consulClient;
-            _configMonitor = config;
-            _application = application;
-            _logger = logger;
+            this.consulClient = consulClient;
+            configMonitor = config;
+            this.application = application;
+            this.logger = logger;
 
-            _name = environment.ApplicationName;
+            name = environment.ApplicationName;
             if (Options.ServiceUri != null)
             {
-                _uri = Options.ServiceUri;
+                uri = Options.ServiceUri;
             }
             else
             {
@@ -53,59 +53,63 @@ namespace Sitko.Core.Consul.Web
                         .Replace("[::]", Options.IpAddress);
 
                     var uriCreated = Uri.TryCreate(preparedAddress, UriKind.Absolute,
-                        out var uri);
-                    if (uriCreated && uri != null)
+                        out var newUri);
+                    if (uriCreated && newUri != null)
                     {
-                        addresses.Add(uri);
+                        addresses.Add(newUri);
                     }
                     else
                     {
-                        _logger.LogWarning("Can't parse address {Address}", featureAddress);
+                        this.logger.LogWarning("Can't parse address {Address}", featureAddress);
                     }
                 }
 
                 if (!addresses.Any())
                 {
-                    throw new Exception("No addresses available for consul registration");
+                    throw new ArgumentException("No addresses available for consul registration", nameof(addresses));
                 }
 
                 var address = addresses.OrderBy(u => u.Port).FirstOrDefault(u => u.Scheme != "https");
-                if (address == null) address = addresses.First();
-                _logger.LogInformation("Consul uri: {Uri}", address);
-                _uri = address;
+                if (address == null)
+                {
+                    address = addresses.First();
+                }
+
+                this.logger.LogInformation("Consul uri: {Uri}", address);
+                uri = address;
             }
 
-            _healthUrl = new Uri(_uri, Options.HealthCheckPath).ToString();
+            healthUrl = new Uri(uri, Options.HealthCheckPath).ToString();
         }
 
         public async Task RegisterAsync()
         {
             var registration = new AgentServiceRegistration
             {
-                ID = _name,
-                Name = _name,
-                Address = _uri.Host,
-                Port = _uri.Port,
+                ID = name,
+                Name = name,
+                Address = uri.Host,
+                Port = uri.Port,
                 Check = new AgentServiceCheck
                 {
-                    HTTP = _healthUrl,
-                    DeregisterCriticalServiceAfter = Options.DeregisterTimeout,
-                    Interval = Options.ChecksInterval
+                    HTTP = healthUrl,
+                    DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(Options.DeregisterTimeoutInSeconds),
+                    Interval = TimeSpan.FromSeconds(Options.ChecksIntervalInSeconds)
                 },
-                Tags = new[] {"metrics", $"healthUrl:{_healthUrl}", $"version:{_application.Version}"}
+                Tags = new[] {"metrics", $"healthUrl:{healthUrl}", $"version:{application.Version}"}
             };
 
-            _logger.LogInformation("Registering in Consul as {Name} on {Host}:{Port}", _name,
-                _uri.Host, _uri.Port);
-            await _consulClient.Agent.ServiceDeregister(registration.ID);
-            var result = await _consulClient.Agent.ServiceRegister(registration);
-            _logger.LogInformation("Consul response code: {Code}", result.StatusCode);
+            logger.LogInformation("Registering in Consul as {Name} on {Host}:{Port}", name,
+                uri.Host, uri.Port);
+            await consulClient.Agent.ServiceDeregister(registration.ID);
+            var result = await consulClient.Agent.ServiceRegister(registration);
+            logger.LogInformation("Consul response code: {Code}", result.StatusCode);
         }
 
         public async Task<HealthCheckResult> CheckHealthAsync(
             CancellationToken cancellationToken = new CancellationToken())
         {
-            var serviceResponse = await _consulClient.Catalog.Service(_name, "metrics", cancellationToken);
+            var serviceResponse = await consulClient.Catalog.Service(name, "metrics", cancellationToken);
             if (serviceResponse.StatusCode == HttpStatusCode.OK)
             {
                 if (serviceResponse.Response.Any())
@@ -119,7 +123,7 @@ namespace Sitko.Core.Consul.Web
                     await RegisterAsync();
                 }
 
-                return HealthCheckResult.Degraded($"No service registered with name {_name}");
+                return HealthCheckResult.Degraded($"No service registered with name {name}");
             }
 
             return HealthCheckResult.Unhealthy($"Error response from consul: {serviceResponse.StatusCode}");

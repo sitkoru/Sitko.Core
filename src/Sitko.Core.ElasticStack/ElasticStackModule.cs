@@ -52,13 +52,13 @@ namespace Sitko.Core.ElasticStack
                 Environment.SetEnvironmentVariable("ElasticApm:VerifyServerCert",
                     startupOptions.ApmVerifyServerCert.ToString());
                 Environment.SetEnvironmentVariable("ElasticApm:FlushInterval",
-                    $"{startupOptions.ApmFlushInterval.TotalSeconds}s");
+                    $"{TimeSpan.FromSeconds(startupOptions.ApmFlushIntervalInSeconds).TotalSeconds}s");
                 Environment.SetEnvironmentVariable("ElasticApm:MaxBatchEventCount",
                     startupOptions.ApmMaxBatchEventCount.ToString());
                 Environment.SetEnvironmentVariable("ElasticApm:MaxQueueEventCount",
                     startupOptions.ApmMaxQueueEventCount.ToString());
                 Environment.SetEnvironmentVariable("ElasticApm:MetricsInterval",
-                    $"{startupOptions.ApmMetricsInterval.TotalSeconds}s");
+                    $"{TimeSpan.FromSeconds(startupOptions.ApmMetricsIntervalInSeconds).TotalSeconds}s");
                 if (startupOptions.ApmDisableMetrics != null && startupOptions.ApmDisableMetrics.Any())
                 {
                     Environment.SetEnvironmentVariable("ElasticApm:DisableMetrics",
@@ -80,7 +80,7 @@ namespace Sitko.Core.ElasticStack
                 Environment.SetEnvironmentVariable("ElasticApm:StackTraceLimit",
                     startupOptions.ApmStackTraceLimit.ToString());
                 Environment.SetEnvironmentVariable("ElasticApm:SpanFramesMinDuration",
-                    $"{startupOptions.ApmSpanFramesMinDuration.TotalMilliseconds}ms");
+                    $"{TimeSpan.FromSeconds(startupOptions.ApmSpanFramesMinDurationInSeconds).TotalMilliseconds}ms");
                 Environment.SetEnvironmentVariable("ElasticApm:ApmLogLevel", startupOptions.ApmLogLevel);
                 hostBuilder.UseAllElasticApm();
             }
@@ -131,9 +131,6 @@ namespace Sitko.Core.ElasticStack
             }
         }
 
-        public override string GetOptionsKey()
-        {
-            return "ElasticApm";
-        }
+        public override string OptionsKey => "ElasticApm";
     }
 }

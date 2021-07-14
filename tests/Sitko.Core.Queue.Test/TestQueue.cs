@@ -57,10 +57,7 @@ namespace Sitko.Core.Queue.Tests
 
     public class TestQueueModule : QueueModule<TestQueue, TestQueueOptions>
     {
-        public override string GetOptionsKey()
-        {
-            return "Queue:Test";
-        }
+        public override string OptionsKey => "Queue:Test";
     }
 
     public class TestQueueOptions : QueueModuleOptions

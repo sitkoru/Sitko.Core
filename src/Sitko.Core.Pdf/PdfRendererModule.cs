@@ -4,12 +4,11 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Pdf
 {
+    using System.Text.Json.Serialization;
+
     public class PdfRendererModule : BaseApplicationModule<PdfRendererModuleOptions>
     {
-        public override string GetOptionsKey()
-        {
-            return "PdfRenderer";
-        }
+        public override string OptionsKey => "PdfRenderer";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             PdfRendererModuleOptions startupOptions)
@@ -23,6 +22,8 @@ namespace Sitko.Core.Pdf
     {
         public string? BrowserWsEndpoint { get; set; }
         public bool IgnoreHTTPSErrors { get; set; } = false;
+
+        [JsonIgnore]
         public ViewPortOptions ViewPortOptions { get; set; } = ViewPortOptions.Default;
     }
 }

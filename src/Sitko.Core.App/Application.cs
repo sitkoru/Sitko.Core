@@ -18,8 +18,13 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Sitko.Core.App
 {
+    using System.Text.Json;
+    using Microsoft.Extensions.Hosting.Internal;
+
     public abstract class Application : IApplication, IAsyncDisposable
     {
+        private const string CheckCommand = "check";
+        private const string GenerateOptionsCommand = "generate-options";
         private static readonly ConcurrentDictionary<Guid, Application> Apps = new();
 
         private static readonly string BaseConsoleLogFormat =
@@ -29,6 +34,10 @@ namespace Sitko.Core.App
             appConfigurationActions = new();
 
         private readonly string[] args;
+
+        private readonly string? currentCommand;
+
+        private readonly Dictionary<string, LogEventLevel> logEventLevels = new();
 
         private readonly List<Action<ApplicationContext, LoggerConfiguration, LogLevelSwitcher>>
             loggerConfigurationActions = new();
@@ -42,23 +51,27 @@ namespace Sitko.Core.App
             servicesConfigurationActions = new();
 
         private readonly Dictionary<string, object> store = new();
-        public readonly Guid ____RULE_VIOLATION____Id____RULE_VIOLATION____ = Guid.NewGuid();
-
-        public readonly bool ____RULE_VIOLATION____IsCheckRun____RULE_VIOLATION____;
-
-        protected readonly Dictionary<string, LogEventLevel>
-            ____RULE_VIOLATION____LogEventLevels____RULE_VIOLATION____ = new();
+        private readonly string[] supportedCommands = {CheckCommand, GenerateOptionsCommand};
 
         private IHost? appHost;
 
         protected Application(string[] args)
         {
             this.args = args;
-            Apps.TryAdd(____RULE_VIOLATION____Id____RULE_VIOLATION____, this);
+            Apps.TryAdd(Id, this);
             Console.OutputEncoding = Encoding.UTF8;
-            if (args.Length > 0 && args[0] == "check")
+            if (args.Length > 0)
             {
-                ____RULE_VIOLATION____IsCheckRun____RULE_VIOLATION____ = true;
+                var command = args[0];
+                if (supportedCommands.Contains(command))
+                {
+                    currentCommand = command;
+                }
+                else
+                {
+                    throw new ArgumentException($"Unknown command {command}. Supported commands: {supportedCommands}",
+                        nameof(args));
+                }
             }
 
             var loggerConfiguration = new LoggerConfiguration();
@@ -68,9 +81,13 @@ namespace Sitko.Core.App
             InternalLogger = new SerilogLoggerFactory(loggerConfiguration.CreateLogger()).CreateLogger<Application>();
         }
 
+        public Guid Id { get; } = Guid.NewGuid();
+
         protected virtual string ConsoleLogFormat => BaseConsoleLogFormat;
 
         private ILogger<Application> InternalLogger { get; set; }
+
+        private bool IsCheckRun => currentCommand == CheckCommand;
 
         public string Name { get; private set; } = "App";
         public string Version { get; private set; } = "dev";
@@ -97,7 +114,7 @@ namespace Sitko.Core.App
 
         private void LogCheck(string message)
         {
-            if (____RULE_VIOLATION____IsCheckRun____RULE_VIOLATION____)
+            if (IsCheckRun)
             {
                 InternalLogger.LogInformation("Check log: {Message}", message);
             }
@@ -213,7 +230,7 @@ namespace Sitko.Core.App
                         loggerConfiguration,
                         logLevelSwitcher);
                     foreach (var (key, value) in
-                        ____RULE_VIOLATION____LogEventLevels____RULE_VIOLATION____)
+                        logEventLevels)
                     {
                         loggerConfiguration.MinimumLevel.Override(key, value);
                     }
@@ -300,6 +317,48 @@ namespace Sitko.Core.App
 
         public async Task RunAsync()
         {
+            if (currentCommand == GenerateOptionsCommand)
+            {
+                InternalLogger.LogInformation("Generate options");
+                var modulesOptions = new Dictionary<string, object>();
+                foreach (var moduleRegistration in moduleRegistrations.Values)
+                {
+                    var (configKey, options) = moduleRegistration.GetOptions(GetContext(new HostingEnvironment(),
+                        new ConfigurationRoot(new List<IConfigurationProvider>())));
+                    if (!string.IsNullOrEmpty(configKey))
+                    {
+                        var current = modulesOptions;
+                        var parts = configKey.Split(':');
+                        for (var i = 0; i < parts.Length; i++)
+                        {
+                            if (i == parts.Length - 1)
+                            {
+                                current[parts[i]] = options;
+                            }
+                            else
+                            {
+                                if (current.ContainsKey(parts[i]))
+                                {
+                                    current = (Dictionary<string, object>)current[parts[i]];
+                                }
+                                else
+                                {
+                                    var part = new Dictionary<string, object>();
+                                    current[parts[i]] = part;
+                                    current = part;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                InternalLogger.LogInformation("Modules options:");
+                InternalLogger.LogInformation("{Options}", JsonSerializer.Serialize(modulesOptions,
+                    new JsonSerializerOptions {WriteIndented = true}));
+
+                return;
+            }
+
             LogCheck("Run app start");
             LogCheck("Build and init");
             var host = await BuildAndInitAsync();
@@ -331,7 +390,8 @@ namespace Sitko.Core.App
                 return;
             }
 
-            if (____RULE_VIOLATION____IsCheckRun____RULE_VIOLATION____)
+
+            if (IsCheckRun)
             {
                 LogCheck("Check run is successful. Exit");
                 return;
@@ -404,7 +464,7 @@ namespace Sitko.Core.App
 
             var host = CreateAppHost(configure);
 
-            if (!____RULE_VIOLATION____IsCheckRun____RULE_VIOLATION____)
+            if (string.IsNullOrEmpty(currentCommand))
             {
                 using var scope = host.Services.CreateScope();
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<Application>>();
@@ -523,7 +583,7 @@ namespace Sitko.Core.App
 
         public Application ConfigureLogLevel(string source, LogEventLevel level)
         {
-            ____RULE_VIOLATION____LogEventLevels____RULE_VIOLATION____.Add(source, level);
+            logEventLevels.Add(source, level);
             return this;
         }
 

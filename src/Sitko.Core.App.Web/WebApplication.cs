@@ -88,7 +88,7 @@ namespace Sitko.Core.App.Web
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseSetting("ApplicationId", this.____RULE_VIOLATION____Id____RULE_VIOLATION____.ToString());
+                    webBuilder.UseSetting("ApplicationId", Id.ToString());
                     webBuilder.UseStartup<TStartup>();
                     ConfigureWebHostDefaults(webBuilder);
                 });

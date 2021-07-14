@@ -7,12 +7,11 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Automapper
 {
+    using Newtonsoft.Json;
+
     public class AutoMapperModule : BaseApplicationModule<AutoMapperModuleOptions>
     {
-        public override string GetOptionsKey()
-        {
-            return "AutoMapper";
-        }
+        public override string OptionsKey => "AutoMapper";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             AutoMapperModuleOptions startupOptions)
@@ -24,7 +23,9 @@ namespace Sitko.Core.Automapper
 
     public class AutoMapperModuleOptions : BaseModuleOptions
     {
+        [JsonIgnore]
         public Action<IMapperConfigurationExpression> Configure { get; set; } = _ => { };
+        [JsonIgnore]
         public readonly List<Assembly> Assemblies = new() {typeof(AutoMapperModule).Assembly};
     }
 }

@@ -38,8 +38,8 @@ namespace Sitko.Core.Xunit
             {
                 application.AddPostgresDatabase<TDbContext>((configuration, environment, moduleOptions) =>
                 {
-                    moduleOptions.Database = $"{application.____RULE_VIOLATION____Id____RULE_VIOLATION____}_{name}";
-                    ConfigurePostgresDatabaseModule(configuration, environment, moduleOptions, application.____RULE_VIOLATION____Id____RULE_VIOLATION____, name);
+                    moduleOptions.Database = $"{application.Id}_{name}";
+                    ConfigurePostgresDatabaseModule(configuration, environment, moduleOptions, application.Id, name);
                 });
             }
 

@@ -7,14 +7,9 @@ namespace Sitko.Core.Email.Smtp
     public class SmtpEmailModule : FluentEmailModule<SmtpEmailModuleOptions>
     {
         protected override void ConfigureBuilder(FluentEmailServicesBuilder builder,
-            SmtpEmailModuleOptions fluentEmailModuleOptions)
-        {
+            SmtpEmailModuleOptions fluentEmailModuleOptions) =>
             builder.Services.TryAddScoped<ISender, MailKitSender>();
-        }
 
-        public override string GetOptionsKey()
-        {
-            return "Email:Smtp";
-        }
+        public override string OptionsKey => "Email:Smtp";
     }
 }

@@ -7,10 +7,10 @@ namespace Sitko.Core.Consul.Web
         public string? IpAddress { get; set; }
         public Uri? ServiceUri { get; set; }
 
-        public TimeSpan ChecksInterval { get; set; } = TimeSpan.FromSeconds(60);
-        public TimeSpan DeregisterTimeout { get; set; } = TimeSpan.FromSeconds(60);
+        public int ChecksIntervalInSeconds { get; set; } = 60;
+        public int DeregisterTimeoutInSeconds { get; set; } = 60;
 
-        public bool AutoFixRegistration { get; set; } = false;
+        public bool AutoFixRegistration { get; set; }
         public string HealthCheckPath { get; set; } = "/health";
     }
 }

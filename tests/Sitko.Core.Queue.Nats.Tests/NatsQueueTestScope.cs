@@ -1,4 +1,3 @@
-using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.Queue.Tests;
@@ -21,7 +20,7 @@ namespace Sitko.Core.Queue.Nats.Tests
             }
 
             options.Verbose = true;
-            options.ConnectionTimeout = TimeSpan.FromSeconds(5);
+            options.ConnectionTimeoutInSeconds = 5;
             options.QueueNamePrefix = name.Replace(".", "_");
             ConfigureQueue(options, configuration, environment);
         }

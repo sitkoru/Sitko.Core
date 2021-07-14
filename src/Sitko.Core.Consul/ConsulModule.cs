@@ -12,10 +12,7 @@ namespace Sitko.Core.Consul
     public class ConsulModule<TConfig> : BaseApplicationModule<TConfig>, IConsulModule
         where TConfig : ConsulModuleOptions, new()
     {
-        public override string GetOptionsKey()
-        {
-            return "Consul";
-        }
+        public override string OptionsKey => "Consul";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             TConfig startupOptions)

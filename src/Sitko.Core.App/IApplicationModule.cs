@@ -11,7 +11,7 @@ namespace Sitko.Core.App
 {
     public interface IApplicationModule<in TModuleOptions> : IApplicationModule where TModuleOptions : class, new()
     {
-        string GetOptionsKey();
+        string OptionsKey { get; }
 
         void ConfigureLogging(ApplicationContext context, TModuleOptions options,
             LoggerConfiguration loggerConfiguration,

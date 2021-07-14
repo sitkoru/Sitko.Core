@@ -12,9 +12,7 @@ namespace Sitko.Core.NewRelic.Logging
 
     public class NewRelicLoggingModuleOptionsValidator : AbstractValidator<NewRelicLoggingModuleOptions>
     {
-        public NewRelicLoggingModuleOptionsValidator()
-        {
+        public NewRelicLoggingModuleOptionsValidator() =>
             RuleFor(o => o.LicenseKey).NotEmpty().WithMessage("Provide License Key for NewRelic");
-        }
     }
 }

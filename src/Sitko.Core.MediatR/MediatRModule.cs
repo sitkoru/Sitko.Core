@@ -18,9 +18,6 @@ namespace Sitko.Core.MediatR
             services.AddMediatR(startupOptions.Assemblies.ToArray());
         }
 
-        public override string GetOptionsKey()
-        {
-            return "MediatR";
-        }
+        public override string OptionsKey => "MediatR";
     }
 }

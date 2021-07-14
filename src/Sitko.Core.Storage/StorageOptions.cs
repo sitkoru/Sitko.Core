@@ -6,19 +6,19 @@ namespace Sitko.Core.Storage
 {
     public abstract class StorageOptions : BaseModuleOptions
     {
+        public StorageOptions() => Name = GetType().Name;
+
         public Uri? PublicUri { get; set; }
 
         public string? Prefix { get; set; }
 
-        public abstract string Name { get; set; }
+        public string Name { get; set; }
     }
 
     public abstract class StorageOptionsValidator<TStorageOptions> : AbstractValidator<TStorageOptions>
         where TStorageOptions : StorageOptions
     {
-        public StorageOptionsValidator()
-        {
-            RuleFor(o => o.Name).NotEmpty().WithMessage($"Storage {typeof(TStorageOptions)} name is empty");
-        }
+        public StorageOptionsValidator() => RuleFor(o => o.Name).NotEmpty()
+            .WithMessage($"Storage {typeof(TStorageOptions)} name is empty");
     }
 }

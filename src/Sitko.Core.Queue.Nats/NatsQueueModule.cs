@@ -5,10 +5,7 @@ namespace Sitko.Core.Queue.Nats
 {
     public class NatsQueueModule : QueueModule<NatsQueue, NatsQueueModuleOptions>
     {
-        public override string GetOptionsKey()
-        {
-            return "Queue:Nats";
-        }
+        public override string OptionsKey => "Queue:Nats";
     }
 
     public class NatsQueueModuleOptions : QueueModuleOptions
@@ -17,7 +14,7 @@ namespace Sitko.Core.Queue.Nats
         public string ClusterName { get; set; } = string.Empty;
         public string? ClientName { get; set; }
         public string? ConsumerGroupName { get; set; }
-        public TimeSpan ConnectionTimeout { get; set; } = TimeSpan.FromSeconds(10);
+        public int ConnectionTimeoutInSeconds { get; set; } = 10;
         public bool Verbose { get; set; }
 
         public string? QueueNamePrefix { get; set; }

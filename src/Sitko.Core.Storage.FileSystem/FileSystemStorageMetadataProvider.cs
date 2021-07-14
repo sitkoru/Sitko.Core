@@ -25,19 +25,21 @@ namespace Sitko.Core.Storage.FileSystem
         {
         }
 
+        public override ValueTask DisposeAsync() => new();
+
         protected override Task DoDeleteMetadataAsync(string filePath, CancellationToken cancellationToken = default)
         {
             var fullPath = Path.Combine(StorageOptions.CurrentValue.StoragePath, filePath);
             var metaDataPath = GetMetaDataPath(fullPath);
-            if (File.Exists(metaDataPath)) File.Delete(metaDataPath);
+            if (File.Exists(metaDataPath))
+            {
+                File.Delete(metaDataPath);
+            }
 
             return Task.CompletedTask;
         }
 
-        protected override Task DoDeleteAllMetadataAsync(CancellationToken cancellationToken = default)
-        {
-            return Task.CompletedTask;
-        }
+        protected override Task DoDeleteAllMetadataAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
         protected override async Task<StorageItemMetadata?> DoGetMetadataJsonAsync(string path,
             CancellationToken cancellationToken = default)
@@ -48,7 +50,10 @@ namespace Sitko.Core.Storage.FileSystem
             if (metaDataInfo.Exists)
             {
                 var json = await File.ReadAllTextAsync(metaDataPath, cancellationToken);
-                if (!string.IsNullOrEmpty(json)) return JsonSerializer.Deserialize<StorageItemMetadata>(json);
+                if (!string.IsNullOrEmpty(json))
+                {
+                    return JsonSerializer.Deserialize<StorageItemMetadata>(json);
+                }
             }
 
             return null;
