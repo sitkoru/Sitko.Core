@@ -35,5 +35,6 @@ namespace Sitko.Core.Storage.ImgProxy
         public string Key { get; set; } = "";
         public string Salt { get; set; } = "";
         public bool EncodeUrls { get; set; }
+        public bool DisableProxy { get; set; }
     }
 }

@@ -90,10 +90,16 @@ namespace Sitko.Core.Storage.ImgProxy
             return BuildUrl(item, builder => builder.WithResize(type, width, height, enlarge));
         }
 
-        private string BuildUrl(StorageItem item, Action<ImgProxyBuilder>? build = null) => BuildUrl(storage.PublicUri(item).ToString(), build);
+        private string BuildUrl(StorageItem item, Action<ImgProxyBuilder>? build = null) =>
+            BuildUrl(storage.PublicUri(item).ToString(), build);
 
         private string BuildUrl(string url, Action<ImgProxyBuilder>? build = null)
         {
+            if (Options.DisableProxy)
+            {
+                return url;
+            }
+
             var builder = GetBuilder();
             build?.Invoke(builder);
             return builder.Build(url, Options.EncodeUrls);
