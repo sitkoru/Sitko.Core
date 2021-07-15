@@ -37,7 +37,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         [Parameter] public TableSize? Size { get; set; }
 
-        [Parameter] public TableLocale Locale { get; set; } = LocaleProvider.GetLocale("en-US").Table;
+        [Parameter] public TableLocale Locale { get; set; } = LocaleProvider.CurrentLocale.Table;
 
         [Parameter] public bool Bordered { get; set; }
 
