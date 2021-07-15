@@ -14,19 +14,22 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
     public abstract class BaseAntListComponent<TItem> : BaseComponent where TItem : class
     {
+        private bool isTableInitialized;
+
+        private QueryModel? lastQueryModel;
+        private Task<(TItem[] items, int itemsCount)>? loadTask;
+
+        private MethodInfo? sortMethod;
         protected IEnumerable<TItem> Items { get; private set; } = Array.Empty<TItem>();
         public int Count { get; protected set; }
 
         protected Table<TItem>? Table { get; set; }
 
-        private QueryModel? lastQueryModel;
-
-        private MethodInfo? sortMethod;
-        private Task<(TItem[] items, int itemsCount)>? loadTask;
-        private bool isTableInitialized;
-
         [Parameter] public int PageSize { get; set; } = 50;
         [Parameter] public int PageIndex { get; set; } = 1;
+        [Parameter] public Func<Task>? OnDataLoaded { get; set; }
+
+        protected LoadRequest<TItem>? LastRequest { get; set; }
 
         protected override void Initialize()
         {
@@ -95,6 +98,11 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
                 var (items, itemsCount) = await loadTask;
                 Items = items;
                 Count = itemsCount;
+                LastRequest = request;
+                if (OnDataLoaded is not null)
+                {
+                    await OnDataLoaded();
+                }
             }
             catch (Exception e)
             {
@@ -103,6 +111,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
             await StopLoadingAsync();
         }
+
 
         public async Task RefreshAsync(int? page = null)
         {
