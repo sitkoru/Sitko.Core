@@ -3,7 +3,7 @@ using Xunit.Abstractions;
 
 namespace Sitko.Core.Storage.S3.Tests
 {
-    public class BasicTests : BasicTests<BaseS3StorageTestScope, TestS3StorageSettings>
+    public class BasicTests : BasicTests<BaseS3StorageTestScope>
     {
         public BasicTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {

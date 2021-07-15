@@ -6,7 +6,7 @@ using Xunit.Abstractions;
 
 namespace Sitko.Core.Storage.Metadata.Postgres.Tests
 {
-    public class BasicTests : BasicTests<BasePostgresStorageTestScope, TestS3StorageSettings>
+    public class BasicTests : BasicTests<BasePostgresStorageTestScope>
     {
         public BasicTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {

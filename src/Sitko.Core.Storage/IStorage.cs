@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace Sitko.Core.Storage
 {
-    public interface IStorage
+    public interface IStorageInstance
+    {
+    }
+
+    public interface IStorage : IStorageInstance
     {
         /// <summary>
         /// Upload file to storage
@@ -96,6 +100,8 @@ namespace Sitko.Core.Storage
 
         internal Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
             CancellationToken cancellationToken = default);
+
+        bool IsDefault { get; }
     }
 
     // Generic interface is required for dependency injection

@@ -8,8 +8,8 @@ using Xunit.Abstractions;
 
 namespace Sitko.Core.Storage.Tests
 {
-    public abstract class BasicTests<T, TSettings> : BaseTest<T>
-        where T : BaseTestScope where TSettings : StorageOptions
+    public abstract class BasicTests<T> : BaseTest<T>
+        where T : BaseTestScope
     {
         protected BasicTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
@@ -20,7 +20,7 @@ namespace Sitko.Core.Storage.Tests
         {
             var scope = await GetScopeAsync();
 
-            var storage = scope.Get<IStorage<TSettings>>();
+            var storage = scope.Get<IStorage>();
 
             Assert.NotNull(storage);
 
@@ -44,7 +44,7 @@ namespace Sitko.Core.Storage.Tests
         {
             var scope = await GetScopeAsync();
 
-            var storage = scope.Get<IStorage<TSettings>>();
+            var storage = scope.Get<IStorage>();
 
             Assert.NotNull(storage);
 
@@ -76,7 +76,7 @@ namespace Sitko.Core.Storage.Tests
         {
             var scope = await GetScopeAsync();
 
-            var storage = scope.Get<IStorage<TSettings>>();
+            var storage = scope.Get<IStorage>();
 
             Assert.NotNull(storage);
 
@@ -99,7 +99,7 @@ namespace Sitko.Core.Storage.Tests
         {
             var scope = await GetScopeAsync();
 
-            var storage = scope.Get<IStorage<TSettings>>();
+            var storage = scope.Get<IStorage>();
 
             Assert.NotNull(storage);
 
@@ -113,7 +113,7 @@ namespace Sitko.Core.Storage.Tests
         {
             var scope = await GetScopeAsync();
 
-            var storage = scope.Get<IStorage<TSettings>>();
+            var storage = scope.Get<IStorage>();
 
             Assert.NotNull(storage);
 
@@ -130,7 +130,7 @@ namespace Sitko.Core.Storage.Tests
             await CheckFoldersContent(storage, uploaded, metaData);
         }
 
-        protected static async Task CheckFoldersContent(IStorage<TSettings> storage, StorageItem uploaded,
+        protected static async Task CheckFoldersContent(IStorage storage, StorageItem uploaded,
             FileMetaData? metaData)
         {
             var uploadDirectoryContent = (await storage.GetDirectoryContentsAsync("upload")).ToArray();
@@ -174,7 +174,7 @@ namespace Sitko.Core.Storage.Tests
         {
             var scope = await GetScopeAsync();
 
-            var storage = scope.Get<IStorage<TSettings>>();
+            var storage = scope.Get<IStorage>();
 
             Assert.NotNull(storage);
 
@@ -201,7 +201,7 @@ namespace Sitko.Core.Storage.Tests
         public async Task UpdateMetadata()
         {
             var scope = await GetScopeAsync();
-            var storage = scope.Get<IStorage<TSettings>>();
+            var storage = scope.Get<IStorage>();
             StorageItem uploaded;
             const string fileName = "file.txt";
             var metaData = new FileMetaData();

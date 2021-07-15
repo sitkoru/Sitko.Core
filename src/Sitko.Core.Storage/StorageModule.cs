@@ -3,6 +3,11 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Storage
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Microsoft.Extensions.DependencyInjection.Extensions;
+
     public interface IStorageModule : IApplicationModule
     {
     }
@@ -15,6 +20,26 @@ namespace Sitko.Core.Storage
             TStorageOptions startupOptions)
         {
             base.ConfigureServices(context, services, startupOptions);
+            services.TryAddSingleton(provider =>
+            {
+                var instances = provider.GetServices<IStorageInstance>().OfType<IStorage>().ToArray();
+                if (instances.Length == 0)
+                {
+                    throw new InvalidOperationException("No storage instances registered");
+                }
+
+                var defaultInstances = instances.Where(i => i.IsDefault).ToArray();
+                return defaultInstances.Length switch
+                {
+                    <= 0 => instances.Last(),
+                    > 1 => throw new InvalidOperationException(
+                        "Multiple storage instances registered as default. There should only be one."),
+                    _ => defaultInstances.First()
+                };
+            });
+            services.TryAddSingleton<IEnumerable<IStorage>>(provider =>
+                provider.GetServices<IStorageInstance>().OfType<IStorage>());
+            services.AddSingleton<IStorageInstance, TStorage>();
             services.AddSingleton<IStorage<TStorageOptions>, TStorage>();
             services.AddSingleton<TStorage>();
         }

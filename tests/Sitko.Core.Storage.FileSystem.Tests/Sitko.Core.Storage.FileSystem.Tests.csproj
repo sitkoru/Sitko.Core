@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Sitko.Core.Storage.FileSystem\Sitko.Core.Storage.FileSystem.csproj"/>
-    <ProjectReference Include="..\..\src\Sitko.Core.Xunit\Sitko.Core.Xunit.csproj"/>
-    <ProjectReference Include="..\Sitko.Core.Storage.Tests\Sitko.Core.Storage.Tests.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.Storage.FileSystem\Sitko.Core.Storage.FileSystem.csproj" />
+    <ProjectReference Include="..\..\src\Sitko.Core.Xunit\Sitko.Core.Xunit.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Storage.Tests\Sitko.Core.Storage.Tests.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -7,7 +7,7 @@ namespace Sitko.Core.Storage.FileSystem.Tests
 {
     public class BaseFileSystemStorageTestScope : BaseTestScope
     {
-        private string _folder = Path.GetTempPath() + "/" + Guid.NewGuid();
+        private readonly string folder = Path.GetTempPath() + "/" + Guid.NewGuid();
 
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
@@ -15,8 +15,8 @@ namespace Sitko.Core.Storage.FileSystem.Tests
             application.AddFileSystemStorage<TestFileSystemStorageSettings>(
                 moduleOptions =>
                 {
-                    moduleOptions.PublicUri = new Uri(_folder);
-                    moduleOptions.StoragePath = _folder;
+                    moduleOptions.PublicUri = new Uri(folder);
+                    moduleOptions.StoragePath = folder;
                 });
             application.AddFileSystemStorageMetadata<TestFileSystemStorageSettings>();
             return application;

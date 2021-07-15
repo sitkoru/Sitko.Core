@@ -13,6 +13,7 @@ namespace Sitko.Core.Storage
         public string? Prefix { get; set; }
 
         public string Name { get; set; }
+        public bool IsDefault { get; set; }
     }
 
     public abstract class StorageOptionsValidator<TStorageOptions> : AbstractValidator<TStorageOptions>
