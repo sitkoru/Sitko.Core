@@ -9,6 +9,8 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.S3
 {
+    using JetBrains.Annotations;
+
     public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3StorageOptions>, TS3StorageOptions>
         where TS3StorageOptions : S3StorageOptions, new()
     {
@@ -40,6 +42,7 @@ namespace Sitko.Core.Storage.S3
         }
     }
 
+    [PublicAPI]
     public class S3StorageOptions : StorageOptions, IModuleOptionsWithValidation
     {
         public Uri? Server { get; set; }

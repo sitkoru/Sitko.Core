@@ -47,10 +47,9 @@ namespace Sitko.Core.Storage
         /// </summary>
         /// <typeparam name="TMetadata"></typeparam>
         /// <returns>Uploaded file metadata object (TMedatata)</returns>
-        public TMetadata? GetMetadata<TMetadata>() where TMetadata : class
-        {
-            return string.IsNullOrEmpty(MetadataJson) ? null : JsonSerializer.Deserialize<TMetadata>(MetadataJson);
-        }
+        public TMetadata? GetMetadata<TMetadata>() where TMetadata : class => string.IsNullOrEmpty(MetadataJson)
+            ? null
+            : JsonSerializer.Deserialize<TMetadata>(MetadataJson);
 
         /// <summary>
         /// Uploaded file size in human-readable format
@@ -66,7 +65,7 @@ namespace Sitko.Core.Storage
             long fileSize, string? prefix, StorageItemMetadata? metadata = null)
         {
             destinationPath = Helpers.GetPathWithoutPrefix(prefix, destinationPath);
-            string? fileName = metadata?.FileName ?? System.IO.Path.GetFileName(destinationPath);
+            var fileName = metadata?.FileName ?? System.IO.Path.GetFileName(destinationPath);
             Path = Helpers.PreparePath(System.IO.Path.GetDirectoryName(destinationPath))!;
             FileName = fileName;
             LastModified = date;

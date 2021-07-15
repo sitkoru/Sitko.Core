@@ -7,6 +7,8 @@ using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.Cache
 {
+    using JetBrains.Annotations;
+
     // Generic parameter is required for dependency injection
     // ReSharper disable once UnusedTypeParameter
     public interface IStorageCache<TStorageOptions> : IAsyncDisposable where TStorageOptions : StorageOptions
@@ -41,8 +43,8 @@ namespace Sitko.Core.Storage.Cache
 
     public abstract class StorageCacheOptions : BaseModuleOptions
     {
-        public int TtlInMinutes { get; set; } = 720;
-        public long MaxFileSizeToStore { get; set; }
-        public long? MaxCacheSize { get; set; }
+        [PublicAPI] public int TtlInMinutes { get; set; } = 720;
+        [PublicAPI] public long MaxFileSizeToStore { get; set; }
+        [PublicAPI] public long? MaxCacheSize { get; set; }
     }
 }

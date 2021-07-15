@@ -27,9 +27,6 @@ namespace Sitko.Core.Storage.Metadata
             await metadataProvider.InitAsync();
         }
 
-        public override IEnumerable<Type> GetRequiredModules(ApplicationContext context, TProviderOptions config)
-        {
-            return new[] {typeof(IStorageModule)};
-        }
+        public override IEnumerable<Type> GetRequiredModules(ApplicationContext context, TProviderOptions config) => new[] {typeof(IStorageModule)};
     }
 }

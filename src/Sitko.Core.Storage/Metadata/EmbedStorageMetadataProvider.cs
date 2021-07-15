@@ -10,6 +10,8 @@ using Nito.AsyncEx;
 
 namespace Sitko.Core.Storage.Metadata
 {
+    using JetBrains.Annotations;
+
     public abstract class
         EmbedStorageMetadataProvider<TStorage, TStorageOptions, TOptions> : BaseStorageMetadataProvider<TOptions,
             TStorageOptions>
@@ -17,7 +19,7 @@ namespace Sitko.Core.Storage.Metadata
         where TOptions : EmbedStorageMetadataModuleOptions<TStorageOptions>
         where TStorageOptions : StorageOptions
     {
-        protected const string MetaDataExtension = ".metadata";
+        [PublicAPI] protected const string MetaDataExtension = ".metadata";
         private readonly IServiceProvider serviceProvider;
         private readonly AsyncLock treeLock = new();
         private TStorage? storage;
@@ -62,7 +64,8 @@ namespace Sitko.Core.Storage.Metadata
             CancellationToken cancellationToken = default)
         {
             if (tree == null || treeLastBuild <
-                DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMinutes(Options.CurrentValue.StorageTreeCacheTimeoutInMinutes)))
+                DateTimeOffset.UtcNow.Subtract(
+                    TimeSpan.FromMinutes(Options.CurrentValue.StorageTreeCacheTimeoutInMinutes)))
             {
                 await BuildStorageTreeAsync(cancellationToken);
             }

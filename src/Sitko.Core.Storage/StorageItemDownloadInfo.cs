@@ -25,9 +25,6 @@ namespace Sitko.Core.Storage
             Metadata = null;
         }
 
-        public void SetMetadata(StorageItemMetadata metadata)
-        {
-            Metadata = metadata;
-        }
+        public void SetMetadata(StorageItemMetadata metadata) => Metadata = metadata;
     }
 }

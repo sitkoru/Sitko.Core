@@ -16,36 +16,29 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             PostgresStorageMetadataModuleOptions<TStorageOptions>, TStorageOptions>
         where TStorageOptions : StorageOptions
     {
-        private readonly IDbContextFactory<StorageDbContext> _dbContextFactory;
+        private readonly IDbContextFactory<StorageDbContext> dbContextFactory;
 
         public PostgresStorageMetadataProvider(
             IOptionsMonitor<PostgresStorageMetadataModuleOptions<TStorageOptions>> options,
             IOptionsMonitor<TStorageOptions> storageOptions,
             IDbContextFactory<StorageDbContext> dbContextFactory,
-            ILogger<PostgresStorageMetadataProvider<TStorageOptions>> logger) : base(options, storageOptions, logger)
-        {
-            _dbContextFactory = dbContextFactory;
-        }
+            ILogger<PostgresStorageMetadataProvider<TStorageOptions>> logger) : base(options, storageOptions, logger) =>
+            this.dbContextFactory = dbContextFactory;
 
-        private StorageDbContext GetDbContext()
-        {
-            return _dbContextFactory.CreateDbContext();
-            //return new(Options.CurrentValue.GetConnectionString(), Options.CurrentValue.Schema);
-        }
+        private StorageDbContext GetDbContext() => dbContextFactory.CreateDbContext();
 
+        //return new(Options.CurrentValue.GetConnectionString(), Options.CurrentValue.Schema);
         private Task<StorageItemRecord?> GetItemRecordAsync(StorageDbContext dbContext, string filePath,
-            CancellationToken cancellationToken = default)
-        {
-            return dbContext.Records.FirstOrDefaultAsync(r =>
+            CancellationToken cancellationToken = default) =>
+            dbContext.Records.FirstOrDefaultAsync(r =>
                     r.Storage == StorageOptions.CurrentValue.Name && r.FilePath == filePath,
                 cancellationToken)!;
-        }
 
         protected override async Task DoDeleteMetadataAsync(string filePath,
             CancellationToken cancellationToken = default)
         {
             await using var dbContext = GetDbContext();
-            StorageItemRecord? record = await GetItemRecordAsync(dbContext, filePath, cancellationToken);
+            var record = await GetItemRecordAsync(dbContext, filePath, cancellationToken);
             if (record is not null)
             {
                 dbContext.Records.Remove(record);
@@ -64,7 +57,10 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             CancellationToken cancellationToken = default)
         {
             await using var dbContext = GetDbContext();
-            if (path.StartsWith("/")) path = path.Substring(1);
+            if (path.StartsWith("/"))
+            {
+                path = path.Substring(1);
+            }
 
             var records = await dbContext.Records
                 .Where(r => r.Storage == StorageOptions.CurrentValue.Name && r.Path.StartsWith(path))
@@ -82,22 +78,21 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             var parts = PreparePath(path.Trim('/'))!.Split("/");
             var current = root;
             foreach (var part in parts)
+            {
                 current = current?.Children.Where(n => n.Type == StorageNodeType.Directory)
                     .FirstOrDefault(f => f.Name == part);
+            }
 
             return current?.Children ?? new StorageNode[0];
         }
 
-        private static string? PreparePath(string? path)
-        {
-            return path?.Replace("\\", "/").Replace("//", "/");
-        }
+        private static string? PreparePath(string? path) => path?.Replace("\\", "/").Replace("//", "/");
 
         protected override async Task<StorageItemMetadata?> DoGetMetadataJsonAsync(string path,
             CancellationToken cancellationToken = default)
         {
             await using var dbContext = GetDbContext();
-            StorageItemRecord? record = await GetItemRecordAsync(dbContext, path, cancellationToken);
+            var record = await GetItemRecordAsync(dbContext, path, cancellationToken);
             return record?.Metadata;
         }
 
@@ -105,14 +100,17 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             CancellationToken cancellationToken = default)
         {
             await using var dbContext = GetDbContext();
-            StorageItemRecord? record = await GetItemRecordAsync(dbContext, storageItem.FilePath, cancellationToken);
+            var record = await GetItemRecordAsync(dbContext, storageItem.FilePath, cancellationToken);
             if (record is null)
             {
                 record = new StorageItemRecord(StorageOptions.CurrentValue.Name, storageItem);
                 await dbContext.Records.AddAsync(record);
             }
 
-            if (metadata?.FileName != null) record.FileName = metadata.FileName;
+            if (metadata?.FileName != null)
+            {
+                record.FileName = metadata.FileName;
+            }
 
             record.Metadata = metadata;
             await dbContext.SaveChangesAsync(cancellationToken);
@@ -127,9 +125,6 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             Logger.LogDebug("Storage metadata database migrated");
         }
 
-        public override ValueTask DisposeAsync()
-        {
-            return new();
-        }
+        public override ValueTask DisposeAsync() => new();
     }
 }

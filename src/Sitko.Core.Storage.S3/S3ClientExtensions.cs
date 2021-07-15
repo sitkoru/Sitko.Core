@@ -33,10 +33,15 @@ namespace Sitko.Core.Storage.S3
             }
             catch (AmazonS3Exception ex)
             {
-                if (string.Equals(ex.ErrorCode, "NoSuchBucket")) throw;
+                if (string.Equals(ex.ErrorCode, "NoSuchBucket"))
+                {
+                    throw;
+                }
 
                 if (string.Equals(ex.ErrorCode, "NotFound") || string.Equals(ex.ErrorCode, "NoSuchKey"))
+                {
                     logger.LogDebug(ex, "File {File} not found", path);
+                }
             }
 
             return response;

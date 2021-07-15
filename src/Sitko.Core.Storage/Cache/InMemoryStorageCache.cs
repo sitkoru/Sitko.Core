@@ -25,16 +25,13 @@ namespace Sitko.Core.Storage.Cache
             Stream stream,
             CancellationToken cancellationToken = default)
         {
-            using var memoryStream = new MemoryStream();
+            await using var memoryStream = new MemoryStream();
             await stream.CopyToAsync(memoryStream, cancellationToken);
             return
                 new InMemoryStorageCacheRecord(item.Metadata, item.FileSize, item.Date, memoryStream.ToArray());
         }
 
-        public override ValueTask DisposeAsync()
-        {
-            return new();
-        }
+        public override ValueTask DisposeAsync() => new();
     }
 
     public class InMemoryStorageCacheOptions : StorageCacheOptions
@@ -57,9 +54,6 @@ namespace Sitko.Core.Storage.Cache
             Date = date;
         }
 
-        public Stream OpenRead()
-        {
-            return new MemoryStream(Data);
-        }
+        public Stream OpenRead() => new MemoryStream(Data);
     }
 }

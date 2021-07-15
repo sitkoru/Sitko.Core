@@ -13,27 +13,24 @@ namespace Sitko.Core.Storage
     public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsyncDisposable
         where TStorageOptions : StorageOptions
     {
-        private readonly IStorageCache<TStorageOptions>? _cache;
-        private readonly IOptionsMonitor<TStorageOptions> _optionsMonitor;
-        protected readonly ILogger<Storage<TStorageOptions>> Logger;
-        protected readonly IStorageMetadataProvider<TStorageOptions>? MetadataProvider;
+        private readonly IStorageCache<TStorageOptions>? cache;
+        private readonly IOptionsMonitor<TStorageOptions> optionsMonitor;
+        protected ILogger<Storage<TStorageOptions>> Logger { get; }
+        protected IStorageMetadataProvider<TStorageOptions>? MetadataProvider { get; }
 
         protected Storage(IOptionsMonitor<TStorageOptions> options, ILogger<Storage<TStorageOptions>> logger,
             IStorageCache<TStorageOptions>? cache,
             IStorageMetadataProvider<TStorageOptions>? metadataProvider)
         {
             Logger = logger;
-            _cache = cache;
+            this.cache = cache;
             MetadataProvider = metadataProvider;
-            _optionsMonitor = options;
+            optionsMonitor = options;
         }
 
-        protected TStorageOptions Options => _optionsMonitor.CurrentValue;
+        protected TStorageOptions Options => optionsMonitor.CurrentValue;
 
-        public virtual ValueTask DisposeAsync()
-        {
-            return new();
-        }
+        public virtual ValueTask DisposeAsync() => new();
 
         public async Task<StorageItem> SaveAsync(Stream file, string fileName, string path, object? metadata = null,
             CancellationToken cancellationToken = default)
@@ -42,7 +39,10 @@ namespace Sitko.Core.Storage
 
             var itemMetadata = new StorageItemMetadata {FileName = fileName};
 
-            if (metadata != null) itemMetadata.SetData(metadata);
+            if (metadata != null)
+            {
+                itemMetadata.SetData(metadata);
+            }
 
             var storageItem = new StorageItem(destinationPath, DateTimeOffset.UtcNow, file.Length, Options.Prefix,
                 itemMetadata);
@@ -50,7 +50,9 @@ namespace Sitko.Core.Storage
             var result = await SaveStorageItemAsync(file, path, destinationPath, storageItem,
                 cancellationToken);
             if (MetadataProvider != null)
+            {
                 await MetadataProvider.SaveMetadataAsync(storageItem, itemMetadata, cancellationToken);
+            }
 
             return result;
         }
@@ -58,12 +60,18 @@ namespace Sitko.Core.Storage
         public async Task<StorageItem> UpdateMetaDataAsync(StorageItem item, string fileName,
             object? metadata = null, CancellationToken cancellationToken = default)
         {
-            if (MetadataProvider is null) throw new Exception("No metadata provider");
+            if (MetadataProvider is null)
+            {
+                throw new Exception("No metadata provider");
+            }
 
             Logger.LogDebug("Update metadata for item {Path}", item.FilePath);
             var itemMetadata = new StorageItemMetadata {FileName = fileName};
 
-            if (metadata != null) itemMetadata.SetData(metadata);
+            if (metadata != null)
+            {
+                itemMetadata.SetData(metadata);
+            }
 
             await MetadataProvider.SaveMetadataAsync(item, itemMetadata, cancellationToken);
             item = (await GetStorageItemInternalAsync(item.FilePath, cancellationToken))!;
@@ -72,7 +80,7 @@ namespace Sitko.Core.Storage
 
         public async Task<DownloadResult?> DownloadAsync(string path, CancellationToken cancellationToken = default)
         {
-            StorageItemDownloadInfo? info = await GetStorageItemInfoAsync(path, cancellationToken);
+            var info = await GetStorageItemInfoAsync(path, cancellationToken);
             if (info != null)
             {
                 var item = new StorageItem(path, info, Options.Prefix);
@@ -84,40 +92,51 @@ namespace Sitko.Core.Storage
 
         public async Task<bool> DeleteAsync(string filePath, CancellationToken cancellationToken = default)
         {
-            if (_cache != null) await _cache.RemoveItemAsync(filePath, cancellationToken);
+            if (cache != null)
+            {
+                await cache.RemoveItemAsync(filePath, cancellationToken);
+            }
 
-            bool result = await DoDeleteAsync(GetPathWithPrefix(filePath), cancellationToken);
+            var result = await DoDeleteAsync(GetPathWithPrefix(filePath), cancellationToken);
             if (result && MetadataProvider != null)
+            {
                 await MetadataProvider.DeleteMetadataAsync(filePath, cancellationToken);
+            }
 
             return result;
         }
 
-        public Task<StorageItem?> GetAsync(string path, CancellationToken cancellationToken = default)
-        {
-            return GetStorageItemInternalAsync(path, cancellationToken);
-        }
+        public Task<StorageItem?> GetAsync(string path, CancellationToken cancellationToken = default) => GetStorageItemInternalAsync(path, cancellationToken);
 
 
         public async Task<bool> IsExistsAsync(string path, CancellationToken cancellationToken = default)
         {
-            StorageItem? result = await GetStorageItemInternalAsync(path, cancellationToken);
+            var result = await GetStorageItemInternalAsync(path, cancellationToken);
             return result != null;
         }
 
         public async Task DeleteAllAsync(CancellationToken cancellationToken = default)
         {
-            if (_cache != null) await _cache.ClearAsync(cancellationToken);
+            if (cache != null)
+            {
+                await cache.ClearAsync(cancellationToken);
+            }
 
             await DoDeleteAllAsync(cancellationToken);
-            if (MetadataProvider != null) await MetadataProvider.DeleteAllMetadataAsync(cancellationToken);
+            if (MetadataProvider != null)
+            {
+                await MetadataProvider.DeleteAllMetadataAsync(cancellationToken);
+            }
         }
 
 
         public Task<IEnumerable<StorageNode>> GetDirectoryContentsAsync(string path,
             CancellationToken cancellationToken = default)
         {
-            if (MetadataProvider != null) return MetadataProvider.GetDirectoryContentAsync(path, cancellationToken);
+            if (MetadataProvider != null)
+            {
+                return MetadataProvider.GetDirectoryContentAsync(path, cancellationToken);
+            }
 
             throw new Exception("No metadata provider");
         }
@@ -136,23 +155,15 @@ namespace Sitko.Core.Storage
         }
 
 
-        public Uri PublicUri(StorageItem item)
-        {
-            return PublicUri(item.FilePath);
-        }
+        public Uri PublicUri(StorageItem item) => PublicUri(item.FilePath);
 
-        public Uri PublicUri(string filePath)
-        {
-            return new(Options.PublicUri!, filePath);
-        }
+        public Uri PublicUri(string filePath) => new(Options.PublicUri!, filePath);
 
         public bool IsDefault => Options.IsDefault;
 
         Task<IEnumerable<StorageItemInfo>> IStorage.GetAllItemsAsync(string path,
-            CancellationToken cancellationToken)
-        {
-            return GetAllItemsAsync(path, cancellationToken);
-        }
+            CancellationToken cancellationToken) =>
+            GetAllItemsAsync(path, cancellationToken);
 
 
         private async Task<StorageItem> SaveStorageItemAsync(Stream file, string path, string destinationPath,
@@ -161,8 +172,10 @@ namespace Sitko.Core.Storage
             file.Seek(0, SeekOrigin.Begin);
             await DoSaveAsync(destinationPath, file, cancellationToken);
             Logger.LogInformation("File saved to {Path}", path);
-            if (_cache != null && !string.IsNullOrEmpty(storageItem.FilePath))
-                await _cache.RemoveItemAsync(storageItem.FilePath, cancellationToken);
+            if (cache != null && !string.IsNullOrEmpty(storageItem.FilePath))
+            {
+                await cache.RemoveItemAsync(storageItem.FilePath, cancellationToken);
+            }
 
             return storageItem;
         }
@@ -170,7 +183,10 @@ namespace Sitko.Core.Storage
         protected virtual string GetDestinationPath(string fileName, string path)
         {
             var destinationName = GetStorageFileName(fileName);
-            if (!string.IsNullOrEmpty(Options.Prefix)) path = Path.Combine(Options.Prefix, path);
+            if (!string.IsNullOrEmpty(Options.Prefix))
+            {
+                path = Path.Combine(Options.Prefix, path);
+            }
 
             return Helpers.PreparePath(Path.Combine(path, destinationName))!;
         }
@@ -192,7 +208,9 @@ namespace Sitko.Core.Storage
         protected string GetPathWithPrefix(string filePath)
         {
             if (!string.IsNullOrEmpty(Options.Prefix) && !filePath.StartsWith(Options.Prefix))
+            {
                 filePath = Helpers.PreparePath(Path.Combine(Options.Prefix, filePath))!;
+            }
 
             return filePath;
         }
@@ -201,9 +219,9 @@ namespace Sitko.Core.Storage
             CancellationToken cancellationToken = default)
         {
             StorageItemDownloadInfo? result;
-            if (_cache != null)
+            if (cache != null)
             {
-                result = await _cache.GetOrAddItemAsync(path,
+                result = await cache.GetOrAddItemAsync(path,
                     async () => await DoGetFileAsync(GetPathWithPrefix(path)), cancellationToken);
             }
             else
@@ -211,8 +229,11 @@ namespace Sitko.Core.Storage
                 result = await DoGetFileAsync(GetPathWithPrefix(path), cancellationToken);
                 if (result is not null && MetadataProvider is not null)
                 {
-                    StorageItemMetadata? metadata = await MetadataProvider.GetMetadataAsync(path, cancellationToken);
-                    if (metadata is not null) result.SetMetadata(metadata);
+                    var metadata = await MetadataProvider.GetMetadataAsync(path, cancellationToken);
+                    if (metadata is not null)
+                    {
+                        result.SetMetadata(metadata);
+                    }
                 }
             }
 
@@ -222,7 +243,7 @@ namespace Sitko.Core.Storage
         private async Task<StorageItem?> GetStorageItemInternalAsync(string path,
             CancellationToken cancellationToken = default)
         {
-            StorageItemDownloadInfo? result = await GetStorageItemInfoAsync(path, cancellationToken);
+            var result = await GetStorageItemInfoAsync(path, cancellationToken);
 
             return result != null
                 ? new StorageItem(path, result.Date, result.FileSize, Options.Prefix, result.Metadata)

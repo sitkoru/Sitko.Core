@@ -4,15 +4,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Sitko.Core.Storage.Metadata.Postgres.DB.Models
 {
+    using JetBrains.Annotations;
+
+    [PublicAPI]
     [Table("StorageItemRecords", Schema = StorageDbContext.Schema)]
     public class StorageItemRecord
     {
         // Used for EF
         // ReSharper disable once UnusedMember.Global
-        public StorageItemRecord()
-        {
-            LastModified = DateTimeOffset.UtcNow;
-        }
+        public StorageItemRecord() => LastModified = DateTimeOffset.UtcNow;
 
         public StorageItemRecord(string storage, StorageItem storageItem)
         {

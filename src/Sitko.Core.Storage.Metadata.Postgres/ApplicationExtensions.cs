@@ -5,27 +5,26 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.Metadata.Postgres
 {
+    using JetBrains.Annotations;
+
+    [PublicAPI]
     public static class ApplicationExtensions
     {
         public static Application AddPostgresStorageMetadata<TStorageOptions>(this Application application,
             Action<IConfiguration, IHostEnvironment, PostgresStorageMetadataModuleOptions<TStorageOptions>> configure,
             string? optionsKey = null)
-            where TStorageOptions : StorageOptions
-        {
-            return application
+            where TStorageOptions : StorageOptions =>
+            application
                 .AddModule<PostgresStorageMetadataModule<TStorageOptions>,
                     PostgresStorageMetadataModuleOptions<TStorageOptions>>(
                     configure, optionsKey);
-        }
 
         public static Application AddPostgresStorageMetadata<TStorageOptions>(this Application application,
             Action<PostgresStorageMetadataModuleOptions<TStorageOptions>>? configure = null, string? optionsKey = null)
-            where TStorageOptions : StorageOptions
-        {
-            return application
+            where TStorageOptions : StorageOptions =>
+            application
                 .AddModule<PostgresStorageMetadataModule<TStorageOptions>,
                     PostgresStorageMetadataModuleOptions<TStorageOptions>>(
                     configure, optionsKey);
-        }
     }
 }

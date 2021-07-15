@@ -4,16 +4,17 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Storage
 {
+    using JetBrains.Annotations;
+
     public abstract class StorageOptions : BaseModuleOptions
     {
-        public StorageOptions() => Name = GetType().Name;
+        protected StorageOptions() => Name = GetType().Name;
 
-        public Uri? PublicUri { get; set; }
+        [PublicAPI] public Uri? PublicUri { get; set; }
 
-        public string? Prefix { get; set; }
-
-        public string Name { get; set; }
-        public bool IsDefault { get; set; }
+        [PublicAPI] public string? Prefix { get; set; }
+        [PublicAPI] public string Name { get; set; }
+        [PublicAPI] public bool IsDefault { get; set; }
     }
 
     public abstract class StorageOptionsValidator<TStorageOptions> : AbstractValidator<TStorageOptions>

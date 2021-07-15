@@ -5,6 +5,8 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.ImgProxy
 {
+    using JetBrains.Annotations;
+
     public class
         ImgProxyStorageModule<TStorageOptions> : BaseApplicationModule<ImgProxyStorageModuleOptions<TStorageOptions>>
         where TStorageOptions : StorageOptions
@@ -23,6 +25,7 @@ namespace Sitko.Core.Storage.ImgProxy
             new[] {typeof(IStorageModule)};
     }
 
+    [PublicAPI]
     // Generic parameter is required for dependency injection
     // ReSharper disable once UnusedTypeParameter
     public class ImgProxyStorageModuleOptions<TStorageOptions> : BaseModuleOptions
@@ -31,6 +34,6 @@ namespace Sitko.Core.Storage.ImgProxy
         public string Host { get; set; } = "";
         public string Key { get; set; } = "";
         public string Salt { get; set; } = "";
-        public bool EncodeUrls { get; set; } = false;
+        public bool EncodeUrls { get; set; }
     }
 }

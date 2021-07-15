@@ -26,7 +26,10 @@ namespace Sitko.Core.Storage.FileSystem
         {
             var dirName = Path.GetDirectoryName(path) ?? "";
             var dirPath = Path.Combine(Options.StoragePath, dirName);
-            if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
+            if (!Directory.Exists(dirPath))
+            {
+                Directory.CreateDirectory(dirPath);
+            }
 
             var fullPath = Path.Combine(Options.StoragePath, path);
             await using var fileStream = File.Create(fullPath);
@@ -39,6 +42,7 @@ namespace Sitko.Core.Storage.FileSystem
         {
             var path = Path.Combine(Options.StoragePath, filePath);
             if (File.Exists(path))
+            {
                 try
                 {
                     File.Delete(path);
@@ -48,6 +52,7 @@ namespace Sitko.Core.Storage.FileSystem
                 {
                     Logger.LogError(ex, "Error while deleting file {File}: {ErrorText}", path, ex.ToString());
                 }
+            }
 
             return Task.FromResult(false);
         }
@@ -61,7 +66,10 @@ namespace Sitko.Core.Storage.FileSystem
 
         protected override Task DoDeleteAllAsync(CancellationToken cancellationToken = default)
         {
-            if (Directory.Exists(Options.StoragePath)) Directory.Delete(Options.StoragePath, true);
+            if (Directory.Exists(Options.StoragePath))
+            {
+                Directory.Delete(Options.StoragePath, true);
+            }
 
             return Task.CompletedTask;
         }
@@ -74,8 +82,10 @@ namespace Sitko.Core.Storage.FileSystem
             var fileInfo = new FileInfo(fullPath);
 
             if (fileInfo.Exists)
+            {
                 result = new StorageItemDownloadInfo(fileInfo.Length, fileInfo.LastWriteTimeUtc,
                     () => new FileStream(fullPath, FileMode.Open));
+            }
 
             return Task.FromResult(result);
         }
@@ -92,20 +102,26 @@ namespace Sitko.Core.Storage.FileSystem
         {
             var fullPath = path == "/" ? Options.StoragePath : Path.Combine(Options.StoragePath, path.Trim('/'));
             if (Directory.Exists(fullPath))
+            {
                 foreach (var info in new DirectoryInfo(fullPath)
                     .EnumerateFileSystemInfos())
                 {
                     if (info is DirectoryInfo dir)
-                        ListFolder(items, Helpers.PreparePath(Path.Combine(path, dir.Name))!);
-
-                    if (info is FileInfo file)
                     {
-                        StorageItemInfo item = new StorageItemInfo(
-                            Helpers.PreparePath(Path.Combine(path, file.Name))!.Trim('/'),
-                            file.Length, file.LastWriteTimeUtc);
-                        items.Add(item);
+                        ListFolder(items, Helpers.PreparePath(Path.Combine(path, dir.Name))!);
                     }
+
+                    if (info is not FileInfo file)
+                    {
+                        continue;
+                    }
+
+                    var item = new StorageItemInfo(
+                        Helpers.PreparePath(Path.Combine(path, file.Name))!.Trim('/'),
+                        file.Length, file.LastWriteTimeUtc);
+                    items.Add(item);
                 }
+            }
         }
     }
 }
