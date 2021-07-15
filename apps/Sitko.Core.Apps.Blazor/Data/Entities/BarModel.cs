@@ -12,6 +12,7 @@ namespace Sitko.Core.Apps.Blazor.Data.Entities
 
         public List<FooModel> Foos { get; set; } = new();
         public DateTimeOffset Date { get; set; } = DateTimeOffset.UtcNow;
+        public decimal Sum { get; set; } = 100;
 
         public StorageItem? StorageItem { get; set; }
 

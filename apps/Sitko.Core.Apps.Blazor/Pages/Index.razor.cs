@@ -24,6 +24,7 @@ namespace Sitko.Core.Apps.Blazor.Pages
         public BarModel? Bar { get; set; }
         [Inject] public IStorage Storage { get; set; } = null!;
         [Inject] public ILocalizationProvider<App> LocalizationProvider { get; set; } = null!;
+        private decimal Summary { get; set; }
 
         protected override async Task InitializeAsync()
         {
@@ -34,6 +35,7 @@ namespace Sitko.Core.Apps.Blazor.Pages
                 await GetService<BarRepository>().AddAsync(new BarModel {Bar = "Bar", Id = Guid.NewGuid()});
                 bars = await GetService<BarRepository>().GetAllAsync();
             }
+
             Bars = bars.items;
             _barFilter = (await GetService<BarContext>().Bars.Select(a => a.Bar).Distinct().ToListAsync())
                 .Select(x => new TableFilter<string> {Text = x, Value = x}).ToArray();
@@ -58,6 +60,8 @@ namespace Sitko.Core.Apps.Blazor.Pages
             form.Test = Guid.NewGuid();
             return Task.CompletedTask;
         }
+
+        private async Task CountSummaryAsync() => Summary = await _barList.SumAsync(model => model.Sum);
     }
 
     public class BarStorageMetadata

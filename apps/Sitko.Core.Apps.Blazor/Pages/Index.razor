@@ -4,7 +4,7 @@
 @inherits BaseComponent
 <PageContainer Title="@LocalizationProvider["Title"]">
 <ChildContent>
-<BarAntRepositoryList @ref="_barList" PageSize="2">
+<BarAntRepositoryList @ref="_barList" PageSize="2" OnDataLoaded="CountSummaryAsync">
     <AntDesign.Column Title="Id" @bind-Field="@context.Id" Sortable DefaultSortOrder="SortDirection.Ascending">
         @context.Id
     </AntDesign.Column>
@@ -23,6 +23,11 @@
             </Button>
         </Popconfirm>
     </ActionColumn>
+    <SummaryRow>
+        <SummaryCell>
+            @Summary
+        </SummaryCell>
+    </SummaryRow>
 </BarAntRepositoryList>
 <AntRepositoryForm
     Layout="@FormLayout.Vertical"
