@@ -22,7 +22,7 @@ namespace Sitko.Core.Apps.Blazor.Pages
         private AntRepositoryForm<BarModel, Guid, BarForm> _frm = null!;
         private BarModel[] _bars = Array.Empty<BarModel>();
         public BarModel? Bar { get; set; }
-        [Inject] public IStorage<TestBlazorStorageOptions> Storage { get; set; } = null!;
+        [Inject] public IStorage Storage { get; set; } = null!;
         [Inject] public ILocalizationProvider<App> LocalizationProvider { get; set; } = null!;
 
         protected override async Task InitializeAsync()
