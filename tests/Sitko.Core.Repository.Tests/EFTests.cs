@@ -176,6 +176,17 @@ namespace Sitko.Core.Repository.Tests
                 Assert.True(task.IsCompletedSuccessfully);
             }
         }
+
+        [Fact]
+        public async Task Sum()
+        {
+            var scope = await GetScopeAsync();
+            var repository = scope.Get<IRepository<TestModel, Guid>>();
+            var sum = await repository.SumAsync(t => t.FooId);
+            var all = await repository.GetAllAsync();
+            var allSum = all.items.Sum(t => t.FooId);
+            Assert.Equal(allSum, sum);
+        }
     }
 
     public class TestDbContext : DbContext

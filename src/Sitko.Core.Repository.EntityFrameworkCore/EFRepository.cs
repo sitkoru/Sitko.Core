@@ -10,6 +10,8 @@ using Nito.AsyncEx;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore
 {
+    using System.Linq.Expressions;
+
     public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         BaseRepository<TEntity, TEntityPk, EFRepositoryQuery<TEntity>>
         where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext
@@ -24,7 +26,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             _repositoryContext = repositoryContext;
             _dbContext = repositoryContext.DbContext;
         }
-        
+
         protected async Task<T> ExecuteDbContextOperationAsync<T>(Func<TDbContext, Task<T>> operation,
             CancellationToken cancellationToken = default)
         {
@@ -71,6 +73,67 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
             return item;
         }
+
+        protected override Task<int> DoSumAsync(EFRepositoryQuery<TEntity> query,
+            Expression<Func<TEntity, int>> selector,
+            CancellationToken cancellationToken = default) =>
+            ExecuteDbContextOperationAsync(_ => query.BuildQuery().SumAsync(selector, cancellationToken),
+                cancellationToken);
+
+        protected override Task<long> DoSumAsync(EFRepositoryQuery<TEntity> query,
+            Expression<Func<TEntity, long>> selector,
+            CancellationToken cancellationToken = default) =>
+            ExecuteDbContextOperationAsync(_ => query.BuildQuery().SumAsync(selector, cancellationToken),
+                cancellationToken);
+
+        protected override Task<double> DoSumAsync(EFRepositoryQuery<TEntity> query,
+            Expression<Func<TEntity, double>> selector,
+            CancellationToken cancellationToken = default) =>
+            ExecuteDbContextOperationAsync(_ => query.BuildQuery().SumAsync(selector, cancellationToken),
+                cancellationToken);
+
+        protected override Task<decimal> DoSumAsync(EFRepositoryQuery<TEntity> query,
+            Expression<Func<TEntity, decimal>> selector,
+            CancellationToken cancellationToken = default) =>
+            ExecuteDbContextOperationAsync(_ => query.BuildQuery().SumAsync(selector, cancellationToken),
+                cancellationToken);
+
+        protected override Task<float> DoSumAsync(EFRepositoryQuery<TEntity> query,
+            Expression<Func<TEntity, float>> selector,
+            CancellationToken cancellationToken = default) =>
+            ExecuteDbContextOperationAsync(_ => query.BuildQuery().SumAsync(selector, cancellationToken),
+                cancellationToken);
+
+        protected override Task<int?> DoSumAsync(EFRepositoryQuery<TEntity> query,
+            Expression<Func<TEntity, int?>> selector,
+            CancellationToken cancellationToken = default) =>
+            ExecuteDbContextOperationAsync(_ => query.BuildQuery().SumAsync(selector, cancellationToken),
+                cancellationToken);
+
+        protected override Task<long?> DoSumAsync(EFRepositoryQuery<TEntity> query,
+            Expression<Func<TEntity, long?>> selector,
+            CancellationToken cancellationToken = default) =>
+            ExecuteDbContextOperationAsync(_ => query.BuildQuery().SumAsync(selector, cancellationToken),
+                cancellationToken);
+
+        protected override Task<double?> DoSumAsync(EFRepositoryQuery<TEntity> query,
+            Expression<Func<TEntity, double?>> selector,
+            CancellationToken cancellationToken = default) =>
+            ExecuteDbContextOperationAsync(_ => query.BuildQuery().SumAsync(selector, cancellationToken),
+                cancellationToken);
+
+        protected override Task<decimal?> DoSumAsync(EFRepositoryQuery<TEntity> query,
+            Expression<Func<TEntity, decimal?>> selector,
+            CancellationToken cancellationToken = default) =>
+            ExecuteDbContextOperationAsync(_ => query.BuildQuery().SumAsync(selector, cancellationToken),
+                cancellationToken);
+
+        protected override Task<float?> DoSumAsync(EFRepositoryQuery<TEntity> query,
+            Expression<Func<TEntity, float?>> selector,
+            CancellationToken cancellationToken = default) =>
+            ExecuteDbContextOperationAsync(_ => query.BuildQuery().SumAsync(selector, cancellationToken),
+                cancellationToken);
+
 
         protected override Task<int> DoCountAsync(EFRepositoryQuery<TEntity> query,
             CancellationToken cancellationToken = default)

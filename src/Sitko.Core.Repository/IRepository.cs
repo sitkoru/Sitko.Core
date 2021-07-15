@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 
 namespace Sitko.Core.Repository
 {
+    using System.Linq.Expressions;
+
     public interface IRepository
     {
     }
@@ -32,6 +34,111 @@ namespace Sitko.Core.Repository
             CancellationToken cancellationToken = default);
 
         Task<int> CountAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            CancellationToken cancellationToken = default);
+
+        Task<int> SumAsync(Expression<Func<TEntity, int>> selector, CancellationToken cancellationToken = default);
+
+        Task<int> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, int>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<int> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, int>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<long> SumAsync(Expression<Func<TEntity, long>> selector, CancellationToken cancellationToken = default);
+
+        Task<long> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, long>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<long> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, long>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<double> SumAsync(Expression<Func<TEntity, double>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<double> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, double>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<double> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, double>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<float> SumAsync(Expression<Func<TEntity, float>> selector, CancellationToken cancellationToken = default);
+
+        Task<float> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, float>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<float> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, float>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<decimal> SumAsync(Expression<Func<TEntity, decimal>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<decimal> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, decimal>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<decimal> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, decimal>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<int?> SumAsync(Expression<Func<TEntity, int?>> selector, CancellationToken cancellationToken = default);
+
+        Task<int?> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, int?>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<int?> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, int?>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<long?> SumAsync(Expression<Func<TEntity, long?>> selector, CancellationToken cancellationToken = default);
+
+        Task<long?> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, long?>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<long?> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, long?>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<double?> SumAsync(Expression<Func<TEntity, double?>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<double?> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, double?>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<double?> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, double?>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<float?> SumAsync(Expression<Func<TEntity, float?>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<float?> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, float?>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<float?> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, float?>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<decimal?> SumAsync(Expression<Func<TEntity, decimal?>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<decimal?> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, decimal?>> selector,
+            CancellationToken cancellationToken = default);
+
+        Task<decimal?> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, decimal?>> selector,
             CancellationToken cancellationToken = default);
 
         Task<TEntity?> GetByIdAsync(TEntityPk id, Func<IRepositoryQuery<TEntity>, Task> configureQuery,
@@ -67,7 +174,7 @@ namespace Sitko.Core.Repository
         Task<bool> BeginBatchAsync(CancellationToken cancellationToken = default);
         Task<bool> CommitBatchAsync(CancellationToken cancellationToken = default);
         Task<bool> RollbackBatchAsync(CancellationToken cancellationToken = default);
-        
+
         Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default);
         Task<bool> HasChangesAsync(TEntity entity);
     }

@@ -9,6 +9,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.Repository
 {
+    using System.Linq.Expressions;
+
     public interface IRepositoryContext<TEntity, TEntityPk> where TEntity : class, IEntity<TEntityPk>
     {
         RepositoryFiltersManager FiltersManager { get; }
@@ -40,6 +42,37 @@ namespace Sitko.Core.Repository
             CancellationToken cancellationToken = default);
 
         protected abstract Task<int> DoCountAsync(TQuery query, CancellationToken cancellationToken = default);
+
+        protected abstract Task<int> DoSumAsync(TQuery query, Expression<Func<TEntity, int>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<long> DoSumAsync(TQuery query, Expression<Func<TEntity, long>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<double> DoSumAsync(TQuery query, Expression<Func<TEntity, double>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<float> DoSumAsync(TQuery query, Expression<Func<TEntity, float>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<decimal> DoSumAsync(TQuery query, Expression<Func<TEntity, decimal>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<int?> DoSumAsync(TQuery query, Expression<Func<TEntity, int?>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<long?> DoSumAsync(TQuery query, Expression<Func<TEntity, long?>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<double?> DoSumAsync(TQuery query, Expression<Func<TEntity, double?>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<float?> DoSumAsync(TQuery query, Expression<Func<TEntity, float?>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<decimal?> DoSumAsync(TQuery query, Expression<Func<TEntity, decimal?>> selector,
+            CancellationToken cancellationToken = default);
+
         protected abstract Task<TEntity?> DoGetAsync(TQuery query, CancellationToken cancellationToken = default);
 
         protected abstract Task DoSaveAsync(CancellationToken cancellationToken = default);
@@ -265,6 +298,226 @@ namespace Sitko.Core.Repository
             await AfterLoadAsync(items, cancellationToken);
 
             return (items, itemsCount);
+        }
+
+        public virtual async Task<int> SumAsync(Expression<Func<TEntity, int>> selector,
+            CancellationToken cancellationToken = default) =>
+            await DoSumAsync(await CreateRepositoryQueryAsync(cancellationToken), selector, cancellationToken);
+
+        public virtual async Task<int> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, int>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            await query.ConfigureAsync(configureQuery, cancellationToken);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<int> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, int>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            query.Configure(configureQuery);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<long> SumAsync(Expression<Func<TEntity, long>> selector,
+            CancellationToken cancellationToken = default) =>
+            await DoSumAsync(await CreateRepositoryQueryAsync(cancellationToken), selector, cancellationToken);
+
+        public virtual async Task<long> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, long>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            await query.ConfigureAsync(configureQuery, cancellationToken);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<long> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, long>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            query.Configure(configureQuery);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<double> SumAsync(Expression<Func<TEntity, double>> selector,
+            CancellationToken cancellationToken = default) =>
+            await DoSumAsync(await CreateRepositoryQueryAsync(cancellationToken), selector, cancellationToken);
+
+        public virtual async Task<double> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, double>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            await query.ConfigureAsync(configureQuery, cancellationToken);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<double> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, double>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            query.Configure(configureQuery);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<float> SumAsync(Expression<Func<TEntity, float>> selector,
+            CancellationToken cancellationToken = default) =>
+            await DoSumAsync(await CreateRepositoryQueryAsync(cancellationToken), selector, cancellationToken);
+
+        public virtual async Task<float> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, float>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            await query.ConfigureAsync(configureQuery, cancellationToken);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<float> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, float>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            query.Configure(configureQuery);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<decimal> SumAsync(Expression<Func<TEntity, decimal>> selector,
+            CancellationToken cancellationToken = default) =>
+            await DoSumAsync(await CreateRepositoryQueryAsync(cancellationToken), selector, cancellationToken);
+
+        public virtual async Task<decimal> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, decimal>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            await query.ConfigureAsync(configureQuery, cancellationToken);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<decimal> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, decimal>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            query.Configure(configureQuery);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<int?> SumAsync(Expression<Func<TEntity, int?>> selector,
+            CancellationToken cancellationToken = default) =>
+            await DoSumAsync(await CreateRepositoryQueryAsync(cancellationToken), selector, cancellationToken);
+
+        public virtual async Task<int?> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, int?>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            await query.ConfigureAsync(configureQuery, cancellationToken);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<int?> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, int?>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            query.Configure(configureQuery);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<long?> SumAsync(Expression<Func<TEntity, long?>> selector,
+            CancellationToken cancellationToken = default) =>
+            await DoSumAsync(await CreateRepositoryQueryAsync(cancellationToken), selector, cancellationToken);
+
+        public virtual async Task<long?> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, long?>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            await query.ConfigureAsync(configureQuery, cancellationToken);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<long?> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, long?>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            query.Configure(configureQuery);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<double?> SumAsync(Expression<Func<TEntity, double?>> selector,
+            CancellationToken cancellationToken = default) =>
+            await DoSumAsync(await CreateRepositoryQueryAsync(cancellationToken), selector, cancellationToken);
+
+        public virtual async Task<double?> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, double?>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            await query.ConfigureAsync(configureQuery, cancellationToken);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<double?> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, double?>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            query.Configure(configureQuery);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<float?> SumAsync(Expression<Func<TEntity, float?>> selector,
+            CancellationToken cancellationToken = default) =>
+            await DoSumAsync(await CreateRepositoryQueryAsync(cancellationToken), selector, cancellationToken);
+
+        public virtual async Task<float?> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, float?>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            await query.ConfigureAsync(configureQuery, cancellationToken);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<float?> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, float?>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            query.Configure(configureQuery);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<decimal?> SumAsync(Expression<Func<TEntity, decimal?>> selector,
+            CancellationToken cancellationToken = default) =>
+            await DoSumAsync(await CreateRepositoryQueryAsync(cancellationToken), selector, cancellationToken);
+
+        public virtual async Task<decimal?> SumAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
+            Expression<Func<TEntity, decimal?>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            await query.ConfigureAsync(configureQuery, cancellationToken);
+            return await DoSumAsync(query, selector, cancellationToken);
+        }
+
+        public virtual async Task<decimal?> SumAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
+            Expression<Func<TEntity, decimal?>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await CreateRepositoryQueryAsync(cancellationToken);
+            query.Configure(configureQuery);
+            return await DoSumAsync(query, selector, cancellationToken);
         }
 
         public virtual async Task<int> CountAsync(CancellationToken cancellationToken = default)
