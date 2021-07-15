@@ -5,11 +5,14 @@
 <PageContainer Title="@LocalizationProvider["Title"]">
 <ChildContent>
 <BarAntRepositoryList @ref="_barList" PageSize="2">
-    <AntDesign.Column Title="Id" @bind-Field="@context.Id" Sortable Filterable DefaultSortOrder="SortDirection.Ascending">
+    <AntDesign.Column Title="Id" @bind-Field="@context.Id" Sortable DefaultSortOrder="SortDirection.Ascending">
         @context.Id
     </AntDesign.Column>
     <AntDesign.Column Title="Название" @bind-Field="@context.Bar" Sortable Filters="_barFilter">
         @context.Bar
+    </AntDesign.Column>
+    <AntDesign.Column Title="Дата" @bind-Field="@context.Date" Sortable>
+        @context.Date
     </AntDesign.Column>
     <ActionColumn>
         <Popconfirm Placement="@PlacementType.Left" Title="@LocalizationProvider["Delete record?"]"
