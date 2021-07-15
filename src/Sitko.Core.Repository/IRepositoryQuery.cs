@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Sitko.Core.Repository
 {
+    using JetBrains.Annotations;
+
+    [PublicAPI]
     public interface IRepositoryQuery<TEntity> where TEntity : class
     {
         public int? Limit { get; }
@@ -41,6 +44,5 @@ namespace Sitko.Core.Repository
     // ReSharper disable once UnusedTypeParameter
     public interface IIncludableRepositoryQuery<TEntity, out TProperty> : IRepositoryQuery<TEntity>
         where TEntity : class
-    {
-    }
+    {}
 }

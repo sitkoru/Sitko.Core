@@ -12,26 +12,13 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 {
     internal class EFRepositoryQuerySource<TEntity> where TEntity : class
     {
-        internal IQueryable<TEntity> Query;
-
-        public EFRepositoryQuerySource(IQueryable<TEntity> query)
-        {
-            Query = query;
-        }
+        public EFRepositoryQuerySource(IQueryable<TEntity> query) => Query = query;
+        internal IQueryable<TEntity> Query { get; set; }
     }
 
     public class EFRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where TEntity : class
     {
-        internal EFRepositoryQuerySource<TEntity> QuerySource;
-
-        internal readonly List<Func<IQueryable<TEntity>, IQueryable<TEntity>>> WhereExpressions = new();
-
-        internal readonly List<Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>> OrderExpressions = new();
-
-        public EFRepositoryQuery(IQueryable<TEntity> query)
-        {
-            QuerySource = new EFRepositoryQuerySource<TEntity>(query);
-        }
+        public EFRepositoryQuery(IQueryable<TEntity> query) => QuerySource = new EFRepositoryQuerySource<TEntity>(query);
 
         internal EFRepositoryQuery(EFRepositoryQuerySource<TEntity> source,
             List<Func<IQueryable<TEntity>, IQueryable<TEntity>>> whereExpressions,
@@ -41,6 +28,12 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             WhereExpressions = whereExpressions;
             OrderExpressions = orderExpressions;
         }
+
+        internal EFRepositoryQuerySource<TEntity> QuerySource { get; }
+
+        internal List<Func<IQueryable<TEntity>, IQueryable<TEntity>>> WhereExpressions { get; } = new();
+
+        internal List<Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>> OrderExpressions { get; } = new();
 
         public IQueryable<TEntity> BuildQuery()
         {
@@ -190,7 +183,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         }
     }
 
-    public static class IIncludableRepositoryQueryExtensions
+    public static class IncludableRepositoryQueryExtensions
     {
         public static IIncludableRepositoryQuery<TEntity, TProperty> ThenInclude<TEntity, TPreviousProperty, TProperty>(
             this IIncludableRepositoryQuery<TEntity, IEnumerable<TPreviousProperty>> source,

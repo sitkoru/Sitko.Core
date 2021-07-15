@@ -11,27 +11,13 @@ namespace Sitko.Core.Repository.Search
             TSearchModel>, IRepositorySearchProvider<TEntity>
         where TSearchModel : BaseSearchModel where TEntity : class, IEntity<TEntityPk>
     {
-        private readonly IRepository<TEntity, TEntityPk> _repository;
+        private readonly IRepository<TEntity, TEntityPk> repository;
 
         protected BaseRepositorySearchProvider(
             ILogger<BaseRepositorySearchProvider<TEntity, TEntityPk, TSearchModel>> logger,
             IRepository<TEntity, TEntityPk> repository,
-            ISearcher<TSearchModel>? searcher = null) : base(logger, searcher)
-        {
-            _repository = repository;
-        }
-
-        protected override Task<TEntity[]> GetEntitiesAsync(TSearchModel[] searchModels,
-            CancellationToken cancellationToken = default)
-        {
-            var ids = searchModels.Select(s => ParseId(s.Id)).Distinct().ToArray();
-            return _repository.GetByIdsAsync(ids, cancellationToken);
-        }
-
-        protected override string GetId(TEntity entity)
-        {
-            return entity.Id!.ToString();
-        }
+            ISearcher<TSearchModel>? searcher = null) : base(logger, searcher) =>
+            this.repository = repository;
 
         public async Task ReindexAsync(int batchSize, CancellationToken cancellationToken = default)
         {
@@ -39,7 +25,7 @@ namespace Sitko.Core.Repository.Search
             while (true)
             {
                 var (items, _) =
-                    await _repository.GetAllAsync(q => q.Paginate(page, batchSize).OrderBy(e => e.Id!),
+                    await repository.GetAllAsync(q => q.Paginate(page, batchSize).OrderBy(e => e.Id!),
                         cancellationToken);
                 if (items.Length == 0)
                 {
@@ -50,5 +36,14 @@ namespace Sitko.Core.Repository.Search
                 page++;
             }
         }
+
+        protected override Task<TEntity[]> GetEntitiesAsync(TSearchModel[] searchModels,
+            CancellationToken cancellationToken = default)
+        {
+            var ids = searchModels.Select(s => ParseId(s.Id)).Distinct().ToArray();
+            return repository.GetByIdsAsync(ids, cancellationToken);
+        }
+
+        protected override string GetId(TEntity entity) => entity.Id!.ToString();
     }
 }

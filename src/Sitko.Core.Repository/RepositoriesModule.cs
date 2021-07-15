@@ -5,8 +5,7 @@ using Sitko.Core.App;
 namespace Sitko.Core.Repository
 {
     public interface IRepositoriesModule
-    {
-    }
+    {}
 
     public abstract class RepositoriesModule<TAssembly, TConfig> : BaseApplicationModule<TConfig>, IRepositoriesModule
         where TConfig : BaseModuleOptions, new()

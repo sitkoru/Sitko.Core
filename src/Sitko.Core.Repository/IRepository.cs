@@ -5,11 +5,13 @@ using System.Threading.Tasks;
 namespace Sitko.Core.Repository
 {
     using System.Linq.Expressions;
+    using JetBrains.Annotations;
 
+    [PublicAPI]
     public interface IRepository
-    {
-    }
+    {}
 
+    [PublicAPI]
     public interface IRepository<TEntity, TEntityPk> : IRepository where TEntity : class, IEntity<TEntityPk>
     {
         Task<(TEntity[] items, int itemsCount)> GetAllAsync(CancellationToken cancellationToken = default);

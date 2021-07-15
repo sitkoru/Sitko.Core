@@ -9,29 +9,24 @@ namespace Sitko.Core.Repository.Search
 {
     public class SearchRepositoryFilter : BaseRepositoryFilter
     {
-        private readonly IEnumerable<ISearchProvider> _searchProviders;
+        private readonly IEnumerable<ISearchProvider> searchProviders;
 
-        public SearchRepositoryFilter(IEnumerable<ISearchProvider> searchProviders)
-        {
-            _searchProviders = searchProviders;
-        }
+        public SearchRepositoryFilter(IEnumerable<ISearchProvider> searchProviders) =>
+            this.searchProviders = searchProviders;
 
         private ISearchProvider<TEntity, TEntityPk>? GetSearchProvider<TEntity, TEntityPk>() where TEntity : class
         {
-            var provider = _searchProviders.FirstOrDefault(s => s.CanProcess(typeof(TEntity)));
+            var provider = searchProviders.FirstOrDefault(s => s.CanProcess(typeof(TEntity)));
             return provider as ISearchProvider<TEntity, TEntityPk>;
         }
 
         private ISearchProvider? GetSearchProvider(Type entityType)
         {
-            var provider = _searchProviders.FirstOrDefault(s => s.CanProcess(entityType));
+            var provider = searchProviders.FirstOrDefault(s => s.CanProcess(entityType));
             return provider;
         }
 
-        public override bool CanProcess(Type type)
-        {
-            return GetSearchProvider(type) != null;
-        }
+        public override bool CanProcess(Type type) => GetSearchProvider(type) != null;
 
         public override async Task<bool> AfterSaveAsync<TEntity, TEntityPk>(TEntity item, bool isNew,
             PropertyChange[]? changes = null, CancellationToken cancellationToken = default)

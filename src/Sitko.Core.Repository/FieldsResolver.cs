@@ -8,7 +8,7 @@ namespace Sitko.Core.Repository
     public static class FieldsResolver
     {
         private static readonly ConcurrentDictionary<string, Dictionary<string, (string name, Type type)>> Properties =
-            new ConcurrentDictionary<string, Dictionary<string, (string name, Type type)>>();
+            new();
 
         public static (string name, Type type)? GetPropertyInfo<T>(string name)
         {

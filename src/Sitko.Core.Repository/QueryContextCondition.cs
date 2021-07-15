@@ -5,16 +5,12 @@ namespace Sitko.Core.Repository
 {
     public class QueryContextCondition
     {
+        public QueryContextCondition(string property) => Property = property;
         public string Property { get; set; }
         public QueryContextOperator Operator { get; set; }
         public object? Value { get; set; }
         public Type? ValueType { get; set; }
 
-        public QueryContextCondition(string property)
-        {
-            Property = property;
-        }
-        
         public string GetExpression(int valueIndex)
         {
             switch (Operator)

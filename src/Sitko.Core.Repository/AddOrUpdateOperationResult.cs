@@ -6,11 +6,6 @@ namespace Sitko.Core.Repository
 {
     public class AddOrUpdateOperationResult<T, TId> where T : IEntity<TId>
     {
-        public bool IsSuccess { get; }
-        public T Entity { get; }
-        public PropertyChange[] Changes { get; }
-        public ValidationFailure[] Errors { get; }
-
         public AddOrUpdateOperationResult(T entity, IEnumerable<ValidationFailure> errors, PropertyChange[] changes)
         {
             Entity = entity;
@@ -19,6 +14,11 @@ namespace Sitko.Core.Repository
             Errors = validationFailures.ToArray();
             IsSuccess = !validationFailures.Any();
         }
+
+        public bool IsSuccess { get; }
+        public T Entity { get; }
+        public PropertyChange[] Changes { get; }
+        public ValidationFailure[] Errors { get; }
 
         public string ErrorsString => string.Join(" ", Errors.Select(e => e.ErrorMessage));
     }

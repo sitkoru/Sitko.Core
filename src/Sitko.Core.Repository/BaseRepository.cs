@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace Sitko.Core.Repository
 {
     using System.Linq.Expressions;
+    using JetBrains.Annotations;
 
     public interface IRepositoryContext<TEntity, TEntityPk> where TEntity : class, IEntity<TEntityPk>
     {
@@ -22,11 +23,7 @@ namespace Sitko.Core.Repository
     public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<TEntity, TEntityPk>
         where TEntity : class, IEntity<TEntityPk> where TQuery : IRepositoryQuery<TEntity>
     {
-        protected readonly IValidator[] Validators;
-        protected readonly RepositoryFiltersManager FiltersManager;
-        protected readonly List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers;
-        protected readonly ILogger Logger;
-        private List<RepositoryRecord<TEntity, TEntityPk>>? _batch;
+        private List<RepositoryRecord<TEntity, TEntityPk>>? batch;
 
         protected BaseRepository(IRepositoryContext<TEntity, TEntityPk> repositoryContext)
         {
@@ -36,48 +33,16 @@ namespace Sitko.Core.Repository
             Logger = repositoryContext.Logger;
         }
 
-        protected abstract Task<TQuery> CreateRepositoryQueryAsync(CancellationToken cancellationToken = default);
+        [PublicAPI]
+        protected IValidator[] Validators { get; }
 
-        protected abstract Task<(TEntity[] items, bool needCount)> DoGetAllAsync(TQuery query,
-            CancellationToken cancellationToken = default);
+        [PublicAPI]
+        protected RepositoryFiltersManager FiltersManager { get; }
 
-        protected abstract Task<int> DoCountAsync(TQuery query, CancellationToken cancellationToken = default);
+        [PublicAPI]
+        protected List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers { get; }
 
-        protected abstract Task<int> DoSumAsync(TQuery query, Expression<Func<TEntity, int>> selector,
-            CancellationToken cancellationToken = default);
-
-        protected abstract Task<long> DoSumAsync(TQuery query, Expression<Func<TEntity, long>> selector,
-            CancellationToken cancellationToken = default);
-
-        protected abstract Task<double> DoSumAsync(TQuery query, Expression<Func<TEntity, double>> selector,
-            CancellationToken cancellationToken = default);
-
-        protected abstract Task<float> DoSumAsync(TQuery query, Expression<Func<TEntity, float>> selector,
-            CancellationToken cancellationToken = default);
-
-        protected abstract Task<decimal> DoSumAsync(TQuery query, Expression<Func<TEntity, decimal>> selector,
-            CancellationToken cancellationToken = default);
-
-        protected abstract Task<int?> DoSumAsync(TQuery query, Expression<Func<TEntity, int?>> selector,
-            CancellationToken cancellationToken = default);
-
-        protected abstract Task<long?> DoSumAsync(TQuery query, Expression<Func<TEntity, long?>> selector,
-            CancellationToken cancellationToken = default);
-
-        protected abstract Task<double?> DoSumAsync(TQuery query, Expression<Func<TEntity, double?>> selector,
-            CancellationToken cancellationToken = default);
-
-        protected abstract Task<float?> DoSumAsync(TQuery query, Expression<Func<TEntity, float?>> selector,
-            CancellationToken cancellationToken = default);
-
-        protected abstract Task<decimal?> DoSumAsync(TQuery query, Expression<Func<TEntity, decimal?>> selector,
-            CancellationToken cancellationToken = default);
-
-        protected abstract Task<TEntity?> DoGetAsync(TQuery query, CancellationToken cancellationToken = default);
-
-        protected abstract Task DoSaveAsync(CancellationToken cancellationToken = default);
-
-        protected abstract Task<(PropertyChange[] changes, TEntity oldEntity)> GetChangesAsync(TEntity item);
+        protected ILogger Logger { get; }
 
         public abstract Task<bool> BeginTransactionAsync(CancellationToken cancellationToken = default);
 
@@ -95,44 +60,40 @@ namespace Sitko.Core.Repository
 
         public virtual Task<bool> BeginBatchAsync(CancellationToken cancellationToken = default)
         {
-            if (_batch != null)
+            if (batch != null)
             {
                 return Task.FromResult(false);
             }
 
-            _batch = new List<RepositoryRecord<TEntity, TEntityPk>>();
+            batch = new List<RepositoryRecord<TEntity, TEntityPk>>();
 
             return Task.FromResult(true);
         }
 
         public virtual async Task<bool> CommitBatchAsync(CancellationToken cancellationToken = default)
         {
-            if (_batch == null)
+            if (batch == null)
             {
                 return false;
             }
 
             await DoSaveAsync(cancellationToken);
-            await AfterSaveAsync(_batch, cancellationToken);
+            await AfterSaveAsync(batch, cancellationToken);
 
-            _batch = null;
+            batch = null;
             return true;
         }
 
         public virtual Task<bool> RollbackBatchAsync(CancellationToken cancellationToken = default)
         {
-            if (_batch == null)
+            if (batch == null)
             {
                 return Task.FromResult(false);
             }
 
-            _batch = null;
+            batch = null;
             return Task.FromResult(true);
         }
-
-        protected abstract Task DoAddAsync(TEntity item, CancellationToken cancellationToken = default);
-        protected abstract Task DoUpdateAsync(TEntity item, CancellationToken cancellationToken = default);
-        protected abstract Task DoDeleteAsync(TEntity item, CancellationToken cancellationToken = default);
 
         public virtual async Task<TEntity> NewAsync(CancellationToken cancellationToken = default)
         {
@@ -164,20 +125,6 @@ namespace Sitko.Core.Repository
 
             return new AddOrUpdateOperationResult<TEntity, TEntityPk>(item, validationResult.errors,
                 new PropertyChange[0]);
-        }
-
-        private async Task SaveAsync(RepositoryRecord<TEntity, TEntityPk> record,
-            CancellationToken cancellationToken = default)
-        {
-            if (_batch == null)
-            {
-                await DoSaveAsync(cancellationToken);
-                await AfterSaveAsync(new[] {record}, cancellationToken);
-            }
-            else
-            {
-                _batch.Add(record);
-            }
         }
 
         public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity item,
@@ -225,7 +172,7 @@ namespace Sitko.Core.Repository
         {
             await BeforeDeleteAsync(entity, cancellationToken);
             await DoDeleteAsync(entity, cancellationToken);
-            if (_batch == null)
+            if (batch == null)
             {
                 await DoSaveAsync(cancellationToken);
             }
@@ -233,10 +180,8 @@ namespace Sitko.Core.Repository
             return true;
         }
 
-        public virtual async Task<TEntity?> GetAsync(CancellationToken cancellationToken = default)
-        {
-            return await DoGetAsync(await CreateRepositoryQueryAsync(cancellationToken), cancellationToken);
-        }
+        public virtual async Task<TEntity?> GetAsync(CancellationToken cancellationToken = default) =>
+            await DoGetAsync(await CreateRepositoryQueryAsync(cancellationToken), cancellationToken);
 
         public virtual async Task<TEntity?> GetAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
             CancellationToken cancellationToken = default)
@@ -259,7 +204,7 @@ namespace Sitko.Core.Repository
         {
             var query = await CreateRepositoryQueryAsync(cancellationToken);
 
-            (TEntity[] items, bool needCount) = await DoGetAllAsync(query, cancellationToken);
+            (TEntity[] items, var needCount) = await DoGetAllAsync(query, cancellationToken);
 
             var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
                 ? await CountAsync(cancellationToken)
@@ -275,7 +220,7 @@ namespace Sitko.Core.Repository
             var query = await CreateRepositoryQueryAsync(cancellationToken);
             query.Configure(configureQuery);
 
-            (TEntity[] items, bool needCount) = await DoGetAllAsync(query, cancellationToken);
+            (TEntity[] items, var needCount) = await DoGetAllAsync(query, cancellationToken);
 
             var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
                 ? await CountAsync(configureQuery, cancellationToken)
@@ -520,10 +465,8 @@ namespace Sitko.Core.Repository
             return await DoSumAsync(query, selector, cancellationToken);
         }
 
-        public virtual async Task<int> CountAsync(CancellationToken cancellationToken = default)
-        {
-            return await DoCountAsync(await CreateRepositoryQueryAsync(cancellationToken), cancellationToken);
-        }
+        public virtual async Task<int> CountAsync(CancellationToken cancellationToken = default) =>
+            await DoCountAsync(await CreateRepositoryQueryAsync(cancellationToken), cancellationToken);
 
         public virtual async Task<int> CountAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
             CancellationToken cancellationToken = default)
@@ -603,23 +546,78 @@ namespace Sitko.Core.Repository
             return items;
         }
 
-        protected virtual Task AfterLoadAsync(TEntity entity, CancellationToken cancellationToken = default)
+        protected abstract Task<TQuery> CreateRepositoryQueryAsync(CancellationToken cancellationToken = default);
+
+        protected abstract Task<(TEntity[] items, bool needCount)> DoGetAllAsync(TQuery query,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<int> DoCountAsync(TQuery query, CancellationToken cancellationToken = default);
+
+        protected abstract Task<int> DoSumAsync(TQuery query, Expression<Func<TEntity, int>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<long> DoSumAsync(TQuery query, Expression<Func<TEntity, long>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<double> DoSumAsync(TQuery query, Expression<Func<TEntity, double>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<float> DoSumAsync(TQuery query, Expression<Func<TEntity, float>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<decimal> DoSumAsync(TQuery query, Expression<Func<TEntity, decimal>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<int?> DoSumAsync(TQuery query, Expression<Func<TEntity, int?>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<long?> DoSumAsync(TQuery query, Expression<Func<TEntity, long?>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<double?> DoSumAsync(TQuery query, Expression<Func<TEntity, double?>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<float?> DoSumAsync(TQuery query, Expression<Func<TEntity, float?>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<decimal?> DoSumAsync(TQuery query, Expression<Func<TEntity, decimal?>> selector,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task<TEntity?> DoGetAsync(TQuery query, CancellationToken cancellationToken = default);
+
+        protected abstract Task DoSaveAsync(CancellationToken cancellationToken = default);
+
+        protected abstract Task<(PropertyChange[] changes, TEntity oldEntity)> GetChangesAsync(TEntity item);
+
+        protected abstract Task DoAddAsync(TEntity item, CancellationToken cancellationToken = default);
+        protected abstract Task DoUpdateAsync(TEntity item, CancellationToken cancellationToken = default);
+        protected abstract Task DoDeleteAsync(TEntity item, CancellationToken cancellationToken = default);
+
+        private async Task SaveAsync(RepositoryRecord<TEntity, TEntityPk> record,
+            CancellationToken cancellationToken = default)
         {
-            return AfterLoadAsync(new[] {entity}, cancellationToken);
+            if (batch == null)
+            {
+                await DoSaveAsync(cancellationToken);
+                await AfterSaveAsync(new[] {record}, cancellationToken);
+            }
+            else
+            {
+                batch.Add(record);
+            }
         }
 
-        protected virtual Task AfterLoadAsync(TEntity[] entities, CancellationToken cancellationToken = default)
-        {
-            return Task.CompletedTask;
-        }
+        protected virtual Task AfterLoadAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+            AfterLoadAsync(new[] {entity}, cancellationToken);
+
+        protected virtual Task AfterLoadAsync(TEntity[] entities, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
 
         protected virtual Task<bool> BeforeSaveAsync(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult, bool isNew,
-            PropertyChange[]? changes = null, CancellationToken cancellationToken = default)
-        {
-            return FiltersManager.BeforeSaveAsync<TEntity, TEntityPk>(item, validationResult, isNew, changes,
+            PropertyChange[]? changes = null, CancellationToken cancellationToken = default) =>
+            FiltersManager.BeforeSaveAsync<TEntity, TEntityPk>(item, validationResult, isNew, changes,
                 cancellationToken);
-        }
 
         protected virtual async Task<bool> AfterSaveAsync(IEnumerable<RepositoryRecord<TEntity, TEntityPk>> items,
             CancellationToken cancellationToken = default)
@@ -633,15 +631,11 @@ namespace Sitko.Core.Repository
             return true;
         }
 
-        protected virtual Task BeforeDeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
-        {
-            return Task.CompletedTask;
-        }
+        protected virtual Task BeforeDeleteAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
 
-        protected virtual Task CheckAccessAsync(TEntity entity, CancellationToken cancellationToken = default)
-        {
-            return CheckAccessAsync(new[] {entity}, cancellationToken);
-        }
+        protected virtual Task CheckAccessAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+            CheckAccessAsync(new[] {entity}, cancellationToken);
 
         protected virtual async Task CheckAccessAsync(TEntity[] entities, CancellationToken cancellationToken = default)
         {
@@ -671,10 +665,8 @@ namespace Sitko.Core.Repository
 
         protected virtual Task<bool> BeforeValidateAsync(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult,
-            bool isNew, CancellationToken cancellationToken = default)
-        {
-            return FiltersManager.BeforeValidateAsync<TEntity, TEntityPk>(item, validationResult, isNew,
+            bool isNew, CancellationToken cancellationToken = default) =>
+            FiltersManager.BeforeValidateAsync<TEntity, TEntityPk>(item, validationResult, isNew,
                 cancellationToken);
-        }
     }
 }

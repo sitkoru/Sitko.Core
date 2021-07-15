@@ -10,12 +10,9 @@ namespace Sitko.Core.Repository
 {
     public class RepositoryFiltersManager
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceProvider serviceProvider;
 
-        public RepositoryFiltersManager(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
+        public RepositoryFiltersManager(IServiceProvider serviceProvider) => this.serviceProvider = serviceProvider;
 
 
         public async Task<bool> BeforeValidateAsync<T, TEntityPk>(T item,
@@ -24,12 +21,16 @@ namespace Sitko.Core.Repository
             where T : class, IEntity<TEntityPk>
         {
             var result = true;
-            var filters = _serviceProvider.GetServices<IRepositoryFilter>().ToArray();
+            var filters = serviceProvider.GetServices<IRepositoryFilter>().ToArray();
             if (filters.Any())
             {
                 foreach (var filter in filters)
                 {
-                    if (!filter.CanProcess(typeof(T))) continue;
+                    if (!filter.CanProcess(typeof(T)))
+                    {
+                        continue;
+                    }
+
                     result = await filter.BeforeValidateAsync<T, TEntityPk>(item, validationResult, isNew,
                         cancellationToken);
                 }
@@ -46,12 +47,16 @@ namespace Sitko.Core.Repository
             where T : class, IEntity<TEntityPk>
         {
             var result = true;
-            var filters = _serviceProvider.GetServices<IRepositoryFilter>().ToArray();
+            var filters = serviceProvider.GetServices<IRepositoryFilter>().ToArray();
             if (filters.Any())
             {
                 foreach (var filter in filters)
                 {
-                    if (!filter.CanProcess(typeof(T))) continue;
+                    if (!filter.CanProcess(typeof(T)))
+                    {
+                        continue;
+                    }
+
                     result = await filter.BeforeSaveAsync<T, TEntityPk>(item, validationResult, isNew, changes,
                         cancellationToken);
                 }
@@ -66,12 +71,16 @@ namespace Sitko.Core.Repository
             where T : class, IEntity<TEntityPk>
         {
             var result = true;
-            var filters = _serviceProvider.GetServices<IRepositoryFilter>().ToArray();
+            var filters = serviceProvider.GetServices<IRepositoryFilter>().ToArray();
             if (filters.Any())
             {
                 foreach (var filter in filters)
                 {
-                    if (!filter.CanProcess(typeof(T))) continue;
+                    if (!filter.CanProcess(typeof(T)))
+                    {
+                        continue;
+                    }
+
                     result = await filter.AfterSaveAsync<T, TEntityPk>(item, isNew, changes, cancellationToken);
                 }
             }

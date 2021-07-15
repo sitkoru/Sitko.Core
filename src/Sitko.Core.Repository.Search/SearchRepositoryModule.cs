@@ -5,6 +5,8 @@ namespace Sitko.Core.Repository.Search
 {
     public class SearchRepositoryModule : BaseApplicationModule
     {
+        public override string OptionsKey => "Search:Repository";
+
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             BaseApplicationModuleOptions startupOptions)
         {
@@ -12,7 +14,5 @@ namespace Sitko.Core.Repository.Search
             services.AddScoped<IRepositoryFilter, SearchRepositoryFilter>();
             services.AddScoped<RepositoryIndexer>();
         }
-
-        public override string OptionsKey => "Search:Repository";
     }
 }

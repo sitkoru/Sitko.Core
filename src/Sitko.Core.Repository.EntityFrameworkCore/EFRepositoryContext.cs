@@ -11,8 +11,8 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
     public class EFRepositoryContext<TEntity, TEntityPk, TDbContext> : IRepositoryContext<TEntity, TEntityPk>
         where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext
     {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly ILoggerFactory _loggerFactory;
+        private readonly ILoggerFactory loggerFactory;
+        private readonly IServiceProvider serviceProvider;
 
         public EFRepositoryContext(IServiceProvider serviceProvider, TDbContext dbContext,
             RepositoryFiltersManager filtersManager,
@@ -20,8 +20,8 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             IEnumerable<IValidator>? validators = null,
             IEnumerable<IAccessChecker<TEntity, TEntityPk>>? accessCheckers = null)
         {
-            _serviceProvider = serviceProvider;
-            _loggerFactory = loggerFactory;
+            this.serviceProvider = serviceProvider;
+            this.loggerFactory = loggerFactory;
             DbContext = dbContext;
             FiltersManager = filtersManager;
             Validators = validators?.ToList();
@@ -31,15 +31,12 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         internal TDbContext DbContext { get; }
 
         public ILogger<IRepository<TEntity, TEntityPk>> Logger =>
-            _loggerFactory.CreateLogger<EFRepository<TEntity, TEntityPk, TDbContext>>();
+            loggerFactory.CreateLogger<EFRepository<TEntity, TEntityPk, TDbContext>>();
 
         public RepositoryFiltersManager FiltersManager { get; }
         public List<IValidator>? Validators { get; }
         public List<IAccessChecker<TEntity, TEntityPk>>? AccessCheckers { get; }
 
-        public IServiceScope CreateScope()
-        {
-            return _serviceProvider.CreateScope();
-        }
+        public IServiceScope CreateScope() => serviceProvider.CreateScope();
     }
 }

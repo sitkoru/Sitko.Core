@@ -12,6 +12,5 @@ namespace Sitko.Core.Repository.Search
     // ReSharper disable once UnusedTypeParameter
     public interface IRepositorySearchProvider<TEntity> : IRepositorySearchProvider
         where TEntity : class, IEntity
-    {
-    }
+    {}
 }

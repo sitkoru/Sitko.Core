@@ -16,23 +16,23 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         BaseRepository<TEntity, TEntityPk, EFRepositoryQuery<TEntity>>
         where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext
     {
-        private readonly EFRepositoryContext<TEntity, TEntityPk, TDbContext> _repositoryContext;
-        private readonly TDbContext _dbContext;
-        private readonly AsyncLock _asyncLock = new();
+        private readonly AsyncLock asyncLock = new();
+        private readonly TDbContext dbContext;
+        private readonly EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext;
 
         protected EFRepository(EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext) : base(
             repositoryContext)
         {
-            _repositoryContext = repositoryContext;
-            _dbContext = repositoryContext.DbContext;
+            this.repositoryContext = repositoryContext;
+            dbContext = repositoryContext.DbContext;
         }
 
         protected async Task<T> ExecuteDbContextOperationAsync<T>(Func<TDbContext, Task<T>> operation,
             CancellationToken cancellationToken = default)
         {
-            using (await _asyncLock.LockAsync(cancellationToken))
+            using (await asyncLock.LockAsync(cancellationToken))
             {
-                return await operation(_dbContext);
+                return await operation(dbContext);
             }
         }
 
@@ -136,36 +136,32 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
 
         protected override Task<int> DoCountAsync(EFRepositoryQuery<TEntity> query,
-            CancellationToken cancellationToken = default)
-        {
-            return ExecuteDbContextOperationAsync(_ => query.BuildQuery().CountAsync(cancellationToken),
+            CancellationToken cancellationToken = default) =>
+            ExecuteDbContextOperationAsync(_ => query.BuildQuery().CountAsync(cancellationToken),
                 cancellationToken);
-        }
 
-        protected override async Task DoSaveAsync(CancellationToken cancellationToken = default)
-        {
-            await ExecuteDbContextOperationAsync(dbContext => dbContext.SaveChangesAsync(cancellationToken),
+        protected override async Task DoSaveAsync(CancellationToken cancellationToken = default) =>
+            await ExecuteDbContextOperationAsync(
+                currentDbContext => currentDbContext.SaveChangesAsync(cancellationToken),
                 cancellationToken);
-        }
 
-        protected override async Task DoAddAsync(TEntity item, CancellationToken cancellationToken = default)
-        {
-            await ExecuteDbContextOperationAsync(dbContext => dbContext.AddAsync(item, cancellationToken).AsTask(),
+        protected override async Task DoAddAsync(TEntity item, CancellationToken cancellationToken = default) =>
+            await ExecuteDbContextOperationAsync(
+                currentDbContext => currentDbContext.AddAsync(item, cancellationToken).AsTask(),
                 cancellationToken);
-        }
 
         protected override async Task<(PropertyChange[] changes, TEntity oldEntity)> GetChangesAsync(TEntity item)
         {
-            using var scope = _repositoryContext.CreateScope();
+            using var scope = repositoryContext.CreateScope();
             var oldDbContext = scope.ServiceProvider.GetRequiredService<TDbContext>();
             var oldEntity = await oldDbContext.Set<TEntity>().FirstOrDefaultAsync(e => e.Id!.Equals(item.Id));
-            var entry = _dbContext.Entry(item);
+            var entry = dbContext.Entry(item);
             var entityChanges = entry
                 .Properties
                 .Where(p => p.IsModified)
                 .Select(p => new PropertyChange(p.Metadata.Name, p.OriginalValue, p.CurrentValue))
                 .ToList();
-            if (!entityChanges.Any() && _dbContext.ChangeTracker.HasChanges())
+            if (!entityChanges.Any() && dbContext.ChangeTracker.HasChanges())
             {
                 foreach (var collection in entry.Collections)
                 {
@@ -180,7 +176,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                     }
 
                     if (collection.CurrentValue.Cast<object>().Any(collectionEntry =>
-                        _dbContext.Entry(collectionEntry).State != EntityState.Unchanged))
+                        dbContext.Entry(collectionEntry).State != EntityState.Unchanged))
                     {
                         entityChanges.Add(new PropertyChange(collection.Metadata.Name, collection, collection));
                     }
@@ -199,41 +195,26 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return (entityChanges.ToArray(), oldEntity);
         }
 
-        public DbSet<T> Set<T>() where T : class
-        {
-            return _dbContext.Set<T>();
-        }
+        public DbSet<T> Set<T>() where T : class => dbContext.Set<T>();
 
-        protected override Task DoUpdateAsync(TEntity item, CancellationToken cancellationToken = default)
-        {
-            return Task.CompletedTask;
-        }
+        protected override Task DoUpdateAsync(TEntity item, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
 
-        protected override Task DoDeleteAsync(TEntity item, CancellationToken cancellationToken = default)
-        {
-            return ExecuteDbContextOperationAsync(dbContext =>
+        protected override Task DoDeleteAsync(TEntity item, CancellationToken cancellationToken = default) =>
+            ExecuteDbContextOperationAsync(currentDbContext =>
             {
-                dbContext.Remove(item);
+                currentDbContext.Remove(item);
                 return Task.FromResult(true);
             }, cancellationToken);
-        }
 
 
-        protected IQueryable<TEntity> GetBaseQuery()
-        {
-            return _dbContext.Set<TEntity>().AsQueryable();
-        }
+        protected IQueryable<TEntity> GetBaseQuery() => dbContext.Set<TEntity>().AsQueryable();
 
-        protected virtual IQueryable<TEntity> AddIncludes(IQueryable<TEntity> query)
-        {
-            return query;
-        }
+        protected virtual IQueryable<TEntity> AddIncludes(IQueryable<TEntity> query) => query;
 
         protected override Task<EFRepositoryQuery<TEntity>> CreateRepositoryQueryAsync(
-            CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(new EFRepositoryQuery<TEntity>(GetBaseQuery()));
-        }
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new EFRepositoryQuery<TEntity>(GetBaseQuery()));
 
         public override async Task<bool> BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
@@ -244,9 +225,9 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
             try
             {
-                await ExecuteDbContextOperationAsync(async dbContext =>
-                    dbContext.Database.CurrentTransaction ??
-                    await dbContext.Database
+                await ExecuteDbContextOperationAsync(async currentDbContext =>
+                    currentDbContext.Database.CurrentTransaction ??
+                    await currentDbContext.Database
                         .BeginTransactionAsync(
                             cancellationToken), cancellationToken);
             }
@@ -260,10 +241,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return true;
         }
 
-        private IDbContextTransaction? GetCurrentTransaction()
-        {
-            return _dbContext.Database.CurrentTransaction;
-        }
+        private IDbContextTransaction? GetCurrentTransaction() => dbContext.Database.CurrentTransaction;
 
         public override async Task<bool> CommitTransactionAsync(CancellationToken cancellationToken = default)
         {
@@ -309,9 +287,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return false;
         }
 
-        public override Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default)
-        {
-            return _dbContext.Entry(entity).ReloadAsync(cancellationToken);
-        }
+        public override Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+            dbContext.Entry(entity).ReloadAsync(cancellationToken);
     }
 }

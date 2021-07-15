@@ -60,8 +60,6 @@ namespace Sitko.Core.Repository
             return this;
         }
 
-        protected abstract void ApplySort((string propertyName, bool isDescending) sortQuery);
-
         public virtual IRepositoryQuery<TEntity> Where(string property, object value)
         {
             SetCondition(property, QueryContextOperator.Equal, value);
@@ -80,41 +78,7 @@ namespace Sitko.Core.Repository
             return this;
         }
 
-        public IRepositoryQuery<TEntity> Where(IEnumerable<QueryContextConditionsGroup> conditionsGroups)
-        {
-            return ApplyConditions(conditionsGroups);
-        }
-
-        protected IRepositoryQuery<TEntity> ApplyConditions(IEnumerable<QueryContextConditionsGroup> conditionsGroups)
-        {
-            var whereQueries = new List<string>();
-            var valueIndex = 0;
-            var values = new List<object?>();
-            foreach (var conditionsGroup in conditionsGroups)
-            {
-                var groupWhere = new List<string>();
-                foreach (var condition in conditionsGroup.Conditions)
-                {
-                    if (PrepareCondition(condition))
-                    {
-                        var expression = condition.GetExpression(valueIndex);
-                        if (!string.IsNullOrEmpty(expression))
-                        {
-                            groupWhere.Add(expression);
-                            values.Add(condition.Value);
-                            valueIndex++;
-                        }
-                    }
-                }
-
-                whereQueries.Add($"({string.Join(" OR ", groupWhere)})");
-            }
-
-            var whereStr = string.Join(" AND ", whereQueries);
-            Where(whereStr, values.ToArray());
-
-            return this;
-        }
+        public IRepositoryQuery<TEntity> Where(IEnumerable<QueryContextConditionsGroup> conditionsGroups) => ApplyConditions(conditionsGroups);
 
         public virtual IRepositoryQuery<TEntity> Like(string property, object value)
         {
@@ -159,6 +123,55 @@ namespace Sitko.Core.Repository
             return this;
         }
 
+        public virtual IRepositoryQuery<TEntity> Paginate(int page, int itemsPerPage)
+        {
+            var offset = 0;
+            if (page > 0)
+            {
+                offset = (page - 1) * itemsPerPage;
+            }
+
+            Offset = offset;
+            Limit = itemsPerPage;
+            return this;
+        }
+
+        public abstract IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(
+            Expression<Func<TEntity, TProperty>> navigationPropertyPath);
+
+        protected abstract void ApplySort((string propertyName, bool isDescending) sortQuery);
+
+        protected IRepositoryQuery<TEntity> ApplyConditions(IEnumerable<QueryContextConditionsGroup> conditionsGroups)
+        {
+            var whereQueries = new List<string>();
+            var valueIndex = 0;
+            var values = new List<object?>();
+            foreach (var conditionsGroup in conditionsGroups)
+            {
+                var groupWhere = new List<string>();
+                foreach (var condition in conditionsGroup.Conditions)
+                {
+                    if (PrepareCondition(condition))
+                    {
+                        var expression = condition.GetExpression(valueIndex);
+                        if (!string.IsNullOrEmpty(expression))
+                        {
+                            groupWhere.Add(expression);
+                            values.Add(condition.Value);
+                            valueIndex++;
+                        }
+                    }
+                }
+
+                whereQueries.Add($"({string.Join(" OR ", groupWhere)})");
+            }
+
+            var whereStr = string.Join(" AND ", whereQueries);
+            Where(whereStr, values.ToArray());
+
+            return this;
+        }
+
         protected bool PrepareCondition(QueryContextCondition condition)
         {
             var propertyInfo = FieldsResolver.GetPropertyInfo<TEntity>(condition.Property);
@@ -181,22 +194,6 @@ namespace Sitko.Core.Repository
             var condition = new QueryContextCondition(property) {Operator = @operator, Value = value};
             Where(condition);
         }
-
-        public virtual IRepositoryQuery<TEntity> Paginate(int page, int itemsPerPage)
-        {
-            var offset = 0;
-            if (page > 0)
-            {
-                offset = (page - 1) * itemsPerPage;
-            }
-
-            Offset = offset;
-            Limit = itemsPerPage;
-            return this;
-        }
-
-        public abstract IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(
-            Expression<Func<TEntity, TProperty>> navigationPropertyPath);
 
         private static object? ParsePropertyValue(Type propertyType, object? value)
         {
@@ -231,8 +228,10 @@ namespace Sitko.Core.Repository
                 var enumType = propertyType;
                 var parsed = int.TryParse(value.ToString(), out var intValue);
 
-                if (Enum.IsDefined(enumType, value.ToString()) || parsed && Enum.IsDefined(enumType, intValue))
+                if (Enum.IsDefined(enumType, value.ToString()) || (parsed && Enum.IsDefined(enumType, intValue)))
+                {
                     parsedValue = Enum.Parse(enumType, value.ToString());
+                }
             }
 
             else if (propertyType == typeof(bool))

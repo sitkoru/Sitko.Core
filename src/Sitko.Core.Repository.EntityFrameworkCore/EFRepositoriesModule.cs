@@ -20,6 +20,5 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
     }
 
     public class EFRepositoriesModuleOptions : BaseModuleOptions
-    {
-    }
+    {}
 }
