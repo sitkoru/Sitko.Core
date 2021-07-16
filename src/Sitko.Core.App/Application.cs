@@ -26,9 +26,6 @@ namespace Sitko.Core.App
         private const string CheckCommand = "check";
         private const string GenerateOptionsCommand = "generate-options";
 
-        private static readonly string BaseConsoleLogFormat =
-            "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}]{NewLine}\t{Message:lj}{NewLine}{Exception}";
-
         private readonly List<Action<ApplicationContext, HostBuilderContext, IConfigurationBuilder>>
             appConfigurationActions = new();
 
@@ -74,26 +71,45 @@ namespace Sitko.Core.App
 
             var loggerConfiguration = new LoggerConfiguration();
             loggerConfiguration
-                .WriteTo.Console(outputTemplate: BaseConsoleLogFormat,
+                .WriteTo.Console(outputTemplate: ApplicationOptions.BaseConsoleLogFormat,
                     restrictedToMinimumLevel: LogEventLevel.Debug);
             InternalLogger = new SerilogLoggerFactory(loggerConfiguration.CreateLogger()).CreateLogger<Application>();
         }
 
-        public Guid Id { get; } = Guid.NewGuid();
+        protected virtual string ApplicationOptionsKey => nameof(Application);
 
-        protected virtual string ConsoleLogFormat => BaseConsoleLogFormat;
+        public Guid Id { get; } = Guid.NewGuid();
 
         private ILogger<Application> InternalLogger { get; set; }
 
         private bool IsCheckRun => currentCommand == CheckCommand;
 
-        public string Name { get; private set; } = "App";
-        public string Version { get; private set; } = "dev";
+        public string Name => GetApplicationOptions().Name;
+        public string Version => GetApplicationOptions().Version;
 
         public virtual ValueTask DisposeAsync()
         {
             appHost?.Dispose();
             return new ValueTask();
+        }
+
+
+        [PublicAPI]
+        public ApplicationOptions GetApplicationOptions() =>
+            GetApplicationOptions(GetContext().Environment, GetContext().Configuration);
+
+        [PublicAPI]
+        protected ApplicationOptions GetApplicationOptions(IHostEnvironment environment, IConfiguration configuration)
+        {
+            var options = new ApplicationOptions();
+            configuration.Bind(ApplicationOptionsKey, options);
+            ConfigureApplicationOptions(environment, configuration, options);
+            return options;
+        }
+
+        protected virtual void ConfigureApplicationOptions(IHostEnvironment environment, IConfiguration configuration,
+            ApplicationOptions options)
+        {
         }
 
         protected IReadOnlyList<ApplicationModuleRegistration>
@@ -124,15 +140,6 @@ namespace Sitko.Core.App
 
             var tmpConfiguration = tmpHost.Services.GetRequiredService<IConfiguration>();
             var tmpEnvironment = tmpHost.Services.GetRequiredService<IHostEnvironment>();
-
-            var name = GetName(tmpEnvironment, tmpConfiguration);
-            Name = !string.IsNullOrEmpty(name) ? name : tmpEnvironment.ApplicationName;
-
-            var version = GetVersion(tmpEnvironment, tmpConfiguration);
-            if (!string.IsNullOrEmpty(version))
-            {
-                Version = version;
-            }
 
             var tmpApplicationContext = GetContext(tmpEnvironment, tmpConfiguration);
 
@@ -194,14 +201,15 @@ namespace Sitko.Core.App
                     }
                 }).ConfigureLogging((context, _) =>
                 {
+                    var applicationOptions = GetApplicationOptions(context.HostingEnvironment, context.Configuration);
                     LogCheck("Configure logging");
                     var loggerConfiguration = new LoggerConfiguration();
                     loggerConfiguration.MinimumLevel.ControlledBy(logLevelSwitcher.Switch);
                     loggerConfiguration
                         .Enrich.FromLogContext()
                         .Enrich.WithMachineName()
-                        .Enrich.WithProperty("App", Name)
-                        .Enrich.WithProperty("AppVersion", Version);
+                        .Enrich.WithProperty("App", applicationOptions.Name)
+                        .Enrich.WithProperty("AppVersion", applicationOptions.Version);
                     logLevelSwitcher.Switch.MinimumLevel =
                         context.HostingEnvironment.IsDevelopment() ? LogEventLevel.Debug : LogEventLevel.Information;
 
@@ -209,7 +217,7 @@ namespace Sitko.Core.App
                     {
                         loggerConfiguration
                             .WriteTo.Console(
-                                outputTemplate: ConsoleLogFormat,
+                                outputTemplate: applicationOptions.ConsoleLogFormat,
                                 levelSwitch: logLevelSwitcher.Switch);
                     }
 
@@ -309,7 +317,13 @@ namespace Sitko.Core.App
 
         private Dictionary<string, object> GetModulesOptions(ApplicationContext applicationContext)
         {
-            var modulesOptions = new Dictionary<string, object>();
+            var modulesOptions = new Dictionary<string, object>
+            {
+                {
+                    ApplicationOptionsKey,
+                    GetApplicationOptions(applicationContext.Environment, applicationContext.Configuration)
+                }
+            };
             foreach (var moduleRegistration in moduleRegistrations.Values)
             {
                 var (configKey, options) = moduleRegistration.GetOptions(applicationContext);
@@ -434,7 +448,7 @@ namespace Sitko.Core.App
 
         public T? GetService<T>() => GetServiceProvider().GetService<T>();
 
-
+        [PublicAPI]
         protected void RegisterModule<TModule, TModuleOptions>(
             Action<IConfiguration, IHostEnvironment, TModuleOptions>? configureOptions = null,
             string? optionsKey = null)
@@ -448,11 +462,6 @@ namespace Sitko.Core.App
             moduleRegistrations.Add(typeof(TModule),
                 new ApplicationModuleRegistration<TModule, TModuleOptions>(configureOptions, optionsKey));
         }
-
-        protected virtual string? GetName(IHostEnvironment environment, IConfiguration configuration) => null;
-
-        protected virtual string? GetVersion(IHostEnvironment environment, IConfiguration configuration) =>
-            GetType().Assembly.GetName().Version?.ToString();
 
         protected virtual void InitApplication()
         {
@@ -483,7 +492,9 @@ namespace Sitko.Core.App
         }
 
         [PublicAPI]
-        protected ApplicationContext GetContext() => GetContext(CreateAppHost().Services);
+        protected ApplicationContext GetContext() => appHost is not null
+            ? GetContext(appHost.Services)
+            : throw new InvalidOperationException("App host is not built yet");
 
         [PublicAPI]
         protected ApplicationContext GetContext(IServiceProvider serviceProvider) =>
@@ -492,8 +503,12 @@ namespace Sitko.Core.App
                 serviceProvider.GetRequiredService<ILogger<Application>>());
 
         protected ApplicationContext GetContext(IHostEnvironment environment, IConfiguration configuration,
-            ILogger<Application>? logger = null) =>
-            new(Name, Version, environment, configuration, logger ?? InternalLogger);
+            ILogger<Application>? logger = null)
+        {
+            var applicationOptions = GetApplicationOptions(environment, configuration);
+            return new ApplicationContext(applicationOptions.Name, applicationOptions.Version, environment, configuration,
+                logger ?? InternalLogger);
+        }
 
         public async Task OnStarted(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider)
@@ -648,6 +663,7 @@ namespace Sitko.Core.App
             }, optionsKey);
     }
 
+    [PublicAPI]
     public class ApplicationContext
     {
         public ApplicationContext(string name, string version, IHostEnvironment environment,
