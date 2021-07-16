@@ -1,25 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Grpc.Core;
-using Microsoft.Extensions.Logging;
-using Sitko.Core.Grpc.Extensions;
-
-namespace Sitko.Core.Grpc
+﻿namespace Sitko.Core.Grpc
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using Extensions;
+    using global::Grpc.Core;
+    using JetBrains.Annotations;
+    using Microsoft.Extensions.Logging;
+
     public abstract class GrpcServiceBase : IGrpcService
     {
+        protected GrpcServiceBase(ILogger<GrpcServiceBase> logger) => Logger = logger;
         protected ILogger<GrpcServiceBase> Logger { get; }
 
-        protected GrpcServiceBase(ILogger<GrpcServiceBase> logger)
-        {
-            Logger = logger;
-        }
-
-        protected TResponse CreateResponse<TResponse>() where TResponse : class, IGrpcResponse, new()
-        {
-            return new() {ResponseInfo = new ApiResponseInfo {IsSuccess = true}};
-        }
+        [PublicAPI]
+        protected TResponse CreateResponse<TResponse>() where TResponse : class, IGrpcResponse, new() =>
+            new() {ResponseInfo = new ApiResponseInfo {IsSuccess = true}};
 
         protected Task<TResponse> ProcessCall<TRequest, TResponse>(TRequest request,
             ServerCallContext context,
@@ -108,24 +104,12 @@ namespace Sitko.Core.Grpc
             }
         }
 
-        protected GrpcCallResult Ok()
-        {
-            return new();
-        }
+        protected GrpcCallResult Ok() => new();
 
-        protected GrpcCallResult Error(string error)
-        {
-            return new(error);
-        }
+        protected GrpcCallResult Error(string error) => new(error);
 
-        protected GrpcCallResult Error(IEnumerable<string> errors)
-        {
-            return new(errors);
-        }
+        protected GrpcCallResult Error(IEnumerable<string> errors) => new(errors);
 
-        protected GrpcCallResult Exception(Exception ex, string? error = null)
-        {
-            return new(ex, error);
-        }
+        protected GrpcCallResult Exception(Exception ex, string? error = null) => new(ex, error);
     }
 }

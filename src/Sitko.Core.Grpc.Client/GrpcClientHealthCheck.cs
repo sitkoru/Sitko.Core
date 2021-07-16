@@ -1,33 +1,23 @@
-using System.Threading;
-using System.Threading.Tasks;
-using Grpc.Core;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Sitko.Core.Grpc.Client.Discovery;
-
 namespace Sitko.Core.Grpc.Client
 {
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Discovery;
+    using global::Grpc.Core;
+    using Microsoft.Extensions.Diagnostics.HealthChecks;
+
     public class GrpcClientHealthCheck<TClient> : IHealthCheck where TClient : ClientBase<TClient>
     {
-        private readonly IGrpcServiceAddressResolver<TClient> _resolver;
+        private readonly IGrpcServiceAddressResolver<TClient> resolver;
 
-        public GrpcClientHealthCheck(IGrpcServiceAddressResolver<TClient> resolver)
-        {
-            _resolver = resolver;
-        }
+        public GrpcClientHealthCheck(IGrpcServiceAddressResolver<TClient> resolver) => this.resolver = resolver;
 
         public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
             CancellationToken cancellationToken = new CancellationToken())
         {
             HealthCheckResult result;
-            var uri = _resolver.GetAddress();
-            if (uri != null)
-            {
-                result = HealthCheckResult.Healthy();
-            }
-            else
-            {
-                result = HealthCheckResult.Unhealthy("Empty url");
-            }
+            var uri = resolver.GetAddress();
+            result = uri != null ? HealthCheckResult.Healthy() : HealthCheckResult.Unhealthy("Empty url");
 
             return Task.FromResult(result);
         }

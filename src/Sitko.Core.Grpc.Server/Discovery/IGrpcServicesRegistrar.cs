@@ -1,9 +1,9 @@
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-
 namespace Sitko.Core.Grpc.Server.Discovery
 {
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Diagnostics.HealthChecks;
+
     public interface IGrpcServicesRegistrar
     {
         Task RegisterAsync<T>() where T : class;

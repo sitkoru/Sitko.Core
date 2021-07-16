@@ -1,23 +1,27 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Sitko.Core.App;
-
 namespace Sitko.Core.Grpc.Server.Discovery
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using App;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
+
     public abstract class DiscoveryGrpcServerModule<TRegistrar, TConfig> : BaseGrpcServerModule<TConfig>
         where TRegistrar : class, IGrpcServicesRegistrar where TConfig : GrpcServerModuleOptions, new()
     {
+        private readonly List<Action<IHealthChecksBuilder>> healthChecksRegistrations = new();
+
+        private readonly List<Func<IGrpcServicesRegistrar, Task>> serviceRegistrations = new();
+
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             TConfig startupOptions)
         {
             base.ConfigureServices(context, services, startupOptions);
             services.AddSingleton<IGrpcServicesRegistrar, TRegistrar>();
             var healthChecksBuilder = services.AddHealthChecks();
-            foreach (var healthChecksRegistration in _healthChecksRegistrations)
+            foreach (var healthChecksRegistration in healthChecksRegistrations)
             {
                 healthChecksRegistration(healthChecksBuilder);
             }
@@ -27,20 +31,17 @@ namespace Sitko.Core.Grpc.Server.Discovery
             IServiceProvider serviceProvider)
         {
             var registrar = serviceProvider.GetRequiredService<IGrpcServicesRegistrar>();
-            foreach (var serviceRegistration in _serviceRegistrations)
+            foreach (var serviceRegistration in serviceRegistrations)
             {
                 await serviceRegistration(registrar);
             }
         }
 
-        private readonly List<Func<IGrpcServicesRegistrar, Task>> _serviceRegistrations = new();
-        private readonly List<Action<IHealthChecksBuilder>> _healthChecksRegistrations = new();
-
         public override void RegisterService<TService>()
         {
             base.RegisterService<TService>();
-            _serviceRegistrations.Add(registrar => registrar.RegisterAsync<TService>());
-            _healthChecksRegistrations.Add(healthCheckBuilder =>
+            serviceRegistrations.Add(registrar => registrar.RegisterAsync<TService>());
+            healthChecksRegistrations.Add(healthCheckBuilder =>
                 healthCheckBuilder.AddCheck<GrpcServiceHealthCheck<TService>>(
                     $"Grpc service {typeof(TService).BaseType?.DeclaringType?.Name}"));
         }

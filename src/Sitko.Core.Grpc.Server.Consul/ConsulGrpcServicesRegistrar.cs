@@ -1,31 +1,30 @@
-using System;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using Consul;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Sitko.Core.App;
-using Sitko.Core.App.Helpers;
-using Sitko.Core.Grpc.Server.Discovery;
-using Tempus;
-
 namespace Sitko.Core.Grpc.Server.Consul
 {
+    using System;
+    using System.Collections.Concurrent;
+    using System.Linq;
+    using System.Net;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using App;
+    using App.Helpers;
+    using Discovery;
+    using global::Consul;
+    using Microsoft.AspNetCore.Hosting.Server;
+    using Microsoft.AspNetCore.Hosting.Server.Features;
+    using Microsoft.Extensions.Diagnostics.HealthChecks;
+    using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Options;
+    using Tempus;
+
     public class ConsulGrpcServicesRegistrar : IGrpcServicesRegistrar, IAsyncDisposable
     {
-        private readonly IOptionsMonitor<ConsulDiscoveryGrpcServerModuleOptions> optionsMonitor;
         private readonly IApplication application;
         private readonly IConsulClient? consulClient;
         private readonly string host = "127.0.0.1";
         private readonly bool inContainer = DockerHelper.IsRunningInDocker();
         private readonly ILogger<ConsulGrpcServicesRegistrar> logger;
-        private ConsulDiscoveryGrpcServerModuleOptions Options => optionsMonitor.CurrentValue;
+        private readonly IOptionsMonitor<ConsulDiscoveryGrpcServerModuleOptions> optionsMonitor;
         private readonly int port;
 
         private readonly ConcurrentDictionary<string, string> registeredServices = new();
@@ -90,6 +89,8 @@ namespace Sitko.Core.Grpc.Server.Consul
                 return Task.CompletedTask;
             });
         }
+
+        private ConsulDiscoveryGrpcServerModuleOptions Options => optionsMonitor.CurrentValue;
 
 
         public async ValueTask DisposeAsync()

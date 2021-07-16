@@ -1,26 +1,24 @@
-﻿using System;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Sitko.Core.App;
-
-namespace Sitko.Core.Grpc.Server.Consul
+﻿namespace Sitko.Core.Grpc.Server.Consul
 {
+    using System;
+    using App;
+    using JetBrains.Annotations;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.Hosting;
+
+    [PublicAPI]
     public static class ApplicationExtensions
     {
         public static Application AddConsulGrpcServer(this Application application,
             Action<IConfiguration, IHostEnvironment, ConsulDiscoveryGrpcServerModuleOptions> configure,
-            string? optionsKey = null)
-        {
-            return application.AddModule<ConsulDiscoveryGrpcServerModule, ConsulDiscoveryGrpcServerModuleOptions>(
+            string? optionsKey = null) =>
+            application.AddModule<ConsulDiscoveryGrpcServerModule, ConsulDiscoveryGrpcServerModuleOptions>(
                 configure, optionsKey);
-        }
 
         public static Application AddConsulGrpcServer(this Application application,
             Action<ConsulDiscoveryGrpcServerModuleOptions>? configure = null,
-            string? optionsKey = null)
-        {
-            return application.AddModule<ConsulDiscoveryGrpcServerModule, ConsulDiscoveryGrpcServerModuleOptions>(
+            string? optionsKey = null) =>
+            application.AddModule<ConsulDiscoveryGrpcServerModule, ConsulDiscoveryGrpcServerModuleOptions>(
                 configure, optionsKey);
-        }
     }
 }

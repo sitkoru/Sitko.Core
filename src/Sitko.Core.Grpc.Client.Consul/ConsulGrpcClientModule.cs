@@ -1,11 +1,11 @@
-using System;
-using System.Collections.Generic;
-using Grpc.Core;
-using Sitko.Core.App;
-using Sitko.Core.Consul;
-
 namespace Sitko.Core.Grpc.Client.Consul
 {
+    using System;
+    using System.Collections.Generic;
+    using App;
+    using Core.Consul;
+    using global::Grpc.Core;
+
     public class ConsulGrpcClientModule<TClient> : GrpcClientModule<TClient, ConsulGrpcServiceAddressResolver<TClient>,
         ConsulGrpcClientModuleOptions>
         where TClient : ClientBase<TClient>
@@ -18,6 +18,5 @@ namespace Sitko.Core.Grpc.Client.Consul
     }
 
     public class ConsulGrpcClientModuleOptions : GrpcClientModuleOptions
-    {
-    }
+    {}
 }

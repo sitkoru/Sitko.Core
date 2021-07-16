@@ -1,13 +1,14 @@
-using System;
-using System.Collections.Generic;
-using Grpc.Core.Interceptors;
-using Grpc.Net.Client;
-using Sitko.Core.App;
-
 namespace Sitko.Core.Grpc.Client
 {
+    using System;
+    using System.Collections.Generic;
     using System.Text.Json.Serialization;
+    using App;
+    using global::Grpc.Core.Interceptors;
+    using global::Grpc.Net.Client;
+    using JetBrains.Annotations;
 
+    [PublicAPI]
     public class GrpcClientModuleOptions : BaseModuleOptions
     {
         public bool EnableHttp2UnencryptedSupport { get; set; }

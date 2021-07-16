@@ -1,35 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Sitko.Core.Grpc
+﻿namespace Sitko.Core.Grpc
 {
+    using System;
+    using System.Collections.Generic;
+
     public class GrpcCallResult
     {
-        public bool IsSuccess { get; }
-        private readonly List<string> _errors = new();
-        public string[] Error => _errors.ToArray();
-        public Exception? Exception { get; }
+        private readonly List<string> errors = new();
 
-        public GrpcCallResult()
-        {
-            IsSuccess = true;
-        }
+        public GrpcCallResult() => IsSuccess = true;
 
         public GrpcCallResult(string error)
         {
             IsSuccess = false;
-            _errors.Add(error);
+            errors.Add(error);
         }
 
         public GrpcCallResult(IEnumerable<string> errors)
         {
             IsSuccess = false;
-            _errors.AddRange(errors);
+            this.errors.AddRange(errors);
         }
 
-        public GrpcCallResult(Exception exception, string? error = null) : this(error ?? exception.Message)
-        {
+        public GrpcCallResult(Exception exception, string? error = null) : this(error ?? exception.Message) =>
             Exception = exception;
-        }
+
+        public bool IsSuccess { get; }
+        public string[] Error => errors.ToArray();
+        public Exception? Exception { get; }
     }
 }

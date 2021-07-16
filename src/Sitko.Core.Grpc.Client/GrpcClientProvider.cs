@@ -1,13 +1,13 @@
-﻿using System;
-using Grpc.Core;
-using Grpc.Net.ClientFactory;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Sitko.Core.Grpc.Client.Discovery;
-
-namespace Sitko.Core.Grpc.Client
+﻿namespace Sitko.Core.Grpc.Client
 {
-    public interface IGrpcClientProvider<TClient> where TClient : ClientBase<TClient>
+    using System;
+    using Discovery;
+    using global::Grpc.Core;
+    using global::Grpc.Net.ClientFactory;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Options;
+
+    public interface IGrpcClientProvider<out TClient> where TClient : ClientBase<TClient>
     {
         TClient Instance { get; }
         Uri? CurrentAddress { get; }
@@ -16,28 +16,28 @@ namespace Sitko.Core.Grpc.Client
     public class GrpcClientProvider<TClient> : IGrpcClientProvider<TClient>
         where TClient : ClientBase<TClient>
     {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly IOptionsMonitor<GrpcClientFactoryOptions> _clientFactoryOptionsMonitor;
-        private readonly IGrpcServiceAddressResolver<TClient> _resolver;
+        private readonly IOptionsMonitor<GrpcClientFactoryOptions> clientFactoryOptionsMonitor;
+        private readonly IGrpcServiceAddressResolver<TClient> resolver;
+        private readonly IServiceProvider serviceProvider;
 
         public GrpcClientProvider(IServiceProvider serviceProvider,
             IOptionsMonitor<GrpcClientFactoryOptions> clientFactoryOptionsMonitor,
             IGrpcServiceAddressResolver<TClient> resolver)
         {
-            _serviceProvider = serviceProvider;
-            _clientFactoryOptionsMonitor = clientFactoryOptionsMonitor;
-            _resolver = resolver;
-            _resolver.OnChange += (_, _) => OnChange();
-            CurrentAddress = _resolver.GetAddress();
+            this.serviceProvider = serviceProvider;
+            this.clientFactoryOptionsMonitor = clientFactoryOptionsMonitor;
+            this.resolver = resolver;
+            this.resolver.OnChange += (_, _) => OnChange();
+            CurrentAddress = this.resolver.GetAddress();
         }
+
+        public TClient Instance => serviceProvider.GetRequiredService<TClient>();
+        public Uri? CurrentAddress { get; private set; }
 
         private void OnChange()
         {
-            var options = _clientFactoryOptionsMonitor.Get(typeof(TClient).Name);
-            CurrentAddress = options.Address = _resolver.GetAddress();
+            var options = clientFactoryOptionsMonitor.Get(typeof(TClient).Name);
+            CurrentAddress = options.Address = resolver.GetAddress();
         }
-
-        public TClient Instance => _serviceProvider.GetRequiredService<TClient>();
-        public Uri? CurrentAddress { get; private set; }
     }
 }

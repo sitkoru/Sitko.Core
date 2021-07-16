@@ -1,27 +1,27 @@
-using System;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Grpc.Core;
-using Grpc.Core.Interceptors;
-using Microsoft.Extensions.DependencyInjection;
-using Sitko.Core.App;
-using Sitko.Core.Grpc.Client.Discovery;
-
 namespace Sitko.Core.Grpc.Client
 {
-    public interface IGrpcClientModule<TClient> where TClient : ClientBase<TClient>
-    {
-    }
+    using System;
+    using System.Linq;
+    using System.Net.Http;
+    using System.Threading.Tasks;
+    using App;
+    using Discovery;
+    using global::Grpc.Core;
+    using global::Grpc.Core.Interceptors;
+    using Microsoft.Extensions.DependencyInjection;
 
-    public abstract class GrpcClientModule<TClient, TResolver, TConfig> : BaseApplicationModule<TConfig>,
+    public interface IGrpcClientModule<TClient> where TClient : ClientBase<TClient>
+    {}
+
+    public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOptions> :
+        BaseApplicationModule<TGrpcClientModuleOptions>,
         IGrpcClientModule<TClient>
         where TClient : ClientBase<TClient>
         where TResolver : class, IGrpcServiceAddressResolver<TClient>
-        where TConfig : GrpcClientModuleOptions, new()
+        where TGrpcClientModuleOptions : GrpcClientModuleOptions, new()
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TConfig startupOptions)
+            TGrpcClientModuleOptions startupOptions)
         {
             base.ConfigureServices(context, services, startupOptions);
             if (startupOptions.EnableHttp2UnencryptedSupport)
@@ -81,9 +81,7 @@ namespace Sitko.Core.Grpc.Client
             await resolver.InitAsync();
         }
 
-        protected virtual void RegisterResolver(IServiceCollection services, TConfig config)
-        {
+        protected virtual void RegisterResolver(IServiceCollection services, TGrpcClientModuleOptions config) =>
             services.AddSingleton<IGrpcServiceAddressResolver<TClient>, TResolver>();
-        }
     }
 }

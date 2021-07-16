@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
-
 namespace Sitko.Core.Grpc.Extensions
 {
+    using System;
+    using System.Collections.Generic;
+    using JetBrains.Annotations;
+
+    [PublicAPI]
     public static class GrpcExtensions
     {
-        public static string PrepareString(string? s)
-        {
-            return s ?? string.Empty;
-        }
+        public static string PrepareString(string? s) => s ?? string.Empty;
 
         public static void SetError(this IGrpcResponse response, string error, int code = 500)
         {
