@@ -19,11 +19,7 @@ namespace Sitko.Core.Apps.Blazor
         {
             base.ConfigureAppServices(services);
             services.AddValidatorsFromAssemblyContaining<Startup>();
-            services.Configure<ProSettings>(settings =>
-            {
-                settings.Title = "Blazor Demo";
-                settings.NavTheme = "dark";
-            });
+            services.Configure<ProSettings>(Configuration.GetSection("AntDesignPro"));
         }
 
         protected override void ConfigureAfterRoutingMiddleware(IApplicationBuilder app)

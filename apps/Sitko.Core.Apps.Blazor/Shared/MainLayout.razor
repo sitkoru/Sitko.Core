@@ -1,7 +1,9 @@
 @using Layout = AntDesign.ProLayout.Layout
+@using Sitko.Core.App
 @inherits LayoutComponentBase
+@inject Application _application
 
-<BasicLayout MenuData="_menuData" HeaderRender="false" Theme="MenuTheme.Dark" Layout="Layout.Side" Logo="@("/logo.png")">
+<BasicLayout Title="@_application.Name" MenuData="_menuData" HeaderRender="false" Layout="Layout.Side" Logo="@("/logo.png")">
     <ChildContent>
         @Body
     </ChildContent>
@@ -24,7 +26,15 @@
         {
             Path = "/",
             Name = "Demo",
-            Key = "Demo"
+            Key = "Demo",
+            Icon = "dashboard"
+        },
+        new()
+        {
+            Path = "/Options",
+            Name = "Options",
+            Key = "options",
+            Icon = "setting"
         }
     };
 }
