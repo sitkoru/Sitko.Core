@@ -22,7 +22,7 @@ namespace Sitko.Core.Queue.InMemory.Tests
         {
             var scope = await GetScopeAsync();
 
-            var queue = scope.Get<IQueue>();
+            var queue = scope.GetService<IQueue>();
 
             Guid? receivedId = null;
             var sub = await queue.SubscribeAsync<TestRequest>((testRequest, _) =>
@@ -32,7 +32,7 @@ namespace Sitko.Core.Queue.InMemory.Tests
             });
             Assert.True(sub.IsSuccess);
 
-            var mediator = scope.Get<IMediator>();
+            var mediator = scope.GetService<IMediator>();
             var request = new TestRequest();
             await mediator.Publish(request);
 

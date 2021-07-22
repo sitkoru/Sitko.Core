@@ -5,12 +5,12 @@ namespace Sitko.Core.IdProvider
 {
     public class FakeIdProvider : IIdProvider
     {
-        private long _id = 100500;
+        private long id = 100500;
 
         public Task<long> NextAsync()
         {
-            Interlocked.Increment(ref _id);
-            return Task.FromResult(_id);
+            Interlocked.Increment(ref id);
+            return Task.FromResult(id);
         }
     }
 }

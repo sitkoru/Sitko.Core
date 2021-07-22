@@ -17,7 +17,7 @@ namespace Sitko.Core.Queue.Tests
         {
             var scope = await GetScopeAsync();
 
-            var queue = scope.Get<IQueue>();
+            var queue = scope.GetService<IQueue>();
 
             var publishResult = await queue.PublishAsync(new TestMessage());
             Assert.False(publishResult.IsSuccess);
@@ -28,9 +28,9 @@ namespace Sitko.Core.Queue.Tests
         {
             var scope = await GetScopeAsync();
 
-            var queue = scope.Get<IQueue>();
+            var queue = scope.GetService<IQueue>();
 
-            var mw = scope.Get<FailingMiddleware>();
+            var mw = scope.GetService<FailingMiddleware>();
 
 
             var received = false;
@@ -56,10 +56,8 @@ namespace Sitko.Core.Queue.Tests
     public class FailingMiddlewareQueueTestScope : BaseTestQueueTestScope
     {
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
-            TestQueueOptions options, string name)
-        {
+            TestQueueOptions options, string name) =>
             options.RegisterMiddleware<FailingMiddleware>();
-        }
     }
 
     public class FailingMiddleware : BaseQueueMiddleware
@@ -70,16 +68,18 @@ namespace Sitko.Core.Queue.Tests
         public override Task<QueuePublishResult> PublishAsync<T>(T message, QueueMessageContext messageContext,
             PublishAsyncDelegate<T>? callback = null)
         {
-            if (!FailOnPublish) return base.PublishAsync(message, messageContext, callback);
+            if (!FailOnPublish)
+            {
+                return base.PublishAsync(message, messageContext, callback);
+            }
+
             var result = new QueuePublishResult();
             result.SetError("Middleware failed publish");
             return Task.FromResult(result);
         }
 
         public override Task<bool> ReceiveAsync<T>(T message, QueueMessageContext messageContext,
-            ReceiveAsyncDelegate<T>? callback = null)
-        {
-            return FailOnReceive ? Task.FromResult(false) : base.ReceiveAsync(message, messageContext, callback);
-        }
+            ReceiveAsyncDelegate<T>? callback = null) =>
+            FailOnReceive ? Task.FromResult(false) : base.ReceiveAsync(message, messageContext, callback);
     }
 }

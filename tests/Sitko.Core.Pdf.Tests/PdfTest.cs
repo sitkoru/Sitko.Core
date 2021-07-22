@@ -18,7 +18,7 @@ namespace Sitko.Core.Pdf.Tests
         public async Task Url()
         {
             var scope = await GetScopeAsync();
-            var renderer = scope.Get<IPdfRenderer>();
+            var renderer = scope.GetService<IPdfRenderer>();
 
             var url = "https://github.com";
             var bytes = await renderer.GetPdfByUrlAsync(url);
@@ -35,7 +35,7 @@ namespace Sitko.Core.Pdf.Tests
         public async Task Pdf()
         {
             var scope = await GetScopeAsync();
-            var renderer = scope.Get<IPdfRenderer>();
+            var renderer = scope.GetService<IPdfRenderer>();
 
             var html =
                 "<html lang=\"en\">\n<head>\n    <title>Title</title>\n</head>\n<body>\n<h1>Hello, World!</h1>\n</body>\n</html>";

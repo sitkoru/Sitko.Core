@@ -17,7 +17,7 @@ namespace Sitko.Core.Configuration.Vault.Tests
         public async Task Get()
         {
             var scope = await GetScopeAsync();
-            var config = scope.Get<IOptionsMonitor<TestConfig>>();
+            var config = scope.GetService<IOptionsMonitor<TestConfig>>();
             Assert.NotEqual(string.Empty, config.CurrentValue.Foo);
             Assert.NotEqual(0, config.CurrentValue.Bar);
         }
@@ -26,7 +26,7 @@ namespace Sitko.Core.Configuration.Vault.Tests
         public async Task Module()
         {
             var scope = await GetScopeAsync();
-            var config = scope.Get<IOptionsMonitor<TestModuleConfig>>();
+            var config = scope.GetService<IOptionsMonitor<TestModuleConfig>>();
             Assert.NotEqual(string.Empty, config.CurrentValue.Foo);
             Assert.NotEqual(0, config.CurrentValue.Bar);
         }
@@ -37,7 +37,7 @@ namespace Sitko.Core.Configuration.Vault.Tests
             var scope = await GetScopeAsync<VaultTestScopeWithValidationFailure>();
             Assert.Throws<OptionsValidationException>(() =>
             {
-                var config = scope.Get<IOptions<TestModuleWithValidationConfig>>();
+                var config = scope.GetService<IOptions<TestModuleWithValidationConfig>>();
                 Assert.Equal(0, config.Value.Bar);
             });
         }

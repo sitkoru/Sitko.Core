@@ -19,7 +19,7 @@ namespace Sitko.Core.ElasticStack.Tests
             var scope = await GetScopeAsync<ElasticStackScope>();
             await scope.StartApplicationAsync();
             Assert.True(Elastic.Apm.Agent.IsConfigured, "APM is not configured");
-            var tracer = scope.Get<ITracer>();
+            var tracer = scope.GetService<ITracer>();
             Assert.NotNull(tracer);
             for (var i = 0; i < 100; i++)
             {
@@ -29,7 +29,7 @@ namespace Sitko.Core.ElasticStack.Tests
                 {
                     if (i % 8 == 0)
                     {
-                        throw new Exception("Transaction exception");
+                        throw new InvalidOperationException("Transaction exception");
                     }
                 }
                 catch (Exception e)

@@ -9,18 +9,14 @@ namespace Sitko.Core.HangFire
     {
         public static Application AddHangfirePostgres(this Application application,
             Action<IConfiguration, IHostEnvironment, HangfirePostgresModuleOptions> configure,
-            string? optionsKey = null)
-        {
-            return application.AddModule<HangfireModule<HangfirePostgresModuleOptions>, HangfirePostgresModuleOptions>(
+            string? optionsKey = null) =>
+            application.AddModule<HangfireModule<HangfirePostgresModuleOptions>, HangfirePostgresModuleOptions>(
                 configure, optionsKey);
-        }
 
         public static Application AddHangfirePostgres(this Application application,
             Action<HangfirePostgresModuleOptions>? configure = null,
-            string? optionsKey = null)
-        {
-            return application.AddModule<HangfireModule<HangfirePostgresModuleOptions>, HangfirePostgresModuleOptions>(
+            string? optionsKey = null) =>
+            application.AddModule<HangfireModule<HangfirePostgresModuleOptions>, HangfirePostgresModuleOptions>(
                 configure, optionsKey);
-        }
     }
 }

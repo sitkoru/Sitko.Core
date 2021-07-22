@@ -24,7 +24,7 @@ namespace Sitko.Core.Storage.FileSystem.Tests
 
         public override async ValueTask DisposeAsync()
         {
-            var storage = Get<IStorage<TestFileSystemStorageSettings>>();
+            var storage = GetService<IStorage<TestFileSystemStorageSettings>>();
             await storage.DeleteAllAsync();
             await base.DisposeAsync();
         }

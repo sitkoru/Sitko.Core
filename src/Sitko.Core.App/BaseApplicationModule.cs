@@ -37,38 +37,26 @@ namespace Sitko.Core.App
         {
         }
 
-        public virtual Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider)
-        {
-            return Task.CompletedTask;
-        }
+        public virtual Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider) =>
+            Task.CompletedTask;
 
-        public virtual IEnumerable<Type> GetRequiredModules(ApplicationContext context, TModuleOptions config)
-        {
-            return new Type[0];
-        }
+        public virtual IEnumerable<Type> GetRequiredModules(ApplicationContext context, TModuleOptions options) =>
+            new Type[0];
 
         public virtual Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
-            IServiceProvider serviceProvider)
-        {
-            return Task.CompletedTask;
-        }
+            IServiceProvider serviceProvider) =>
+            Task.CompletedTask;
 
         public virtual Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
-            IServiceProvider serviceProvider)
-        {
-            return Task.CompletedTask;
-        }
+            IServiceProvider serviceProvider) =>
+            Task.CompletedTask;
 
         public virtual Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
-            IServiceProvider serviceProvider)
-        {
-            return Task.CompletedTask;
-        }
+            IServiceProvider serviceProvider) =>
+            Task.CompletedTask;
 
-        public TModuleOptions GetOptions(IServiceProvider serviceProvider)
-        {
-            return serviceProvider.GetRequiredService<IOptions<TModuleOptions>>().Value;
-        }
+        public TModuleOptions GetOptions(IServiceProvider serviceProvider) =>
+            serviceProvider.GetRequiredService<IOptions<TModuleOptions>>().Value;
 
         public abstract string OptionsKey { get; }
     }

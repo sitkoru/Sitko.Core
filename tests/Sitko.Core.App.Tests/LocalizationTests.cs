@@ -23,7 +23,7 @@ namespace Sitko.Core.App.Tests
         public async Task Localize()
         {
             var scope = await GetScopeAsync();
-            var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
+            var provider = scope.GetService<ILocalizationProvider<LocalizationTests>>();
             var localized = provider["Bar"];
             Assert.Equal("Бар", localized);
         }
@@ -32,7 +32,7 @@ namespace Sitko.Core.App.Tests
         public async Task LocalizeParameters()
         {
             var scope = await GetScopeAsync();
-            var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
+            var provider = scope.GetService<ILocalizationProvider<LocalizationTests>>();
             var localized = provider["Bar: {0}", 0];
             Assert.Equal("Бар: 0", localized);
         }
@@ -41,7 +41,7 @@ namespace Sitko.Core.App.Tests
         public async Task NoLocalizer()
         {
             var scope = await GetScopeAsync<NoLocalizationTestScope>();
-            var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
+            var provider = scope.GetService<ILocalizationProvider<LocalizationTests>>();
             var localized = provider["Bar"];
             Assert.Equal("Bar", localized);
         }
@@ -50,7 +50,7 @@ namespace Sitko.Core.App.Tests
         public async Task NoLocalizerParameters()
         {
             var scope = await GetScopeAsync<NoLocalizationTestScope>();
-            var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
+            var provider = scope.GetService<ILocalizationProvider<LocalizationTests>>();
             var localized = provider["Bar: {0}", 0];
             Assert.Equal("Bar: 0", localized);
         }
@@ -59,7 +59,7 @@ namespace Sitko.Core.App.Tests
         public async Task ParentFallback()
         {
             var scope = await GetScopeAsync();
-            var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
+            var provider = scope.GetService<ILocalizationProvider<LocalizationTests>>();
             var localized = provider["Foo"];
             Assert.Equal("Фу", localized);
         }
@@ -68,7 +68,7 @@ namespace Sitko.Core.App.Tests
         public async Task InvariantFallback()
         {
             var scope = await GetScopeAsync();
-            var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
+            var provider = scope.GetService<ILocalizationProvider<LocalizationTests>>();
             var localized = provider["Baz"];
             Assert.Equal("DefaultBaz", localized);
         }
@@ -77,7 +77,7 @@ namespace Sitko.Core.App.Tests
         public async Task DefaultLocalize()
         {
             var scope = await GetScopeAsync();
-            var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
+            var provider = scope.GetService<ILocalizationProvider<LocalizationTests>>();
             var localized = provider["DefaultBar"];
             Assert.Equal("БарБар", localized);
         }
@@ -86,7 +86,7 @@ namespace Sitko.Core.App.Tests
         public async Task DefaultParentFallback()
         {
             var scope = await GetScopeAsync();
-            var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
+            var provider = scope.GetService<ILocalizationProvider<LocalizationTests>>();
             var localized = provider["DefaultFoo"];
             Assert.Equal("ФуФу", localized);
         }
@@ -95,7 +95,7 @@ namespace Sitko.Core.App.Tests
         public async Task DefaultInvariantFallback()
         {
             var scope = await GetScopeAsync();
-            var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
+            var provider = scope.GetService<ILocalizationProvider<LocalizationTests>>();
             var localized = provider["DefaultBaz"];
             Assert.Equal("Default", localized);
         }
@@ -104,7 +104,7 @@ namespace Sitko.Core.App.Tests
         public async Task DefaultNonExistent()
         {
             var scope = await GetScopeAsync();
-            var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
+            var provider = scope.GetService<ILocalizationProvider<LocalizationTests>>();
             var localized = provider["DefaultFooBar"];
             Assert.Equal("DefaultFooBar", localized);
         }
@@ -113,7 +113,7 @@ namespace Sitko.Core.App.Tests
         public async Task NonExistent()
         {
             var scope = await GetScopeAsync();
-            var provider = scope.Get<ILocalizationProvider<LocalizationTests>>();
+            var provider = scope.GetService<ILocalizationProvider<LocalizationTests>>();
             var localized = provider["FooBar"];
             Assert.Equal("FooBar", localized);
         }
@@ -122,7 +122,7 @@ namespace Sitko.Core.App.Tests
         public async Task Generic()
         {
             var scope = await GetScopeAsync();
-            var provider = scope.Get<ILocalizationProvider<LocalizationTests<string>>>();
+            var provider = scope.GetService<ILocalizationProvider<LocalizationTests<string>>>();
             var localized = provider["Bar"];
             Assert.Equal("Бар", localized);
         }
@@ -131,7 +131,7 @@ namespace Sitko.Core.App.Tests
         public async Task GenericMultipleParameters()
         {
             var scope = await GetScopeAsync();
-            var provider = scope.Get<ILocalizationProvider<LocalizationTests<string, double>>>();
+            var provider = scope.GetService<ILocalizationProvider<LocalizationTests<string, double>>>();
             var localized = provider["Bar"];
             Assert.Equal("Бар", localized);
         }
@@ -140,7 +140,7 @@ namespace Sitko.Core.App.Tests
         public async Task GenericInterface()
         {
             var scope = await GetScopeAsync();
-            var provider = scope.Get<ILocalizationProvider<LocalizationTests<string, double, int>>>();
+            var provider = scope.GetService<ILocalizationProvider<LocalizationTests<string, double, int>>>();
             var localized = provider["Bar"];
             Assert.Equal("Бар", localized);
         }
@@ -155,6 +155,7 @@ namespace Sitko.Core.App.Tests
     }
 
 
+    // ReSharper disable once InconsistentNaming
     public interface LocalizationTests<T, T2, T3>
     {
     }
@@ -165,13 +166,11 @@ namespace Sitko.Core.App.Tests
 
     public class LocalizationTestApplication : TestApplication
     {
-        public LocalizationTestApplication(string[] args) : base(args)
-        {
+        public LocalizationTestApplication(string[] args) : base(args) =>
             this.AddJsonLocalization(moduleOptions =>
             {
                 moduleOptions.AddDefaultResource<Default>();
             });
-        }
     }
 
     public class LocalizationTestScope : BaseTestScope<LocalizationTestApplication>

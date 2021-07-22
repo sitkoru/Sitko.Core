@@ -15,17 +15,14 @@ namespace Sitko.Core.Email.Smtp
     /// </summary>
     public class MailKitSender : ISender
     {
-        private readonly IOptionsMonitor<SmtpEmailModuleOptions> _smtpClientOptionsMonitor;
-        private SmtpEmailModuleOptions SmtpClientOptions => _smtpClientOptionsMonitor.CurrentValue;
+        private readonly IOptionsMonitor<SmtpEmailModuleOptions> smtpClientOptionsMonitor;
+        private SmtpEmailModuleOptions SmtpClientOptions => smtpClientOptionsMonitor.CurrentValue;
 
         /// <summary>
         /// Creates a sender that uses the given SmtpClientOptions when sending with MailKit. Since the client is internal this will dispose of the client.
         /// </summary>
         /// <param name="smtpClientOptions">The SmtpClientOptions to use to create the MailKit client</param>
-        public MailKitSender(IOptionsMonitor<SmtpEmailModuleOptions> smtpClientOptions)
-        {
-            _smtpClientOptionsMonitor = smtpClientOptions;
-        }
+        public MailKitSender(IOptionsMonitor<SmtpEmailModuleOptions> smtpClientOptions) => smtpClientOptionsMonitor = smtpClientOptions;
 
         /// <summary>
         /// Send the specified email.
@@ -124,11 +121,11 @@ namespace Sitko.Core.Email.Smtp
         /// </summary>
         /// <returns>The mail message.</returns>
         /// <param name="email">Email data.</param>
-        private MimeMessage CreateMailMessage(IFluentEmail email)
+        private static MimeMessage CreateMailMessage(IFluentEmail email)
         {
             var data = email.Data;
 
-            MimeMessage message = new MimeMessage {Subject = data.Subject ?? string.Empty};
+            MimeMessage message = new() {Subject = data.Subject ?? string.Empty};
 
             message.From.Add(new MailboxAddress(data.FromAddress.Name, data.FromAddress.EmailAddress));
 

@@ -10,9 +10,6 @@ namespace Sitko.Core.Email
     public abstract class FluentEmailModuleOptionsValidator<TOptions> : EmailModuleOptionsValidator<TOptions>
         where TOptions : FluentEmailModuleOptions
     {
-        public FluentEmailModuleOptionsValidator()
-        {
-            RuleFor(o => o.From).NotEmpty().WithMessage("Provide value for from address");
-        }
+        public FluentEmailModuleOptionsValidator() => RuleFor(o => o.From).NotEmpty().WithMessage("Provide value for from address");
     }
 }

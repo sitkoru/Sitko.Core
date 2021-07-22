@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.Grpc.Server.Tests
 {
-    public class TestServiceImpl : TestService.TestServiceBase
+    public class GrpcTestService : TestService.TestServiceBase
     {
         public override Task<TestResponse> Request(TestRequest request, ServerCallContext context)
         {
@@ -12,7 +12,7 @@ namespace Sitko.Core.Grpc.Server.Tests
             return ProcessCall<TestRequest, TestResponse>(request, context, _ => new GrpcCallResult());
         }
 
-        public TestServiceImpl(ILogger<TestServiceImpl> logger) : base(logger)
+        public GrpcTestService(ILogger<GrpcTestService> logger) : base(logger)
         {
         }
     }

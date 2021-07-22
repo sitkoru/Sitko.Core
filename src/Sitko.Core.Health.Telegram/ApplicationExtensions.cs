@@ -9,18 +9,14 @@ namespace Sitko.Core.Health.Telegram
     {
         public static Application AddTelegramHealthReporter(this Application application,
             Action<IConfiguration, IHostEnvironment, TelegramHealthReporterModuleOptions> configure,
-            string? optionsKey = null)
-        {
-            return application.AddModule<TelegramHealthReporterModule, TelegramHealthReporterModuleOptions>(configure,
+            string? optionsKey = null) =>
+            application.AddModule<TelegramHealthReporterModule, TelegramHealthReporterModuleOptions>(configure,
                 optionsKey);
-        }
 
         public static Application AddTelegramHealthReporter(this Application application,
             Action<TelegramHealthReporterModuleOptions>? configure = null,
-            string? optionsKey = null)
-        {
-            return application.AddModule<TelegramHealthReporterModule, TelegramHealthReporterModuleOptions>(configure,
+            string? optionsKey = null) =>
+            application.AddModule<TelegramHealthReporterModule, TelegramHealthReporterModuleOptions>(configure,
                 optionsKey);
-        }
     }
 }

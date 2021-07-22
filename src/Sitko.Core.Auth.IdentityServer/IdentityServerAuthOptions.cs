@@ -11,9 +11,6 @@ namespace Sitko.Core.Auth.IdentityServer
     public class IdentityServerAuthOptionsValidator<TOptions> : AuthOptionsValidator<TOptions>
         where TOptions : IdentityServerAuthOptions
     {
-        public IdentityServerAuthOptionsValidator()
-        {
-            RuleFor(o => o.OidcServerUrl).NotEmpty().WithMessage("Oidc server url can't be empty");
-        }
+        public IdentityServerAuthOptionsValidator() => RuleFor(o => o.OidcServerUrl).NotEmpty().WithMessage("Oidc server url can't be empty");
     }
 }

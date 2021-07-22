@@ -40,7 +40,7 @@ namespace Sitko.Core.Grpc.Server
             services.AddGrpc(options =>
             {
                 options.EnableDetailedErrors = startupOptions.EnableDetailedErrors;
-                startupOptions.Configure?.Invoke(options);
+                startupOptions.ConfigureGrpcService?.Invoke(options);
             });
             if (startupOptions.EnableReflection)
             {

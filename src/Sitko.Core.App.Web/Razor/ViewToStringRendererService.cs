@@ -134,6 +134,11 @@ namespace Sitko.Core.App.Web.Razor
 
             var viewName = viewResult.ViewName ?? GetActionName(actionContext);
 
+            if (string.IsNullOrEmpty(viewName))
+            {
+                throw new InvalidOperationException("View name is empty");
+            }
+
             var result = viewEngine.GetView(null, viewName, true);
             var originalResult = result;
             if (!result.Success)

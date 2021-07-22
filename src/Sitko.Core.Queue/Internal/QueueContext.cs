@@ -4,8 +4,8 @@ namespace Sitko.Core.Queue.Internal
 {
     public class QueueContext
     {
-        public readonly List<IQueueMiddleware> Middleware = new List<IQueueMiddleware>();
-        public readonly List<IQueueMessageOptions> MessageOptions = new List<IQueueMessageOptions>();
+        public List<IQueueMiddleware> Middleware { get; } = new();
+        public List<IQueueMessageOptions> MessageOptions { get; } = new();
 
         public QueueContext(IEnumerable<IQueueMiddleware>? middleware = default,
             IEnumerable<IQueueMessageOptions>? messageOptions = default)

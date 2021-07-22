@@ -29,30 +29,16 @@ namespace Sitko.Core.Queue.Tests
         }
 
         protected override Task<QueueSubscribeResult> DoReplyAsync<TMessage, TResponse>(
-            Func<TMessage, QueueMessageContext, PublishAsyncDelegate<TResponse>, Task<bool>> callback)
-        {
-            return Task.FromResult(new QueueSubscribeResult());
-        }
+            Func<TMessage, QueueMessageContext, PublishAsyncDelegate<TResponse>, Task<bool>> callback) =>
+            Task.FromResult(new QueueSubscribeResult());
 
-        protected override Task<bool> DoStopReplyAsync<TMessage, TResponse>(Guid id)
-        {
-            return Task.FromResult(true);
-        }
+        protected override Task<bool> DoStopReplyAsync<TMessage, TResponse>(Guid id) => Task.FromResult(true);
 
-        protected override Task<QueueSubscribeResult> DoSubscribeAsync<T>(IQueueMessageOptions<T>? options = null)
-        {
-            return Task.FromResult(new QueueSubscribeResult());
-        }
+        protected override Task<QueueSubscribeResult> DoSubscribeAsync<T>(IQueueMessageOptions<T>? options = null) => Task.FromResult(new QueueSubscribeResult());
 
-        protected override Task DoUnsubscribeAsync<T>()
-        {
-            return Task.CompletedTask;
-        }
+        protected override Task DoUnsubscribeAsync<T>() => Task.CompletedTask;
 
-        public override Task<(HealthStatus status, string? errorMessage)> CheckHealthAsync()
-        {
-            return Task.FromResult((HealthStatus.Healthy, (string?)null));
-        }
+        public override Task<(HealthStatus status, string? errorMessage)> CheckHealthAsync() => Task.FromResult((HealthStatus.Healthy, (string?)null));
     }
 
     public class TestQueueModule : QueueModule<TestQueue, TestQueueOptions>

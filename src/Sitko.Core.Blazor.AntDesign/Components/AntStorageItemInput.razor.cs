@@ -7,9 +7,6 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
     public partial class AntStorageItemInput
     {
-        protected override StorageItem? GetResult(IEnumerable<StorageFileUploadResult> results)
-        {
-            return results.FirstOrDefault()?.StorageItem;
-        }
+        protected override StorageItem? GetResult(IEnumerable<StorageFileUploadResult> results) => results.FirstOrDefault()?.StorageItem;
     }
 }

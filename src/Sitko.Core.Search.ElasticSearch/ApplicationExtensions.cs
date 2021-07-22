@@ -9,16 +9,12 @@ namespace Sitko.Core.Search.ElasticSearch
     {
         public static Application AddElasticSearch(this Application application,
             Action<IConfiguration, IHostEnvironment, ElasticSearchModuleOptions> configure,
-            string? optionsKey = null)
-        {
-            return application.AddModule<ElasticSearchModule, ElasticSearchModuleOptions>(configure, optionsKey);
-        }
+            string? optionsKey = null) =>
+            application.AddModule<ElasticSearchModule, ElasticSearchModuleOptions>(configure, optionsKey);
 
         public static Application AddElasticSearch(this Application application,
             Action<ElasticSearchModuleOptions>? configure = null,
-            string? optionsKey = null)
-        {
-            return application.AddModule<ElasticSearchModule, ElasticSearchModuleOptions>(configure, optionsKey);
-        }
+            string? optionsKey = null) =>
+            application.AddModule<ElasticSearchModule, ElasticSearchModuleOptions>(configure, optionsKey);
     }
 }

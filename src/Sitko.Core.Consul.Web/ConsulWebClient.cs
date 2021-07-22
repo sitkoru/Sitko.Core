@@ -44,6 +44,11 @@ namespace Sitko.Core.Consul.Web
             else
             {
                 var addressesFeature = server.Features.Get<IServerAddressesFeature>();
+                if (addressesFeature is null)
+                {
+                    throw new InvalidOperationException("IServerAddressesFeature not present");
+                }
+
                 var addresses = new List<Uri>();
                 foreach (var featureAddress in addressesFeature.Addresses)
                 {
@@ -66,7 +71,7 @@ namespace Sitko.Core.Consul.Web
 
                 if (!addresses.Any())
                 {
-                    throw new ArgumentException("No addresses available for consul registration", nameof(addresses));
+                    throw new InvalidOperationException("No addresses available for consul registration");
                 }
 
                 var address = addresses.OrderBy(u => u.Port).FirstOrDefault(u => u.Scheme != "https");

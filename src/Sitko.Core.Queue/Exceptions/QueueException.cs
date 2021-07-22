@@ -10,9 +10,6 @@ namespace Sitko.Core.Queue.Exceptions
     {
         public TimeSpan Timeout { get; }
 
-        public QueueRequestTimeoutException(TimeSpan timeout)
-        {
-            Timeout = timeout;
-        }
+        public QueueRequestTimeoutException(TimeSpan timeout) => Timeout = timeout;
     }
 }

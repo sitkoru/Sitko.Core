@@ -28,10 +28,8 @@ namespace Sitko.Core.Auth
         }
 
         public virtual void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder)
-        {
+            IApplicationBuilder appBuilder) =>
             appBuilder.UseAuthentication()
                 .UseAuthorization();
-        }
     }
 }

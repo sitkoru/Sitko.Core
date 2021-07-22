@@ -9,18 +9,14 @@ namespace Sitko.Core.IdProvider.SonyFlake
     {
         public static Application AddSonyFlakeIdProvider(this Application application,
             Action<IConfiguration, IHostEnvironment, SonyFlakeIdProviderModuleOptions> configure,
-            string? optionsKey = null)
-        {
-            return application.AddModule<SonyFlakeIdProviderModule, SonyFlakeIdProviderModuleOptions>(configure,
+            string? optionsKey = null) =>
+            application.AddModule<SonyFlakeIdProviderModule, SonyFlakeIdProviderModuleOptions>(configure,
                 optionsKey);
-        }
 
         public static Application AddSonyFlakeIdProvider(this Application application,
             Action<SonyFlakeIdProviderModuleOptions>? configure = null,
-            string? optionsKey = null)
-        {
-            return application.AddModule<SonyFlakeIdProviderModule, SonyFlakeIdProviderModuleOptions>(configure,
+            string? optionsKey = null) =>
+            application.AddModule<SonyFlakeIdProviderModule, SonyFlakeIdProviderModuleOptions>(configure,
                 optionsKey);
-        }
     }
 }

@@ -19,7 +19,7 @@ namespace Sitko.Core.Storage
         /// </summary>
         public Stream Stream { get; }
 
-        private bool _isDisposed;
+        private bool isDisposed;
 
         public DownloadResult(StorageItem storageItem, Stream stream)
         {
@@ -29,19 +29,19 @@ namespace Sitko.Core.Storage
 
         public async ValueTask DisposeAsync()
         {
-            if (!_isDisposed)
+            if (!isDisposed)
             {
-                _isDisposed = true;
+                isDisposed = true;
                 await Stream.DisposeAsync();
             }
         }
 
         public void Dispose()
         {
-            if (!_isDisposed)
+            if (!isDisposed)
             {
                 Stream.Dispose();
-                _isDisposed = true;
+                isDisposed = true;
             }
         }
     };

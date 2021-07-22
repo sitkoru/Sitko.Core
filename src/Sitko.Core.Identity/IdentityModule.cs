@@ -22,7 +22,10 @@ namespace Sitko.Core.Identity
             IdentityModuleOptions startupOptions)
         {
             base.ConfigureServices(context, services, startupOptions);
-            var identityBuilder = services
+#if NETCOREAPP3_1 || NET5_0
+            var identityBuilder =
+#endif
+            services
                 .AddIdentity<TUser, TRole>(options =>
                     options.SignIn.RequireConfirmedAccount = startupOptions.RequireConfirmedAccount)
                 .AddEntityFrameworkStores<TDbContext>()

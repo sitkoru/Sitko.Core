@@ -20,7 +20,7 @@ namespace Sitko.Core.Storage.Tests
         {
             var scope = await GetScopeAsync();
 
-            var storage = scope.Get<IStorage>();
+            var storage = scope.GetService<IStorage>();
 
             Assert.NotNull(storage);
 
@@ -44,7 +44,7 @@ namespace Sitko.Core.Storage.Tests
         {
             var scope = await GetScopeAsync();
 
-            var storage = scope.Get<IStorage>();
+            var storage = scope.GetService<IStorage>();
 
             Assert.NotNull(storage);
 
@@ -76,7 +76,7 @@ namespace Sitko.Core.Storage.Tests
         {
             var scope = await GetScopeAsync();
 
-            var storage = scope.Get<IStorage>();
+            var storage = scope.GetService<IStorage>();
 
             Assert.NotNull(storage);
 
@@ -99,7 +99,7 @@ namespace Sitko.Core.Storage.Tests
         {
             var scope = await GetScopeAsync();
 
-            var storage = scope.Get<IStorage>();
+            var storage = scope.GetService<IStorage>();
 
             Assert.NotNull(storage);
 
@@ -113,7 +113,7 @@ namespace Sitko.Core.Storage.Tests
         {
             var scope = await GetScopeAsync();
 
-            var storage = scope.Get<IStorage>();
+            var storage = scope.GetService<IStorage>();
 
             Assert.NotNull(storage);
 
@@ -174,7 +174,7 @@ namespace Sitko.Core.Storage.Tests
         {
             var scope = await GetScopeAsync();
 
-            var storage = scope.Get<IStorage>();
+            var storage = scope.GetService<IStorage>();
 
             Assert.NotNull(storage);
 
@@ -201,7 +201,7 @@ namespace Sitko.Core.Storage.Tests
         public async Task UpdateMetadata()
         {
             var scope = await GetScopeAsync();
-            var storage = scope.Get<IStorage>();
+            var storage = scope.GetService<IStorage>();
             StorageItem uploaded;
             const string fileName = "file.txt";
             var metaData = new FileMetaData();

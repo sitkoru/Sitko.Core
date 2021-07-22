@@ -13,14 +13,12 @@ namespace Sitko.Core.Health.Teams
 {
     public class TeamsHealthCheckPublisher : BaseHealthCheckPublisher<TeamsHealthReporterModuleOptions>
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpClientFactory httpClientFactory;
 
         public TeamsHealthCheckPublisher(IOptionsMonitor<TeamsHealthReporterModuleOptions> options,
             ILogger<TeamsHealthCheckPublisher> logger, IHostEnvironment hostingEnvironment,
-            IHttpClientFactory httpClientFactory) : base(options, logger, hostingEnvironment)
-        {
-            _httpClientFactory = httpClientFactory;
-        }
+            IHttpClientFactory httpClientFactory) : base(options, logger, hostingEnvironment) =>
+            this.httpClientFactory = httpClientFactory;
 
         protected override Task DoSendAsync(string checkName, HealthReportEntry entry,
             CancellationToken cancellationToken)
@@ -50,7 +48,7 @@ namespace Sitko.Core.Health.Teams
                 }
             }
 
-            var client = new TeamsHookClient(_httpClientFactory.CreateClient());
+            var client = new TeamsHookClient(httpClientFactory.CreateClient());
             return client.PostAsync(Options.WebHookUrl,
                 new MessageCard {Title = title, Text = summary, Sections = sections, ThemeColor = color});
         }

@@ -9,16 +9,12 @@ namespace Sitko.Core.Pdf
     {
         public static Application AddPdfRenderer(this Application application,
             Action<IConfiguration, IHostEnvironment, PdfRendererModuleOptions> configure,
-            string? optionsKey = null)
-        {
-            return application.AddModule<PdfRendererModule, PdfRendererModuleOptions>(configure, optionsKey);
-        }
+            string? optionsKey = null) =>
+            application.AddModule<PdfRendererModule, PdfRendererModuleOptions>(configure, optionsKey);
 
         public static Application AddPdfRenderer(this Application application,
             Action<PdfRendererModuleOptions>? configure = null,
-            string? optionsKey = null)
-        {
-            return application.AddModule<PdfRendererModule, PdfRendererModuleOptions>(configure, optionsKey);
-        }
+            string? optionsKey = null) =>
+            application.AddModule<PdfRendererModule, PdfRendererModuleOptions>(configure, optionsKey);
     }
 }

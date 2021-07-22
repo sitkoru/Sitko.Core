@@ -9,16 +9,12 @@ namespace Sitko.Core.Email.Smtp
     {
         public static Application AddSmtpEmail(this Application application,
             Action<IConfiguration, IHostEnvironment, SmtpEmailModuleOptions> configure,
-            string? optionsKey = null)
-        {
-            return application.AddModule<SmtpEmailModule, SmtpEmailModuleOptions>(configure, optionsKey);
-        }
+            string? optionsKey = null) =>
+            application.AddModule<SmtpEmailModule, SmtpEmailModuleOptions>(configure, optionsKey);
 
         public static Application AddSmtpEmail(this Application application,
             Action<SmtpEmailModuleOptions>? configure = null,
-            string? optionsKey = null)
-        {
-            return application.AddModule<SmtpEmailModule, SmtpEmailModuleOptions>(configure, optionsKey);
-        }
+            string? optionsKey = null) =>
+            application.AddModule<SmtpEmailModule, SmtpEmailModuleOptions>(configure, optionsKey);
     }
 }

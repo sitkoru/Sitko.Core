@@ -16,10 +16,13 @@ namespace Sitko.Core.Grpc.Client.External
         {
         }
 
-        public Task InitAsync() => Task.CompletedTask;
+        public Task InitAsync()
+        {
+            OnChange?.Invoke(this, EventArgs.Empty);
+            return Task.CompletedTask;
+        }
 
         public Uri GetAddress() => address;
-
         public event EventHandler? OnChange;
     }
 }

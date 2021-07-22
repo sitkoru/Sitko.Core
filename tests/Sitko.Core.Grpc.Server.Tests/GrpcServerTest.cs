@@ -19,7 +19,7 @@ namespace Sitko.Core.Grpc.Server.Tests
         [Fact]
         public async Task TestResponse()
         {
-            var application = new TestApplication(new string[0]);
+            var application = new TestApplication(Array.Empty<string>());
             using var host = await application.StartAsync();
             var service = host.GetTestServer();
             var responseVersionHandler = new ResponseVersionHandler {InnerHandler = service.CreateHandler()};

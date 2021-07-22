@@ -9,17 +9,13 @@ namespace Sitko.Core.Configuration.Vault
     {
         public static Application AddVaultConfiguration(this Application application,
             Action<IConfiguration, IHostEnvironment, VaultConfigurationModuleOptions> configure,
-            string? optionsKey = null)
-        {
-            return application.AddModule<VaultConfigurationModule, VaultConfigurationModuleOptions>(configure,
+            string? optionsKey = null) =>
+            application.AddModule<VaultConfigurationModule, VaultConfigurationModuleOptions>(configure,
                 optionsKey);
-        }
 
         public static Application AddVaultConfiguration(this Application application,
-            Action<VaultConfigurationModuleOptions>? configure = null, string? optionsKey = null)
-        {
-            return application.AddModule<VaultConfigurationModule, VaultConfigurationModuleOptions>(configure,
+            Action<VaultConfigurationModuleOptions>? configure = null, string? optionsKey = null) =>
+            application.AddModule<VaultConfigurationModule, VaultConfigurationModuleOptions>(configure,
                 optionsKey);
-        }
     }
 }

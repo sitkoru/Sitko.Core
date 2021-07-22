@@ -155,7 +155,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         protected void UpdateCurrentValue()
         {
             var value = UpdateCurrentValue(Files.ToList());
-            CurrentValue = value;
+            CurrentValue = value!;
         }
 
         protected abstract TValue? UpdateCurrentValue(ICollection<UploadedItem> items);

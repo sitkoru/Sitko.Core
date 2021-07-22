@@ -5,9 +5,6 @@ namespace Sitko.Core.Blazor.AntDesignComponents
 {
     public class AntBlazorApplication<TStartup> : BlazorApplication<TStartup> where TStartup : AntBlazorStartup
     {
-        public AntBlazorApplication(string[] args) : base(args)
-        {
-            this.AddBlazorFileUpload();
-        }
+        public AntBlazorApplication(string[] args) : base(args) => this.AddBlazorFileUpload();
     }
 }

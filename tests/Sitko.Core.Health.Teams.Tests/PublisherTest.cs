@@ -19,7 +19,7 @@ namespace Sitko.Core.Health.Teams.Tests
         public async Task Healthy()
         {
             var scope = await GetScopeAsync();
-            var publisher = scope.Get<IHealthCheckPublisher>();
+            var publisher = scope.GetService<IHealthCheckPublisher>();
 
             var failReport =
                 new HealthReport(
@@ -52,11 +52,11 @@ namespace Sitko.Core.Health.Teams.Tests
         public async Task UnHealthy()
         {
             var scope = await GetScopeAsync();
-            var publisher = scope.Get<IHealthCheckPublisher>();
+            var publisher = scope.GetService<IHealthCheckPublisher>();
 
             try
             {
-                throw new Exception("Mega exception");
+                throw new InvalidOperationException("Mega exception");
             }
             catch (Exception ex)
             {
@@ -79,7 +79,7 @@ namespace Sitko.Core.Health.Teams.Tests
         public async Task Degraded()
         {
             var scope = await GetScopeAsync();
-            var publisher = scope.Get<IHealthCheckPublisher>();
+            var publisher = scope.GetService<IHealthCheckPublisher>();
 
             var report =
                 new HealthReport(

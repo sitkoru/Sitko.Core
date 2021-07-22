@@ -21,15 +21,15 @@ namespace Sitko.Core.Queue.Tests
             var scope = await GetScopeAsync<ProcessorQueueTestScope>();
 
             await scope.StartApplicationAsync(); // need to start hosted services
-            var processor = scope.Get<FooTestMessageProcessor>();
+            var processor = scope.GetService<FooTestMessageProcessor>();
             Assert.NotNull(processor);
 
-            var counter = scope.Get<TestQueueProcessorCounter>();
+            var counter = scope.GetService<TestQueueProcessorCounter>();
             Assert.NotNull(counter);
 
             Assert.Equal(0, counter.Count);
 
-            var queue = scope.Get<IQueue>();
+            var queue = scope.GetService<IQueue>();
 
             var msg = new TestMessage();
             var result = await queue.PublishAsync(msg);
@@ -46,12 +46,12 @@ namespace Sitko.Core.Queue.Tests
             var scope = await GetScopeAsync<MultipleProcessorQueueTestScope>();
 
             await scope.StartApplicationAsync(); // need to start hosted services
-            var counter = scope.Get<TestQueueProcessorCounter>();
+            var counter = scope.GetService<TestQueueProcessorCounter>();
             Assert.NotNull(counter);
 
             Assert.Equal(0, counter.Count);
 
-            var queue = scope.Get<IQueue>();
+            var queue = scope.GetService<IQueue>();
 
             var msg = new TestMessage();
             var result = await queue.PublishAsync(msg);
@@ -65,16 +65,13 @@ namespace Sitko.Core.Queue.Tests
 
     public abstract class TestQueueProcessor<T> : IQueueProcessor<T> where T : class, new()
     {
-        private readonly TestQueueProcessorCounter _counter;
+        private readonly TestQueueProcessorCounter counter;
 
-        protected TestQueueProcessor(TestQueueProcessorCounter counter)
-        {
-            _counter = counter;
-        }
+        protected TestQueueProcessor(TestQueueProcessorCounter counter) => this.counter = counter;
 
         public Task<bool> ProcessAsync(T message, QueueMessageContext queueMessageContext)
         {
-            _counter.Count++;
+            counter.Count++;
             return Task.FromResult(true);
         }
     }
@@ -102,33 +99,25 @@ namespace Sitko.Core.Queue.Tests
     {
         protected override IServiceCollection ConfigureServices(IConfiguration configuration,
             IHostEnvironment environment,
-            IServiceCollection services, string name)
-        {
-            return base.ConfigureServices(configuration, environment, services, name)
+            IServiceCollection services, string name) =>
+            base.ConfigureServices(configuration, environment, services, name)
                 .AddSingleton<TestQueueProcessorCounter>();
-        }
 
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
-            TestQueueOptions options, string name)
-        {
+            TestQueueOptions options, string name) =>
             options.RegisterProcessor<FooTestMessageProcessor, TestMessage>();
-        }
     }
 
     public class MultipleProcessorQueueTestScope : BaseTestQueueTestScope
     {
         protected override IServiceCollection ConfigureServices(IConfiguration configuration,
             IHostEnvironment environment,
-            IServiceCollection services, string name)
-        {
-            return base.ConfigureServices(configuration, environment, services, name)
+            IServiceCollection services, string name) =>
+            base.ConfigureServices(configuration, environment, services, name)
                 .AddSingleton<TestQueueProcessorCounter>();
-        }
 
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
-            TestQueueOptions options, string name)
-        {
+            TestQueueOptions options, string name) =>
             options.RegisterProcessors<ProcessorTests>();
-        }
     }
 }

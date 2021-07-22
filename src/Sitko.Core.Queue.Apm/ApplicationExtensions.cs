@@ -4,9 +4,6 @@ namespace Sitko.Core.Queue.Apm
 {
     public static class ApplicationExtensions
     {
-        public static Application AddQueueElasticApm(this Application application)
-        {
-            return application.AddModule<QueueElasticApmModule>();
-        }
+        public static Application AddQueueElasticApm(this Application application) => application.AddModule<QueueElasticApmModule>();
     }
 }

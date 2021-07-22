@@ -12,43 +12,43 @@ namespace Sitko.Core.Queue
 {
     public abstract class BaseQueue<TConfig> : IQueue where TConfig : QueueModuleOptions
     {
-        private readonly IOptionsMonitor<TConfig> _config;
-        protected TConfig Config => _config.CurrentValue;
+        private readonly IOptionsMonitor<TConfig> config;
+        protected TConfig Config => config.CurrentValue;
 
-        private readonly QueuePipeline _pipeline;
+        private readonly QueuePipeline pipeline;
 
         //private readonly IList<IQueueMiddleware> _middlewares;
-        private readonly IList<IQueueMessageOptions> _messageOptions;
+        private readonly IList<IQueueMessageOptions> messageOptions;
 
-        protected readonly ILogger<BaseQueue<TConfig>> Logger;
+        protected ILogger<BaseQueue<TConfig>> Logger { get; }
         protected bool IsStarted { get; private set; }
 
-        private readonly ConcurrentDictionary<Guid, QueueSubscription> _subscriptions = new();
+        private readonly ConcurrentDictionary<Guid, QueueSubscription> subscriptions = new();
 
         protected BaseQueue(IOptionsMonitor<TConfig> config, QueueContext context, ILogger<BaseQueue<TConfig>> logger)
         {
-            _config = config;
+            this.config = config;
             Logger = logger;
             //_middlewares = context.Middleware;
-            _pipeline = new QueuePipeline();
+            pipeline = new QueuePipeline();
             foreach (var middleware in context.Middleware)
             {
-                _pipeline.Use(middleware);
+                pipeline.Use(middleware);
             }
 
-            _messageOptions = context.MessageOptions;
+            messageOptions = context.MessageOptions;
         }
 
         private async Task<bool> ReceiveAsync<T>(T message, QueueMessageContext context) where T : class
         {
-            var subscriptions = _subscriptions.Values.Where(s => s is QueueSubscription<T>).ToList();
+            var queueSubscriptions = this.subscriptions.Values.Where(s => s is QueueSubscription<T>).ToList();
 
-            if (!subscriptions.Any())
+            if (!queueSubscriptions.Any())
             {
                 return false;
             }
 
-            foreach (var subscription in subscriptions)
+            foreach (var subscription in queueSubscriptions)
             {
                 if (subscription is QueueSubscription<T> payloadSubscription)
                 {
@@ -72,7 +72,7 @@ namespace Sitko.Core.Queue
             ReceiveAsyncDelegate<T>? callback = null) where T : class
         {
             callback ??= ReceiveAsync;
-            return _pipeline.ReceiveAsync(message, context, callback);
+            return pipeline.ReceiveAsync(message, context, callback);
         }
 
         private QueueMessageContext GetMessageContext<T>(QueueMessageContext? parentMessageContext = null)
@@ -124,20 +124,12 @@ namespace Sitko.Core.Queue
 
         protected abstract Task DoUnsubscribeAsync<T>() where T : class;
 
-        private IQueueMessageOptions<T>? GetOptions<T>() where T : class
-        {
-            return _messageOptions.FirstOrDefault(o => o is IQueueMessageOptions<T>) as IQueueMessageOptions<T>;
-        }
+        private IQueueMessageOptions<T>? GetOptions<T>() where T : class =>
+            messageOptions.FirstOrDefault(o => o is IQueueMessageOptions<T>) as IQueueMessageOptions<T>;
 
-        protected virtual Task DoStartAsync()
-        {
-            return Task.CompletedTask;
-        }
+        protected virtual Task DoStartAsync() => Task.CompletedTask;
 
-        protected virtual Task DoStopAsync()
-        {
-            return Task.CompletedTask;
-        }
+        protected virtual Task DoStopAsync() => Task.CompletedTask;
 
         protected async Task StartAsync()
         {
@@ -162,7 +154,7 @@ namespace Sitko.Core.Queue
             await StartAsync();
             var messageContext = GetMessageContext<T>(parentMessageContext);
 
-            var result = await _pipeline.PublishAsync(message, messageContext, DoPublishAsync);
+            var result = await pipeline.PublishAsync(message, messageContext, DoPublishAsync);
 
             return result;
         }
@@ -179,7 +171,7 @@ namespace Sitko.Core.Queue
             {
                 var subscription = new QueueSubscription<T>(async (message, context) =>
                     await callback(message, context));
-                _subscriptions[subscription.Id] = subscription;
+                subscriptions[subscription.Id] = subscription;
                 result.SubscriptionId = subscription.Id;
                 result.Options = options;
             }
@@ -189,18 +181,18 @@ namespace Sitko.Core.Queue
 
         public async Task UnsubscribeAsync<T>(Guid subscriptionId) where T : class
         {
-            if (!(_subscriptions[subscriptionId] is QueueSubscription<T>))
+            if (!(subscriptions[subscriptionId] is QueueSubscription<T>))
             {
                 throw new Exception($"Subscription {subscriptionId} is not for type {typeof(T)}");
             }
 
-            var unsubscribed = _subscriptions.TryRemove(subscriptionId, out QueueSubscription _);
+            var unsubscribed = subscriptions.TryRemove(subscriptionId, out QueueSubscription _);
             if (!unsubscribed)
             {
                 throw new Exception($"Can't remove subscription {subscriptionId}");
             }
 
-            if (!_subscriptions.Values.Any(s => s is QueueSubscription<T>))
+            if (!subscriptions.Values.Any(s => s is QueueSubscription<T>))
             {
                 await DoUnsubscribeAsync<T>();
             }
@@ -213,20 +205,18 @@ namespace Sitko.Core.Queue
             await StartAsync();
             return await DoReplyAsync<TMessage, TResponse>((message, context, sendCallback) =>
             {
-                return _pipeline.ReceiveAsync(message, context, async (msg, msgContext) =>
+                return pipeline.ReceiveAsync(message, context, async (msg, msgContext) =>
                 {
                     var response = await callback(msg, msgContext);
-                    var result = await _pipeline.PublishAsync(response, msgContext, sendCallback);
+                    var result = await pipeline.PublishAsync(response, msgContext, sendCallback);
                     return result.IsSuccess;
                 });
             });
         }
 
         public Task<bool> StopReplyAsync<TMessage, TResponse>(Guid id) where TMessage : class
-            where TResponse : class
-        {
-            return DoStopReplyAsync<TMessage, TResponse>(id);
-        }
+            where TResponse : class =>
+            DoStopReplyAsync<TMessage, TResponse>(id);
 
         public abstract Task<(HealthStatus status, string? errorMessage)> CheckHealthAsync();
 
@@ -242,14 +232,14 @@ namespace Sitko.Core.Queue
             var messageContext = GetMessageContext<TMessage>(parentMessageContext);
             (TResponse message, QueueMessageContext context)? response = null;
             (TResponse message, QueueMessageContext messageContext)? result = null;
-            var publishResult = await _pipeline.PublishAsync(message, messageContext, async (_, context) =>
+            var publishResult = await pipeline.PublishAsync(message, messageContext, async (_, context) =>
             {
                 response = await DoRequestAsync<TMessage, TResponse>(message, context, timeout.Value);
                 return new QueuePublishResult();
             });
             if (publishResult.IsSuccess && response != null)
             {
-                if (!await _pipeline.ReceiveAsync(response.Value.message, response.Value.context, (_, _) =>
+                if (!await pipeline.ReceiveAsync(response.Value.message, response.Value.context, (_, _) =>
                 {
                     result = response;
                     return Task.FromResult(true);
@@ -264,7 +254,7 @@ namespace Sitko.Core.Queue
 
         public async ValueTask DisposeAsync()
         {
-            _subscriptions.Clear();
+            subscriptions.Clear();
             await DoStopAsync();
         }
     }

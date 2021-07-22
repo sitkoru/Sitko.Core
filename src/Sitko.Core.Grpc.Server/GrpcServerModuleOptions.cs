@@ -20,7 +20,7 @@ namespace Sitko.Core.Grpc.Server
         public bool EnableReflection { get; set; }
         public bool EnableDetailedErrors { get; set; }
 
-        [JsonIgnore] public Action<GrpcServiceOptions>? Configure { get; set; }
+        [JsonIgnore] public Action<GrpcServiceOptions>? ConfigureGrpcService { get; set; }
 
         public bool AutoFixRegistration { get; set; }
 

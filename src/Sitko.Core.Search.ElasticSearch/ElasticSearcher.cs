@@ -12,34 +12,39 @@ namespace Sitko.Core.Search.ElasticSearch
 {
     public class ElasticSearcher<TSearchModel> : ISearcher<TSearchModel> where TSearchModel : BaseSearchModel
     {
-        private readonly IOptionsMonitor<ElasticSearchModuleOptions> _optionsMonitor;
-        private readonly ILogger<ElasticSearcher<TSearchModel>> _logger;
-        private ElasticSearchModuleOptions Options => _optionsMonitor.CurrentValue;
-        private ElasticClient? _client;
+        private readonly IOptionsMonitor<ElasticSearchModuleOptions> optionsMonitor;
+        private readonly ILogger<ElasticSearcher<TSearchModel>> logger;
+        private ElasticSearchModuleOptions Options => optionsMonitor.CurrentValue;
+        private ElasticClient? client;
 
         public ElasticSearcher(IOptionsMonitor<ElasticSearchModuleOptions> optionsMonitor,
             ILogger<ElasticSearcher<TSearchModel>> logger)
         {
-            _optionsMonitor = optionsMonitor;
-            _logger = logger;
+            this.optionsMonitor = optionsMonitor;
+            this.logger = logger;
         }
 
         private ElasticClient GetClient()
         {
-            if (_client == null)
+            if (client == null)
             {
-                _logger.LogDebug("Create elastic client");
+                logger.LogDebug("Create elastic client");
                 var settings = new ConnectionSettings(new Uri(Options.Url)).DisableDirectStreaming()
                     .OnRequestCompleted(details =>
                     {
                         if (Options.EnableClientLogging)
                         {
-                            _logger.LogDebug("### ES REQEUST ###");
+                            logger.LogDebug("### ES REQEUST ###");
                             if (details.RequestBodyInBytes != null)
-                                _logger.LogDebug("{Request}", Encoding.UTF8.GetString(details.RequestBodyInBytes));
-                            _logger.LogDebug("### ES RESPONSE ###");
+                            {
+                                logger.LogDebug("{Request}", Encoding.UTF8.GetString(details.RequestBodyInBytes));
+                            }
+
+                            logger.LogDebug("### ES RESPONSE ###");
                             if (details.ResponseBodyInBytes != null)
-                                _logger.LogDebug("{Response}", Encoding.UTF8.GetString(details.ResponseBodyInBytes));
+                            {
+                                logger.LogDebug("{Response}", Encoding.UTF8.GetString(details.ResponseBodyInBytes));
+                            }
                         }
                     })
                     .PrettyJson();
@@ -49,10 +54,10 @@ namespace Sitko.Core.Search.ElasticSearch
                 }
 
                 settings.ServerCertificateValidationCallback((_, _, _, _) => true);
-                _client = new ElasticClient(settings);
+                client = new ElasticClient(settings);
             }
 
-            return _client;
+            return client;
         }
 
         private SearchDescriptor<TSearchModel> GetSearchRequest(SearchDescriptor<TSearchModel> descriptor,
@@ -90,14 +95,14 @@ namespace Sitko.Core.Search.ElasticSearch
             {
                 foreach (var item in result.ItemsWithErrors)
                 {
-                    _logger.LogError("Error while indexing document {IndexName} {Id}: {ErrorText}", indexName, item.Id,
+                    logger.LogError("Error while indexing document {IndexName} {Id}: {ErrorText}", indexName, item.Id,
                         item.Error);
                 }
             }
 
             if (result.ServerError != null)
             {
-                _logger.LogError("Error while indexing {IndexName} documents: {ErrorText}", indexName,
+                logger.LogError("Error while indexing {IndexName} documents: {ErrorText}", indexName,
                     result.ServerError);
             }
 
@@ -114,7 +119,7 @@ namespace Sitko.Core.Search.ElasticSearch
             {
                 foreach (var item in result.ItemsWithErrors)
                 {
-                    _logger.LogError("Error while deleting document {Id} from {IndexName}: {ErrorText}", item.Id,
+                    logger.LogError("Error while deleting document {Id} from {IndexName}: {ErrorText}", item.Id,
                         indexName,
                         item.Error);
                 }
@@ -122,7 +127,7 @@ namespace Sitko.Core.Search.ElasticSearch
 
             if (result.ServerError != null)
             {
-                _logger.LogError("Error while deleting documents from {IndexName}: {ErrorText}", indexName,
+                logger.LogError("Error while deleting documents from {IndexName}: {ErrorText}", indexName,
                     result.ServerError);
             }
 
@@ -137,7 +142,7 @@ namespace Sitko.Core.Search.ElasticSearch
                     cancellationToken);
             if (result.ServerError != null)
             {
-                _logger.LogError("Error while deleting documents from {IndexName}: {ErrorText}", indexName,
+                logger.LogError("Error while deleting documents from {IndexName}: {ErrorText}", indexName,
                     result.ServerError);
             }
 
@@ -154,7 +159,7 @@ namespace Sitko.Core.Search.ElasticSearch
                     .Index(indexName.ToLowerInvariant()), cancellationToken);
             if (resultsCount.ServerError != null)
             {
-                _logger.LogError("Error while counting documents in {IndexName}: {ErrorText}", indexName,
+                logger.LogError("Error while counting documents in {IndexName}: {ErrorText}", indexName,
                     resultsCount.ServerError);
             }
 
@@ -169,7 +174,7 @@ namespace Sitko.Core.Search.ElasticSearch
                 .SearchAsync<TSearchModel>(x => GetSearchRequest(x, indexName, term, limit), cancellationToken);
             if (results.ServerError != null)
             {
-                _logger.LogError("Error while searching in {IndexName}: {ErrorText}", indexName, results.ServerError);
+                logger.LogError("Error while searching in {IndexName}: {ErrorText}", indexName, results.ServerError);
             }
 
             return results.Documents.ToArray();
@@ -191,7 +196,7 @@ namespace Sitko.Core.Search.ElasticSearch
                     .Index(indexName.ToLowerInvariant()), cancellationToken);
             if (results.ServerError != null)
             {
-                _logger.LogError("Error while looking for similar documents in {IndexName}: {ErrorText}", indexName,
+                logger.LogError("Error while looking for similar documents in {IndexName}: {ErrorText}", indexName,
                     results.ServerError);
             }
 
@@ -204,7 +209,7 @@ namespace Sitko.Core.Search.ElasticSearch
             var indexExists = await GetClient().Indices.ExistsAsync(indexName, ct: cancellationToken);
             if (indexExists.Exists)
             {
-                _logger.LogDebug("Update existing index {IndexName}", indexName);
+                logger.LogDebug("Update existing index {IndexName}", indexName);
                 await GetClient().Indices.CloseAsync(indexName, ct: cancellationToken);
                 var result = await GetClient().Indices.UpdateSettingsAsync(indexName, c => c.IndexSettings(s =>
                     s.Analysis(BuildIndexDescriptor)), cancellationToken);
@@ -216,7 +221,7 @@ namespace Sitko.Core.Search.ElasticSearch
             }
             else
             {
-                _logger.LogDebug("Create new index {IndexName}", indexName);
+                logger.LogDebug("Create new index {IndexName}", indexName);
                 var result = await GetClient()
                     .Indices.CreateAsync(indexName,
                         c => c.Settings(s => s.Analysis(BuildIndexDescriptor)), cancellationToken);
@@ -227,20 +232,16 @@ namespace Sitko.Core.Search.ElasticSearch
             }
         }
 
-        private AnalysisDescriptor BuildIndexDescriptor(AnalysisDescriptor a)
-        {
-            return
-                a
-                    .Analyzers(aa => aa
-                        .Custom("default",
-                            descriptor =>
-                                descriptor.Tokenizer("standard")
-                                    .CharFilters("html_strip")
-                                    .Filters("lowercase", "ru_RU", "en_US"))
-                    ).TokenFilters(descriptor =>
-                        descriptor.Hunspell("ru_RU", hh => hh.Dedup().Locale("ru_RU"))
-                            .Hunspell("en_US", hh => hh.Dedup().Locale("en_US")))
-                ;
-        }
+        private AnalysisDescriptor BuildIndexDescriptor(AnalysisDescriptor a) =>
+            a
+                .Analyzers(aa => aa
+                    .Custom("default",
+                        descriptor =>
+                            descriptor.Tokenizer("standard")
+                                .CharFilters("html_strip")
+                                .Filters("lowercase", "ru_RU", "en_US"))
+                ).TokenFilters(descriptor =>
+                    descriptor.Hunspell("ru_RU", hh => hh.Dedup().Locale("ru_RU"))
+                        .Hunspell("en_US", hh => hh.Dedup().Locale("en_US")));
     }
 }

@@ -26,23 +26,20 @@ namespace Sitko.Core.Email
 
     public class DevEmailSender : ISender
     {
-        private readonly ILogger<DevEmailSender> _logger;
+        private readonly ILogger<DevEmailSender> logger;
 
-        public DevEmailSender(ILogger<DevEmailSender> logger)
-        {
-            _logger = logger;
-        }
+        public DevEmailSender(ILogger<DevEmailSender> logger) => this.logger = logger;
 
         public SendResponse Send(IFluentEmail email, CancellationToken? token = null)
         {
-            _logger.LogInformation("Send email {Subject} to {Recipients}", email.Data.Subject,
+            logger.LogInformation("Send email {Subject} to {Recipients}", email.Data.Subject,
                 string.Join(", ", email.Data.ToAddresses));
             return new SendResponse {MessageId = Guid.NewGuid().ToString(), ErrorMessages = new List<string>()};
         }
 
         public Task<SendResponse> SendAsync(IFluentEmail email, CancellationToken? token = null)
         {
-            _logger.LogInformation("Send email {Subject} to {Recipients}", email.Data.Subject,
+            logger.LogInformation("Send email {Subject} to {Recipients}", email.Data.Subject,
                 string.Join(", ", email.Data.ToAddresses));
             return Task.FromResult(new SendResponse
             {

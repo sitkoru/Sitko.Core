@@ -19,9 +19,6 @@ namespace Sitko.Core.ElasticStack.Tests
 
     public class ElasticApplication : WebApplication<ElasticStartup>
     {
-        public ElasticApplication(string[] args) : base(args)
-        {
-            this.AddElasticStack();
-        }
+        public ElasticApplication(string[] args) : base(args) => this.AddElasticStack();
     }
 }

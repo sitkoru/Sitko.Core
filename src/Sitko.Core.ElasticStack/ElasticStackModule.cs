@@ -27,11 +27,11 @@ namespace Sitko.Core.ElasticStack
                 Environment.SetEnvironmentVariable("ELASTIC_APM_TRANSACTION_SAMPLE_RATE",
                     startupOptions.ApmTransactionSampleRate.ToString(CultureInfo.InvariantCulture));
                 Environment.SetEnvironmentVariable("ElasticApm:TransactionMaxSpans",
-                    startupOptions.ApmTransactionMaxSpans.ToString());
+                    startupOptions.ApmTransactionMaxSpans.ToString(CultureInfo.InvariantCulture));
                 Environment.SetEnvironmentVariable("ElasticApm:CentralConfig",
-                    startupOptions.ApmCentralConfig.ToString());
+                    startupOptions.ApmCentralConfig.ToString(CultureInfo.InvariantCulture));
                 Environment.SetEnvironmentVariable("ElasticApm:SanitizeFieldNames",
-                    startupOptions.ApmCentralConfig.ToString());
+                    startupOptions.ApmCentralConfig.ToString(CultureInfo.InvariantCulture));
                 if (startupOptions.ApmSanitizeFieldNames != null && startupOptions.ApmSanitizeFieldNames.Any())
                 {
                     Environment.SetEnvironmentVariable("ElasticApm:SanitizeFieldNames",
@@ -54,9 +54,9 @@ namespace Sitko.Core.ElasticStack
                 Environment.SetEnvironmentVariable("ElasticApm:FlushInterval",
                     $"{TimeSpan.FromSeconds(startupOptions.ApmFlushIntervalInSeconds).TotalSeconds}s");
                 Environment.SetEnvironmentVariable("ElasticApm:MaxBatchEventCount",
-                    startupOptions.ApmMaxBatchEventCount.ToString());
+                    startupOptions.ApmMaxBatchEventCount.ToString(CultureInfo.InvariantCulture));
                 Environment.SetEnvironmentVariable("ElasticApm:MaxQueueEventCount",
-                    startupOptions.ApmMaxQueueEventCount.ToString());
+                    startupOptions.ApmMaxQueueEventCount.ToString(CultureInfo.InvariantCulture));
                 Environment.SetEnvironmentVariable("ElasticApm:MetricsInterval",
                     $"{TimeSpan.FromSeconds(startupOptions.ApmMetricsIntervalInSeconds).TotalSeconds}s");
                 if (startupOptions.ApmDisableMetrics != null && startupOptions.ApmDisableMetrics.Any())
@@ -74,11 +74,11 @@ namespace Sitko.Core.ElasticStack
                 }
 
                 Environment.SetEnvironmentVariable("ElasticApm:CaptureHeaders",
-                    startupOptions.ApmCaptureHeaders.ToString());
+                    startupOptions.ApmCaptureHeaders.ToString(CultureInfo.InvariantCulture));
                 Environment.SetEnvironmentVariable("ElasticApm:UseElasticTraceparentHeader",
-                    startupOptions.ApmUseElasticTraceparentHeader.ToString());
+                    startupOptions.ApmUseElasticTraceparentHeader.ToString(CultureInfo.InvariantCulture));
                 Environment.SetEnvironmentVariable("ElasticApm:StackTraceLimit",
-                    startupOptions.ApmStackTraceLimit.ToString());
+                    startupOptions.ApmStackTraceLimit.ToString(CultureInfo.InvariantCulture));
                 Environment.SetEnvironmentVariable("ElasticApm:SpanFramesMinDuration",
                     $"{TimeSpan.FromSeconds(startupOptions.ApmSpanFramesMinDurationInSeconds).TotalMilliseconds}ms");
                 Environment.SetEnvironmentVariable("ElasticApm:ApmLogLevel", startupOptions.ApmLogLevel);
@@ -94,7 +94,7 @@ namespace Sitko.Core.ElasticStack
             if (options.LoggingEnabled)
             {
                 var rolloverAlias = string.IsNullOrEmpty(options.LoggingLiferRolloverAlias)
-                    ? $"dotnet-logs-{context.Name.ToLower().Replace(".", "-")}-{context.Environment.EnvironmentName.ToLower().Replace(".", "-")}"
+                    ? $"dotnet-logs-{context.Name.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}-{context.Environment.EnvironmentName.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}"
                     : options.LoggingLiferRolloverAlias;
                 var sinkOptions = new ElasticsearchSinkOptions(options.ElasticSearchUrls)
                 {
@@ -104,7 +104,7 @@ namespace Sitko.Core.ElasticStack
                     NumberOfReplicas = options.LoggingNumberOfReplicas,
                     IndexFormat =
                         options.LoggingIndexFormat ??
-                        $"dotnet-logs-{context.Name.ToLower().Replace(".", "-")}-{context.Name.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
+                        $"dotnet-logs-{context.Name.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}-{context.Name.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
                     LevelSwitch = logLevelSwitcher.Switch,
                     TemplateName = rolloverAlias
                 };

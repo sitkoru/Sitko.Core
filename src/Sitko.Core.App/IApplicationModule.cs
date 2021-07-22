@@ -23,7 +23,7 @@ namespace Sitko.Core.App
             HostBuilderContext hostBuilderContext, IConfigurationBuilder configurationBuilder,
             TModuleOptions startupOptions);
 
-        IEnumerable<Type> GetRequiredModules(ApplicationContext context, TModuleOptions config);
+        IEnumerable<Type> GetRequiredModules(ApplicationContext context, TModuleOptions options);
     }
 
     public interface IApplicationModule

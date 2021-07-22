@@ -21,10 +21,7 @@ namespace Sitko.Core.Queue
             ErrorMessage = error;
         }
 
-        public string GetErrorText()
-        {
-            return Exception?.ToString() ?? (ErrorMessage ?? string.Empty);
-        }
+        public string GetErrorText() => Exception?.ToString() ?? (ErrorMessage ?? string.Empty);
     }
 
     public class QueueSubscribeResult : QueueResult

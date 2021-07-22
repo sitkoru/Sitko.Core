@@ -11,19 +11,18 @@ namespace Sitko.Core.Health
 {
     public abstract class BaseHealthCheckPublisher<TOptions> : IHealthCheckPublisher
     {
-        private readonly IOptionsMonitor<TOptions> _optionsMonitor;
-        protected TOptions Options => _optionsMonitor.CurrentValue;
-        protected readonly ILogger<BaseHealthCheckPublisher<TOptions>> Logger;
-        protected readonly IHostEnvironment HostingEnvironment;
+        private readonly IOptionsMonitor<TOptions> optionsMonitor;
+        protected TOptions Options => optionsMonitor.CurrentValue;
+        protected ILogger<BaseHealthCheckPublisher<TOptions>> Logger { get; }
+        protected IHostEnvironment HostingEnvironment { get; }
 
-        private readonly ConcurrentDictionary<string, HealthStatus> _entries =
-            new ConcurrentDictionary<string, HealthStatus>();
+        private readonly ConcurrentDictionary<string, HealthStatus> entries = new();
 
         public BaseHealthCheckPublisher(IOptionsMonitor<TOptions> options,
             ILogger<BaseHealthCheckPublisher<TOptions>> logger,
             IHostEnvironment hostingEnvironment)
         {
-            _optionsMonitor = options;
+            optionsMonitor = options;
             Logger = logger;
             HostingEnvironment = hostingEnvironment;
         }
@@ -32,16 +31,16 @@ namespace Sitko.Core.Health
         {
             foreach (var entry in report.Entries)
             {
-                bool isNew = true;
-                bool isChanged = false;
-                _entries.AddOrUpdate(entry.Key, _ => entry.Value.Status, (_, reportEntry) =>
+                var isNew = true;
+                var isChanged = false;
+                entries.AddOrUpdate(entry.Key, _ => entry.Value.Status, (_, reportEntry) =>
                 {
                     isNew = false;
                     isChanged = reportEntry != entry.Value.Status;
                     return entry.Value.Status;
                 });
 
-                if (isNew && entry.Value.Status != HealthStatus.Healthy || isChanged)
+                if ((isNew && entry.Value.Status != HealthStatus.Healthy) || isChanged)
                 {
                     try
                     {
@@ -53,7 +52,7 @@ namespace Sitko.Core.Health
                     }
                 }
 
-                _entries[entry.Key] = entry.Value.Status;
+                entries[entry.Key] = entry.Value.Status;
             }
         }
 

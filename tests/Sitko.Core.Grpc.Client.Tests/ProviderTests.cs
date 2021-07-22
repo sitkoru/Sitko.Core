@@ -22,15 +22,15 @@ namespace Sitko.Core.Grpc.Client.Tests
 
             var resolver =
                 (TestGrpcClientResolver<TestService.TestServiceClient>)scope
-                    .Get<IGrpcServiceAddressResolver<TestService.TestServiceClient>>();
+                    .GetService<IGrpcServiceAddressResolver<TestService.TestServiceClient>>();
             resolver.SetPort(4000);
-            var provider1 = scope.Get<IGrpcClientProvider<TestService.TestServiceClient>>();
+            var provider1 = scope.GetService<IGrpcClientProvider<TestService.TestServiceClient>>();
             var client1 = provider1.Instance;
             Assert.NotNull(client1);
             Assert.Throws<RpcException>(() => client1.Request(new TestRequest()));
             Assert.Equal(new Uri("http://localhost:4000"), provider1.CurrentAddress);
             resolver.SetPort(5000);
-            var provider2 = scope.Get<IGrpcClientProvider<TestService.TestServiceClient>>();
+            var provider2 = scope.GetService<IGrpcClientProvider<TestService.TestServiceClient>>();
             var client2 = provider2.Instance;
             Assert.NotNull(client2);
             Assert.Throws<RpcException>(() => client2.Request(new TestRequest()));
@@ -39,7 +39,7 @@ namespace Sitko.Core.Grpc.Client.Tests
         }
     }
 
-    public class test : Interceptor
+    public class TestInterceptor : Interceptor
     {
     }
 
@@ -55,7 +55,7 @@ namespace Sitko.Core.Grpc.Client.Tests
                     {
                         moduleOptions.EnableHttp2UnencryptedSupport = true;
                         moduleOptions.DisableCertificatesValidation = true;
-                        moduleOptions.AddInterceptor<test>();
+                        moduleOptions.AddInterceptor<TestInterceptor>();
                     });
             return application;
         }
@@ -76,23 +76,17 @@ namespace Sitko.Core.Grpc.Client.Tests
     public class TestGrpcClientResolver<TClient> : IGrpcServiceAddressResolver<TClient>
         where TClient : ClientBase<TClient>
     {
-        private int _port = 1000;
+        private int port = 1000;
 
-        public Task InitAsync()
-        {
-            return Task.CompletedTask;
-        }
+        public Task InitAsync() => Task.CompletedTask;
 
-        public void SetPort(int port)
+        public void SetPort(int newPort)
         {
-            _port = port;
+            port = newPort;
             OnChange?.Invoke(this, EventArgs.Empty);
         }
 
-        public Uri GetAddress()
-        {
-            return new($"http://localhost:{_port}");
-        }
+        public Uri GetAddress() => new($"http://localhost:{port}");
 
         public event EventHandler? OnChange;
     }

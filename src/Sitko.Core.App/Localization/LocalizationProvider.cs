@@ -19,29 +19,17 @@ namespace Sitko.Core.App.Localization
 
     public class LocalizationProvider<T> : ILocalizationProvider<T>
     {
-        private readonly IStringLocalizer<T>? _localizer;
+        private readonly IStringLocalizer<T>? localizer;
 
-        public LocalizationProvider(IStringLocalizer<T>? localizer = null)
-        {
-            _localizer = localizer;
-        }
+        public LocalizationProvider(IStringLocalizer<T>? localizer = null) => this.localizer = localizer;
 
-        public string Localize(string message)
-        {
-            return Localize(message, new object[0]);
-        }
+        public string Localize(string message) => Localize(message, new object[0]);
 
-        public string Localize(string message, params object[] arguments)
-        {
-            return _localizer is not null ? _localizer[message, arguments]! : string.Format(message, arguments);
-        }
+        public string Localize(string message, params object[] arguments) => localizer is not null ? localizer[message, arguments]! : string.Format(message, arguments);
 
         public string this[string name] => Localize(name);
         public string this[string name, params object[] arguments] => Localize(name, arguments);
 
-        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
-        {
-            return _localizer?.GetAllStrings(includeParentCultures) ?? new LocalizedString[0];
-        }
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => localizer?.GetAllStrings(includeParentCultures) ?? new LocalizedString[0];
     }
 }

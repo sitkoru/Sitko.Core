@@ -19,7 +19,7 @@ namespace Sitko.Core.Health.Telegram.Tests
         public async Task Healthy()
         {
             var scope = await GetScopeAsync();
-            var publisher = scope.Get<IHealthCheckPublisher>();
+            var publisher = scope.GetService<IHealthCheckPublisher>();
 
             var failReport =
                 new HealthReport(
@@ -52,7 +52,7 @@ namespace Sitko.Core.Health.Telegram.Tests
         public async Task UnHealthy()
         {
             var scope = await GetScopeAsync();
-            var publisher = scope.Get<IHealthCheckPublisher>();
+            var publisher = scope.GetService<IHealthCheckPublisher>();
 
             try
             {
@@ -79,7 +79,7 @@ namespace Sitko.Core.Health.Telegram.Tests
         public async Task Degraded()
         {
             var scope = await GetScopeAsync();
-            var publisher = scope.Get<IHealthCheckPublisher>();
+            var publisher = scope.GetService<IHealthCheckPublisher>();
 
             var report =
                 new HealthReport(

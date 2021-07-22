@@ -16,9 +16,6 @@ namespace Sitko.Core.Db.InMemory
         InMemoryDatabaseModuleOptionsValidator<TDbContext> : BaseDbModuleOptionsValidator<
             InMemoryDatabaseModuleOptions<TDbContext>, TDbContext> where TDbContext : DbContext
     {
-        public InMemoryDatabaseModuleOptionsValidator()
-        {
-            RuleFor(o => o.Database).NotEmpty().WithMessage("Empty InMemory database name");
-        }
+        public InMemoryDatabaseModuleOptionsValidator() => RuleFor(o => o.Database).NotEmpty().WithMessage("Empty InMemory database name");
     }
 }

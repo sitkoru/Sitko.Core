@@ -21,22 +21,17 @@ namespace Sitko.Core.Apps.Blazor.Forms
             return Task.FromResult(result);
         }
 
-        protected override Task<FormSaveResult> UpdateAsync(FooModel entity) => Task.FromResult(new FormSaveResult(true, ""));
+        protected override Task<FormSaveResult> UpdateAsync(FooModel entity) =>
+            Task.FromResult(new FormSaveResult(true, ""));
     }
 
     public class FooFormValidator : AbstractValidator<FooForm>
     {
-        public FooFormValidator()
-        {
-            RuleFor(m => m.Foo).NotEmpty().WithMessage("Blaaaaa");
-        }
+        public FooFormValidator() => RuleFor(m => m.Foo).NotEmpty().WithMessage("Blaaaaa");
     }
 
     public class FooValidator : AbstractValidator<FooModel>
     {
-        public FooValidator()
-        {
-            RuleFor(m => m.Foo).NotEmpty().WithMessage("Blaaaaa");
-        }
+        public FooValidator() => RuleFor(m => m.Foo).NotEmpty().WithMessage("Blaaaaa");
     }
 }

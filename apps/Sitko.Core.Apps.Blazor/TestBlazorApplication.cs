@@ -24,9 +24,6 @@ namespace Sitko.Core.Apps.Blazor
                 .ConfigureLogLevel("Microsoft.EntityFrameworkCore", LogEventLevel.Warning);
         }
 
-        protected override bool LoggingEnableConsole(HostBuilderContext context)
-        {
-            return true;
-        }
+        protected override bool LoggingEnableConsole(HostBuilderContext context) => true;
     }
 }

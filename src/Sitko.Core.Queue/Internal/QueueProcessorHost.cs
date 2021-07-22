@@ -10,37 +10,37 @@ namespace Sitko.Core.Queue.Internal
 {
     internal class QueueProcessorHost<T> : IHostedService where T : class
     {
-        private readonly IQueue _queue;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly ILogger<QueueProcessorHost<T>> _logger;
-        private QueueSubscribeResult? _subscriptionResult;
+        private readonly IQueue queue;
+        private readonly IServiceProvider serviceProvider;
+        private readonly ILogger<QueueProcessorHost<T>> logger;
+        private QueueSubscribeResult? subscriptionResult;
 
         public QueueProcessorHost(IQueue queue, IServiceProvider serviceProvider, ILogger<QueueProcessorHost<T>> logger)
         {
-            _queue = queue;
-            _serviceProvider = serviceProvider;
-            _logger = logger;
+            this.queue = queue;
+            this.serviceProvider = serviceProvider;
+            this.logger = logger;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Start processing messages of type {Type}", typeof(T));
-            var result = await _queue.SubscribeAsync<T>(async (message, context) =>
+            logger.LogInformation("Start processing messages of type {Type}", typeof(T));
+            var result = await queue.SubscribeAsync<T>(async (message, context) =>
             {
-                _logger.LogDebug("New message of {Type}", typeof(T));
-                using var scope = _serviceProvider.CreateScope();
+                logger.LogDebug("New message of {Type}", typeof(T));
+                using var scope = serviceProvider.CreateScope();
                 var processors = scope.ServiceProvider.GetServices<IQueueProcessor<T>>().ToArray();
-                _logger.LogDebug("Processors of type {Type}: {Count}", typeof(T), processors.Length);
+                logger.LogDebug("Processors of type {Type}: {Count}", typeof(T), processors.Length);
                 foreach (IQueueProcessor<T> processor in processors)
                 {
                     try
                     {
-                        _logger.LogDebug("Run processor {Processor}", processor.GetType());
+                        logger.LogDebug("Run processor {Processor}", processor.GetType());
                         await processor.ProcessAsync(message, context);
                     }
                     catch (Exception e)
                     {
-                        _logger.LogError(e, "Error while processing message {MessageType}: {ErrorText}", typeof(T),
+                        logger.LogError(e, "Error while processing message {MessageType}: {ErrorText}", typeof(T),
                             e.ToString());
                     }
                 }
@@ -50,7 +50,7 @@ namespace Sitko.Core.Queue.Internal
 
             if (result.IsSuccess)
             {
-                _subscriptionResult = result;
+                subscriptionResult = result;
             }
             else
             {
@@ -60,9 +60,9 @@ namespace Sitko.Core.Queue.Internal
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            if (_subscriptionResult != null)
+            if (subscriptionResult != null)
             {
-                await _queue.UnsubscribeAsync<T>(_subscriptionResult.SubscriptionId);
+                await queue.UnsubscribeAsync<T>(subscriptionResult.SubscriptionId);
             }
         }
     }

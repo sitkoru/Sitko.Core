@@ -6,17 +6,12 @@ namespace Sitko.Core.Consul.Web
 {
     public class ConsulWebHealthCheck : IHealthCheck
     {
-        private readonly ConsulWebClient _consulClient;
+        private readonly ConsulWebClient consulClient;
 
-        public ConsulWebHealthCheck(ConsulWebClient consulClient)
-        {
-            _consulClient = consulClient;
-        }
+        public ConsulWebHealthCheck(ConsulWebClient consulClient) => this.consulClient = consulClient;
 
         public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
-            CancellationToken cancellationToken = default)
-        {
-            return _consulClient.CheckHealthAsync(cancellationToken);
-        }
+            CancellationToken cancellationToken = default) =>
+            consulClient.CheckHealthAsync(cancellationToken);
     }
 }

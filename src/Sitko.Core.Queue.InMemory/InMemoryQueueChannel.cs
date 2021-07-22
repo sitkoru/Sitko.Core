@@ -9,47 +9,37 @@ namespace Sitko.Core.Queue.InMemory
 {
     public class InMemoryQueueChannel<T> : InMemoryQueueChannel where T : class
     {
-        private readonly Channel<(T message, QueueMessageContext messageContext)> _channel = Channel.CreateUnbounded<(T message, QueueMessageContext messageContext)>();
-        private readonly ILogger _logger;
+        private readonly Channel<(T message, QueueMessageContext messageContext)> channel = Channel.CreateUnbounded<(T message, QueueMessageContext messageContext)>();
+        private readonly ILogger logger;
 
-        private readonly ConcurrentDictionary<Guid, Func<T, QueueMessageContext, Task>> _callbacks =
-            new ConcurrentDictionary<Guid, Func<T, QueueMessageContext, Task>>();
+        private readonly ConcurrentDictionary<Guid, Func<T, QueueMessageContext, Task>> callbacks = new();
 
-        private readonly Guid _id = Guid.NewGuid();
-        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        private readonly Guid id = Guid.NewGuid();
+        private readonly CancellationTokenSource cts = new();
 
-        public InMemoryQueueChannel(ILogger logger)
-        {
-            _logger = logger;
-        }
+        public InMemoryQueueChannel(ILogger logger) => this.logger = logger;
 
-        public void Publish(T message, QueueMessageContext context)
-        {
-            _channel.Writer.TryWrite((message, context));
-        }
+        public void Publish(T message, QueueMessageContext context) => channel.Writer.TryWrite((message, context));
 
         public Guid Subscribe(Func<T, QueueMessageContext, Task> callback)
         {
-            var id = Guid.NewGuid();
-            _callbacks.TryAdd(id, callback);
-            return id;
+            var subscriptionId = Guid.NewGuid();
+            callbacks.TryAdd(subscriptionId, callback);
+            return subscriptionId;
         }
 
-        public bool UnSubscribe(Guid id)
-        {
-            return _callbacks.TryRemove(id, out _);
-        }
+        public bool UnSubscribe(Guid subscriptionId) => callbacks.TryRemove(subscriptionId, out _);
 
         public void Run()
         {
-            _logger.LogInformation("Start message bus worker {Id}", _id);
+            logger.LogInformation("Start message bus worker {Id}", id);
             Task.Run(async () =>
             {
-                _logger.LogInformation("Message bus worker {Id} processing messages", _id);
-                await foreach (var entry in _channel.Reader.ReadAllAsync(_cts.Token))
+                logger.LogInformation("Message bus worker {Id} processing messages", id);
+                await foreach (var entry in channel.Reader.ReadAllAsync(cts.Token))
                 {
-                    _logger.LogDebug("Message bus worker {Id} got new message {@Message}", _id, entry);
-                    foreach (var callback in _callbacks.Values)
+                    logger.LogDebug("Message bus worker {Id} got new message {@Message}", id, entry);
+                    foreach (var callback in callbacks.Values)
                     {
                         try
                         {
@@ -57,26 +47,26 @@ namespace Sitko.Core.Queue.InMemory
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, "Error while processing message {@Message}: {ErrorText}", entry,
+                            logger.LogError(ex, "Error while processing message {@Message}: {ErrorText}", entry,
                                 ex.ToString());
                         }
                     }
 
-                    _logger.LogDebug("Message {@Message} processed by message bus worker {Id}", entry, _id);
+                    logger.LogDebug("Message {@Message} processed by message bus worker {Id}", entry, id);
                 }
 
-                _logger.LogInformation("Message bus worker {Id} stop processing messages", _id);
-            }, _cts.Token);
-            _logger.LogInformation("Message bus worker {Id} started", _id);
+                logger.LogInformation("Message bus worker {Id} stop processing messages", id);
+            }, cts.Token);
+            logger.LogInformation("Message bus worker {Id} started", id);
         }
 
         public override async Task StopAsync()
         {
-            _channel.Writer.TryComplete();
-            _logger.LogInformation("Stop message bus worker {Id}", _id);
-            _cts.Cancel();
-            _logger.LogInformation("Message bus worker {Id} stopped", _id);
-            await _channel.Reader.Completion;
+            channel.Writer.TryComplete();
+            logger.LogInformation("Stop message bus worker {Id}", id);
+            cts.Cancel();
+            logger.LogInformation("Message bus worker {Id} stopped", id);
+            await channel.Reader.Completion;
         }
     }
 

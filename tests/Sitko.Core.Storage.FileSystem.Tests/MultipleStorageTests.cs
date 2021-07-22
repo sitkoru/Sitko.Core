@@ -19,7 +19,7 @@
         public async Task Multiple()
         {
             var scope = await GetScopeAsync();
-            var storages = scope.GetAll<IStorage>();
+            var storages = scope.GetServices<IStorage>();
             Assert.NotEmpty(storages);
             Assert.Equal(3, storages.Count());
         }
@@ -28,7 +28,7 @@
         public async Task Default()
         {
             var scope = await GetScopeAsync();
-            var storage = scope.Get<IStorage>();
+            var storage = scope.GetService<IStorage>();
             Assert.NotNull(storage);
             Assert.IsAssignableFrom<IStorage<MultipleStorageTestsOptionsSecond>>(storage);
         }
@@ -37,7 +37,7 @@
         public async Task Specific()
         {
             var scope = await GetScopeAsync();
-            var storage = scope.Get<IStorage<MultipleStorageTestsOptionsThird>>();
+            var storage = scope.GetService<IStorage<MultipleStorageTestsOptionsThird>>();
             Assert.NotNull(storage);
         }
     }

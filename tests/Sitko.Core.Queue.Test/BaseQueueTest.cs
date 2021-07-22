@@ -16,21 +16,21 @@ namespace Sitko.Core.Queue.Tests
         }
     }
 
-    public abstract class BaseQueueTestScope<TQueueModule, TQueue, TConfig> : BaseTestScope
-        where TQueueModule : QueueModule<TQueue, TConfig>, new()
+    public abstract class BaseQueueTestScope<TQueueModule, TQueue, TQueueModuleOptions> : BaseTestScope
+        where TQueueModule : QueueModule<TQueue, TQueueModuleOptions>, new()
         where TQueue : class, IQueue
-        where TConfig : QueueModuleOptions, new()
+        where TQueueModuleOptions : QueueModuleOptions, new()
     {
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             base.ConfigureApplication(application, name);
-            application.AddModule<TQueueModule, TConfig>((
-                configuration, environment, moduleConfig) => Configure(configuration, environment, moduleConfig, name));
+            application.AddModule<TQueueModule, TQueueModuleOptions>((
+                configuration, environment, moduleOptions) => Configure(configuration, environment, moduleOptions, name));
 
             return application;
         }
 
-        protected abstract void Configure(IConfiguration configuration, IHostEnvironment environment, TConfig config,
+        protected abstract void Configure(IConfiguration configuration, IHostEnvironment environment, TQueueModuleOptions options,
             string name);
     }
 

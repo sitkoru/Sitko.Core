@@ -10,16 +10,10 @@ namespace Sitko.Core.Queue.Internal
 
     internal class QueueSubscription<T> : QueueSubscription where T : class
     {
-        public QueueSubscription(Func<T, QueueMessageContext, Task<bool>> callback)
-        {
-            Callback = callback;
-        }
+        public QueueSubscription(Func<T, QueueMessageContext, Task<bool>> callback) => Callback = callback;
 
 
-        public Task<bool> ProcessAsync(T message, QueueMessageContext context)
-        {
-            return Callback(message, context);
-        }
+        public Task<bool> ProcessAsync(T message, QueueMessageContext context) => Callback(message, context);
 
         private Func<T, QueueMessageContext, Task<bool>> Callback { get; }
     }

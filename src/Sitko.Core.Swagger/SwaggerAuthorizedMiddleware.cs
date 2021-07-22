@@ -11,13 +11,13 @@ namespace Sitko.Core.Swagger
 {
     public class SwaggerAuthorizedMiddleware
     {
-        private readonly RequestDelegate _next;
-        private readonly IPolicyEvaluator _policyEvaluator;
+        private readonly RequestDelegate next;
+        private readonly IPolicyEvaluator policyEvaluator;
 
         public SwaggerAuthorizedMiddleware(RequestDelegate next, IPolicyEvaluator policyEvaluator)
         {
-            _next = next;
-            _policyEvaluator = policyEvaluator;
+            this.next = next;
+            this.policyEvaluator = policyEvaluator;
         }
 
         public async Task Invoke(HttpContext context)
@@ -31,9 +31,9 @@ namespace Sitko.Core.Swagger
                         new ClaimsAuthorizationRequirement("userFlag", new[] {"isAdmin"})
                     }, new[] {"Cookies", "oidc"});
                 var authenticateResult =
-                    await _policyEvaluator.AuthenticateAsync(policy, context);
+                    await policyEvaluator.AuthenticateAsync(policy, context);
                 var authorizationResult =
-                    await _policyEvaluator.AuthorizeAsync(policy, authenticateResult, context, null);
+                    await policyEvaluator.AuthorizeAsync(policy, authenticateResult, context, null);
                 if (!authorizationResult.Succeeded)
                 {
                     await context.ChallengeAsync();
@@ -41,7 +41,7 @@ namespace Sitko.Core.Swagger
                 }
             }
 
-            await _next.Invoke(context);
+            await next.Invoke(context);
         }
     }
 

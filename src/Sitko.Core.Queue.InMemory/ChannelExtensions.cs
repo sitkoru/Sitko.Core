@@ -12,7 +12,7 @@ namespace Sitko.Core.Queue.InMemory
         {
             while (await reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
             {
-                while (reader.TryRead(out T? item))
+                while (reader.TryRead(out var item))
                 {
                     yield return item;
                 }

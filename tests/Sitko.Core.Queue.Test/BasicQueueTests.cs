@@ -21,7 +21,7 @@ namespace Sitko.Core.Queue.Tests
         {
             var scope = await GetScopeAsync();
 
-            var queue = scope.Get<IQueue>();
+            var queue = scope.GetService<IQueue>();
 
             Guid? receivedId = null;
             var subResult = await queue.SubscribeAsync<TestMessage>((message, _) =>
@@ -47,7 +47,7 @@ namespace Sitko.Core.Queue.Tests
         {
             var scope = await GetScopeAsync();
 
-            var queue = scope.Get<IQueue>();
+            var queue = scope.GetService<IQueue>();
 
             Guid? receivedId1 = null;
             var subResult = await queue.SubscribeAsync<TestMessage>((message, _) =>
@@ -83,7 +83,7 @@ namespace Sitko.Core.Queue.Tests
         {
             var scope = await GetScopeAsync();
 
-            var queue = scope.Get<IQueue>();
+            var queue = scope.GetService<IQueue>();
 
             var msg = new TestMessage();
 
@@ -104,7 +104,7 @@ namespace Sitko.Core.Queue.Tests
         {
             var scope = await GetScopeAsync();
 
-            var queue = scope.Get<IQueue>();
+            var queue = scope.GetService<IQueue>();
 
             Guid? receivedId = null;
             var subResult = await queue.SubscribeAsync<TestMessage>((message, _) =>
@@ -139,7 +139,7 @@ namespace Sitko.Core.Queue.Tests
         {
             var scope = await GetScopeAsync();
 
-            var queue = scope.Get<IQueue>();
+            var queue = scope.GetService<IQueue>();
             var sentContext = new QueueMessageContext
             {
                 Id = Guid.NewGuid(),

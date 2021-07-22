@@ -30,18 +30,12 @@ namespace Sitko.Core.Blazor.FileUpload
 
     public abstract class BaseStorageItemInputComponent : BaseStorageFileInputComponent<StorageItem>
     {
-        protected override StorageItem? GetResult(IEnumerable<StorageFileUploadResult> results)
-        {
-            return results.FirstOrDefault()?.StorageItem;
-        }
+        protected override StorageItem? GetResult(IEnumerable<StorageFileUploadResult> results) => results.FirstOrDefault()?.StorageItem;
     }
 
     public abstract class BaseStorageItemsInputComponent : BaseStorageFileInputComponent<IEnumerable<StorageItem>>
     {
-        protected override IEnumerable<StorageItem> GetResult(IEnumerable<StorageFileUploadResult> results)
-        {
-            return results.Select(r => r.StorageItem);
-        }
+        protected override IEnumerable<StorageItem> GetResult(IEnumerable<StorageFileUploadResult> results) => results.Select(r => r.StorageItem);
     }
 
     public class StorageFileUploadResult : IFileUploadResult

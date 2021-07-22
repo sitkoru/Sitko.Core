@@ -70,9 +70,6 @@ namespace Sitko.Core.Configuration.Vault.Tests
 
     public class TestModuleWithValidationConfigValidator : AbstractValidator<TestModuleWithValidationConfig>
     {
-        public TestModuleWithValidationConfigValidator()
-        {
-            RuleFor(o => o.Bar).Equal(0).WithMessage("Bar must equals zero!");
-        }
+        public TestModuleWithValidationConfigValidator() => RuleFor(o => o.Bar).Equal(0).WithMessage("Bar must equals zero!");
     }
 }

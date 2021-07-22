@@ -17,10 +17,10 @@ namespace Sitko.Core.Apps.Blazor.Pages
 {
     public partial class Index
     {
-        private BarAntRepositoryList _barList = null!;
-        private TableFilter<string>[] _barFilter = Array.Empty<TableFilter<string>>();
-        private AntRepositoryForm<BarModel, Guid, BarForm> _frm = null!;
-        private BarModel[] _bars = Array.Empty<BarModel>();
+        private BarAntRepositoryList barList = null!;
+        private TableFilter<string>[] barFilter = Array.Empty<TableFilter<string>>();
+        private AntRepositoryForm<BarModel, Guid, BarForm> frm = null!;
+        private BarModel[] bars = Array.Empty<BarModel>();
         public BarModel? Bar { get; set; }
         [Inject] public IStorage Storage { get; set; } = null!;
         [Inject] public ILocalizationProvider<App> LocalizationProvider { get; set; } = null!;
@@ -29,23 +29,23 @@ namespace Sitko.Core.Apps.Blazor.Pages
         protected override async Task InitializeAsync()
         {
             await base.InitializeAsync();
-            var bars = await GetService<BarRepository>().GetAllAsync();
-            if (bars.itemsCount == 0)
+            var result = await GetService<BarRepository>().GetAllAsync();
+            if (result.itemsCount == 0)
             {
                 await GetService<BarRepository>().AddAsync(new BarModel {Bar = "Bar", Id = Guid.NewGuid()});
-                bars = await GetService<BarRepository>().GetAllAsync();
+                result = await GetService<BarRepository>().GetAllAsync();
             }
 
-            Bars = bars.items;
-            _barFilter = (await GetService<BarContext>().Bars.Select(a => a.Bar).Distinct().ToListAsync())
+            Bars = result.items;
+            barFilter = (await GetService<BarContext>().Bars.Select(a => a.Bar).Distinct().ToListAsync())
                 .Select(x => new TableFilter<string> {Text = x, Value = x}).ToArray();
             Bar = Bars.First();
         }
 
         public BarModel[] Bars
         {
-            get => _bars;
-            set => _bars = value;
+            get => bars;
+            set => bars = value;
         }
 
         private static Task<object> GenerateMetadataAsync()
@@ -61,7 +61,7 @@ namespace Sitko.Core.Apps.Blazor.Pages
             return Task.CompletedTask;
         }
 
-        private async Task CountSummaryAsync() => Summary = await _barList.SumAsync(model => model.Sum);
+        private async Task CountSummaryAsync() => Summary = await barList.SumAsync(model => model.Sum);
     }
 
     public class BarStorageMetadata

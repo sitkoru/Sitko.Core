@@ -9,17 +9,13 @@ namespace Sitko.Core.Health.Teams
     {
         public static Application AddTeamsHealthReporter(this Application application,
             Action<IConfiguration, IHostEnvironment, TeamsHealthReporterModuleOptions> configure,
-            string? optionsKey = null)
-        {
-            return application.AddModule<TeamsHealthReporterModule, TeamsHealthReporterModuleOptions>(configure,
+            string? optionsKey = null) =>
+            application.AddModule<TeamsHealthReporterModule, TeamsHealthReporterModuleOptions>(configure,
                 optionsKey);
-        }
 
         public static Application AddTeamsHealthReporter(this Application application,
-            Action<TeamsHealthReporterModuleOptions>? configure = null, string? optionsKey = null)
-        {
-            return application.AddModule<TeamsHealthReporterModule, TeamsHealthReporterModuleOptions>(configure,
+            Action<TeamsHealthReporterModuleOptions>? configure = null, string? optionsKey = null) =>
+            application.AddModule<TeamsHealthReporterModule, TeamsHealthReporterModuleOptions>(configure,
                 optionsKey);
-        }
     }
 }

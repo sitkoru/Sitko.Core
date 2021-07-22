@@ -8,15 +8,11 @@ namespace Sitko.Core.Auth.Basic
     public static class ApplicationExtensions
     {
         public static Application AddBasicAuth(this Application application,
-            Action<IConfiguration, IHostEnvironment, BasicAuthModuleOptions> configure, string? optionsKey = null)
-        {
-            return application.AddModule<BasicAuthModule, BasicAuthModuleOptions>(configure, optionsKey);
-        }
+            Action<IConfiguration, IHostEnvironment, BasicAuthModuleOptions> configure, string? optionsKey = null) =>
+            application.AddModule<BasicAuthModule, BasicAuthModuleOptions>(configure, optionsKey);
 
         public static Application AddBasicAuth(this Application application,
-            Action<BasicAuthModuleOptions>? configure = null, string? optionsKey = null)
-        {
-            return application.AddModule<BasicAuthModule, BasicAuthModuleOptions>(configure, optionsKey);
-        }
+            Action<BasicAuthModuleOptions>? configure = null, string? optionsKey = null) =>
+            application.AddModule<BasicAuthModule, BasicAuthModuleOptions>(configure, optionsKey);
     }
 }

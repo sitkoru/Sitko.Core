@@ -12,10 +12,7 @@ namespace Sitko.Core.Apps.Vault
 {
     public class Program
     {
-        public static async Task Main(string[] args)
-        {
-            await CreateApplication(args).RunAsync();
-        }
+        public static async Task Main(string[] args) => await CreateApplication(args).RunAsync();
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             CreateApplication(args).GetHostBuilder();
@@ -63,10 +60,7 @@ namespace Sitko.Core.Apps.Vault
             }
         }
 
-        private string GetSenderType()
-        {
-            return new List<string>() {"email", "telegram"}.OrderBy(_ => Guid.NewGuid()).First();
-        }
+        private static string GetSenderType() => new List<string>() {"email", "telegram"}.OrderBy(_ => Guid.NewGuid()).First();
     }
 
     public class MailSender

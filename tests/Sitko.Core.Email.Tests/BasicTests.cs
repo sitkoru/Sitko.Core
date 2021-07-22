@@ -18,8 +18,8 @@ namespace Sitko.Core.Email.Tests
         public async Task Send()
         {
             var scope = await GetScopeAsync();
-            var mailer = scope.Get<IMailSender>();
-            var configuration = scope.Get<IConfiguration>();
+            var mailer = scope.GetService<IMailSender>();
+            var configuration = scope.GetService<IConfiguration>();
             const string txtName = "file.txt";
             const string imgName = "img.jpg";
             await using var txtFile = File.Open($"Data/{txtName}", FileMode.Open);

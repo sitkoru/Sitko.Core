@@ -22,8 +22,8 @@ namespace Sitko.Core.Queue.Nats.Tests
         {
             var scope = await GetScopeAsync();
 
-            var queue = scope.Get<IQueue>();
-            var messageOptions = scope.Get<IEnumerable<IQueueMessageOptions>>().ToArray();
+            var queue = scope.GetService<IQueue>();
+            var messageOptions = scope.GetService<IEnumerable<IQueueMessageOptions>>().ToArray();
             Assert.NotNull(messageOptions);
             Assert.NotEmpty(messageOptions);
 

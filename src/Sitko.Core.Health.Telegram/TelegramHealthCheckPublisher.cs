@@ -14,15 +14,15 @@ namespace Sitko.Core.Health.Telegram
 {
     public class TelegramHealthCheckPublisher : BaseHealthCheckPublisher<TelegramHealthReporterModuleOptions>
     {
-        private readonly ChatId _chatId;
-        private readonly ITelegramBotClient _telegramBotClient;
+        private readonly ChatId chatId;
+        private readonly ITelegramBotClient telegramBotClient;
 
         public TelegramHealthCheckPublisher(IOptionsMonitor<TelegramHealthReporterModuleOptions> options,
             ILogger<TelegramHealthCheckPublisher> logger, IHostEnvironment hostingEnvironment,
             IHttpClientFactory httpClientFactory) : base(options, logger, hostingEnvironment)
         {
-            _chatId = new ChatId(Options.ChatId);
-            _telegramBotClient = new TelegramBotClient(Options.Token,
+            chatId = new ChatId(Options.ChatId);
+            telegramBotClient = new TelegramBotClient(Options.Token,
                 httpClientFactory.CreateClient());
         }
 
@@ -50,7 +50,7 @@ namespace Sitko.Core.Health.Telegram
                 }
             }
 
-            return _telegramBotClient.SendTextMessageAsync(_chatId,
+            return telegramBotClient.SendTextMessageAsync(chatId,
                 text, ParseMode.Markdown,
                 cancellationToken: cancellationToken);
         }

@@ -16,8 +16,8 @@ namespace Sitko.Core.Xunit
     public interface IBaseTestScope : IAsyncDisposable
     {
         Task ConfigureAsync(string name, ITestOutputHelper testOutputHelper);
-        T Get<T>();
-        IEnumerable<T> GetAll<T>();
+        T GetService<T>();
+        IEnumerable<T> GetServices<T>();
         ILogger<T> GetLogger<T>();
         Task OnCreatedAsync();
         Task StartApplicationAsync();
@@ -28,27 +28,27 @@ namespace Sitko.Core.Xunit
         protected IServiceProvider? ServiceProvider { get; set; }
         protected IConfiguration? Configuration { get; set; }
         protected IHostEnvironment? Environment { get; set; }
-        private TApplication? application;
+        private TApplication? scopeApplication;
         private bool isApplicationStarted;
         protected string? Name { get; private set; }
 
         public async Task ConfigureAsync(string name, ITestOutputHelper testOutputHelper)
         {
             Name = name;
-            application = CreateApplication();
+            scopeApplication = CreateApplication();
 
-            application.ConfigureServices((_, context, services) =>
+            scopeApplication.ConfigureServices((_, context, services) =>
             {
                 ConfigureServices(context.Configuration, context.HostingEnvironment, services, name);
             });
 
-            application.ConfigureLogging((_, loggerConfiguration, logLevelSwitcher) =>
+            scopeApplication.ConfigureLogging((_, loggerConfiguration, logLevelSwitcher) =>
             {
                 loggerConfiguration.WriteTo.TestOutput(testOutputHelper, levelSwitch: logLevelSwitcher.Switch);
             });
 
-            application = ConfigureApplication(application, name);
-            var host = await application.BuildAndInitAsync();
+            scopeApplication = ConfigureApplication(scopeApplication, name);
+            var host = await scopeApplication.BuildAndInitAsync();
             ServiceProvider = host.Services.CreateScope().ServiceProvider;
             Configuration = ServiceProvider.GetService<IConfiguration>();
             Environment = ServiceProvider.GetService<IHostEnvironment>();
@@ -62,7 +62,7 @@ namespace Sitko.Core.Xunit
                 return typedApplication;
             }
 
-            throw new Exception($"Can't create application {typeof(TApplication)}");
+            throw new InvalidOperationException($"Can't create application {typeof(TApplication)}");
         }
 
 
@@ -73,14 +73,14 @@ namespace Sitko.Core.Xunit
             services;
 
 
-        public T Get<T>()
+        public T GetService<T>()
         {
 #pragma warning disable 8714
             return ServiceProvider!.GetRequiredService<T>();
 #pragma warning restore 8714
         }
 
-        public IEnumerable<T> GetAll<T>() => ServiceProvider!.GetServices<T>();
+        public IEnumerable<T> GetServices<T>() => ServiceProvider!.GetServices<T>();
 
         public ILogger<T> GetLogger<T>() => ServiceProvider!.GetRequiredService<ILogger<T>>();
 
@@ -89,22 +89,22 @@ namespace Sitko.Core.Xunit
 
         public virtual async ValueTask DisposeAsync()
         {
-            if (application != null)
+            if (scopeApplication != null)
             {
                 if (isApplicationStarted)
                 {
-                    await application.StopAsync();
+                    await scopeApplication.StopAsync();
                 }
 
-                await application.DisposeAsync();
+                await scopeApplication.DisposeAsync();
             }
         }
 
         public async Task StartApplicationAsync()
         {
-            if (application != null && !isApplicationStarted)
+            if (scopeApplication != null && !isApplicationStarted)
             {
-                await application.StartAsync();
+                await scopeApplication.StartAsync();
                 isApplicationStarted = true;
             }
         }
@@ -122,10 +122,10 @@ namespace Sitko.Core.Xunit
 
         protected override void ConfigureLogging(ApplicationContext applicationContext,
             LoggerConfiguration loggerConfiguration,
-            LogLevelSwitcher logLevelSwitcher)
+            LogLevelSwitcher appLogLevelSwitcher)
         {
-            base.ConfigureLogging(applicationContext, loggerConfiguration, logLevelSwitcher);
-            logLevelSwitcher.Switch.MinimumLevel = LogEventLevel.Debug;
+            base.ConfigureLogging(applicationContext, loggerConfiguration, appLogLevelSwitcher);
+            appLogLevelSwitcher.Switch.MinimumLevel = LogEventLevel.Debug;
         }
 
         protected override void ConfigureHostConfiguration(IConfigurationBuilder configurationBuilder)

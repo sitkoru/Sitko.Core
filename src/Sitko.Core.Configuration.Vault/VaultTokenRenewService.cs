@@ -10,23 +10,20 @@ namespace Sitko.Core.Configuration.Vault
 {
     public class VaultTokenRenewService : BackgroundService
     {
-        private readonly IOptionsMonitor<VaultConfigurationModuleOptions> _optionsMonitor;
+        private readonly IOptionsMonitor<VaultConfigurationModuleOptions> optionsMonitor;
 
-        public VaultTokenRenewService(IOptionsMonitor<VaultConfigurationModuleOptions> optionsMonitor)
-        {
-            _optionsMonitor = optionsMonitor;
-        }
+        public VaultTokenRenewService(IOptionsMonitor<VaultConfigurationModuleOptions> optionsMonitor) => this.optionsMonitor = optionsMonitor;
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                await Task.FromResult(TimeSpan.FromMinutes(_optionsMonitor.CurrentValue.TokenRenewIntervalMinutes))
+                await Task.FromResult(TimeSpan.FromMinutes(optionsMonitor.CurrentValue.TokenRenewIntervalMinutes))
                     .ConfigureAwait(false);
-                if (_optionsMonitor.CurrentValue.RenewToken)
+                if (optionsMonitor.CurrentValue.RenewToken)
                 {
-                    var authMethod = new TokenAuthMethodInfo(_optionsMonitor.CurrentValue.Token);
-                    var vaultClientSettings = new VaultClientSettings(_optionsMonitor.CurrentValue.Uri, authMethod);
+                    var authMethod = new TokenAuthMethodInfo(optionsMonitor.CurrentValue.Token);
+                    var vaultClientSettings = new VaultClientSettings(optionsMonitor.CurrentValue.Uri, authMethod);
                     var vaultClient = new VaultClient(vaultClientSettings);
                     await vaultClient.V1.Auth.Token.RenewSelfAsync().ConfigureAwait(false);
                 }

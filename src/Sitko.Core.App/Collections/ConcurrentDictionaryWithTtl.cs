@@ -7,33 +7,38 @@ namespace Sitko.Core.App.Collections
 {
     public class ConcurrentDictionaryWithTtl<TKey, TValue> : ConcurrentDictionary<TKey, TValue>, IDisposable
     {
-        private readonly Func<TValue, DateTimeOffset> _expirationPredicate;
-        private readonly TimeSpan _ttl = TimeSpan.FromMinutes(30);
-        private readonly TimeSpan _frequency = TimeSpan.FromSeconds(30);
-        private readonly Timer? _timer;
+        private readonly Func<TValue, DateTimeOffset> expirationPredicate;
+        private readonly TimeSpan ttl = TimeSpan.FromMinutes(30);
+        private readonly TimeSpan frequency = TimeSpan.FromSeconds(30);
+        private readonly Timer? timer;
 
         public ConcurrentDictionaryWithTtl(Func<TValue, DateTimeOffset> expirationPredicate, TimeSpan? ttl = null,
             TimeSpan? frequency = null)
         {
-            _expirationPredicate = expirationPredicate;
-            if (ttl.HasValue) _ttl = ttl.Value;
-            if (frequency.HasValue) _frequency = frequency.Value;
-            _timer = new Timer(_ => Expire(), null, TimeSpan.Zero, _frequency);
+            this.expirationPredicate = expirationPredicate;
+            if (ttl.HasValue)
+            {
+                this.ttl = ttl.Value;
+            }
+
+            if (frequency.HasValue)
+            {
+                this.frequency = frequency.Value;
+            }
+
+            timer = new Timer(_ => Expire(), null, TimeSpan.Zero, this.frequency);
         }
 
         private void Expire()
         {
-            var expireDate = DateTimeOffset.UtcNow - _ttl;
-            var expired = this.Where(item => _expirationPredicate(item.Value) < expireDate).ToList();
+            var expireDate = DateTimeOffset.UtcNow - ttl;
+            var expired = this.Where(item => expirationPredicate(item.Value) < expireDate).ToList();
             foreach (var item in expired)
             {
                 TryRemove(item.Key, out _);
             }
         }
 
-        public void Dispose()
-        {
-            _timer?.Dispose();
-        }
+        public void Dispose() => timer?.Dispose();
     }
 }

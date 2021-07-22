@@ -8,15 +8,11 @@ namespace Sitko.Core.ElasticStack
     public static class ApplicationExtensions
     {
         public static Application AddElasticStack(this Application application,
-            Action<IConfiguration, IHostEnvironment, ElasticStackModuleOptions> configure, string? optionsKey = null)
-        {
-            return application.AddModule<ElasticStackModule, ElasticStackModuleOptions>(configure, optionsKey);
-        }
+            Action<IConfiguration, IHostEnvironment, ElasticStackModuleOptions> configure, string? optionsKey = null) =>
+            application.AddModule<ElasticStackModule, ElasticStackModuleOptions>(configure, optionsKey);
 
         public static Application AddElasticStack(this Application application,
-            Action<ElasticStackModuleOptions>? configure = null, string? optionsKey = null)
-        {
-            return application.AddModule<ElasticStackModule, ElasticStackModuleOptions>(configure, optionsKey);
-        }
+            Action<ElasticStackModuleOptions>? configure = null, string? optionsKey = null) =>
+            application.AddModule<ElasticStackModule, ElasticStackModuleOptions>(configure, optionsKey);
     }
 }

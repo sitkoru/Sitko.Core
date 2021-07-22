@@ -52,14 +52,14 @@ namespace Sitko.Core.Grpc.Server.Consul
                 var dockerIp = DockerHelper.GetContainerAddress();
                 if (string.IsNullOrEmpty(dockerIp))
                 {
-                    throw new Exception("Can't find host ip for grpc");
+                    throw new InvalidOperationException("Can't find host ip for grpc");
                 }
 
                 host = dockerIp;
             }
 
             this.logger.LogInformation("GRPC Host: {Host}", host);
-            if (Options.Port != null && Options.Port > 0)
+            if (Options.Port is > 0)
             {
                 this.logger.LogInformation("Use grpc port from config");
                 port = Options.Port.Value;
@@ -67,11 +67,16 @@ namespace Sitko.Core.Grpc.Server.Consul
             else
             {
                 var serverAddressesFeature = server.Features.Get<IServerAddressesFeature>();
+                if (serverAddressesFeature is null)
+                {
+                    throw new InvalidOperationException("IServerAddressesFeature not present");
+                }
+
                 var address = serverAddressesFeature.Addresses.Select(a => new Uri(a))
                     .FirstOrDefault(u => u.Scheme == "https");
                 if (address == null)
                 {
-                    throw new Exception("Can't find https address for grpc service");
+                    throw new InvalidOperationException("Can't find https address for grpc service");
                 }
 
                 port = address.Port > 0 ? address.Port : 443;
@@ -182,12 +187,12 @@ namespace Sitko.Core.Grpc.Server.Consul
             return HealthCheckResult.Unhealthy($"Error response from consul: {serviceResponse.StatusCode}");
         }
 
-        private string GetServiceName<T>()
+        private static string GetServiceName<T>()
         {
             var serviceName = typeof(T).BaseType?.DeclaringType?.Name;
             if (string.IsNullOrEmpty(serviceName))
             {
-                throw new Exception($"Can't find service name for {typeof(T)}");
+                throw new InvalidOperationException($"Can't find service name for {typeof(T)}");
             }
 
             return serviceName;

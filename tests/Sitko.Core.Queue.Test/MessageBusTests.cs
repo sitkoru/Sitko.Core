@@ -21,7 +21,7 @@ namespace Sitko.Core.Queue.Tests
         {
             var scope = await GetScopeAsync();
 
-            var queue = scope.Get<IQueue>();
+            var queue = scope.GetService<IQueue>();
 
             Guid? receivedId = null;
             var sub = await queue.SubscribeAsync<TestRequest>((testRequest, _) =>
@@ -31,7 +31,7 @@ namespace Sitko.Core.Queue.Tests
             });
             Assert.True(sub.IsSuccess);
 
-            var mediator = scope.Get<IMediator>();
+            var mediator = scope.GetService<IMediator>();
             var request = new TestRequest();
             await mediator.Publish(request);
 
@@ -52,10 +52,8 @@ namespace Sitko.Core.Queue.Tests
         }
 
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
-            TestQueueOptions options, string name)
-        {
+            TestQueueOptions options, string name) =>
             options.TranslateMediatRNotification<TestRequest>();
-        }
     }
 
     public class TestRequest : TestMessage, INotification

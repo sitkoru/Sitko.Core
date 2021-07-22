@@ -28,7 +28,7 @@ namespace Sitko.Core.HangFire
             base.ConfigureServices(context, services, startupOptions);
             services.AddHangfire(config =>
             {
-                startupOptions.Configure?.Invoke(config);
+                startupOptions.ConfigureHangfire?.Invoke(config);
             });
             if (startupOptions.IsHealthChecksEnabled)
             {
@@ -71,7 +71,7 @@ namespace Sitko.Core.HangFire
 
     public abstract class HangfireModuleOptions : BaseModuleOptions
     {
-        [JsonIgnore] public Action<IGlobalConfiguration>? Configure { get; set; }
+        [JsonIgnore] public Action<IGlobalConfiguration>? ConfigureHangfire { get; set; }
 
         public bool IsWorkersEnabled { get; private set; }
         public int Workers { get; private set; }
@@ -118,7 +118,7 @@ namespace Sitko.Core.HangFire
         public int DistributedLockTimeoutInMinutes { get; set; } = 300;
 
         public HangfirePostgresModuleOptions() =>
-            Configure = configuration =>
+            ConfigureHangfire = configuration =>
             {
                 configuration.UsePostgreSqlStorage(ConnectionString,
                     new PostgreSqlStorageOptions

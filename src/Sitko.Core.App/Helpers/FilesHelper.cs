@@ -5,7 +5,7 @@ namespace Sitko.Core.App.Helpers
 {
     public static class FilesHelper
     {
-        private static readonly string[] s_units = {"bytes", "KB", "MB", "GB", "TB", "PB"};
+        private static readonly string[] Units = {"bytes", "KB", "MB", "GB", "TB", "PB"};
 
         public static string HumanSize(long fileSize)
         {
@@ -24,7 +24,7 @@ namespace Sitko.Core.App.Helpers
             }
 
             var sizeStr = Math.Round(size, 2).ToString("N2", CultureInfo.InvariantCulture);
-            return $"{sizeStr} {s_units[unit]}";
+            return $"{sizeStr} {Units[unit]}";
         }
     }
 }

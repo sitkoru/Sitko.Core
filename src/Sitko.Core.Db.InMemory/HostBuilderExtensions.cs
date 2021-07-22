@@ -10,17 +10,18 @@ namespace Sitko.Core.Db.InMemory
         public static IHostBuilder AddInMemoryDb<T>(this IHostBuilder hostBuilder, bool useContextPooling,
             string databaseName,
             IConfiguration configuration,
-            Action<IServiceProvider, DbContextOptionsBuilder<T>, IConfiguration> configureInMemory) where T : DbContext
-        {
-            return hostBuilder.ConfigureServices((context, collection) =>
+            Action<IServiceProvider, DbContextOptionsBuilder<T>, IConfiguration> configureInMemory) where T : DbContext =>
+            hostBuilder.ConfigureServices((context, collection) =>
             {
-                if (string.IsNullOrEmpty(databaseName)) databaseName = context.HostingEnvironment.ApplicationName;
+                if (string.IsNullOrEmpty(databaseName))
+                {
+                    databaseName = context.HostingEnvironment.ApplicationName;
+                }
 
                 collection.AddInMemoryDb<T>(useContextPooling, databaseName, (serviceProvider, builder) =>
                 {
                     configureInMemory(serviceProvider, builder, configuration);
                 });
             });
-        }
     }
 }

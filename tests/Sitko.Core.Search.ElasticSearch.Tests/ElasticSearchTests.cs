@@ -11,6 +11,8 @@ using Xunit.Abstractions;
 
 namespace Sitko.Core.Search.ElasticSearch.Tests
 {
+    using System.Globalization;
+
     public class ElasticSearchTests : BaseTest<ElasticSearchTestScope>
     {
         public ElasticSearchTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
@@ -21,8 +23,8 @@ namespace Sitko.Core.Search.ElasticSearch.Tests
         public async Task Search()
         {
             var scope = await GetScopeAsync();
-            var provider = scope.Get<TestModelProvider>();
-            var searchProvider = scope.Get<ISearchProvider<TestModel, Guid>>();
+            var provider = scope.GetService<TestModelProvider>();
+            var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid>>();
             await searchProvider.DeleteIndexAsync();
             await searchProvider.InitAsync();
 
@@ -59,7 +61,7 @@ namespace Sitko.Core.Search.ElasticSearch.Tests
             base.ConfigureApplication(application, name);
             application.AddElasticSearch(moduleOptions =>
             {
-                moduleOptions.Prefix = name.ToLower();
+                moduleOptions.Prefix = name.ToLower(CultureInfo.InvariantCulture);
                 moduleOptions.EnableClientLogging = true;
             });
 
@@ -83,43 +85,33 @@ namespace Sitko.Core.Search.ElasticSearch.Tests
 
     public class TestSearchProvider : BaseSearchProvider<TestModel, Guid, BaseSearchModel>
     {
-        private readonly TestModelProvider _testModelProvider;
+        private readonly TestModelProvider testModelProvider;
 
         public TestSearchProvider(ILogger<TestSearchProvider> logger,
             TestModelProvider testModelProvider,
-            ISearcher<BaseSearchModel>? searcher = null) : base(logger, searcher)
-        {
-            _testModelProvider = testModelProvider;
-        }
+            ISearcher<BaseSearchModel>? searcher = null) : base(logger, searcher) =>
+            this.testModelProvider = testModelProvider;
 
-        protected override Guid ParseId(string id)
-        {
-            return Guid.Parse(id);
-        }
+        protected override Guid ParseId(string id) => Guid.Parse(id);
 
         protected override Task<BaseSearchModel[]> GetSearchModelsAsync(TestModel[] entities,
-            CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(entities
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(entities
                 .Select(e => new BaseSearchModel(e.Id.ToString(), e.Title, e.Url, e.Description, e.Date)).ToArray());
-        }
 
         protected override Task<TestModel[]> GetEntitiesAsync(BaseSearchModel[] searchModels,
             CancellationToken cancellationToken = default)
         {
             var ids = searchModels.Select(m => Guid.Parse(m.Id));
-            return Task.FromResult(_testModelProvider.Models.Where(m => ids.Contains(m.Id)).ToArray());
+            return Task.FromResult(testModelProvider.Models.Where(m => ids.Contains(m.Id)).ToArray());
         }
 
-        protected override string GetId(TestModel entity)
-        {
-            return entity.Id.ToString();
-        }
+        protected override string GetId(TestModel entity) => entity.Id.ToString();
     }
 
     public class TestModelProvider
     {
-        public readonly List<TestModel> Models = new List<TestModel>();
+        public List<TestModel> Models { get; } = new();
 
         public TestModelProvider AddModel(TestModel model)
         {

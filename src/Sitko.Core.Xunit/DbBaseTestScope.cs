@@ -10,10 +10,13 @@ using Sitko.Core.Db.Postgres;
 
 namespace Sitko.Core.Xunit
 {
+    using JetBrains.Annotations;
+
+    [PublicAPI]
     public abstract class DbBaseTestScope<TApplication, TDbContext> : BaseTestScope<TApplication>
         where TDbContext : DbContext where TApplication : Application
     {
-        private TDbContext? _dbContext;
+        private TDbContext? scopeDbContext;
 
         protected override TApplication ConfigureApplication(TApplication application, string name)
         {
@@ -53,31 +56,28 @@ namespace Sitko.Core.Xunit
 
         public override async Task OnCreatedAsync()
         {
-            _dbContext = ServiceProvider!.GetService<TDbContext>();
-            if (_dbContext == null)
+            scopeDbContext = ServiceProvider!.GetService<TDbContext>();
+            if (scopeDbContext == null)
             {
                 throw new Exception("Can't create db context");
             }
 
-            await _dbContext.Database.EnsureDeletedAsync();
-            await _dbContext.Database.EnsureCreatedAsync();
-            await InitDbContextAsync(_dbContext);
+            await scopeDbContext.Database.EnsureDeletedAsync();
+            await scopeDbContext.Database.EnsureCreatedAsync();
+            await InitDbContextAsync(scopeDbContext);
         }
 
         public TDbContext GetDbContext()
         {
-            if (_dbContext == null)
+            if (scopeDbContext == null)
             {
-                throw new Exception("Db context is null");
+                throw new InvalidOperationException("Db context is null");
             }
 
-            return _dbContext;
+            return scopeDbContext;
         }
 
-        protected virtual Task InitDbContextAsync(TDbContext dbContext)
-        {
-            return Task.CompletedTask;
-        }
+        protected virtual Task InitDbContextAsync(TDbContext dbContext) => Task.CompletedTask;
 
         protected virtual void ConfigurePostgresDatabaseModule(IConfiguration configuration,
             IHostEnvironment environment, PostgresDatabaseModuleOptions<TDbContext> moduleOptions, Guid applicationId,
@@ -87,9 +87,9 @@ namespace Sitko.Core.Xunit
 
         public override async ValueTask DisposeAsync()
         {
-            if (_dbContext != null)
+            if (scopeDbContext != null)
             {
-                await _dbContext.Database.EnsureDeletedAsync();
+                await scopeDbContext.Database.EnsureDeletedAsync();
             }
 
             await base.DisposeAsync();

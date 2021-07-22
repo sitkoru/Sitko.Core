@@ -58,11 +58,11 @@ namespace Sitko.Core.Queue
             }
         }
 
-        public override IEnumerable<Type> GetRequiredModules(ApplicationContext context, TConfig config)
+        public override IEnumerable<Type> GetRequiredModules(ApplicationContext context, TConfig options)
         {
-            var modules = new List<Type>(base.GetRequiredModules(context, config));
+            var modules = new List<Type>(base.GetRequiredModules(context, options));
 
-            if (config.TranslateMediatRTypes.Any())
+            if (options.TranslateMediatRTypes.Any())
             {
                 modules.Add(typeof(IMediatRModule));
             }

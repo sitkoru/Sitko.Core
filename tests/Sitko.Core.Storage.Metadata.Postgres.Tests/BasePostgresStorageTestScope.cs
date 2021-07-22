@@ -24,7 +24,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres.Tests
 
         public override async ValueTask DisposeAsync()
         {
-            var storage = Get<IStorage<TestS3StorageSettings>>();
+            var storage = GetService<IStorage<TestS3StorageSettings>>();
             await storage.DeleteAllAsync();
             await base.DisposeAsync();
         }

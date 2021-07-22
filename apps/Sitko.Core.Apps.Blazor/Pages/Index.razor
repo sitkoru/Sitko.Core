@@ -4,11 +4,11 @@
 @inherits BaseComponent
 <PageContainer Title="@LocalizationProvider["Title"]">
 <ChildContent>
-<BarAntRepositoryList @ref="_barList" PageSize="2" OnDataLoaded="CountSummaryAsync">
+<BarAntRepositoryList @ref="barList" PageSize="2" OnDataLoaded="CountSummaryAsync">
     <AntDesign.Column Title="Id" @bind-Field="@context.Id" Sortable DefaultSortOrder="SortDirection.Ascending">
         @context.Id
     </AntDesign.Column>
-    <AntDesign.Column Title="Название" @bind-Field="@context.Bar" Sortable Filters="_barFilter">
+    <AntDesign.Column Title="Название" @bind-Field="@context.Bar" Sortable Filters="barFilter">
         @context.Bar
     </AntDesign.Column>
     <AntDesign.Column Title="Дата" @bind-Field="@context.Date" Sortable>
@@ -16,7 +16,7 @@
     </AntDesign.Column>
     <ActionColumn>
         <Popconfirm Placement="@PlacementType.Left" Title="@LocalizationProvider["Delete record?"]"
-                    OnConfirm="@(() => _barList.DeleteAsync(context))"
+                    OnConfirm="@(() => barList.DeleteAsync(context))"
                     OkText="@LocalizationProvider["Delete"]"
                     CancelText="@LocalizationProvider["Cancel"]">
             <Button Size="small" Icon="delete">
@@ -34,7 +34,7 @@
     TEntity="BarModel"
     TEntityPk="Guid"
     TForm="BarForm"
-    EntityId="Bar!.Id" @ref="_frm"
+    EntityId="Bar!.Id" @ref="frm"
     OnInitialize="InitFormModelAsync">
 <p>Test: @context.Test</p>
 @if (context.StorageItem is not null)
@@ -248,6 +248,6 @@
 <Button OnClick="() => context.Foos.Add(new FooModel())">Add foo</Button>
 <Button Disabled="@(!context.CanSave())" OnClick="@context.Save">Save</Button>
 </AntRepositoryForm>
-<Button OnClick="async () => await _frm.Form!.ResetAsync()">Reset</Button>
+<Button OnClick="async () => await frm.Form!.ResetAsync()">Reset</Button>
 </ChildContent>
 </PageContainer>

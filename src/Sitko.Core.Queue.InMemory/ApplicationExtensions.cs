@@ -9,16 +9,12 @@ namespace Sitko.Core.Queue.InMemory
     {
         public static Application AddInMemoryQueue(this Application application,
             Action<IConfiguration, IHostEnvironment, InMemoryQueueModuleOptions> configure,
-            string? optionsKey = null)
-        {
-            return application.AddModule<InMemoryQueueModule, InMemoryQueueModuleOptions>(configure, optionsKey);
-        }
+            string? optionsKey = null) =>
+            application.AddModule<InMemoryQueueModule, InMemoryQueueModuleOptions>(configure, optionsKey);
 
         public static Application AddInMemoryQueue(this Application application,
             Action<InMemoryQueueModuleOptions>? configure = null,
-            string? optionsKey = null)
-        {
-            return application.AddModule<InMemoryQueueModule, InMemoryQueueModuleOptions>(configure, optionsKey);
-        }
+            string? optionsKey = null) =>
+            application.AddModule<InMemoryQueueModule, InMemoryQueueModuleOptions>(configure, optionsKey);
     }
 }

@@ -8,10 +8,7 @@ namespace Sitko.Core.Email
     {
         public T Message { get; }
 
-        public MailEntry(string subject, IEnumerable<string> recipients, T message) : base(subject, recipients)
-        {
-            Message = message;
-        }
+        public MailEntry(string subject, IEnumerable<string> recipients, T message) : base(subject, recipients) => Message = message;
     }
 
     public class MailEntry

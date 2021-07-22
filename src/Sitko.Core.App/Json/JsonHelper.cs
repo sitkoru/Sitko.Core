@@ -5,9 +5,8 @@ namespace Sitko.Core.App.Json
 {
     public class JsonHelper
     {
-        private static JsonSerializerSettings GetJsonSettings(bool throwOnError)
-        {
-            return new()
+        private static JsonSerializerSettings GetJsonSettings(bool throwOnError) =>
+            new()
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                 TypeNameHandling = TypeNameHandling.Auto,
@@ -22,16 +21,11 @@ namespace Sitko.Core.App.Json
                     }
                 }
             };
-        }
 
-        public static string SerializeWithMetadata(object obj, bool throwOnError = true)
-        {
-            return JsonConvert.SerializeObject(obj, GetJsonSettings(throwOnError));
-        }
+        public static string SerializeWithMetadata(object obj, bool throwOnError = true) =>
+            JsonConvert.SerializeObject(obj, GetJsonSettings(throwOnError));
 
-        public static T? DeserializeWithMetadata<T>(string json, bool throwOnError = true)
-        {
-            return JsonConvert.DeserializeObject<T>(json, GetJsonSettings(throwOnError));
-        }
+        public static T? DeserializeWithMetadata<T>(string json, bool throwOnError = true) =>
+            JsonConvert.DeserializeObject<T>(json, GetJsonSettings(throwOnError));
     }
 }

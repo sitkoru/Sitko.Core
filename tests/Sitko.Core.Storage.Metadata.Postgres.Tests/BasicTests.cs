@@ -16,8 +16,8 @@ namespace Sitko.Core.Storage.Metadata.Postgres.Tests
         public async Task Refresh()
         {
             var scope = await GetScopeAsync();
-            var storage = scope.Get<IStorage<TestS3StorageSettings>>();
-            var metadataProvider = scope.Get<IStorageMetadataProvider<TestS3StorageSettings>>();
+            var storage = scope.GetService<IStorage<TestS3StorageSettings>>();
+            var metadataProvider = scope.GetService<IStorageMetadataProvider<TestS3StorageSettings>>();
 
 
             StorageItem uploaded;

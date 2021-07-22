@@ -12,8 +12,8 @@ namespace Sitko.Core.Queue.InMemory
 {
     public class InMemoryQueue : BaseQueue<InMemoryQueueModuleOptions>
     {
-        private readonly ConcurrentDictionary<Type, InMemoryQueueChannel> _channels =
-            new ConcurrentDictionary<Type, InMemoryQueueChannel>();
+        private readonly ConcurrentDictionary<Type, InMemoryQueueChannel> channels =
+            new();
 
 
         public InMemoryQueue(IOptionsMonitor<InMemoryQueueModuleOptions> config, QueueContext context,
@@ -21,15 +21,13 @@ namespace Sitko.Core.Queue.InMemory
         {
         }
 
-        private InMemoryQueueChannel<T> GetOrCreateChannel<T>() where T : class
-        {
-            return (InMemoryQueueChannel<T>)_channels.GetOrAdd(typeof(T), _ =>
+        private InMemoryQueueChannel<T> GetOrCreateChannel<T>() where T : class =>
+            (InMemoryQueueChannel<T>)channels.GetOrAdd(typeof(T), _ =>
             {
                 var channel = new InMemoryQueueChannel<T>(Logger);
                 channel.Run();
                 return channel;
             });
-        }
 
         protected override Task<QueuePublishResult> DoPublishAsync<T>(T message, QueueMessageContext messageContext)
         {
@@ -71,7 +69,10 @@ namespace Sitko.Core.Queue.InMemory
 
             await Task.WhenAny(tasks);
             channel.UnSubscribe(subscriptionId);
-            if (!resultSource.Task.IsCompleted) throw new QueueRequestTimeoutException(timeout);
+            if (!resultSource.Task.IsCompleted)
+            {
+                throw new QueueRequestTimeoutException(timeout);
+            }
 
             return resultSource.Task.Result;
         }
@@ -124,7 +125,7 @@ namespace Sitko.Core.Queue.InMemory
 
         protected override async Task DoUnsubscribeAsync<T>()
         {
-            if (_channels.TryRemove(typeof(T), out var channel))
+            if (channels.TryRemove(typeof(T), out var channel))
             {
                 await channel.StopAsync();
             }
@@ -133,17 +134,15 @@ namespace Sitko.Core.Queue.InMemory
         protected override async Task DoStopAsync()
         {
             await base.DoStopAsync();
-            foreach (var channel in _channels.Values)
+            foreach (var channel in channels.Values)
             {
                 await channel.StopAsync();
             }
 
-            _channels.Clear();
+            channels.Clear();
         }
 
-        public override Task<(HealthStatus status, string? errorMessage)> CheckHealthAsync()
-        {
-            return Task.FromResult((HealthStatus.Healthy, (string?)null));
-        }
+        public override Task<(HealthStatus status, string? errorMessage)> CheckHealthAsync() =>
+            Task.FromResult((HealthStatus.Healthy, (string?)null));
     }
 }

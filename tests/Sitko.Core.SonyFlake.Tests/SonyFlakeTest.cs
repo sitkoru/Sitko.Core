@@ -18,7 +18,7 @@ namespace Sitko.Core.SonyFlake.Tests
         {
             var scope = await GetScopeAsync();
 
-            var provider = scope.Get<IIdProvider>();
+            var provider = scope.GetService<IIdProvider>();
 
             var id = await provider.NextAsync();
 

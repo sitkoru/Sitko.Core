@@ -7,31 +7,25 @@ namespace Sitko.Core.App.Collections
 {
     public class OrderedCollection<TItem> : IEnumerable<TItem> where TItem : class, IOrdered
     {
-        private ObservableCollection<TItem> _items = new();
+        private ObservableCollection<TItem> items = new();
 
         private void UpdateIndex(int newIndex, int oldIndex)
         {
-            _items.Move(oldIndex, newIndex);
+            items.Move(oldIndex, newIndex);
             FillPositions();
         }
 
         private void FillPositions()
         {
-            foreach (var item in _items)
+            foreach (var item in items)
             {
-                item.Position = _items.IndexOf(item);
+                item.Position = items.IndexOf(item);
             }
         }
 
-        public bool CanMoveUp(TItem item)
-        {
-            return item.Position > 0;
-        }
+        public bool CanMoveUp(TItem item) => item.Position > 0;
 
-        public bool CanMoveDown(TItem item)
-        {
-            return item.Position < _items.Count - 1;
-        }
+        public bool CanMoveDown(TItem item) => item.Position < items.Count - 1;
 
         public void MoveUp(TItem item)
         {
@@ -50,12 +44,12 @@ namespace Sitko.Core.App.Collections
             }
         }
 
-        public void AddItems(IEnumerable<TItem> items, TItem? neighbor = null, bool after = true)
+        public void AddItems(IEnumerable<TItem> newItems, TItem? neighbor = null, bool after = true)
         {
-            foreach (var item in items)
+            foreach (var item in newItems)
             {
                 AddItem(item, neighbor, after);
-                // to add all new items in original order we need to insert them one after another   
+                // to add all new items in original order we need to insert them one after another
                 neighbor = item;
                 if (!after)
                 {
@@ -66,35 +60,29 @@ namespace Sitko.Core.App.Collections
 
         public void AddItem(TItem item, TItem? neighbor = null, bool after = true)
         {
-            neighbor ??= _items.LastOrDefault();
+            neighbor ??= items.LastOrDefault();
 
             var position = neighbor is not null ? after ? neighbor.Position + 1 : neighbor.Position : 0;
 
-            _items.Insert(position, item);
+            items.Insert(position, item);
             FillPositions();
         }
 
-        public void SetItems(IEnumerable<TItem> items)
+        public void SetItems(IEnumerable<TItem> newItems)
         {
-            _items = new ObservableCollection<TItem>(items);
+            items = new ObservableCollection<TItem>(newItems);
             FillPositions();
         }
 
         public void RemoveItem(TItem item)
         {
-            _items.Remove(item);
+            items.Remove(item);
             FillPositions();
         }
 
-        public IEnumerator<TItem> GetEnumerator()
-        {
-            return _items.GetEnumerator();
-        }
+        public IEnumerator<TItem> GetEnumerator() => items.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     public interface IOrdered

@@ -9,9 +9,6 @@ namespace Sitko.Core.Auth.IdentityServer
 
     public class JwtAuthOptionsValidator : IdentityServerAuthOptionsValidator<JwtIdentityServerModuleOptions>
     {
-        public JwtAuthOptionsValidator()
-        {
-            RuleFor(o => o.JwtAudience).NotEmpty().WithMessage("Oidc jwt audience can't be empty");
-        }
+        public JwtAuthOptionsValidator() => RuleFor(o => o.JwtAudience).NotEmpty().WithMessage("Oidc jwt audience can't be empty");
     }
 }

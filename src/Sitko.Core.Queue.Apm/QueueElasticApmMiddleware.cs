@@ -5,13 +5,13 @@ namespace Sitko.Core.Queue.Apm
 {
     public class QueueElasticApmMiddleware : BaseQueueMiddleware
     {
-        private ITracer? _tracer;
+        private ITracer? tracer;
 
         private ITracer? GetTracer()
         {
             if (Elastic.Apm.Agent.IsConfigured)
             {
-                return _tracer ??= Elastic.Apm.Agent.Tracer;    
+                return tracer ??= Elastic.Apm.Agent.Tracer;
             }
 
             return null;
@@ -20,16 +20,16 @@ namespace Sitko.Core.Queue.Apm
         public override Task<QueuePublishResult> PublishAsync<T>(T message, QueueMessageContext messageContext,
             PublishAsyncDelegate<T>? callback = null)
         {
-            var tracer = GetTracer();
-            if (tracer != null)
+            var currentTracer = GetTracer();
+            if (currentTracer != null)
             {
-                var transaction = tracer.CurrentTransaction;
+                var transaction = currentTracer.CurrentTransaction;
                 if (transaction == null)
                 {
-                    return tracer.CaptureTransaction($"Publish {message.GetType().FullName}",
+                    return currentTracer.CaptureTransaction($"Publish {message.GetType().FullName}",
                         ApiConstants.TypeExternal, () =>
                         {
-                            messageContext.RequestId = tracer.CurrentTransaction.OutgoingDistributedTracingData.SerializeToString();
+                            messageContext.RequestId = currentTracer.CurrentTransaction.OutgoingDistributedTracingData.SerializeToString();
                             return base.PublishAsync(message, messageContext, callback);
                         });
                 }
@@ -37,7 +37,7 @@ namespace Sitko.Core.Queue.Apm
                 return transaction.CaptureSpan($"Publish {message.GetType().FullName}", ApiConstants.TypeExternal,
                     () =>
                     {
-                        messageContext.RequestId = tracer.CurrentTransaction.OutgoingDistributedTracingData.SerializeToString();
+                        messageContext.RequestId = currentTracer.CurrentTransaction.OutgoingDistributedTracingData.SerializeToString();
                         return base.PublishAsync(message, messageContext, callback);
                     }, "Queue");
             }
@@ -48,13 +48,13 @@ namespace Sitko.Core.Queue.Apm
         public override Task<bool> ReceiveAsync<T>(T message, QueueMessageContext messageContext,
             ReceiveAsyncDelegate<T>? callback = null)
         {
-            var tracer = GetTracer();
-            if (tracer != null)
+            var currentTracer = GetTracer();
+            if (currentTracer != null)
             {
-                var transaction = tracer.CurrentTransaction;
+                var transaction = currentTracer.CurrentTransaction;
                 if (transaction == null)
                 {
-                    return tracer.CaptureTransaction($"Process {message.GetType().FullName}",
+                    return currentTracer.CaptureTransaction($"Process {message.GetType().FullName}",
                         ApiConstants.TypeRequest, () => base.ReceiveAsync(message, messageContext, callback), DistributedTracingData.TryDeserializeFromString(messageContext.RequestId));
                 }
 

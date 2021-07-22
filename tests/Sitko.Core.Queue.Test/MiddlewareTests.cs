@@ -20,9 +20,9 @@ namespace Sitko.Core.Queue.Tests
         {
             var scope = await GetScopeAsync<MiddlewareQueueTestScope>();
 
-            var queue = scope.Get<IQueue>();
+            var queue = scope.GetService<IQueue>();
 
-            var mw = scope.Get<CountMiddleware>();
+            var mw = scope.GetService<CountMiddleware>();
 
             Assert.Equal(0, mw.Published);
 
@@ -37,9 +37,9 @@ namespace Sitko.Core.Queue.Tests
         {
             var scope = await GetScopeAsync<MiddlewareQueueTestScope>();
 
-            var queue = scope.Get<IQueue>();
+            var queue = scope.GetService<IQueue>();
 
-            var mw = scope.Get<CountMiddleware>();
+            var mw = scope.GetService<CountMiddleware>();
 
             Assert.Equal(0, mw.Received);
 
@@ -65,7 +65,7 @@ namespace Sitko.Core.Queue.Tests
             var classes =
                 typeof(MiddlewareTests).Assembly.ExportedTypes.Where(t => typeof(IQueueMiddleware).IsAssignableFrom(t));
 
-            var mws = scope.GetAll<IQueueMiddleware>();
+            var mws = scope.GetServices<IQueueMiddleware>();
 
             Assert.Equal(classes.Count(), mws.Count());
         }
@@ -75,11 +75,11 @@ namespace Sitko.Core.Queue.Tests
         {
             var scope = await GetScopeAsync<ChainMiddlewareQueueTestScope>();
 
-            var state = scope.Get<ChainState>();
+            var state = scope.GetService<ChainState>();
 
             Assert.Null(state.State);
 
-            var queue = scope.Get<IQueue>();
+            var queue = scope.GetService<IQueue>();
 
             var publishResult = await queue.PublishAsync(new TestMessage());
             Assert.True(publishResult.IsSuccess);
@@ -91,36 +91,28 @@ namespace Sitko.Core.Queue.Tests
     public class MiddlewareQueueTestScope : BaseTestQueueTestScope
     {
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
-            TestQueueOptions options, string name)
-        {
+            TestQueueOptions options, string name) =>
             options.RegisterMiddleware<CountMiddleware>();
-        }
     }
 
     public class MultipleMiddlewareQueueTestScope : BaseTestQueueTestScope
     {
         protected override IServiceCollection ConfigureServices(IConfiguration configuration,
             IHostEnvironment environment,
-            IServiceCollection services, string name)
-        {
-            return base.ConfigureServices(configuration, environment, services, name).AddSingleton<ChainState>();
-        }
+            IServiceCollection services, string name) =>
+            base.ConfigureServices(configuration, environment, services, name).AddSingleton<ChainState>();
 
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
-            TestQueueOptions options, string name)
-        {
+            TestQueueOptions options, string name) =>
             options.RegisterMiddlewares<MiddlewareTests>();
-        }
     }
 
     public class ChainMiddlewareQueueTestScope : BaseTestQueueTestScope
     {
         protected override IServiceCollection ConfigureServices(IConfiguration configuration,
             IHostEnvironment environment,
-            IServiceCollection services, string name)
-        {
-            return base.ConfigureServices(configuration, environment, services, name).AddSingleton<ChainState>();
-        }
+            IServiceCollection services, string name) =>
+            base.ConfigureServices(configuration, environment, services, name).AddSingleton<ChainState>();
 
         protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
             TestQueueOptions options, string name)
@@ -134,42 +126,33 @@ namespace Sitko.Core.Queue.Tests
     {
         public string? State { get; private set; }
 
-        public void AppendState(string state)
-        {
-            State += state;
-        }
+        public void AppendState(string state) => State += state;
     }
 
     public class ChainFooMiddleware : BaseQueueMiddleware
     {
-        private readonly ChainState _state;
+        private readonly ChainState state;
 
-        public ChainFooMiddleware(ChainState state)
-        {
-            _state = state;
-        }
+        public ChainFooMiddleware(ChainState state) => this.state = state;
 
         public override Task<QueuePublishResult> PublishAsync<T>(T message, QueueMessageContext messageContext,
             PublishAsyncDelegate<T>? callback = null)
         {
-            _state.AppendState("foo");
+            state.AppendState("foo");
             return base.PublishAsync(message, messageContext, callback);
         }
     }
 
     public class ChainBarMiddleware : BaseQueueMiddleware
     {
-        private readonly ChainState _state;
+        private readonly ChainState state;
 
-        public ChainBarMiddleware(ChainState state)
-        {
-            _state = state;
-        }
+        public ChainBarMiddleware(ChainState state) => this.state = state;
 
         public override Task<QueuePublishResult> PublishAsync<T>(T message, QueueMessageContext messageContext,
             PublishAsyncDelegate<T>? callback = null)
         {
-            _state.AppendState("bar");
+            state.AppendState("bar");
             return base.PublishAsync(message, messageContext, callback);
         }
     }

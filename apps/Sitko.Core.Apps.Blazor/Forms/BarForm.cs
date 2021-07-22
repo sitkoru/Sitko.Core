@@ -33,9 +33,6 @@ namespace Sitko.Core.Apps.Blazor.Forms
 
     public class BarFormValidator : AbstractValidator<BarForm>
     {
-        public BarFormValidator()
-        {
-            RuleFor(m => m.Bar).NotEmpty().WithMessage("Blaaaaa");
-        }
+        public BarFormValidator() => RuleFor(m => m.Bar).NotEmpty().WithMessage("Blaaaaa");
     }
 }

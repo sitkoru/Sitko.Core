@@ -6,17 +6,14 @@ namespace Sitko.Core.Queue
 {
     public class QueueHealthCheck : IHealthCheck
     {
-        private readonly IQueue _queue;
+        private readonly IQueue queue;
 
-        public QueueHealthCheck(IQueue queue)
-        {
-            _queue = queue;
-        }
+        public QueueHealthCheck(IQueue queue) => this.queue = queue;
 
         public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = default)
         {
-            (HealthStatus status, string? errorMessage) = await _queue.CheckHealthAsync();
+            var (status, errorMessage) = await queue.CheckHealthAsync();
             return new HealthCheckResult(status, errorMessage);
         }
     }

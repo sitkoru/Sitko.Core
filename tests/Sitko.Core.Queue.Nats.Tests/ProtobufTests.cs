@@ -17,7 +17,7 @@ namespace Sitko.Core.Queue.Nats.Tests
         {
             var scope = await GetScopeAsync();
 
-            var queue = scope.Get<IQueue>();
+            var queue = scope.GetService<IQueue>();
 
             string receivedText = null;
             await queue.SubscribeAsync<TestMsg>((message, _) =>

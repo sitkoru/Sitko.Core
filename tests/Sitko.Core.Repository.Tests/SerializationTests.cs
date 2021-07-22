@@ -51,15 +51,9 @@ namespace Sitko.Core.Repository.Tests
             }
         };
         
-        private static string Serialize(object obj)
-        {
-            return JsonConvert.SerializeObject(obj, _jsonSettings);
-        }
+        private static string Serialize(object obj) => JsonConvert.SerializeObject(obj, _jsonSettings);
 
-        private static T? Deserialize<T>(string json)
-        {
-            return JsonConvert.DeserializeObject<T>(json, _jsonSettings);
-        }
+        private static T? Deserialize<T>(string json) => JsonConvert.DeserializeObject<T>(json, _jsonSettings);
     }
 
     public class Model

@@ -6,13 +6,11 @@ namespace Sitko.Core.Grpc.Server.Tests
 {
     public class TestApplication : WebApplication<TestStartup>
     {
-        public TestApplication(string[] args) : base(args)
-        {
+        public TestApplication(string[] args) : base(args) =>
             this.AddGrpcServer(moduleOptions =>
             {
-                moduleOptions.RegisterService<TestServiceImpl>();
+                moduleOptions.RegisterService<GrpcTestService>();
             });
-        }
 
         protected override void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)
         {

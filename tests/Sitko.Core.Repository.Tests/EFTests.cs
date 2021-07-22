@@ -26,7 +26,7 @@ namespace Sitko.Core.Repository.Tests
         {
             var scope = await GetScopeAsync();
 
-            var repository = scope.Get<IRepository<TestModel, Guid>>();
+            var repository = scope.GetService<IRepository<TestModel, Guid>>();
 
             var item = await repository.GetAsync();
 
@@ -48,13 +48,13 @@ namespace Sitko.Core.Repository.Tests
         public async Task Validation()
         {
             var scope = await GetScopeAsync();
-            var validator = scope.GetAll<IValidator>();
+            var validator = scope.GetServices<IValidator>();
             Assert.NotEmpty(validator);
 
-            var typedValidator = scope.GetAll<IValidator<TestModel>>();
+            var typedValidator = scope.GetServices<IValidator<TestModel>>();
             Assert.NotEmpty(typedValidator);
 
-            var repository = scope.Get<IRepository<TestModel, Guid>>();
+            var repository = scope.GetService<IRepository<TestModel, Guid>>();
 
             var item = await repository.GetAsync();
 
@@ -74,7 +74,7 @@ namespace Sitko.Core.Repository.Tests
         {
             var scope = await GetScopeAsync();
 
-            var repository = scope.Get<IRepository<TestModel, Guid>>();
+            var repository = scope.GetService<IRepository<TestModel, Guid>>();
 
             var item = await repository.GetAsync();
 
@@ -94,7 +94,7 @@ namespace Sitko.Core.Repository.Tests
 
             var scope = await GetScopeAsync();
 
-            var repository = scope.Get<IRepository<TestModel, Guid>>();
+            var repository = scope.GetService<IRepository<TestModel, Guid>>();
 
             Assert.NotNull(repository);
 
@@ -109,7 +109,7 @@ namespace Sitko.Core.Repository.Tests
         {
             var scope = await GetScopeAsync();
 
-            var repository = scope.Get<IRepository<BarModel, Guid>>();
+            var repository = scope.GetService<IRepository<BarModel, Guid>>();
 
             Assert.NotNull(repository);
 
@@ -124,7 +124,7 @@ namespace Sitko.Core.Repository.Tests
         {
             var scope = await GetScopeAsync();
 
-            var repository = scope.Get<IRepository<TestModel, Guid>>();
+            var repository = scope.GetService<IRepository<TestModel, Guid>>();
 
             Assert.NotNull(repository);
 
@@ -141,7 +141,7 @@ namespace Sitko.Core.Repository.Tests
         {
             var scope = await GetScopeAsync();
 
-            var repository = scope.Get<IRepository<TestModel, Guid>>();
+            var repository = scope.GetService<IRepository<TestModel, Guid>>();
             Assert.NotNull(repository);
 
             var item = await repository.GetAsync(query => query
@@ -165,7 +165,7 @@ namespace Sitko.Core.Repository.Tests
         {
             var scope = await GetScopeAsync();
 
-            var threadSafeRepository = scope.Get<IRepository<TestModel, Guid>>();
+            var threadSafeRepository = scope.GetService<IRepository<TestModel, Guid>>();
 
             var tasks = new List<Task> {threadSafeRepository.GetAllAsync(), threadSafeRepository.GetAllAsync()};
 
@@ -181,7 +181,7 @@ namespace Sitko.Core.Repository.Tests
         public async Task Sum()
         {
             var scope = await GetScopeAsync();
-            var repository = scope.Get<IRepository<TestModel, Guid>>();
+            var repository = scope.GetService<IRepository<TestModel, Guid>>();
             var sum = await repository.SumAsync(t => t.FooId);
             var all = await repository.GetAllAsync();
             var allSum = all.items.Sum(t => t.FooId);
@@ -228,10 +228,7 @@ namespace Sitko.Core.Repository.Tests
 
     public class TestModelValidator : AbstractValidator<TestModel>
     {
-        public TestModelValidator()
-        {
-            RuleFor(m => m.Status).NotEqual(TestStatus.Error).WithMessage("Status can't be error");
-        }
+        public TestModelValidator() => RuleFor(m => m.Status).NotEqual(TestStatus.Error).WithMessage("Status can't be error");
     }
 
     public enum TestStatus

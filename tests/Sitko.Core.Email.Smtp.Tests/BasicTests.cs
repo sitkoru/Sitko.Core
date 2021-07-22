@@ -28,9 +28,6 @@ namespace Sitko.Core.Email.Smtp.Tests
 
     public class TestApplication : WebApplication<TestStartup>
     {
-        public TestApplication(string[] args) : base(args)
-        {
-            this.AddSmtpEmail();
-        }
+        public TestApplication(string[] args) : base(args) => this.AddSmtpEmail();
     }
 }

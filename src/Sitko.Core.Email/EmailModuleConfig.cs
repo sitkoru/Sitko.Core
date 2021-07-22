@@ -13,9 +13,6 @@ namespace Sitko.Core.Email
     public abstract class EmailModuleOptionsValidator<TOptions> : AbstractValidator<TOptions>
         where TOptions : EmailModuleOptions
     {
-        public EmailModuleOptionsValidator()
-        {
-            RuleFor(o => o.Scheme).NotEmpty().WithMessage("Provide value for uri scheme to generate absolute urls");
-        }
+        public EmailModuleOptionsValidator() => RuleFor(o => o.Scheme).NotEmpty().WithMessage("Provide value for uri scheme to generate absolute urls");
     }
 }

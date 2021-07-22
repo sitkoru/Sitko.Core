@@ -8,34 +8,34 @@ namespace Sitko.Core.App
 {
     public class ApplicationLifetimeService : BackgroundService
     {
-        private readonly IHostApplicationLifetime _hostApplicationLifetime;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly Application _application;
-        private readonly IConfiguration _configuration;
-        private readonly IHostEnvironment _environment;
+        private readonly IHostApplicationLifetime hostApplicationLifetime;
+        private readonly IServiceProvider serviceProvider;
+        private readonly Application application;
+        private readonly IConfiguration configuration;
+        private readonly IHostEnvironment environment;
 
         public ApplicationLifetimeService(IHostApplicationLifetime hostApplicationLifetime,
             IServiceProvider serviceProvider, Application application, IConfiguration configuration,
             IHostEnvironment environment)
         {
-            _hostApplicationLifetime = hostApplicationLifetime;
-            _serviceProvider = serviceProvider;
-            _application = application;
-            _configuration = configuration;
-            _environment = environment;
+            this.hostApplicationLifetime = hostApplicationLifetime;
+            this.serviceProvider = serviceProvider;
+            this.application = application;
+            this.configuration = configuration;
+            this.environment = environment;
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             // ReSharper disable once AsyncVoidLambda
-            _hostApplicationLifetime.ApplicationStarted.Register(async () =>
-                await _application.OnStarted(_configuration, _environment, _serviceProvider));
+            hostApplicationLifetime.ApplicationStarted.Register(async () =>
+                await application.OnStarted(configuration, environment, serviceProvider));
             // ReSharper disable once AsyncVoidLambda
-            _hostApplicationLifetime.ApplicationStopping.Register(async () =>
-                await _application.OnStopping(_configuration, _environment, _serviceProvider));
+            hostApplicationLifetime.ApplicationStopping.Register(async () =>
+                await application.OnStopping(configuration, environment, serviceProvider));
             // ReSharper disable once AsyncVoidLambda
-            _hostApplicationLifetime.ApplicationStopped.Register(async () =>
-                await _application.OnStopped(_configuration, _environment, _serviceProvider));
+            hostApplicationLifetime.ApplicationStopped.Register(async () =>
+                await application.OnStopped(configuration, environment, serviceProvider));
 
             return Task.CompletedTask;
         }
