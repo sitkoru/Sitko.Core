@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +13,9 @@ using Microsoft.Extensions.Hosting;
 
 namespace Sitko.Core.App.Web
 {
+    using JetBrains.Annotations;
+
+    [PublicAPI]
     public abstract class BaseStartup
     {
         private readonly Dictionary<string, (CorsPolicy policy, bool isDefault)> corsPolicies =
@@ -37,8 +39,7 @@ namespace Sitko.Core.App.Web
         {
             if (EnableMvc)
             {
-                ConfigureMvc(services.AddControllersWithViews().AddControllersAsServices())
-                    .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                ConfigureMvc(services.AddControllersWithViews().AddControllersAsServices());
             }
 
             if (AddHttpContextAccessor)
@@ -90,9 +91,11 @@ namespace Sitko.Core.App.Web
 
         public virtual void AddMemoryCache(IServiceCollection services) => services.AddMemoryCache();
 
-        private void AddDataProtection(IServiceCollection services) => ConfigureDataProtection(services.AddDataProtection());
+        private void AddDataProtection(IServiceCollection services) =>
+            ConfigureDataProtection(services.AddDataProtection());
 
-        protected virtual IDataProtectionBuilder ConfigureDataProtection(IDataProtectionBuilder dataProtectionBuilder) =>
+        protected virtual IDataProtectionBuilder
+            ConfigureDataProtection(IDataProtectionBuilder dataProtectionBuilder) =>
             dataProtectionBuilder
                 .SetApplicationName(Environment.ApplicationName)
                 .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
@@ -105,13 +108,16 @@ namespace Sitko.Core.App.Web
         {
             if (Environment.IsDevelopment())
             {
+#if NETCOREAPP3_1 || NET5_0
                 mvcBuilder.AddRazorRuntimeCompilation();
+#endif
             }
 
             return mvcBuilder;
         }
 
-        protected virtual IHealthChecksBuilder ConfigureHealthChecks(IHealthChecksBuilder healthChecksBuilder) => healthChecksBuilder;
+        protected virtual IHealthChecksBuilder ConfigureHealthChecks(IHealthChecksBuilder healthChecksBuilder) =>
+            healthChecksBuilder;
 
         protected virtual void ConfigureBeforeRoutingMiddleware(IApplicationBuilder app)
         {

@@ -1,23 +1,30 @@
 name: Build
 
 on:
-    push:
-        branches: [ master ]
-    pull_request:
+  push:
+    branches: [ master ]
+  pull_request:
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        container: ghcr.io/sitkoru/actions-container
-        steps:
-            -   uses: actions/checkout@v2.3.4
-            -   uses: actions/setup-dotnet@v1.8.1
-                with:
-                    dotnet-version: '3.1.x'            
-            -   uses: actions/setup-dotnet@v1.8.1
-                with:
-                    dotnet-version: '5.0.x'
-            -   name: Build
-                run: dotnet build
-            -   name: Create packages
-                run: dotnet pack -c Release
+  build:
+    runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
+    steps:
+      - uses: actions/checkout@v2.3.4
+      - name: Install .NET Core 3.1
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '3.1.x'
+      - name: Install .NET 5.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Install .NET 6.0.x
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+            - name: Build
+              run: dotnet build
+            - name: Create packages
+              run: dotnet pack -c Release

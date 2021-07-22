@@ -19,7 +19,7 @@ namespace Sitko.Core.App
 {
     using System.Text.Json;
     using JetBrains.Annotations;
-    using Microsoft.Extensions.Hosting.Internal;
+    using Microsoft.Extensions.FileProviders;
 
     public abstract class Application : IApplication, IAsyncDisposable
     {
@@ -363,7 +363,7 @@ namespace Sitko.Core.App
             {
                 InternalLogger.LogInformation("Generate options");
 
-                var modulesOptions = GetModulesOptions(GetContext(new HostingEnvironment(),
+                var modulesOptions = GetModulesOptions(GetContext(new DummyEnvironment(),
                     new ConfigurationRoot(new List<IConfigurationProvider>())));
 
                 InternalLogger.LogInformation("Modules options:");
@@ -506,7 +506,8 @@ namespace Sitko.Core.App
             ILogger<Application>? logger = null)
         {
             var applicationOptions = GetApplicationOptions(environment, configuration);
-            return new ApplicationContext(applicationOptions.Name, applicationOptions.Version, environment, configuration,
+            return new ApplicationContext(applicationOptions.Name, applicationOptions.Version, environment,
+                configuration,
                 logger ?? InternalLogger);
         }
 
@@ -681,5 +682,13 @@ namespace Sitko.Core.App
         public IHostEnvironment Environment { get; }
         public IConfiguration Configuration { get; }
         public ILogger Logger { get; }
+    }
+
+    internal class DummyEnvironment : IHostEnvironment
+    {
+        public string EnvironmentName { get; set; } = "";
+        public string ApplicationName { get; set; } = "";
+        public string ContentRootPath { get; set; } = "";
+        public IFileProvider ContentRootFileProvider { get; set; } = null!;
     }
 }

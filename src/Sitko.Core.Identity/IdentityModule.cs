@@ -28,11 +28,13 @@ namespace Sitko.Core.Identity
                 .AddEntityFrameworkStores<TDbContext>()
                 .AddErrorDescriber<RussianIdentityErrorDescriber>()
                 .AddDefaultTokenProviders();
+#if NETCOREAPP3_1 || NET5_0
             if (startupOptions.AddDefaultUi)
             {
                 identityBuilder.AddDefaultUI();
                 services.AddRazorPages();
             }
+#endif
 
             services.ConfigureApplicationCookie(options =>
             {
@@ -47,11 +49,13 @@ namespace Sitko.Core.Identity
             IApplicationBuilder appBuilder,
             IEndpointRouteBuilder endpoints)
         {
+#if NETCOREAPP3_1 || NET5_0
             var config = GetOptions(appBuilder.ApplicationServices);
             if (config.AddDefaultUi)
             {
                 endpoints.MapRazorPages();
             }
+#endif
         }
 
         public void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
@@ -66,7 +70,9 @@ namespace Sitko.Core.Identity
 
     public class IdentityModuleOptions : BaseModuleOptions
     {
+#if NETCOREAPP3_1 || NET5_0
         public bool AddDefaultUi { get; set; }
+#endif
         public int CookieExpireDays { get; set; } = 30;
         public bool CookieSlidingExpiration { get; set; } = true;
         public bool RequireConfirmedAccount { get; set; } = true;
