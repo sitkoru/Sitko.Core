@@ -50,7 +50,7 @@ jobs:
         uses: actions/setup-dotnet@v1.8.1
         with:
           dotnet-version: '6.0.x'
-          include-prerelease: trues
+          include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests
