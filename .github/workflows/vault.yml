@@ -1,57 +1,64 @@
 name: Sitko.Core.Configuration.Vault
 
 on:
-    push:
-        branches: [ master ]
-        paths:
-            - "src/Sitko.Core.App/**"
-            - "src/Sitko.Core.Configuration.Vault/**"
-            - "tests/Sitko.Core.Configuration.Vault.Tests/**"
-            - ".github/workflows/vault.yml"
-    pull_request:
-        branches: [ master ]
-        paths:
-            - "src/Sitko.Core.App/**"
-            - "src/Sitko.Core.Configuration.Vault/**"
-            - "tests/Sitko.Core.Configuration.Vault.Tests/**"
-            - ".github/workflows/vault.yml"
+  push:
+    branches: [ master ]
+    paths:
+      - "src/Sitko.Core.App/**"
+      - "src/Sitko.Core.Configuration.Vault/**"
+      - "tests/Sitko.Core.Configuration.Vault.Tests/**"
+      - ".github/workflows/vault.yml"
+  pull_request:
+    branches: [ master ]
+    paths:
+      - "src/Sitko.Core.App/**"
+      - "src/Sitko.Core.Configuration.Vault/**"
+      - "tests/Sitko.Core.Configuration.Vault.Tests/**"
+      - ".github/workflows/vault.yml"
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        container: ghcr.io/sitkoru/actions-container
-        env:
-            VAULT__URI: http://127.0.0.1:8200
-            VAULT__TOKEN: twit3itPSAD0yok
-            VAULT__MOUNTPOINT: secret
-            VAULT__SECRETS__0: tests
-        services:
-            sonyflake:
-                image: titpetric/sonyflake
-        steps:
-            -   uses: actions/checkout@v2.3.4
-            -   uses: actions/setup-dotnet@v1.8.0
-                with:
-                    dotnet-version: '3.1.x'
-            -   uses: actions/setup-dotnet@v1.8.0
-                with:
-                    dotnet-version: '5.0.x'
-            -   name: Install Vault
-                run: |
-                    curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
-                    apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-                    apt-get update && apt-get install -y vault
-                    setcap cap_ipc_lock= /usr/bin/vault
-            -   name: Start Vault
-                run: |
-                    vault server -dev -dev-root-token-id="${VAULT__TOKEN}" &
-            -   name: Seed Vault
-                run: |
-                    export VAULT_ADDR=${VAULT__URI}
-                    json='{"test": {"Foo": "123","Bar": 123}}'
-                    echo $json > data.json
-                    vault kv put ${VAULT__MOUNTPOINT}/${VAULT__SECRETS__0} @data.json 
-            -   name: Add Github Actions logger
-                run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
-            -   name: Run tests
-                run: dotnet test --logger GitHubActions tests/Sitko.Core.Configuration.Vault.Tests/Sitko.Core.Configuration.Vault.Tests.csproj
+  build:
+    runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
+    env:
+      VAULT__URI: http://127.0.0.1:8200
+      VAULT__TOKEN: twit3itPSAD0yok
+      VAULT__MOUNTPOINT: secret
+      VAULT__SECRETS__0: tests
+    services:
+      sonyflake:
+        image: titpetric/sonyflake
+    steps:
+      - uses: actions/checkout@v2.3.4
+      - name: Install .NET Core 3.1
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '3.1.x'
+      - name: Install .NET 5.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Install .NET 6.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+      - name: Install Vault
+        run: |
+          curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
+          apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+          apt-get update && apt-get install -y vault
+          setcap cap_ipc_lock= /usr/bin/vault
+      - name: Start Vault
+        run: |
+          vault server -dev -dev-root-token-id="${VAULT__TOKEN}" &
+      - name: Seed Vault
+        run: |
+          export VAULT_ADDR=${VAULT__URI}
+          json='{"test": {"Foo": "123","Bar": 123}}'
+          echo $json > data.json
+          vault kv put ${VAULT__MOUNTPOINT}/${VAULT__SECRETS__0} @data.json
+      - name: Add Github Actions logger
+        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
+      - name: Run tests
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Configuration.Vault.Tests/Sitko.Core.Configuration.Vault.Tests.csproj
