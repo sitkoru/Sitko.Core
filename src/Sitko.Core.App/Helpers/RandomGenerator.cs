@@ -6,8 +6,11 @@ namespace Sitko.Core.App.Helpers
 {
     public static class RandomGenerator
     {
+#if !NET6_0
         private static readonly UniformRandom Rnd = new();
-
+#else
+        private static readonly Random Rnd = Random.Shared;
+#endif
         private const string ValidSymbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 
         public static string GetRandomString(int length)
@@ -17,13 +20,13 @@ namespace Sitko.Core.App.Helpers
             while (length-- > 0)
             {
                 var num = Rnd.Next(0, ValidSymbols.Length);
-                res.Append(ValidSymbols[(int) (num % (uint) ValidSymbols.Length)]);
+                res.Append(ValidSymbols[(int)(num % (uint)ValidSymbols.Length)]);
             }
 
             return res.ToString();
         }
     }
-
+#if !NET6_0
     internal class UniformRandom
     {
         private static readonly RNGCryptoServiceProvider Global = new();
@@ -51,4 +54,5 @@ namespace Sitko.Core.App.Helpers
             return minValue + r;
         }
     }
+#endif
 }
