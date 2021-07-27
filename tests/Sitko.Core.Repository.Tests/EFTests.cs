@@ -145,8 +145,7 @@ namespace Sitko.Core.Repository.Tests
             Assert.NotNull(repository);
 
             var item = await repository.GetAsync(query => query
-                .Include(e => e.Bars)
-                .ThenInclude(e => e.Foos).ThenInclude(f => f.Bar).ThenInclude(b => b.Test));
+                .Include(testModel => testModel.Bars).ThenInclude(barModel => barModel.Foos));
             Assert.NotNull(item);
             Assert.NotNull(item!.Bars);
             Assert.NotEmpty(item.Bars);
@@ -167,7 +166,7 @@ namespace Sitko.Core.Repository.Tests
 
             var threadSafeRepository = scope.GetService<IRepository<TestModel, Guid>>();
 
-            var tasks = new List<Task> {threadSafeRepository.GetAllAsync(), threadSafeRepository.GetAllAsync()};
+            var tasks = new List<Task> { threadSafeRepository.GetAllAsync(), threadSafeRepository.GetAllAsync() };
 
             await Task.WhenAll(tasks);
 
@@ -202,17 +201,17 @@ namespace Sitko.Core.Repository.Tests
             base.OnModelCreating(modelBuilder);
             var testModels = new List<TestModel>
             {
-                new() {Id = Guid.NewGuid(), FooId = 1},
-                new() {Id = Guid.NewGuid(), FooId = 2},
-                new() {Id = Guid.NewGuid(), FooId = 3},
-                new() {Id = Guid.NewGuid(), FooId = 4},
-                new() {Id = Guid.NewGuid(), FooId = 5},
-                new() {Id = Guid.NewGuid(), FooId = 5}
+                new() { Id = Guid.NewGuid(), FooId = 1 },
+                new() { Id = Guid.NewGuid(), FooId = 2 },
+                new() { Id = Guid.NewGuid(), FooId = 3 },
+                new() { Id = Guid.NewGuid(), FooId = 4 },
+                new() { Id = Guid.NewGuid(), FooId = 5 },
+                new() { Id = Guid.NewGuid(), FooId = 5 }
             };
             modelBuilder.Entity<TestModel>().HasData(testModels);
-            var barModel = new BarModel {Id = Guid.NewGuid(), TestId = testModels.First().Id};
+            var barModel = new BarModel { Id = Guid.NewGuid(), TestId = testModels.First().Id };
             modelBuilder.Entity<BarModel>().HasData(barModel);
-            modelBuilder.Entity<FooModel>().HasData(new FooModel {Id = Guid.NewGuid(), BarId = barModel.Id});
+            modelBuilder.Entity<FooModel>().HasData(new FooModel { Id = Guid.NewGuid(), BarId = barModel.Id });
         }
     }
 
@@ -228,7 +227,8 @@ namespace Sitko.Core.Repository.Tests
 
     public class TestModelValidator : AbstractValidator<TestModel>
     {
-        public TestModelValidator() => RuleFor(m => m.Status).NotEqual(TestStatus.Error).WithMessage("Status can't be error");
+        public TestModelValidator() =>
+            RuleFor(m => m.Status).NotEqual(TestStatus.Error).WithMessage("Status can't be error");
     }
 
     public enum TestStatus
