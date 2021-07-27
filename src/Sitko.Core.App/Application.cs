@@ -438,7 +438,7 @@ namespace Sitko.Core.App
             }
             catch (Exception ex)
             {
-                var logger = serviceProvider.GetService<ILogger<Application>>();
+                var logger = serviceProvider.GetRequiredService<ILogger<Application>>();
                 logger.LogError(ex, "Error: {ErrorText}", ex.ToString());
             }
         }
@@ -457,7 +457,7 @@ namespace Sitko.Core.App
         {
             if (moduleRegistrations.ContainsKey(typeof(TModule)))
             {
-                throw new Exception($"Module {typeof(TModule)} already registered");
+                throw new InvalidOperationException($"Module {typeof(TModule)} already registered");
             }
 
             moduleRegistrations.Add(typeof(TModule),

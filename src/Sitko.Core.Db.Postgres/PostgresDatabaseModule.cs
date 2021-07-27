@@ -21,7 +21,7 @@ namespace Sitko.Core.Db.Postgres
             await base.InitAsync(context, serviceProvider);
             if (GetOptions(serviceProvider).AutoApplyMigrations)
             {
-                var logger = serviceProvider.GetService<ILogger<PostgresDatabaseModule<TDbContext>>>();
+                var logger = serviceProvider.GetRequiredService<ILogger<PostgresDatabaseModule<TDbContext>>>();
                 var migrated = false;
                 for (var i = 1; i <= 10; i++)
                 {
@@ -51,7 +51,7 @@ namespace Sitko.Core.Db.Postgres
                 }
                 else
                 {
-                    throw new Exception("Can't migrate database after 10 tries. See previous errors");
+                    throw new InvalidOperationException("Can't migrate database after 10 tries. See previous errors");
                 }
             }
         }
@@ -73,7 +73,7 @@ namespace Sitko.Core.Db.Postgres
             }
         }
 
-        private NpgsqlConnectionStringBuilder CreateBuilder(
+        private static NpgsqlConnectionStringBuilder CreateBuilder(
             PostgresDatabaseModuleOptions<TDbContext> options)
         {
             var connBuilder = new NpgsqlConnectionStringBuilder

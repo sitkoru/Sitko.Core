@@ -10,6 +10,8 @@ using Sitko.Core.Storage.Metadata.Postgres.DB.Models;
 
 namespace Sitko.Core.Storage.Metadata.Postgres
 {
+    using System;
+
     public class
         PostgresStorageMetadataProvider<TStorageOptions> : BaseStorageMetadataProvider<
             PostgresStorageMetadataModuleOptions<TStorageOptions>, TStorageOptions>
@@ -82,7 +84,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
                     .FirstOrDefault(f => f.Name == part);
             }
 
-            return current?.Children ?? new StorageNode[0];
+            return current?.Children ?? Array.Empty<StorageNode>();
         }
 
         private static string? PreparePath(string? path) => path?.Replace("\\", "/").Replace("//", "/");
@@ -103,7 +105,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             if (record is null)
             {
                 record = new StorageItemRecord(StorageOptions.CurrentValue.Name, storageItem);
-                await dbContext.Records.AddAsync(record);
+                await dbContext.Records.AddAsync(record, cancellationToken);
             }
 
             if (metadata?.FileName != null)

@@ -59,7 +59,7 @@ namespace Sitko.Core.Xunit
             scopeDbContext = ServiceProvider!.GetService<TDbContext>();
             if (scopeDbContext == null)
             {
-                throw new Exception("Can't create db context");
+                throw new InvalidOperationException("Can't create db context");
             }
 
             await scopeDbContext.Database.EnsureDeletedAsync();

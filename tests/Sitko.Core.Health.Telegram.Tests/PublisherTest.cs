@@ -56,7 +56,7 @@ namespace Sitko.Core.Health.Telegram.Tests
 
             try
             {
-                throw new Exception("Mega exception");
+                throw new InvalidOperationException("Mega exception");
             }
             catch (Exception ex)
             {

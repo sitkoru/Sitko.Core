@@ -154,6 +154,11 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             using var scope = repositoryContext.CreateScope();
             var oldDbContext = scope.ServiceProvider.GetRequiredService<TDbContext>();
             var oldEntity = await oldDbContext.Set<TEntity>().FirstOrDefaultAsync(e => e.Id!.Equals(item.Id));
+            if (oldEntity is null)
+            {
+                throw new InvalidOperationException("Old entity not found");
+            }
+
             var entry = dbContext.Entry(item);
             var entityChanges = entry
                 .Properties
@@ -167,15 +172,15 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                     var oldCollection = oldDbContext.Entry(oldEntity).Collections
                         .First(c => c.Metadata.Name == collection.Metadata.Name);
                     await oldCollection.LoadAsync();
-                    if (oldCollection.CurrentValue.Cast<object>().Count() !=
-                        collection.CurrentValue.Cast<object>().Count())
+                    if (oldCollection.CurrentValue?.Cast<object>().Count() !=
+                        collection.CurrentValue?.Cast<object>().Count())
                     {
                         entityChanges.Add(new PropertyChange(collection.Metadata.Name, oldCollection, collection));
                         continue;
                     }
 
-                    if (collection.CurrentValue.Cast<object>().Any(collectionEntry =>
-                        dbContext.Entry(collectionEntry).State != EntityState.Unchanged))
+                    if (collection.CurrentValue?.Cast<object>().Any(collectionEntry =>
+                        dbContext.Entry(collectionEntry).State != EntityState.Unchanged) == true)
                     {
                         entityChanges.Add(new PropertyChange(collection.Metadata.Name, collection, collection));
                     }

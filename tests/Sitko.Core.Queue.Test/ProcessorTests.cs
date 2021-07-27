@@ -69,7 +69,7 @@ namespace Sitko.Core.Queue.Tests
 
         protected TestQueueProcessor(TestQueueProcessorCounter counter) => this.counter = counter;
 
-        public Task<bool> ProcessAsync(T message, QueueMessageContext queueMessageContext)
+        public Task<bool> ProcessAsync(T message, QueueMessageContext messageContext)
         {
             counter.Count++;
             return Task.FromResult(true);
