@@ -6,31 +6,30 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Nito.AsyncEx;
+using System.Linq.Expressions;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore
 {
-    using System.Linq.Expressions;
-
     public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         BaseRepository<TEntity, TEntityPk, EFRepositoryQuery<TEntity>>
         where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext
     {
-        private readonly AsyncLock asyncLock = new();
         private readonly TDbContext dbContext;
         private readonly EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext;
+        private readonly EFRepositoryLock repositoryLock;
 
         protected EFRepository(EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext) : base(
             repositoryContext)
         {
             this.repositoryContext = repositoryContext;
             dbContext = repositoryContext.DbContext;
+            repositoryLock = repositoryContext.RepositoryLock;
         }
 
         protected async Task<T> ExecuteDbContextOperationAsync<T>(Func<TDbContext, Task<T>> operation,
             CancellationToken cancellationToken = default)
         {
-            using (await asyncLock.LockAsync(cancellationToken))
+            using (await repositoryLock.Lock.LockAsync(cancellationToken))
             {
                 return await operation(dbContext);
             }

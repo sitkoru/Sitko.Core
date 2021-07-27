@@ -12,6 +12,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         {
             base.ConfigureServices(context, services, startupOptions);
             services.AddScoped(typeof(EFRepositoryContext<,,>));
+            services.AddScoped<EFRepositoryLock>();
 
             services.Scan(s =>
                 s.FromAssemblyOf<TAssembly>().AddClasses(classes => classes.AssignableTo(typeof(EFRepository<,,>)))

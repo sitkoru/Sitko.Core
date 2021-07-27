@@ -164,9 +164,10 @@ namespace Sitko.Core.Repository.Tests
         {
             var scope = await GetScopeAsync();
 
-            var threadSafeRepository = scope.GetService<IRepository<TestModel, Guid>>();
+            var testRepository = scope.GetService<IRepository<TestModel, Guid>>();
+            var barRepository = scope.GetService<IRepository<BarModel, Guid>>();
 
-            var tasks = new List<Task> { threadSafeRepository.GetAllAsync(), threadSafeRepository.GetAllAsync() };
+            var tasks = new List<Task> { testRepository.GetAllAsync(), barRepository.GetAllAsync() };
 
             await Task.WhenAll(tasks);
 
