@@ -20,4 +20,8 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             return collection;
         }
     }
+
+    public class ListAntStorageItemsInput : AntStorageItemsInput<List<StorageItem>>
+    {
+    }
 }

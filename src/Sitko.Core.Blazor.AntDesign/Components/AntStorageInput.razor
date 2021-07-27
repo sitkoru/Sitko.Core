@@ -1,6 +1,5 @@
 ﻿@typeparam TValue
 @inherits BaseAntStorageInput<TValue>
-@using Sitko.Core.Storage
 <AntDesign.Spin Spinning="IsSpinning">
     @if (ShowUpload)
     {
@@ -27,8 +26,7 @@
             else
             {
                 <CascadingValue Value="this" IsFixed="true">
-                    <AntStorageItemsInput
-                        TValue="List<StorageItem>"
+                    <ListAntStorageItemsInput
                         @ref="FileInput"
                         Storage="@Storage"
                         MaxFileSize="MaxFileSize"
@@ -40,7 +38,7 @@
                         @bind-Value="Items"
                         UploadPath="@UploadPath"
                         OnChange="@(_ => { return OnChangeAsync(); })">
-                    </AntStorageItemsInput>
+                    </ListAntStorageItemsInput>
                 </CascadingValue>
             }
         }
@@ -132,9 +130,8 @@
                 else
                 {
                     <CascadingValue Value="this" IsFixed="true">
-                        <AntStorageItemsInput
+                        <ListAntStorageItemsInput
                             @ref="FileInput"
-                            TValue="List<StorageItem>"
                             Storage="@Storage"
                             MaxFileSize="MaxFileSize"
                             MaxAllowedFiles="@MaxFilesToUpload"
@@ -148,7 +145,7 @@
                                 <AntDesign.Icon Spin="IsSpinning" Type="@(IsSpinning ? "Loading" : "plus")"></AntDesign.Icon>
                                 <div className="ant-upload-text">@UploadText</div>
                             </div>
-                        </AntStorageItemsInput>
+                        </ListAntStorageItemsInput>
                     </CascadingValue>
                 }
             }
