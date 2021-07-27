@@ -3,7 +3,15 @@
 @inherits BaseAntRepositoryListComponent<TItem, TEntityPk>
 @if (ChildContent is not null)
 {
-    <AntDesign.Table TItem="TItem" DataSource="@Items" Total="@Count" OnChange="async model  => await OnChangeAsync(model)" @bind-PageSize="@PageSize" Loading="@IsLoading" @ref="Table" @bind-PageIndex="@PageIndex"
+    <AntDesign.Table TItem="TItem"
+                     DataSource="@Items"
+                     RemoteDataSource="true"
+                     Total="@Count"
+                     OnChange="async model  => await OnChangeAsync(model)"
+                     @bind-PageSize="@PageSize"
+                     Loading="@IsLoading"
+                     @ref="Table"
+                     @bind-PageIndex="@PageIndex"
                      RowExpandable="@RowExpandable"
                      TreeChildren="@TreeChildren"
                      OnRow="@OnRow"
