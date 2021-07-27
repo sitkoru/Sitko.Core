@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Sitko.Core.App.Collections
 {
-    public class ConcurrentDictionaryWithTtl<TKey, TValue> : ConcurrentDictionary<TKey, TValue>, IDisposable
+    public class ConcurrentDictionaryWithTtl<TKey, TValue> : ConcurrentDictionary<TKey, TValue>, IDisposable where TKey : notnull
     {
         private readonly Func<TValue, DateTimeOffset> expirationPredicate;
         private readonly TimeSpan ttl = TimeSpan.FromMinutes(30);
