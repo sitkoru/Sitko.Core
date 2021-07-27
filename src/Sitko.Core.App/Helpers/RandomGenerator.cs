@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace Sitko.Core.App.Helpers
@@ -29,7 +28,7 @@ namespace Sitko.Core.App.Helpers
 #if !NET6_0
     internal class UniformRandom
     {
-        private static readonly RNGCryptoServiceProvider Global = new();
+        private static readonly System.Security.Cryptography.RNGCryptoServiceProvider Global = new();
 
         private readonly Random rnd;
 
