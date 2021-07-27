@@ -1,9 +1,9 @@
 @using Layout = AntDesign.ProLayout.Layout
 @using Sitko.Core.App
 @inherits LayoutComponentBase
-@inject Application _application
+@inject Application application
 
-<BasicLayout Title="@_application.Name" MenuData="_menuData" HeaderRender="false" Layout="Layout.Side" Logo="@("/logo.png")">
+<BasicLayout Title="@application.Name" MenuData="menuData" HeaderRender="false" Layout="Layout.Side" Logo="@("/logo.png")">
     <ChildContent>
         @Body
     </ChildContent>
@@ -20,7 +20,7 @@
 
 @code
 {
-    private readonly MenuDataItem[] _menuData =
+    private readonly MenuDataItem[] menuData =
     {
         new()
         {

@@ -1,11 +1,11 @@
 ﻿@page "/Options"
 @using Sitko.Core.App
 @using System.Text.Json
-@inject Application _application
-<PageContainer Title="@_application.Name">
+@inject Application application
+<PageContainer Title="@application.Name">
     <ChildContent>
         <pre>
-@JsonSerializer.Serialize(_application.GetModulesOptions(), new JsonSerializerOptions
+@JsonSerializer.Serialize(application.GetModulesOptions(), new JsonSerializerOptions
 {
     WriteIndented = true
 })
