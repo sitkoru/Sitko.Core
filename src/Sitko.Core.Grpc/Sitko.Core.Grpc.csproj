@@ -13,13 +13,14 @@
     <Summary>Sitko.Core is a set of libraries to help build .NET Core applications fast</Summary>
     <Copyright>Copyright © Sitko.ru 2020</Copyright>
     <RepositoryUrl>https://github.com/sitkoru/Sitko.Core</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/sitkoru/Sitko.Core</PackageProjectUrl>
     <PackageIcon>packageIcon.png</PackageIcon>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Grpc.Core.Api" Version="2.38.1" />
     <PackageReference Include="Grpc.Tools" Version="2.38.1" PrivateAssets="none" />
@@ -28,7 +29,7 @@
     <Protobuf Include="Proto\**\*.proto" GrpcServices="None" />
     <None Pack="true" PackagePath="protos" Include="Proto\**\*.proto" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
   </ItemGroup>

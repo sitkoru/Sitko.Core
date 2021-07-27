@@ -14,6 +14,7 @@
     <Summary>Sitko.Core is a set of libraries to help build .NET Core applications fast</Summary>
     <Copyright>Copyright © Sitko.ru 2020</Copyright>
     <RepositoryUrl>https://github.com/sitkoru/Sitko.Core</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/sitkoru/Sitko.Core</PackageProjectUrl>
     <PackageIcon>packageIcon.png</PackageIcon>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>

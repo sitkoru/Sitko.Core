@@ -13,6 +13,7 @@
     <Summary>Sitko.Core is a set of libraries to help build .NET Core applications fast</Summary>
     <Copyright>Copyright © Sitko.ru 2020</Copyright>
     <RepositoryUrl>https://github.com/sitkoru/Sitko.Core</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/sitkoru/Sitko.Core</PackageProjectUrl>
     <PackageIcon>packageIcon.png</PackageIcon>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
@@ -28,7 +29,7 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.7" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
     <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\" />

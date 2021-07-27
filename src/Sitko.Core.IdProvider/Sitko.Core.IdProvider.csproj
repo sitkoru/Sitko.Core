@@ -13,13 +13,14 @@
     <Summary>Sitko.Core is a set of libraries to help build .NET Core applications fast</Summary>
     <Copyright>Copyright © Sitko.ru 2020</Copyright>
     <RepositoryUrl>https://github.com/sitkoru/Sitko.Core</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/sitkoru/Sitko.Core</PackageProjectUrl>
     <PackageIcon>packageIcon.png</PackageIcon>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
