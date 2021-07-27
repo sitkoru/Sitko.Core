@@ -194,7 +194,7 @@ namespace Sitko.Core.App.Localization
                 }
                 catch (FileNotFoundException exception)
                 {
-                    logger.LogWarning(exception,
+                    logger.LogDebug(exception,
                         "Could not find satellite assembly for '{CultureInfoName}': {Message}",
                         cultureInfo.Name, exception.Message);
                     loaded = false;
