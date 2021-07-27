@@ -1,4 +1,4 @@
-﻿FROM ghcr.io/sitkoru/dotnet-runtime:5
+﻿FROM mcr.microsoft.com/dotnet/aspnet:6.0
 
 WORKDIR /app
 COPY . .
