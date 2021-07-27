@@ -25,6 +25,7 @@ namespace Sitko.Core.App
     {
         private const string CheckCommand = "check";
         private const string GenerateOptionsCommand = "generate-options";
+        private const string RunCommand = "run";
 
         private readonly List<Action<ApplicationContext, HostBuilderContext, IConfigurationBuilder>>
             appConfigurationActions = new();
@@ -47,7 +48,7 @@ namespace Sitko.Core.App
             servicesConfigurationActions = new();
 
         private readonly Dictionary<string, object> store = new();
-        private readonly string[] supportedCommands = {CheckCommand, GenerateOptionsCommand};
+        private readonly string[] supportedCommands = {CheckCommand, GenerateOptionsCommand, RunCommand};
 
         private IHost? appHost;
 
@@ -180,7 +181,7 @@ namespace Sitko.Core.App
                 {
                     LogCheck("Configure app services");
                     services.AddSingleton(logLevelSwitcher);
-                    services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
+                    //services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
                     services.AddSingleton(typeof(IApplication), this);
                     services.AddSingleton(typeof(Application), this);
                     services.AddSingleton(GetType(), this);
