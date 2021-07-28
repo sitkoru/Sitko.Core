@@ -9,12 +9,15 @@ using Sitko.Core.Blazor.FileUpload;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
+    using Sitko.Blazor.ScriptInjector;
+
     public abstract class BastAntStorageFileInputComponent<TInput> : BaseStorageFileInputComponent<TInput>, IDisposable
     {
         private IDisposable? thisReference;
         protected ElementReference Btn { get; set; }
 
         [Inject] private MessageService MessageService { get; set; } = null!;
+        [Inject] private IScriptInjector ScriptInjector { get; set; } = null!;
 
         [Inject]
         protected ILocalizationProvider<BastAntStorageFileInputComponent<TInput>> LocalizationProvider { get; set; } =
@@ -58,9 +61,15 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         {
             if (firstRender)
             {
-                thisReference = DotNetObjectReference.Create(this);
-                await JsRuntime.InvokeVoidAsync("SitkoCoreBlazorAntDesign.FileUpload.init", InputRef, Btn,
-                    thisReference);
+                await ScriptInjector.InjectAsync(
+                    ScriptInjectRequest.FromUrl("fileupload", "/_content/Sitko.Core.Blazor.AntDesign/fileupload.js"),
+                    async token =>
+                    {
+                        thisReference = DotNetObjectReference.Create(this);
+                        await JsRuntime.InvokeVoidAsync("SitkoCoreBlazorAntDesign.FileUpload.init", token, InputRef,
+                            Btn,
+                            thisReference);
+                    });
             }
         }
 
