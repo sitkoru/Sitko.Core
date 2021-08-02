@@ -10,6 +10,8 @@ using Microsoft.Extensions.Logging;
 namespace Sitko.Core.Repository
 {
     using System.Linq.Expressions;
+    using System.Text.Json;
+    using System.Text.Json.Serialization;
     using JetBrains.Annotations;
 
     public interface IRepositoryContext<TEntity, TEntityPk> where TEntity : class, IEntity<TEntityPk>
@@ -23,6 +25,9 @@ namespace Sitko.Core.Repository
     public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<TEntity, TEntityPk>
         where TEntity : class, IEntity<TEntityPk> where TQuery : IRepositoryQuery<TEntity>
     {
+        private readonly JsonSerializerOptions jsonSnapshotOptions =
+            new() { ReferenceHandler = ReferenceHandler.Preserve };
+
         private List<RepositoryRecord<TEntity, TEntityPk>>? batch;
 
         protected BaseRepository(IRepositoryContext<TEntity, TEntityPk> repositoryContext)
@@ -33,14 +38,11 @@ namespace Sitko.Core.Repository
             Logger = repositoryContext.Logger;
         }
 
-        [PublicAPI]
-        protected IValidator[] Validators { get; }
+        [PublicAPI] protected IValidator[] Validators { get; }
 
-        [PublicAPI]
-        protected RepositoryFiltersManager FiltersManager { get; }
+        [PublicAPI] protected RepositoryFiltersManager FiltersManager { get; }
 
-        [PublicAPI]
-        protected List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers { get; }
+        [PublicAPI] protected List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers { get; }
 
         protected ILogger Logger { get; }
 
@@ -56,6 +58,10 @@ namespace Sitko.Core.Repository
             var changesResult = await GetChangesAsync(entity);
             return changesResult.changes.Length > 0;
         }
+
+        public TEntity CreateSnapshot(TEntity entity) =>
+            JsonSerializer.Deserialize<TEntity>(JsonSerializer.Serialize(entity, jsonSnapshotOptions),
+                jsonSnapshotOptions)!;
 
 
         public virtual Task<bool> BeginBatchAsync(CancellationToken cancellationToken = default)
@@ -599,7 +605,7 @@ namespace Sitko.Core.Repository
             if (batch == null)
             {
                 await DoSaveAsync(cancellationToken);
-                await AfterSaveAsync(new[] {record}, cancellationToken);
+                await AfterSaveAsync(new[] { record }, cancellationToken);
             }
             else
             {
@@ -608,7 +614,7 @@ namespace Sitko.Core.Repository
         }
 
         protected virtual Task AfterLoadAsync(TEntity entity, CancellationToken cancellationToken = default) =>
-            AfterLoadAsync(new[] {entity}, cancellationToken);
+            AfterLoadAsync(new[] { entity }, cancellationToken);
 
         protected virtual Task AfterLoadAsync(TEntity[] entities, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
@@ -635,7 +641,7 @@ namespace Sitko.Core.Repository
             Task.CompletedTask;
 
         protected virtual Task CheckAccessAsync(TEntity entity, CancellationToken cancellationToken = default) =>
-            CheckAccessAsync(new[] {entity}, cancellationToken);
+            CheckAccessAsync(new[] { entity }, cancellationToken);
 
         protected virtual async Task CheckAccessAsync(TEntity[] entities, CancellationToken cancellationToken = default)
         {

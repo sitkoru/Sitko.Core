@@ -179,5 +179,27 @@ namespace Sitko.Core.Repository
 
         Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default);
         Task<bool> HasChangesAsync(TEntity entity);
+        TEntity CreateSnapshot(TEntity entity);
+    }
+
+    public interface IExternalRepository<TEntity, TEntityPk> : IRepository<TEntity, TEntityPk>
+        where TEntity : class, IEntity<TEntityPk>
+    {
+        Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateExternalAsync(TEntity entity, TEntity? baseEntity,
+            CancellationToken cancellationToken = default);
+
+        Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateExternalAsync(TEntity entity,
+            Action<TEntity> update,
+            CancellationToken cancellationToken = default);
+
+        Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateExternalAsync(TEntity entity,
+            Func<TEntity, Task> update,
+            CancellationToken cancellationToken = default);
+
+        Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddExternalAsync(TEntity entity,
+            CancellationToken cancellationToken = default);
+
+        Task<bool> DeleteExternalAsync(TEntity entity,
+            CancellationToken cancellationToken = default);
     }
 }

@@ -7,11 +7,16 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
+using System.Collections.Generic;
+using AutoMapper;
+using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using AutoMapper.EquivalencyExpression;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore
 {
     public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
-        BaseRepository<TEntity, TEntityPk, EFRepositoryQuery<TEntity>>
+        BaseRepository<TEntity, TEntityPk, EFRepositoryQuery<TEntity>>, IExternalRepository<TEntity, TEntityPk>
         where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext
     {
         private readonly TDbContext dbContext;
@@ -26,6 +31,257 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             repositoryLock = repositoryContext.RepositoryLock;
         }
 
+        private static bool Attach(TDbContext context, TEntity entity)
+        {
+            bool result;
+            if (context.Set<TEntity>().Local.Contains(entity))
+            {
+                result = true;
+                var entry = context.Entry(entity);
+                foreach (var collection in entry.Collections)
+                {
+                    if (collection.CurrentValue is not null)
+                    {
+                        context.AttachRange(collection.CurrentValue);
+                    }
+                }
+
+                foreach (var referenceEntry in entry.References)
+                {
+                    if (referenceEntry.CurrentValue is not null)
+                    {
+                        context.AttachRange(referenceEntry.CurrentValue);
+                    }
+                }
+            }
+            else
+            {
+                context.Set<TEntity>().Attach(entity);
+                result = true;
+            }
+
+            return result;
+        }
+
+        private record EntityReference(Type ParentType, object ParentId, Type Type, object Id, string PropertyName);
+
+        public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateExternalAsync(TEntity entity,
+            TEntity? baseEntity,
+            CancellationToken cancellationToken = default)
+        {
+            await ExecuteDbContextOperationAsync(context =>
+            {
+                var loadedReferences =
+                    new List<EntityReference>();
+                if (baseEntity is not null)
+                {
+                    var baseEntry = dbContext.Entry<IEntity>(baseEntity);
+                    AnalyzeReferences(baseEntry, loadedReferences);
+                }
+
+                context.ChangeTracker.TrackGraph(entity, node =>
+                {
+                    var nodeEntity = node.Entry.Entity as IEntity;
+                    if (nodeEntity is not null)
+                    {
+                        var existedEntry = GetTrackedEntity(context, nodeEntity);
+                        if (existedEntry is not null)
+                        {
+                            node.Entry.State = EntityState.Detached;
+                            return;
+                        }
+                    }
+
+                    var properties = node.Entry.GetDatabaseValues();
+                    if (properties is null)
+                    {
+                        node.Entry.State = EntityState.Added;
+                        return;
+                    }
+
+                    var hasChanges = false;
+                    foreach (var property in node.Entry.Properties)
+                    {
+                        if (property.Metadata.IsKey() || property.Metadata.IsShadowProperty())
+                        {
+                            continue;
+                        }
+
+                        if (properties.TryGetValue<object>(property.Metadata.Name, out var value))
+                        {
+                            if (!property.Metadata.GetValueComparer().Equals(property.CurrentValue, value))
+                            {
+                                property.IsModified = true;
+                                hasChanges = true;
+                            }
+                        }
+                    }
+
+                    node.Entry.State = hasChanges ? EntityState.Modified : EntityState.Unchanged;
+                    if (nodeEntity is not null)
+                    {
+                        var entryReferences = loadedReferences.Where(r =>
+                            r.ParentType == nodeEntity.GetType() && r.ParentId.Equals(nodeEntity.GetId())).ToList();
+                        foreach (var entryReference in node.Entry.References)
+                        {
+                            var refValue = entryReferences.FirstOrDefault(e =>
+                                e.PropertyName == entryReference.Metadata.Name);
+                            if (entryReference.CurrentValue is null)
+                            {
+                                if (refValue is not null)
+                                {
+                                    entryReference.Load();
+                                    entryReference.CurrentValue = null;
+                                }
+                            }
+                            else
+                            {
+                                if (refValue is null)
+                                {
+                                    var refEntry = context.Entry(entryReference.CurrentValue);
+                                    refEntry.State = refEntry.IsKeySet ? EntityState.Unchanged : EntityState.Added;
+                                    entryReference.IsModified = true;
+                                }
+                            }
+                        }
+
+
+                        foreach (var collection in node.Entry.Collections)
+                        {
+                            var refValues = entryReferences.Where(e =>
+                                e.PropertyName == collection.Metadata.Name).ToList();
+                            if (refValues.Any())
+                            {
+                                var current = collection.CurrentValue.Cast<IEntity>().ToList();
+                                if (collection.CurrentValue is not null &&
+                                    current.Count != refValues.Count)
+                                {
+                                    var mapper = new Mapper(new MapperConfiguration(x =>
+                                    {
+                                        x.AddCollectionMappers();
+                                        x.CreateMap<IEntity, IEntity>().EqualityComparison((entity1, entity2) =>
+                                            entity1.GetId() != null && entity1.GetId()!.Equals(entity2.GetId()));
+                                    }));
+                                    collection.CurrentValue = null;
+                                    collection.Load();
+                                    var final = new List<IEntity>();
+                                    foreach (var val in current.Cast<IEntity>())
+                                    {
+                                        var valEntry = GetTrackedEntity(dbContext, val) ?? context.Add(val);
+                                        final.Add(valEntry.Entity as IEntity ?? throw new InvalidOperationException());
+                                    }
+
+                                    mapper.Map(final, collection.CurrentValue);
+                                }
+                            }
+                        }
+                    }
+                });
+                return Task.FromResult(true);
+            }, cancellationToken);
+            var result = await UpdateAsync(entity, cancellationToken);
+
+            return result;
+        }
+
+        private void AnalyzeReferences(EntityEntry<IEntity> entry,
+            List<EntityReference> loadedReferences)
+        {
+            foreach (var reference in entry.References)
+            {
+                if (reference.TargetEntry?.Entity is IEntity entityReference)
+                {
+                    var entityEntry = entry.Context.Entry(entityReference);
+                    var id = new EntityReference(entry.Entity.GetType(), entry.Entity.GetId()!,
+                        entityReference.GetType(),
+                        entityReference.GetId()!, reference.Metadata.Name);
+                    if (!loadedReferences.Contains(id))
+                    {
+                        loadedReferences.Add(id);
+                        AnalyzeReferences(entityEntry, loadedReferences);
+                    }
+                }
+            }
+
+            foreach (var collection in entry.Collections)
+            {
+                if (collection.CurrentValue is not null)
+                {
+                    foreach (var entityReference in collection.CurrentValue.Cast<IEntity>())
+                    {
+                        var id = new EntityReference(entry.Entity.GetType(), entry.Entity.GetId()!,
+                            entityReference.GetType(), entityReference.GetId()!, collection.Metadata.Name);
+                        if (!loadedReferences.Contains(id))
+                        {
+                            var entityEntry = entry.Context.Entry(entityReference);
+                            loadedReferences.Add(id);
+                            AnalyzeReferences(entityEntry, loadedReferences);
+                        }
+                    }
+                }
+            }
+        }
+
+        private EntityEntry? GetTrackedEntity<TTrackedEntity>(TDbContext trackingDbContext,
+            TTrackedEntity trackedEntity)
+            where TTrackedEntity : class, IEntity =>
+            trackingDbContext.ChangeTracker.Entries().FirstOrDefault(x =>
+                x.Entity is IEntity xEntity && xEntity.GetType() == trackedEntity.GetType() &&
+                xEntity.GetId()?.Equals(trackedEntity.GetId()) == true);
+
+        [PublicAPI]
+        public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateExternalAsync(TEntity entity,
+            Action<TEntity> update,
+            CancellationToken cancellationToken = default)
+        {
+            if (Attach(dbContext, entity))
+            {
+                update(entity);
+                return await UpdateAsync(entity, cancellationToken);
+            }
+
+            throw new InvalidOperationException("Can't attach entity to dbContext");
+        }
+
+        [PublicAPI]
+        public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateExternalAsync(TEntity entity,
+            Func<TEntity, Task> update,
+            CancellationToken cancellationToken = default)
+        {
+            if (Attach(dbContext, entity))
+            {
+                await update(entity);
+                return await UpdateAsync(entity, cancellationToken);
+            }
+
+            throw new InvalidOperationException("Can't attach entity to dbContext");
+        }
+
+        [PublicAPI]
+        public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddExternalAsync(TEntity entity,
+            CancellationToken cancellationToken = default)
+        {
+            if (Attach(dbContext, entity))
+            {
+                return await AddAsync(entity, cancellationToken);
+            }
+
+            throw new InvalidOperationException("Can't attach entity to dbContext");
+        }
+
+        [PublicAPI]
+        public async Task<bool> DeleteExternalAsync(TEntity entity,
+            CancellationToken cancellationToken = default)
+        {
+            if (Attach(dbContext, entity))
+            {
+                return await DeleteAsync(entity, cancellationToken);
+            }
+
+            throw new InvalidOperationException("Can't attach entity to dbContext");
+        }
+
+        [PublicAPI]
         protected async Task<T> ExecuteDbContextOperationAsync<T>(Func<TDbContext, Task<T>> operation,
             CancellationToken cancellationToken = default)
         {
@@ -165,34 +421,33 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 .Where(p => p.IsModified)
                 .Select(p => new PropertyChange(p.Metadata.Name, p.OriginalValue, p.CurrentValue))
                 .ToList();
-            if (!entityChanges.Any() && dbContext.ChangeTracker.HasChanges())
+            foreach (var collection in entry.Collections)
             {
-                foreach (var collection in entry.Collections)
+                var oldCollection = oldDbContext.Entry(oldEntity).Collections
+                    .First(c => c.Metadata.Name == collection.Metadata.Name);
+                await oldCollection.LoadAsync();
+                if (oldCollection.CurrentValue?.Cast<object>().Count() !=
+                    collection.CurrentValue?.Cast<object>().Count())
                 {
-                    var oldCollection = oldDbContext.Entry(oldEntity).Collections
-                        .First(c => c.Metadata.Name == collection.Metadata.Name);
-                    await oldCollection.LoadAsync();
-                    if (oldCollection.CurrentValue?.Cast<object>().Count() !=
-                        collection.CurrentValue?.Cast<object>().Count())
-                    {
-                        entityChanges.Add(new PropertyChange(collection.Metadata.Name, oldCollection, collection));
-                        continue;
-                    }
-
-                    if (collection.CurrentValue?.Cast<object>().Any(collectionEntry =>
-                        dbContext.Entry(collectionEntry).State != EntityState.Unchanged) == true)
-                    {
-                        entityChanges.Add(new PropertyChange(collection.Metadata.Name, collection, collection));
-                    }
+                    entityChanges.Add(new PropertyChange(collection.Metadata.Name, oldCollection.CurrentValue,
+                        collection.CurrentValue));
+                    continue;
                 }
 
-                foreach (var reference in entry.References)
+                if (collection.CurrentValue?.Cast<object>().Any(collectionEntry =>
+                    dbContext.Entry(collectionEntry).State != EntityState.Unchanged) == true)
                 {
-                    if (reference.IsModified)
-                    {
-                        entityChanges.Add(new PropertyChange(reference.Metadata.Name, reference.CurrentValue,
-                            reference.CurrentValue));
-                    }
+                    entityChanges.Add(new PropertyChange(collection.Metadata.Name, collection.CurrentValue,
+                        collection.CurrentValue));
+                }
+            }
+
+            foreach (var reference in entry.References)
+            {
+                if (reference.IsModified || reference.TargetEntry?.State == EntityState.Modified)
+                {
+                    entityChanges.Add(new PropertyChange(reference.Metadata.Name, reference.CurrentValue,
+                        reference.CurrentValue));
                 }
             }
 
@@ -211,7 +466,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 return Task.FromResult(true);
             }, cancellationToken);
 
-
+        [PublicAPI]
         protected IQueryable<TEntity> GetBaseQuery() => dbContext.Set<TEntity>().AsQueryable();
 
         protected virtual IQueryable<TEntity> AddIncludes(IQueryable<TEntity> query) => query;

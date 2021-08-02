@@ -10,6 +10,7 @@ using Sitko.Core.Repository.EntityFrameworkCore;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 
 [assembly: UserSecretsId("test")]
 
@@ -109,14 +110,14 @@ namespace Sitko.Core.Repository.Tests
         {
             var scope = await GetScopeAsync();
 
-            var repository = scope.GetService<IRepository<BarModel, Guid>>();
+            var repository = scope.GetService<BarRepository>();
 
             Assert.NotNull(repository);
 
-            var item = await repository.GetAsync(query => query.Include(e => e.Test));
+            var item = await repository.GetAsync(query => query.Where(e => e.TestId != null).Include(e => e.Test));
             Assert.NotNull(item);
             Assert.NotNull(item!.Test);
-            Assert.Equal(1, item.Test.FooId);
+            Assert.Equal(1, item.Test!.FooId);
         }
 
         [Fact]
@@ -153,10 +154,9 @@ namespace Sitko.Core.Repository.Tests
             var bar = item.Bars.First();
             Assert.Equal(item.Id, bar.TestId);
             Assert.NotEmpty(bar.Foos);
-            Assert.Single(bar.Foos);
             var foo = bar.Foos.First();
             Assert.NotNull(foo.Bar);
-            Assert.NotNull(foo.Bar.Test);
+            Assert.NotNull(foo.Bar!.Test);
         }
 
         [Fact]
@@ -165,7 +165,7 @@ namespace Sitko.Core.Repository.Tests
             var scope = await GetScopeAsync();
 
             var testRepository = scope.GetService<IRepository<TestModel, Guid>>();
-            var barRepository = scope.GetService<IRepository<BarModel, Guid>>();
+            var barRepository = scope.GetService<BarRepository>();
 
             var tasks = new List<Task> { testRepository.GetAllAsync(), barRepository.GetAllAsync() };
 
@@ -186,6 +186,311 @@ namespace Sitko.Core.Repository.Tests
             var all = await repository.GetAllAsync();
             var allSum = all.items.Sum(t => t.FooId);
             Assert.Equal(allSum, sum);
+        }
+
+        [Fact]
+        public async Task DisconnectedProperty()
+        {
+            var scope = await GetScopeAsync();
+            BarModel? originalBar;
+            BarModel snapshot;
+            using (var scope1 = scope.CreateScope())
+            {
+                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
+                originalBar = await repository1.GetAsync(q => q.Where(b => b.Baz == null));
+                Assert.NotNull(originalBar);
+                snapshot = repository1.CreateSnapshot(originalBar!);
+            }
+
+            Assert.Null(originalBar!.Baz);
+            originalBar.Baz = "123";
+
+            using (var scope2 = scope.CreateScope())
+            {
+                var repository2 = scope2.ServiceProvider.GetRequiredService<BarRepository>();
+                var updateResult = await repository2.UpdateExternalAsync(originalBar, snapshot);
+                Assert.True(updateResult.IsSuccess);
+                Assert.NotEmpty(updateResult.Changes);
+            }
+
+            using (var finalScope = scope.CreateScope())
+            {
+                var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
+                var updatedBar =
+                    await repository.GetAsync(q => q.Where(b => b.Id == originalBar.Id));
+                Assert.Equal("123", updatedBar!.Baz);
+            }
+        }
+
+        [Fact]
+        public async Task DisconnectedOneToOne()
+        {
+            var scope = await GetScopeAsync();
+            BarModel? originalBar;
+            BarModel snapshot;
+            using (var scope1 = scope.CreateScope())
+            {
+                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
+                originalBar = await repository1.GetAsync(q => q.Where(b => b.TestId == null));
+                Assert.NotNull(originalBar);
+                snapshot = repository1.CreateSnapshot(originalBar!);
+            }
+
+            Assert.Null(originalBar!.Test);
+            Assert.Equal(default, originalBar.TestId);
+
+            AddOrUpdateOperationResult<TestModel, Guid> newTestResult;
+            using (var scope2 = scope.CreateScope())
+            {
+                var repository2 = scope2.ServiceProvider.GetRequiredService<IRepository<TestModel, Guid>>();
+                newTestResult = await repository2.AddAsync(await repository2.NewAsync());
+            }
+
+            Assert.True(newTestResult.IsSuccess);
+
+            originalBar.Test = newTestResult.Entity;
+
+
+            using (var scope3 = scope.CreateScope())
+            {
+                var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
+                var updateResult = await repository3.UpdateExternalAsync(originalBar, snapshot);
+                Assert.True(updateResult.IsSuccess);
+                Assert.NotEmpty(updateResult.Changes);
+            }
+
+            using (var finalScope = scope.CreateScope())
+            {
+                var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
+                var updatedBar =
+                    await repository.GetAsync(q => q.Where(b => b.Id == originalBar.Id));
+                Assert.Equal(newTestResult.Entity.Id, updatedBar!.TestId);
+            }
+        }
+
+        [Fact]
+        public async Task DisconnectedOneToOneUpdateEntity()
+        {
+            var scope = await GetScopeAsync();
+            BarModel? originalBar;
+            BarModel snapshot;
+            using (var scope1 = scope.CreateScope())
+            {
+                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
+                originalBar = await repository1.GetAsync(q => q.Where(b => b.TestId != null).Include(b => b.Test));
+                Assert.NotNull(originalBar);
+                snapshot = repository1.CreateSnapshot(originalBar!);
+            }
+
+            Assert.NotNull(originalBar!.Test);
+            originalBar.Test!.FooId = 10;
+
+            using (var scope3 = scope.CreateScope())
+            {
+                var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
+                var updateResult = await repository3.UpdateExternalAsync(originalBar, snapshot);
+                Assert.True(updateResult.IsSuccess);
+                Assert.NotEmpty(updateResult.Changes);
+                await repository3.RefreshAsync(originalBar);
+            }
+
+            using (var finalScope = scope.CreateScope())
+            {
+                var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
+                var updatedBar =
+                    await repository.GetAsync(q => q.Where(b => b.Id == originalBar.Id).Include(b => b.Test));
+                Assert.Equal(10, updatedBar!.Test!.FooId);
+            }
+        }
+
+
+        [Fact]
+        public async Task DisconnectedOneToOneDeleteEntity()
+        {
+            var scope = await GetScopeAsync();
+            BarModel? originalBar;
+            BarModel snapshot;
+            using (var scope1 = scope.CreateScope())
+            {
+                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
+                originalBar = await repository1.GetAsync(q => q.Where(b => b.TestId != null).Include(b => b.Test));
+                Assert.NotNull(originalBar);
+                snapshot = repository1.CreateSnapshot(originalBar!);
+            }
+
+            Assert.NotNull(originalBar!.Test);
+            originalBar.Test = null;
+
+            using (var scope3 = scope.CreateScope())
+            {
+                var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
+                var updateResult = await repository3.UpdateExternalAsync(originalBar, snapshot);
+                Assert.True(updateResult.IsSuccess);
+                Assert.NotEmpty(updateResult.Changes);
+            }
+
+            using (var finalScope = scope.CreateScope())
+            {
+                var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
+                var updatedBar =
+                    await repository.GetAsync(q => q.Where(b => b.Id == originalBar.Id).Include(b => b.Foos));
+                Assert.Null(updatedBar!.Test);
+                Assert.Null(updatedBar.TestId);
+            }
+        }
+
+        [Fact]
+        public async Task DisconnectedOneToMany()
+        {
+            var scope = await GetScopeAsync();
+            BarModel? originalBar;
+            BarModel snapshot;
+            using (var scope1 = scope.CreateScope())
+            {
+                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
+                originalBar = await repository1.GetAsync(q => q.Where(b => !b.Foos.Any()));
+                Assert.NotNull(originalBar);
+                snapshot = repository1.CreateSnapshot(originalBar!);
+            }
+
+            Assert.NotNull(originalBar);
+            Assert.Empty(originalBar!.Foos);
+
+            AddOrUpdateOperationResult<FooModel, Guid> newTestResult;
+            using (var scope2 = scope.CreateScope())
+            {
+                var repository2 = scope2.ServiceProvider.GetRequiredService<FooRepository>();
+                newTestResult = await repository2.AddAsync(await repository2.NewAsync());
+            }
+
+            Assert.True(newTestResult.IsSuccess);
+
+            originalBar.Foos.Add(newTestResult.Entity);
+
+            using (var scope3 = scope.CreateScope())
+            {
+                var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
+                var updateResult = await repository3.UpdateExternalAsync(originalBar, snapshot);
+                Assert.True(updateResult.IsSuccess);
+                Assert.NotEmpty(updateResult.Changes);
+            }
+
+            using (var finalScope = scope.CreateScope())
+            {
+                var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
+                var updatedBar =
+                    await repository.GetAsync(q => q.Where(b => b.Id == originalBar.Id).Include(b => b.Foos));
+                Assert.NotEmpty(updatedBar!.Foos);
+            }
+        }
+
+        [Fact]
+        public async Task DisconnectedOneToManyNewEntity()
+        {
+            var scope = await GetScopeAsync();
+            BarModel? originalBar;
+            BarModel snapshot;
+            using (var scope1 = scope.CreateScope())
+            {
+                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
+                originalBar = await repository1.GetAsync(q => q.Where(b => !b.Foos.Any()));
+                Assert.NotNull(originalBar);
+                snapshot = repository1.CreateSnapshot(originalBar!);
+            }
+
+            Assert.Empty(originalBar!.Foos);
+
+            var foo = new FooModel();
+
+            originalBar.Foos.Add(foo);
+
+            using (var scope3 = scope.CreateScope())
+            {
+                var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
+                var updateResult = await repository3.UpdateExternalAsync(originalBar, snapshot);
+                Assert.True(updateResult.IsSuccess);
+                Assert.NotEmpty(updateResult.Changes);
+            }
+
+            using (var finalScope = scope.CreateScope())
+            {
+                var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
+                var updatedBar =
+                    await repository.GetAsync(q => q.Where(b => b.Id == originalBar.Id).Include(b => b.Foos));
+                Assert.NotEmpty(updatedBar!.Foos);
+            }
+        }
+
+        [Fact]
+        public async Task DisconnectedOneToManyUpdateEntity()
+        {
+            var scope = await GetScopeAsync();
+            BarModel? originalBar;
+            BarModel snapshot;
+            using (var scope1 = scope.CreateScope())
+            {
+                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
+                originalBar = await repository1.GetAsync(q => q.Where(b => b.Foos.Any()).Include(b => b.Foos));
+                Assert.NotNull(originalBar);
+                snapshot = repository1.CreateSnapshot(originalBar!);
+            }
+
+            Assert.NotEmpty(originalBar!.Foos);
+            var foo = originalBar.Foos.OrderBy(f => f.Id).First();
+            foo.FooText = "000";
+
+            using (var scope3 = scope.CreateScope())
+            {
+                var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
+                var updateResult = await repository3.UpdateExternalAsync(originalBar, snapshot);
+                Assert.True(updateResult.IsSuccess);
+                Assert.NotEmpty(updateResult.Changes);
+            }
+
+            using (var finalScope = scope.CreateScope())
+            {
+                var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
+                var updatedBar =
+                    await repository.GetAsync(q => q.Where(b => b.Id == originalBar.Id).Include(b => b.Foos));
+                Assert.Equal("000", updatedBar!.Foos.First(f => f.Id == foo.Id).FooText);
+            }
+        }
+
+        [Fact]
+        public async Task DisconnectedOneToManyDeleteEntity()
+        {
+            var scope = await GetScopeAsync();
+            BarModel? originalBar;
+            BarModel snapshot;
+            using (var scope1 = scope.CreateScope())
+            {
+                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
+                originalBar = await repository1.GetAsync(q => q.Where(b => b.Foos.Any()).Include(b => b.Foos));
+                Assert.NotNull(originalBar);
+                snapshot = repository1.CreateSnapshot(originalBar!);
+            }
+
+            Assert.NotNull(originalBar);
+            Assert.NotEmpty(originalBar!.Foos);
+            var count = originalBar.Foos.Count;
+            Assert.Equal(4, count);
+
+            originalBar.Foos.Remove(originalBar.Foos.Last());
+            using (var scope3 = scope.CreateScope())
+            {
+                var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
+                var updateResult = await repository3.UpdateExternalAsync(originalBar, snapshot);
+                Assert.True(updateResult.IsSuccess);
+                Assert.NotEmpty(updateResult.Changes);
+            }
+
+            using (var finalScope = scope.CreateScope())
+            {
+                var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
+                var updatedBar =
+                    await repository.GetAsync(q => q.Where(b => b.Id == originalBar.Id).Include(b => b.Foos));
+                Assert.Equal(count - 1, updatedBar!.Foos.Count);
+            }
         }
     }
 
@@ -210,9 +515,16 @@ namespace Sitko.Core.Repository.Tests
                 new() { Id = Guid.NewGuid(), FooId = 5 }
             };
             modelBuilder.Entity<TestModel>().HasData(testModels);
-            var barModel = new BarModel { Id = Guid.NewGuid(), TestId = testModels.First().Id };
-            modelBuilder.Entity<BarModel>().HasData(barModel);
-            modelBuilder.Entity<FooModel>().HasData(new FooModel { Id = Guid.NewGuid(), BarId = barModel.Id });
+            var barModels = new List<BarModel>()
+            {
+                new() { Id = Guid.NewGuid(), TestId = testModels.First().Id }, new() { Id = Guid.NewGuid() }
+            };
+            modelBuilder.Entity<BarModel>().HasData(barModels);
+            modelBuilder.Entity<FooModel>()
+                .HasData(new FooModel { Id = Guid.NewGuid(), BarId = barModels[0].Id, FooText = "123" },
+                    new FooModel { Id = Guid.NewGuid(), BarId = barModels[0].Id, FooText = "456" },
+                    new FooModel { Id = Guid.NewGuid(), BarId = barModels[0].Id, FooText = "789" },
+                    new FooModel { Id = Guid.NewGuid(), BarId = barModels[0].Id, FooText = "012" });
         }
     }
 
@@ -239,17 +551,20 @@ namespace Sitko.Core.Repository.Tests
 
     public class BarModel : Entity<Guid>
     {
-        public Guid TestId { get; set; }
-        [ForeignKey(nameof(TestId))] public TestModel Test { get; set; } = null!;
+        public Guid? TestId { get; set; }
+        [ForeignKey(nameof(TestId))] public TestModel? Test { get; set; } = null!;
 
         [InverseProperty(nameof(FooModel.Bar))]
         public List<FooModel> Foos { get; set; } = new();
+
+        public string? Baz { get; set; }
     }
 
     public class FooModel : Entity<Guid>
     {
-        public Guid BarId { get; set; }
-        [ForeignKey(nameof(BarId))] public BarModel Bar { get; set; } = null!;
+        public string? FooText { get; set; }
+        public Guid? BarId { get; set; }
+        [ForeignKey(nameof(BarId))] public BarModel? Bar { get; set; } = null!;
     }
 
     public class TestRepository : EFRepository<TestModel, Guid, TestDbContext>

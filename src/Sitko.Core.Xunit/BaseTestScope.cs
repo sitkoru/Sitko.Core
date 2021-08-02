@@ -80,6 +80,7 @@ namespace Sitko.Core.Xunit
 #pragma warning restore 8714
         }
 
+        public IServiceScope CreateScope() => ServiceProvider!.CreateScope();
         public IEnumerable<T> GetServices<T>() => ServiceProvider!.GetServices<T>();
 
         public ILogger<T> GetLogger<T>() => ServiceProvider!.GetRequiredService<ILogger<T>>();
