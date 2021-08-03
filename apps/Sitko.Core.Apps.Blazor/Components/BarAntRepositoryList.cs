@@ -6,13 +6,22 @@ using Sitko.Core.Blazor.AntDesignComponents.Components;
 
 namespace Sitko.Core.Apps.Blazor.Components
 {
+    using Data;
+    using Data.Repositories;
+    using Microsoft.EntityFrameworkCore;
+    using Repository.EntityFrameworkCore;
+
     public class
-        BarAntRepositoryList : AntRepositoryList<BarModel, Guid>
+        BarAntRepositoryList : BaseAntRepositoryList<BarModel, Guid, BarRepository>
     {
-        public async Task DeleteAsync(BarModel barModel)
-        {
-            await Repository.DeleteAsync(barModel);
-            await RefreshAsync();
-        }
+        public Task UpdateAsync(BarModel barModel) =>
+            ExecuteRepositoryOperation(async repository =>
+            {
+                var result = await repository.UpdateExternalAsync(barModel, model =>
+                {
+                    model.Date = DateTimeOffset.UtcNow;
+                });
+                return result.IsSuccess;
+            });
     }
 }
