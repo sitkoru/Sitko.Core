@@ -1,13 +1,14 @@
-﻿@typeparam TItem
+﻿@typeparam TEntity
 @typeparam TEntityPk
-@inherits BaseAntRepositoryListComponent<TItem, TEntityPk>
+@typeparam TRepository
+@inherits BaseAntRepositoryListComponent<TEntity, TEntityPk, TRepository>
 @if (ChildContent is not null)
 {
-    <AntDesign.Table TItem="TItem"
+    <AntDesign.Table TItem="TEntity"
                      DataSource="@Items"
                      RemoteDataSource="true"
                      Total="@Count"
-                     OnChange="async model  => await OnChangeAsync(model)"
+                     OnChange="async model => await OnChangeAsync(model)"
                      @bind-PageSize="@PageSize"
                      Loading="@IsLoading"
                      @ref="Table"
@@ -41,7 +42,7 @@
                      SelectedRowsChanged="@SelectedRowsChanged">
         <ChildContent>
             @ChildContent(context)
-            <AntListInitializer TEntity="TItem" Table="Table" AntListComponent="this"></AntListInitializer>
+            <AntListInitializer TEntity="TEntity" Table="Table" AntListComponent="this"></AntListInitializer>
         </ChildContent>
     </AntDesign.Table>
 }
