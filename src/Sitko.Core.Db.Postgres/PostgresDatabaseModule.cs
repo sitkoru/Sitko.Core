@@ -83,7 +83,8 @@ namespace Sitko.Core.Db.Postgres
                 Username = options.Username,
                 Password = options.Password,
                 Database = options.Database,
-                Pooling = options.EnableNpgsqlPooling
+                Pooling = options.EnableNpgsqlPooling,
+                IncludeErrorDetails = options.IncludeErrorDetails
             };
             return connBuilder;
         }

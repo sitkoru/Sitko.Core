@@ -43,6 +43,7 @@ namespace Sitko.Core.Xunit
                 {
                     moduleOptions.Database = $"{application.Id}_{name}";
                     moduleOptions.EnableSensitiveLogging = true;
+                    moduleOptions.IncludeErrorDetails = true;
                     ConfigurePostgresDatabaseModule(configuration, environment, moduleOptions, application.Id, name);
                 });
             }
