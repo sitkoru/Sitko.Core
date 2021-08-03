@@ -26,10 +26,8 @@ namespace Sitko.Core.Repository
     public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<TEntity, TEntityPk>
         where TEntity : class, IEntity<TEntityPk> where TQuery : IRepositoryQuery<TEntity>
     {
-        private List<RepositoryRecord<TEntity, TEntityPk>>? batch;
         private readonly Dictionary<TEntityPk, TEntity> snapshots = new();
-
-        protected CompareLogic Comparer { get; }
+        private List<RepositoryRecord<TEntity, TEntityPk>>? batch;
 
         protected BaseRepository(IRepositoryContext<TEntity, TEntityPk> repositoryContext)
         {
@@ -39,6 +37,8 @@ namespace Sitko.Core.Repository
             Logger = repositoryContext.Logger;
             Comparer = repositoryContext.Comparer;
         }
+
+        protected CompareLogic Comparer { get; }
 
         [PublicAPI] protected IValidator[] Validators { get; }
 

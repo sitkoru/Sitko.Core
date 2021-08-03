@@ -22,46 +22,14 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         private readonly TDbContext dbContext;
         private readonly EFRepositoryLock repositoryLock;
 
+        private MethodInfo? updateCollectionMethodInfo;
+
         protected EFRepository(EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext) : base(
             repositoryContext)
         {
             dbContext = repositoryContext.DbContext;
             repositoryLock = repositoryContext.RepositoryLock;
         }
-
-        private static bool Attach(TDbContext context, TEntity entity)
-        {
-            bool result;
-            if (context.Set<TEntity>().Local.Contains(entity))
-            {
-                result = true;
-                var entry = context.Entry(entity);
-                foreach (var collection in entry.Collections)
-                {
-                    if (collection.CurrentValue is not null)
-                    {
-                        context.AttachRange(collection.CurrentValue);
-                    }
-                }
-
-                foreach (var referenceEntry in entry.References)
-                {
-                    if (referenceEntry.CurrentValue is not null)
-                    {
-                        context.AttachRange(referenceEntry.CurrentValue);
-                    }
-                }
-            }
-            else
-            {
-                context.Set<TEntity>().Attach(entity);
-                result = true;
-            }
-
-            return result;
-        }
-
-        private record EntityReference(Type ParentType, object ParentId, Type Type, object Id, string PropertyName);
 
         public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateExternalAsync(TEntity entity,
             TEntity? baseEntity,
@@ -223,7 +191,157 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return await UpdateAsync(entity, cancellationToken);
         }
 
-        private MethodInfo? updateCollectionMethodInfo;
+        public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateExternalAsync(TEntity entity,
+            Action<TEntity> update,
+            CancellationToken cancellationToken = default)
+        {
+            if (Attach(dbContext, entity))
+            {
+                update(entity);
+                return await UpdateAsync(entity, cancellationToken);
+            }
+
+            throw new InvalidOperationException("Can't attach entity to dbContext");
+        }
+
+        public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateExternalAsync(TEntity entity,
+            Func<TEntity, Task> update,
+            CancellationToken cancellationToken = default)
+        {
+            if (Attach(dbContext, entity))
+            {
+                await update(entity);
+                return await UpdateAsync(entity, cancellationToken);
+            }
+
+            throw new InvalidOperationException("Can't attach entity to dbContext");
+        }
+
+        public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddExternalAsync(TEntity entity,
+            CancellationToken cancellationToken = default)
+        {
+            if (Attach(dbContext, entity))
+            {
+                return await AddAsync(entity, cancellationToken);
+            }
+
+            throw new InvalidOperationException("Can't attach entity to dbContext");
+        }
+
+        public async Task<bool> DeleteExternalAsync(TEntity entity,
+            CancellationToken cancellationToken = default)
+        {
+            if (Attach(dbContext, entity))
+            {
+                return await DeleteAsync(entity, cancellationToken);
+            }
+
+            throw new InvalidOperationException("Can't attach entity to dbContext");
+        }
+
+        public override async Task<bool> BeginTransactionAsync(CancellationToken cancellationToken = default)
+        {
+            if (GetCurrentTransaction() != null)
+            {
+                return true;
+            }
+
+            try
+            {
+                await ExecuteDbContextOperationAsync(async currentDbContext =>
+                    currentDbContext.Database.CurrentTransaction ??
+                    await currentDbContext.Database
+                        .BeginTransactionAsync(
+                            cancellationToken), cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error while starting transaction in {Repository}: {ErrorText}", GetType(),
+                    ex.ToString());
+                return false;
+            }
+
+            return true;
+        }
+
+        public override async Task<bool> CommitTransactionAsync(CancellationToken cancellationToken = default)
+        {
+            var transaction = GetCurrentTransaction();
+            if (transaction != null)
+            {
+                try
+                {
+                    await transaction.CommitAsync(cancellationToken);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error while commiting transaction {Id} in {Repository}: {ErrorText}",
+                        transaction.TransactionId, GetType(),
+                        ex.ToString());
+                    return false;
+                }
+            }
+
+            return false;
+        }
+
+        public override async Task<bool> RollbackTransactionAsync(CancellationToken cancellationToken = default)
+        {
+            var transaction = GetCurrentTransaction();
+            if (transaction != null)
+            {
+                try
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error while rollback transaction {Id} in {Repository}: {ErrorText}",
+                        transaction.TransactionId, GetType(),
+                        ex.ToString());
+                    return false;
+                }
+            }
+
+            return false;
+        }
+
+        public override Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+            dbContext.Entry(entity).ReloadAsync(cancellationToken);
+
+        private static bool Attach(TDbContext context, TEntity entity)
+        {
+            bool result;
+            if (context.Set<TEntity>().Local.Contains(entity))
+            {
+                result = true;
+                var entry = context.Entry(entity);
+                foreach (var collection in entry.Collections)
+                {
+                    if (collection.CurrentValue is not null)
+                    {
+                        context.AttachRange(collection.CurrentValue);
+                    }
+                }
+
+                foreach (var referenceEntry in entry.References)
+                {
+                    if (referenceEntry.CurrentValue is not null)
+                    {
+                        context.AttachRange(referenceEntry.CurrentValue);
+                    }
+                }
+            }
+            else
+            {
+                context.Set<TEntity>().Attach(entity);
+                result = true;
+            }
+
+            return result;
+        }
 
         private static TCollection UpdateCollection<TElement, TCollection>(TCollection collection,
             IEnumerable<TElement> values,
@@ -308,58 +426,6 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             trackingDbContext.ChangeTracker.Entries().FirstOrDefault(x =>
                 x.Entity is IEntity xEntity && xEntity.GetType() == trackedEntity.GetType() &&
                 xEntity.GetId()?.Equals(trackedEntity.GetId()) == true);
-
-        [PublicAPI]
-        public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateExternalAsync(TEntity entity,
-            Action<TEntity> update,
-            CancellationToken cancellationToken = default)
-        {
-            if (Attach(dbContext, entity))
-            {
-                update(entity);
-                return await UpdateAsync(entity, cancellationToken);
-            }
-
-            throw new InvalidOperationException("Can't attach entity to dbContext");
-        }
-
-        [PublicAPI]
-        public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateExternalAsync(TEntity entity,
-            Func<TEntity, Task> update,
-            CancellationToken cancellationToken = default)
-        {
-            if (Attach(dbContext, entity))
-            {
-                await update(entity);
-                return await UpdateAsync(entity, cancellationToken);
-            }
-
-            throw new InvalidOperationException("Can't attach entity to dbContext");
-        }
-
-        [PublicAPI]
-        public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddExternalAsync(TEntity entity,
-            CancellationToken cancellationToken = default)
-        {
-            if (Attach(dbContext, entity))
-            {
-                return await AddAsync(entity, cancellationToken);
-            }
-
-            throw new InvalidOperationException("Can't attach entity to dbContext");
-        }
-
-        [PublicAPI]
-        public async Task<bool> DeleteExternalAsync(TEntity entity,
-            CancellationToken cancellationToken = default)
-        {
-            if (Attach(dbContext, entity))
-            {
-                return await DeleteAsync(entity, cancellationToken);
-            }
-
-            throw new InvalidOperationException("Can't attach entity to dbContext");
-        }
 
         [PublicAPI]
         protected async Task<T> ExecuteDbContextOperationAsync<T>(Func<TDbContext, Task<T>> operation,
@@ -506,78 +572,8 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             CancellationToken cancellationToken = default) =>
             Task.FromResult(new EFRepositoryQuery<TEntity>(GetBaseQuery()));
 
-        public override async Task<bool> BeginTransactionAsync(CancellationToken cancellationToken = default)
-        {
-            if (GetCurrentTransaction() != null)
-            {
-                return true;
-            }
-
-            try
-            {
-                await ExecuteDbContextOperationAsync(async currentDbContext =>
-                    currentDbContext.Database.CurrentTransaction ??
-                    await currentDbContext.Database
-                        .BeginTransactionAsync(
-                            cancellationToken), cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error while starting transaction in {Repository}: {ErrorText}", GetType(),
-                    ex.ToString());
-                return false;
-            }
-
-            return true;
-        }
-
         private IDbContextTransaction? GetCurrentTransaction() => dbContext.Database.CurrentTransaction;
 
-        public override async Task<bool> CommitTransactionAsync(CancellationToken cancellationToken = default)
-        {
-            var transaction = GetCurrentTransaction();
-            if (transaction != null)
-            {
-                try
-                {
-                    await transaction.CommitAsync(cancellationToken);
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error while commiting transaction {Id} in {Repository}: {ErrorText}",
-                        transaction.TransactionId, GetType(),
-                        ex.ToString());
-                    return false;
-                }
-            }
-
-            return false;
-        }
-
-        public override async Task<bool> RollbackTransactionAsync(CancellationToken cancellationToken = default)
-        {
-            var transaction = GetCurrentTransaction();
-            if (transaction != null)
-            {
-                try
-                {
-                    await transaction.RollbackAsync(cancellationToken);
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error while rollback transaction {Id} in {Repository}: {ErrorText}",
-                        transaction.TransactionId, GetType(),
-                        ex.ToString());
-                    return false;
-                }
-            }
-
-            return false;
-        }
-
-        public override Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default) =>
-            dbContext.Entry(entity).ReloadAsync(cancellationToken);
+        private record EntityReference(Type ParentType, object ParentId, Type Type, object Id, string PropertyName);
     }
 }
