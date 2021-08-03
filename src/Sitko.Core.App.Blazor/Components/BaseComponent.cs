@@ -2,57 +2,154 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Reflection;
+using JetBrains.Annotations;
 
 namespace Sitko.Core.App.Blazor.Components
 {
-    using JetBrains.Annotations;
-
     public interface IBaseComponent
     {
         Task NotifyStateChangeAsync();
     }
 
-    public abstract class BaseComponent : IComponent, IHandleEvent, IHandleAfterRender, IBaseComponent, IAsyncDisposable
+    public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposable
     {
+        private static readonly FieldInfo? RenderFragment = typeof(ComponentBase).GetField("_renderFragment",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+        private static readonly FieldInfo? HasPendingQueuedRender = typeof(ComponentBase).GetField(
+            "_hasPendingQueuedRender",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+        private static readonly FieldInfo? HasNeverRendered = typeof(ComponentBase).GetField("_hasNeverRendered",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+        private bool isDisposed;
         private bool isInitialized;
 
-        protected BaseComponent() =>
-            renderFragment = builder =>
+        private ILogger? logger;
+#if NET6_0_OR_GREATER
+        private AsyncServiceScope? scope;
+#else
+        private IServiceScope? scope;
+#endif
+
+        protected BaseComponent()
+        {
+            if (RenderFragment is null || HasPendingQueuedRender is null || HasNeverRendered is null)
             {
-                hasPendingQueuedRender = false;
-                hasNeverRendered = false;
+                throw new InvalidOperationException("Can't find BaseComponent properties");
+            }
+
+            RenderFragment.SetValue(this, (RenderFragment)(builder =>
+            {
+                HasPendingQueuedRender.SetValue(this, false);
+                HasNeverRendered.SetValue(this, false);
                 if (isInitialized) // do not call BuildRenderTree before we initialized
                 {
-                    BuildRenderTree(builder);
+                    if (ScopeType == ScopeType.Isolated)
+                    {
+                        builder.OpenComponent<CascadingValue<IServiceScope>>(1);
+                        builder.AddAttribute(2, "Value", scope);
+                        builder.AddAttribute(3, "Name", "ParentScope");
+                        builder.AddAttribute(4, "ChildContent", (RenderFragment)BuildRenderTree);
+                        builder.CloseComponent();
+                    }
+                    else
+                    {
+                        BuildRenderTree(builder);
+                    }
                 }
-            };
+            }));
+        }
+
+        [PublicAPI] public Guid ComponentId { get; } = Guid.NewGuid();
+
+        [CascadingParameter(Name = "ParentScope")]
+        private IServiceScope? ParentScope { get; set; }
+
+        [Parameter] public virtual ScopeType ScopeType { get; set; } = ScopeType.Parent;
+
+        [Inject] private IServiceProvider GlobalServiceProvider { get; set; } = null!;
+
+        private IServiceProvider ServiceProvider =>
+            scope?.ServiceProvider ?? ParentScope?.ServiceProvider ?? GlobalServiceProvider;
 
         [PublicAPI] public bool IsLoading { get; private set; }
 
-        [PublicAPI] [Inject] protected NavigationManager NavigationManager { get; set; } = null!;
+        [PublicAPI] protected NavigationManager NavigationManager => GetRequiredService<NavigationManager>();
 
         protected ILogger Logger
         {
             get
             {
-                var validatorType = typeof(ILogger<>);
-                var formValidatorType = validatorType.MakeGenericType(GetType());
-                return (ScopedServices.GetRequiredService(formValidatorType) as ILogger)!;
+                if (logger is null)
+                {
+                    var loggerType = typeof(ILogger<>);
+                    var componentLoggerType = loggerType.MakeGenericType(GetType());
+                    logger = (ServiceProvider.GetRequiredService(componentLoggerType) as ILogger)!;
+                }
+
+                return logger;
             }
         }
 
+        public async ValueTask DisposeAsync()
+        {
+            if (!isDisposed)
+            {
+                if (scope is not null)
+                {
+#if NET6_0_OR_GREATER
+                    await scope.Value.DisposeAsync();
+#else
+                    scope.Dispose();
+#endif
+                }
+
+                Dispose(true);
+                await DisposeAsync(true);
+                isDisposed = true;
+                GC.SuppressFinalize(this);
+            }
+        }
+
+        public void Dispose()
+        {
+            if (!isDisposed)
+            {
+                throw new InvalidOperationException(
+                    "This class must not be disposed synchronously. This method only here to avoid exception on sync scope dispose in .NET 5");
+            }
+
+            GC.SuppressFinalize(this);
+        }
+
+        public override string ToString() => $"{GetType().Name} {ComponentId}";
+
         public Task NotifyStateChangeAsync() => InvokeAsync(StateHasChanged);
 
-        private async Task OnInitializedAsync()
+        protected sealed override async Task OnInitializedAsync()
         {
+            await base.OnInitializedAsync();
+            if (ScopeType == ScopeType.Isolated)
+            {
+#if NET6_0_OR_GREATER
+                scope = ServiceProvider.CreateAsyncScope();
+#else
+                scope = ServiceProvider.CreateScope();
+#endif
+            }
+
             // ReSharper disable once MethodHasAsyncOverload
             Initialize();
             await InitializeAsync();
             isInitialized = true;
         }
+
+        protected sealed override void OnInitialized() => base.OnInitialized();
 
         protected virtual Task InitializeAsync() => Task.CompletedTask;
 
@@ -60,33 +157,31 @@ namespace Sitko.Core.App.Blazor.Components
         {
         }
 
-        protected virtual bool ShouldRender() => isInitialized;
+        protected override bool ShouldRender() => isInitialized;
 
-        protected TService GetService<TService>()
+        [PublicAPI]
+        protected TService? GetService<TService>() where TService : notnull => ServiceProvider.GetService<TService>();
+
+        [PublicAPI]
+        protected TService GetRequiredService<TService>() where TService : notnull =>
+            ServiceProvider.GetRequiredService<TService>();
+
+        [PublicAPI]
+        protected IEnumerable<TService> GetServices<TService>() => ServiceProvider.GetServices<TService>();
+
+        [PublicAPI]
+        protected IServiceScope CreateServicesScope() => ServiceProvider.CreateScope();
+
+        protected async Task<TResult> ExecuteServiceOperation<TService, TResult>(
+            Func<TService, Task<TResult>> operation) where TService : notnull
         {
-#pragma warning disable 8714
-            return ScopedServices.GetRequiredService<TService>();
-#pragma warning restore 8714
+            using var serviceScope = CreateServicesScope();
+            var repository = serviceScope.ServiceProvider.GetRequiredService<TService>();
+            var result = await operation.Invoke(repository);
+            return result;
         }
 
         [PublicAPI]
-        protected IEnumerable<TService> GetServices<TService>() => ScopedServices.GetServices<TService>();
-
-        [PublicAPI]
-        protected TService GetScopedService<TService>()
-        {
-#pragma warning disable 8714
-            return ScopeFactory.CreateScope().ServiceProvider.GetRequiredService<TService>();
-#pragma warning restore 8714
-        }
-
-        [PublicAPI]
-        protected IEnumerable<TService> GetScopedServices<TService>() =>
-            ScopeFactory.CreateScope().ServiceProvider.GetServices<TService>();
-
-        [PublicAPI]
-        protected IServiceScope CreateServicesScope() => ScopeFactory.CreateScope();
-
         protected void StartLoading()
         {
             IsLoading = true;
@@ -95,6 +190,7 @@ namespace Sitko.Core.App.Blazor.Components
         }
 
 
+        [PublicAPI]
         protected void StopLoading()
         {
             IsLoading = false;
@@ -116,104 +212,28 @@ namespace Sitko.Core.App.Blazor.Components
             await NotifyStateChangeAsync();
         }
 
+        [PublicAPI]
         protected virtual void OnStartLoading()
         {
         }
 
+        [PublicAPI]
         protected virtual void OnStopLoading()
         {
         }
 
+        [PublicAPI]
         protected virtual Task OnStartLoadingAsync()
         {
             OnStartLoading();
             return Task.CompletedTask;
         }
 
+        [PublicAPI]
         protected virtual Task OnStopLoadingAsync()
         {
             OnStopLoading();
             return Task.CompletedTask;
-        }
-
-        #region BaseComponent and OwningComponentBase stuff
-
-        [Inject] private IServiceScopeFactory ScopeFactory { get; set; } = null!;
-        private readonly RenderFragment renderFragment;
-        private RenderHandle componentRenderHandle;
-        private bool initialized;
-        private bool hasNeverRendered = true;
-        private bool hasPendingQueuedRender;
-        private bool hasCalledOnAfterRender;
-        private IServiceScope? scope;
-        private bool IsDisposed { get; set; }
-
-        protected virtual void BuildRenderTree(RenderTreeBuilder builder)
-        {
-        }
-
-        protected IServiceProvider ScopedServices
-        {
-            get
-            {
-                if (ScopeFactory == null)
-                {
-                    throw new InvalidOperationException(
-                        "Services cannot be accessed before the component is initialized.");
-                }
-
-                if (IsDisposed)
-                {
-                    throw new ObjectDisposedException(GetType().Name);
-                }
-
-                scope ??= ScopeFactory.CreateScope();
-                return scope.ServiceProvider;
-            }
-        }
-
-        [PublicAPI]
-        protected void StateHasChanged()
-        {
-            if (hasPendingQueuedRender)
-            {
-                return;
-            }
-
-            if (hasNeverRendered || ShouldRender())
-            {
-                hasPendingQueuedRender = true;
-
-                try
-                {
-                    componentRenderHandle.Render(renderFragment);
-                }
-                catch
-                {
-                    hasPendingQueuedRender = false;
-                    throw;
-                }
-            }
-        }
-
-        [PublicAPI]
-        protected Task InvokeAsync(Action workItem) =>
-            IsDisposed ? Task.CompletedTask : componentRenderHandle.Dispatcher.InvokeAsync(workItem);
-
-        [PublicAPI]
-        protected Task InvokeAsync(Func<Task> workItem) =>
-            IsDisposed ? Task.CompletedTask : componentRenderHandle.Dispatcher.InvokeAsync(workItem);
-
-        public async ValueTask DisposeAsync()
-        {
-            if (!IsDisposed)
-            {
-                Dispose(true);
-                await DisposeAsync(true);
-                scope?.Dispose();
-                scope = null;
-                IsDisposed = true;
-            }
         }
 
         protected virtual void Dispose(bool disposing)
@@ -221,120 +241,10 @@ namespace Sitko.Core.App.Blazor.Components
         }
 
         protected virtual Task DisposeAsync(bool disposing) => Task.CompletedTask;
+    }
 
-        public void Attach(RenderHandle renderHandle)
-        {
-            if (this.componentRenderHandle.IsInitialized)
-            {
-                throw new InvalidOperationException(
-                    $"The render handle is already set. Cannot initialize a {nameof(ComponentBase)} more than once.");
-            }
-
-            this.componentRenderHandle = renderHandle;
-        }
-
-        public Task SetParametersAsync(ParameterView parameters)
-        {
-            parameters.SetParameterProperties(this);
-            if (!initialized)
-            {
-                initialized = true;
-
-                return RunInitAndSetParametersAsync();
-            }
-
-            return CallOnParametersSetAsync();
-        }
-
-        private async Task RunInitAndSetParametersAsync()
-        {
-            var task = OnInitializedAsync();
-
-            if (task.Status != TaskStatus.RanToCompletion && task.Status != TaskStatus.Canceled)
-            {
-                StateHasChanged();
-
-                try
-                {
-                    await task;
-                }
-                catch
-                {
-                    if (!task.IsCanceled)
-                    {
-                        throw;
-                    }
-                }
-            }
-
-            await CallOnParametersSetAsync();
-        }
-
-        protected virtual void OnParametersSet()
-        {
-        }
-
-        protected virtual Task OnParametersSetAsync()
-            => Task.CompletedTask;
-
-        private Task CallOnParametersSetAsync()
-        {
-            OnParametersSet();
-            var task = OnParametersSetAsync();
-            var shouldAwaitTask = task.Status != TaskStatus.RanToCompletion &&
-                                  task.Status != TaskStatus.Canceled;
-            StateHasChanged();
-
-            return shouldAwaitTask ? CallStateHasChangedOnAsyncCompletion(task) : Task.CompletedTask;
-        }
-
-        private async Task CallStateHasChangedOnAsyncCompletion(Task task)
-        {
-            try
-            {
-                await task;
-            }
-            catch
-            {
-                if (task.IsCanceled)
-                {
-                    return;
-                }
-
-                throw;
-            }
-
-            StateHasChanged();
-        }
-
-        public Task HandleEventAsync(EventCallbackWorkItem item, object? arg)
-        {
-            var task = item.InvokeAsync(arg);
-            var shouldAwaitTask = task.Status != TaskStatus.RanToCompletion &&
-                                  task.Status != TaskStatus.Canceled;
-
-            StateHasChanged();
-
-            return shouldAwaitTask ? CallStateHasChangedOnAsyncCompletion(task) : Task.CompletedTask;
-        }
-
-        public Task OnAfterRenderAsync()
-        {
-            var firstRender = !hasCalledOnAfterRender;
-            hasCalledOnAfterRender = true;
-
-            OnAfterRender(firstRender);
-
-            return OnAfterRenderAsync(firstRender);
-        }
-
-        protected virtual void OnAfterRender(bool firstRender)
-        {
-        }
-
-        protected virtual Task OnAfterRenderAsync(bool firstRender)
-            => Task.CompletedTask;
-
-        #endregion
+    public enum ScopeType
+    {
+        Parent = 0, Isolated = 1
     }
 }
