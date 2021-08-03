@@ -8,10 +8,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using System.Collections.Generic;
-using AutoMapper;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using AutoMapper.EquivalencyExpression;
+using System.Collections;
+using Microsoft.EntityFrameworkCore.Metadata;
+using System.Reflection;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore
 {
@@ -112,6 +113,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                             if (!property.Metadata.GetValueComparer().Equals(property.CurrentValue, value))
                             {
                                 property.IsModified = true;
+                                property.OriginalValue = value;
                                 hasChanges = true;
                             }
                         }
@@ -133,6 +135,20 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                                     entryReference.Load();
                                     entryReference.CurrentValue = null;
                                 }
+                                else
+                                {
+                                    if (entryReference.Metadata is INavigation navigation)
+                                    {
+                                        foreach (var foreignKeyProperty in navigation.ForeignKey.Properties)
+                                        {
+                                            var fkProperty = node.Entry.Property(foreignKeyProperty.Name);
+                                            if (fkProperty is not null)
+                                            {
+                                                fkProperty.IsModified = false;
+                                            }
+                                        }
+                                    }
+                                }
                             }
                             else
                             {
@@ -152,26 +168,48 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                                 e.PropertyName == collection.Metadata.Name).ToList();
                             if (refValues.Any())
                             {
+                                var currentValue = collection.CurrentValue;
                                 var current = collection.CurrentValue.Cast<IEntity>().ToList();
-                                if (collection.CurrentValue is not null &&
-                                    current.Count != refValues.Count)
+                                if (current?.Cast<object>().Any() == true)
                                 {
-                                    var mapper = new Mapper(new MapperConfiguration(x =>
+                                    var originalIds = refValues.Select(v => v.Id);
+                                    var currentIds = current.Select(v => v.GetId());
+                                    if (currentIds.SequenceEqual(originalIds))
                                     {
-                                        x.AddCollectionMappers();
-                                        x.CreateMap<IEntity, IEntity>().EqualityComparison((entity1, entity2) =>
-                                            entity1.GetId() != null && entity1.GetId()!.Equals(entity2.GetId()));
-                                    }));
-                                    collection.CurrentValue = null;
-                                    collection.Load();
-                                    var final = new List<IEntity>();
-                                    foreach (var val in current.Cast<IEntity>())
-                                    {
-                                        var valEntry = GetTrackedEntity(dbContext, val) ?? context.Add(val);
-                                        final.Add(valEntry.Entity as IEntity ?? throw new InvalidOperationException());
+                                        continue;
                                     }
 
-                                    mapper.Map(final, collection.CurrentValue);
+                                    collection.CurrentValue = null;
+                                    collection.Load();
+                                    if (updateCollectionMethodInfo is null)
+                                    {
+                                        updateCollectionMethodInfo = GetType().BaseType
+                                            .GetMethod(nameof(UpdateCollection),
+                                                BindingFlags.NonPublic | BindingFlags.Static);
+                                        if (updateCollectionMethodInfo is null)
+                                        {
+                                            throw new InvalidOperationException("Can't find method UpdateCollection");
+                                        }
+                                    }
+
+                                    if (collection.CurrentValue is not null)
+                                    {
+                                        var method =
+                                            updateCollectionMethodInfo.MakeGenericMethod(current.First().GetType(),
+                                                collection.CurrentValue.GetType());
+                                        collection.CurrentValue = method.Invoke(null,
+                                                new object[] { collection.CurrentValue, currentValue, context }) as
+                                            IEnumerable;
+                                        collection.IsModified = true;
+                                    }
+                                }
+                                else
+                                {
+                                    collection.Load();
+                                    if (collection.CurrentValue is ICollection<IEntity> entityCollection)
+                                    {
+                                        entityCollection.Clear();
+                                    }
                                 }
                             }
                         }
@@ -183,6 +221,42 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
             return result;
         }
+
+        private MethodInfo? updateCollectionMethodInfo;
+
+        private static TCollection UpdateCollection<TElement, TCollection>(TCollection collection,
+            IEnumerable<TElement> values,
+            TDbContext dbContext)
+            where TCollection : ICollection<TElement> where TElement : class, IEntity
+        {
+            foreach (var element in collection)
+            {
+                if (values.All(e => e.GetId()?.Equals(element.GetId()) != true))
+                {
+                    collection.Remove(element);
+                }
+            }
+
+            foreach (var element in values)
+            {
+                var entry = GetTrackedEntity(dbContext, element);
+                if (entry is null)
+                {
+                    dbContext.Add(element);
+                    collection.Add(element);
+                }
+                else
+                {
+                    if (collection.All(e => e.GetId()?.Equals(element.GetId()) != true))
+                    {
+                        collection.Add(element);
+                    }
+                }
+            }
+
+            return collection;
+        }
+
 
         private void AnalyzeReferences(EntityEntry<IEntity> entry,
             List<EntityReference> loadedReferences)
@@ -222,7 +296,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             }
         }
 
-        private EntityEntry? GetTrackedEntity<TTrackedEntity>(TDbContext trackingDbContext,
+        private static EntityEntry? GetTrackedEntity<TTrackedEntity>(TDbContext trackingDbContext,
             TTrackedEntity trackedEntity)
             where TTrackedEntity : class, IEntity =>
             trackingDbContext.ChangeTracker.Entries().FirstOrDefault(x =>
@@ -421,7 +495,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 .Where(p => p.IsModified)
                 .Select(p => new PropertyChange(p.Metadata.Name, p.OriginalValue, p.CurrentValue))
                 .ToList();
-            foreach (var collection in entry.Collections)
+            foreach (var collection in entry.Collections.Where(c => c.IsLoaded || c.IsModified))
             {
                 var oldCollection = oldDbContext.Entry(oldEntity).Collections
                     .First(c => c.Metadata.Name == collection.Metadata.Name);
