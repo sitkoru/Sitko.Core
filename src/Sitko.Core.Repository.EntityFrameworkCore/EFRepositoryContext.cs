@@ -5,6 +5,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using KellermanSoftware.CompareNetObjects;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore
 {
@@ -28,12 +29,28 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             RepositoryLock = repositoryLock;
             Validators = validators?.ToList();
             AccessCheckers = accessCheckers?.ToList();
+            var comparerOptions = new ComparisonConfig
+            {
+                MaxDifferences = 100,
+                IgnoreCollectionOrder = true,
+                Caching = true,
+                AutoClearCache = true,
+                CollectionMatchingSpec = new Dictionary<Type, IEnumerable<string>>()
+            };
+            foreach (var entityType in dbContext.Model.GetEntityTypes())
+            {
+                comparerOptions.CollectionMatchingSpec.Add(entityType.ClrType, new[] { "Id" });
+            }
+
+            Comparer = new(comparerOptions);
         }
 
         internal TDbContext DbContext { get; }
 
         public ILogger<IRepository<TEntity, TEntityPk>> Logger =>
             loggerFactory.CreateLogger<EFRepository<TEntity, TEntityPk, TDbContext>>();
+
+        public CompareLogic Comparer { get; }
 
         public RepositoryFiltersManager FiltersManager { get; }
         public EFRepositoryLock RepositoryLock { get; }

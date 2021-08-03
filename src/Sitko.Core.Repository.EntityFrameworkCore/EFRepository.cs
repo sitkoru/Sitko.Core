@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using System.Collections.Generic;
@@ -21,13 +20,11 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext
     {
         private readonly TDbContext dbContext;
-        private readonly EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext;
         private readonly EFRepositoryLock repositoryLock;
 
         protected EFRepository(EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext) : base(
             repositoryContext)
         {
-            this.repositoryContext = repositoryContext;
             dbContext = repositoryContext.DbContext;
             repositoryLock = repositoryContext.RepositoryLock;
         }
@@ -78,6 +75,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 {
                     var baseEntry = dbContext.Entry<IEntity>(baseEntity);
                     AnalyzeReferences(baseEntry, loadedReferences);
+                    SaveSnapshot(baseEntity);
                 }
 
                 context.ChangeTracker.TrackGraph(entity, node =>
@@ -217,9 +215,12 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 });
                 return Task.FromResult(true);
             }, cancellationToken);
-            var result = await UpdateAsync(entity, cancellationToken);
+            if (baseEntity is null)
+            {
+                SaveSnapshot(entity);
+            }
 
-            return result;
+            return await UpdateAsync(entity, cancellationToken);
         }
 
         private MethodInfo? updateCollectionMethodInfo;
@@ -483,55 +484,6 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             await ExecuteDbContextOperationAsync(
                 currentDbContext => currentDbContext.AddAsync(item, cancellationToken).AsTask(),
                 cancellationToken);
-
-        protected override async Task<(PropertyChange[] changes, TEntity oldEntity)> GetChangesAsync(TEntity item)
-        {
-            using var scope = repositoryContext.CreateScope();
-            var oldDbContext = scope.ServiceProvider.GetRequiredService<TDbContext>();
-            var oldEntity = await oldDbContext.Set<TEntity>().FirstOrDefaultAsync(e => e.Id!.Equals(item.Id));
-            if (oldEntity is null)
-            {
-                throw new InvalidOperationException("Old entity not found");
-            }
-
-            var entry = dbContext.Entry(item);
-            var entityChanges = entry
-                .Properties
-                .Where(p => p.IsModified)
-                .Select(p => new PropertyChange(p.Metadata.Name, p.OriginalValue, p.CurrentValue))
-                .ToList();
-            foreach (var collection in entry.Collections.Where(c => c.IsLoaded || c.IsModified))
-            {
-                var oldCollection = oldDbContext.Entry(oldEntity).Collections
-                    .First(c => c.Metadata.Name == collection.Metadata.Name);
-                await oldCollection.LoadAsync();
-                if (oldCollection.CurrentValue?.Cast<object>().Count() !=
-                    collection.CurrentValue?.Cast<object>().Count())
-                {
-                    entityChanges.Add(new PropertyChange(collection.Metadata.Name, oldCollection.CurrentValue,
-                        collection.CurrentValue));
-                    continue;
-                }
-
-                if (collection.CurrentValue?.Cast<object>().Any(collectionEntry =>
-                    dbContext.Entry(collectionEntry).State != EntityState.Unchanged) == true)
-                {
-                    entityChanges.Add(new PropertyChange(collection.Metadata.Name, collection.CurrentValue,
-                        collection.CurrentValue));
-                }
-            }
-
-            foreach (var reference in entry.References)
-            {
-                if (reference.IsModified || reference.TargetEntry?.State == EntityState.Modified)
-                {
-                    entityChanges.Add(new PropertyChange(reference.Metadata.Name, reference.CurrentValue,
-                        reference.CurrentValue));
-                }
-            }
-
-            return (entityChanges.ToArray(), oldEntity);
-        }
 
         public DbSet<T> Set<T>() where T : class => dbContext.Set<T>();
 
