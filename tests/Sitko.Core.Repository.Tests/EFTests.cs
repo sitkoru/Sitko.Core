@@ -436,7 +436,7 @@ namespace Sitko.Core.Repository.Tests
             }
 
             Assert.NotEmpty(originalBar!.Foos);
-            var foo = originalBar.Foos.OrderBy(f => Guid.NewGuid()).First(); // change random
+            var foo = originalBar.Foos.OrderBy(_ => Guid.NewGuid()).First(); // change random
             var newText = Guid.NewGuid().ToString();
             foo.FooText = newText;
 
@@ -593,10 +593,10 @@ namespace Sitko.Core.Repository.Tests
     public class BarModel : Entity<Guid>
     {
         public Guid? TestId { get; set; }
-        [ForeignKey(nameof(TestId))] public TestModel? Test { get; set; } = null!;
+        [ForeignKey(nameof(TestId))] public TestModel? Test { get; set; }
 
         [InverseProperty(nameof(FooModel.Bar))]
-        public List<FooModel> Foos { get; set; } = new List<FooModel>();
+        public List<FooModel> Foos { get; set; } = new();
 
         public string? Baz { get; set; }
     }
