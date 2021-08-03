@@ -177,7 +177,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                         return;
                     }
 
-                    var hasChanges = false;
+                    node.Entry.State = EntityState.Unchanged;
                     foreach (var property in node.Entry.Properties)
                     {
                         if (property.Metadata.IsKey() || property.Metadata.IsShadowProperty())
@@ -191,12 +191,11 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                             {
                                 property.IsModified = true;
                                 property.OriginalValue = value;
-                                hasChanges = true;
                             }
                         }
                     }
 
-                    node.Entry.State = hasChanges ? EntityState.Modified : EntityState.Unchanged;
+
                     if (nodeEntity is not null)
                     {
                         var entryReferences = loadedReferences.Where(r =>
