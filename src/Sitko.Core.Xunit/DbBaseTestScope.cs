@@ -42,6 +42,7 @@ namespace Sitko.Core.Xunit
                 application.AddPostgresDatabase<TDbContext>((configuration, environment, moduleOptions) =>
                 {
                     moduleOptions.Database = $"{application.Id}_{name}";
+                    moduleOptions.EnableSensitiveLogging = true;
                     ConfigurePostgresDatabaseModule(configuration, environment, moduleOptions, application.Id, name);
                 });
             }
