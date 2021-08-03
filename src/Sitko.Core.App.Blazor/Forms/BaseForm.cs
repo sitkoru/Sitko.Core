@@ -3,17 +3,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
-using Sitko.Core.App.Json;
-using AutoMapper;
+using Sitko.Core.App.Blazor.Components;
+using KellermanSoftware.CompareNetObjects;
+using Microsoft.AspNetCore.Components;
 
 namespace Sitko.Core.App.Blazor.Forms
 {
-    public abstract class BaseForm
+    using AnyClone;
+    using Localization;
+
+    public abstract class BaseForm : BaseComponent
     {
-        protected BaseFormComponent? Parent { get; set; }
         protected EditContext? EditContext { get; set; }
 
-        public void SetParent(BaseFormComponent parent) => Parent = parent;
+        public override ScopeType ScopeType { get; set; } = ScopeType.Isolated;
 
         public void SetEditContext(EditContext editContext)
         {
@@ -22,7 +25,23 @@ namespace Sitko.Core.App.Blazor.Forms
             {
                 IsValid = !EditContext.GetValidationMessages().Any();
             };
+            EditContext.OnFieldChanged += async (_, args) =>
+            {
+                await OnFieldChangeAsync(args.FieldIdentifier);
+                await UpdateFormStateAsync();
+            };
         }
+
+        protected async Task UpdateFormStateAsync()
+        {
+            IsValid = EditContext?.GetValidationMessages().Any() == false;
+            HasChanges = await DetectChangesAsync();
+            await NotifyStateChangeAsync();
+        }
+
+        protected abstract Task<bool> DetectChangesAsync();
+
+        protected virtual Task OnFieldChangeAsync(FieldIdentifier fieldIdentifier) => Task.CompletedTask;
 
         public abstract void NotifyChange();
         public abstract void NotifyChange(FieldIdentifier fieldIdentifier);
@@ -31,93 +50,76 @@ namespace Sitko.Core.App.Blazor.Forms
         public abstract bool CanSave();
 
         public virtual bool IsValid { get; protected set; }
+        protected bool HasChanges { get; private set; }
 
-        public virtual void Save() => Parent?.Save();
-
-        public abstract Task FieldChangedAsync(FieldIdentifier fieldIdentifier);
         public abstract Task SaveEntityAsync();
     }
 
-    public abstract class BaseForm<TEntity> : BaseForm where TEntity : class
+    public abstract class BaseForm<TEntity> : BaseForm where TEntity : class, new()
     {
-        protected ILogger<BaseForm<TEntity>> Logger { get; }
+        private readonly CompareLogic comparer;
+        protected TEntity? EntitySnapshot { get; private set; }
 
-        private string? oldEntityJson;
-        private readonly Mapper mapper;
-
-        protected BaseForm(ILogger<BaseForm<TEntity>> logger)
+        public BaseForm()
         {
-            Logger = logger;
-            var mapperConfiguration = new MapperConfiguration(cfg =>
-            {
-                cfg.CreateMap(typeof(TEntity), GetType());
-                cfg.CreateMap(GetType(), typeof(TEntity));
-            });
-            mapper = new Mapper(mapperConfiguration);
+            var comparerOptions = new ComparisonConfig { MaxDifferences = 100, Caching = true, AutoClearCache = true };
+            comparer = new CompareLogic(comparerOptions);
         }
 
         public bool IsNew { get; protected set; }
-        protected TEntity? Entity { get; private set; }
+        private TEntity? entity;
 
-        protected bool HasChanges { get; private set; }
-        public Func<TEntity, Task>? OnAfterSave { get; set; }
-        public Func<TEntity, Task>? OnAfterCreate { get; set; }
-        public Func<TEntity, Task>? OnAfterUpdate { get; set; }
-        public Func<string, Task>? OnError { get; set; }
-        public Func<Task>? OnSuccess { get; set; }
-        public Func<Exception, Task>? OnException { get; set; }
-
-        public bool IsLoading { get; set; }
-
-        protected virtual Task MapEntityAsync(TEntity entity)
+        public TEntity Entity
         {
-            mapper.Map(this, Entity);
-            return Task.CompletedTask;
+            get => entity ?? throw new InvalidOperationException("Entity is not initialized");
+            set => entity = value;
         }
+
+
+        [Parameter] public Func<TEntity, Task>? OnAfterSave { get; set; }
+        [Parameter] public Func<TEntity, Task>? OnAfterCreate { get; set; }
+        [Parameter] public Func<TEntity, Task>? OnAfterUpdate { get; set; }
+        [Parameter] public Func<string, Task>? OnError { get; set; }
+        [Parameter] public Func<Task>? OnSuccess { get; set; }
+        [Parameter] public Func<Exception, Task>? OnException { get; set; }
 
         public override void NotifyChange(FieldIdentifier fieldIdentifier) =>
             EditContext?.NotifyFieldChanged(fieldIdentifier);
 
-        public override void NotifyChange() => NotifyChange(new FieldIdentifier(Entity!, "Id"));
-
-        public async Task InitializeAsync(TEntity? entity = null)
+        public override void NotifyChange() => NotifyChange(new FieldIdentifier(Entity, "Id"));
+        private ILocalizationProvider? localizationProvider;
+        protected ILocalizationProvider LocalizationProvider
         {
-            if (entity is null)
+            get
             {
-                IsNew = true;
-                entity = await CreateEntityAsync();
+                if (localizationProvider is null)
+                {
+                    var localizationProviderType = typeof(ILocalizationProvider<>);
+                    var componentLoggerType = localizationProviderType.MakeGenericType(GetType());
+                    localizationProvider = GetRequiredService<ILocalizationProvider>(componentLoggerType);
+                }
+
+                return localizationProvider;
             }
-
-            Entity = entity;
-            oldEntityJson = JsonHelper.SerializeWithMetadata(entity);
-            await MapFormAsync(Entity);
         }
-
-        protected virtual async Task<TEntity> CreateEntityAsync()
+        protected override async Task InitializeAsync()
         {
-            var entity = Activator.CreateInstance<TEntity>();
-            await InitializeEntityAsync(entity);
-            return entity;
+            await base.InitializeAsync();
+            (IsNew, Entity) = await GetEntityAsync();
+            await InitializeEntityAsync(Entity);
+            EntitySnapshot = CreateEntitySnapshot(Entity);
         }
+
+        protected abstract Task<(bool IsNew, TEntity Entity)> GetEntityAsync();
+
+        protected virtual TEntity? CreateEntitySnapshot(TEntity? entity) => entity.Clone();
 
         protected virtual Task InitializeEntityAsync(TEntity entity) => Task.CompletedTask;
 
-        protected virtual Task MapFormAsync(TEntity entity)
-        {
-            mapper.Map(Entity, this);
-            return Task.CompletedTask;
-        }
-
         public override async Task SaveEntityAsync()
         {
-            if (Entity is null)
-            {
-                throw new InvalidOperationException("Entity can't be null");
-            }
-
             await StartLoadingAsync();
             await BeforeSaveAsync();
-            await MapEntityAsync(Entity);
             await BeforeEntitySaveAsync(Entity);
             try
             {
@@ -127,9 +129,8 @@ namespace Sitko.Core.App.Blazor.Forms
                 await StopLoadingAsync();
                 if (result.IsSuccess)
                 {
-                    HasChanges = false;
-                    oldEntityJson = JsonHelper.SerializeWithMetadata(Entity);
-                    await NotifyStateChangeAsync();
+                    EntitySnapshot = CreateEntitySnapshot(Entity);
+                    await UpdateFormStateAsync();
                     if (IsNew)
                     {
                         await OnCreatedAsync(Entity);
@@ -179,32 +180,13 @@ namespace Sitko.Core.App.Blazor.Forms
             }
         }
 
-        private async Task StopLoadingAsync()
-        {
-            IsLoading = false;
-            await NotifyStateChangeAsync();
-        }
-
-        private async Task StartLoadingAsync()
-        {
-            IsLoading = true;
-            await NotifyStateChangeAsync();
-        }
-
-        protected async Task NotifyStateChangeAsync()
-        {
-            if (Parent is not null)
-            {
-                await Parent.NotifyStateChangeAsync();
-            }
-        }
 
         protected abstract Task<FormSaveResult> AddAsync(TEntity entity);
         protected abstract Task<FormSaveResult> UpdateAsync(TEntity entity);
 
         protected virtual Task BeforeEntitySaveAsync(TEntity entity) => Task.CompletedTask;
 
-        public override Task ResetAsync() => InitializeAsync(Entity);
+        public override Task ResetAsync() => InitializeAsync();
 
         protected virtual Task BeforeSaveAsync() => Task.CompletedTask;
 
@@ -212,27 +194,12 @@ namespace Sitko.Core.App.Blazor.Forms
 
         protected virtual Task OnUpdatedAsync(TEntity entity) => Task.CompletedTask;
 
-        public override bool CanSave()
+        public override bool CanSave() => HasChanges && IsValid;
+
+        protected sealed override async Task<bool> DetectChangesAsync()
         {
-            if (Parent == null)
+            if (!IsNew)
             {
-                return false;
-            }
-
-            return HasChanges && IsValid;
-        }
-
-        public override async Task FieldChangedAsync(FieldIdentifier fieldIdentifier)
-        {
-            await OnFieldChangeAsync(fieldIdentifier);
-            HasChanges = await DetectChangesAsync();
-        }
-
-        private async Task<bool> DetectChangesAsync()
-        {
-            if (Entity is not null && !IsNew)
-            {
-                await MapEntityAsync(Entity);
                 return await DetectChangesAsync(Entity);
             }
 
@@ -241,11 +208,23 @@ namespace Sitko.Core.App.Blazor.Forms
 
         protected virtual Task<bool> DetectChangesAsync(TEntity entity)
         {
-            var newJson = JsonHelper.SerializeWithMetadata(entity);
-            return Task.FromResult(!newJson.Equals(oldEntityJson, StringComparison.Ordinal));
-        }
+            var result = false;
+            if (EntitySnapshot is null)
+            {
+                result = true;
+            }
+            else
+            {
+                var differences = comparer.Compare(EntitySnapshot, entity);
+                if (!differences.AreEqual)
+                {
+                    result = true;
+                    Logger.LogDebug("Changes detected. {Changes}", differences.DifferencesString);
+                }
+            }
 
-        protected virtual Task OnFieldChangeAsync(FieldIdentifier fieldIdentifier) => Task.CompletedTask;
+            return Task.FromResult(result);
+        }
     }
 
     public class FormSaveResult

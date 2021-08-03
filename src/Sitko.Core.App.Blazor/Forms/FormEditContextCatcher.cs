@@ -8,7 +8,7 @@ namespace Sitko.Core.App.Blazor.Forms
     {
         [CascadingParameter] public EditContext? CurrentEditContext { get; set; }
 
-        [Parameter] public BaseFormComponent? Form { get; set; }
+        [Parameter] public BaseForm? Form { get; set; }
 
         protected override void OnInitialized()
         {
@@ -22,10 +22,10 @@ namespace Sitko.Core.App.Blazor.Forms
             if (Form is null)
             {
                 throw new InvalidOperationException(
-                    $"{nameof(FormEditContextCatcher)} requires a parameter {nameof(Form)} of type {nameof(BaseFormComponent)}.");
+                    $"{nameof(FormEditContextCatcher)} requires a parameter {nameof(Form)} of type {nameof(BaseForm)}.");
             }
 
-            Form.EditContext = CurrentEditContext;
+            Form.SetEditContext(CurrentEditContext);
         }
     }
 }

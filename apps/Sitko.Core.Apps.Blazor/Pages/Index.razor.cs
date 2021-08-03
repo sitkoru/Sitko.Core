@@ -10,36 +10,41 @@ using Sitko.Core.Apps.Blazor.Data;
 using Sitko.Core.Apps.Blazor.Data.Entities;
 using Sitko.Core.Apps.Blazor.Data.Repositories;
 using Sitko.Core.Apps.Blazor.Forms;
-using Sitko.Core.Blazor.AntDesignComponents.Components;
 using Sitko.Core.Storage;
 
 namespace Sitko.Core.Apps.Blazor.Pages
 {
+    using System.Collections.Generic;
+    using Core.Blazor.AntDesignComponents.Components;
+
     public partial class Index
     {
         private BarAntRepositoryList barList = null!;
         private TableFilter<string>[] barFilter = Array.Empty<TableFilter<string>>();
-        private AntRepositoryForm<BarModel, Guid, BarForm> frm = null!;
+        private BarForm frm = null!;
         private BarModel[] bars = Array.Empty<BarModel>();
         public BarModel? Bar { get; set; }
-        [Inject] public IStorage Storage { get; set; } = null!;
+        private IStorage storage => GetRequiredService<IStorage>();
         [Inject] public ILocalizationProvider<App> LocalizationProvider { get; set; } = null!;
+
+        public BarRepository ScopedBarRepository => GetRequiredService<BarRepository>();
+
         private decimal Summary { get; set; }
 
         protected override async Task InitializeAsync()
         {
             await base.InitializeAsync();
-            var result = await GetService<BarRepository>().GetAllAsync();
+            var result = await GetRequiredService<BarRepository>().GetAllAsync();
             if (result.itemsCount == 0)
             {
-                await GetService<BarRepository>().AddAsync(new BarModel {Bar = "Bar", Id = Guid.NewGuid()});
-                result = await GetService<BarRepository>().GetAllAsync();
+                await GetRequiredService<BarRepository>().AddAsync(new BarModel { Bar = "Bar", Id = Guid.NewGuid() });
+                result = await GetRequiredService<BarRepository>().GetAllAsync();
             }
 
             Bars = result.items;
-            barFilter = (await GetService<BarContext>().Bars.Select(a => a.Bar).Distinct().ToListAsync())
-                .Select(x => new TableFilter<string> {Text = x, Value = x}).ToArray();
-            Bar = Bars.First();
+            barFilter = (await GetRequiredService<BarContext>().Bars.Select(a => a.Bar).Distinct().ToListAsync())
+                .Select(x => new TableFilter<string> { Text = x, Value = x }).ToArray();
+            Bar = Bars.OrderBy(b => b.Id).First();
         }
 
         public BarModel[] Bars
@@ -52,13 +57,6 @@ namespace Sitko.Core.Apps.Blazor.Pages
         {
             var metadata = new BarStorageMetadata();
             return Task.FromResult<object>(metadata);
-        }
-
-
-        private static Task InitFormModelAsync(BarForm form)
-        {
-            form.Test = Guid.NewGuid();
-            return Task.CompletedTask;
         }
 
         private async Task CountSummaryAsync() => Summary = await barList.SumAsync(model => model.Sum);

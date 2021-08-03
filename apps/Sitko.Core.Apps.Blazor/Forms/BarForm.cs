@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Blazor.Forms;
 using Sitko.Core.App.Collections;
@@ -11,28 +10,28 @@ using Sitko.Core.Storage;
 
 namespace Sitko.Core.Apps.Blazor.Forms
 {
-    public class BarForm : BaseRepositoryForm<BarModel, Guid>
+    using Core.Blazor.AntDesignComponents.Components;
+    using Data.Repositories;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.EntityFrameworkCore;
+
+    public class BarForm : BaseAntRepositoryForm<BarModel, Guid, BarRepository>
     {
-        public Guid Test { get; set; }
-        public string Bar { get; set; } = "";
-        public List<FooModel> Foos { get; set; } = new();
-        public StorageItem? StorageItem { get; set; }
-        public ValueCollection<StorageItem> StorageItems { get; set; } = new();
-
-        public BarForm(IRepository<BarModel, Guid> repository, ILogger<BarForm> logger) : base(
-            repository, logger)
-        {
-        }
-
         protected override Task ConfigureQueryAsync(IRepositoryQuery<BarModel> query)
         {
-            query.Include(bar => bar.Foos);
+            query.Include(bar => bar.Foos).Include(bar => bar.Foo);
             return Task.CompletedTask;
         }
-    }
 
-    public class BarFormValidator : AbstractValidator<BarForm>
-    {
-        public BarFormValidator() => RuleFor(m => m.Bar).NotEmpty().WithMessage("Blaaaaa");
+        public void SetFoo() => Entity.Foo = new FooModel();
+
+        public void AddFoo() => Entity.Foos.Add(new FooModel());
+
+        public void DeleteFoo() => Entity.Foo = null;
+
+        [Parameter]
+        public RenderFragment<BarForm> ChildContent { get; set; }
+
+        protected override RenderFragment ChildContentFragment => ChildContent(this);
     }
 }
