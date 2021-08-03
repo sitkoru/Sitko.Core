@@ -1,7 +1,6 @@
 @page "/"
 @using Sitko.Core.Apps.Blazor.Data.Entities
 @using Microsoft.Extensions.Logging
-@using Sitko.Core.Apps.Blazor.Data.Repositories
 @inherits BaseComponent
 <PageContainer Title="@LocalizationProvider["Title"]">
 <ChildContent>
@@ -46,7 +45,7 @@
 {
     <p>Foo: @context.Entity.Foo.Id</p>
 }
-<Button OnClick="() => context.AddFooAsync()">Set foo</Button>
+<Button OnClick="() => context.AddFoo()">Set foo</Button>
 <Button Disabled="@(!context.CanSave())" OnClick="@context.Save">Save</Button>
 @if (context.Entity.StorageItem is not null)
 {
@@ -256,8 +255,8 @@
     </AntDesign.FormItem>
     <Button OnClick="() => { context.Entity.Foos.Remove(foo); context.NotifyChange();}">Remove foo</Button>
 }
-<Button OnClick="() => context.AddFooAsync()">Add foo</Button>
-<Button OnClick="() => context.AddFooAsync()">Set foo</Button>
+<Button OnClick="() => context.AddFoo()">Add foo</Button>
+<Button OnClick="() => context.AddFoo()">Set foo</Button>
 <Button Disabled="@(!context.CanSave())" OnClick="@context.Save">Save</Button>
 </ChildContent>
 </BarForm>

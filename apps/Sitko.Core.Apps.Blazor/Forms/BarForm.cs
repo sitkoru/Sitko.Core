@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Blazor.Forms;
 using Sitko.Core.App.Collections;
@@ -23,24 +22,10 @@ namespace Sitko.Core.Apps.Blazor.Forms
             return Task.CompletedTask;
         }
 
-        public async Task SetFooAsync()
-        {
-            Entity!.Foo = new FooModel();
-        }
+        public void SetFoo() => Entity.Foo = new FooModel();
 
-        public async Task AddFooAsync()
-        {
-            Entity!.Foos.Add(new FooModel());
-        }
+        public void AddFoo() => Entity.Foos.Add(new FooModel());
 
-        public async Task DeleteFooAsync()
-        {
-            Entity!.Foo = null;
-        }
-    }
-
-    public class BarModelValidator : AbstractValidator<BarModel>
-    {
-        public BarModelValidator() => RuleFor(m => m.Bar).NotEmpty().WithMessage("Blaaaaa");
+        public void DeleteFoo() => Entity.Foo = null;
     }
 }

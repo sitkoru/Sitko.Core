@@ -13,7 +13,7 @@
                 <AntDesign.Input @bind-Value="@context.Entity.Foo.Foo"/>
             </AntDesign.FormItem>
         }
-        <Button OnClick="() => context.DeleteFooAsync()">Delete foo</Button>
+        <Button OnClick="() => context.DeleteFoo()">Delete foo</Button>
         <p>Multiple foo</p>
         @foreach (var foo in context.Entity.Foos)
         {
@@ -24,8 +24,8 @@
             <Button OnClick="() => { context.Entity.Foos.Remove(foo); context.NotifyChange();}">Remove foo</Button>
         }
         <div>
-            <Button OnClick="() => context.AddFooAsync()">Add foo</Button>
-            <Button OnClick="() => context.SetFooAsync()">Set foo</Button>
+            <Button OnClick="() => context.AddFoo()">Add foo</Button>
+            <Button OnClick="() => context.SetFoo()">Set foo</Button>
             <Button Disabled="@(!context.CanSave())" OnClick="@context.Save">Save</Button>
         </div>
     </ChildContent>
