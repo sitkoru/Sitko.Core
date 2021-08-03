@@ -168,7 +168,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                             {
                                 var currentValue = collection.CurrentValue;
                                 var current = collection.CurrentValue.Cast<IEntity>().ToList();
-                                if (current?.Cast<object>().Any() == true)
+                                if (current.Cast<object>().Any())
                                 {
                                     var originalIds = refValues.Select(v => v.Id);
                                     var currentIds = current.Select(v => v.GetId());
