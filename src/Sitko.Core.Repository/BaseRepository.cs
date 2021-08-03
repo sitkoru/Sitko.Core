@@ -6,23 +6,27 @@ using System.Threading.Tasks;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
+using System.Collections;
+using System.Linq.Expressions;
+using AnyClone;
+using JetBrains.Annotations;
+using KellermanSoftware.CompareNetObjects;
 
 namespace Sitko.Core.Repository
 {
-    using System.Linq.Expressions;
-    using JetBrains.Annotations;
-
     public interface IRepositoryContext<TEntity, TEntityPk> where TEntity : class, IEntity<TEntityPk>
     {
         RepositoryFiltersManager FiltersManager { get; }
         List<IValidator>? Validators { get; }
         List<IAccessChecker<TEntity, TEntityPk>>? AccessCheckers { get; }
         ILogger<IRepository<TEntity, TEntityPk>> Logger { get; }
+        CompareLogic Comparer { get; }
     }
 
     public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<TEntity, TEntityPk>
         where TEntity : class, IEntity<TEntityPk> where TQuery : IRepositoryQuery<TEntity>
     {
+        private readonly Dictionary<TEntityPk, TEntity> snapshots = new();
         private List<RepositoryRecord<TEntity, TEntityPk>>? batch;
 
         protected BaseRepository(IRepositoryContext<TEntity, TEntityPk> repositoryContext)
@@ -31,16 +35,16 @@ namespace Sitko.Core.Repository
             FiltersManager = repositoryContext.FiltersManager;
             AccessCheckers = repositoryContext.AccessCheckers ?? new List<IAccessChecker<TEntity, TEntityPk>>();
             Logger = repositoryContext.Logger;
+            Comparer = repositoryContext.Comparer;
         }
 
-        [PublicAPI]
-        protected IValidator[] Validators { get; }
+        protected CompareLogic Comparer { get; }
 
-        [PublicAPI]
-        protected RepositoryFiltersManager FiltersManager { get; }
+        [PublicAPI] protected IValidator[] Validators { get; }
 
-        [PublicAPI]
-        protected List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers { get; }
+        [PublicAPI] protected RepositoryFiltersManager FiltersManager { get; }
+
+        [PublicAPI] protected List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers { get; }
 
         protected ILogger Logger { get; }
 
@@ -56,6 +60,8 @@ namespace Sitko.Core.Repository
             var changesResult = await GetChangesAsync(entity);
             return changesResult.changes.Length > 0;
         }
+
+        public TEntity CreateSnapshot(TEntity entity) => entity.Clone();
 
 
         public virtual Task<bool> BeginBatchAsync(CancellationToken cancellationToken = default)
@@ -180,15 +186,29 @@ namespace Sitko.Core.Repository
             return true;
         }
 
-        public virtual async Task<TEntity?> GetAsync(CancellationToken cancellationToken = default) =>
-            await DoGetAsync(await CreateRepositoryQueryAsync(cancellationToken), cancellationToken);
+        public virtual async Task<TEntity?> GetAsync(CancellationToken cancellationToken = default)
+        {
+            var entity = await DoGetAsync(await CreateRepositoryQueryAsync(cancellationToken), cancellationToken);
+            if (entity is not null)
+            {
+                await AfterLoadEntityAsync(entity, cancellationToken);
+            }
+
+            return entity;
+        }
 
         public virtual async Task<TEntity?> GetAsync(Func<IRepositoryQuery<TEntity>, Task> configureQuery,
             CancellationToken cancellationToken = default)
         {
             var query = await CreateRepositoryQueryAsync(cancellationToken);
             await query.ConfigureAsync(configureQuery, cancellationToken);
-            return await DoGetAsync(query, cancellationToken);
+            var entity = await DoGetAsync(query, cancellationToken);
+            if (entity is not null)
+            {
+                await AfterLoadEntityAsync(entity, cancellationToken);
+            }
+
+            return entity;
         }
 
         public virtual async Task<TEntity?> GetAsync(Action<IRepositoryQuery<TEntity>> configureQuery,
@@ -196,7 +216,13 @@ namespace Sitko.Core.Repository
         {
             var query = await CreateRepositoryQueryAsync(cancellationToken);
             query.Configure(configureQuery);
-            return await DoGetAsync(query, cancellationToken);
+            var entity = await DoGetAsync(query, cancellationToken);
+            if (entity is not null)
+            {
+                await AfterLoadEntityAsync(entity, cancellationToken);
+            }
+
+            return entity;
         }
 
         public virtual async Task<(TEntity[] items, int itemsCount)> GetAllAsync(
@@ -209,7 +235,7 @@ namespace Sitko.Core.Repository
             var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
                 ? await CountAsync(cancellationToken)
                 : items.Length;
-            await AfterLoadAsync(items, cancellationToken);
+            await AfterLoadEntitiesAsync(items, cancellationToken);
 
             return (items, itemsCount);
         }
@@ -225,7 +251,7 @@ namespace Sitko.Core.Repository
             var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
                 ? await CountAsync(configureQuery, cancellationToken)
                 : items.Length;
-            await AfterLoadAsync(items, cancellationToken);
+            await AfterLoadEntitiesAsync(items, cancellationToken);
 
             return (items, itemsCount);
         }
@@ -240,7 +266,7 @@ namespace Sitko.Core.Repository
             var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
                 ? await CountAsync(configureQuery, cancellationToken)
                 : items.Length;
-            await AfterLoadAsync(items, cancellationToken);
+            await AfterLoadEntitiesAsync(items, cancellationToken);
 
             return (items, itemsCount);
         }
@@ -489,7 +515,13 @@ namespace Sitko.Core.Repository
             var query = await CreateRepositoryQueryAsync(cancellationToken);
             query.Where(i => i.Id!.Equals(id));
 
-            return await DoGetAsync(query, cancellationToken);
+            var entity = await DoGetAsync(query, cancellationToken);
+            if (entity is not null)
+            {
+                await AfterLoadEntityAsync(entity, cancellationToken);
+            }
+
+            return entity;
         }
 
         public virtual async Task<TEntity?> GetByIdAsync(TEntityPk id,
@@ -499,7 +531,13 @@ namespace Sitko.Core.Repository
             query.Where(i => i.Id!.Equals(id));
             await query.ConfigureAsync(configureQuery, cancellationToken);
 
-            return await DoGetAsync(query, cancellationToken);
+            var entity = await DoGetAsync(query, cancellationToken);
+            if (entity is not null)
+            {
+                await AfterLoadEntityAsync(entity, cancellationToken);
+            }
+
+            return entity;
         }
 
         public virtual async Task<TEntity?> GetByIdAsync(TEntityPk id, Action<IRepositoryQuery<TEntity>> configureQuery,
@@ -509,7 +547,13 @@ namespace Sitko.Core.Repository
             query.Where(i => i.Id!.Equals(id));
             query.Configure(configureQuery);
 
-            return await DoGetAsync(query, cancellationToken);
+            var entity = await DoGetAsync(query, cancellationToken);
+            if (entity is not null)
+            {
+                await AfterLoadEntityAsync(entity, cancellationToken);
+            }
+
+            return entity;
         }
 
         public virtual async Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids,
@@ -519,6 +563,8 @@ namespace Sitko.Core.Repository
             query.Where(i => ids.Contains(i.Id));
 
             (TEntity[] items, _) = await DoGetAllAsync(query, cancellationToken);
+
+            await AfterLoadEntitiesAsync(items, cancellationToken);
 
             return items;
         }
@@ -531,6 +577,8 @@ namespace Sitko.Core.Repository
             await query.ConfigureAsync(configureQuery, cancellationToken);
 
             (TEntity[] items, _) = await DoGetAllAsync(query, cancellationToken);
+
+            await AfterLoadEntitiesAsync(items, cancellationToken);
 
             return items;
         }
@@ -542,6 +590,8 @@ namespace Sitko.Core.Repository
             query.Where(i => ids.Contains(i.Id)).Configure(configureQuery);
 
             (TEntity[] items, _) = await DoGetAllAsync(query, cancellationToken);
+
+            await AfterLoadEntitiesAsync(items, cancellationToken);
 
             return items;
         }
@@ -587,7 +637,42 @@ namespace Sitko.Core.Repository
 
         protected abstract Task DoSaveAsync(CancellationToken cancellationToken = default);
 
-        protected abstract Task<(PropertyChange[] changes, TEntity oldEntity)> GetChangesAsync(TEntity item);
+        protected virtual Task<(PropertyChange[] changes, TEntity oldEntity)> GetChangesAsync(TEntity item)
+        {
+            var changes = new List<PropertyChange>();
+            var snapshot  = snapshots[item.Id];
+            var differences = Comparer.Compare(snapshot, item);
+            if (!differences.AreEqual)
+            {
+                foreach (var difference in differences.Differences)
+                {
+                    if (difference.Object1 is null || difference.Object2 is null)
+                    {
+                        var propertyName = !string.IsNullOrEmpty(difference.ParentPropertyName)
+                            ? difference.ParentPropertyName
+                            : !string.IsNullOrEmpty(difference.PropertyName)
+                                ? difference.PropertyName
+                                : null;
+                        if (propertyName is not null)
+                        {
+                            var property = difference.ParentObject1.GetType().GetProperty(propertyName);
+                            if (property is not null)
+                            {
+                                if (property.PropertyType != typeof(string) &&
+                                    typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
+                                {
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+
+                    changes.Add(new PropertyChange(difference.PropertyName, difference.Object1, difference.Object2));
+                }
+            }
+
+            return Task.FromResult((changes.ToArray(), snapshot));
+        }
 
         protected abstract Task DoAddAsync(TEntity item, CancellationToken cancellationToken = default);
         protected abstract Task DoUpdateAsync(TEntity item, CancellationToken cancellationToken = default);
@@ -599,7 +684,7 @@ namespace Sitko.Core.Repository
             if (batch == null)
             {
                 await DoSaveAsync(cancellationToken);
-                await AfterSaveAsync(new[] {record}, cancellationToken);
+                await AfterSaveAsync(new[] { record }, cancellationToken);
             }
             else
             {
@@ -607,11 +692,35 @@ namespace Sitko.Core.Repository
             }
         }
 
+        private Task AfterLoadEntityAsync(TEntity entity, CancellationToken cancellationToken = default)
+        {
+            var entities = new[] { entity };
+            SaveSnapshots(entities);
+            return AfterLoadAsync(entities, cancellationToken);
+        }
+
+        private Task AfterLoadEntitiesAsync(TEntity[] entities, CancellationToken cancellationToken = default)
+        {
+            SaveSnapshots(entities);
+            return AfterLoadAsync(entities, cancellationToken);
+        }
+
         protected virtual Task AfterLoadAsync(TEntity entity, CancellationToken cancellationToken = default) =>
-            AfterLoadAsync(new[] {entity}, cancellationToken);
+            AfterLoadAsync(new[] { entity }, cancellationToken);
 
         protected virtual Task AfterLoadAsync(TEntity[] entities, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
+
+        protected void SaveSnapshot(TEntity entity) => SaveSnapshots(new[] { entity });
+
+        protected void SaveSnapshots(IEnumerable<TEntity> entities)
+        {
+            foreach (var entity in entities)
+            {
+                var snapshot = CreateSnapshot(entity);
+                snapshots[entity.Id] = snapshot;
+            }
+        }
 
         protected virtual Task<bool> BeforeSaveAsync(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult, bool isNew,
@@ -624,6 +733,7 @@ namespace Sitko.Core.Repository
         {
             foreach (var item in items)
             {
+                SaveSnapshot(item.Item);
                 await FiltersManager.AfterSaveAsync<TEntity, TEntityPk>(item.Item, item.IsNew, item.Changes,
                     cancellationToken);
             }
@@ -635,7 +745,7 @@ namespace Sitko.Core.Repository
             Task.CompletedTask;
 
         protected virtual Task CheckAccessAsync(TEntity entity, CancellationToken cancellationToken = default) =>
-            CheckAccessAsync(new[] {entity}, cancellationToken);
+            CheckAccessAsync(new[] { entity }, cancellationToken);
 
         protected virtual async Task CheckAccessAsync(TEntity[] entities, CancellationToken cancellationToken = default)
         {
