@@ -3,19 +3,25 @@ using AntDesign;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using OneOf;
-using Sitko.Core.App.Blazor.Forms;
 using Sitko.Core.App.Localization;
+using Sitko.Core.Repository;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
-    public abstract class BaseAntForm<TEntity, TForm> : BaseFormComponent<TEntity, TForm>
-        where TForm : BaseForm<TEntity>
-        where TEntity : class, new()
+    public class AntRepositoryForm<TEntity, TEntityPk> : BaseAntRepositoryForm<TEntity, TEntityPk,
+        IRepository<TEntity, TEntityPk>, AntRepositoryForm<TEntity, TEntityPk>>
+        where TEntity : class, IEntity<TEntityPk>, new()
     {
-        protected Form<TForm>? AntForm { get; set; }
+    }
 
-        [Inject]
-        protected ILocalizationProvider<BaseAntForm<TEntity, TForm>> LocalizationProvider { get; set; } = null!;
+    public partial class BaseAntRepositoryForm<TEntity, TEntityPk, TRepository, TForm>
+        where TEntity : class, IEntity<TEntityPk>, new()
+        where TRepository : class, IRepository<TEntity, TEntityPk>
+        where TForm : BaseAntRepositoryForm<TEntity, TEntityPk, TRepository, TForm>
+    {
+        protected Form<TEntity>? AntForm { get; set; }
+
+        [Inject] protected ILocalizationProvider<TForm> LocalizationProvider { get; set; } = null!;
 
         [Parameter] public RenderFragment<TForm> ChildContent { get; set; } = null!;
 
@@ -63,17 +69,17 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         [Inject] protected MessageService MessageService { get; set; } = null!;
 
-        protected override Task ConfigureFormAsync(TForm form)
+        protected override async Task InitializeAsync()
         {
-            form.OnSuccess = () => MessageService.Success(LocalizationProvider["Entity saved successfully"]);
-            form.OnError = error => MessageService.Error(error);
-            form.OnException = exception => MessageService.Error(exception.ToString());
-            return Task.CompletedTask;
+            await base.InitializeAsync();
+            OnSuccess ??= () => MessageService.Success(LocalizationProvider["Entity saved successfully"]);
+            OnError ??= error => MessageService.Error(error);
+            OnException ??= exception => MessageService.Error(exception.ToString());
         }
 
         protected Task OnFormErrorAsync(EditContext editContext) =>
             MessageService.Error(string.Join(". ", editContext.GetValidationMessages()));
 
-        public override void Save() => AntForm?.Submit();
+        public void Save() => AntForm?.Submit();
     }
 }

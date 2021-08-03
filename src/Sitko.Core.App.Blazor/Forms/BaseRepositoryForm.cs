@@ -1,65 +1,89 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Sitko.Core.Repository;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Sitko.Core.App.Blazor.Forms
 {
-    public abstract class BaseRepositoryForm<TEntity, TEntityPk> : BaseForm<TEntity>
-        where TEntity : class, IEntity<TEntityPk>, new()
+    public abstract class BaseRepositoryForm<TEntity, TEntityPk, TRepository> : BaseForm<TEntity>
+        where TEntity : class, IEntity<TEntityPk>, new() where TRepository : class, IRepository<TEntity, TEntityPk>
     {
-        protected IRepository<TEntity, TEntityPk> Repository { get; }
+        [Parameter] public TEntityPk? EntityId { get; set; }
 
-        protected BaseRepositoryForm(IRepository<TEntity, TEntityPk> repository,
-            ILogger<BaseRepositoryForm<TEntity, TEntityPk>> logger) : base(logger) =>
-            Repository = repository;
-
-        private TEntityPk? EntityId { get; set; }
-
-        public async Task InitializeAsync(TEntityPk? entityId)
+        protected override async Task<(bool IsNew, TEntity Entity)> GetEntityAsync()
         {
-            TEntity? entity = null;
-            if (entityId is not null && default(TEntityPk)?.Equals(entityId) == false)
+            var isNew = false;
+            TEntity? entity;
+            using var scope = CreateServicesScope();
+            var repository = scope.ServiceProvider.GetRequiredService<TRepository>();
+            if (EntityId is not null && default(TEntityPk)?.Equals(EntityId) == false)
             {
-                EntityId = entityId;
-                if (Entity is not null)
-                {
-                    await Repository.RefreshAsync(Entity);
-                }
-
-                entity = await Repository.GetAsync(async q =>
-                {
-                    q.Where(e => e.Id!.Equals(EntityId));
-                    await ConfigureQueryAsync(q);
-                });
-                if (entity is null)
-                {
-                    throw new InvalidOperationException($"Entity {EntityId} not found");
-                }
+                entity = await GetEntityAsync(repository, EntityId);
+            }
+            else
+            {
+                entity = await repository.NewAsync();
+                isNew = true;
             }
 
-            await InitializeAsync(entity);
+            return (isNew, entity);
+        }
+
+        private async Task<TEntity> GetEntityAsync(TRepository repository, TEntityPk id)
+        {
+            var entity = await repository.GetAsync(async q =>
+            {
+                q.Where(e => e.Id!.Equals(id));
+                await ConfigureQueryAsync(q);
+            });
+            if (entity is null)
+            {
+                throw new InvalidOperationException($"Entity {id} not found");
+            }
+
+            return entity;
         }
 
         protected virtual Task ConfigureQueryAsync(IRepositoryQuery<TEntity> query) => Task.CompletedTask;
 
         protected override async Task<FormSaveResult> AddAsync(TEntity entity)
         {
-            var result = await Repository.AddAsync(entity);
+            using var scope = CreateServicesScope();
+            var repository = scope.ServiceProvider.GetRequiredService<TRepository>();
+            AddOrUpdateOperationResult<TEntity, TEntityPk> result;
+            if (repository is IExternalRepository<TEntity, TEntityPk> externalRepository)
+            {
+                result = await externalRepository.AddExternalAsync(entity);
+            }
+            else
+            {
+                result = await repository.AddAsync(entity);
+            }
+
             return new FormSaveResult(result.IsSuccess, result.ErrorsString);
         }
 
         protected override async Task<FormSaveResult> UpdateAsync(TEntity entity)
         {
-            var result = await Repository.UpdateAsync(entity);
+            using var scope = CreateServicesScope();
+            var repository = scope.ServiceProvider.GetRequiredService<TRepository>();
+            AddOrUpdateOperationResult<TEntity, TEntityPk> result;
+            if (repository is IExternalRepository<TEntity, TEntityPk> externalRepository)
+            {
+                result = await externalRepository.UpdateExternalAsync(entity, EntitySnapshot);
+            }
+            else
+            {
+                result = await repository.UpdateAsync(entity);
+            }
+
             return new FormSaveResult(result.IsSuccess, result.ErrorsString);
         }
 
-        protected override Task<bool> DetectChangesAsync(TEntity entity) => Repository.HasChangesAsync(entity);
-
         public override async Task ResetAsync()
         {
-            await InitializeAsync(EntityId);
+            await InitializeAsync();
             await NotifyStateChangeAsync();
         }
     }

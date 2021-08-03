@@ -1,9 +1,11 @@
 @typeparam TEntity
+@typeparam TEntityPk
+@typeparam TRepository
 @typeparam TForm
-@inherits BaseAntForm<TEntity, TForm>
+@inherits Sitko.Core.App.Blazor.Forms.BaseRepositoryForm<TEntity, TEntityPk, TRepository>
 
-<Form ValidateOnChange="ValidateOnChange" Model="Form" Loading="Form.IsLoading"
-      OnFinish="Form.SaveEntityAsync" @ref="AntForm" OnFinishFailed="OnFormErrorAsync"
+<Form ValidateOnChange="ValidateOnChange" Model="Entity" Loading="IsLoading"
+      OnFinish="SaveEntityAsync" @ref="AntForm" OnFinishFailed="OnFormErrorAsync"
       Layout="@Layout" Name="@Name" Size="@Size" LabelCol="@LabelCol" LabelAlign="@LabelAlign"
       LabelColSpan="@LabelColSpan" LabelColOffset="@LabelColOffset" WrapperCol="@WrapperCol"
       WrapperColSpan="@WrapperColSpan" WrapperColOffset="@WrapperColOffset">
@@ -12,6 +14,6 @@
         <Sitko.Core.App.Blazor.Forms.FormEditContextCatcher Form="this"/>
     </Validator>
     <ChildContent>
-        @ChildContent(Form)
+        @ChildContent((TForm)this)
     </ChildContent>
 </Form>
