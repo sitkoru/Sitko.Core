@@ -229,12 +229,18 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             TDbContext dbContext)
             where TCollection : ICollection<TElement> where TElement : class, IEntity
         {
+            var toDelete = new List<TElement>();
             foreach (var element in collection)
             {
                 if (values.All(e => e.GetId()?.Equals(element.GetId()) != true))
                 {
-                    collection.Remove(element);
+                    toDelete.Add(element);
                 }
+            }
+
+            foreach (var element in toDelete)
+            {
+                collection.Remove(element);
             }
 
             foreach (var element in values)
