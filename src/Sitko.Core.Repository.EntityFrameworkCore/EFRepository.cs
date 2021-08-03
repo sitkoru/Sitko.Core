@@ -249,7 +249,6 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 if (entry is null)
                 {
                     dbContext.Add(element);
-                    collection.Add(element);
                 }
                 else
                 {
