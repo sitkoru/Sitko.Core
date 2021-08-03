@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components;
 namespace Sitko.Core.App.Blazor.Forms
 {
     using AnyClone;
+    using Localization;
 
     public abstract class BaseForm : BaseComponent
     {
@@ -86,7 +87,21 @@ namespace Sitko.Core.App.Blazor.Forms
             EditContext?.NotifyFieldChanged(fieldIdentifier);
 
         public override void NotifyChange() => NotifyChange(new FieldIdentifier(Entity, "Id"));
+        private ILocalizationProvider? localizationProvider;
+        protected ILocalizationProvider LocalizationProvider
+        {
+            get
+            {
+                if (localizationProvider is null)
+                {
+                    var localizationProviderType = typeof(ILocalizationProvider<>);
+                    var componentLoggerType = localizationProviderType.MakeGenericType(GetType());
+                    localizationProvider = GetRequiredService<ILocalizationProvider>(componentLoggerType);
+                }
 
+                return localizationProvider;
+            }
+        }
         protected override async Task InitializeAsync()
         {
             await base.InitializeAsync();

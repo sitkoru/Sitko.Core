@@ -1,34 +1,32 @@
 ﻿@page "/Edit/{Id:guid}"
 @inherits BaseComponent
 <BarForm Layout="@FormLayout.Vertical" EntityId="Id">
-    <ChildContent>
-        <AntDesign.FormItem Label="Bar">
-            <AntDesign.Input @bind-Value="@context.Entity.Bar"/>
+    <AntDesign.FormItem Label="Bar">
+        <AntDesign.Input @bind-Value="@context.Entity.Bar"/>
+    </AntDesign.FormItem>
+    <p>Simple Foo</p>
+    @if (context.Entity.Foo is not null)
+    {
+        <AntDesign.FormItem Label="Foo">
+            <p>Foo id: @context.Entity.Foo.Id</p>
+            <AntDesign.Input @bind-Value="@context.Entity.Foo.Foo"/>
         </AntDesign.FormItem>
-        <p>Simple Foo</p>
-        @if (context.Entity.Foo is not null)
-        {
-            <AntDesign.FormItem Label="Foo">
-                <p>Foo id: @context.Entity.Foo.Id</p>
-                <AntDesign.Input @bind-Value="@context.Entity.Foo.Foo"/>
-            </AntDesign.FormItem>
-        }
-        <Button OnClick="() => context.DeleteFoo()">Delete foo</Button>
-        <p>Multiple foo</p>
-        @foreach (var foo in context.Entity.Foos)
-        {
-            <AntDesign.FormItem Label="Foo">
-                <p>Foo id: @foo.Id</p>
-                <AntDesign.Input @bind-Value="@foo.Foo"/>
-            </AntDesign.FormItem>
-            <Button OnClick="() => { context.Entity.Foos.Remove(foo); context.NotifyChange();}">Remove foo</Button>
-        }
-        <div>
-            <Button OnClick="() => context.AddFoo()">Add foo</Button>
-            <Button OnClick="() => context.SetFoo()">Set foo</Button>
-            <Button Disabled="@(!context.CanSave())" OnClick="@context.Save">Save</Button>
-        </div>
-    </ChildContent>
+    }
+    <Button OnClick="() => context.DeleteFoo()">Delete foo</Button>
+    <p>Multiple foo</p>
+    @foreach (var foo in context.Entity.Foos)
+    {
+        <AntDesign.FormItem Label="Foo">
+            <p>Foo id: @foo.Id</p>
+            <AntDesign.Input @bind-Value="@foo.Foo"/>
+        </AntDesign.FormItem>
+        <Button OnClick="() => { context.Entity.Foos.Remove(foo); context.NotifyChange();}">Remove foo</Button>
+    }
+    <div>
+        <Button OnClick="() => context.AddFoo()">Add foo</Button>
+        <Button OnClick="() => context.SetFoo()">Set foo</Button>
+        <Button Disabled="@(!context.CanSave())" OnClick="@context.Save">Save</Button>
+    </div>
 </BarForm>
 
 @code {

@@ -3,26 +3,24 @@ using AntDesign;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using OneOf;
-using Sitko.Core.App.Localization;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
     using System;
     using App.Blazor.Forms;
 
-    public class AntForm<TEntity> : BaseAntForm<TEntity, AntForm<TEntity>>
+    public class AntForm<TEntity> : BaseAntForm<TEntity>
         where TEntity : class, new()
     {
+        [Parameter] public RenderFragment<BaseAntForm<TEntity>> ChildContent { get; set; } = null!;
+
+        protected override RenderFragment ChildContentFragment => ChildContent(this);
     }
 
-    public partial class BaseAntForm<TEntity, TForm> where TEntity : class, new()
-        where TForm : BaseAntForm<TEntity, TForm>
+    public abstract partial class BaseAntForm<TEntity> where TEntity : class, new()
     {
         protected Form<TEntity>? AntFormInstance { get; set; }
-
-        [Inject] protected ILocalizationProvider<TForm> LocalizationProvider { get; set; } = null!;
-
-        [Parameter] public RenderFragment<TForm> ChildContent { get; set; } = null!;
+        protected abstract RenderFragment ChildContentFragment { get; }
 
         [Parameter] public string Layout { get; set; } = FormLayout.Horizontal;
 

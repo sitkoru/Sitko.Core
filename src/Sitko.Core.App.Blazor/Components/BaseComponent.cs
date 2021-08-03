@@ -89,7 +89,7 @@ namespace Sitko.Core.App.Blazor.Components
                 {
                     var loggerType = typeof(ILogger<>);
                     var componentLoggerType = loggerType.MakeGenericType(GetType());
-                    logger = (ServiceProvider.GetRequiredService(componentLoggerType) as ILogger)!;
+                    logger = GetRequiredService<ILogger>(componentLoggerType);
                 }
 
                 return logger;
@@ -163,8 +163,17 @@ namespace Sitko.Core.App.Blazor.Components
         protected TService? GetService<TService>() where TService : notnull => ServiceProvider.GetService<TService>();
 
         [PublicAPI]
+        protected TService? GetService<TService>(Type type) where TService : class =>
+            ServiceProvider.GetService(type) as TService;
+
+        [PublicAPI]
         protected TService GetRequiredService<TService>() where TService : notnull =>
             ServiceProvider.GetRequiredService<TService>();
+
+        [PublicAPI]
+        protected TService GetRequiredService<TService>(Type type) where TService : class =>
+            ServiceProvider.GetRequiredService(type) as TService ??
+            throw new InvalidOperationException($"Can't resolver service {type}");
 
         [PublicAPI]
         protected IEnumerable<TService> GetServices<TService>() => ServiceProvider.GetServices<TService>();

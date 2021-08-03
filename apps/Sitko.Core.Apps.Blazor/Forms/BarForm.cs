@@ -12,9 +12,10 @@ namespace Sitko.Core.Apps.Blazor.Forms
 {
     using Core.Blazor.AntDesignComponents.Components;
     using Data.Repositories;
+    using Microsoft.AspNetCore.Components;
     using Microsoft.EntityFrameworkCore;
 
-    public class BarForm : BaseAntRepositoryForm<BarModel, Guid, BarRepository, BarForm>
+    public class BarForm : BaseAntRepositoryForm<BarModel, Guid, BarRepository>
     {
         protected override Task ConfigureQueryAsync(IRepositoryQuery<BarModel> query)
         {
@@ -27,5 +28,10 @@ namespace Sitko.Core.Apps.Blazor.Forms
         public void AddFoo() => Entity.Foos.Add(new FooModel());
 
         public void DeleteFoo() => Entity.Foo = null;
+
+        [Parameter]
+        public RenderFragment<BarForm> ChildContent { get; set; }
+
+        protected override RenderFragment ChildContentFragment => ChildContent(this);
     }
 }

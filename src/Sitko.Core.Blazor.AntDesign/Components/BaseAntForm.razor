@@ -1,5 +1,4 @@
 @typeparam TEntity
-@typeparam TForm
 @inherits Sitko.Core.App.Blazor.Forms.BaseForm<TEntity>
 
 <Form ValidateOnChange="ValidateOnChange" Model="Entity" Loading="IsLoading"
@@ -12,6 +11,6 @@
         <Sitko.Core.App.Blazor.Forms.FormEditContextCatcher Form="this"/>
     </Validator>
     <ChildContent>
-        @ChildContent((TForm)this)
+        @ChildContentFragment
     </ChildContent>
 </Form>

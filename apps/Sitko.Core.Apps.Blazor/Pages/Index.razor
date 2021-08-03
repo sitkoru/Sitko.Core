@@ -40,7 +40,6 @@
     </SummaryRow>
 </BarAntRepositoryList>
 <BarForm Layout="@FormLayout.Vertical" EntityId="Bar!.Id" @ref="frm">
-<ChildContent>
 @if (context.Entity.Foo is not null)
 {
     <p>Foo: @context.Entity.Foo.Id</p>
@@ -258,25 +257,22 @@
 <Button OnClick="() => context.AddFoo()">Add foo</Button>
 <Button OnClick="() => context.AddFoo()">Set foo</Button>
 <Button Disabled="@(!context.CanSave())" OnClick="@context.Save">Save</Button>
-</ChildContent>
 </BarForm>
 <Button OnClick="async () => await frm.ResetAsync()">Reset</Button>
 <Divider Text="Add form"></Divider>
 <BarForm Layout="@FormLayout.Vertical">
-    <ChildContent>
-        <AntDesign.FormItem Label="Bar">
-            <AntDesign.Input @bind-Value="@context.Entity.Bar"/>
+    <AntDesign.FormItem Label="Bar">
+        <AntDesign.Input @bind-Value="@context.Entity.Bar"/>
+    </AntDesign.FormItem>
+    @if (context.Entity.Foo is not null)
+    {
+        <AntDesign.FormItem Label="Foo">
+            <AntDesign.Input @bind-Value="@context.Entity.Foo.Foo"/>
         </AntDesign.FormItem>
-        @if (context.Entity.Foo is not null)
-        {
-            <AntDesign.FormItem Label="Foo">
-                <AntDesign.Input @bind-Value="@context.Entity.Foo.Foo"/>
-            </AntDesign.FormItem>
-            <Button OnClick="() => { context.Entity.Foo = null; context.NotifyChange();}">Remove foo</Button>
-        }
-        <Button OnClick="() => context.AddFoo()">Add foo</Button>
-        <Button Disabled="@(!context.CanSave())" OnClick="@context.Save">Save</Button>
-    </ChildContent>
+        <Button OnClick="() => { context.Entity.Foo = null; context.NotifyChange();}">Remove foo</Button>
+    }
+    <Button OnClick="() => context.AddFoo()">Add foo</Button>
+    <Button Disabled="@(!context.CanSave())" OnClick="@context.Save">Save</Button>
 </BarForm>
 </ChildContent>
 </PageContainer>

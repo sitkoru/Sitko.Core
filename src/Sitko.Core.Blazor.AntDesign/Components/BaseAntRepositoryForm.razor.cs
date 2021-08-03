@@ -9,21 +9,19 @@ using Sitko.Core.Repository;
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
     public class AntRepositoryForm<TEntity, TEntityPk> : BaseAntRepositoryForm<TEntity, TEntityPk,
-        IRepository<TEntity, TEntityPk>, AntRepositoryForm<TEntity, TEntityPk>>
+        IRepository<TEntity, TEntityPk>>
         where TEntity : class, IEntity<TEntityPk>, new()
     {
+        [Parameter] public RenderFragment<AntRepositoryForm<TEntity, TEntityPk>> ChildContent { get; set; } = null!;
+
+        protected override RenderFragment ChildContentFragment => ChildContent(this);
     }
 
-    public partial class BaseAntRepositoryForm<TEntity, TEntityPk, TRepository, TForm>
+    public abstract partial class BaseAntRepositoryForm<TEntity, TEntityPk, TRepository>
         where TEntity : class, IEntity<TEntityPk>, new()
         where TRepository : class, IRepository<TEntity, TEntityPk>
-        where TForm : BaseAntRepositoryForm<TEntity, TEntityPk, TRepository, TForm>
     {
         protected Form<TEntity>? AntForm { get; set; }
-
-        [Inject] protected ILocalizationProvider<TForm> LocalizationProvider { get; set; } = null!;
-
-        [Parameter] public RenderFragment<TForm> ChildContent { get; set; } = null!;
 
         [Parameter] public string Layout { get; set; } = FormLayout.Horizontal;
 
@@ -81,5 +79,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             MessageService.Error(string.Join(". ", editContext.GetValidationMessages()));
 
         public void Save() => AntForm?.Submit();
+
+        protected abstract RenderFragment ChildContentFragment { get; }
     }
 }
