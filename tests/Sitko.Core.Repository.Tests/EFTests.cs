@@ -436,8 +436,9 @@ namespace Sitko.Core.Repository.Tests
             }
 
             Assert.NotEmpty(originalBar!.Foos);
-            var foo = originalBar.Foos.OrderBy(f => f.Id).First();
-            foo.FooText = "000";
+            var foo = originalBar.Foos.OrderBy(f => Guid.NewGuid()).First(); // change random
+            var newText = Guid.NewGuid().ToString();
+            foo.FooText = newText;
 
             using (var scope3 = scope.CreateScope())
             {
@@ -452,7 +453,7 @@ namespace Sitko.Core.Repository.Tests
                 var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
                 var updatedBar =
                     await repository.GetAsync(q => q.Where(b => b.Id == originalBar.Id).Include(b => b.Foos));
-                Assert.Equal("000", updatedBar!.Foos.First(f => f.Id == foo.Id).FooText);
+                Assert.Equal(newText, updatedBar!.Foos.First(f => f.Id == foo.Id).FooText);
             }
         }
 
@@ -515,7 +516,7 @@ namespace Sitko.Core.Repository.Tests
             var count = originalBar.Foos.Count;
             Assert.Equal(4, count);
 
-            originalBar.Foos.Remove(originalBar.Foos.Last());
+            originalBar.Foos.Remove(originalBar.Foos.OrderBy(_ => Guid.NewGuid()).First()); // delete random
             using (var scope3 = scope.CreateScope())
             {
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
@@ -595,7 +596,7 @@ namespace Sitko.Core.Repository.Tests
         [ForeignKey(nameof(TestId))] public TestModel? Test { get; set; } = null!;
 
         [InverseProperty(nameof(FooModel.Bar))]
-        public ICollection<FooModel> Foos { get; set; } = new List<FooModel>();
+        public List<FooModel> Foos { get; set; } = new List<FooModel>();
 
         public string? Baz { get; set; }
     }
