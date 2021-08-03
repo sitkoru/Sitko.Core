@@ -28,6 +28,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         [Parameter] public int PageSize { get; set; } = 50;
         [Parameter] public int PageIndex { get; set; } = 1;
         [Parameter] public Func<Task>? OnDataLoaded { get; set; }
+        public override ScopeType ScopeType { get; set; } = ScopeType.Isolated;
 
         protected LoadRequest<TItem>? LastRequest { get; set; }
 
@@ -111,7 +112,6 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
             await StopLoadingAsync();
         }
-
 
         public async Task RefreshAsync(int? page = null)
         {

@@ -3,30 +3,35 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Sitko.Core.Repository;
+using System.Linq.Expressions;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
-    using System.Linq.Expressions;
-
-    public abstract class BaseAntRepositoryListComponent<TEntity, TEntityPk> : BaseAntListComponent<TEntity>
-        where TEntity : class, IEntity<TEntityPk>, new()
+    public abstract class
+        BaseAntRepositoryListComponent<TEntity, TEntityPk, TRepository> : BaseAntListComponent<TEntity>
+        where TEntity : class, IEntity<TEntityPk>, new() where TRepository : IRepository<TEntity, TEntityPk>
     {
-        protected IRepository<TEntity, TEntityPk> Repository => GetService<IRepository<TEntity, TEntityPk>>();
-
         [Parameter] public Func<IRepositoryQuery<TEntity>, Task>? ConfigureQuery { get; set; }
+
+        protected Task<TResult> ExecuteRepositoryOperation<TResult>(
+            Func<TRepository, Task<TResult>> operation) =>
+            ExecuteServiceOperation(operation);
 
         protected override Task<(TEntity[] items, int itemsCount)> GetDataAsync(LoadRequest<TEntity> request,
             CancellationToken cancellationToken = default) =>
-            Repository.GetAllAsync(async query =>
+            ExecuteRepositoryOperation(repository =>
             {
-                await DoConfigureQuery(request, query);
-                foreach (var sort in request.Sort)
+                return repository.GetAllAsync(async query =>
                 {
-                    query = query.Order(sort);
-                }
+                    await DoConfigureQuery(request, query);
+                    foreach (var sort in request.Sort)
+                    {
+                        query = query.Order(sort);
+                    }
 
-                query.Paginate(request.Page, PageSize);
-            }, cancellationToken);
+                    query.Paginate(request.Page, PageSize);
+                }, cancellationToken);
+            });
 
         private async Task DoConfigureQuery(LoadRequest<TEntity>? request, IRepositoryQuery<TEntity> query)
         {
@@ -49,63 +54,93 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         protected virtual Task ConfigureQueryAsync(IRepositoryQuery<TEntity> query) => Task.CompletedTask;
 
         public Task<int> SumAsync(Expression<Func<TEntity, int>> selector) =>
-            Repository.SumAsync(async query =>
+            ExecuteRepositoryOperation(repository =>
             {
-                await DoConfigureQuery(LastRequest, query);
-            }, selector);
+                return repository.SumAsync(async query =>
+                {
+                    await DoConfigureQuery(LastRequest, query);
+                }, selector);
+            });
 
         public Task<int?> SumAsync(Expression<Func<TEntity, int?>> selector) =>
-            Repository.SumAsync(async query =>
+            ExecuteRepositoryOperation(repository =>
             {
-                await DoConfigureQuery(LastRequest, query);
-            }, selector);
+                return repository.SumAsync(async query =>
+                {
+                    await DoConfigureQuery(LastRequest, query);
+                }, selector);
+            });
 
         public Task<long> SumAsync(Expression<Func<TEntity, long>> selector) =>
-            Repository.SumAsync(async query =>
+            ExecuteRepositoryOperation(repository =>
             {
-                await DoConfigureQuery(LastRequest, query);
-            }, selector);
+                return repository.SumAsync(async query =>
+                {
+                    await DoConfigureQuery(LastRequest, query);
+                }, selector);
+            });
 
         public Task<long?> SumAsync(Expression<Func<TEntity, long?>> selector) =>
-            Repository.SumAsync(async query =>
+            ExecuteRepositoryOperation(repository =>
             {
-                await DoConfigureQuery(LastRequest, query);
-            }, selector);
+                return repository.SumAsync(async query =>
+                {
+                    await DoConfigureQuery(LastRequest, query);
+                }, selector);
+            });
 
         public Task<double> SumAsync(Expression<Func<TEntity, double>> selector) =>
-            Repository.SumAsync(async query =>
+            ExecuteRepositoryOperation(repository =>
             {
-                await DoConfigureQuery(LastRequest, query);
-            }, selector);
+                return repository.SumAsync(async query =>
+                {
+                    await DoConfigureQuery(LastRequest, query);
+                }, selector);
+            });
 
         public Task<double?> SumAsync(Expression<Func<TEntity, double?>> selector) =>
-            Repository.SumAsync(async query =>
+            ExecuteRepositoryOperation(repository =>
             {
-                await DoConfigureQuery(LastRequest, query);
-            }, selector);
+                return repository.SumAsync(async query =>
+                {
+                    await DoConfigureQuery(LastRequest, query);
+                }, selector);
+            });
 
         public Task<float> SumAsync(Expression<Func<TEntity, float>> selector) =>
-            Repository.SumAsync(async query =>
+            ExecuteRepositoryOperation(repository =>
             {
-                await DoConfigureQuery(LastRequest, query);
-            }, selector);
+                return repository.SumAsync(async query =>
+                {
+                    await DoConfigureQuery(LastRequest, query);
+                }, selector);
+            });
 
         public Task<float?> SumAsync(Expression<Func<TEntity, float?>> selector) =>
-            Repository.SumAsync(async query =>
+            ExecuteRepositoryOperation(repository =>
             {
-                await DoConfigureQuery(LastRequest, query);
-            }, selector);
+                return repository.SumAsync(async query =>
+                {
+                    await DoConfigureQuery(LastRequest, query);
+                }, selector);
+            });
 
         public Task<decimal> SumAsync(Expression<Func<TEntity, decimal>> selector) =>
-            Repository.SumAsync(async query =>
+            ExecuteRepositoryOperation(repository =>
             {
-                await DoConfigureQuery(LastRequest, query);
-            }, selector);
+                return repository.SumAsync(async query =>
+                {
+                    await DoConfigureQuery(LastRequest, query);
+                }, selector);
+            });
 
         public Task<decimal?> SumAsync(Expression<Func<TEntity, decimal?>> selector) =>
-            Repository.SumAsync(async query =>
+            ExecuteRepositoryOperation(repository =>
             {
-                await DoConfigureQuery(LastRequest, query);
-            }, selector);
+                return repository.SumAsync(async query =>
+                {
+                    await DoConfigureQuery(LastRequest, query);
+                }, selector);
+            });
     }
 }
