@@ -57,25 +57,8 @@ namespace Sitko.Core.App.Collections
                 (current, element) => (current * 397) ^ (element is null ? 0 : equalityComparer!.GetHashCode(element))
             ));
 
-        public string ToString(string? format, IFormatProvider? formatProvider) =>
-            //TODO propose a meaningful format i.e. [,] or {;}
-            $"[{FormatValue(this, formatProvider)}]";
+        public string ToString(string? format, IFormatProvider? formatProvider) => $"[{typeof(T).Name}[{Count}]]";
 
         public override string ToString() => ToString(null, CultureInfo.CurrentCulture);
-
-        private static string? FormatValue(object? value, IFormatProvider? formatProvider) =>
-            value switch
-            {
-                null => "∅",
-                bool b => b ? "true" : "false",
-                string s => $"\"{s}\"",
-                char c => $"\'{c}\'",
-                DateTime dt => dt.ToString("o", formatProvider),
-                IFormattable @if => @if.ToString(null, formatProvider),
-                IEnumerable ie => "[" +
-                                  string.Join(", ", ie.Cast<object>().Select(e => FormatValue(e, formatProvider))) +
-                                  "]",
-                _ => value.ToString()
-            };
     }
 }
