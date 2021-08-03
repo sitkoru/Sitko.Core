@@ -269,6 +269,41 @@ namespace Sitko.Core.Repository.Tests
         }
 
         [Fact]
+        public async Task DisconnectedOneToOneAdd()
+        {
+            var scope = await GetScopeAsync();
+            var originalBar = new BarModel { Id = Guid.NewGuid() };
+            AddOrUpdateOperationResult<TestModel, Guid> newTestResult;
+            using (var scope2 = scope.CreateScope())
+            {
+                var repository2 = scope2.ServiceProvider.GetRequiredService<IRepository<TestModel, Guid>>();
+                newTestResult = await repository2.AddAsync(await repository2.NewAsync());
+            }
+
+            Assert.True(newTestResult.IsSuccess);
+
+            originalBar.Test = newTestResult.Entity;
+
+
+            using (var scope3 = scope.CreateScope())
+            {
+                var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
+                var updateResult = await repository3.AddExternalAsync(originalBar);
+                Assert.True(updateResult.IsSuccess);
+                Assert.Empty(updateResult.Changes);
+            }
+
+            using (var finalScope = scope.CreateScope())
+            {
+                var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
+                var updatedBar =
+                    await repository.GetAsync(q => q.Where(b => b.Id == originalBar.Id));
+                Assert.NotNull(updatedBar);
+                Assert.Equal(newTestResult.Entity.Id, updatedBar!.TestId);
+            }
+        }
+
+        [Fact]
         public async Task DisconnectedOneToOneUpdateEntity()
         {
             var scope = await GetScopeAsync();
