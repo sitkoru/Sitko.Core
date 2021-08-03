@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Hosting;
-using Serilog.Events;
 using Sitko.Core.App.Localization;
 using Sitko.Core.Apps.Blazor.Data;
 using Sitko.Core.Blazor.AntDesignComponents;
@@ -14,14 +13,14 @@ namespace Sitko.Core.Apps.Blazor
     {
         public TestBlazorApplication(string[] args) : base(args)
         {
-            this.AddPostgresDatabase<BarContext>()
+            this.AddPostgresDatabase<BarContext>(options =>
+                {
+                    options.EnableSensitiveLogging = true;
+                })
                 .AddEFRepositories<BarContext>()
                 .AddFileSystemStorage<TestBlazorStorageOptions>()
                 .AddPostgresStorageMetadata<TestBlazorStorageOptions>()
                 .AddJsonLocalization();
-            ConfigureLogLevel("System.Net.Http.HttpClient.health-checks", LogEventLevel.Error)
-                .ConfigureLogLevel("Microsoft.AspNetCore", LogEventLevel.Warning)
-                .ConfigureLogLevel("Microsoft.EntityFrameworkCore", LogEventLevel.Warning);
         }
 
         protected override bool LoggingEnableConsole(HostBuilderContext context) => true;
