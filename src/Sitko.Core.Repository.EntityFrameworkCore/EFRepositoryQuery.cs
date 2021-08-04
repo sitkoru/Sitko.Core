@@ -18,15 +18,18 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
     public class EFRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where TEntity : class
     {
-        public EFRepositoryQuery(IQueryable<TEntity> query) => QuerySource = new EFRepositoryQuerySource<TEntity>(query);
+        public EFRepositoryQuery(IQueryable<TEntity> query) =>
+            QuerySource = new EFRepositoryQuerySource<TEntity>(query);
 
         internal EFRepositoryQuery(EFRepositoryQuerySource<TEntity> source,
             List<Func<IQueryable<TEntity>, IQueryable<TEntity>>> whereExpressions,
-            List<Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>> orderExpressions)
+            List<Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>> orderExpressions, int? limit, int? offset)
         {
             QuerySource = source;
             WhereExpressions = whereExpressions;
             OrderExpressions = orderExpressions;
+            Limit = limit;
+            Offset = offset;
         }
 
         internal EFRepositoryQuerySource<TEntity> QuerySource { get; }
@@ -118,7 +121,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             QuerySource.Query = QuerySource.Query.Include(navigationPropertyPath);
             var query = new EFIncludableRepositoryQuery<TEntity, TProperty>(QuerySource,
                 WhereExpressions,
-                OrderExpressions);
+                OrderExpressions, Limit, Offset);
             return query;
         }
 
@@ -146,9 +149,10 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
     {
         internal EFIncludableRepositoryQuery(EFRepositoryQuerySource<TEntity> source,
             List<Func<IQueryable<TEntity>, IQueryable<TEntity>>> whereExpressions,
-            List<Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>> orderExpressions) : base(source,
+            List<Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>> orderExpressions, int? limit,
+            int? offset) : base(source,
             whereExpressions,
-            orderExpressions)
+            orderExpressions, limit, offset)
         {
         }
 
@@ -163,7 +167,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             var query = new EFIncludableRepositoryQuery<TEntity, TNextProperty>(
                 efQuery.QuerySource,
                 efQuery.WhereExpressions,
-                efQuery.OrderExpressions);
+                efQuery.OrderExpressions, efQuery.Limit, efQuery.Offset);
             return query;
         }
 
@@ -178,7 +182,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             var query = new EFIncludableRepositoryQuery<TEntity, TNextProperty>(
                 efQuery.QuerySource,
                 efQuery.WhereExpressions,
-                efQuery.OrderExpressions);
+                efQuery.OrderExpressions, efQuery.Limit, efQuery.Offset);
             return query;
         }
     }
