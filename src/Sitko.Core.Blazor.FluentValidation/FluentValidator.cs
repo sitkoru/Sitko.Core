@@ -7,30 +7,22 @@ using System.Threading.Tasks;
 using FluentValidation.Internal;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Sitko.Core.App.Blazor.Components;
+using Microsoft.Extensions.Logging;
+
 
 namespace Sitko.Core.Blazor.FluentValidation
 {
     /// <summary>
     /// Add Fluent Validator support to an EditContext.
     /// </summary>
-    public class FluentValidator : ComponentBase, IDisposable
+    public class FluentValidator : BaseComponent
     {
         /// <summary>
         /// Inherited object from the FormEdit component.
         /// </summary>
         [CascadingParameter]
         private EditContext? CurrentEditContext { get; set; }
-
-        /// <summary>
-        /// Enable access to the ASP.NET Core Service Provider / DI.
-        /// </summary>
-        [Inject]
-        private IServiceProvider ServiceProvider { get; set; } = null!;
-
-        /// <summary>
-        /// Isolate scoped DbContext to this component.
-        /// </summary>
-        private IServiceScope? ServiceScope { get; set; }
 
         /// <summary>
         /// The AbstractValidator object for the corresponding form Model object type.
@@ -44,11 +36,12 @@ namespace Sitko.Core.Blazor.FluentValidation
         [Parameter]
         public Dictionary<Type, IValidator?> ChildValidators { set; get; } = new();
 
-        /// <summary>
-        /// Attach to parent EditForm context enabling validation.
-        /// </summary>
-        protected override void OnInitialized()
+        private IServiceScope ServiceScope { get; set; } = null!;
+
+
+        protected override void Initialize()
         {
+            base.Initialize();
             if (CurrentEditContext == null)
             {
                 throw new InvalidOperationException($"{nameof(DataAnnotationsValidator)} requires a cascading " +
@@ -56,28 +49,8 @@ namespace Sitko.Core.Blazor.FluentValidation
                                                     "inside an EditForm.");
             }
 
-            ServiceScope = ServiceProvider.CreateScope();
-
-            if (Validator == null)
-            {
-                SetFormValidator();
-            }
-
+            ServiceScope = CreateServicesScope();
             AddValidation();
-        }
-
-        /// <summary>
-        /// Try setting the EditContext form model typed validator implementation from the DI.
-        /// </summary>
-        private void SetFormValidator()
-        {
-            var formType = CurrentEditContext!.Model.GetType();
-            Validator = TryGetValidatorForObjectType(formType);
-            if (Validator == null)
-            {
-                throw new InvalidOperationException($"FluentValidation.IValidator<{formType.FullName}> is"
-                                                    + " not registered in the application service provider.");
-            }
         }
 
         /// <summary>
@@ -89,7 +62,7 @@ namespace Sitko.Core.Blazor.FluentValidation
         {
             var validatorType = typeof(IValidator<>);
             var formValidatorType = validatorType.MakeGenericType(modelType);
-            return ServiceScope?.ServiceProvider.GetService(formValidatorType) as IValidator;
+            return ServiceScope.ServiceProvider.GetService(formValidatorType) as IValidator;
         }
 
         /// <summary>
@@ -109,7 +82,7 @@ namespace Sitko.Core.Blazor.FluentValidation
             // If you create it as a ValidationContext<object> instead of a ValidationContext<T> then FluentValidation will perform the conversion internally, assuming the types are compatible.
             var context = new ValidationContext<object>(model, new PropertyChain(), validatorSelector)
             {
-                RootContextData = {["_FV_ServiceProvider"] = ServiceProvider}
+                RootContextData = { ["_FV_ServiceProvider"] = ServiceScope.ServiceProvider }
             };
 
             // InjectValidator looks for a service provider inside the ValidationContext with this key.
@@ -145,16 +118,18 @@ namespace Sitko.Core.Blazor.FluentValidation
             // https://github.com/dotnet/aspnetcore/issues/11914
             var validationResults = await TryValidateModel(editContext);
             messages.Clear();
-
-            var graph = new ModelGraphCache(editContext.Model);
-            foreach (var error in validationResults.Errors)
+            if (validationResults is not null)
             {
-                var (propertyValue, propertyName) = graph.EvalObjectProperty(error.PropertyName);
-                // while it is impossible to have a validation error for a null child property, better be safe than sorry...
-                if (propertyValue != null)
+                var graph = new ModelGraphCache(editContext.Model);
+                foreach (var error in validationResults.Errors)
                 {
-                    var fieldID = new FieldIdentifier(propertyValue, propertyName);
-                    messages.Add(fieldID, error.ErrorMessage);
+                    var (propertyValue, propertyName) = graph.EvalObjectProperty(error.PropertyName);
+                    // while it is impossible to have a validation error for a null child property, better be safe than sorry...
+                    if (propertyValue != null)
+                    {
+                        var fieldID = new FieldIdentifier(propertyValue, propertyName);
+                        messages.Add(fieldID, error.ErrorMessage);
+                    }
                 }
             }
 
@@ -166,12 +141,18 @@ namespace Sitko.Core.Blazor.FluentValidation
         /// </summary>
         /// <param name="editContext"></param>
         /// <returns></returns>
-        private async Task<ValidationResult> TryValidateModel(EditContext editContext)
+        private async Task<ValidationResult?> TryValidateModel(EditContext editContext)
         {
             try
             {
                 var validationContext = CreateValidationContext(editContext.Model);
-                return await Validator!.ValidateAsync(validationContext);
+                var validator = TryGetModelValidator(editContext);
+                if (validator is null)
+                {
+                    return null;
+                }
+
+                return await validator.ValidateAsync(validationContext);
             }
             catch (Exception ex)
             {
@@ -193,7 +174,7 @@ namespace Sitko.Core.Blazor.FluentValidation
         {
             try
             {
-                var vselector = new MemberNameValidatorSelector(new[] {fieldIdentifier.FieldName});
+                var vselector = new MemberNameValidatorSelector(new[] { fieldIdentifier.FieldName });
                 var vctx = CreateValidationContext(fieldIdentifier.Model, validatorSelector: vselector);
                 return await validator.ValidateAsync(vctx);
             }
@@ -211,6 +192,19 @@ namespace Sitko.Core.Blazor.FluentValidation
             }
         }
 
+        private IValidator? TryGetModelValidator(EditContext editContext)
+        {
+            var validator = Validator ?? TryGetValidatorForObjectType(editContext.Model.GetType());
+            if (validator is null)
+            {
+                Logger.LogWarning(
+                    "FluentValidation.IValidator<{FormType}> is not registered in the application service provider.",
+                    editContext.Model.GetType().FullName);
+            }
+
+            return validator;
+        }
+
         /// <summary>
         /// Attempts to retrieve the field or property validator of a form model or child object model.
         /// </summary>
@@ -221,7 +215,7 @@ namespace Sitko.Core.Blazor.FluentValidation
         {
             if (fieldIdentifier.Model == editContext.Model)
             {
-                return Validator;
+                return TryGetModelValidator(editContext);
             }
 
             var modelType = fieldIdentifier.Model.GetType();
@@ -262,37 +256,13 @@ namespace Sitko.Core.Blazor.FluentValidation
             editContext.NotifyValidationStateChanged();
         }
 
-        #region IDisposable Support
-
-        private bool disposedValue; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            base.Dispose(disposing);
+            if (disposing)
             {
-                if (disposing)
-                {
-                    // Dispose managed state (managed objects).
-                    ServiceScope?.Dispose();
-                }
-
-                // Free unmanaged resources (unmanaged objects) and override a finalizer below.
-
-                // Set large fields to null.
-                ServiceScope = null;
-                Validator = null;
-                disposedValue = true;
+                ServiceScope.Dispose();
             }
         }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        #endregion
     }
 }
