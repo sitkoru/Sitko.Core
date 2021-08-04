@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Sitko.Core.Repository.EntityFrameworkCore;
 using Sitko.Core.Xunit;
+using Sitko.Core.App.Compare;
+using Sitko.Core.Db.Postgres;
+using KellermanSoftware.CompareNetObjects;
 using Xunit;
 using Xunit.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
@@ -581,6 +584,8 @@ namespace Sitko.Core.Repository.Tests
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.RegisterJsonEnumerableConversion<BarModel, BaseJsonModel, List<BaseJsonModel>>(model =>
+                model.JsonModels, "JsonModels");
             var testModels = new List<TestModel>
             {
                 new() { Id = Guid.NewGuid(), FooId = 1 },
@@ -593,7 +598,13 @@ namespace Sitko.Core.Repository.Tests
             modelBuilder.Entity<TestModel>().HasData(testModels);
             var barModels = new List<BarModel>()
             {
-                new() { Id = Guid.NewGuid(), TestId = testModels.First().Id }, new() { Id = Guid.NewGuid() }
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    TestId = testModels.First().Id,
+                    JsonModels = new List<BaseJsonModel> { new JsonModelBar(), new JsonModelFoo() }
+                },
+                new() { Id = Guid.NewGuid() }
             };
             modelBuilder.Entity<BarModel>().HasData(barModels);
             modelBuilder.Entity<FooModel>()
@@ -633,7 +644,23 @@ namespace Sitko.Core.Repository.Tests
         [InverseProperty(nameof(FooModel.Bar))]
         public List<FooModel> Foos { get; set; } = new();
 
+        public List<BaseJsonModel> JsonModels { get; set; } = new();
         public string? Baz { get; set; }
+    }
+
+    public abstract class BaseJsonModel
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+    }
+
+    public class JsonModelFoo : BaseJsonModel
+    {
+        public string Foo { get; set; } = "";
+    }
+
+    public class JsonModelBar : BaseJsonModel
+    {
+        public string Bar { get; set; } = "";
     }
 
     public class FooModel : Entity<Guid>
@@ -675,8 +702,20 @@ namespace Sitko.Core.Repository.Tests
     {
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
-            application.AddEFRepositories<EFTestScope>();
+            application.AddEFRepositories<EFTestScope>().AddCompareLogicConfigurator<TestCompareLogicConfigurator>();
             return base.ConfigureApplication(application, name);
+        }
+    }
+
+    public class TestCompareLogicConfigurator : ICompareLogicConfigurator
+    {
+        public void Configure(ComparisonConfig config)
+        {
+            config.IgnoreCollectionOrder = true;
+            config.CollectionMatchingSpec ??= new Dictionary<Type, IEnumerable<string>>();
+
+            config.CollectionMatchingSpec.Add(typeof(JsonModelFoo), new[] { nameof(BaseJsonModel.Id) });
+            config.CollectionMatchingSpec.Add(typeof(JsonModelBar), new[] { nameof(BaseJsonModel.Id) });
         }
     }
 }

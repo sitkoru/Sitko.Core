@@ -11,6 +11,7 @@ using System.Linq.Expressions;
 using AnyClone;
 using JetBrains.Annotations;
 using KellermanSoftware.CompareNetObjects;
+using Sitko.Core.App.Compare;
 
 namespace Sitko.Core.Repository
 {
@@ -20,7 +21,7 @@ namespace Sitko.Core.Repository
         List<IValidator>? Validators { get; }
         List<IAccessChecker<TEntity, TEntityPk>>? AccessCheckers { get; }
         ILogger<IRepository<TEntity, TEntityPk>> Logger { get; }
-        CompareLogic Comparer { get; }
+        List<ICompareLogicConfigurator> ComparerConfigurators { get; }
     }
 
     public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<TEntity, TEntityPk>
@@ -35,7 +36,20 @@ namespace Sitko.Core.Repository
             FiltersManager = repositoryContext.FiltersManager;
             AccessCheckers = repositoryContext.AccessCheckers ?? new List<IAccessChecker<TEntity, TEntityPk>>();
             Logger = repositoryContext.Logger;
-            Comparer = repositoryContext.Comparer;
+            var comparerOptions = new ComparisonConfig
+            {
+                MaxDifferences = 100,
+                IgnoreCollectionOrder = true,
+                Caching = true,
+                AutoClearCache = true,
+                CollectionMatchingSpec = new Dictionary<Type, IEnumerable<string>>()
+            };
+            foreach (var comparerConfigurator in repositoryContext.ComparerConfigurators)
+            {
+                comparerConfigurator.Configure(comparerOptions);
+            }
+
+            Comparer = new(comparerOptions);
         }
 
         protected CompareLogic Comparer { get; }
@@ -640,7 +654,7 @@ namespace Sitko.Core.Repository
         protected virtual Task<(PropertyChange[] changes, TEntity oldEntity)> GetChangesAsync(TEntity item)
         {
             var changes = new List<PropertyChange>();
-            var snapshot  = snapshots[item.Id];
+            var snapshot = snapshots[item.Id];
             var differences = Comparer.Compare(snapshot, item);
             if (!differences.AreEqual)
             {
