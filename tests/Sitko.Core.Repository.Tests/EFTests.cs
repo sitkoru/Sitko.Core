@@ -161,6 +161,19 @@ namespace Sitko.Core.Repository.Tests
         }
 
         [Fact]
+        public async Task IncludeWithPagination()
+        {
+            var scope = await GetScopeAsync();
+
+            var repository = scope.GetService<IRepository<TestModel, Guid>>();
+
+            Assert.NotNull(repository);
+
+            var item = await repository.GetAllAsync(query => query.Include(e => e.Bars).Take(1));
+            Assert.Single(item.items);
+        }
+
+        [Fact]
         public async Task ThreadSafe()
         {
             var scope = await GetScopeAsync();
