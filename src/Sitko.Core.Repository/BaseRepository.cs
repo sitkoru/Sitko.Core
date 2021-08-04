@@ -75,7 +75,7 @@ namespace Sitko.Core.Repository
             return changesResult.changes.Length > 0;
         }
 
-        public TEntity CreateSnapshot(TEntity entity) => entity.Clone();
+        public virtual TEntity CreateSnapshot(TEntity entity) => entity.Clone();
 
 
         public virtual Task<bool> BeginBatchAsync(CancellationToken cancellationToken = default)
