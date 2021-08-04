@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Sitko.Core.App.Blazor.Forms
 {
-    using AnyClone;
+    using Json;
     using Localization;
 
     public abstract class BaseForm : BaseComponent
@@ -67,12 +67,12 @@ namespace Sitko.Core.App.Blazor.Forms
         }
 
         public bool IsNew { get; protected set; }
-        private TEntity? entity;
+        private TEntity? currentEntity;
 
         public TEntity Entity
         {
-            get => entity ?? throw new InvalidOperationException("Entity is not initialized");
-            set => entity = value;
+            get => currentEntity ?? throw new InvalidOperationException("Entity is not initialized");
+            private set => currentEntity = value;
         }
 
 
@@ -112,7 +112,7 @@ namespace Sitko.Core.App.Blazor.Forms
 
         protected abstract Task<(bool IsNew, TEntity Entity)> GetEntityAsync();
 
-        protected virtual TEntity? CreateEntitySnapshot(TEntity? entity) => entity.Clone();
+        protected virtual TEntity? CreateEntitySnapshot(TEntity? entity) => JsonHelper.Clone(entity);
 
         protected virtual Task InitializeEntityAsync(TEntity entity) => Task.CompletedTask;
 

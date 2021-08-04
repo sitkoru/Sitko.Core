@@ -8,9 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Sitko.Core.Repository.EntityFrameworkCore;
 using Sitko.Core.Xunit;
-using Sitko.Core.App.Compare;
 using Sitko.Core.Db.Postgres;
-using KellermanSoftware.CompareNetObjects;
 using Xunit;
 using Xunit.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
@@ -648,17 +646,17 @@ namespace Sitko.Core.Repository.Tests
         public string? Baz { get; set; }
     }
 
-    public abstract class BaseJsonModel
+    public abstract record BaseJsonModel
     {
         public Guid Id { get; set; } = Guid.NewGuid();
     }
 
-    public class JsonModelFoo : BaseJsonModel
+    public record JsonModelFoo : BaseJsonModel
     {
         public string Foo { get; set; } = "";
     }
 
-    public class JsonModelBar : BaseJsonModel
+    public record JsonModelBar : BaseJsonModel
     {
         public string Bar { get; set; } = "";
     }
@@ -702,20 +700,8 @@ namespace Sitko.Core.Repository.Tests
     {
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
-            application.AddEFRepositories<EFTestScope>().AddCompareLogicConfigurator<TestCompareLogicConfigurator>();
+            application.AddEFRepositories<EFTestScope>();
             return base.ConfigureApplication(application, name);
-        }
-    }
-
-    public class TestCompareLogicConfigurator : ICompareLogicConfigurator
-    {
-        public void Configure(ComparisonConfig config)
-        {
-            config.IgnoreCollectionOrder = true;
-            config.CollectionMatchingSpec ??= new Dictionary<Type, IEnumerable<string>>();
-
-            config.CollectionMatchingSpec.Add(typeof(JsonModelFoo), new[] { nameof(BaseJsonModel.Id) });
-            config.CollectionMatchingSpec.Add(typeof(JsonModelBar), new[] { nameof(BaseJsonModel.Id) });
         }
     }
 }

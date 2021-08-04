@@ -6,53 +6,33 @@ using System.Threading.Tasks;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
-using System.Collections;
 using System.Linq.Expressions;
-using AnyClone;
 using JetBrains.Annotations;
-using KellermanSoftware.CompareNetObjects;
-using Sitko.Core.App.Compare;
 
 namespace Sitko.Core.Repository
 {
+    using App.Json;
+
     public interface IRepositoryContext<TEntity, TEntityPk> where TEntity : class, IEntity<TEntityPk>
     {
         RepositoryFiltersManager FiltersManager { get; }
         List<IValidator>? Validators { get; }
         List<IAccessChecker<TEntity, TEntityPk>>? AccessCheckers { get; }
         ILogger<IRepository<TEntity, TEntityPk>> Logger { get; }
-        List<ICompareLogicConfigurator> ComparerConfigurators { get; }
     }
 
     public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<TEntity, TEntityPk>
         where TEntity : class, IEntity<TEntityPk> where TQuery : IRepositoryQuery<TEntity>
     {
-        private readonly Dictionary<TEntityPk, TEntity> snapshots = new();
         private List<RepositoryRecord<TEntity, TEntityPk>>? batch;
 
         protected BaseRepository(IRepositoryContext<TEntity, TEntityPk> repositoryContext)
         {
-            Validators = repositoryContext.Validators?.ToArray() ?? new IValidator[0];
+            Validators = repositoryContext.Validators?.ToArray() ?? Array.Empty<IValidator>();
             FiltersManager = repositoryContext.FiltersManager;
             AccessCheckers = repositoryContext.AccessCheckers ?? new List<IAccessChecker<TEntity, TEntityPk>>();
             Logger = repositoryContext.Logger;
-            var comparerOptions = new ComparisonConfig
-            {
-                MaxDifferences = 100,
-                IgnoreCollectionOrder = true,
-                Caching = true,
-                AutoClearCache = true,
-                CollectionMatchingSpec = new Dictionary<Type, IEnumerable<string>>()
-            };
-            foreach (var comparerConfigurator in repositoryContext.ComparerConfigurators)
-            {
-                comparerConfigurator.Configure(comparerOptions);
-            }
-
-            Comparer = new(comparerOptions);
         }
-
-        protected CompareLogic Comparer { get; }
 
         [PublicAPI] protected IValidator[] Validators { get; }
 
@@ -72,10 +52,10 @@ namespace Sitko.Core.Repository
         public async Task<bool> HasChangesAsync(TEntity entity)
         {
             var changesResult = await GetChangesAsync(entity);
-            return changesResult.changes.Length > 0;
+            return changesResult.Length > 0;
         }
 
-        public virtual TEntity CreateSnapshot(TEntity entity) => entity.Clone();
+        public virtual TEntity CreateSnapshot(TEntity entity) => JsonHelper.Clone(entity)!;
 
 
         public virtual Task<bool> BeginBatchAsync(CancellationToken cancellationToken = default)
@@ -154,9 +134,7 @@ namespace Sitko.Core.Repository
             (bool isValid, IList<ValidationFailure> errors) validationResult = (false, new List<ValidationFailure>());
             if (await BeforeValidateAsync(item, validationResult, false, cancellationToken))
             {
-                var changesResult = await GetChangesAsync(item);
-                changes = changesResult.changes;
-                var oldItem = changesResult.oldEntity;
+                changes = await GetChangesAsync(item);
                 if (changes.Any())
                 {
                     validationResult = await ValidateAsync(item, false, changes, cancellationToken);
@@ -166,7 +144,7 @@ namespace Sitko.Core.Repository
                         {
                             await DoUpdateAsync(item, cancellationToken);
 
-                            await SaveAsync(new RepositoryRecord<TEntity, TEntityPk>(item, false, changes, oldItem),
+                            await SaveAsync(new RepositoryRecord<TEntity, TEntityPk>(item, false, changes),
                                 cancellationToken);
                         }
                     }
@@ -651,42 +629,7 @@ namespace Sitko.Core.Repository
 
         protected abstract Task DoSaveAsync(CancellationToken cancellationToken = default);
 
-        protected virtual Task<(PropertyChange[] changes, TEntity oldEntity)> GetChangesAsync(TEntity item)
-        {
-            var changes = new List<PropertyChange>();
-            var snapshot = snapshots[item.Id];
-            var differences = Comparer.Compare(snapshot, item);
-            if (!differences.AreEqual)
-            {
-                foreach (var difference in differences.Differences)
-                {
-                    if (difference.Object1 is null || difference.Object2 is null)
-                    {
-                        var propertyName = !string.IsNullOrEmpty(difference.ParentPropertyName)
-                            ? difference.ParentPropertyName
-                            : !string.IsNullOrEmpty(difference.PropertyName)
-                                ? difference.PropertyName
-                                : null;
-                        if (propertyName is not null)
-                        {
-                            var property = difference.ParentObject1.GetType().GetProperty(propertyName);
-                            if (property is not null)
-                            {
-                                if (property.PropertyType != typeof(string) &&
-                                    typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
-                                {
-                                    continue;
-                                }
-                            }
-                        }
-                    }
-
-                    changes.Add(new PropertyChange(difference.PropertyName, difference.Object1, difference.Object2));
-                }
-            }
-
-            return Task.FromResult((changes.ToArray(), snapshot));
-        }
+        protected abstract Task<PropertyChange[]> GetChangesAsync(TEntity item);
 
         protected abstract Task DoAddAsync(TEntity item, CancellationToken cancellationToken = default);
         protected abstract Task DoUpdateAsync(TEntity item, CancellationToken cancellationToken = default);
@@ -709,32 +652,17 @@ namespace Sitko.Core.Repository
         private Task AfterLoadEntityAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             var entities = new[] { entity };
-            SaveSnapshots(entities);
             return AfterLoadAsync(entities, cancellationToken);
         }
 
-        private Task AfterLoadEntitiesAsync(TEntity[] entities, CancellationToken cancellationToken = default)
-        {
-            SaveSnapshots(entities);
-            return AfterLoadAsync(entities, cancellationToken);
-        }
+        private Task AfterLoadEntitiesAsync(TEntity[] entities, CancellationToken cancellationToken = default) =>
+            AfterLoadAsync(entities, cancellationToken);
 
         protected virtual Task AfterLoadAsync(TEntity entity, CancellationToken cancellationToken = default) =>
             AfterLoadAsync(new[] { entity }, cancellationToken);
 
         protected virtual Task AfterLoadAsync(TEntity[] entities, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
-
-        protected void SaveSnapshot(TEntity entity) => SaveSnapshots(new[] { entity });
-
-        protected void SaveSnapshots(IEnumerable<TEntity> entities)
-        {
-            foreach (var entity in entities)
-            {
-                var snapshot = CreateSnapshot(entity);
-                snapshots[entity.Id] = snapshot;
-            }
-        }
 
         protected virtual Task<bool> BeforeSaveAsync(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult, bool isNew,
@@ -747,7 +675,6 @@ namespace Sitko.Core.Repository
         {
             foreach (var item in items)
             {
-                SaveSnapshot(item.Item);
                 await FiltersManager.AfterSaveAsync<TEntity, TEntityPk>(item.Item, item.IsNew, item.Changes,
                     cancellationToken);
             }

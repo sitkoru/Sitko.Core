@@ -154,7 +154,6 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 {
                     var baseEntry = dbContext.Entry<IEntity>(baseEntity);
                     AnalyzeReferences(baseEntry, loadedReferences);
-                    SaveSnapshot(baseEntity);
                 }
 
                 context.ChangeTracker.TrackGraph(entity, node =>
@@ -293,10 +292,6 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 });
                 return Task.FromResult(true);
             }, cancellationToken);
-            if (baseEntity is null)
-            {
-                SaveSnapshot(entity);
-            }
         }
 
         private static TCollection UpdateCollection<TElement, TCollection>(TCollection collection,
@@ -531,5 +526,59 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         private IDbContextTransaction? GetCurrentTransaction() => dbContext.Database.CurrentTransaction;
 
         private record EntityReference(Type ParentType, object ParentId, Type Type, object Id, string PropertyName);
+
+        protected override Task<PropertyChange[]> GetChangesAsync(TEntity item)
+        {
+            var modifiedStates = new[] { EntityState.Added, EntityState.Deleted, EntityState.Modified };
+            var changes = new List<PropertyChange>();
+            if (dbContext.ChangeTracker.HasChanges())
+            {
+                var entry = dbContext.Entry(item);
+                if (entry.State != EntityState.Detached)
+                {
+                    foreach (var property in entry.Properties.Where(p => p.IsModified))
+                    {
+                        changes.Add(new PropertyChange(property.Metadata.Name, property.OriginalValue,
+                            property.CurrentValue));
+                    }
+
+                    foreach (var entryReference in entry.References.Where(n =>
+                        n.IsModified || (n.TargetEntry != null && modifiedStates.Contains(n.TargetEntry.State))))
+                    {
+                        changes.Add(new PropertyChange(entryReference.Metadata.Name, null,
+                            entryReference.CurrentValue));
+                    }
+
+                    foreach (var entryCollection in entry.Collections.Where(c => c.IsLoaded || c.IsModified))
+                    {
+                        var hasChanges = false;
+                        if (entryCollection.IsModified)
+                        {
+                            hasChanges = true;
+                        }
+                        else if (entryCollection.CurrentValue is not null)
+                        {
+                            foreach (var collectionElement in entryCollection.CurrentValue.Cast<object>())
+                            {
+                                var collectionEntry = dbContext.Entry(collectionElement);
+                                if (modifiedStates.Contains(collectionEntry.State))
+                                {
+                                    hasChanges = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (hasChanges)
+                        {
+                            changes.Add(new PropertyChange(entryCollection.Metadata.Name, null,
+                                entryCollection.CurrentValue));
+                        }
+                    }
+                }
+            }
+
+            return Task.FromResult(changes.ToArray());
+        }
     }
 }

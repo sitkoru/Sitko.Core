@@ -27,5 +27,8 @@ namespace Sitko.Core.App.Json
 
         public static T? DeserializeWithMetadata<T>(string json, bool throwOnError = true) =>
             JsonConvert.DeserializeObject<T>(json, GetJsonSettings(throwOnError));
+
+        public static T? Clone<T>(T? obj, bool throwOnError = true) where T : class =>
+            obj is null ? null : DeserializeWithMetadata<T>(SerializeWithMetadata(obj, throwOnError), throwOnError)!;
     }
 }
