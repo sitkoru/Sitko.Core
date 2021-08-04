@@ -39,7 +39,10 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             };
             foreach (var entityType in dbContext.Model.GetEntityTypes())
             {
-                comparerOptions.CollectionMatchingSpec.Add(entityType.ClrType, new[] { "Id" });
+                if (typeof(IEntity).IsAssignableFrom(entityType.ClrType))
+                {
+                    comparerOptions.CollectionMatchingSpec.Add(entityType.ClrType, new[] { "Id" });
+                }
             }
 
             Comparer = new(comparerOptions);
