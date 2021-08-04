@@ -79,7 +79,8 @@ namespace Sitko.Core.App.Blazor.Components
 
         [PublicAPI] public bool IsLoading { get; private set; }
 
-        [PublicAPI] protected NavigationManager NavigationManager => GetRequiredService<NavigationManager>();
+        [PublicAPI]
+        protected NavigationManager NavigationManager => GlobalServiceProvider.GetRequiredService<NavigationManager>();
 
         protected ILogger Logger
         {
