@@ -51,7 +51,7 @@ namespace Sitko.Core.App.Blazor.Forms
         public abstract bool CanSave();
 
         public virtual bool IsValid { get; protected set; }
-        protected bool HasChanges { get; private set; }
+        public bool HasChanges { get; private set; }
 
         public abstract Task SaveEntityAsync();
     }
