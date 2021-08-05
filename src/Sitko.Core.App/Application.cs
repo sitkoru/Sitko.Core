@@ -191,7 +191,7 @@ namespace Sitko.Core.App
                 {
                     LogCheck("Configure app services");
                     services.AddSingleton(logLevelSwitcher);
-                    //services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
+                    services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
                     services.AddSingleton(typeof(IApplication), this);
                     services.AddSingleton(typeof(Application), this);
                     services.AddSingleton(GetType(), this);
