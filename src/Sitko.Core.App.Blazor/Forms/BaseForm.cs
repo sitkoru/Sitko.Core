@@ -89,6 +89,7 @@ namespace Sitko.Core.App.Blazor.Forms
 
         public override void NotifyChange() => NotifyChange(new FieldIdentifier(Entity, "Id"));
         private ILocalizationProvider? localizationProvider;
+
         protected ILocalizationProvider LocalizationProvider
         {
             get
@@ -103,6 +104,7 @@ namespace Sitko.Core.App.Blazor.Forms
                 return localizationProvider;
             }
         }
+
         protected override async Task InitializeAsync()
         {
             await base.InitializeAsync();
