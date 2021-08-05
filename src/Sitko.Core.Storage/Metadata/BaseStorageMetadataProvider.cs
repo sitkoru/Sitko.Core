@@ -11,10 +11,6 @@ namespace Sitko.Core.Storage.Metadata
         where TOptions : StorageMetadataModuleOptions<TStorageOptions>
         where TStorageOptions : StorageOptions
     {
-        protected IOptionsMonitor<TOptions> Options { get; }
-        protected IOptionsMonitor<TStorageOptions> StorageOptions { get; }
-        protected ILogger<BaseStorageMetadataProvider<TOptions, TStorageOptions>> Logger { get; }
-
         protected BaseStorageMetadataProvider(IOptionsMonitor<TOptions> options,
             IOptionsMonitor<TStorageOptions> storageOptions,
             ILogger<BaseStorageMetadataProvider<TOptions, TStorageOptions>> logger)
@@ -24,11 +20,11 @@ namespace Sitko.Core.Storage.Metadata
             Logger = logger;
         }
 
-        public abstract ValueTask DisposeAsync();
+        protected IOptionsMonitor<TOptions> Options { get; }
+        protected IOptionsMonitor<TStorageOptions> StorageOptions { get; }
+        protected ILogger<BaseStorageMetadataProvider<TOptions, TStorageOptions>> Logger { get; }
 
         Task IStorageMetadataProvider<TStorageOptions>.InitAsync() => DoInitAsync();
-
-        protected virtual Task DoInitAsync() => Task.CompletedTask;
 
         Task IStorageMetadataProvider<TStorageOptions>.SaveMetadataAsync(StorageItem storageItem,
             StorageItemMetadata itemMetadata,
@@ -39,20 +35,13 @@ namespace Sitko.Core.Storage.Metadata
             CancellationToken cancellationToken) =>
             DoDeleteMetadataAsync(filePath, cancellationToken);
 
-        protected abstract Task DoDeleteMetadataAsync(string filePath, CancellationToken cancellationToken = default);
-
         Task IStorageMetadataProvider<TStorageOptions>.DeleteAllMetadataAsync(
             CancellationToken cancellationToken) =>
             DoDeleteAllMetadataAsync(cancellationToken);
 
-        protected abstract Task DoDeleteAllMetadataAsync(CancellationToken cancellationToken = default);
-
         Task<IEnumerable<StorageNode>> IStorageMetadataProvider<TStorageOptions>.GetDirectoryContentAsync(string path,
             CancellationToken cancellationToken) =>
             DoGetDirectoryContentsAsync(path, cancellationToken);
-
-        protected abstract Task<IEnumerable<StorageNode>> DoGetDirectoryContentsAsync(string path,
-            CancellationToken cancellationToken = default);
 
         async Task IStorageMetadataProvider<TStorageOptions>.RefreshDirectoryContentsAsync(
             IEnumerable<StorageItemInfo> storageItems,
@@ -60,13 +49,23 @@ namespace Sitko.Core.Storage.Metadata
         {
             foreach (var storageItem in storageItems)
             {
-                await DoSaveMetadataAsync(new StorageItem(storageItem, StorageOptions.CurrentValue.Prefix), cancellationToken: cancellationToken);
+                await DoSaveMetadataAsync(new StorageItem(storageItem, StorageOptions.CurrentValue.Prefix),
+                    cancellationToken: cancellationToken);
             }
         }
 
         Task<StorageItemMetadata?> IStorageMetadataProvider<TStorageOptions>.GetMetadataAsync(string path,
             CancellationToken cancellationToken) =>
             DoGetMetadataAsync(path, cancellationToken);
+
+        protected virtual Task DoInitAsync() => Task.CompletedTask;
+
+        protected abstract Task DoDeleteMetadataAsync(string filePath, CancellationToken cancellationToken = default);
+
+        protected abstract Task DoDeleteAllMetadataAsync(CancellationToken cancellationToken = default);
+
+        protected abstract Task<IEnumerable<StorageNode>> DoGetDirectoryContentsAsync(string path,
+            CancellationToken cancellationToken = default);
 
         protected Task<StorageItemMetadata?> DoGetMetadataAsync(string path,
             CancellationToken cancellationToken = default) =>

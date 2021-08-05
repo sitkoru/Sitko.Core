@@ -95,6 +95,7 @@ namespace Sitko.Core.Xunit
             }
 
             await base.DisposeAsync();
+            GC.SuppressFinalize(this);
         }
     }
 

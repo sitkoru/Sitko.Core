@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Sitko.Core.Storage.S3;
 using Sitko.Core.Xunit;
@@ -27,6 +28,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres.Tests
             var storage = GetService<IStorage<TestS3StorageSettings>>();
             await storage.DeleteAllAsync();
             await base.DisposeAsync();
+            GC.SuppressFinalize(this);
         }
     }
 }

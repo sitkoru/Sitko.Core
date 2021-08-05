@@ -22,8 +22,6 @@ namespace Sitko.Core.Storage.S3
         {
         }
 
-        public override ValueTask DisposeAsync() => new();
-
         protected override async Task DoDeleteMetadataAsync(string filePath,
             CancellationToken cancellationToken = default)
         {

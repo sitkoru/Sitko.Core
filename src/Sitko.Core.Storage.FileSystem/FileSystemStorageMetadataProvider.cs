@@ -25,8 +25,6 @@ namespace Sitko.Core.Storage.FileSystem
         {
         }
 
-        public override ValueTask DisposeAsync() => new();
-
         protected override Task DoDeleteMetadataAsync(string filePath, CancellationToken cancellationToken = default)
         {
             var fullPath = Path.Combine(StorageOptions.CurrentValue.StoragePath, filePath);

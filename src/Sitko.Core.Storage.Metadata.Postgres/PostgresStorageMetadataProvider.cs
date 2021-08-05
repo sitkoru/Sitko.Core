@@ -125,7 +125,5 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             await dbContext.Database.MigrateAsync();
             Logger.LogDebug("Storage metadata database migrated");
         }
-
-        public override ValueTask DisposeAsync() => new();
     }
 }

@@ -119,6 +119,7 @@ namespace Sitko.Core.Grpc.Server.Consul
 
                 disposed = true;
             }
+            GC.SuppressFinalize(this);
         }
 
         public async Task RegisterAsync<T>() where T : class

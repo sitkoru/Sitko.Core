@@ -27,6 +27,7 @@ namespace Sitko.Core.Storage.FileSystem.Tests
             var storage = GetService<IStorage<TestFileSystemStorageSettings>>();
             await storage.DeleteAllAsync();
             await base.DisposeAsync();
+            GC.SuppressFinalize(this);
         }
     }
 }

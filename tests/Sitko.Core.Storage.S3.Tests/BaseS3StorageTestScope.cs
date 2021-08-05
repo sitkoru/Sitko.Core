@@ -26,6 +26,7 @@ namespace Sitko.Core.Storage.S3.Tests
             var storage = GetService<IStorage<TestS3StorageSettings>>();
             await storage.DeleteAllAsync();
             await base.DisposeAsync();
+            GC.SuppressFinalize(this);
         }
     }
 }

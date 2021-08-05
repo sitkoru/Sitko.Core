@@ -92,7 +92,6 @@ namespace Sitko.Core.Xunit
 
         public virtual async ValueTask DisposeAsync()
         {
-            GC.SuppressFinalize(this);
             if (scopeApplication != null)
             {
                 if (isApplicationStarted)
@@ -102,6 +101,7 @@ namespace Sitko.Core.Xunit
 
                 await scopeApplication.DisposeAsync();
             }
+            GC.SuppressFinalize(this);
         }
 
         public async Task StartApplicationAsync()

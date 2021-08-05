@@ -66,6 +66,7 @@ namespace Sitko.Core.Xunit
             {
                 await testScope.Value.DisposeAsync();
             }
+            GC.SuppressFinalize(this);
         }
 
         public virtual Task InitializeAsync() => Task.CompletedTask;
