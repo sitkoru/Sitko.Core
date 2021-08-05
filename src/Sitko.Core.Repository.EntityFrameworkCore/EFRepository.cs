@@ -254,9 +254,9 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                                     collection.Load();
                                     if (updateCollectionMethodInfo is null)
                                     {
-                                        updateCollectionMethodInfo = typeof(EFRepository<,,>)
+                                        updateCollectionMethodInfo = GetType().BaseType!
                                             .GetMethod(nameof(UpdateCollection),
-                                                BindingFlags.NonPublic | BindingFlags.Static);
+                                                BindingFlags.NonPublic | BindingFlags.Instance);
                                         if (updateCollectionMethodInfo is null)
                                         {
                                             throw new InvalidOperationException("Can't find method UpdateCollection");
@@ -268,7 +268,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                                         var method =
                                             updateCollectionMethodInfo.MakeGenericMethod(current.First().GetType(),
                                                 collection.CurrentValue.GetType());
-                                        collection.CurrentValue = method.Invoke(null,
+                                        collection.CurrentValue = method.Invoke(this,
                                                 new object[] { collection.CurrentValue, currentValue!, context }) as
                                             IEnumerable;
                                         collection.IsModified = true;
@@ -289,9 +289,9 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 return Task.FromResult(true);
             }, cancellationToken);
 
-        private static TCollection UpdateCollection<TElement, TCollection>(TCollection collection,
+        private TCollection UpdateCollection<TElement, TCollection>(TCollection collection,
             IEnumerable<TElement> values,
-            TDbContext dbContext)
+            TDbContext context)
             where TCollection : ICollection<TElement> where TElement : class, IEntity
         {
             var toDelete = new List<TElement>();
@@ -313,7 +313,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 var entry = GetTrackedEntity(dbContext, element);
                 if (entry is null)
                 {
-                    dbContext.Add(element);
+                    context.Add(element);
                 }
                 else
                 {
@@ -520,8 +520,6 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         private IDbContextTransaction? GetCurrentTransaction() => dbContext.Database.CurrentTransaction;
 
-        private record EntityReference(Type ParentType, object ParentId, Type Type, object Id, string PropertyName);
-
         protected override Task<PropertyChange[]> GetChangesAsync(TEntity item)
         {
             var modifiedStates = new[] { EntityState.Added, EntityState.Deleted, EntityState.Modified };
@@ -575,5 +573,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
             return Task.FromResult(changes.ToArray());
         }
+
+        private record EntityReference(Type ParentType, object ParentId, Type Type, object Id, string PropertyName);
     }
 }
