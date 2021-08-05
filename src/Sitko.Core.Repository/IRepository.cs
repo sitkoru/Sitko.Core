@@ -9,7 +9,8 @@ namespace Sitko.Core.Repository
 
     [PublicAPI]
     public interface IRepository
-    {}
+    {
+    }
 
     [PublicAPI]
     public interface IRepository<TEntity, TEntityPk> : IRepository where TEntity : class, IEntity<TEntityPk>
@@ -185,7 +186,8 @@ namespace Sitko.Core.Repository
     public interface IExternalRepository<TEntity, TEntityPk> : IRepository<TEntity, TEntityPk>
         where TEntity : class, IEntity<TEntityPk>
     {
-        Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateExternalAsync(TEntity entity, TEntity? baseEntity,
+        Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateExternalAsync(TEntity entity,
+            TEntity? baseEntity = null,
             CancellationToken cancellationToken = default);
 
         Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateExternalAsync(TEntity entity,

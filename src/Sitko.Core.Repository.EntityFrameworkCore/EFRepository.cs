@@ -32,7 +32,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         }
 
         public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateExternalAsync(TEntity entity,
-            TEntity? baseEntity,
+            TEntity? baseEntity = null,
             CancellationToken cancellationToken = default)
         {
             await AttachAsync(entity, baseEntity, cancellationToken);
@@ -143,7 +143,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         public override Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default) =>
             dbContext.Entry(entity).ReloadAsync(cancellationToken);
 
-        private async Task AttachAsync(TEntity entity, TEntity? baseEntity = null,
+        protected async Task AttachAsync(TEntity entity, TEntity? baseEntity = null,
             CancellationToken cancellationToken = default) =>
             await ExecuteDbContextOperationAsync(context =>
             {
