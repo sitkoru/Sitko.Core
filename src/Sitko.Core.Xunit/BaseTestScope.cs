@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,10 +25,13 @@ namespace Sitko.Core.Xunit
     public abstract class BaseTestScope<TApplication> : IBaseTestScope where TApplication : Application
     {
         protected IServiceProvider? ServiceProvider { get; set; }
+        [PublicAPI]
         protected IConfiguration? Configuration { get; set; }
+        [PublicAPI]
         protected IHostEnvironment? Environment { get; set; }
         private TApplication? scopeApplication;
         private bool isApplicationStarted;
+        [PublicAPI]
         protected string? Name { get; private set; }
 
         public async Task ConfigureAsync(string name, ITestOutputHelper testOutputHelper)
@@ -88,6 +92,7 @@ namespace Sitko.Core.Xunit
 
         public virtual async ValueTask DisposeAsync()
         {
+            GC.SuppressFinalize(this);
             if (scopeApplication != null)
             {
                 if (isApplicationStarted)
