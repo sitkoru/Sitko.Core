@@ -283,6 +283,52 @@ namespace Sitko.Core.Repository.Tests
         }
 
         [Fact]
+        public async Task DisconnectedOneToOneViaProperty()
+        {
+            var scope = await GetScopeAsync();
+            BarModel? originalBar;
+            BarModel snapshot;
+            using (var scope1 = scope.CreateScope())
+            {
+                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
+                originalBar = await repository1.GetAsync(q => q.Where(b => b.TestId == null));
+                Assert.NotNull(originalBar);
+                snapshot = repository1.CreateSnapshot(originalBar!);
+            }
+
+            Assert.Null(originalBar!.Test);
+            Assert.Equal(default, originalBar.TestId);
+
+            AddOrUpdateOperationResult<TestModel, Guid> newTestResult;
+            using (var scope2 = scope.CreateScope())
+            {
+                var repository2 = scope2.ServiceProvider.GetRequiredService<IRepository<TestModel, Guid>>();
+                newTestResult = await repository2.AddAsync(await repository2.NewAsync());
+            }
+
+            Assert.True(newTestResult.IsSuccess);
+
+            originalBar.TestId = newTestResult.Entity.Id;
+
+
+            using (var scope3 = scope.CreateScope())
+            {
+                var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
+                var updateResult = await repository3.UpdateExternalAsync(originalBar, snapshot);
+                Assert.True(updateResult.IsSuccess);
+                Assert.Equal(2, updateResult.Changes.Length);
+            }
+
+            using (var finalScope = scope.CreateScope())
+            {
+                var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
+                var updatedBar =
+                    await repository.GetAsync(q => q.Where(b => b.Id == originalBar.Id));
+                Assert.Equal(newTestResult.Entity.Id, updatedBar!.TestId);
+            }
+        }
+
+        [Fact]
         public async Task DisconnectedOneToOneAdd()
         {
             var scope = await GetScopeAsync();

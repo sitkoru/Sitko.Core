@@ -216,7 +216,10 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                                         foreach (var foreignKeyProperty in navigation.ForeignKey.Properties)
                                         {
                                             var fkProperty = node.Entry.Property(foreignKeyProperty.Name);
-                                            fkProperty.IsModified = false;
+                                            if (fkProperty.CurrentValue is null)
+                                            {
+                                                fkProperty.IsModified = false;
+                                            }
                                         }
                                     }
                                 }
