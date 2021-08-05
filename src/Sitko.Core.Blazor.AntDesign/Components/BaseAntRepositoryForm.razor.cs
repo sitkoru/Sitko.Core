@@ -3,7 +3,6 @@ using AntDesign;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using OneOf;
-using Sitko.Core.App.Localization;
 using Sitko.Core.Repository;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components

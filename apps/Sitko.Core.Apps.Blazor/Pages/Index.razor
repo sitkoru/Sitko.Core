@@ -59,7 +59,7 @@
 </AntDesign.FormItem>
 <AntDesign.FormItem Label="Simple file input">
     <AntStorageItemInput
-        Storage="storage"
+        Storage="Storage"
         @bind-Value="context.Entity.StorageItem"
         UploadPath="bars"
         MaxFileSize="@(2 * 1024 * 1024)"
@@ -68,7 +68,7 @@
 </AntDesign.FormItem>
 <AntDesign.FormItem Label="Simple custom file input">
     <AntStorageItemInput
-        Storage="storage"
+        Storage="Storage"
         @bind-Value="context.Entity.StorageItem"
         UploadPath="bars"
         MaxFileSize="@(2 * 1024 * 1024)"
@@ -79,7 +79,7 @@
 <AntDesign.FormItem Label="Multiple file input">
     <AntStorageItemsInput
         TValue="ValueCollection<StorageItem>"
-        Storage="storage"
+        Storage="Storage"
         Mode="AntStorageInputMode.Image"
         MaxAllowedFiles="10"
         @bind-Value="context.Entity.StorageItems"
@@ -90,7 +90,7 @@
     </AntStorageItemsInput>
 </AntDesign.FormItem>
 <AntDesign.FormItem Label="Single image">
-    <AntStorageImageInput Storage="@storage"
+    <AntStorageImageInput Storage="@Storage"
                           MaxFileSize="@(2 * 1024 * 1024)"
                           UploadPath="bars"
                           GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
@@ -99,7 +99,7 @@
     </AntStorageImageInput>
 </AntDesign.FormItem>
 <AntDesign.FormItem Label="Single small image">
-    <AntStorageImageInput Storage="@storage"
+    <AntStorageImageInput Storage="@Storage"
                           Size="small"
                           MaxFileSize="@(2 * 1024 * 1024)"
                           UploadPath="bars"
@@ -109,7 +109,7 @@
     </AntStorageImageInput>
 </AntDesign.FormItem>
 <AntDesign.FormItem Label="Single large image">
-    <AntStorageImageInput Storage="@storage"
+    <AntStorageImageInput Storage="@Storage"
                           Size="large"
                           MaxFileSize="@(2 * 1024 * 1024)"
                           UploadPath="bars"
@@ -121,7 +121,7 @@
 <FormItem Label="Multiple images">
     <AntStorageImagesInput
         TValue="ValueCollection<StorageItem>"
-        Storage="@storage"
+        Storage="@Storage"
         MaxFileSize="@(2 * 1024 * 1024)"
         UploadPath="bars"
         GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
@@ -130,7 +130,7 @@
     </AntStorageImagesInput>
 </FormItem>
 <FormItem Label="Multiple images with custom upload button">
-    <AntStorageImagesInput Storage="@storage"
+    <AntStorageImagesInput Storage="@Storage"
                            TValue="ValueCollection<StorageItem>"
                            MaxFileSize="@(2 * 1024 * 1024)"
                            MaxFiles="10"
@@ -144,7 +144,7 @@
     </AntStorageImagesInput>
 </FormItem>
 <FormItem Label="Multiple images with custom upload">
-    <AntStorageImagesInput Storage="@storage"
+    <AntStorageImagesInput Storage="@Storage"
                            TValue="ValueCollection<StorageItem>"
                            MaxFileSize="@(2 * 1024 * 1024)"
                            MaxFiles="10"
@@ -157,7 +157,7 @@
 </FormItem>
 @* AVATARS *@
 <AntDesign.FormItem Label="Single avatar">
-    <AntStorageImageInput Storage="@storage"
+    <AntStorageImageInput Storage="@Storage"
                           Avatar="true"
                           MaxFileSize="@(2 * 1024 * 1024)"
                           UploadPath="bars"
@@ -167,7 +167,7 @@
     </AntStorageImageInput>
 </AntDesign.FormItem>
 <AntDesign.FormItem Label="Single small avatar">
-    <AntStorageImageInput Storage="@storage"
+    <AntStorageImageInput Storage="@Storage"
                           Avatar="true"
                           Size="small"
                           MaxFileSize="@(2 * 1024 * 1024)"
@@ -178,7 +178,7 @@
     </AntStorageImageInput>
 </AntDesign.FormItem>
 <AntDesign.FormItem Label="Single large avatar">
-    <AntStorageImageInput Storage="@storage"
+    <AntStorageImageInput Storage="@Storage"
                           Avatar="true"
                           Size="large"
                           MaxFileSize="@(2 * 1024 * 1024)"
@@ -192,7 +192,7 @@
     <AntStorageImagesInput
         TValue="ValueCollection<StorageItem>"
         Avatar="true"
-        Storage="@storage"
+        Storage="@Storage"
         MaxFileSize="@(2 * 1024 * 1024)"
         UploadPath="bars"
         GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
@@ -202,7 +202,7 @@
 </FormItem>
 @* AVATARS END *@
 <FormItem Label="Single file">
-    <AntStorageFileInput Storage="@storage"
+    <AntStorageFileInput Storage="@Storage"
                          MaxFileSize="@(2 * 1024 * 1024)"
                          UploadPath="bars"
                          GenerateMetadata="@((_, _) => GenerateMetadataAsync())"
@@ -211,7 +211,7 @@
     </AntStorageFileInput>
 </FormItem>
 <FormItem Label="Multiple files">
-    <AntStorageFilesInput Storage="@storage"
+    <AntStorageFilesInput Storage="@Storage"
                           TValue="ValueCollection<StorageItem>"
                           MaxFileSize="@(2 * 1024 * 1024)"
                           MaxFiles="10"
@@ -222,7 +222,7 @@
     </AntStorageFilesInput>
 </FormItem>
 <FormItem Label="Multiple files with custom upload button">
-    <AntStorageFilesInput Storage="@storage"
+    <AntStorageFilesInput Storage="@Storage"
                           TValue="ValueCollection<StorageItem>"
                           MaxFileSize="@(2 * 1024 * 1024)"
                           MaxFiles="10"
@@ -236,7 +236,7 @@
     </AntStorageFilesInput>
 </FormItem>
 <FormItem Label="Multiple files with custom upload">
-    <AntStorageFilesInput Storage="@storage"
+    <AntStorageFilesInput Storage="@Storage"
                           TValue="ValueCollection<StorageItem>"
                           MaxFileSize="@(2 * 1024 * 1024)"
                           MaxFiles="10"

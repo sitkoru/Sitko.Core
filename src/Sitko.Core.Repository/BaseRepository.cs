@@ -8,11 +8,10 @@ using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
+using Sitko.Core.App.Json;
 
 namespace Sitko.Core.Repository
 {
-    using App.Json;
-
     public interface IRepositoryContext<TEntity, TEntityPk> where TEntity : class, IEntity<TEntityPk>
     {
         RepositoryFiltersManager FiltersManager { get; }

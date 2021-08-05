@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.Extensions.Localization;
 
 namespace Sitko.Core.App.Localization
@@ -27,11 +28,14 @@ namespace Sitko.Core.App.Localization
 
         public string Localize(string message) => Localize(message, Array.Empty<object>());
 
-        public string Localize(string message, params object[] arguments) => localizer is not null ? localizer[message, arguments]! : string.Format(message, arguments);
+        public string Localize(string message, params object[] arguments) => localizer is not null
+            ? localizer[message, arguments]
+            : string.Format(CultureInfo.CurrentCulture, message, arguments);
 
         public string this[string name] => Localize(name);
         public string this[string name, params object[] arguments] => Localize(name, arguments);
 
-        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => localizer?.GetAllStrings(includeParentCultures) ?? Array.Empty<LocalizedString>();
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>
+            localizer?.GetAllStrings(includeParentCultures) ?? Array.Empty<LocalizedString>();
     }
 }

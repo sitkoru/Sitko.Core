@@ -11,8 +11,7 @@ namespace Sitko.Core.Apps.Blazor
 {
     public class TestBlazorApplication : AntBlazorApplication<Startup>
     {
-        public TestBlazorApplication(string[] args) : base(args)
-        {
+        public TestBlazorApplication(string[] args) : base(args) =>
             this.AddPostgresDatabase<BarContext>(options =>
                 {
                     options.EnableSensitiveLogging = true;
@@ -21,7 +20,6 @@ namespace Sitko.Core.Apps.Blazor
                 .AddFileSystemStorage<TestBlazorStorageOptions>()
                 .AddPostgresStorageMetadata<TestBlazorStorageOptions>()
                 .AddJsonLocalization();
-        }
 
         protected override bool LoggingEnableConsole(HostBuilderContext context) => true;
     }

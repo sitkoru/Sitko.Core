@@ -11,7 +11,8 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Db.Postgres
 {
-    public class PostgresDatabaseModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleOptions<TDbContext>>
+    public class
+        PostgresDatabaseModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleOptions<TDbContext>>
         where TDbContext : DbContext
     {
         public override string OptionsKey => $"Db:Postgres:{typeof(TDbContext).Name}";
@@ -84,7 +85,11 @@ namespace Sitko.Core.Db.Postgres
                 Password = options.Password,
                 Database = options.Database,
                 Pooling = options.EnableNpgsqlPooling,
+#if NET6_0_OR_GREATER
+                IncludeErrorDetail = options.IncludeErrorDetails
+#else
                 IncludeErrorDetails = options.IncludeErrorDetails
+#endif
             };
             return connBuilder;
         }
@@ -102,7 +107,8 @@ namespace Sitko.Core.Db.Postgres
                 options.EnableSensitiveDataLogging();
             }
 
-            config.ConfigureDbContextOptions?.Invoke((DbContextOptionsBuilder<TDbContext>)options, serviceProvider, configuration,
+            config.ConfigureDbContextOptions?.Invoke((DbContextOptionsBuilder<TDbContext>)options, serviceProvider,
+                configuration,
                 environment);
         }
     }

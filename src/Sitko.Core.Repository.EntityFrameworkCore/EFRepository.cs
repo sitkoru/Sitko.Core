@@ -144,8 +144,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             dbContext.Entry(entity).ReloadAsync(cancellationToken);
 
         private async Task AttachAsync(TEntity entity, TEntity? baseEntity = null,
-            CancellationToken cancellationToken = default)
-        {
+            CancellationToken cancellationToken = default) =>
             await ExecuteDbContextOperationAsync(context =>
             {
                 var loadedReferences =
@@ -217,10 +216,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                                         foreach (var foreignKeyProperty in navigation.ForeignKey.Properties)
                                         {
                                             var fkProperty = node.Entry.Property(foreignKeyProperty.Name);
-                                            if (fkProperty is not null)
-                                            {
-                                                fkProperty.IsModified = false;
-                                            }
+                                            fkProperty.IsModified = false;
                                         }
                                     }
                                 }
@@ -244,8 +240,8 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                             if (refValues.Any())
                             {
                                 var currentValue = collection.CurrentValue;
-                                var current = collection.CurrentValue.Cast<IEntity>().ToList();
-                                if (current.Cast<object>().Any())
+                                var current = collection.CurrentValue?.Cast<IEntity>().ToList();
+                                if (current?.Count > 0)
                                 {
                                     var originalIds = refValues.Select(v => v.Id);
                                     var currentIds = current.Select(v => v.GetId());
@@ -258,7 +254,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                                     collection.Load();
                                     if (updateCollectionMethodInfo is null)
                                     {
-                                        updateCollectionMethodInfo = GetType().BaseType
+                                        updateCollectionMethodInfo = typeof(EFRepository<,,>)
                                             .GetMethod(nameof(UpdateCollection),
                                                 BindingFlags.NonPublic | BindingFlags.Static);
                                         if (updateCollectionMethodInfo is null)
@@ -273,7 +269,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                                             updateCollectionMethodInfo.MakeGenericMethod(current.First().GetType(),
                                                 collection.CurrentValue.GetType());
                                         collection.CurrentValue = method.Invoke(null,
-                                                new object[] { collection.CurrentValue, currentValue, context }) as
+                                                new object[] { collection.CurrentValue, currentValue!, context }) as
                                             IEnumerable;
                                         collection.IsModified = true;
                                     }
@@ -292,7 +288,6 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 });
                 return Task.FromResult(true);
             }, cancellationToken);
-        }
 
         private static TCollection UpdateCollection<TElement, TCollection>(TCollection collection,
             IEnumerable<TElement> values,

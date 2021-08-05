@@ -33,7 +33,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             CancellationToken cancellationToken = default) =>
             dbContext.Records.FirstOrDefaultAsync(r =>
                     r.Storage == StorageOptions.CurrentValue.Name && r.FilePath == filePath,
-                cancellationToken)!;
+                cancellationToken);
 
         protected override async Task DoDeleteMetadataAsync(string filePath,
             CancellationToken cancellationToken = default)
@@ -58,7 +58,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres
             CancellationToken cancellationToken = default)
         {
             await using var dbContext = GetDbContext();
-            if (path.StartsWith("/"))
+            if (path.StartsWith("/", StringComparison.Ordinal))
             {
                 path = path.Substring(1);
             }

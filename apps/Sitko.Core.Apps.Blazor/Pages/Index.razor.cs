@@ -14,9 +14,6 @@ using Sitko.Core.Storage;
 
 namespace Sitko.Core.Apps.Blazor.Pages
 {
-    using System.Collections.Generic;
-    using Core.Blazor.AntDesignComponents.Components;
-
     public partial class Index
     {
         private BarAntRepositoryList barList = null!;
@@ -24,7 +21,7 @@ namespace Sitko.Core.Apps.Blazor.Pages
         private BarForm frm = null!;
         private BarModel[] bars = Array.Empty<BarModel>();
         public BarModel? Bar { get; set; }
-        private IStorage storage => GetRequiredService<IStorage>();
+        private IStorage Storage => GetRequiredService<IStorage>();
         [Inject] public ILocalizationProvider<App> LocalizationProvider { get; set; } = null!;
 
         public BarRepository ScopedBarRepository => GetRequiredService<BarRepository>();
