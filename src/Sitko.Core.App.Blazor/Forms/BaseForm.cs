@@ -30,6 +30,7 @@ namespace Sitko.Core.App.Blazor.Forms
                 await OnFieldChangeAsync(args.FieldIdentifier);
                 await UpdateFormStateAsync();
             };
+            IsValid = EditContext.Validate();
         }
 
         protected async Task UpdateFormStateAsync()
