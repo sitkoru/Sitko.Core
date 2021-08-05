@@ -20,7 +20,7 @@
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.7.1.19" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.1.20" />
     <PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="5.0.2" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
