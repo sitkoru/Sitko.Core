@@ -104,6 +104,16 @@ namespace Sitko.Core.App
         {
             var options = new ApplicationOptions();
             configuration.Bind(ApplicationOptionsKey, options);
+            if (string.IsNullOrEmpty(options.Name))
+            {
+                options.Name = GetType().Name;
+            }
+
+            if (string.IsNullOrEmpty(options.Version))
+            {
+                options.Version = GetType().Assembly.GetName().Version.ToString();
+            }
+
             ConfigureApplicationOptions(environment, configuration, options);
             return options;
         }
