@@ -106,7 +106,7 @@ namespace Sitko.Core.App
             configuration.Bind(ApplicationOptionsKey, options);
             if (string.IsNullOrEmpty(options.Name))
             {
-                options.Name = GetType().Name;
+                options.Name = GetType().Assembly.GetName().Name;
             }
 
             if (string.IsNullOrEmpty(options.Version))
