@@ -1,6 +1,15 @@
 ﻿@page "/Edit/{Id:guid}"
 @inherits BaseComponent
 <BarForm Layout="@FormLayout.Vertical" EntityId="Id">
+    <p>
+        IsValid: @context.IsValid
+    </p>
+    <p>
+        HasChanges: @context.HasChanges
+    </p>
+    <p>
+        IsNew: @context.IsNew
+    </p>
     <AntDesign.FormItem Label="Bar">
         <AntDesign.Input @bind-Value="@context.Entity.Bar"/>
     </AntDesign.FormItem>
