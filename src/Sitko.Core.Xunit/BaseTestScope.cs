@@ -6,9 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.Events;
 using Sitko.Core.App;
-using Sitko.Core.App.Logging;
 using Xunit.Abstractions;
 
 namespace Sitko.Core.Xunit
@@ -119,14 +117,6 @@ namespace Sitko.Core.Xunit
     {
         public TestApplication(string[] args) : base(args)
         {
-        }
-
-        protected override void ConfigureLogging(ApplicationContext applicationContext,
-            LoggerConfiguration loggerConfiguration,
-            LogLevelSwitcher appLogLevelSwitcher)
-        {
-            base.ConfigureLogging(applicationContext, loggerConfiguration, appLogLevelSwitcher);
-            appLogLevelSwitcher.Switch.MinimumLevel = LogEventLevel.Debug;
         }
 
         protected override void ConfigureHostConfiguration(IConfigurationBuilder configurationBuilder)
