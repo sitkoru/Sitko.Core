@@ -216,7 +216,7 @@ namespace Sitko.Core.App.Blazor.Forms
             }
             else
             {
-                var differences = comparer.Compare(EntitySnapshot, entity);
+                var differences = comparer.Compare(EntitySnapshot, CreateEntitySnapshot(entity));
                 if (!differences.AreEqual)
                 {
                     result = true;
