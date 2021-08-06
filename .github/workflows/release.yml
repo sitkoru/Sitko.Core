@@ -33,6 +33,9 @@ jobs:
         uses: actions/setup-node@v2.4.0
         with:
           node-version: '15'
+          cache: 'npm'
+          cache-dependency-path: |
+            src/Sitko.Core.Blazor.AntDesign/Web/package.json
       - name: Build Sitko.Core.Blazor.AntDesign js
         working-directory: src/Sitko.Core.Blazor.AntDesign/Web
         shell: bash
