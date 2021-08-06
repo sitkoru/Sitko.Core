@@ -20,7 +20,5 @@ namespace Sitko.Core.Apps.Blazor
                 .AddFileSystemStorage<TestBlazorStorageOptions>()
                 .AddPostgresStorageMetadata<TestBlazorStorageOptions>()
                 .AddJsonLocalization();
-
-        protected override bool LoggingEnableConsole(HostBuilderContext context) => true;
     }
 }

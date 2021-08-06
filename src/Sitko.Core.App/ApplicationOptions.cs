@@ -9,5 +9,6 @@
         public string Version { get; set; } = "";
 
         public string ConsoleLogFormat { get; set; } = BaseConsoleLogFormat;
+        public bool? EnableConsoleLogging { get; set; }
     }
 }

@@ -114,6 +114,8 @@ namespace Sitko.Core.App
                 options.Version = GetType().Assembly.GetName().Version.ToString();
             }
 
+            options.EnableConsoleLogging ??= environment.IsDevelopment();
+
             ConfigureApplicationOptions(environment, configuration, options);
             return options;
         }
@@ -224,7 +226,7 @@ namespace Sitko.Core.App
                     logLevelSwitcher.Switch.MinimumLevel =
                         context.HostingEnvironment.IsDevelopment() ? LogEventLevel.Debug : LogEventLevel.Information;
 
-                    if (LoggingEnableConsole(context))
+                    if (applicationOptions.EnableConsoleLogging == true)
                     {
                         loggerConfiguration
                             .WriteTo.Console(
@@ -312,9 +314,6 @@ namespace Sitko.Core.App
             IConfigurationBuilder configurationBuilder)
         {
         }
-
-        protected virtual bool LoggingEnableConsole(HostBuilderContext context) =>
-            context.HostingEnvironment.IsDevelopment();
 
         protected virtual void ConfigureLogging(ApplicationContext applicationContext,
             LoggerConfiguration loggerConfiguration,
