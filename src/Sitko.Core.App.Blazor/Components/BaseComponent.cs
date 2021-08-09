@@ -198,7 +198,12 @@ namespace Sitko.Core.App.Blazor.Components
         }
 
         private void HandleLocationChanged(object? sender, LocationChangedEventArgs e) =>
-            OnLocationChangeAsync(e.Location, e.IsNavigationIntercepted);
+            InvokeAsync(async () =>
+            {
+                await Task.Delay(1);
+                await OnLocationChangeAsync(e.Location, e.IsNavigationIntercepted);
+                StateHasChanged();
+            });
 
         protected virtual Task OnLocationChangeAsync(string location, bool isNavigationIntercepted) =>
             Task.CompletedTask;
