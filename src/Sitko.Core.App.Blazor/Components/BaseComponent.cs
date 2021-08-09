@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Sitko.Core.App.Blazor.Components
 {
@@ -151,6 +152,49 @@ namespace Sitko.Core.App.Blazor.Components
             Initialize();
             await InitializeAsync();
             isInitialized = true;
+        }
+
+        protected T? GetQueryString<T>(string key) => TryGetQueryString<T>(key, out var value) ? value : default;
+
+        protected bool TryGetQueryString<T>(string key, out T? value)
+        {
+            var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+
+            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue(key, out var valueFromQueryString))
+            {
+                if (typeof(T) == typeof(int) && int.TryParse(valueFromQueryString, out var valueAsInt))
+                {
+                    value = (T)(object)valueAsInt;
+                    return true;
+                }
+
+                if (typeof(T) == typeof(string))
+                {
+                    value = (T)(object)valueFromQueryString.ToString();
+                    return true;
+                }
+
+                if (typeof(T) == typeof(decimal) && decimal.TryParse(valueFromQueryString, out var valueAsDecimal))
+                {
+                    value = (T)(object)valueAsDecimal;
+                    return true;
+                }
+
+                if (typeof(T) == typeof(double) && double.TryParse(valueFromQueryString, out var valueAsDouble))
+                {
+                    value = (T)(object)valueAsDouble;
+                    return true;
+                }
+
+                if (typeof(T) == typeof(Guid) && Guid.TryParse(valueFromQueryString, out var valueAsGuid))
+                {
+                    value = (T)(object)valueAsGuid;
+                    return true;
+                }
+            }
+
+            value = default;
+            return false;
         }
 
         private void HandleLocationChanged(object? sender, LocationChangedEventArgs e) =>
