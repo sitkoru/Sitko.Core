@@ -1,0 +1,29 @@
+﻿@page "/QueryString"
+@inherits BaseComponent
+
+<p>
+    Guid: @Test
+</p>
+<a href="/QueryString?test=@Guid.NewGuid()">Change</a>
+
+@code
+{
+    private Guid Test { get; set; } = Guid.Empty;
+
+    protected override async Task OnLocationChangeAsync(string location, bool isNavigationIntercepted)
+    {
+        await base.OnLocationChangeAsync(location, isNavigationIntercepted);
+        SetParams();
+    }
+
+    protected override void Initialize()
+    {
+        base.Initialize();
+        SetParams();
+    }
+
+    private void SetParams()
+    {
+        Test = GetQueryString<Guid>("test");
+    }
+}
