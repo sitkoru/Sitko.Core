@@ -25,10 +25,13 @@ namespace Sitko.Core.App.Blazor.Forms
             {
                 IsValid = !EditContext.GetValidationMessages().Any();
             };
-            EditContext.OnFieldChanged += async (_, args) =>
+            EditContext.OnFieldChanged += (_, args) =>
             {
-                await OnFieldChangeAsync(args.FieldIdentifier);
-                await UpdateFormStateAsync();
+                InvokeAsync(async () =>
+                {
+                    await OnFieldChangeAsync(args.FieldIdentifier);
+                    await UpdateFormStateAsync();
+                });
             };
             IsValid = EditContext.Validate();
         }
