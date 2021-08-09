@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Sitko.Core.App.Blazor.Components
 {
@@ -110,6 +111,7 @@ namespace Sitko.Core.App.Blazor.Components
 #endif
                 }
 
+                NavigationManager.LocationChanged -= HandleLocationChanged;
                 Dispose(true);
                 await DisposeAsync(true);
                 isDisposed = true;
@@ -144,11 +146,18 @@ namespace Sitko.Core.App.Blazor.Components
 #endif
             }
 
+            NavigationManager.LocationChanged += HandleLocationChanged;
             // ReSharper disable once MethodHasAsyncOverload
             Initialize();
             await InitializeAsync();
             isInitialized = true;
         }
+
+        private void HandleLocationChanged(object? sender, LocationChangedEventArgs e) =>
+            OnLocationChangeAsync(e.Location, e.IsNavigationIntercepted);
+
+        protected virtual Task OnLocationChangeAsync(string location, bool isNavigationIntercepted) =>
+            Task.CompletedTask;
 
         protected sealed override void OnInitialized() => base.OnInitialized();
 
