@@ -23,7 +23,7 @@ namespace Sitko.Core.Storage.ImgProxy
         string Format(string url, string format);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="url">Image url</param>
         /// <param name="preset">Preset name</param>
@@ -46,8 +46,9 @@ namespace Sitko.Core.Storage.ImgProxy
         /// <param name="height">Resize height to</param>
         /// <param name="type">Resize type - auto, fit, fill. Default is auto</param>
         /// <param name="enlarge">Allow to enlarge image. Default is false</param>
+        /// <param name="extend"></param>
         /// <returns>Url to resized image</returns>
-        string Resize(string url, int width, int height, string type = "auto", bool enlarge = false);
+        string Resize(string url, int width, int height, string type = "auto", bool enlarge = false, bool extend = false);
 
         /// <summary>
         /// Generate url for optimized image
@@ -65,7 +66,7 @@ namespace Sitko.Core.Storage.ImgProxy
         string Format(StorageItem item, string format);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="item">StorageItem</param>
         /// <param name="preset">Preset name</param>
@@ -88,7 +89,8 @@ namespace Sitko.Core.Storage.ImgProxy
         /// <param name="height">Resize height to</param>
         /// <param name="type">Resize type - auto, fit, fill. Default is auto</param>
         /// <param name="enlarge">Allow to enlarge image. Default is false</param>
+        /// <param name="extend">When extend is set to 1, t or true, imgproxy will extend the image if it is smaller than the given size.</param>
         /// <returns>Url to resized image</returns>
-        string Resize(StorageItem item, int width, int height, string type = "auto", bool enlarge = false);
+        string Resize(StorageItem item, int width, int height, string type = "auto", bool enlarge = false, bool extend = false);
     }
 }

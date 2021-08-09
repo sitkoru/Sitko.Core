@@ -1,5 +1,6 @@
 ﻿using System;
 using ImgProxy;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -50,12 +51,12 @@ namespace Sitko.Core.Storage.ImgProxy
             return BuildUrl(url, build);
         }
 
-        public string Resize(string url, int width, int height, string type = "auto", bool enlarge = false)
+        public string Resize(string url, int width, int height, string type = "auto", bool enlarge = false, bool extend = false)
         {
             logger.LogDebug(
                 "Build url to resized image {Url}. Width: {Width}. Height: {Height}. Type: {Type}. Enlarge: {Enlarge}",
                 url, width, height, type, enlarge);
-            return BuildUrl(url, builder => builder.WithResize(type, width, height, enlarge));
+            return BuildUrl(url, builder => builder.WithOptions(new ResizeOption(type, width, height, enlarge, extend)));
         }
 
         public string Url(StorageItem item)
@@ -82,12 +83,12 @@ namespace Sitko.Core.Storage.ImgProxy
             return BuildUrl(item, build);
         }
 
-        public string Resize(StorageItem item, int width, int height, string type = "auto", bool enlarge = false)
+        public string Resize(StorageItem item, int width, int height, string type = "auto", bool enlarge = false, bool extend = false)
         {
             logger.LogDebug(
                 "Build url to resized item {Item}. Width: {Width}. Height: {Height}. Type: {Type}. Enlarge: {Enlarge}",
                 item.FilePath, width, height, type, enlarge);
-            return BuildUrl(item, builder => builder.WithResize(type, width, height, enlarge));
+            return BuildUrl(item, builder => builder.WithOptions(new ResizeOption(type, width, height, enlarge, extend)));
         }
 
         private string BuildUrl(StorageItem item, Action<ImgProxyBuilder>? build = null) =>
@@ -104,5 +105,59 @@ namespace Sitko.Core.Storage.ImgProxy
             build?.Invoke(builder);
             return builder.Build(url, Options.EncodeUrls);
         }
+    }
+
+    public class ResizeOption : ImgProxyOption
+    {
+        private string Type { get; }
+        private int Width { get; }
+        private int Height { get; }
+        private bool Enlarge { get; }
+        private bool Extend { get; }
+
+        public ResizeOption(string type, int width, int height, bool enlarge = false, bool extend = false)
+        {
+            if (height < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(height));
+            }
+
+            if (width < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(width));
+            }
+
+            Type = type;
+            Width = width;
+            Height = height;
+            Enlarge = enlarge;
+            Extend = extend;
+        }
+
+        public override string ToString()
+        {
+            var enlarge = Enlarge ? "1" : "0";
+            var extend = Extend ? "1" : "0";
+
+            return $"resize:{Type}:{Width}:{Height}:{enlarge}:{extend}";
+        }
+    }
+
+    [PublicAPI]
+    public class BlurOption : ImgProxyOption
+    {
+        private float Sigma { get; }
+
+        public BlurOption(float sigma)
+        {
+            if (sigma < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(sigma));
+            }
+
+            Sigma = sigma;
+        }
+
+        public override string ToString() => $"blur:{Sigma}";
     }
 }
