@@ -39,6 +39,10 @@ namespace Sitko.Core.App.Collections
             }
         }
 
-        public void Dispose() => timer?.Dispose();
+        public void Dispose()
+        {
+            timer?.Dispose();
+            GC.SuppressFinalize(this);
+        }
     }
 }

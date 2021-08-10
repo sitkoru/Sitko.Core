@@ -91,6 +91,7 @@ namespace Sitko.Core.App
         public virtual ValueTask DisposeAsync()
         {
             appHost?.Dispose();
+            GC.SuppressFinalize(this);
             return new ValueTask();
         }
 
@@ -106,12 +107,12 @@ namespace Sitko.Core.App
             configuration.Bind(ApplicationOptionsKey, options);
             if (string.IsNullOrEmpty(options.Name))
             {
-                options.Name = GetType().Assembly.GetName().Name;
+                options.Name = GetType().Assembly.GetName().Name ?? "App";
             }
 
             if (string.IsNullOrEmpty(options.Version))
             {
-                options.Version = GetType().Assembly.GetName().Version.ToString();
+                options.Version = GetType().Assembly.GetName().Version?.ToString() ?? "dev";
             }
 
             options.EnableConsoleLogging ??= environment.IsDevelopment();

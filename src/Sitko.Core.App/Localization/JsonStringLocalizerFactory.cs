@@ -16,7 +16,7 @@ namespace Sitko.Core.App.Localization
     public class JsonStringLocalizerFactory : IStringLocalizerFactory, IDisposable
     {
         private static ILogger<JsonStringLocalizerFactory> logger = null!;
-        private static Type[] defaultResources = new Type[0];
+        private static Type[] defaultResources = Type.EmptyTypes;
         private readonly IScheduledTask clearCacheTask;
 
         private readonly Dictionary<int, Dictionary<string, string>> dataCache = new();
@@ -47,6 +47,7 @@ namespace Sitko.Core.App.Localization
         {
             onChange.Dispose();
             clearCacheTask.Cancel();
+            GC.SuppressFinalize(this);
         }
 
         public IStringLocalizer Create(Type resourceSource) => GetLocalizer(resourceSource);
@@ -68,7 +69,7 @@ namespace Sitko.Core.App.Localization
             defaultResources = localizerOptions.DefaultResources;
         }
 
-        private int GetCacheKey(string name, Assembly assembly, CultureInfo cultureInfo)
+        private static int GetCacheKey(string name, Assembly assembly, CultureInfo cultureInfo)
         {
             unchecked // Overflow is fine, just wrap
             {
@@ -133,7 +134,7 @@ namespace Sitko.Core.App.Localization
             }
         }
 
-        private Dictionary<string, string> LoadResourcesData(string name, Assembly assembly,
+        private static Dictionary<string, string> LoadResourcesData(string name, Assembly assembly,
             CultureInfo cultureInfo)
         {
             var data = new Dictionary<string, string>();
@@ -203,7 +204,7 @@ namespace Sitko.Core.App.Localization
             }
 
             var resourceName = satelliteAssembly.GetManifestResourceNames()
-                .FirstOrDefault(n => n.EndsWith($"{name}.json"));
+                .FirstOrDefault(n => n.EndsWith($"{name}.json", StringComparison.Ordinal));
             if (string.IsNullOrEmpty(resourceName))
             {
                 loaded = false;

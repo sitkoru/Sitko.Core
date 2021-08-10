@@ -29,8 +29,7 @@ namespace Sitko.Core.Apps.Blazor.Forms
 
         public void DeleteFoo() => Entity.Foo = null;
 
-        [Parameter]
-        public RenderFragment<BarForm> ChildContent { get; set; }
+        [Parameter] public RenderFragment<BarForm> ChildContent { get; set; } = null!;
 
         protected override RenderFragment ChildContentFragment => ChildContent(this);
     }

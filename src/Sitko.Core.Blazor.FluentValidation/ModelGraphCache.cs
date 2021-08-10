@@ -33,7 +33,7 @@ namespace Sitko.Core.Blazor.FluentValidation
         /// <returns></returns>
         public (object? walker, string fieldName) EvalObjectProperty(string propertyPath)
         {
-            if (propertyPath.Contains(".") == false)
+            if (propertyPath.Contains('.') == false)
             {
                 return (Model, propertyPath);
             }
@@ -51,7 +51,7 @@ namespace Sitko.Core.Blazor.FluentValidation
                 var propertyName = objectParts[i];
                 var isArray = false;
                 var arrayIndex = 0;
-                if (propertyName.Contains("[") && propertyName.Contains("]"))
+                if (propertyName.Contains('[') && propertyName.Contains(']'))
                 {
                     // propertyName = "A[22]" --> ["A", "22"]
                     var indexedPropertyName = propertyName.Split('[', ']');

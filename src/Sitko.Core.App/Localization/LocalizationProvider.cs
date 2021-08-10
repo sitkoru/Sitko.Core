@@ -28,9 +28,19 @@ namespace Sitko.Core.App.Localization
 
         public string Localize(string message) => Localize(message, Array.Empty<object>());
 
-        public string Localize(string message, params object[] arguments) => localizer is not null
-            ? localizer[message, arguments]
-            : string.Format(CultureInfo.CurrentCulture, message, arguments);
+        public string Localize(string message, params object[] arguments)
+        {
+            if (localizer is not null)
+            {
+                var result = localizer[message, arguments];
+                if (!string.IsNullOrEmpty(result.Value))
+                {
+                    return result.Value;
+                }
+            }
+
+            return string.Format(CultureInfo.CurrentCulture, message, arguments);
+        }
 
         public string this[string name] => Localize(name);
         public string this[string name, params object[] arguments] => Localize(name, arguments);

@@ -29,9 +29,9 @@ namespace Sitko.Core.Storage.Metadata.Postgres
         private StorageDbContext GetDbContext() => dbContextFactory.CreateDbContext();
 
         //return new(Options.CurrentValue.GetConnectionString(), Options.CurrentValue.Schema);
-        private Task<StorageItemRecord?> GetItemRecordAsync(StorageDbContext dbContext, string filePath,
+        private async Task<StorageItemRecord?> GetItemRecordAsync(StorageDbContext dbContext, string filePath,
             CancellationToken cancellationToken = default) =>
-            dbContext.Records.FirstOrDefaultAsync(r =>
+            await dbContext.Records.FirstOrDefaultAsync(r =>
                     r.Storage == StorageOptions.CurrentValue.Name && r.FilePath == filePath,
                 cancellationToken);
 

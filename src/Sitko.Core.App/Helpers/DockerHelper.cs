@@ -7,11 +7,9 @@ namespace Sitko.Core.App.Helpers
 {
     public static class DockerHelper
     {
-        public static bool IsRunningInDocker()
-        {
-            bool.TryParse(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"), out var inContainer);
-            return inContainer;
-        }
+        public static bool IsRunningInDocker() =>
+            bool.TryParse(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"), out var inContainer) &&
+            inContainer;
 
         public static string? GetContainerAddress()
         {

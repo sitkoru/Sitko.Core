@@ -41,7 +41,7 @@ namespace Sitko.Core.App
             Task.CompletedTask;
 
         public virtual IEnumerable<Type> GetRequiredModules(ApplicationContext context, TModuleOptions options) =>
-            new Type[0];
+            Type.EmptyTypes;
 
         public virtual Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider) =>
