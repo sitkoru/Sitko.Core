@@ -187,8 +187,7 @@ namespace Sitko.Core.Repository
         where TEntity : class, IEntity<TEntityPk>
     {
         Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateExternalAsync(TEntity entity,
-            TEntity? baseEntity = null,
-            CancellationToken cancellationToken = default);
+            TEntity? originalEntity = null, CancellationToken cancellationToken = default);
 
         Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateExternalAsync(TEntity entity,
             Action<TEntity> update,

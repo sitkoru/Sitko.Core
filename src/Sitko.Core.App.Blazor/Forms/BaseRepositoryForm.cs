@@ -71,7 +71,8 @@ namespace Sitko.Core.App.Blazor.Forms
             AddOrUpdateOperationResult<TEntity, TEntityPk> result;
             if (repository is IExternalRepository<TEntity, TEntityPk> externalRepository)
             {
-                result = await externalRepository.UpdateExternalAsync(entity, EntitySnapshot);
+                var originalEntity = await GetEntityAsync(repository, entity.Id);
+                result = await externalRepository.UpdateExternalAsync(entity, originalEntity);
             }
             else
             {
