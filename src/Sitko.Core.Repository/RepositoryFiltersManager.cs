@@ -43,7 +43,7 @@ namespace Sitko.Core.Repository
         public async Task<bool> BeforeSaveAsync<T, TEntityPk>(T item,
             (bool isValid, IList<ValidationFailure> errors) validationResult,
             bool isNew,
-            PropertyChange[]? changes = null, CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default)
             where T : class, IEntity<TEntityPk>
         {
             var result = true;
@@ -57,8 +57,7 @@ namespace Sitko.Core.Repository
                         continue;
                     }
 
-                    result = await filter.BeforeSaveAsync<T, TEntityPk>(item, validationResult, isNew, changes,
-                        cancellationToken);
+                    result = await filter.BeforeSaveAsync<T, TEntityPk>(item, validationResult, isNew, cancellationToken);
                 }
             }
 

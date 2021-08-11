@@ -51,15 +51,7 @@ namespace Sitko.Core.App.Blazor.Forms
         {
             using var scope = CreateServicesScope();
             var repository = scope.ServiceProvider.GetRequiredService<TRepository>();
-            AddOrUpdateOperationResult<TEntity, TEntityPk> result;
-            if (repository is IExternalRepository<TEntity, TEntityPk> externalRepository)
-            {
-                result = await externalRepository.AddExternalAsync(entity);
-            }
-            else
-            {
-                result = await repository.AddAsync(entity);
-            }
+            var result = await repository.AddAsync(entity);
 
             return new FormSaveResult(result.IsSuccess, result.ErrorsString);
         }
@@ -68,16 +60,8 @@ namespace Sitko.Core.App.Blazor.Forms
         {
             using var scope = CreateServicesScope();
             var repository = scope.ServiceProvider.GetRequiredService<TRepository>();
-            AddOrUpdateOperationResult<TEntity, TEntityPk> result;
-            if (repository is IExternalRepository<TEntity, TEntityPk> externalRepository)
-            {
-                var originalEntity = await GetEntityAsync(repository, entity.Id);
-                result = await externalRepository.UpdateExternalAsync(entity, originalEntity);
-            }
-            else
-            {
-                result = await repository.UpdateAsync(entity);
-            }
+            var originalEntity = await GetEntityAsync(repository, entity.Id);
+            var result = await repository.UpdateAsync(entity, originalEntity);
 
             return new FormSaveResult(result.IsSuccess, result.ErrorsString);
         }

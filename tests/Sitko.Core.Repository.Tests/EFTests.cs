@@ -44,6 +44,8 @@ namespace Sitko.Core.Repository.Tests
             var change = result.Changes.First(c => c.Name == nameof(item.Status));
             Assert.Equal(oldValue, change.OriginalValue);
             Assert.Equal(item.Status, change.CurrentValue);
+            await repository.RefreshAsync(item);
+            Assert.Equal(TestStatus.Disabled, item.Status);
         }
 
         [Fact]
@@ -228,7 +230,7 @@ namespace Sitko.Core.Repository.Tests
             using (var scope2 = scope.CreateScope())
             {
                 var repository2 = scope2.ServiceProvider.GetRequiredService<BarRepository>();
-                var updateResult = await repository2.UpdateExternalAsync(bar, originalBar);
+                var updateResult = await repository2.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
                 Assert.Single(updateResult.Changes);
             }
@@ -239,6 +241,34 @@ namespace Sitko.Core.Repository.Tests
                 var updatedBar =
                     await repository.GetAsync(q => q.Where(b => b.Id == bar.Id));
                 Assert.Equal("123", updatedBar!.Baz);
+            }
+        }
+
+        [Fact]
+        public async Task DisconnectedDelete()
+        {
+            var scope = await GetScopeAsync();
+            BarModel? originalBar;
+            using (var scope1 = scope.CreateScope())
+            {
+                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
+                originalBar = await repository1.GetAsync(q => q.Where(b => b.TestId != null));
+                Assert.NotNull(originalBar);
+            }
+
+            using (var scope2 = scope.CreateScope())
+            {
+                var repository2 = scope2.ServiceProvider.GetRequiredService<BarRepository>();
+                var updateResult = await repository2.DeleteAsync(originalBar!);
+                Assert.True(updateResult);
+            }
+
+            using (var finalScope = scope.CreateScope())
+            {
+                var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
+                var updatedBar =
+                    await repository.GetAsync(q => q.Where(b => b.Id == originalBar!.Id));
+                Assert.Null(updatedBar);
             }
         }
 
@@ -307,7 +337,7 @@ namespace Sitko.Core.Repository.Tests
             {
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
                 var updateResult =
-                    await repository3.UpdateExternalAsync(bar, originalBar);
+                    await repository3.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
                 Assert.Equal(2, updateResult.Changes.Length);
             }
@@ -360,7 +390,7 @@ namespace Sitko.Core.Repository.Tests
             {
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
                 var updateResult =
-                    await repository3.UpdateExternalAsync(bar, originalBar);
+                    await repository3.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
                 Assert.Equal(2, updateResult.Changes.Length);
             }
@@ -394,7 +424,7 @@ namespace Sitko.Core.Repository.Tests
             using (var scope3 = scope.CreateScope())
             {
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
-                var updateResult = await repository3.AddExternalAsync(originalBar);
+                var updateResult = await repository3.AddAsync(originalBar);
                 Assert.True(updateResult.IsSuccess);
                 Assert.Empty(updateResult.Changes);
             }
@@ -436,7 +466,7 @@ namespace Sitko.Core.Repository.Tests
             using (var scope3 = scope.CreateScope())
             {
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
-                var updateResult = await repository3.UpdateExternalAsync(bar, originalBar);
+                var updateResult = await repository3.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
                 Assert.Single(updateResult.Changes);
             }
@@ -478,7 +508,7 @@ namespace Sitko.Core.Repository.Tests
             {
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
                 var updateResult =
-                    await repository3.UpdateExternalAsync(bar, originalBar);
+                    await repository3.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
                 Assert.Equal(2, updateResult.Changes.Length);
             }
@@ -522,7 +552,7 @@ namespace Sitko.Core.Repository.Tests
             using (var scope3 = scope.CreateScope())
             {
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
-                var updateResult = await repository3.UpdateExternalAsync(originalBar);
+                var updateResult = await repository3.UpdateAsync(originalBar);
                 Assert.True(updateResult.IsSuccess);
                 Assert.Single(updateResult.Changes);
             }
@@ -557,7 +587,7 @@ namespace Sitko.Core.Repository.Tests
             using (var scope3 = scope.CreateScope())
             {
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
-                var updateResult = await repository3.UpdateExternalAsync(originalBar);
+                var updateResult = await repository3.UpdateAsync(originalBar);
                 Assert.True(updateResult.IsSuccess);
                 Assert.Single(updateResult.Changes);
             }
@@ -591,7 +621,7 @@ namespace Sitko.Core.Repository.Tests
             using (var scope3 = scope.CreateScope())
             {
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
-                var updateResult = await repository3.UpdateExternalAsync(originalBar);
+                var updateResult = await repository3.UpdateAsync(originalBar);
                 Assert.True(updateResult.IsSuccess);
                 Assert.Single(updateResult.Changes);
             }
@@ -636,7 +666,7 @@ namespace Sitko.Core.Repository.Tests
             using (var scope3 = scope.CreateScope())
             {
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
-                var updateResult = await repository3.UpdateExternalAsync(bar, originalBar);
+                var updateResult = await repository3.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
                 Assert.Single(updateResult.Changes);
             }
@@ -682,7 +712,7 @@ namespace Sitko.Core.Repository.Tests
             {
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
                 var updateResult =
-                    await repository3.UpdateExternalAsync(bar, originalBar);
+                    await repository3.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
                 Assert.Single(updateResult.Changes);
             }
@@ -750,9 +780,9 @@ namespace Sitko.Core.Repository.Tests
 
     public class BazModel : Entity<Guid>
     {
-        public string Baz { get; set; }
-        public List<FooModel> Foos { get; set; }
-        public List<BarModel> Bars { get; set; }
+        public string Baz { get; set; } = "";
+        public List<FooModel> Foos { get; set; } = new();
+        public List<BarModel> Bars { get; set; } = new();
     }
 
     public abstract record BaseJsonModel
@@ -876,8 +906,8 @@ namespace Sitko.Core.Repository.Tests
                 new() { Id = Guid.NewGuid(), Baz = "5" },
                 new() { Id = Guid.NewGuid(), Baz = "6" }
             };
-            await dbContext.AddRangeAsync(bazModels);
-            await dbContext.AddRangeAsync(fooModels);
+            await dbContext.Set<BazModel>().AddRangeAsync(bazModels);
+            await dbContext.Set<FooModel>().AddRangeAsync(fooModels);
             await dbContext.SaveChangesAsync();
         }
     }

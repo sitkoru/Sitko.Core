@@ -17,10 +17,8 @@ namespace Sitko.Core.Apps.Blazor.Components
         public Task UpdateAsync(BarModel barModel) =>
             ExecuteRepositoryOperation(async repository =>
             {
-                var result = await repository.UpdateExternalAsync(barModel, model =>
-                {
-                    model.Date = DateTimeOffset.UtcNow;
-                });
+                barModel.Date = DateTimeOffset.UtcNow;
+                var result = await repository.UpdateAsync(barModel);
                 return result.IsSuccess;
             });
     }

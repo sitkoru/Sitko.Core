@@ -18,7 +18,7 @@ namespace Sitko.Core.Repository
 
         public virtual Task<bool> BeforeSaveAsync<TEntity, TEntityPk>(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult, bool isNew,
-            PropertyChange[]? changes = null, CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default)
             where TEntity : class, IEntity<TEntityPk> =>
             Task.FromResult(true);
 

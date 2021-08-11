@@ -126,32 +126,30 @@ namespace Sitko.Core.Repository
                 new PropertyChange[0]);
         }
 
-        public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity item,
+        public virtual Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity entity,
+            CancellationToken cancellationToken = default) => UpdateAsync(entity, null, cancellationToken);
+
+        public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity entity,
+            TEntity? oldEntity,
             CancellationToken cancellationToken = default)
         {
-            PropertyChange[] changes = new PropertyChange[0];
+            PropertyChange[] changes = Array.Empty<PropertyChange>();
             (bool isValid, IList<ValidationFailure> errors) validationResult = (false, new List<ValidationFailure>());
-            if (await BeforeValidateAsync(item, validationResult, false, cancellationToken))
+            if (await BeforeValidateAsync(entity, validationResult, false, cancellationToken))
             {
-                changes = await GetChangesAsync(item);
-                if (changes.Any())
+                validationResult = await ValidateAsync(entity, false, cancellationToken);
+                if (validationResult.isValid)
                 {
-                    validationResult = await ValidateAsync(item, false, changes, cancellationToken);
-                    if (validationResult.isValid)
+                    if (await BeforeSaveAsync(entity, validationResult, false, cancellationToken))
                     {
-                        if (await BeforeSaveAsync(item, validationResult, false, changes, cancellationToken))
-                        {
-                            await DoUpdateAsync(item, cancellationToken);
-
-                            await SaveAsync(new RepositoryRecord<TEntity, TEntityPk>(item, false, changes),
-                                cancellationToken);
-                        }
+                        changes = await DoUpdateAsync(entity, oldEntity, cancellationToken);
+                        await SaveAsync(new RepositoryRecord<TEntity, TEntityPk>(entity, false, changes),
+                            cancellationToken);
                     }
                 }
             }
 
-
-            return new AddOrUpdateOperationResult<TEntity, TEntityPk>(item, validationResult.errors, changes);
+            return new AddOrUpdateOperationResult<TEntity, TEntityPk>(entity, validationResult.errors, changes);
         }
 
         public virtual async Task<bool> DeleteAsync(TEntityPk id, CancellationToken cancellationToken = default)
@@ -630,9 +628,12 @@ namespace Sitko.Core.Repository
 
         protected abstract Task<PropertyChange[]> GetChangesAsync(TEntity item);
 
-        protected abstract Task DoAddAsync(TEntity item, CancellationToken cancellationToken = default);
-        protected abstract Task DoUpdateAsync(TEntity item, CancellationToken cancellationToken = default);
-        protected abstract Task DoDeleteAsync(TEntity item, CancellationToken cancellationToken = default);
+        protected abstract Task DoAddAsync(TEntity entity, CancellationToken cancellationToken = default);
+
+        protected abstract Task<PropertyChange[]> DoUpdateAsync(TEntity entity, TEntity? oldEntity,
+            CancellationToken cancellationToken = default);
+
+        protected abstract Task DoDeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
 
         private async Task SaveAsync(RepositoryRecord<TEntity, TEntityPk> record,
             CancellationToken cancellationToken = default)
@@ -665,9 +666,8 @@ namespace Sitko.Core.Repository
 
         protected virtual Task<bool> BeforeSaveAsync(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult, bool isNew,
-            PropertyChange[]? changes = null, CancellationToken cancellationToken = default) =>
-            FiltersManager.BeforeSaveAsync<TEntity, TEntityPk>(item, validationResult, isNew, changes,
-                cancellationToken);
+            CancellationToken cancellationToken = default) =>
+            FiltersManager.BeforeSaveAsync<TEntity, TEntityPk>(item, validationResult, isNew, cancellationToken);
 
         protected virtual async Task<bool> AfterSaveAsync(IEnumerable<RepositoryRecord<TEntity, TEntityPk>> items,
             CancellationToken cancellationToken = default)
@@ -696,8 +696,7 @@ namespace Sitko.Core.Repository
         }
 
         protected virtual async Task<(bool isValid, IList<ValidationFailure> errors)> ValidateAsync(TEntity entity,
-            bool isNew,
-            PropertyChange[]? changes = null, CancellationToken cancellationToken = default)
+            bool isNew, CancellationToken cancellationToken = default)
         {
             var failures = new List<ValidationFailure>();
             foreach (var validator in Validators.Where(v => v.CanValidateInstancesOfType(typeof(TEntity))))
