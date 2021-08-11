@@ -189,7 +189,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return await UpdateAsync(originalEntity, cancellationToken);
         }
 
-        private bool HasChanges(EntityChange[]? entityChanges, IEntity entity, string propertyName)
+        private static bool HasChanges(EntityChange[]? entityChanges, IEntity entity, string propertyName)
         {
             if (entityChanges is null)
             {
@@ -318,7 +318,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 }
                 else
                 {
-                    if (HasChanges(changes, originalEntry.Entity, entryReference.Metadata.Name))
+                    if (EFRepository<TEntity, TEntityPk, TDbContext>.HasChanges(changes, originalEntry.Entity, entryReference.Metadata.Name))
                     {
                         await entryReference.LoadAsync();
                         if (entryReference.CurrentValue is not null)
@@ -340,7 +340,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                     modifiedCollection.CurrentValue.Cast<object?>().Any())
                 {
                     var ids = modifiedCollection.CurrentValue.Cast<IEntity>().Select(v => v.GetId()).ToList();
-                    var hasChanges = HasChanges(changes, originalEntry.Entity, entryCollection.Metadata.Name);
+                    var hasChanges = EFRepository<TEntity, TEntityPk, TDbContext>.HasChanges(changes, originalEntry.Entity, entryCollection.Metadata.Name);
                     if (!entryCollection.IsLoaded)
                     {
                         await entryCollection.LoadAsync();
@@ -418,7 +418,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 }
                 else
                 {
-                    if (HasChanges(changes, entity, entryCollection.Metadata.Name) &&
+                    if (EFRepository<TEntity, TEntityPk, TDbContext>.HasChanges(changes, entity, entryCollection.Metadata.Name) &&
                         entryCollection.CurrentValue is not null &&
                         entryCollection.CurrentValue.Cast<IEntity>().Count() > 0)
                     {
