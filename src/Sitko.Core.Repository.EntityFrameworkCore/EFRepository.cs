@@ -168,27 +168,6 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             }
         }
 
-        // public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateExternalAsync(TEntity entity,
-        //     TEntity? originalEntity = null, CancellationToken cancellationToken = default)
-        // {
-        //     await ExecuteDbContextOperationAsync(async context =>
-        //     {
-        //         var changes = originalEntity is null ? null : Compare(originalEntity, entity);
-        //         var modifiedEntry = context.Entry(entity as IEntity);
-        //         var processed = new List<IEntity>();
-        //         originalEntity =
-        //             await ProcessEntryAsync(null, modifiedEntry, context, processed, changes) as TEntity;
-        //         Logger.LogInformation("External entity processed");
-        //         return true;
-        //     }, cancellationToken);
-        //     if (originalEntity is null)
-        //     {
-        //         throw new InvalidOperationException("Entity result is null");
-        //     }
-        //
-        //     return await UpdateAsync(originalEntity, cancellationToken);
-        // }
-
         private static bool HasChanges(EntityChange[]? entityChanges, IEntity entity, string propertyName)
         {
             if (entityChanges is null)
@@ -267,7 +246,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 if (!entryProperty.Metadata.GetValueComparer()
                     .Equals(entryProperty.CurrentValue, modifiedProperty.CurrentValue))
                 {
-                    Logger.LogInformation(
+                    Logger.LogDebug(
                         "Entity {Type} [{Entity}]. Property {Property} changed from {OldValue} to {NewValue}",
                         entity.GetType().Name, entity.GetId(), entryProperty.Metadata.Name, entryProperty.CurrentValue,
                         modifiedProperty.CurrentValue);
@@ -309,7 +288,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                         context.Entry(modifiedEntity), context, proccessedEntities, changes);
                     if (processedEntity != entryReference.CurrentValue)
                     {
-                        Logger.LogInformation(
+                        Logger.LogDebug(
                             "Entity {Type} [{Entity}]. Reference {Property} changed from {OldValue} to {NewValue}",
                             entity.GetType().Name, entity.GetId(), entryReference.Metadata.Name,
                             entryReference.CurrentValue, processedEntity);
@@ -318,13 +297,13 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 }
                 else
                 {
-                    if (EFRepository<TEntity, TEntityPk, TDbContext>.HasChanges(changes, originalEntry.Entity,
+                    if (HasChanges(changes, originalEntry.Entity,
                         entryReference.Metadata.Name))
                     {
                         await entryReference.LoadAsync();
                         if (entryReference.CurrentValue is not null)
                         {
-                            Logger.LogInformation(
+                            Logger.LogDebug(
                                 "Entity {Type} [{Entity}]. Reference {Property} changed from {OldValue} to null",
                                 entity.GetType().Name, entity.GetId(), entryReference.Metadata.Name,
                                 entryReference.CurrentValue);
@@ -336,28 +315,31 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
             foreach (var entryCollection in originalEntry.Collections)
             {
+                // ReSharper disable once PossibleMultipleEnumeration
+                var currentValue = entryCollection.CurrentValue?.Cast<IEntity>().ToList();
                 var modifiedCollection = modifiedEntry.Collection(entryCollection.Metadata.Name);
-                if (modifiedCollection.CurrentValue is not null &&
-                    modifiedCollection.CurrentValue.Cast<object?>().Any())
+                var modifiedValue = modifiedCollection.CurrentValue?.Cast<IEntity>().ToList();
+                if (modifiedValue is not null && modifiedValue.Any())
                 {
-                    var ids = modifiedCollection.CurrentValue.Cast<IEntity>().Select(v => v.GetId()).ToList();
-                    var hasChanges = EFRepository<TEntity, TEntityPk, TDbContext>.HasChanges(changes,
+                    var ids = modifiedValue.Select(v => v.GetId()).ToList();
+                    var hasChanges = HasChanges(changes,
                         originalEntry.Entity, entryCollection.Metadata.Name);
                     if (!entryCollection.IsLoaded)
                     {
                         await entryCollection.LoadAsync();
-                        Logger.LogInformation("Entity {Type} [{Entity}]. Collection {Property} loaded",
+                        // ReSharper disable once PossibleMultipleEnumeration
+                        currentValue = entryCollection.CurrentValue?.Cast<IEntity>().ToList();
+                        Logger.LogDebug("Entity {Type} [{Entity}]. Collection {Property} loaded",
                             entity.GetType().Name, entity.GetId(), entryCollection.Metadata.Name);
                     }
-
                     if (!hasChanges)
                     {
-                        if (entryCollection.CurrentValue is not null)
+                        if (currentValue is not null)
                         {
-                            var dbIds = entryCollection.CurrentValue.Cast<IEntity>().Select(v => v.GetId()).ToList();
+                            var dbIds = currentValue.Select(v => v.GetId()).ToList();
                             if (dbIds.Any())
                             {
-                                var first = entryCollection.CurrentValue.Cast<IEntity>().First();
+                                var first = currentValue.First();
                                 if (!dbIds.OrderBy(id => id).SequenceEqual(ids.OrderBy(id => id)))
                                 {
                                     if (ids.Intersect(dbIds).Count() == ids.Count)
@@ -384,7 +366,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
                             if (hasChanges)
                             {
-                                Logger.LogInformation(
+                                Logger.LogDebug(
                                     "Entity {Type} [{Entity}]. Collection {Property} changed from {OldValue} to {NewValue}",
                                     entity.GetType().Name, entity.GetId(), entryCollection.Metadata.Name, dbIds, ids);
                             }
@@ -399,7 +381,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                     if (hasChanges)
                     {
                         var values = new List<IEntity>();
-                        foreach (var value in modifiedCollection.CurrentValue.Cast<IEntity>())
+                        foreach (var value in modifiedValue)
                         {
                             var existingEntity = EFRepositoryHelper.GetTrackedEntity(context, value);
                             var processedEntity =
@@ -413,19 +395,18 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                         }
 
                         entryCollection.CurrentValue = UpdateCollection(
-                            modifiedCollection.CurrentValue.GetType().GetGenericArguments().First(),
-                            modifiedCollection.CurrentValue.GetType(), context, entryCollection.CurrentValue, values);
+                            modifiedCollection.CurrentValue!.GetType().GetGenericArguments().First(),
+                            // ReSharper disable once PossibleMultipleEnumeration
+                            modifiedCollection.CurrentValue!.GetType(), context, entryCollection.CurrentValue, values);
                         entryCollection.IsModified = true;
                     }
                 }
                 else
                 {
-                    if (EFRepository<TEntity, TEntityPk, TDbContext>.HasChanges(changes, entity,
-                            entryCollection.Metadata.Name) &&
-                        entryCollection.CurrentValue is not null &&
-                        entryCollection.CurrentValue.Cast<IEntity>().Count() > 0)
+                    if (HasChanges(changes, entity, entryCollection.Metadata.Name) && currentValue is not null &&
+                        currentValue.Any())
                     {
-                        Logger.LogInformation(
+                        Logger.LogDebug(
                             "Entity {Type} [{Entity}]. Collection {Property} changed from {OldValue} to {NewValue}",
                             entity.GetType().Name, entity.GetId(), entryCollection.Metadata.Name,
                             entryCollection.CurrentValue, modifiedCollection.CurrentValue);
@@ -507,7 +488,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         }
 
         private IEnumerable UpdateCollection(Type elementType, Type collectionType, TDbContext context,
-            IEnumerable? oldValues, IEnumerable newValues)
+            IEnumerable? oldValues, ICollection<IEntity> newValues)
         {
             if (updateCollectionMethodInfo is null)
             {
@@ -778,12 +759,12 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         }
 
         public static TCollection UpdateCollection<TElement, TCollection>(TCollection? collection,
-            IEnumerable<IEntity> values,
+            ICollection<IEntity> values,
             DbContext context)
             where TCollection : ICollection<TElement>, new() where TElement : class, IEntity
         {
             var toDelete = new List<TElement>();
-            collection ??= new();
+            collection ??= new TCollection();
             foreach (var element in collection)
             {
                 if (values.All(e => e.GetId()?.Equals(element.GetId()) != true))
