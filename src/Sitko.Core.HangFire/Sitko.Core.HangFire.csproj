@@ -22,7 +22,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Hangfire.AspNetCore" Version="1.7.24" />
-    <PackageReference Include="Hangfire.PostgreSql" Version="1.8.5.4" />
+    <PackageReference Include="Hangfire.PostgreSql" Version="1.8.6" />
     <PackageReference Include="AspNetCore.HealthChecks.Hangfire" Version="5.0.1" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
@@ -33,11 +33,8 @@
     <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
     <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
-  <!-- Workaround for this bug (https://github.com/dotnet/sdk/issues/18148) (replace the analyzer name with the one you need to exclude (filename only, no extension) -->
-  <Target Name="RemoveLoggingAnalyzer" AfterTargets="ResolveLockFileAnalyzers">
-    <ItemGroup>
-      <Analyzer Remove="@(Analyzer)" Condition="%(FileName) == 'Microsoft.Extensions.Logging.Generators'" />
-      <Analyzer Remove="@(Analyzer)" Condition="%(FileName) == 'System.Text.Json.SourceGeneration'" />
-    </ItemGroup>
-  </Target>
+  <!-- Workaround for .NET 6 Preview 7 (https://devblogs.microsoft.com/dotnet/announcing-net-6-preview-7/#comment-9902)-->
+  <PropertyGroup>
+    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+  </PropertyGroup>
 </Project>
