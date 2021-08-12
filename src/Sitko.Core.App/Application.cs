@@ -11,8 +11,9 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
 using Sitko.Core.App.Localization;
-using Sitko.Core.App.Logging;
 using Tempus;
+using Thinktecture;
+using Thinktecture.Extensions.Configuration;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Sitko.Core.App
@@ -36,10 +37,8 @@ namespace Sitko.Core.App
 
         private readonly Dictionary<string, LogEventLevel> logEventLevels = new();
 
-        private readonly List<Action<ApplicationContext, LoggerConfiguration, LogLevelSwitcher>>
+        private readonly List<Action<ApplicationContext, LoggerConfiguration>>
             loggerConfigurationActions = new();
-
-        private readonly LogLevelSwitcher logLevelSwitcher = new();
 
         private readonly Dictionary<Type, ApplicationModuleRegistration> moduleRegistrations =
             new();
@@ -48,7 +47,7 @@ namespace Sitko.Core.App
             servicesConfigurationActions = new();
 
         private readonly Dictionary<string, object> store = new();
-        private readonly string[] supportedCommands = {CheckCommand, GenerateOptionsCommand, RunCommand};
+        private readonly string[] supportedCommands = { CheckCommand, GenerateOptionsCommand, RunCommand };
 
         private IHost? appHost;
 
@@ -162,7 +161,7 @@ namespace Sitko.Core.App
             InitApplication();
 
             LogCheck("Create main host builder");
-
+            var loggingConfiguration = new SerilogConfiguration();
             var hostBuilder = CreateHostBuilder(args)
                 .UseDefaultServiceProvider(options =>
                 {
@@ -178,6 +177,7 @@ namespace Sitko.Core.App
                 .ConfigureAppConfiguration((context, builder) =>
                 {
                     LogCheck("Configure app configuration");
+                    builder.AddLoggingConfiguration(loggingConfiguration, "Serilog");
                     var appContext = GetContext(context.HostingEnvironment, context.Configuration);
                     foreach (var appConfigurationAction in appConfigurationActions)
                     {
@@ -193,7 +193,7 @@ namespace Sitko.Core.App
                 .ConfigureServices((context, services) =>
                 {
                     LogCheck("Configure app services");
-                    services.AddSingleton(logLevelSwitcher);
+                    services.AddSingleton<ISerilogConfiguration>(loggingConfiguration);
                     services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
                     services.AddSingleton(typeof(IApplication), this);
                     services.AddSingleton(typeof(Application), this);
@@ -213,32 +213,27 @@ namespace Sitko.Core.App
                         moduleRegistration.ConfigureOptions(appContext, services);
                         moduleRegistration.ConfigureServices(appContext, services);
                     }
-                }).ConfigureLogging((context, _) =>
+                }).ConfigureLogging((context, builder) =>
                 {
                     var applicationOptions = GetApplicationOptions(context.HostingEnvironment, context.Configuration);
                     LogCheck("Configure logging");
+                    builder.AddConfiguration(context.Configuration.GetSection("Logging"));
                     var loggerConfiguration = new LoggerConfiguration();
-                    loggerConfiguration.MinimumLevel.ControlledBy(logLevelSwitcher.Switch);
+                    loggerConfiguration.ReadFrom.Configuration(context.Configuration);
                     loggerConfiguration
                         .Enrich.FromLogContext()
                         .Enrich.WithMachineName()
                         .Enrich.WithProperty("App", applicationOptions.Name)
                         .Enrich.WithProperty("AppVersion", applicationOptions.Version);
-                    logLevelSwitcher.Switch.MinimumLevel =
-                        context.HostingEnvironment.IsDevelopment() ? LogEventLevel.Debug : LogEventLevel.Information;
 
                     if (applicationOptions.EnableConsoleLogging == true)
                     {
-                        loggerConfiguration
-                            .WriteTo.Console(
-                                outputTemplate: applicationOptions.ConsoleLogFormat,
-                                levelSwitch: logLevelSwitcher.Switch);
+                        loggerConfiguration.WriteTo.Console(outputTemplate: applicationOptions.ConsoleLogFormat);
                     }
 
                     var appContext = GetContext(context.HostingEnvironment, context.Configuration);
                     ConfigureLogging(appContext,
-                        loggerConfiguration,
-                        logLevelSwitcher);
+                        loggerConfiguration);
                     foreach (var (key, value) in
                         logEventLevels)
                     {
@@ -247,13 +242,12 @@ namespace Sitko.Core.App
 
                     foreach (var moduleRegistration in GetEnabledModuleRegistrations(appContext))
                     {
-                        moduleRegistration.ConfigureLogging(tmpApplicationContext, loggerConfiguration,
-                            logLevelSwitcher);
+                        moduleRegistration.ConfigureLogging(tmpApplicationContext, loggerConfiguration);
                     }
 
                     foreach (var loggerConfigurationAction in loggerConfigurationActions)
                     {
-                        loggerConfigurationAction(appContext, loggerConfiguration, logLevelSwitcher);
+                        loggerConfigurationAction(appContext, loggerConfiguration);
                     }
 
                     Log.Logger = loggerConfiguration.CreateLogger();
@@ -317,8 +311,7 @@ namespace Sitko.Core.App
         }
 
         protected virtual void ConfigureLogging(ApplicationContext applicationContext,
-            LoggerConfiguration loggerConfiguration,
-            LogLevelSwitcher appLogLevelSwitcher)
+            LoggerConfiguration loggerConfiguration)
         {
         }
 
@@ -379,7 +372,7 @@ namespace Sitko.Core.App
 
                 InternalLogger.LogInformation("Modules options:");
                 InternalLogger.LogInformation("{Options}", JsonSerializer.Serialize(modulesOptions,
-                    new JsonSerializerOptions {WriteIndented = true}));
+                    new JsonSerializerOptions { WriteIndented = true }));
 
                 return;
             }
@@ -618,7 +611,7 @@ namespace Sitko.Core.App
             return this;
         }
 
-        public Application ConfigureLogging(Action<ApplicationContext, LoggerConfiguration, LogLevelSwitcher> configure)
+        public Application ConfigureLogging(Action<ApplicationContext, LoggerConfiguration> configure)
         {
             loggerConfigurationActions.Add(configure);
             return this;

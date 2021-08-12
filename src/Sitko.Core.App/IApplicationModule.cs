@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using Sitko.Core.App.Logging;
 
 namespace Sitko.Core.App
 {
@@ -14,8 +13,7 @@ namespace Sitko.Core.App
         string OptionsKey { get; }
 
         void ConfigureLogging(ApplicationContext context, TModuleOptions options,
-            LoggerConfiguration loggerConfiguration,
-            LogLevelSwitcher logLevelSwitcher);
+            LoggerConfiguration loggerConfiguration);
 
         void ConfigureServices(ApplicationContext context, IServiceCollection services, TModuleOptions startupOptions);
 

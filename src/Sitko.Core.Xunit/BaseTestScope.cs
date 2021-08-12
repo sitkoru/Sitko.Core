@@ -44,9 +44,9 @@ namespace Sitko.Core.Xunit
                 ConfigureServices(context.Configuration, context.HostingEnvironment, services, name);
             });
 
-            scopeApplication.ConfigureLogging((_, loggerConfiguration, logLevelSwitcher) =>
+            scopeApplication.ConfigureLogging((_, loggerConfiguration) =>
             {
-                loggerConfiguration.WriteTo.TestOutput(testOutputHelper, levelSwitch: logLevelSwitcher.Switch);
+                loggerConfiguration.WriteTo.TestOutput(testOutputHelper);
             });
 
             scopeApplication = ConfigureApplication(scopeApplication, name);

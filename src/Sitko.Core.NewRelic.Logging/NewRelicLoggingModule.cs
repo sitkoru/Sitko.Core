@@ -1,7 +1,6 @@
 using NewRelic.LogEnrichers.Serilog;
 using Serilog;
 using Sitko.Core.App;
-using Sitko.Core.App.Logging;
 
 namespace Sitko.Core.NewRelic.Logging
 {
@@ -10,9 +9,9 @@ namespace Sitko.Core.NewRelic.Logging
         public override string OptionsKey => "Logging:NewRelic";
 
         public override void ConfigureLogging(ApplicationContext context, NewRelicLoggingModuleOptions options,
-            LoggerConfiguration loggerConfiguration, LogLevelSwitcher logLevelSwitcher)
+            LoggerConfiguration loggerConfiguration)
         {
-            base.ConfigureLogging(context, options, loggerConfiguration, logLevelSwitcher);
+            base.ConfigureLogging(context, options, loggerConfiguration);
             if (options.EnableLogging)
             {
                 loggerConfiguration

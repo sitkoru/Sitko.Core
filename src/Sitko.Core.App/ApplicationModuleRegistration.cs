@@ -7,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using Sitko.Core.App.Logging;
 using IL.FluentValidation.Extensions.Options;
 
 namespace Sitko.Core.App
@@ -70,10 +69,10 @@ namespace Sitko.Core.App
 
         public override ApplicationModuleRegistration ConfigureLogging(
             ApplicationContext context,
-            LoggerConfiguration loggerConfiguration, LogLevelSwitcher logLevelSwitcher)
+            LoggerConfiguration loggerConfiguration)
         {
             var options = CreateOptions(context);
-            instance.ConfigureLogging(context, options, loggerConfiguration, logLevelSwitcher);
+            instance.ConfigureLogging(context, options, loggerConfiguration);
             return this;
         }
 
@@ -161,7 +160,7 @@ namespace Sitko.Core.App
             IServiceCollection services);
 
         public abstract ApplicationModuleRegistration ConfigureLogging(ApplicationContext context,
-            LoggerConfiguration loggerConfiguration, LogLevelSwitcher logLevelSwitcher);
+            LoggerConfiguration loggerConfiguration);
 
         public abstract ApplicationModuleRegistration ConfigureServices(ApplicationContext context,
             IServiceCollection services);

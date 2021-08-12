@@ -10,7 +10,6 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.Elasticsearch;
 using Sitko.Core.App;
-using Sitko.Core.App.Logging;
 
 namespace Sitko.Core.ElasticStack
 {
@@ -87,10 +86,9 @@ namespace Sitko.Core.ElasticStack
         }
 
         public override void ConfigureLogging(ApplicationContext context, ElasticStackModuleOptions options,
-            LoggerConfiguration loggerConfiguration,
-            LogLevelSwitcher logLevelSwitcher)
+            LoggerConfiguration loggerConfiguration)
         {
-            base.ConfigureLogging(context, options, loggerConfiguration, logLevelSwitcher);
+            base.ConfigureLogging(context, options, loggerConfiguration);
             if (options.LoggingEnabled)
             {
                 var rolloverAlias = string.IsNullOrEmpty(options.LoggingLiferRolloverAlias)
@@ -105,7 +103,6 @@ namespace Sitko.Core.ElasticStack
                     IndexFormat =
                         options.LoggingIndexFormat ??
                         $"dotnet-logs-{context.Name.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}-{context.Name.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
-                    LevelSwitch = logLevelSwitcher.Switch,
                     TemplateName = rolloverAlias
                 };
 
