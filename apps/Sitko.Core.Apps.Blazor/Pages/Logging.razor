@@ -1,0 +1,12 @@
+﻿@page "/Logging"
+@using Thinktecture.Extensions.Configuration
+@using Serilog.Events
+@inherits BaseComponent
+@inject ISerilogConfiguration loggingConfiguration
+<PageContainer Title="Logging">
+    <ChildContent>
+        <Button OnClick="@(() => loggingConfiguration.SetLevel(LogEventLevel.Debug))">Set debug</Button>
+        <Button OnClick="@(() => loggingConfiguration.SetLevel(LogEventLevel.Information))">Set info</Button>
+        <Button OnClick="@(() => loggingConfiguration.ResetLevel())">Reset</Button>
+    </ChildContent>
+</PageContainer>
