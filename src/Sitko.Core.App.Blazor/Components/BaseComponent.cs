@@ -103,6 +103,7 @@ namespace Sitko.Core.App.Blazor.Components
         {
             if (!isDisposed)
             {
+                NavigationManager.LocationChanged -= HandleLocationChanged;
                 if (scope is not null)
                 {
 #if NET6_0_OR_GREATER
@@ -112,7 +113,6 @@ namespace Sitko.Core.App.Blazor.Components
 #endif
                 }
 
-                NavigationManager.LocationChanged -= HandleLocationChanged;
                 Dispose(true);
                 await DisposeAsync(true);
                 isDisposed = true;
