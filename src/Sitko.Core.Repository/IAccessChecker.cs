@@ -12,7 +12,7 @@ namespace Sitko.Core.Repository
     public class EntityAccessDeniedException : Exception
     {
         public EntityAccessDeniedException(IEntity entity) : base(
-            $"Access to entity {entity} with id {entity.GetId()} is denied")
+            $"Access to entity {entity} with id {entity.EntityId} is denied")
         {
         }
     }

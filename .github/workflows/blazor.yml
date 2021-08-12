@@ -4,12 +4,16 @@ on:
   push:
     branches: [ master ]
     paths:
+      - "src/Sitko.Core.Blazor.Blazor/**"
       - "src/Sitko.Core.Blazor.AntDesign/**"
+      - "tests/Sitko.Core.App.Blazor.Tests/**"
       - ".github/workflows/blazor.yml"
   pull_request:
     branches: [ master ]
     paths:
       - "src/Sitko.Core.Blazor.AntDesign/**"
+      - "src/Sitko.Core.Blazor.Blazor/**"
+      - "tests/Sitko.Core.App.Blazor.Tests/**"
       - ".github/workflows/blazor.yml"
 
 jobs:
@@ -31,3 +35,21 @@ jobs:
         run: |
           npm ci
           npm run prod
+      - name: Install .NET Core 3.1
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '3.1.x'
+      - name: Install .NET 5.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Install .NET 6.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+      - name: Add Github Actions logger
+        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
+      - name: Run tests
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.App.Blazor.Tests/Sitko.Core.App.Blazor.Tests.csproj
+

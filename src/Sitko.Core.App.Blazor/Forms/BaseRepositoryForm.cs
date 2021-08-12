@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using KellermanSoftware.CompareNetObjects;
 using Sitko.Core.Repository;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -70,6 +72,14 @@ namespace Sitko.Core.App.Blazor.Forms
         {
             await InitializeAsync();
             await NotifyStateChangeAsync();
+        }
+
+        protected override void ConfigureComparer(ComparisonConfig comparisonConfig)
+        {
+            base.ConfigureComparer(comparisonConfig);
+            comparisonConfig.IgnoreCollectionOrder = true;
+            comparisonConfig.CollectionMatchingSpec ??= new Dictionary<Type, IEnumerable<string>>();
+            comparisonConfig.CollectionMatchingSpec.Add(typeof(IEntity), new[] { nameof(IEntity.EntityId) });
         }
     }
 }

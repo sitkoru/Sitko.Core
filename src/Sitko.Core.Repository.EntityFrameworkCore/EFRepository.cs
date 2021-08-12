@@ -105,7 +105,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 if (modifiedCollection.CurrentValue is not null &&
                     modifiedCollection.CurrentValue.Cast<object?>().Any())
                 {
-                    var ids = modifiedCollection.CurrentValue.Cast<IEntity>().Select(v => v.GetId()).ToList();
+                    var ids = modifiedCollection.CurrentValue.Cast<IEntity>().Select(v => v.EntityId).ToList();
                     var originalValues = entryCollection.CurrentValue?.Cast<IEntity>().ToList();
                     if (originalValues is null || !originalValues.Any())
                     {
@@ -114,7 +114,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                     }
                     else
                     {
-                        var originalIds = originalValues.Select(v => v.GetId()).ToList();
+                        var originalIds = originalValues.Select(v => v.EntityId).ToList();
                         if (!originalIds.OrderBy(id => id).SequenceEqual(ids.OrderBy(id => id)))
                         {
                             entityChange.AddChange(entryCollection.Metadata.Name, entryCollection.CurrentValue,
@@ -127,7 +127,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                             foreach (var modifiedEntity in modifiedValues)
                             {
                                 var originalValue =
-                                    originalValues.FirstOrDefault(v => v.GetId()!.Equals(modifiedEntity.GetId()));
+                                    originalValues.FirstOrDefault(v => v.EntityId!.Equals(modifiedEntity.EntityId));
                                 if (originalValue is not null)
                                 {
                                     ProcessEntryChanges(dbContext.Entry(originalValue), dbContext.Entry(modifiedEntity),
@@ -147,7 +147,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                         foreach (var val in entryCollection.CurrentValue.Cast<IEntity>())
                         {
                             if (!processed.Any(e =>
-                                e.GetType() == val.GetType() && e.GetId()!.Equals(val.GetId())))
+                                e.GetType() == val.GetType() && e.EntityId!.Equals(val.EntityId)))
                             {
                                 hasNewRef = true;
                             }
@@ -248,7 +248,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 {
                     Logger.LogDebug(
                         "Entity {Type} [{Entity}]. Property {Property} changed from {OldValue} to {NewValue}",
-                        entity.GetType().Name, entity.GetId(), entryProperty.Metadata.Name, entryProperty.CurrentValue,
+                        entity.GetType().Name, entity.EntityId, entryProperty.Metadata.Name, entryProperty.CurrentValue,
                         modifiedProperty.CurrentValue);
                     entryProperty.CurrentValue = modifiedProperty.CurrentValue;
                     if (entryProperty.Metadata.IsForeignKey())
@@ -290,7 +290,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                     {
                         Logger.LogDebug(
                             "Entity {Type} [{Entity}]. Reference {Property} changed from {OldValue} to {NewValue}",
-                            entity.GetType().Name, entity.GetId(), entryReference.Metadata.Name,
+                            entity.GetType().Name, entity.EntityId, entryReference.Metadata.Name,
                             entryReference.CurrentValue, processedEntity);
                         entryReference.CurrentValue = processedEntity;
                     }
@@ -305,7 +305,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                         {
                             Logger.LogDebug(
                                 "Entity {Type} [{Entity}]. Reference {Property} changed from {OldValue} to null",
-                                entity.GetType().Name, entity.GetId(), entryReference.Metadata.Name,
+                                entity.GetType().Name, entity.EntityId, entryReference.Metadata.Name,
                                 entryReference.CurrentValue);
                             entryReference.CurrentValue = null;
                         }
@@ -321,7 +321,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 var modifiedValue = modifiedCollection.CurrentValue?.Cast<IEntity>().ToList();
                 if (modifiedValue is not null && modifiedValue.Any())
                 {
-                    var ids = modifiedValue.Select(v => v.GetId()).ToList();
+                    var ids = modifiedValue.Select(v => v.EntityId).ToList();
                     var hasChanges = HasChanges(changes,
                         originalEntry.Entity, entryCollection.Metadata.Name);
                     if (!entryCollection.IsLoaded)
@@ -330,13 +330,13 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                         // ReSharper disable once PossibleMultipleEnumeration
                         currentValue = entryCollection.CurrentValue?.Cast<IEntity>().ToList();
                         Logger.LogDebug("Entity {Type} [{Entity}]. Collection {Property} loaded",
-                            entity.GetType().Name, entity.GetId(), entryCollection.Metadata.Name);
+                            entity.GetType().Name, entity.EntityId, entryCollection.Metadata.Name);
                     }
                     if (!hasChanges)
                     {
                         if (currentValue is not null)
                         {
-                            var dbIds = currentValue.Select(v => v.GetId()).ToList();
+                            var dbIds = currentValue.Select(v => v.EntityId).ToList();
                             if (dbIds.Any())
                             {
                                 var first = currentValue.First();
@@ -347,7 +347,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                                         foreach (var id in ids)
                                         {
                                             if (!proccessedEntities.Any(e =>
-                                                e.GetType() == first.GetType() && e.GetId()!.Equals(id)))
+                                                e.GetType() == first.GetType() && e.EntityId!.Equals(id)))
                                             {
                                                 hasChanges = true;
                                             }
@@ -368,7 +368,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                             {
                                 Logger.LogDebug(
                                     "Entity {Type} [{Entity}]. Collection {Property} changed from {OldValue} to {NewValue}",
-                                    entity.GetType().Name, entity.GetId(), entryCollection.Metadata.Name, dbIds, ids);
+                                    entity.GetType().Name, entity.EntityId, entryCollection.Metadata.Name, dbIds, ids);
                             }
                         }
                         else
@@ -408,7 +408,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                     {
                         Logger.LogDebug(
                             "Entity {Type} [{Entity}]. Collection {Property} changed from {OldValue} to {NewValue}",
-                            entity.GetType().Name, entity.GetId(), entryCollection.Metadata.Name,
+                            entity.GetType().Name, entity.EntityId, entryCollection.Metadata.Name,
                             entryCollection.CurrentValue, modifiedCollection.CurrentValue);
                         entryCollection.CurrentValue = modifiedCollection.CurrentValue;
                     }
@@ -749,7 +749,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         {
             var entry = trackingDbContext.ChangeTracker.Entries().FirstOrDefault(x =>
                 x.Entity is IEntity xEntity && xEntity.GetType() == trackedEntity.GetType() &&
-                xEntity.GetId()?.Equals(trackedEntity.GetId()) == true);
+                xEntity.EntityId?.Equals(trackedEntity.EntityId) == true);
             if (entry is not null)
             {
                 return trackingDbContext.Entry(entry.Entity as IEntity) as EntityEntry<IEntity>;
@@ -767,7 +767,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             collection ??= new TCollection();
             foreach (var element in collection)
             {
-                if (values.All(e => e.GetId()?.Equals(element.GetId()) != true))
+                if (values.All(e => e.EntityId?.Equals(element.EntityId) != true))
                 {
                     toDelete.Add(element);
                 }
@@ -778,7 +778,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 collection.Remove(element);
             }
 
-            var ids = collection.Select(e => e.GetId()).ToList();
+            var ids = collection.Select(e => e.EntityId).ToList();
             foreach (var element in values.Cast<TElement>())
             {
                 var entry = GetTrackedEntity(context, element);
@@ -789,7 +789,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 }
                 else
                 {
-                    var elementId = element.GetId();
+                    var elementId = element.EntityId;
                     if (!ids.Any(id => id!.Equals(elementId)))
                     {
                         collection.Add(element);

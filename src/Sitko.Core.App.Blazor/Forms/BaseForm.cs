@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Forms;
@@ -39,11 +40,13 @@ namespace Sitko.Core.App.Blazor.Forms
         protected async Task UpdateFormStateAsync()
         {
             IsValid = EditContext?.GetValidationMessages().Any() == false;
-            HasChanges = await DetectChangesAsync();
+            await DetectChangesAsync();
             await NotifyStateChangeAsync();
         }
 
-        protected abstract Task<bool> DetectChangesAsync();
+        public async Task DetectChangesAsync() => Changes = await GetChangesAsync();
+
+        protected abstract Task<FormChange[]> GetChangesAsync();
 
         protected virtual Task OnFieldChangeAsync(FieldIdentifier fieldIdentifier) => Task.CompletedTask;
 
@@ -54,21 +57,16 @@ namespace Sitko.Core.App.Blazor.Forms
         public abstract bool CanSave();
 
         public virtual bool IsValid { get; protected set; }
-        public bool HasChanges { get; private set; }
+        public bool HasChanges => Changes.Length > 0;
+        public FormChange[] Changes { get; private set; } = Array.Empty<FormChange>();
 
         public abstract Task SaveEntityAsync();
     }
 
     public abstract class BaseForm<TEntity> : BaseForm where TEntity : class, new()
     {
-        private readonly CompareLogic comparer;
+        private CompareLogic? comparer;
         protected TEntity? EntitySnapshot { get; private set; }
-
-        public BaseForm()
-        {
-            var comparerOptions = new ComparisonConfig { MaxDifferences = 100, Caching = true, AutoClearCache = true };
-            comparer = new CompareLogic(comparerOptions);
-        }
 
         public bool IsNew { get; protected set; }
         private TEntity? currentEntity;
@@ -77,6 +75,23 @@ namespace Sitko.Core.App.Blazor.Forms
         {
             get => currentEntity ?? throw new InvalidOperationException("Entity is not initialized");
             private set => currentEntity = value;
+        }
+
+        private CompareLogic GetComparer()
+        {
+            if (comparer is null)
+            {
+                var comparerOptions =
+                    new ComparisonConfig { MaxDifferences = 100, Caching = true, AutoClearCache = true };
+                ConfigureComparer(comparerOptions);
+                comparer = new CompareLogic(comparerOptions);
+            }
+
+            return comparer;
+        }
+
+        protected virtual void ConfigureComparer(ComparisonConfig comparisonConfig)
+        {
         }
 
 
@@ -202,34 +217,30 @@ namespace Sitko.Core.App.Blazor.Forms
 
         public override bool CanSave() => HasChanges && IsValid;
 
-        protected sealed override async Task<bool> DetectChangesAsync()
-        {
-            if (!IsNew)
-            {
-                return await DetectChangesAsync(Entity);
-            }
+        protected sealed override async Task<FormChange[]> GetChangesAsync() => await DetectChangesAsync(Entity);
 
-            return true;
-        }
-
-        protected virtual Task<bool> DetectChangesAsync(TEntity entity)
+        protected virtual Task<FormChange[]> DetectChangesAsync(TEntity entity)
         {
-            var result = false;
-            if (EntitySnapshot is null)
+            var changes = new List<FormChange>();
+            if (IsNew || EntitySnapshot is null)
             {
-                result = true;
+                changes.Add(new FormChange("Entity", null, entity, "null", entity.ToString() ?? "null"));
             }
             else
             {
-                var differences = comparer.Compare(EntitySnapshot, CreateEntitySnapshot(entity));
+                var differences = GetComparer().Compare(EntitySnapshot, CreateEntitySnapshot(entity));
                 if (!differences.AreEqual)
                 {
-                    result = true;
-                    Logger.LogDebug("Changes detected. {Changes}", differences.DifferencesString);
+                    foreach (var difference in differences.Differences)
+                    {
+                        var change = new FormChange(difference.GetShortItem(), difference.Object1, difference.Object2,
+                            difference.Object1Value, difference.Object2Value);
+                        changes.Add(change);
+                    }
                 }
             }
 
-            return Task.FromResult(result);
+            return Task.FromResult(changes.ToArray());
         }
     }
 
@@ -243,5 +254,11 @@ namespace Sitko.Core.App.Blazor.Forms
 
         public bool IsSuccess { get; }
         public string? Error { get; }
+    }
+
+    public record FormChange(string Property, object? OriginalValue, object? CurrentValue, string OriginalValueString,
+        string CurrentValueString)
+    {
+        public override string ToString() => $"{Property}: {OriginalValueString} -> {CurrentValueString}";
     }
 }

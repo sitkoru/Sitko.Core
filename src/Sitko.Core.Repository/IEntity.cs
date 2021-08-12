@@ -11,12 +11,12 @@ namespace Sitko.Core.Repository
 
     public interface IEntity
     {
-        object? GetId();
+        object? EntityId { get; }
     }
 
     public abstract class Entity<TEntityPk> : IEntity<TEntityPk>, IEquatable<Entity<TEntityPk>>
     {
-        public virtual object? GetId() => Id;
+        public virtual object? EntityId => Id;
 
         [Key]
 #pragma warning disable 8618
@@ -52,7 +52,7 @@ namespace Sitko.Core.Repository
                 return true;
             }
 
-            if (obj.GetType() != this.GetType())
+            if (obj.GetType() != GetType())
             {
                 return false;
             }
@@ -65,7 +65,7 @@ namespace Sitko.Core.Repository
 
     public abstract record EntityRecord<TEntityPk> : IEntity<TEntityPk>
     {
-        public virtual object? GetId() => Id;
+        public object? EntityId => Id;
 
         [Key]
 #pragma warning disable 8618
