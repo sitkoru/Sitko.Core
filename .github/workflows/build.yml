@@ -50,4 +50,4 @@ jobs:
         run: dotnet pack -c Release /p:Version=${{ steps.prep.outputs.version }} -o $(pwd)/packages
       - name: Publish nuget package
         if: github.ref == 'refs/heads/master'
-        run: find packages -name *.nupkg -exec dotnet nuget push {} -s https://nuget.pkg.github.com/sitkoru/index.json -k ${{ secrets.GITHUB_TOKEN }} --skip-duplicate \;
+        run: find packages -type f -name '*.nupkg' -print0 |  xargs -0 -n 10 -P 4 dotnet nuget push -s https://nuget.pkg.github.com/sitkoru/index.json -k ${{ secrets.GITHUB_TOKEN }}
