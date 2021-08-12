@@ -11,6 +11,26 @@ jobs:
     container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v2.3.4
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+      - name: 'Get next minor version'
+        id: semvers
+        uses: "WyriHaximus/github-action-next-semvers@v1"
+        with:
+          version: ${{ steps.previoustag.outputs.tag }}
+      - name: Prepare
+        id: prep
+        shell: bash
+        run: |
+          VERSION=$next_version-beta-`date "+%y%m%d%H%M"`
+          DOCKER_IMAGE_SITE=${{ secrets.DOCKER_REGISTRY_URL }}/${{ secrets.DOCKER_IMAGE_NAME_SITE }}
+          TAGS_SITE="${DOCKER_IMAGE_SITE}:${VERSION},${DOCKER_IMAGE_SITE}:beta,${DOCKER_IMAGE_SITE}:beta-${{ github.run_id }}"
+          echo ::set-output name=tags_site::${TAGS_SITE}
+          echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          echo ::set-output name=version::${VERSION}
+        env:
+          next_version: ${{ steps.semvers.outputs.patch }}
       - name: Install .NET Core 3.1
         uses: actions/setup-dotnet@v1.8.1
         with:
@@ -27,4 +47,7 @@ jobs:
       - name: Build
         run: dotnet build
       - name: Create packages
-        run: dotnet pack -c Release
+        run: dotnet pack -c Release /p:Version=${{ steps.prep.outputs.version }} -o $(pwd)/packages
+      - name: Publish nuget package
+        if: github.ref == 'refs/heads/master'
+        run: find packages -name *.nupkg -exec dotnet nuget push {} -s https://nuget.pkg.github.com/sitkoru/index.json -k ${{ secrets.GITHUB_TOKEN }} --skip-duplicate \;
