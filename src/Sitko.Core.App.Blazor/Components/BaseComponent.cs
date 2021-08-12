@@ -81,8 +81,11 @@ namespace Sitko.Core.App.Blazor.Components
 
         [PublicAPI] public bool IsLoading { get; private set; }
 
+        private NavigationManager? navigationManager;
+
         [PublicAPI]
-        protected NavigationManager NavigationManager => GlobalServiceProvider.GetRequiredService<NavigationManager>();
+        protected NavigationManager NavigationManager =>
+            navigationManager ??= GlobalServiceProvider.GetRequiredService<NavigationManager>();
 
         protected ILogger Logger
         {
