@@ -25,10 +25,8 @@ jobs:
         id: prep
         shell: bash
         run: |
-          VERSION=$next_version-beta-`date "+%y%m%d%H%M"`
-          DOCKER_IMAGE_SITE=${{ secrets.DOCKER_REGISTRY_URL }}/${{ secrets.DOCKER_IMAGE_NAME_SITE }}
-          TAGS_SITE="${DOCKER_IMAGE_SITE}:${VERSION},${DOCKER_IMAGE_SITE}:beta,${DOCKER_IMAGE_SITE}:beta-${{ github.run_id }}"
-          echo ::set-output name=tags_site::${TAGS_SITE}
+          VERSION=$next_version-ci.`date "+%y%m%d%H%M"`
+          echo VERSION=${VERSION}
           echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           echo ::set-output name=version::${VERSION}
         env:
