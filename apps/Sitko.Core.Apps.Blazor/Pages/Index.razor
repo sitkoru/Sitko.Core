@@ -6,7 +6,7 @@
 <ChildContent>
 <AntRepositoryList TItem="BarModel" TEntityPk="Guid">
     <AntDesign.Column Title="Id" @bind-Field="@context.Id" Sortable DefaultSortOrder="SortDirection.Ascending">
-        @context.Id
+        <a href="/Bars/@context.Id/Edit">@context.Id</a>
     </AntDesign.Column>
     <AntDesign.Column Title="Название" @bind-Field="@context.Bar" Sortable Filters="barFilter">
         @context.Bar
