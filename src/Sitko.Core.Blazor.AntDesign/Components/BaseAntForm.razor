@@ -12,5 +12,9 @@
     </Validator>
     <ChildContent>
         @ChildContentFragment
+        @if (Debug)
+                {
+                    <AntFormDebug TEntity="TEntity" Form="this"></AntFormDebug>
+                }
     </ChildContent>
 </Form>

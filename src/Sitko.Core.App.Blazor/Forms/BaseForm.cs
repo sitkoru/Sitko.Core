@@ -58,6 +58,7 @@ namespace Sitko.Core.App.Blazor.Forms
         public virtual bool IsValid { get; protected set; }
         public bool HasChanges => Changes.Length > 0;
         public FormChange[] Changes { get; private set; } = Array.Empty<FormChange>();
+        public string[] Errors => EditContext?.GetValidationMessages().ToArray() ?? Array.Empty<string>();
 
         public abstract Task SaveEntityAsync();
     }

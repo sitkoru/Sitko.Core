@@ -64,6 +64,8 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         [Parameter] public bool ValidateOnChange { get; set; } = true;
 
+        [Parameter] public bool Debug { get; set; }
+
         [Inject] protected MessageService MessageService { get; set; } = null!;
 
         protected override async Task InitializeAsync()
@@ -108,5 +110,11 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         protected override Task<FormSaveResult> AddAsync(TEntity entity) => Add!(entity);
 
         protected override Task<FormSaveResult> UpdateAsync(TEntity entity) => Update!(entity);
+
+        public override async Task ResetAsync()
+        {
+            await base.ResetAsync();
+            AntFormInstance!.Reset();
+        }
     }
 }

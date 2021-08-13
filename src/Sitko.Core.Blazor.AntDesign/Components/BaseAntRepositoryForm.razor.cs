@@ -63,6 +63,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         [Parameter] public string? Name { get; set; }
 
         [Parameter] public bool ValidateOnChange { get; set; } = true;
+        [Parameter] public bool Debug { get; set; }
 
         [Inject] protected MessageService MessageService { get; set; } = null!;
 
@@ -80,5 +81,11 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         public void Save() => AntForm?.Submit();
 
         protected abstract RenderFragment ChildContentFragment { get; }
+
+        public override async Task ResetAsync()
+        {
+            await base.ResetAsync();
+            AntForm!.Reset();
+        }
     }
 }

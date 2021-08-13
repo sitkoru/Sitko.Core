@@ -1,0 +1,74 @@
+﻿@inherits Sitko.Core.App.Blazor.Components.BaseComponent
+@typeparam TEntity
+
+<Divider/>
+<Collapse>
+    <Panel Header="Debug">
+        <Result Status="@(Form.IsValid ? "success" : "error")">
+            <div class="desc">
+                @if (Form.IsNew)
+                {
+                    <Paragraph>
+                        <Text Strong Style="font-size: 16px;">
+                            @LocalizationProvider["New entity"]
+                        </Text>
+                    </Paragraph>
+                }
+                @if (!Form.IsValid)
+                {
+                    <Paragraph>
+                        <Text Strong Style="font-size: 16px;">
+                            @LocalizationProvider["Errors"]
+                        </Text>
+                    </Paragraph>
+                    @foreach (var error in Form.Errors)
+                    {
+                        <Paragraph>
+                            <Icon Type="close-circle" Theme="Outline"/> @error
+                        </Paragraph>
+                    }
+                }
+                else
+                {
+                    <Paragraph>
+                        <Text Strong Style="font-size: 16px;">
+                            @LocalizationProvider["No errors"]
+                        </Text>
+                    </Paragraph>
+                }
+                @if (Form.HasChanges)
+                {
+                    <Paragraph>
+                        <Text Strong Style="font-size: 16px;">
+                            @LocalizationProvider["Changes"]
+                        </Text>
+                    </Paragraph>
+                    @foreach (var change in Form.Changes)
+                    {
+                        <Paragraph>
+                            <Icon Type="edit" Theme="Outline"/> @change
+                        </Paragraph>
+                    }
+                }
+                else
+                {
+                    <Paragraph>
+                        <Text Strong Style="font-size: 16px;">
+                            @LocalizationProvider["No changes"]
+                        </Text>
+                    </Paragraph>
+                }
+                <Paragraph>
+                    <Text Strong Style="font-size: 16px;">
+                        @LocalizationProvider["Entity"]
+                    </Text>
+                </Paragraph>
+                <Paragraph>
+                    <Text>
+                        <pre>@EntityJson</pre>
+                    </Text>
+                </Paragraph>
+            </div>
+        </Result>
+    </Panel>
+</Collapse>

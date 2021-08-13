@@ -1,6 +1,13 @@
 {
-    "Success": "Успех",
-    "Error": "Ошибка",
-    "Critical error": "Критическая ошибка",
-    "Upload": "Загрузить"
+  "Success": "Успех",
+  "Error": "Ошибка",
+  "Critical error": "Критическая ошибка",
+  "Upload": "Загрузить",
+  "Entity saved successfully": "Запись успешно сохранена",
+  "New entity": "Новая сущность",
+  "Entity": "Сущность",
+  "Errors": "Ошибки",
+  "Changes": "Изменения",
+  "No errors": "Ошибок нет",
+  "No changes": "Изменений нет"
 }
