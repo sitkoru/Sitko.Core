@@ -107,20 +107,6 @@ namespace Sitko.Core.App.Blazor.Forms
 
         public override void NotifyChange() => NotifyChange(new FieldIdentifier(Entity, "Id"));
 
-        protected ILocalizationProvider LocalizationProvider
-        {
-            get
-            {
-                if (localizationProvider is null)
-                {
-                    var localizationProviderType = typeof(ILocalizationProvider<>);
-                    var componentLoggerType = localizationProviderType.MakeGenericType(GetType());
-                    localizationProvider = GetRequiredService<ILocalizationProvider>(componentLoggerType);
-                }
-
-                return localizationProvider;
-            }
-        }
 
         protected override async Task InitializeAsync()
         {
