@@ -1,15 +1,6 @@
 ﻿@page "/Edit/{Id:guid}"
 @inherits BaseComponent
-<BarForm Layout="@FormLayout.Vertical" EntityId="Id">
-    <p>
-        IsValid: @context.IsValid
-    </p>
-    <p>
-        HasChanges: @context.HasChanges
-    </p>
-    <p>
-        IsNew: @context.IsNew
-    </p>
+<BarForm Layout="@FormLayout.Vertical" EntityId="Id" Debug="true">
     <AntDesign.FormItem Label="Bar">
         <AntDesign.Input @bind-Value="@context.Entity.Bar"/>
     </AntDesign.FormItem>
@@ -35,6 +26,7 @@
         <Button OnClick="() => context.AddFoo()">Add foo</Button>
         <Button OnClick="() => context.SetFoo()">Set foo</Button>
         <Button Disabled="@(!context.CanSave())" OnClick="@context.Save">Save</Button>
+        <Button Disabled="@(!context.HasChanges)" OnClick="@context.ResetAsync">Reset</Button>
     </div>
 </BarForm>
 
