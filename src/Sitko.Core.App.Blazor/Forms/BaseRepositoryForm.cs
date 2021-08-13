@@ -68,12 +68,6 @@ namespace Sitko.Core.App.Blazor.Forms
             return new FormSaveResult(result.IsSuccess, result.ErrorsString);
         }
 
-        public override async Task ResetAsync()
-        {
-            await InitializeAsync();
-            await NotifyStateChangeAsync();
-        }
-
         protected override void ConfigureComparer(ComparisonConfig comparisonConfig)
         {
             base.ConfigureComparer(comparisonConfig);

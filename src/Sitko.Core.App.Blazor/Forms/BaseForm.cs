@@ -192,7 +192,12 @@ namespace Sitko.Core.App.Blazor.Forms
 
         protected virtual Task BeforeEntitySaveAsync(TEntity entity) => Task.CompletedTask;
 
-        public override Task ResetAsync() => InitializeAsync();
+        public override async Task ResetAsync()
+        {
+            await InitializeAsync();
+            await UpdateFormStateAsync();
+            await NotifyStateChangeAsync();
+        }
 
         protected virtual Task BeforeSaveAsync() => Task.CompletedTask;
 
