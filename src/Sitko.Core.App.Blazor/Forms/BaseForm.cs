@@ -205,18 +205,14 @@ namespace Sitko.Core.App.Blazor.Forms
 
         protected virtual Task OnUpdatedAsync(TEntity entity) => Task.CompletedTask;
 
-        public override bool CanSave() => HasChanges && IsValid;
+        public override bool CanSave() => IsValid && (IsNew || HasChanges);
 
         protected sealed override async Task<FormChange[]> GetChangesAsync() => await DetectChangesAsync(Entity);
 
         protected virtual Task<FormChange[]> DetectChangesAsync(TEntity entity)
         {
             var changes = new List<FormChange>();
-            if (IsNew || EntitySnapshot is null)
-            {
-                changes.Add(new FormChange("Entity", null, entity, "null", entity.ToString() ?? "null"));
-            }
-            else
+            if (!IsNew && EntitySnapshot is not null)
             {
                 var differences = GetComparer().Compare(EntitySnapshot, CreateEntitySnapshot(entity));
                 if (!differences.AreEqual)
