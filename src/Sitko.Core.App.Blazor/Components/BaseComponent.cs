@@ -8,6 +8,7 @@ using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.WebUtilities;
+using Sitko.Core.App.Localization;
 
 namespace Sitko.Core.App.Blazor.Components
 {
@@ -99,6 +100,23 @@ namespace Sitko.Core.App.Blazor.Components
                 }
 
                 return logger;
+            }
+        }
+
+        private ILocalizationProvider? localizationProvider;
+
+        protected ILocalizationProvider LocalizationProvider
+        {
+            get
+            {
+                if (localizationProvider is null)
+                {
+                    var localizationProviderType = typeof(ILocalizationProvider<>);
+                    var componentLocalizationProviderType = localizationProviderType.MakeGenericType(GetType());
+                    localizationProvider = GetRequiredService<ILocalizationProvider>(componentLocalizationProviderType);
+                }
+
+                return localizationProvider;
             }
         }
 

@@ -22,7 +22,6 @@ namespace Sitko.Core.Apps.Blazor.Pages
         private BarModel[] bars = Array.Empty<BarModel>();
         public BarModel? Bar { get; set; }
         private IStorage Storage => GetRequiredService<IStorage>();
-        [Inject] public ILocalizationProvider<App> LocalizationProvider { get; set; } = null!;
 
         public BarRepository ScopedBarRepository => GetRequiredService<BarRepository>();
 

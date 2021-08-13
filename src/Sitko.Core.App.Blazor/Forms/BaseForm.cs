@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Components;
 namespace Sitko.Core.App.Blazor.Forms
 {
     using Json;
-    using Localization;
 
     public abstract class BaseForm : BaseComponent
     {
@@ -106,7 +105,6 @@ namespace Sitko.Core.App.Blazor.Forms
             EditContext?.NotifyFieldChanged(fieldIdentifier);
 
         public override void NotifyChange() => NotifyChange(new FieldIdentifier(Entity, "Id"));
-        private ILocalizationProvider? localizationProvider;
 
         protected ILocalizationProvider LocalizationProvider
         {
