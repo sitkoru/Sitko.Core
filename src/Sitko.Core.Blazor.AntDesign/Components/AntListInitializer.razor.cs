@@ -12,8 +12,16 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
     public class AntListInitializer<TEntity> : BaseComponent where TEntity : class
     {
-        [Parameter] public BaseAntListComponent<TEntity> AntListComponent { get; set; } = null!;
-        [Parameter] public Table<TEntity> Table { get; set; } = null!;
+#if NET6_0_OR_GREATER
+        [EditorRequired]
+#endif
+        [Parameter]
+        public BaseAntListComponent<TEntity> AntListComponent { get; set; } = null!;
+#if NET6_0_OR_GREATER
+        [EditorRequired]
+#endif
+        [Parameter]
+        public Table<TEntity> Table { get; set; } = null!;
 
         protected override async Task InitializeAsync()
         {

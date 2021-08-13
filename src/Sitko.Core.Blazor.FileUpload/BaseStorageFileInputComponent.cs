@@ -11,7 +11,12 @@ namespace Sitko.Core.Blazor.FileUpload
     public abstract class
         BaseStorageFileInputComponent<TInput> : BaseFileInputComponent<StorageFileUploadResult, TInput>
     {
-        [Parameter] public IStorage Storage { get; set; } = null!;
+#if NET6_0_OR_GREATER
+        [EditorRequired]
+#endif
+        [Parameter]
+        public IStorage Storage { get; set; } = null!;
+
         [Parameter] public string UploadPath { get; set; } = "";
         [Parameter] public Func<FileUploadRequest, FileStream, Task<object>>? GenerateMetadata { get; set; }
 
@@ -30,23 +35,25 @@ namespace Sitko.Core.Blazor.FileUpload
 
     public abstract class BaseStorageItemInputComponent : BaseStorageFileInputComponent<StorageItem>
     {
-        protected override StorageItem? GetResult(IEnumerable<StorageFileUploadResult> results) => results.FirstOrDefault()?.StorageItem;
+        protected override StorageItem? GetResult(IEnumerable<StorageFileUploadResult> results) =>
+            results.FirstOrDefault()?.StorageItem;
     }
 
     public abstract class BaseStorageItemsInputComponent : BaseStorageFileInputComponent<IEnumerable<StorageItem>>
     {
-        protected override IEnumerable<StorageItem> GetResult(IEnumerable<StorageFileUploadResult> results) => results.Select(r => r.StorageItem);
+        protected override IEnumerable<StorageItem> GetResult(IEnumerable<StorageFileUploadResult> results) =>
+            results.Select(r => r.StorageItem);
     }
 
     public class StorageFileUploadResult : IFileUploadResult
     {
-        public StorageItem StorageItem { get; }
-
         public StorageFileUploadResult(StorageItem storageItem, string url)
         {
             StorageItem = storageItem;
             Url = url;
         }
+
+        public StorageItem StorageItem { get; }
 
         public string FileName => StorageItem.FileName!;
         public string FilePath => StorageItem.FilePath;

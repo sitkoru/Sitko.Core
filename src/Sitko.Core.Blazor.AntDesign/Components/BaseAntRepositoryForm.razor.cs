@@ -11,7 +11,11 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         IRepository<TEntity, TEntityPk>>
         where TEntity : class, IEntity<TEntityPk>, new()
     {
-        [Parameter] public RenderFragment<AntRepositoryForm<TEntity, TEntityPk>> ChildContent { get; set; } = null!;
+#if NET6_0_OR_GREATER
+        [EditorRequired]
+#endif
+        [Parameter]
+        public RenderFragment<AntRepositoryForm<TEntity, TEntityPk>> ChildContent { get; set; } = null!;
 
         protected override RenderFragment ChildContentFragment => ChildContent(this);
     }
@@ -67,6 +71,8 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         [Inject] protected MessageService MessageService { get; set; } = null!;
 
+        protected abstract RenderFragment ChildContentFragment { get; }
+
         protected override async Task InitializeAsync()
         {
             await base.InitializeAsync();
@@ -79,8 +85,6 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             MessageService.Error(string.Join(". ", editContext.GetValidationMessages()));
 
         public void Save() => AntForm?.Submit();
-
-        protected abstract RenderFragment ChildContentFragment { get; }
 
         public override async Task ResetAsync()
         {

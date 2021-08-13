@@ -12,7 +12,11 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
     public class AntForm<TEntity> : BaseAntForm<TEntity>
         where TEntity : class, new()
     {
-        [Parameter] public RenderFragment<BaseAntForm<TEntity>> ChildContent { get; set; } = null!;
+#if NET6_0_OR_GREATER
+        [EditorRequired]
+#endif
+        [Parameter]
+        public RenderFragment<BaseAntForm<TEntity>> ChildContent { get; set; } = null!;
 
         protected override RenderFragment ChildContentFragment => ChildContent(this);
     }
@@ -68,6 +72,24 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         [Inject] protected MessageService MessageService { get; set; } = null!;
 
+#if NET6_0_OR_GREATER
+        [EditorRequired]
+#endif
+        [Parameter]
+        public Func<TEntity, Task<FormSaveResult>>? Add { get; set; }
+
+#if NET6_0_OR_GREATER
+        [EditorRequired]
+#endif
+        [Parameter]
+        public Func<TEntity, Task<FormSaveResult>>? Update { get; set; }
+
+#if NET6_0_OR_GREATER
+        [EditorRequired]
+#endif
+        [Parameter]
+        public Func<Task<(bool IsNew, TEntity Entity)>>? GetEntity { get; set; }
+
         protected override async Task InitializeAsync()
         {
             await base.InitializeAsync();
@@ -82,11 +104,6 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             MessageService.Error(string.Join(". ", editContext.GetValidationMessages()));
 
         public void Save() => AntFormInstance?.Submit();
-
-        [Parameter] public Func<TEntity, Task<FormSaveResult>>? Add { get; set; }
-
-        [Parameter] public Func<TEntity, Task<FormSaveResult>>? Update { get; set; }
-        [Parameter] public Func<Task<(bool IsNew, TEntity Entity)>>? GetEntity { get; set; }
 
         protected override void OnParametersSet()
         {

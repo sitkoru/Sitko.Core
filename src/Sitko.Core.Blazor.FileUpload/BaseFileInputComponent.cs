@@ -134,7 +134,8 @@ namespace Sitko.Core.Blazor.FileUpload
         protected virtual Task NotifyUploadAsync(int resultsCount) => Task.CompletedTask;
 
 
-        protected virtual Task NotifyFileContentTypeNotAllowedAsync(string fileName, string fileContentType) => Task.CompletedTask;
+        protected virtual Task NotifyFileContentTypeNotAllowedAsync(string fileName, string fileContentType) =>
+            Task.CompletedTask;
 
         protected virtual Task NotifyFileExceedMaxSizeAsync(string fileName, long fileSize) => Task.CompletedTask;
 

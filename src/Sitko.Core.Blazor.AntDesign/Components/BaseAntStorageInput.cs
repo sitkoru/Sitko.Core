@@ -32,7 +32,12 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         [Parameter] public string PreviewText { get; set; } = "";
         [Parameter] public string DownloadText { get; set; } = "";
         [Parameter] public string RemoveText { get; set; } = "";
-        [Parameter] public IStorage Storage { get; set; } = null!;
+#if NET6_0_OR_GREATER
+        [EditorRequired]
+#endif
+        [Parameter]
+        public IStorage Storage { get; set; } = null!;
+
         [Parameter] public bool EnableOrdering { get; set; } = true;
         [Parameter] public virtual AntStorageInputMode Mode { get; set; } = AntStorageInputMode.File;
         [Parameter] public Func<StorageItem, UploadedItemUrlType, string>? GeneratePreviewUrl { get; set; }
@@ -164,7 +169,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         {
             var urls = new Dictionary<UploadedItemUrlType, string>
             {
-                {UploadedItemUrlType.Full, Storage.PublicUri(storageItem).ToString()}
+                { UploadedItemUrlType.Full, Storage.PublicUri(storageItem).ToString() }
             };
             if (Mode == AntStorageInputMode.Image)
             {
@@ -242,7 +247,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         {
             if (currentValue is not null)
             {
-                return new[] {CreateUploadedItem(currentValue)};
+                return new[] { CreateUploadedItem(currentValue) };
             }
 
             return Array.Empty<UploadedItem>();
