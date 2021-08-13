@@ -18,11 +18,13 @@ namespace Sitko.Core.Blazor.FluentValidation
     /// </summary>
     public class FluentValidator : BaseComponent
     {
+        private ValidationMessageStore? messages;
+
         /// <summary>
         /// Inherited object from the FormEdit component.
         /// </summary>
         [CascadingParameter]
-        private EditContext? CurrentEditContext { get; set; }
+        private EditContext CurrentEditContext { get; set; } = null!;
 
         /// <summary>
         /// The AbstractValidator object for the corresponding form Model object type.
@@ -94,33 +96,37 @@ namespace Sitko.Core.Blazor.FluentValidation
         /// </summary>
         private void AddValidation()
         {
-            var messages = new ValidationMessageStore(CurrentEditContext!);
+            messages = new ValidationMessageStore(CurrentEditContext);
 
             // Perform object-level validation on request
             // ReSharper disable once AsyncVoidLambda
-            CurrentEditContext!.OnValidationRequested +=
-                async (sender, _) => await ValidateModel((EditContext)sender!, messages);
+            CurrentEditContext.OnValidationRequested += HandleModelValidation;
 
             // Perform per-field validation on each field edit
             // ReSharper disable once AsyncVoidLambda
-            CurrentEditContext.OnFieldChanged += async (_, eventArgs) =>
-                await ValidateField(CurrentEditContext, messages, eventArgs.FieldIdentifier);
+            CurrentEditContext.OnFieldChanged += HandleFieldValidation;
         }
+
+        private void HandleModelValidation(object? sender, ValidationRequestedEventArgs args) =>
+            InvokeAsync(ValidateModel);
+
+        private void HandleFieldValidation(object? sender, FieldChangedEventArgs args) =>
+            InvokeAsync(() => ValidateField(args.FieldIdentifier));
 
         /// <summary>
         /// Validate the whole form and trigger client UI update.
         /// </summary>
-        /// <param name="editContext"></param>
-        /// <param name="messages"></param>
-        private async Task ValidateModel(EditContext editContext, ValidationMessageStore messages)
+        private async Task ValidateModel()
         {
             // <EditForm> should now be able to run async validations:
             // https://github.com/dotnet/aspnetcore/issues/11914
-            var validationResults = await TryValidateModel(editContext);
+            messages ??= new ValidationMessageStore(CurrentEditContext);
+
+            var validationResults = await TryValidateModel();
             messages.Clear();
             if (validationResults is not null)
             {
-                var graph = new ModelGraphCache(editContext.Model);
+                var graph = new ModelGraphCache(CurrentEditContext.Model);
                 foreach (var error in validationResults.Errors)
                 {
                     var (propertyValue, propertyName) = graph.EvalObjectProperty(error.PropertyName);
@@ -133,20 +139,19 @@ namespace Sitko.Core.Blazor.FluentValidation
                 }
             }
 
-            editContext.NotifyValidationStateChanged();
+            CurrentEditContext.NotifyValidationStateChanged();
         }
 
         /// <summary>
         /// Attempts to validate an entire form object model.
         /// </summary>
-        /// <param name="editContext"></param>
         /// <returns></returns>
-        private async Task<ValidationResult?> TryValidateModel(EditContext editContext)
+        private async Task<ValidationResult?> TryValidateModel()
         {
             try
             {
-                var validationContext = CreateValidationContext(editContext.Model);
-                var validator = TryGetModelValidator(editContext);
+                var validationContext = CreateValidationContext(CurrentEditContext.Model);
+                var validator = TryGetModelValidator();
                 if (validator is null)
                 {
                     return null;
@@ -157,7 +162,7 @@ namespace Sitko.Core.Blazor.FluentValidation
             catch (Exception ex)
             {
                 var msg =
-                    $"An unhandled exception occurred when validating <EditForm> model type: '{editContext.Model.GetType()}'";
+                    $"An unhandled exception occurred when validating <EditForm> model type: '{CurrentEditContext.Model.GetType()}'";
                 throw new UnhandledValidationException(msg, ex);
             }
         }
@@ -166,11 +171,9 @@ namespace Sitko.Core.Blazor.FluentValidation
         /// Attempts to validate a single field or property of a form model or child object model.
         /// </summary>
         /// <param name="validator"></param>
-        /// <param name="editContext"></param>
         /// <param name="fieldIdentifier"></param>
         /// <returns></returns>
-        private async Task<ValidationResult> TryValidateField(IValidator validator, EditContext editContext,
-            FieldIdentifier fieldIdentifier)
+        private async Task<ValidationResult> TryValidateField(IValidator validator, FieldIdentifier fieldIdentifier)
         {
             try
             {
@@ -182,24 +185,24 @@ namespace Sitko.Core.Blazor.FluentValidation
             {
                 var msg = $"An unhandled exception occurred when validating field name: '{fieldIdentifier.FieldName}'";
 
-                if (editContext.Model != fieldIdentifier.Model)
+                if (CurrentEditContext.Model != fieldIdentifier.Model)
                 {
                     msg += $" of a child object of type: {fieldIdentifier.Model.GetType()}";
                 }
 
-                msg += $" of <EditForm> model type: '{editContext.Model.GetType()}'";
+                msg += $" of <EditForm> model type: '{CurrentEditContext.Model.GetType()}'";
                 throw new UnhandledValidationException(msg, ex);
             }
         }
 
-        private IValidator? TryGetModelValidator(EditContext editContext)
+        private IValidator? TryGetModelValidator()
         {
-            var validator = Validator ?? TryGetValidatorForObjectType(editContext.Model.GetType());
+            var validator = Validator ?? TryGetValidatorForObjectType(CurrentEditContext.Model.GetType());
             if (validator is null)
             {
                 Logger.LogWarning(
                     "FluentValidation.IValidator<{FormType}> is not registered in the application service provider.",
-                    editContext.Model.GetType().FullName);
+                    CurrentEditContext.Model.GetType().FullName);
             }
 
             return validator;
@@ -208,14 +211,13 @@ namespace Sitko.Core.Blazor.FluentValidation
         /// <summary>
         /// Attempts to retrieve the field or property validator of a form model or child object model.
         /// </summary>
-        /// <param name="editContext"></param>
         /// <param name="fieldIdentifier"></param>
         /// <returns></returns>
-        private IValidator? TryGetFieldValidator(EditContext editContext, in FieldIdentifier fieldIdentifier)
+        private IValidator? TryGetFieldValidator(in FieldIdentifier fieldIdentifier)
         {
-            if (fieldIdentifier.Model == editContext.Model)
+            if (fieldIdentifier.Model == CurrentEditContext.Model)
             {
-                return TryGetModelValidator(editContext);
+                return TryGetModelValidator();
             }
 
             var modelType = fieldIdentifier.Model.GetType();
@@ -232,20 +234,19 @@ namespace Sitko.Core.Blazor.FluentValidation
         /// <summary>
         /// Validate a single field and trigger client UI update.
         /// </summary>
-        /// <param name="editContext"></param>
-        /// <param name="messages"></param>
         /// <param name="fieldIdentifier"></param>
-        private async Task ValidateField(EditContext editContext, ValidationMessageStore messages,
-            FieldIdentifier fieldIdentifier)
+        private async Task ValidateField(FieldIdentifier fieldIdentifier)
         {
-            var fieldValidator = TryGetFieldValidator(editContext, fieldIdentifier);
+            messages ??= new ValidationMessageStore(CurrentEditContext);
+
+            var fieldValidator = TryGetFieldValidator(fieldIdentifier);
             if (fieldValidator == null)
             {
                 // Should not error / just fail silently for classes not supposed to be validated.
                 return;
             }
 
-            var validationResults = await TryValidateField(fieldValidator, editContext, fieldIdentifier);
+            var validationResults = await TryValidateField(fieldValidator, fieldIdentifier);
             messages.Clear(fieldIdentifier);
 
             foreach (var error in validationResults.Errors)
@@ -253,7 +254,7 @@ namespace Sitko.Core.Blazor.FluentValidation
                 messages.Add(fieldIdentifier, error.ErrorMessage);
             }
 
-            editContext.NotifyValidationStateChanged();
+            CurrentEditContext.NotifyValidationStateChanged();
         }
 
         protected override void Dispose(bool disposing)
@@ -261,6 +262,8 @@ namespace Sitko.Core.Blazor.FluentValidation
             base.Dispose(disposing);
             if (disposing)
             {
+                CurrentEditContext.OnValidationRequested -= HandleModelValidation;
+                CurrentEditContext.OnFieldChanged -= HandleFieldValidation;
                 ServiceScope.Dispose();
             }
         }
