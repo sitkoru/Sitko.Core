@@ -13,6 +13,15 @@ namespace Sitko.Core.App.Blazor.Forms
     {
         [Parameter] public TEntityPk? EntityId { get; set; }
 
+        protected override async Task OnParametersSetAsync()
+        {
+            await base.OnParametersSetAsync();
+            if (EntitySnapshot != null && EntityId?.Equals(Entity.Id) == false)
+            {
+                await ResetAsync();
+            }
+        }
+
         protected override async Task<(bool IsNew, TEntity Entity)> GetEntityAsync()
         {
             var isNew = false;
