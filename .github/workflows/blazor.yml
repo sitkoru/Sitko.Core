@@ -11,8 +11,8 @@ on:
   pull_request:
     branches: [ master ]
     paths:
-      - "src/Sitko.Core.App.AntDesign/**"
-      - "src/Sitko.Core.Blazor.Blazor/**"
+      - "src/Sitko.Core.App.Blazor/**"
+      - "src/Sitko.Core.Blazor.AntDesign/**"
       - "tests/Sitko.Core.App.Blazor.Tests/**"
       - ".github/workflows/blazor.yml"
 
