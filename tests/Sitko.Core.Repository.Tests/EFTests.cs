@@ -339,7 +339,7 @@ namespace Sitko.Core.Repository.Tests
                 var updateResult =
                     await repository3.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
-                Assert.Equal(2, updateResult.Changes.Length);
+                Assert.Single(updateResult.Changes);
             }
 
             using (var finalScope = scope.CreateScope())
@@ -392,7 +392,7 @@ namespace Sitko.Core.Repository.Tests
                 var updateResult =
                     await repository3.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
-                Assert.Equal(2, updateResult.Changes.Length);
+                Assert.Single(updateResult.Changes);
             }
 
             using (var finalScope = scope.CreateScope())
@@ -510,7 +510,7 @@ namespace Sitko.Core.Repository.Tests
                 var updateResult =
                     await repository3.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
-                Assert.Equal(2, updateResult.Changes.Length);
+                Assert.Single(updateResult.Changes);
             }
 
             using (var finalScope = scope.CreateScope())
@@ -613,15 +613,23 @@ namespace Sitko.Core.Repository.Tests
                 Assert.NotNull(originalBar);
             }
 
-            Assert.NotEmpty(originalBar!.Foos);
-            var foo = originalBar.Foos.OrderBy(_ => Guid.NewGuid()).First(); // change random
+            BarModel? bar;
+            using (var scope1 = scope.CreateScope())
+            {
+                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
+                bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id).Include(b => b.Foos));
+                Assert.NotNull(bar);
+            }
+
+            Assert.NotEmpty(bar!.Foos);
+            var foo = bar.Foos.OrderBy(_ => Guid.NewGuid()).First(); // change random
             var newText = Guid.NewGuid().ToString();
             foo.FooText = newText;
 
             using (var scope3 = scope.CreateScope())
             {
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
-                var updateResult = await repository3.UpdateAsync(originalBar);
+                var updateResult = await repository3.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
                 Assert.Single(updateResult.Changes);
             }
@@ -630,7 +638,7 @@ namespace Sitko.Core.Repository.Tests
             {
                 var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
                 var updatedBar =
-                    await repository.GetAsync(q => q.Where(b => b.Id == originalBar.Id).Include(b => b.Foos));
+                    await repository.GetAsync(q => q.Where(b => b.Id == bar.Id).Include(b => b.Foos));
                 Assert.Equal(newText, updatedBar!.Foos.First(f => f.Id == foo.Id).FooText);
             }
         }
@@ -651,7 +659,7 @@ namespace Sitko.Core.Repository.Tests
             using (var scope1 = scope.CreateScope())
             {
                 var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
-                bar = await repository1.GetAsync(q => q.Where(b => b.Id==originalBar!.Id));
+                bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id));
                 Assert.NotNull(bar);
             }
 

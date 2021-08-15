@@ -168,254 +168,41 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             }
         }
 
-        private static bool HasChanges(EntityChange[]? entityChanges, IEntity entity, string propertyName)
+        private static bool HasChanges(EntityChange[]? entityChanges, IEntity entity, string propertyName,
+            out PropertyChange? change)
         {
+            change = default;
             if (entityChanges is null)
             {
                 return true;
             }
 
             var entityChange = entityChanges.FirstOrDefault(c => c.Entity.Equals(entity));
-            return entityChange?.Changes.Any(c => c.Name == propertyName) == true;
+            var propertyChanges = entityChange?.Changes.Where(c => c.Name == propertyName).ToArray() ??
+                                  Array.Empty<PropertyChange>();
+            if (propertyChanges.Length > 0)
+            {
+                change = propertyChanges.First();
+                return true;
+            }
+
+            return false;
         }
 
-        private async Task<IEntity?> ProcessEntryAsync(EntityEntry<IEntity>? originalEntry,
-            EntityEntry<IEntity> modifiedEntry,
-            TDbContext context, List<IEntity> proccessedEntities, EntityChange[]? changes)
+        private static bool HasChanges(EntityChange[]? entityChanges, IEntity entity) =>
+            HasChanges(entityChanges, entity, out _);
+
+        private static bool HasChanges(EntityChange[]? entityChanges, IEntity entity, out PropertyChange[] changes)
         {
-            var entity = originalEntry?.Entity;
-            var isNew = false;
-            if (originalEntry is null)
+            if (entityChanges is null)
             {
-                if (modifiedEntry.IsKeySet)
-                {
-                    var pk = modifiedEntry.Properties.First(p => p.Metadata.IsPrimaryKey()).CurrentValue;
-                    var originalEntity = await context.FindAsync(modifiedEntry.Entity.GetType(), pk);
-                    if (originalEntity is null)
-                    {
-                        throw new InvalidOperationException(
-                            $"Can't find entity {modifiedEntry.Entity.GetType()} with PK {pk}");
-                    }
-
-                    if (originalEntity is IEntity typedEntity)
-                    {
-                        entity = typedEntity;
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException(
-                            $"Entity {modifiedEntry.Entity.GetType()} with PK {pk} is not IEntity");
-                    }
-                }
-                else
-                {
-                    entity = modifiedEntry.Entity;
-                    isNew = true;
-                }
-
-                originalEntry = context.Entry(entity);
-            }
-            else
-            {
-                if (proccessedEntities.Contains(originalEntry.Entity))
-                {
-                    return originalEntry.Entity;
-                }
+                changes = Array.Empty<PropertyChange>();
+                return true;
             }
 
-            if (isNew)
-            {
-                return entity;
-            }
-
-            if (entity is null)
-            {
-                throw new InvalidOperationException("Entity is null");
-            }
-
-            proccessedEntities.Add(entity);
-            var modifiedFks = new List<string>();
-            foreach (var entryProperty in originalEntry.Properties)
-            {
-                if (entryProperty.Metadata.IsKey() || entryProperty.Metadata.IsShadowProperty())
-                {
-                    continue;
-                }
-
-                var modifiedProperty = modifiedEntry.Property(entryProperty.Metadata.Name);
-                if (!entryProperty.Metadata.GetValueComparer()
-                    .Equals(entryProperty.CurrentValue, modifiedProperty.CurrentValue))
-                {
-                    Logger.LogDebug(
-                        "Entity {Type} [{Entity}]. Property {Property} changed from {OldValue} to {NewValue}",
-                        entity.GetType().Name, entity.EntityId, entryProperty.Metadata.Name, entryProperty.CurrentValue,
-                        modifiedProperty.CurrentValue);
-                    entryProperty.CurrentValue = modifiedProperty.CurrentValue;
-                    if (entryProperty.Metadata.IsForeignKey())
-                    {
-                        modifiedFks.Add(entryProperty.Metadata.Name);
-                    }
-                }
-            }
-
-            foreach (var entryReference in originalEntry.References)
-            {
-                var changedViaProperty = false;
-                if (entryReference.Metadata is INavigation navigation)
-                {
-                    foreach (var foreignKeyProperty in navigation.ForeignKey.Properties)
-                    {
-                        if (modifiedFks.Contains(foreignKeyProperty.Name))
-                        {
-                            changedViaProperty = true;
-                        }
-                    }
-                }
-
-                if (changedViaProperty)
-                {
-                    continue;
-                }
-
-                var modifiedReference = modifiedEntry.Reference(entryReference.Metadata.Name);
-                if (modifiedReference.CurrentValue is not null &&
-                    modifiedReference.CurrentValue is IEntity modifiedEntity)
-                {
-                    var referenceEntry = entryReference.CurrentValue is null
-                        ? null
-                        : EFRepositoryHelper.GetTrackedEntity(context, (IEntity)entryReference.CurrentValue);
-                    var processedEntity = await ProcessEntryAsync(referenceEntry,
-                        context.Entry(modifiedEntity), context, proccessedEntities, changes);
-                    if (processedEntity != entryReference.CurrentValue)
-                    {
-                        Logger.LogDebug(
-                            "Entity {Type} [{Entity}]. Reference {Property} changed from {OldValue} to {NewValue}",
-                            entity.GetType().Name, entity.EntityId, entryReference.Metadata.Name,
-                            entryReference.CurrentValue, processedEntity);
-                        entryReference.CurrentValue = processedEntity;
-                    }
-                }
-                else
-                {
-                    if (HasChanges(changes, originalEntry.Entity,
-                        entryReference.Metadata.Name))
-                    {
-                        await entryReference.LoadAsync();
-                        if (entryReference.CurrentValue is not null)
-                        {
-                            Logger.LogDebug(
-                                "Entity {Type} [{Entity}]. Reference {Property} changed from {OldValue} to null",
-                                entity.GetType().Name, entity.EntityId, entryReference.Metadata.Name,
-                                entryReference.CurrentValue);
-                            entryReference.CurrentValue = null;
-                        }
-                    }
-                }
-            }
-
-            foreach (var entryCollection in originalEntry.Collections)
-            {
-                // ReSharper disable once PossibleMultipleEnumeration
-                var currentValue = entryCollection.CurrentValue?.Cast<IEntity>().ToList();
-                var modifiedCollection = modifiedEntry.Collection(entryCollection.Metadata.Name);
-                var modifiedValue = modifiedCollection.CurrentValue?.Cast<IEntity>().ToList();
-                if (modifiedValue is not null && modifiedValue.Any())
-                {
-                    var ids = modifiedValue.Select(v => v.EntityId).ToList();
-                    var hasChanges = HasChanges(changes,
-                        originalEntry.Entity, entryCollection.Metadata.Name);
-                    if (!entryCollection.IsLoaded)
-                    {
-                        await entryCollection.LoadAsync();
-                        // ReSharper disable once PossibleMultipleEnumeration
-                        currentValue = entryCollection.CurrentValue?.Cast<IEntity>().ToList();
-                        Logger.LogDebug("Entity {Type} [{Entity}]. Collection {Property} loaded",
-                            entity.GetType().Name, entity.EntityId, entryCollection.Metadata.Name);
-                    }
-                    if (!hasChanges)
-                    {
-                        if (currentValue is not null)
-                        {
-                            var dbIds = currentValue.Select(v => v.EntityId).ToList();
-                            if (dbIds.Any())
-                            {
-                                var first = currentValue.First();
-                                if (!dbIds.OrderBy(id => id).SequenceEqual(ids.OrderBy(id => id)))
-                                {
-                                    if (ids.Intersect(dbIds).Count() == ids.Count)
-                                    {
-                                        foreach (var id in ids)
-                                        {
-                                            if (!proccessedEntities.Any(e =>
-                                                e.GetType() == first.GetType() && e.EntityId!.Equals(id)))
-                                            {
-                                                hasChanges = true;
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        hasChanges = true;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                hasChanges = true;
-                            }
-
-                            if (hasChanges)
-                            {
-                                Logger.LogDebug(
-                                    "Entity {Type} [{Entity}]. Collection {Property} changed from {OldValue} to {NewValue}",
-                                    entity.GetType().Name, entity.EntityId, entryCollection.Metadata.Name, dbIds, ids);
-                            }
-                        }
-                        else
-                        {
-                            hasChanges = true;
-                        }
-                    }
-
-
-                    if (hasChanges)
-                    {
-                        var values = new List<IEntity>();
-                        foreach (var value in modifiedValue)
-                        {
-                            var existingEntity = EFRepositoryHelper.GetTrackedEntity(context, value);
-                            var processedEntity =
-                                await ProcessEntryAsync(existingEntity, context.Entry(value), context,
-                                    proccessedEntities,
-                                    changes);
-                            if (processedEntity is not null)
-                            {
-                                values.Add(processedEntity);
-                            }
-                        }
-
-                        entryCollection.CurrentValue = UpdateCollection(
-                            modifiedCollection.CurrentValue!.GetType().GetGenericArguments().First(),
-                            // ReSharper disable once PossibleMultipleEnumeration
-                            modifiedCollection.CurrentValue!.GetType(), context, entryCollection.CurrentValue, values);
-                        entryCollection.IsModified = true;
-                    }
-                }
-                else
-                {
-                    if (HasChanges(changes, entity, entryCollection.Metadata.Name) && currentValue is not null &&
-                        currentValue.Any())
-                    {
-                        Logger.LogDebug(
-                            "Entity {Type} [{Entity}]. Collection {Property} changed from {OldValue} to {NewValue}",
-                            entity.GetType().Name, entity.EntityId, entryCollection.Metadata.Name,
-                            entryCollection.CurrentValue, modifiedCollection.CurrentValue);
-                        entryCollection.CurrentValue = modifiedCollection.CurrentValue;
-                    }
-                }
-            }
-
-            return entity;
+            var entityChange = entityChanges.FirstOrDefault(c => c.Entity.Equals(entity));
+            changes = entityChange?.Changes ?? Array.Empty<PropertyChange>();
+            return changes.Length > 0;
         }
 
         public override async Task<bool> BeginTransactionAsync(CancellationToken cancellationToken = default)
@@ -656,17 +443,278 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 var entry = context.Entry(entity);
                 if (entry.State == EntityState.Detached)
                 {
+                    // This is external entity, so we need to attach it to db context
+                    // 1. If we have old entity - detect changes
                     var changes = oldEntity is null ? null : Compare(oldEntity, entity);
-                    var modifiedEntry = context.Entry(entity as IEntity);
+                    var entityEntry = context.Entry(entity as IEntity);
                     var processed = new List<IEntity>();
-                    var result = await ProcessEntryAsync(null, modifiedEntry, context, processed, changes) as TEntity ??
-                                 throw new InvalidOperationException("Entity result is null");
-                    Logger.LogDebug("External entity {Entity} processed", result);
-                    return await GetChangesAsync(result);
+                    // 2. Start walking entities graph
+                    await AttachEntryAsync(entityEntry, changes, context, processed);
+                    // 3. Entity attached. If we have old entity - return detected changes as flat list
+                    if (changes is not null)
+                    {
+                        var entityChanges = new List<PropertyChange>();
+                        foreach (var entityChange in changes)
+                        {
+                            foreach (var entityPropertyChange in entityChange.Changes)
+                            {
+                                var name = entityPropertyChange.Name;
+                                if (!entityChange.Entity.Equals(entity))
+                                {
+                                    name = $"{entityChange.Entity}.{name}";
+                                }
+
+                                var change = new PropertyChange(name, entityPropertyChange.OriginalValue,
+                                    entityPropertyChange.CurrentValue, entityPropertyChange.ChangeType);
+                                entityChanges.Add(change);
+                            }
+                        }
+
+                        return entityChanges.ToArray();
+                    }
                 }
 
                 return await GetChangesAsync(entity);
             }, cancellationToken);
+
+        private async Task AttachEntryAsync(EntityEntry<IEntity> entry, EntityChange[]? changes, TDbContext context,
+            List<IEntity> processedEntities)
+        {
+            var entity = entry.Entity;
+            if (processedEntities.Contains(entity))
+            {
+                // If we already process this entity - no need to do it again
+                return;
+            }
+
+            // Load entity values from database
+            var properties = await entry.GetDatabaseValuesAsync();
+            if (properties is null)
+            {
+                // If database returns null - this is new entity, mark as added
+                entry.State = EntityState.Added;
+                // No need to do anything else with new entities
+                return;
+            }
+
+            // Mark entity as processed to avoid loops
+            processedEntities.Add(entity);
+
+            // Default entity state - unchanged. If something changed - we will detect it later
+            entry.State = EntityState.Unchanged;
+            var modifiedFks = new List<string>();
+            // First we will detect changes in simple properties
+            foreach (var property in entry.Properties)
+            {
+                if (property.Metadata.IsKey() || property.Metadata.IsShadowProperty())
+                {
+                    // Skip keys, cause they can't be changed
+                    // Skip shadow properties, ef will updated them himself
+                    continue;
+                }
+
+                // Compare current property value to one from database
+                if (properties.TryGetValue<object>(property.Metadata.Name, out var value))
+                {
+                    if (!property.Metadata.GetValueComparer().Equals(property.CurrentValue, value))
+                    {
+                        Logger.LogDebug(
+                            "Entity {Type} [{Entity}]. Property {Property} changed from {OldValue} to {NewValue}",
+                            entity.GetType().Name, entity.EntityId, property.Metadata.Name,
+                            value,
+                            property.CurrentValue);
+                        // Mark property as changed
+                        property.IsModified = true;
+                        property.OriginalValue = value;
+                        if (property.Metadata.IsForeignKey())
+                        {
+                            // If property is foreign key - save it for reference changes detection later
+                            modifiedFks.Add(property.Metadata.Name);
+                        }
+                    }
+                }
+            }
+
+            // Next check references (one-to-one or one-to-many relations)
+            foreach (var entryReference in entry.References)
+            {
+                // Find if reference foreign key was changed
+                var changedViaProperty = false;
+                if (entryReference.Metadata is INavigation navigation)
+                {
+                    foreach (var foreignKeyProperty in navigation.ForeignKey.Properties)
+                    {
+                        if (modifiedFks.Contains(foreignKeyProperty.Name))
+                        {
+                            changedViaProperty = true;
+                        }
+                    }
+                }
+
+                if (changedViaProperty)
+                {
+                    // reference foreign key was already changed, ef will correctly update reference himself
+                    continue;
+                }
+
+                if (HasChanges(changes, entity, entryReference.Metadata.Name, out var change))
+                {
+                    // We don't have old entity or reference value has changed
+                    if (entryReference.CurrentValue is null)
+                    {
+                        // Current reference value is null, so it was deleted
+                        // Load original value from db so ef will both sides of relation
+                        await entryReference.LoadAsync();
+                        // "Delete" it. Ef will update fk on both sides as necessary
+                        entryReference.CurrentValue = null;
+                        Logger.LogDebug(
+                            "Entity {Type} [{Entity}]. Reference {Property} changed from {OldValue} to {NewValue}",
+                            entity.GetType().Name, entity.EntityId, entryReference.Metadata.Name,
+                            change?.OriginalValue, entryReference.CurrentValue);
+                    }
+                    else
+                    {
+                        // Current value is not null. Mark it as modified
+                        entryReference.IsModified = true;
+                        if (entryReference.CurrentValue is IEntity referencedEntity)
+                        {
+                            // If reference value is IEntity - attach it to graph
+                            await AttachEntryAsync(context.Entry(referencedEntity), changes, context,
+                                processedEntities);
+                        }
+
+                        else
+                        {
+                            // Else just mark as unchanged
+                            entryReference.TargetEntry.State = EntityState.Unchanged;
+                        }
+                    }
+                }
+                else
+                {
+                    // Reference value was not changed
+                    if (entryReference.CurrentValue is not null)
+                    {
+                        // If reference value is not null - we should process it
+                        if (entryReference.CurrentValue is IEntity referencedEntity)
+                        {
+                            // Reference value is IEntity. Any changes?
+                            if (HasChanges(changes, referencedEntity))
+                            {
+                                // Yes, so full attach process
+                                await AttachEntryAsync(context.Entry(referencedEntity), changes, context,
+                                    processedEntities);
+                            }
+                            else
+                            {
+                                // No changes, mark as unchanged
+                                context.Entry(referencedEntity).State = EntityState.Unchanged;
+                            }
+                        }
+                        else
+                        {
+                            // Reference value is not IEntity, just mark as unchanged
+                            entryReference.TargetEntry.State = EntityState.Unchanged;
+                        }
+                    }
+                }
+            }
+
+            // Finally, let's process collections (many-to-one, many-to-many relations)
+            foreach (var entryCollection in entry.Collections)
+            {
+                // Cast collection value to List of IEntity
+                // ReSharper disable once PossibleMultipleEnumeration
+                var currentValue = entryCollection.CurrentValue?.Cast<IEntity>().ToList();
+                if (HasChanges(changes, entity, entryCollection.Metadata.Name, out var change))
+                {
+                    // We don't have old entity or collection value has changed
+                    if (currentValue is null || !currentValue.Any())
+                    {
+                        // Collection value is null or empty, means it was cleared.
+                        // Load original value from db so ef will both sides of relation
+                        await entryCollection.LoadAsync();
+                        // "Delete" it. Ef will update fk on both sides as necessary
+                        entryCollection.CurrentValue = null;
+                        Logger.LogDebug(
+                            "Entity {Type} [{Entity}]. Collection {Property} changed from {OldValue} to {NewValue}",
+                            entity.GetType().Name, entity.EntityId, entryCollection.Metadata.Name,
+                            change?.OriginalValue, entryCollection.CurrentValue);
+                    }
+                    else
+                    {
+                        // Collection value is not empty. Here be dragons.
+                        // If have old entity - get original value.
+                        var originalValue = (change?.OriginalValue as IEnumerable)?.Cast<IEntity>().ToList();
+                        // Get all entities from original value, if present
+                        // We can't attach added values now, as it will force EF to think it was already there and not update anything
+                        // If no original values - just all values, cause we had no idea what was changed
+                        foreach (var value in currentValue.Where(v =>
+                            originalValue is null || originalValue.Any(ov => ov.Equals(v))))
+                        {
+                            // Attach all selected entities
+                            var existingEntity = context.Entry(value);
+                            await AttachEntryAsync(existingEntity, changes, context, processedEntities);
+                        }
+
+                        // Load original value from db so ef will both sides of relation
+                        await entryCollection.LoadAsync();
+
+                        // Build new values list
+                        var newEntities = new List<IEntity>();
+                        var values = new List<IEntity>();
+                        foreach (var value in currentValue)
+                        {
+                            if (context.Entry(value).State == EntityState.Detached)
+                            {
+                                // If entity is detached - it was added to collection, so we need to attach and process it
+                                newEntities.Add(value);
+                            }
+
+                            values.Add(value);
+                        }
+
+                        // Ef really likes when we manipulate existing collection, not replace it with new one.
+                        // So we need to update current  collection value.
+                        // Because it is some random IEnumerable - we need a bit of generic and reflection magic
+                        entryCollection.CurrentValue = UpdateCollection(
+                            entryCollection.CurrentValue!.GetType().GetGenericArguments().First(),
+                            // ReSharper disable once PossibleMultipleEnumeration
+                            entryCollection.CurrentValue!.GetType(), context, entryCollection.CurrentValue, values);
+                        // Collection updated, now all those added values are in Added state, so we can attach them correctly
+                        foreach (var value in newEntities)
+                        {
+                            var existingEntity = context.Entry(value);
+                            await AttachEntryAsync(existingEntity, changes, context, processedEntities);
+                        }
+                    }
+                }
+                else
+                {
+                    // Collection value was not changed
+                    if (currentValue is not null && currentValue.Any())
+                    {
+                        // It is not empty, mark collection as loaded
+                        entryCollection.IsLoaded = true;
+                        // Check all collection elements for changes and process them
+                        foreach (var collectionEntity in currentValue)
+                        {
+                            if (HasChanges(changes, collectionEntity))
+                            {
+                                // Element has come changes - process
+                                await AttachEntryAsync(context.Entry(collectionEntity), changes, context,
+                                    processedEntities);
+                            }
+                            else
+                            {
+                                // Element is unchanged. Mark as such.
+                                context.Entry(collectionEntity).State = EntityState.Unchanged;
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         protected override Task DoDeleteAsync(TEntity entity, CancellationToken cancellationToken = default) =>
             ExecuteDbContextOperationAsync(currentDbContext =>
