@@ -30,7 +30,15 @@ namespace Sitko.Core.App.Blazor.Forms
             var repository = scope.ServiceProvider.GetRequiredService<TRepository>();
             if (EntityId is not null && default(TEntityPk)?.Equals(EntityId) == false)
             {
-                entity = await GetEntityAsync(repository, EntityId);
+                entity = await repository.GetAsync(async q =>
+                {
+                    q.Where(e => e.Id!.Equals(EntityId));
+                    await ConfigureQueryAsync(q);
+                });
+                if (entity is null)
+                {
+                    throw new InvalidOperationException($"Entity {EntityId} not found");
+                }
             }
             else
             {
@@ -39,21 +47,6 @@ namespace Sitko.Core.App.Blazor.Forms
             }
 
             return (isNew, entity);
-        }
-
-        private async Task<TEntity> GetEntityAsync(TRepository repository, TEntityPk id)
-        {
-            var entity = await repository.GetAsync(async q =>
-            {
-                q.Where(e => e.Id!.Equals(id));
-                await ConfigureQueryAsync(q);
-            });
-            if (entity is null)
-            {
-                throw new InvalidOperationException($"Entity {id} not found");
-            }
-
-            return entity;
         }
 
         protected virtual Task ConfigureQueryAsync(IRepositoryQuery<TEntity> query) => Task.CompletedTask;
@@ -69,11 +62,10 @@ namespace Sitko.Core.App.Blazor.Forms
 
         protected override async Task<FormSaveResult> UpdateAsync(TEntity entity)
         {
+            var (_, originalEntity) = await GetEntityAsync();
             using var scope = CreateServicesScope();
             var repository = scope.ServiceProvider.GetRequiredService<TRepository>();
-            var originalEntity = await GetEntityAsync(repository, entity.Id);
             var result = await repository.UpdateAsync(entity, originalEntity);
-
             return new FormSaveResult(result.IsSuccess, result.ErrorsString);
         }
 
