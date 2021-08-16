@@ -1,0 +1,14 @@
+﻿@inherits AntDomComponentBase
+<FormItem Label="@Label" LabelTemplate="LabelTemplate" Class="@Class" Required="Required" Style="@Style" LabelColSpan="LabelColSpan" LabelColOffset="LabelColOffset" LabelAlign="LabelAlign" LabelCol="LabelCol" WrapperCol="WrapperCol" WrapperColSpan="WrapperColSpan" WrapperColOffset="WrapperColOffset" NoStyle="NoStyle">
+    @ChildContent
+</FormItem>
+
+@code{
+
+    private RenderFragment DefaultIcon => @<Icon Type="@HintIconType" Theme="@HintIconTheme" Class="@HintIconClass" Style="@HintIconStyle"></Icon>;
+
+    private RenderFragment LabelWithHint => @<span>
+                                                <label>@Label</label><Tooltip Title="@Hint" Style="margin-left: 5px">@HintIcon</Tooltip>
+                                            </span>;
+
+}
