@@ -2,9 +2,9 @@
 @page "/Bars/{Id:guid}/Edit"
 @inherits BaseComponent
 <BarForm Layout="@FormLayout.Vertical" EntityId="Id" Debug="true">
-    <AntDesign.FormItem Label="Bar">
+    <AntFormItem Label="Bar" Hint="Bar help">
         <AntDesign.Input @bind-Value="@context.Entity.Bar"/>
-    </AntDesign.FormItem>
+    </AntFormItem>
     <p>Simple Foo</p>
     @if (context.Entity.Foo is not null)
     {
