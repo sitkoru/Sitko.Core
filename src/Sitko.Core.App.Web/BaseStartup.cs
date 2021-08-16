@@ -104,15 +104,7 @@ namespace Sitko.Core.App.Web
         {
         }
 
-        protected virtual IMvcBuilder ConfigureMvc(IMvcBuilder mvcBuilder)
-        {
-            if (Environment.IsDevelopment())
-            {
-                mvcBuilder.AddRazorRuntimeCompilation();
-            }
-
-            return mvcBuilder;
-        }
+        protected virtual IMvcBuilder ConfigureMvc(IMvcBuilder mvcBuilder) => mvcBuilder;
 
         protected virtual IHealthChecksBuilder ConfigureHealthChecks(IHealthChecksBuilder healthChecksBuilder) =>
             healthChecksBuilder;
