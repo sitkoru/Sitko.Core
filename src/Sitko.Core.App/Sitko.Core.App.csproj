@@ -21,7 +21,7 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="10.3.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="10.3.1" />
     <PackageReference Include="IL.FluentValidation.Extensions.Options" Version="10.0.1" />
     <PackageReference Include="JetBrains.Annotations" Version="2021.2.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
