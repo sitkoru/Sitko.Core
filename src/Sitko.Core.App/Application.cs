@@ -79,6 +79,7 @@ namespace Sitko.Core.App
                         new JsonSerializerOptions { WriteIndented = true }));
                     return Task.FromResult(false);
                 }));
+            commands.Add(new("run"));
             if (args.Length > 0)
             {
                 var commandName = args[0];
