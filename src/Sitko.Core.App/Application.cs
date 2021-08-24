@@ -24,16 +24,13 @@ namespace Sitko.Core.App
 
     public abstract class Application : IApplication, IAsyncDisposable
     {
-        private const string CheckCommand = "check";
-        private const string GenerateOptionsCommand = "generate-options";
-        private const string RunCommand = "run";
-
         private readonly List<Action<ApplicationContext, HostBuilderContext, IConfigurationBuilder>>
             appConfigurationActions = new();
 
         private readonly string[] args;
+        private readonly List<ApplicationCommand> commands = new();
 
-        private readonly string? currentCommand;
+        private ApplicationCommand? currentCommand;
 
         private readonly Dictionary<string, LogEventLevel> logEventLevels = new();
 
@@ -47,7 +44,6 @@ namespace Sitko.Core.App
             servicesConfigurationActions = new();
 
         private readonly Dictionary<string, object> store = new();
-        private readonly string[] supportedCommands = { CheckCommand, GenerateOptionsCommand, RunCommand };
 
         private IHost? appHost;
 
@@ -55,25 +51,48 @@ namespace Sitko.Core.App
         {
             this.args = args;
             Console.OutputEncoding = Encoding.UTF8;
-            if (args.Length > 0)
-            {
-                var command = args[0];
-                if (supportedCommands.Contains(command))
-                {
-                    currentCommand = command;
-                }
-                else
-                {
-                    throw new ArgumentException($"Unknown command {command}. Supported commands: {supportedCommands}",
-                        nameof(args));
-                }
-            }
-
             var loggerConfiguration = new LoggerConfiguration();
             loggerConfiguration
                 .WriteTo.Console(outputTemplate: ApplicationOptions.BaseConsoleLogFormat,
                     restrictedToMinimumLevel: LogEventLevel.Debug);
             InternalLogger = new SerilogLoggerFactory(loggerConfiguration.CreateLogger()).CreateLogger<Application>();
+            ProcessArguments();
+        }
+
+        private void ProcessArguments()
+        {
+            commands.Add(new("check", true, true, OnAfterRunAsync: () =>
+            {
+                LogVerbose("Check run is successful. Exit");
+                return Task.FromResult(false);
+            }));
+            commands.Add(new("generate-options", true, OnBeforeRunAsync:
+                () =>
+                {
+                    InternalLogger.LogInformation("Generate options");
+
+                    var modulesOptions = GetModulesOptions(GetContext(new DummyEnvironment(),
+                        new ConfigurationRoot(new List<IConfigurationProvider>())));
+
+                    InternalLogger.LogInformation("Modules options:");
+                    InternalLogger.LogInformation("{Options}", JsonSerializer.Serialize(modulesOptions,
+                        new JsonSerializerOptions { WriteIndented = true }));
+                    return Task.FromResult(false);
+                }));
+            if (args.Length > 0)
+            {
+                var commandName = args[0];
+                currentCommand = GetCommand(commandName);
+                if (currentCommand is null)
+                {
+                    throw new ArgumentException($"Unknown command {commandName}. Supported commands: {commands}",
+                        nameof(args));
+                }
+                else
+                {
+                    InternalLogger.LogInformation("Run command {CommandName}", currentCommand.Name);
+                }
+            }
         }
 
         protected virtual string ApplicationOptionsKey => nameof(Application);
@@ -81,8 +100,6 @@ namespace Sitko.Core.App
         public Guid Id { get; } = Guid.NewGuid();
 
         private ILogger<Application> InternalLogger { get; set; }
-
-        private bool IsCheckRun => currentCommand == CheckCommand;
 
         public string Name => GetApplicationOptions().Name;
         public string Version => GetApplicationOptions().Version;
@@ -93,6 +110,9 @@ namespace Sitko.Core.App
             GC.SuppressFinalize(this);
             return new ValueTask();
         }
+
+        private ApplicationCommand? GetCommand(string commandName) =>
+            commands.FirstOrDefault(c => c.Name == commandName);
 
 
         [PublicAPI]
@@ -129,9 +149,9 @@ namespace Sitko.Core.App
             GetEnabledModuleRegistrations(ApplicationContext context) => moduleRegistrations
             .Where(r => r.Value.IsEnabled(context)).Select(r => r.Value).ToList();
 
-        private void LogCheck(string message)
+        private void LogVerbose(string message)
         {
-            if (IsCheckRun)
+            if (currentCommand?.EnableVerboseLogging == true)
             {
                 InternalLogger.LogInformation("Check log: {Message}", message);
             }
@@ -139,9 +159,9 @@ namespace Sitko.Core.App
 
         private IHostBuilder ConfigureHostBuilder(Action<IHostBuilder>? configure = null)
         {
-            LogCheck("Configure host builder start");
+            LogVerbose("Configure host builder start");
 
-            LogCheck("Create tmp host builder");
+            LogVerbose("Create tmp host builder");
 
             using var tmpHost = CreateHostBuilder(args)
                 .UseDefaultServiceProvider(options =>
@@ -156,11 +176,11 @@ namespace Sitko.Core.App
 
             var tmpApplicationContext = GetContext(tmpEnvironment, tmpConfiguration);
 
-            LogCheck("Init application");
+            LogVerbose("Init application");
 
             InitApplication();
 
-            LogCheck("Create main host builder");
+            LogVerbose("Create main host builder");
             var loggingConfiguration = new SerilogConfiguration();
             var hostBuilder = CreateHostBuilder(args)
                 .UseDefaultServiceProvider(options =>
@@ -176,7 +196,7 @@ namespace Sitko.Core.App
                 })
                 .ConfigureAppConfiguration((context, builder) =>
                 {
-                    LogCheck("Configure app configuration");
+                    LogVerbose("Configure app configuration");
                     builder.AddLoggingConfiguration(loggingConfiguration, "Serilog");
                     var appContext = GetContext(context.HostingEnvironment, context.Configuration);
                     foreach (var appConfigurationAction in appConfigurationActions)
@@ -184,7 +204,7 @@ namespace Sitko.Core.App
                         appConfigurationAction(appContext, context, builder);
                     }
 
-                    LogCheck("Configure app configuration in modules");
+                    LogVerbose("Configure app configuration in modules");
                     foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpApplicationContext))
                     {
                         moduleRegistration.ConfigureAppConfiguration(appContext, context, builder);
@@ -192,7 +212,7 @@ namespace Sitko.Core.App
                 })
                 .ConfigureServices((context, services) =>
                 {
-                    LogCheck("Configure app services");
+                    LogVerbose("Configure app services");
                     services.AddSingleton<ISerilogConfiguration>(loggingConfiguration);
                     services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
                     services.AddSingleton(typeof(IApplication), this);
@@ -216,7 +236,7 @@ namespace Sitko.Core.App
                 }).ConfigureLogging((context, builder) =>
                 {
                     var applicationOptions = GetApplicationOptions(context.HostingEnvironment, context.Configuration);
-                    LogCheck("Configure logging");
+                    LogVerbose("Configure logging");
                     builder.AddConfiguration(context.Configuration.GetSection("Logging"));
                     var loggerConfiguration = new LoggerConfiguration();
                     loggerConfiguration.ReadFrom.Configuration(context.Configuration);
@@ -253,38 +273,38 @@ namespace Sitko.Core.App
                     Log.Logger = loggerConfiguration.CreateLogger();
                 });
 
-            LogCheck("Configure host builder in modules");
+            LogVerbose("Configure host builder in modules");
             foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpApplicationContext))
             {
                 moduleRegistration.ConfigureHostBuilder(tmpApplicationContext, hostBuilder);
             }
 
-            LogCheck("Configure host builder");
+            LogVerbose("Configure host builder");
             configure?.Invoke(hostBuilder);
-            LogCheck("Create host builder done");
+            LogVerbose("Create host builder done");
             return hostBuilder;
         }
 
         protected IHost CreateAppHost(Action<IHostBuilder>? configure = null)
         {
-            LogCheck("Create app host start");
+            LogVerbose("Create app host start");
 
             if (appHost is not null)
             {
-                LogCheck("App host is already built");
+                LogVerbose("App host is already built");
 
                 return appHost;
             }
 
-            LogCheck("Configure host builder");
+            LogVerbose("Configure host builder");
 
             var hostBuilder = ConfigureHostBuilder(configure);
 
-            LogCheck("Build host");
+            LogVerbose("Build host");
             var host = hostBuilder.Build();
 
             appHost = host;
-            LogCheck("Create app host done");
+            LogVerbose("Create app host done");
             return appHost;
         }
 
@@ -363,22 +383,17 @@ namespace Sitko.Core.App
 
         public async Task RunAsync()
         {
-            if (currentCommand == GenerateOptionsCommand)
+            if (currentCommand?.OnBeforeRunAsync is not null)
             {
-                InternalLogger.LogInformation("Generate options");
-
-                var modulesOptions = GetModulesOptions(GetContext(new DummyEnvironment(),
-                    new ConfigurationRoot(new List<IConfigurationProvider>())));
-
-                InternalLogger.LogInformation("Modules options:");
-                InternalLogger.LogInformation("{Options}", JsonSerializer.Serialize(modulesOptions,
-                    new JsonSerializerOptions { WriteIndented = true }));
-
-                return;
+                var shouldContinue = await currentCommand.OnBeforeRunAsync();
+                if (!shouldContinue)
+                {
+                    return;
+                }
             }
 
-            LogCheck("Run app start");
-            LogCheck("Build and init");
+            LogVerbose("Run app start");
+            LogVerbose("Build and init");
             var host = await BuildAndInitAsync();
 
             InternalLogger.LogInformation("Check required modules");
@@ -409,10 +424,13 @@ namespace Sitko.Core.App
             }
 
 
-            if (IsCheckRun)
+            if (currentCommand?.OnAfterRunAsync is not null)
             {
-                LogCheck("Check run is successful. Exit");
-                return;
+                var shouldContinue = await currentCommand.OnAfterRunAsync();
+                if (!shouldContinue)
+                {
+                    return;
+                }
             }
 
             await host.RunAsync();
@@ -473,11 +491,11 @@ namespace Sitko.Core.App
 
         public async Task<IHost> BuildAndInitAsync(Action<IHostBuilder>? configure = null)
         {
-            LogCheck("Build and init async start");
+            LogVerbose("Build and init async start");
 
             var host = CreateAppHost(configure);
 
-            if (string.IsNullOrEmpty(currentCommand))
+            if (currentCommand?.IsInitDisabled != true)
             {
                 using var scope = host.Services.CreateScope();
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<Application>>();
@@ -490,7 +508,7 @@ namespace Sitko.Core.App
                 }
             }
 
-            LogCheck("Build and init async done");
+            LogVerbose("Build and init async done");
 
             return host;
         }
@@ -695,4 +713,8 @@ namespace Sitko.Core.App
         public string ContentRootPath { get; set; } = "";
         public IFileProvider ContentRootFileProvider { get; set; } = null!;
     }
+
+    internal record ApplicationCommand(string Name, bool IsInitDisabled = false, bool EnableVerboseLogging = false,
+        Func<Task<bool>>? OnBeforeRunAsync = null,
+        Func<Task<bool>>? OnAfterRunAsync = null);
 }
