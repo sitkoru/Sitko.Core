@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.UserSecrets;
@@ -243,6 +244,38 @@ namespace Sitko.Core.Repository.Tests
                 var updatedBar =
                     await repository.GetAsync(q => q.Where(b => b.Id == bar.Id));
                 Assert.Equal("123", updatedBar!.Baz);
+            }
+        }
+
+        [Fact]
+        public async Task DisconnectedPropertyNoOriginal()
+        {
+            var scope = await GetScopeAsync();
+            BarModel? bar;
+            using (var scope2 = scope.CreateScope())
+            {
+                var repository2 = scope2.ServiceProvider.GetRequiredService<BarRepository>();
+                bar = await repository2.GetAsync(q => q.Where(b => b.TestId != null));
+                bar.Should().NotBeNull();
+            }
+
+            bar!.Baz.Should().BeNull();
+            bar.Baz = "123";
+
+            using (var scope2 = scope.CreateScope())
+            {
+                var repository2 = scope2.ServiceProvider.GetRequiredService<BarRepository>();
+                var updateResult = await repository2.UpdateAsync(bar);
+                updateResult.IsSuccess.Should().BeTrue();
+                updateResult.Changes.Should().ContainSingle();
+            }
+
+            using (var finalScope = scope.CreateScope())
+            {
+                var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
+                var updatedBar =
+                    await repository.GetAsync(q => q.Where(b => b.Id == bar.Id));
+                updatedBar!.Baz.Should().BeEquivalentTo("123");
             }
         }
 
