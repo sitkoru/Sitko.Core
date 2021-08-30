@@ -791,19 +791,14 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
     public static class EFRepositoryHelper
     {
-        public static EntityEntry<IEntity>? GetTrackedEntity<TTrackedEntity>(DbContext trackingDbContext,
+        private static EntityEntry<IEntity>? GetTrackedEntity<TTrackedEntity>(DbContext trackingDbContext,
             TTrackedEntity trackedEntity)
             where TTrackedEntity : class, IEntity
         {
             var entry = trackingDbContext.ChangeTracker.Entries().FirstOrDefault(x =>
                 x.Entity is IEntity xEntity && xEntity.GetType() == trackedEntity.GetType() &&
                 xEntity.EntityId?.Equals(trackedEntity.EntityId) == true);
-            if (entry is not null)
-            {
-                return trackingDbContext.Entry(entry.Entity as IEntity) as EntityEntry<IEntity>;
-            }
-
-            return null;
+            return entry is not null ? trackingDbContext.Entry((IEntity)entry.Entity) : null;
         }
 
         public static TCollection UpdateCollection<TElement, TCollection>(TCollection? collection,
