@@ -12,6 +12,8 @@ using Sitko.Core.Db.Postgres;
 using Xunit;
 using Xunit.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Serilog.Events;
 
 [assembly: UserSecretsId("test")]
 
@@ -864,6 +866,10 @@ namespace Sitko.Core.Repository.Tests
         protected override TestApplication ConfigureApplication(TestApplication application, string name)
         {
             application.AddEFRepositories<EFTestScope>();
+            application.ConfigureLogging((_, configuration) =>
+            {
+                configuration.MinimumLevel.Override("Sitko.Core.Repository", LogEventLevel.Debug);
+            });
             return base.ConfigureApplication(application, name);
         }
 
