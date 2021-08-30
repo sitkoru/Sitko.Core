@@ -23,6 +23,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         private readonly EFRepositoryLock repositoryLock;
 
         private MethodInfo? updateCollectionMethodInfo;
+        private MethodInfo? copyCollectionMethodInfo;
 
         protected EFRepository(EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext) : base(
             repositoryContext)
@@ -117,8 +118,9 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                         var originalIds = originalValues.Select(v => v.EntityId).ToList();
                         if (!originalIds.OrderBy(id => id).SequenceEqual(ids.OrderBy(id => id)))
                         {
+                            // use CopyCollection to prevent updating change value if model value changes
                             entityChange.AddChange(entryCollection.Metadata.Name, entryCollection.CurrentValue,
-                                modifiedCollection.CurrentValue, ChangeType.Modified);
+                                CopyCollection(modifiedCollection.CurrentValue), ChangeType.Modified);
                         }
 
                         var modifiedValues = modifiedCollection.CurrentValue?.Cast<IEntity>().ToList();
@@ -168,13 +170,13 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             }
         }
 
-        private static bool HasChanges(EntityChange[]? entityChanges, IEntity entity, string propertyName,
+        private static ChangeState HasChanges(EntityChange[]? entityChanges, IEntity entity, string propertyName,
             out PropertyChange? change)
         {
             change = default;
             if (entityChanges is null)
             {
-                return true;
+                return ChangeState.Unknown;
             }
 
             var entityChange = entityChanges.FirstOrDefault(c => c.Entity.Equals(entity));
@@ -183,10 +185,10 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             if (propertyChanges.Length > 0)
             {
                 change = propertyChanges.First();
-                return true;
+                return ChangeState.Changed;
             }
 
-            return false;
+            return ChangeState.Unknown;
         }
 
         private static bool HasChanges(EntityChange[]? entityChanges, IEntity entity) =>
@@ -274,8 +276,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return false;
         }
 
-        private IEnumerable UpdateCollection(Type elementType, Type collectionType, TDbContext context,
-            IEnumerable? oldValues, ICollection<IEntity> newValues)
+        private IEnumerable UpdateCollection(IEnumerable collection, ICollection<IEntity> newValues)
         {
             if (updateCollectionMethodInfo is null)
             {
@@ -288,9 +289,28 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 }
             }
 
-            var method = updateCollectionMethodInfo.MakeGenericMethod(elementType,
-                collectionType);
-            return (method.Invoke(this, new object?[] { oldValues, newValues, context }) as IEnumerable)!;
+            var method =
+                updateCollectionMethodInfo.MakeGenericMethod(collection.GetType().GetGenericArguments().First(),
+                    collection.GetType());
+            return (method.Invoke(this, new object?[] { collection, newValues }) as IEnumerable)!;
+        }
+
+        private IEnumerable CopyCollection(IEnumerable collection)
+        {
+            if (copyCollectionMethodInfo is null)
+            {
+                copyCollectionMethodInfo = typeof(EFRepositoryHelper)
+                    .GetMethod(nameof(EFRepositoryHelper.CopyCollection),
+                        BindingFlags.Public | BindingFlags.Static);
+                if (copyCollectionMethodInfo is null)
+                {
+                    throw new InvalidOperationException("Can't find method CopyCollection");
+                }
+            }
+
+            var method = copyCollectionMethodInfo.MakeGenericMethod(collection.GetType().GetGenericArguments().First(),
+                collection.GetType());
+            return (method.Invoke(this, new object?[] { collection }) as IEnumerable)!;
         }
 
         public override Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default) =>
@@ -436,6 +456,73 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         public DbSet<T> Set<T>() where T : class => dbContext.Set<T>();
 
+        private void AttachAllEntities(TDbContext context, IEntity entity, EntityChange[]? entityChanges)
+        {
+            var entities = new List<IEntity>();
+            TraverseAndFillEntities(context, entity, entities);
+            foreach (var processedEntity in entities)
+            {
+                var entry = context.Entry(processedEntity);
+                entry.State = entry.IsKeySet ? EntityState.Unchanged : EntityState.Added;
+            }
+
+            foreach (var processedEntity in entities)
+            {
+                var entry = context.Entry(processedEntity);
+                foreach (var collection in entry.Collections)
+                {
+                    if (collection.CurrentValue is not null)
+                    {
+                        var changeState = HasChanges(entityChanges, processedEntity, collection.Metadata.Name,
+                            out var change);
+                        if (changeState == ChangeState.Changed && change is not null)
+                        {
+                            UpdateCollection(collection.CurrentValue,
+                                (change.Value.CurrentValue as IEnumerable).Cast<IEntity>().ToList());
+                        }
+                    }
+                }
+            }
+        }
+
+        private void TraverseAndFillEntities(TDbContext context, IEntity entity, List<IEntity> entities)
+        {
+            var existingEntity = entities.FirstOrDefault(e => e.Equals(entity));
+            if (existingEntity is not null)
+            {
+                if (existingEntity != entity && context.Entry(entity).IsKeySet)
+                {
+                    throw new InvalidOperationException($"Entity {entity} has multiple instances in graph");
+                }
+
+                return;
+            }
+
+            entities.Add(entity);
+            var entry = context.Entry(entity);
+            foreach (var reference in entry.References)
+            {
+                if (reference.CurrentValue is IEntity referenceCurrentValue)
+                {
+                    TraverseAndFillEntities(context, referenceCurrentValue, entities);
+                }
+            }
+
+            foreach (var collection in entry.Collections)
+            {
+                if (collection.CurrentValue is not null)
+                {
+                    foreach (var collectionValue in collection.CurrentValue)
+                    {
+                        if (collectionValue is IEntity collectionItem)
+                        {
+                            TraverseAndFillEntities(context, collectionItem, entities);
+                        }
+                    }
+                }
+            }
+        }
+
         protected override async Task<PropertyChange[]> DoUpdateAsync(TEntity entity, TEntity? oldEntity,
             CancellationToken cancellationToken = default) =>
             await ExecuteDbContextOperationAsync(async context =>
@@ -446,11 +533,15 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                     // This is external entity, so we need to attach it to db context
                     // 1. If we have old entity - detect changes
                     var changes = oldEntity is null ? null : Compare(oldEntity, entity);
+                    // 2. If we have entity Foo in graph and some other entity Bar has relation with Foo
+                    // and we process Bar first and load Foo from DB, when we will process Foo from graph Foo from db would be already in DbContext.
+                    // To prevent such duplicates we need to attach all graph entities to DbContext first.
+                    AttachAllEntities(context, entity, changes);
+                    // 3. Start walking entities graph
                     var entityEntry = context.Entry(entity as IEntity);
                     var processed = new List<IEntity>();
-                    // 2. Start walking entities graph
                     await AttachEntryAsync(entityEntry, changes, context, processed);
-                    // 3. Entity attached. If we have old entity - return detected changes as flat list
+                    // 4. Entity attached. If we have old entity - return detected changes as flat list
                     if (changes is not null)
                     {
                         var entityChanges = new List<PropertyChange>();
@@ -500,8 +591,6 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             // Mark entity as processed to avoid loops
             processedEntities.Add(entity);
 
-            // Default entity state - unchanged. If something changed - we will detect it later
-            entry.State = EntityState.Unchanged;
             var modifiedFks = new List<string>();
             // First we will detect changes in simple properties
             foreach (var property in entry.Properties)
@@ -557,32 +646,52 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                     continue;
                 }
 
-                if (HasChanges(changes, entity, entryReference.Metadata.Name, out var change))
+                var changeState = HasChanges(changes, entity, entryReference.Metadata.Name, out var change);
+                if (changeState != ChangeState.UnChanged)
                 {
                     // We don't have old entity or reference value has changed
                     if (entryReference.CurrentValue is null)
                     {
-                        // Current reference value is null, so it was deleted
-                        // Load original value from db so ef will both sides of relation
-                        await entryReference.LoadAsync();
-                        // "Delete" it. Ef will update fk on both sides as necessary
-                        entryReference.CurrentValue = null;
-                        Logger.LogDebug(
-                            "Entity {Type} [{Entity}]. Reference {Property} changed from {OldValue} to {NewValue}",
-                            entity.GetType().Name, entity.EntityId, entryReference.Metadata.Name,
-                            change?.OriginalValue, entryReference.CurrentValue);
+                        if (changeState == ChangeState.Changed)
+                        {
+                            // Current reference value is null, so it was deleted
+                            // Load original value from db so ef will both sides of relation
+                            await entryReference.LoadAsync();
+                            // "Delete" it. Ef will update fk on both sides as necessary
+                            entryReference.CurrentValue = null;
+                            Logger.LogDebug(
+                                "Entity {Type} [{Entity}]. Reference {Property} changed from {OldValue} to {NewValue}",
+                                entity.GetType().Name, entity.EntityId, entryReference.Metadata.Name,
+                                change?.OriginalValue, entryReference.CurrentValue);
+                        }
+                        else
+                        {
+                            entryReference.IsModified = false;
+                            Logger.LogDebug(
+                                "Entity {Type} [{Entity}]. Reference {Property} is null, but original value is unknown. Skip",
+                                entity.GetType().Name, entity.EntityId, entryReference.Metadata.Name);
+                        }
                     }
                     else
                     {
-                        // Current value is not null. Mark it as modified
-                        entryReference.IsModified = true;
+                        // No old entity to compare
+                        if (changeState == ChangeState.Unknown)
+                        {
+                            // try to detect if reference value is back-reference produced by ef core navigation fixups
+                            if (processedEntities.Any(e => e.Equals(entryReference.CurrentValue)))
+                            {
+                                // Probably it is, leave unmodified
+                                entryReference.IsModified = false;
+                                continue;
+                            }
+                        }
+
                         if (entryReference.CurrentValue is IEntity referencedEntity)
                         {
                             // If reference value is IEntity - attach it to graph
                             await AttachEntryAsync(context.Entry(referencedEntity), changes, context,
                                 processedEntities);
                         }
-
                         else
                         {
                             // Else just mark as unchanged
@@ -626,63 +735,71 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 // Cast collection value to List of IEntity
                 // ReSharper disable once PossibleMultipleEnumeration
                 var currentValue = entryCollection.CurrentValue?.Cast<IEntity>().ToList();
-                if (HasChanges(changes, entity, entryCollection.Metadata.Name, out var change))
+                var changeState = HasChanges(changes, entity, entryCollection.Metadata.Name, out var change);
+                if (changeState != ChangeState.UnChanged)
                 {
                     // We don't have old entity or collection value has changed
                     if (currentValue is null || !currentValue.Any())
                     {
-                        // Collection value is null or empty, means it was cleared.
-                        // Load original value from db so ef will both sides of relation
-                        await entryCollection.LoadAsync();
-                        // "Delete" it. Ef will update fk on both sides as necessary
-                        entryCollection.CurrentValue = null;
-                        Logger.LogDebug(
-                            "Entity {Type} [{Entity}]. Collection {Property} changed from {OldValue} to {NewValue}",
-                            entity.GetType().Name, entity.EntityId, entryCollection.Metadata.Name,
-                            change?.OriginalValue, entryCollection.CurrentValue);
+                        if (changeState == ChangeState.Changed)
+                        {
+                            // Collection value is null or empty, means it was cleared.
+                            // Load original value from db so ef will both sides of relation
+                            await entryCollection.LoadAsync();
+                            // "Delete" it. Ef will update fk on both sides as necessary
+                            entryCollection.CurrentValue = null;
+                            Logger.LogDebug(
+                                "Entity {Type} [{Entity}]. Collection {Property} changed from {OldValue} to {NewValue}",
+                                entity.GetType().Name, entity.EntityId, entryCollection.Metadata.Name,
+                                change?.OriginalValue, entryCollection.CurrentValue);
+                        }
+                        else
+                        {
+                            Logger.LogDebug(
+                                "Entity {Type} [{Entity}]. Collection {Property} is null but original value is unknown. Skip",
+                                entity.GetType().Name, entity.EntityId, entryCollection.Metadata.Name);
+                            entryCollection.IsModified = false;
+                        }
                     }
                     else
                     {
                         // Collection value is not empty. Here be dragons.
-                        // If have old entity - get original value.
-                        var originalValue = (change?.OriginalValue as IEnumerable)?.Cast<IEntity>().ToList();
-                        // Get all entities from original value, if present
-                        // We can't attach added values now, as it will force EF to think it was already there and not update anything
-                        // If no original values - just all values, cause we had no idea what was changed
-                        foreach (var value in currentValue.Where(v =>
-                            originalValue is null || originalValue.Any(ov => ov.Equals(v))))
+                        if (changeState == ChangeState.Unknown)
                         {
-                            // Attach all selected entities
-                            var existingEntity = context.Entry(value);
-                            await AttachEntryAsync(existingEntity, changes, context, processedEntities);
-                        }
-
-                        // Load original value from db so ef will both sides of relation
-                        await entryCollection.LoadAsync();
-
-                        // Build new values list
-                        var newEntities = new List<IEntity>();
-                        var values = new List<IEntity>();
-                        foreach (var value in currentValue)
-                        {
-                            if (context.Entry(value).State == EntityState.Detached)
+                            // No old entity so try to detect if all collection values are back-references produced by ef core navigation fixups
+                            var allFound = true;
+                            foreach (var collectionEntity in currentValue)
                             {
-                                // If entity is detached - it was added to collection, so we need to attach and process it
-                                newEntities.Add(value);
+                                if (!processedEntities.Any(e => e.Equals(collectionEntity)))
+                                {
+                                    allFound = false;
+                                    break;
+                                }
                             }
 
-                            values.Add(value);
+                            if (allFound)
+                            {
+                                // Probably they are. So leave unmodified
+                                entryCollection.IsModified = false;
+                                continue;
+                            }
                         }
+
+                        // Load original value from db so ef will knew both sides of relation
+                        Logger.LogDebug("Load collection {Collection} original value", entryCollection.Metadata.Name);
+                        entryCollection.CurrentValue = null;
+                        await entryCollection.LoadAsync();
 
                         // Ef really likes when we manipulate existing collection, not replace it with new one.
                         // So we need to update current  collection value.
                         // Because it is some random IEnumerable - we need a bit of generic and reflection magic
-                        entryCollection.CurrentValue = UpdateCollection(
-                            entryCollection.CurrentValue!.GetType().GetGenericArguments().First(),
-                            // ReSharper disable once PossibleMultipleEnumeration
-                            entryCollection.CurrentValue!.GetType(), context, entryCollection.CurrentValue, values);
-                        // Collection updated, now all those added values are in Added state, so we can attach them correctly
-                        foreach (var value in newEntities)
+                        // ReSharper disable once PossibleMultipleEnumeration
+                        entryCollection.CurrentValue =
+                            UpdateCollection(entryCollection.CurrentValue!, currentValue);
+                        // Trigger change detection to force ef to update all links
+                        context.ChangeTracker.DetectChanges();
+                        // Collection updated, now we can to process all collection values
+                        foreach (var value in currentValue)
                         {
                             var existingEntity = context.Entry(value);
                             await AttachEntryAsync(existingEntity, changes, context, processedEntities);
@@ -791,56 +908,38 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
     public static class EFRepositoryHelper
     {
-        private static EntityEntry<IEntity>? GetTrackedEntity<TTrackedEntity>(DbContext trackingDbContext,
-            TTrackedEntity trackedEntity)
-            where TTrackedEntity : class, IEntity
-        {
-            var entry = trackingDbContext.ChangeTracker.Entries().FirstOrDefault(x =>
-                x.Entity is IEntity xEntity && xEntity.GetType() == trackedEntity.GetType() &&
-                xEntity.EntityId?.Equals(trackedEntity.EntityId) == true);
-            return entry is not null ? trackingDbContext.Entry((IEntity)entry.Entity) : null;
-        }
-
         public static TCollection UpdateCollection<TElement, TCollection>(TCollection? collection,
-            ICollection<IEntity> values,
-            DbContext context)
+            ICollection<IEntity> values)
             where TCollection : ICollection<TElement>, new() where TElement : class, IEntity
         {
-            var toDelete = new List<TElement>();
             collection ??= new TCollection();
-            foreach (var element in collection)
-            {
-                if (values.All(e => e.EntityId?.Equals(element.EntityId) != true))
-                {
-                    toDelete.Add(element);
-                }
-            }
+            collection.Clear();
 
-            foreach (var element in toDelete)
+            foreach (var entity in values.Cast<TElement>())
             {
-                collection.Remove(element);
-            }
-
-            var ids = collection.Select(e => e.EntityId).ToList();
-            foreach (var element in values.Cast<TElement>())
-            {
-                var entry = GetTrackedEntity(context, element);
-                if (entry is null)
-                {
-                    context.Add(element);
-                    collection.Add(element);
-                }
-                else
-                {
-                    var elementId = element.EntityId;
-                    if (!ids.Any(id => id!.Equals(elementId)))
-                    {
-                        collection.Add(element);
-                    }
-                }
+                collection.Add(entity);
             }
 
             return collection;
         }
+
+        public static TCollection CopyCollection<TElement, TCollection>(TCollection collection)
+            where TCollection : ICollection<TElement>, new() where TElement : class, IEntity
+        {
+            var newCollection = new TCollection();
+            foreach (var element in collection)
+            {
+                newCollection.Add(element);
+            }
+
+            return newCollection;
+        }
+    }
+
+    public enum ChangeState
+    {
+        Changed,
+        UnChanged,
+        Unknown
     }
 }
