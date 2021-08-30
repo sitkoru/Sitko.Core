@@ -579,6 +579,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             }
 
             // Load entity values from database
+            Logger.LogDebug("Load entity {Type} [{Entity}] original value", entity.GetType(), entity.EntityId);
             var properties = await entry.GetDatabaseValuesAsync();
             if (properties is null)
             {
@@ -593,6 +594,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
             var modifiedFks = new List<string>();
             // First we will detect changes in simple properties
+            Logger.LogDebug("Process entity {Type} [{Entity}] properties", entity.GetType(), entity.EntityId);
             foreach (var property in entry.Properties)
             {
                 if (property.Metadata.IsKey() || property.Metadata.IsShadowProperty())
@@ -625,8 +627,11 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             }
 
             // Next check references (one-to-one or one-to-many relations)
+            Logger.LogDebug("Process entity {Type} [{Entity}] references", entity.GetType(), entity.EntityId);
             foreach (var entryReference in entry.References)
             {
+                Logger.LogDebug("Process entity {Type} [{Entity}] reference {Reference}", entity.GetType(),
+                    entity.EntityId, entryReference.Metadata.Name);
                 // Find if reference foreign key was changed
                 var changedViaProperty = false;
                 if (entryReference.Metadata is INavigation navigation)
@@ -730,6 +735,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             }
 
             // Finally, let's process collections (many-to-one, many-to-many relations)
+            Logger.LogDebug("Process entity {Type} [{Entity}] collections", entity.GetType(), entity.EntityId);
             foreach (var entryCollection in entry.Collections)
             {
                 // Cast collection value to List of IEntity
