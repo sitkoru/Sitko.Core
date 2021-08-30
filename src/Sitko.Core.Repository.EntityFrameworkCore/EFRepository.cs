@@ -142,7 +142,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 else
                 {
                     if (entryCollection.CurrentValue is not null &&
-                        entryCollection.CurrentValue.Cast<IEntity>().Count() > 0)
+                        entryCollection.CurrentValue.Cast<IEntity>().Any())
                     {
                         // try to detect if all collection values are back-references produced by ef core navigation fixups
                         var hasNewRef = false;
