@@ -680,20 +680,22 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                     }
                     else
                     {
-                        // No old entity to compare
-                        if (changeState == ChangeState.Unknown)
-                        {
-                            // try to detect if reference value is back-reference produced by ef core navigation fixups
-                            if (processedEntities.Any(e => e.Equals(entryReference.CurrentValue)))
-                            {
-                                // Probably it is, leave unmodified
-                                entryReference.IsModified = false;
-                                continue;
-                            }
-                        }
-
                         if (entryReference.CurrentValue is IEntity referencedEntity)
                         {
+                            // No old entity to compare
+                            if (changeState == ChangeState.Unknown)
+                            {
+                                // try to detect if reference value is back-reference produced by ef core navigation fixups
+                                if (context.ChangeTracker.Entries()
+                                        .Any(e => e.Entity.Equals(referencedEntity)) &&
+                                    HasChanges(changes, referencedEntity) != ChangeState.Changed)
+                                {
+                                    // Probably it is, leave unmodified
+                                    entryReference.IsModified = false;
+                                    continue;
+                                }
+                            }
+
                             // If reference value is IEntity - attach it to graph
                             await AttachEntryAsync(context.Entry(referencedEntity), changes, context,
                                 processedEntities);
@@ -777,7 +779,8 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                             var allFound = true;
                             foreach (var collectionEntity in currentValue)
                             {
-                                if (!processedEntities.Any(e => e.Equals(collectionEntity)))
+                                if (!context.ChangeTracker.Entries().Any(e => e.Entity.Equals(collectionEntity)) ||
+                                    HasChanges(changes, collectionEntity) == ChangeState.Changed)
                                 {
                                     allFound = false;
                                     break;
