@@ -135,7 +135,7 @@ namespace Sitko.Core.Repository.Tests
 
             Assert.NotNull(repository);
 
-            var item = await repository.GetAsync(query => query.Include(e => e.Bars));
+            var item = await repository.GetAsync(query => query.Where(model => model.Bars.Any()).Include(e => e.Bars));
             Assert.NotNull(item);
             Assert.NotNull(item!.Bars);
             Assert.NotEmpty(item.Bars);
@@ -151,7 +151,7 @@ namespace Sitko.Core.Repository.Tests
             var repository = scope.GetService<IRepository<TestModel, Guid>>();
             Assert.NotNull(repository);
 
-            var item = await repository.GetAsync(query => query
+            var item = await repository.GetAsync(query => query.Where(model => model.Bars.Any())
                 .Include(testModel => testModel.Bars).ThenInclude(barModel => barModel.Foos));
             Assert.NotNull(item);
             Assert.NotNull(item!.Bars);
