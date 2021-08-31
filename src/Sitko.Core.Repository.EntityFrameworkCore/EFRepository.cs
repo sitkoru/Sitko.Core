@@ -22,8 +22,6 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
         private readonly TDbContext dbContext;
         private readonly EFRepositoryLock repositoryLock;
 
-        private MethodInfo? updateCollectionMethodInfo;
-        private MethodInfo? copyCollectionMethodInfo;
 
         protected EFRepository(EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext) : base(
             repositoryContext)
@@ -120,7 +118,8 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                         {
                             // use CopyCollection to prevent updating change value if model value changes
                             entityChange.AddChange(entryCollection.Metadata.Name, entryCollection.CurrentValue,
-                                CopyCollection(modifiedCollection.CurrentValue), ChangeType.Modified);
+                                EFRepositoryHelper.CopyCollection(modifiedCollection.CurrentValue),
+                                ChangeType.Modified);
                         }
 
                         var modifiedValues = modifiedCollection.CurrentValue?.Cast<IEntity>().ToList();
@@ -275,43 +274,6 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             }
 
             return false;
-        }
-
-        private IEnumerable UpdateCollection(IEnumerable collection, ICollection<IEntity> newValues)
-        {
-            if (updateCollectionMethodInfo is null)
-            {
-                updateCollectionMethodInfo = typeof(EFRepositoryHelper)
-                    .GetMethod(nameof(EFRepositoryHelper.UpdateCollection),
-                        BindingFlags.Public | BindingFlags.Static);
-                if (updateCollectionMethodInfo is null)
-                {
-                    throw new InvalidOperationException("Can't find method UpdateCollection");
-                }
-            }
-
-            var method =
-                updateCollectionMethodInfo.MakeGenericMethod(collection.GetType().GetGenericArguments().First(),
-                    collection.GetType());
-            return (method.Invoke(this, new object?[] { collection, newValues }) as IEnumerable)!;
-        }
-
-        private IEnumerable CopyCollection(IEnumerable collection)
-        {
-            if (copyCollectionMethodInfo is null)
-            {
-                copyCollectionMethodInfo = typeof(EFRepositoryHelper)
-                    .GetMethod(nameof(EFRepositoryHelper.CopyCollection),
-                        BindingFlags.Public | BindingFlags.Static);
-                if (copyCollectionMethodInfo is null)
-                {
-                    throw new InvalidOperationException("Can't find method CopyCollection");
-                }
-            }
-
-            var method = copyCollectionMethodInfo.MakeGenericMethod(collection.GetType().GetGenericArguments().First(),
-                collection.GetType());
-            return (method.Invoke(this, new object?[] { collection }) as IEnumerable)!;
         }
 
         public override Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default) =>
@@ -478,7 +440,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                             out var change);
                         if (changeState == ChangeState.Changed && change is not null)
                         {
-                            UpdateCollection(collection.CurrentValue,
+                            EFRepositoryHelper.UpdateCollection(collection.CurrentValue,
                                 (change.Value.CurrentValue as IEnumerable).Cast<IEntity>().ToList());
                         }
                     }
@@ -805,7 +767,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                         // Because it is some random IEnumerable - we need a bit of generic and reflection magic
                         // ReSharper disable once PossibleMultipleEnumeration
                         entryCollection.CurrentValue =
-                            UpdateCollection(entryCollection.CurrentValue!, currentValue);
+                            EFRepositoryHelper.UpdateCollection(entryCollection.CurrentValue!, currentValue);
                         // Trigger change detection to force ef to update all links
                         context.ChangeTracker.DetectChanges();
                         // Collection updated, now we can to process all collection values
@@ -918,7 +880,47 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
     public static class EFRepositoryHelper
     {
-        public static TCollection UpdateCollection<TElement, TCollection>(TCollection? collection,
+        private static MethodInfo? updateCollectionMethodInfo;
+        private static MethodInfo? copyCollectionMethodInfo;
+
+        public static IEnumerable UpdateCollection(IEnumerable collection, ICollection<IEntity> newValues)
+        {
+            if (updateCollectionMethodInfo is null)
+            {
+                updateCollectionMethodInfo = typeof(EFRepositoryHelper)
+                    .GetMethod(nameof(UpdateCollection),
+                        BindingFlags.NonPublic | BindingFlags.Static);
+                if (updateCollectionMethodInfo is null)
+                {
+                    throw new InvalidOperationException("Can't find method UpdateCollection");
+                }
+            }
+
+            var method =
+                updateCollectionMethodInfo.MakeGenericMethod(collection.GetType().GetGenericArguments().First(),
+                    collection.GetType());
+            return (method.Invoke(null, new object?[] { collection, newValues }) as IEnumerable)!;
+        }
+
+        public static IEnumerable CopyCollection(IEnumerable collection)
+        {
+            if (copyCollectionMethodInfo is null)
+            {
+                copyCollectionMethodInfo = typeof(EFRepositoryHelper)
+                    .GetMethod(nameof(CopyCollection),
+                        BindingFlags.NonPublic | BindingFlags.Static);
+                if (copyCollectionMethodInfo is null)
+                {
+                    throw new InvalidOperationException("Can't find method CopyCollection");
+                }
+            }
+
+            var method = copyCollectionMethodInfo.MakeGenericMethod(collection.GetType().GetGenericArguments().First(),
+                collection.GetType());
+            return (method.Invoke(null, new object?[] { collection }) as IEnumerable)!;
+        }
+
+        private static TCollection UpdateCollection<TElement, TCollection>(TCollection? collection,
             ICollection<IEntity> values)
             where TCollection : ICollection<TElement>, new() where TElement : class, IEntity
         {
@@ -933,7 +935,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return collection;
         }
 
-        public static TCollection CopyCollection<TElement, TCollection>(TCollection collection)
+        private static TCollection CopyCollection<TElement, TCollection>(TCollection collection)
             where TCollection : ICollection<TElement>, new() where TElement : class, IEntity
         {
             var newCollection = new TCollection();
