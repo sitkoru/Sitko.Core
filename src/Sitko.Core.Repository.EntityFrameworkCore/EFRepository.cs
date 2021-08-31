@@ -772,7 +772,26 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
                         // Load original value from db so ef will knew both sides of relation
                         Logger.LogDebug("Load collection {Collection} original value", entryCollection.Metadata.Name);
+                        // Before loading collection from db we need to set it's value to null
+                        // Otherwise EF will not update it's value
                         entryCollection.CurrentValue = null;
+                        if (skipNavigation is not null)
+                        {
+                            // This is skip navigation. We need to detach all subentities from dbcontext before loading current value.
+                            // This is to prevent them stacking in "deleted" state after we set collection value to null
+                            if (skipNavigation.ForeignKey is not null)
+                            {
+                                var skipTypeName = skipNavigation.ForeignKey.DeclaringEntityType.Name;
+                                foreach (var entityEntry in context.ChangeTracker.Entries())
+                                {
+                                    if (entityEntry.Metadata.Name == skipTypeName)
+                                    {
+                                        entityEntry.State = EntityState.Detached;
+                                    }
+                                }
+                            }
+                        }
+
                         await entryCollection.LoadAsync();
 
                         // Ef really likes when we manipulate existing collection, not replace it with new one.
