@@ -109,7 +109,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                     if (originalValues is null || !originalValues.Any())
                     {
                         entityChange.AddChange(entryCollection.Metadata.Name, entryCollection.CurrentValue,
-                            modifiedCollection.CurrentValue, ChangeType.Added);
+                            EFRepositoryHelper.CopyCollection(modifiedCollection.CurrentValue), ChangeType.Added);
                     }
                     else
                     {
@@ -157,7 +157,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                         if (hasNewRef)
                         {
                             entityChange.AddChange(entryCollection.Metadata.Name, entryCollection.CurrentValue,
-                                modifiedCollection.CurrentValue, ChangeType.Deleted);
+                                EFRepositoryHelper.CopyCollection(modifiedCollection.CurrentValue), ChangeType.Deleted);
                         }
                     }
                 }
