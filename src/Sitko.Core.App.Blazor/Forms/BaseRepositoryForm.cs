@@ -17,10 +17,15 @@ namespace Sitko.Core.App.Blazor.Forms
         protected override async Task OnParametersSetAsync()
         {
             await base.OnParametersSetAsync();
-            if (EntitySnapshot != null && EntityId?.Equals(currentEntityId) == false)
+            if (EntityId?.Equals(currentEntityId) == false)
             {
                 await ResetAsync();
             }
+        }
+
+        protected override async Task InitializeAsync()
+        {
+            await base.InitializeAsync();
             currentEntityId = EntityId;
         }
 
