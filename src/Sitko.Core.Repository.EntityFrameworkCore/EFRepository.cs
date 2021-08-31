@@ -421,65 +421,48 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         private void AttachAllEntities(TDbContext context, IEntity entity, EntityChange[]? entityChanges)
         {
-            var entities = new List<IEntity>();
-            TraverseAndFillEntities(context, entity, entities);
-            foreach (var processedEntity in entities)
+            // First, attach entities graph to dbContext
+            context.ChangeTracker.TrackGraph(entity, node =>
             {
-                var entry = context.Entry(processedEntity);
-                entry.State = entry.IsKeySet ? EntityState.Unchanged : EntityState.Added;
-            }
-
-            foreach (var processedEntity in entities)
+                node.Entry.State = node.Entry.IsKeySet ? EntityState.Unchanged : EntityState.Added;
+            });
+            // This operation has side effects - EF is clever, so he will rebuild all relations between tracked items
+            // If we have changes in FKs, references or collections - we must reapply them
+            foreach (var entry in context.ChangeTracker.Entries())
             {
-                var entry = context.Entry(processedEntity);
-                foreach (var collection in entry.Collections)
+                if (entry.Entity is IEntity processedEntity)
                 {
-                    if (collection.CurrentValue is not null)
+                    foreach (var property in entry.Properties.Where(p => p.Metadata.IsForeignKey()))
                     {
-                        var changeState = HasChanges(entityChanges, processedEntity, collection.Metadata.Name,
+                        var changeState = HasChanges(entityChanges, processedEntity, property.Metadata.Name,
                             out var change);
                         if (changeState == ChangeState.Changed && change is not null)
                         {
-                            EFRepositoryHelper.UpdateCollection(collection.CurrentValue,
-                                (change.Value.CurrentValue as IEnumerable).Cast<IEntity>().ToList());
+                            property.CurrentValue = change.Value.CurrentValue;
                         }
                     }
-                }
-            }
-        }
 
-        private void TraverseAndFillEntities(TDbContext context, IEntity entity, List<IEntity> entities)
-        {
-            var existingEntity = entities.FirstOrDefault(e => e.Equals(entity));
-            if (existingEntity is not null)
-            {
-                if (existingEntity != entity && context.Entry(entity).IsKeySet)
-                {
-                    throw new InvalidOperationException($"Entity {entity} has multiple instances in graph");
-                }
-
-                return;
-            }
-
-            entities.Add(entity);
-            var entry = context.Entry(entity);
-            foreach (var reference in entry.References)
-            {
-                if (reference.CurrentValue is IEntity referenceCurrentValue)
-                {
-                    TraverseAndFillEntities(context, referenceCurrentValue, entities);
-                }
-            }
-
-            foreach (var collection in entry.Collections)
-            {
-                if (collection.CurrentValue is not null)
-                {
-                    foreach (var collectionValue in collection.CurrentValue)
+                    foreach (var reference in entry.References)
                     {
-                        if (collectionValue is IEntity collectionItem)
+                        var changeState = HasChanges(entityChanges, processedEntity, reference.Metadata.Name,
+                            out var change);
+                        if (changeState == ChangeState.Changed && change is not null)
                         {
-                            TraverseAndFillEntities(context, collectionItem, entities);
+                            reference.CurrentValue = change.Value.CurrentValue;
+                        }
+                    }
+
+                    foreach (var collection in entry.Collections)
+                    {
+                        if (collection.CurrentValue is not null)
+                        {
+                            var changeState = HasChanges(entityChanges, processedEntity, collection.Metadata.Name,
+                                out var change);
+                            if (changeState == ChangeState.Changed && change is not null)
+                            {
+                                EFRepositoryHelper.UpdateCollection(collection.CurrentValue,
+                                    (change.Value.CurrentValue as IEnumerable).Cast<IEntity>().ToList());
+                            }
                         }
                     }
                 }
