@@ -235,7 +235,7 @@ namespace Sitko.Core.Repository.Tests
                 var repository2 = scope2.ServiceProvider.GetRequiredService<BarRepository>();
                 var updateResult = await repository2.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
-                Assert.Single(updateResult.Changes);
+                updateResult.Changes.Should().ContainSingle();
             }
 
             using (var finalScope = scope.CreateScope())
@@ -374,7 +374,7 @@ namespace Sitko.Core.Repository.Tests
                 var updateResult =
                     await repository3.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
-                Assert.Single(updateResult.Changes);
+                updateResult.Changes.Should().ContainSingle();
             }
 
             using (var finalScope = scope.CreateScope())
@@ -427,7 +427,7 @@ namespace Sitko.Core.Repository.Tests
                 var updateResult =
                     await repository3.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
-                Assert.Single(updateResult.Changes);
+                updateResult.Changes.Should().ContainSingle();
             }
 
             using (var finalScope = scope.CreateScope())
@@ -461,7 +461,7 @@ namespace Sitko.Core.Repository.Tests
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
                 var updateResult = await repository3.AddAsync(originalBar);
                 Assert.True(updateResult.IsSuccess);
-                Assert.Empty(updateResult.Changes);
+                updateResult.Changes.Should().BeEmpty();
             }
 
             using (var finalScope = scope.CreateScope())
@@ -503,7 +503,7 @@ namespace Sitko.Core.Repository.Tests
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
                 var updateResult = await repository3.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
-                Assert.Single(updateResult.Changes);
+                updateResult.Changes.Should().ContainSingle();
             }
 
             using (var finalScope = scope.CreateScope())
@@ -545,7 +545,7 @@ namespace Sitko.Core.Repository.Tests
                 var updateResult =
                     await repository3.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
-                Assert.Single(updateResult.Changes);
+                updateResult.Changes.Should().ContainSingle();
             }
 
             using (var finalScope = scope.CreateScope())
@@ -597,7 +597,7 @@ namespace Sitko.Core.Repository.Tests
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
                 var updateResult = await repository3.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
-                Assert.Single(updateResult.Changes);
+                updateResult.Changes.Should().ContainSingle();
             }
 
             using (var finalScope = scope.CreateScope())
@@ -632,7 +632,7 @@ namespace Sitko.Core.Repository.Tests
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
                 var updateResult = await repository3.UpdateAsync(originalBar);
                 Assert.True(updateResult.IsSuccess);
-                Assert.Single(updateResult.Changes);
+                updateResult.Changes.Should().ContainSingle();
             }
 
             using (var finalScope = scope.CreateScope())
@@ -674,7 +674,7 @@ namespace Sitko.Core.Repository.Tests
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
                 var updateResult = await repository3.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
-                Assert.Single(updateResult.Changes);
+                updateResult.Changes.Should().ContainSingle();
             }
 
             using (var finalScope = scope.CreateScope())
@@ -719,7 +719,7 @@ namespace Sitko.Core.Repository.Tests
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
                 var updateResult = await repository3.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
-                Assert.Single(updateResult.Changes);
+                updateResult.Changes.Should().ContainSingle();
             }
 
             using (var finalScope = scope.CreateScope())
@@ -765,7 +765,7 @@ namespace Sitko.Core.Repository.Tests
                 var updateResult =
                     await repository3.UpdateAsync(bar, originalBar);
                 Assert.True(updateResult.IsSuccess);
-                Assert.Single(updateResult.Changes);
+                updateResult.Changes.Should().ContainSingle();
             }
 
             using (var finalScope = scope.CreateScope())
