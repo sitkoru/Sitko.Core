@@ -191,20 +191,21 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return ChangeState.Unknown;
         }
 
-        private static bool HasChanges(EntityChange[]? entityChanges, IEntity entity) =>
+        private static ChangeState HasChanges(EntityChange[]? entityChanges, IEntity entity) =>
             HasChanges(entityChanges, entity, out _);
 
-        private static bool HasChanges(EntityChange[]? entityChanges, IEntity entity, out PropertyChange[] changes)
+        private static ChangeState HasChanges(EntityChange[]? entityChanges, IEntity entity,
+            out PropertyChange[] changes)
         {
             if (entityChanges is null)
             {
                 changes = Array.Empty<PropertyChange>();
-                return true;
+                return ChangeState.Unknown;
             }
 
             var entityChange = entityChanges.FirstOrDefault(c => c.Entity.Equals(entity));
             changes = entityChange?.Changes ?? Array.Empty<PropertyChange>();
-            return changes.Length > 0;
+            return changes.Length > 0 ? ChangeState.Changed : ChangeState.UnChanged;
         }
 
         public override async Task<bool> BeginTransactionAsync(CancellationToken cancellationToken = default)
@@ -713,7 +714,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                         if (entryReference.CurrentValue is IEntity referencedEntity)
                         {
                             // Reference value is IEntity. Any changes?
-                            if (HasChanges(changes, referencedEntity))
+                            if (HasChanges(changes, referencedEntity) == ChangeState.Changed)
                             {
                                 // Yes, so full attach process
                                 await AttachEntryAsync(context.Entry(referencedEntity), changes, context,
@@ -822,7 +823,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                         // Check all collection elements for changes and process them
                         foreach (var collectionEntity in currentValue)
                         {
-                            if (HasChanges(changes, collectionEntity))
+                            if (HasChanges(changes, collectionEntity) == ChangeState.Changed)
                             {
                                 // Element has come changes - process
                                 await AttachEntryAsync(context.Entry(collectionEntity), changes, context,
