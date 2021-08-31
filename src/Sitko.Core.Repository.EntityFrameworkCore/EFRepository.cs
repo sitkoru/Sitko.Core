@@ -707,12 +707,18 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 var skipNavigation = entryCollection.Metadata as ISkipNavigation;
                 if (skipNavigation != null)
                 {
+                    // This is skip navigation. We need to process it only once and only one side if it
                     if (processedNavigations.Contains(skipNavigation) ||
                         processedNavigations.Contains(skipNavigation.Inverse))
                     {
+                        // Skip navigation or it's other side already processed. Skip.
+                        Logger.LogDebug(
+                            "Entity {Type} [{Entity}]. Collection {Collection} or its Inverse was already processed",
+                            entity.GetType().Name, entity.EntityId, entryCollection.Metadata.Name);
                         continue;
                     }
 
+                    // Skip navigation was not processed yet, add to list
                     processedNavigations.Add(skipNavigation);
                 }
 
