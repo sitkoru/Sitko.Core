@@ -503,7 +503,8 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                     // 3. Start walking entities graph
                     var entityEntry = context.Entry(entity as IEntity);
                     var processed = new List<IEntity>();
-                    await AttachEntryAsync(entityEntry, changes, context, processed);
+                    var processedNavigations = new List<ISkipNavigation>();
+                    await AttachEntryAsync(entityEntry, changes, context, processed, processedNavigations);
                     // 4. Entity attached. If we have old entity - return detected changes as flat list
                     if (changes is not null)
                     {
@@ -532,7 +533,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             }, cancellationToken);
 
         private async Task AttachEntryAsync(EntityEntry<IEntity> entry, EntityChange[]? changes, TDbContext context,
-            List<IEntity> processedEntities)
+            List<IEntity> processedEntities, List<ISkipNavigation> processedNavigations)
         {
             var entity = entry.Entity;
             if (processedEntities.Contains(entity))
@@ -660,7 +661,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
                             // If reference value is IEntity - attach it to graph
                             await AttachEntryAsync(context.Entry(referencedEntity), changes, context,
-                                processedEntities);
+                                processedEntities, processedNavigations);
                         }
                         else
                         {
@@ -682,7 +683,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                             {
                                 // Yes, so full attach process
                                 await AttachEntryAsync(context.Entry(referencedEntity), changes, context,
-                                    processedEntities);
+                                    processedEntities, processedNavigations);
                             }
                             else
                             {
@@ -703,6 +704,18 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             Logger.LogDebug("Process entity {Type} [{Entity}] collections", entity.GetType(), entity.EntityId);
             foreach (var entryCollection in entry.Collections)
             {
+                var skipNavigation = entryCollection.Metadata as ISkipNavigation;
+                if (skipNavigation != null)
+                {
+                    if (processedNavigations.Contains(skipNavigation) ||
+                        processedNavigations.Contains(skipNavigation.Inverse))
+                    {
+                        continue;
+                    }
+
+                    processedNavigations.Add(skipNavigation);
+                }
+
                 // Cast collection value to List of IEntity
                 // ReSharper disable once PossibleMultipleEnumeration
                 var currentValue = entryCollection.CurrentValue?.Cast<IEntity>().ToList();
@@ -774,7 +787,8 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                         foreach (var value in currentValue)
                         {
                             var existingEntity = context.Entry(value);
-                            await AttachEntryAsync(existingEntity, changes, context, processedEntities);
+                            await AttachEntryAsync(existingEntity, changes, context, processedEntities,
+                                processedNavigations);
                         }
                     }
                 }
@@ -792,7 +806,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                             {
                                 // Element has come changes - process
                                 await AttachEntryAsync(context.Entry(collectionEntity), changes, context,
-                                    processedEntities);
+                                    processedEntities, processedNavigations);
                             }
                             else
                             {
