@@ -704,6 +704,8 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             Logger.LogDebug("Process entity {Type} [{Entity}] collections", entity.GetType(), entity.EntityId);
             foreach (var entryCollection in entry.Collections)
             {
+                Logger.LogDebug("Process entity {Type} [{Entity}] collection {Collection}", entity.GetType(),
+                    entity.EntityId, entryCollection.Metadata.Name);
                 var skipNavigation = entryCollection.Metadata as ISkipNavigation;
                 if (skipNavigation != null)
                 {
