@@ -440,6 +440,59 @@ namespace Sitko.Core.Repository.Tests
         }
 
         [Fact]
+        public async Task DisconnectedOneToOneViaPropertyUpdate()
+        {
+            var scope = await GetScopeAsync();
+            BarModel? originalBar;
+            using (var scope1 = scope.CreateScope())
+            {
+                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
+                originalBar = await repository1.GetAsync(q => q.Where(b => b.TestId != null).Include(b => b.Test));
+                originalBar.Should().NotBeNull();
+            }
+
+            BarModel? bar;
+            using (var scope1 = scope.CreateScope())
+            {
+                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
+                bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id).Include(b => b.Test));
+                bar.Should().NotBeNull();
+            }
+
+            bar!.Test.Should().NotBeNull();
+            bar.TestId.Should().NotBe(default(Guid));
+
+            AddOrUpdateOperationResult<TestModel, Guid> newTestResult;
+            using (var scope2 = scope.CreateScope())
+            {
+                var repository2 = scope2.ServiceProvider.GetRequiredService<IRepository<TestModel, Guid>>();
+                newTestResult = await repository2.AddAsync(await repository2.NewAsync());
+            }
+
+            newTestResult.IsSuccess.Should().BeTrue();
+
+            bar.TestId = newTestResult.Entity.Id;
+
+
+            using (var scope3 = scope.CreateScope())
+            {
+                var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
+                var updateResult =
+                    await repository3.UpdateAsync(bar, originalBar);
+                updateResult.IsSuccess.Should().BeTrue();
+                updateResult.Changes.Should().ContainSingle();
+            }
+
+            using (var finalScope = scope.CreateScope())
+            {
+                var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
+                var updatedBar =
+                    await repository.GetAsync(q => q.Where(b => b.Id == bar.Id));
+                updatedBar!.TestId.Should().Be(newTestResult.Entity.Id);
+            }
+        }
+
+        [Fact]
         public async Task DisconnectedOneToOneAdd()
         {
             var scope = await GetScopeAsync();
