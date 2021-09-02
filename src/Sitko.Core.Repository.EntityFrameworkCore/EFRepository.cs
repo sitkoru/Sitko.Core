@@ -763,34 +763,44 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
                         // Load original value from db so ef will knew both sides of relation
                         Logger.LogDebug("Load collection {Collection} original value", entryCollection.Metadata.Name);
-                        // Before loading collection from db we need to set it's value to null
-                        // Otherwise EF will not update it's value
-                        entryCollection.CurrentValue = null;
+                        var skipNavigationEntries = new List<EntityEntry>();
                         if (skipNavigation is not null)
                         {
-                            // This is skip navigation. We need to detach all subentities from dbcontext before loading current value.
-                            // This is to prevent them stacking in "deleted" state after we set collection value to null
+                            // This is skip navigation. EF may already contains "link" entities in change tracker
+                            // After loading collection data from database new links would be mark as deleted
+                            // We need revert this later, so let's collect such entities
                             if (skipNavigation.ForeignKey is not null)
                             {
                                 var skipTypeName = skipNavigation.ForeignKey.DeclaringEntityType.Name;
                                 foreach (var entityEntry in context.ChangeTracker.Entries())
                                 {
-                                    if (entityEntry.Metadata.Name == skipTypeName)
+                                    if (entityEntry.Metadata.Name == skipTypeName &&
+                                        entityEntry.State != EntityState.Deleted)
                                     {
-                                        entityEntry.State = EntityState.Detached;
+                                        skipNavigationEntries.Add(entityEntry);
                                     }
                                 }
                             }
                         }
 
-                        await entryCollection.LoadAsync();
-
+                        // Force load current collection value from database
+                        var data = await EFRepositoryHelper.LoadCollectionAsync(entryCollection, context);
+                        entryCollection.CurrentValue = data;
+                        // Collection data is loaded. Now check link entities
+                        foreach (var skipNavigationEntry in skipNavigationEntries)
+                        {
+                            if (skipNavigationEntry.State == EntityState.Deleted)
+                            {
+                                // Link entity was marked as deleted. We can safely remove it from dbContext
+                                // EF will recreate it when we set new collection value
+                                skipNavigationEntry.State = EntityState.Detached;
+                            }
+                        }
                         // Ef really likes when we manipulate existing collection, not replace it with new one.
                         // So we need to update current  collection value.
                         // Because it is some random IEnumerable - we need a bit of generic and reflection magic
                         // ReSharper disable once PossibleMultipleEnumeration
-                        entryCollection.CurrentValue =
-                            EFRepositoryHelper.UpdateCollection(entryCollection.CurrentValue!, currentValue);
+                        EFRepositoryHelper.UpdateCollection(entryCollection.CurrentValue, currentValue);
                         // Trigger change detection to force ef to update all links
                         context.ChangeTracker.DetectChanges();
                         // Collection updated, now we can to process all collection values
@@ -906,6 +916,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
     {
         private static MethodInfo? updateCollectionMethodInfo;
         private static MethodInfo? copyCollectionMethodInfo;
+        private static MethodInfo? loadCollectionMethodInfo;
 
         public static IEnumerable UpdateCollection(IEnumerable collection, ICollection<IEntity> newValues)
         {
@@ -923,7 +934,33 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             var method =
                 updateCollectionMethodInfo.MakeGenericMethod(collection.GetType().GetGenericArguments().First(),
                     collection.GetType());
-            return (method.Invoke(null, new object?[] { collection, newValues }) as IEnumerable)!;
+            return (method.Invoke(null, new object[] { collection, newValues }) as IEnumerable)!;
+        }
+
+        public static async Task<IEnumerable> LoadCollectionAsync(CollectionEntry collectionEntry, DbContext dbContext)
+        {
+            if (loadCollectionMethodInfo is null)
+            {
+                loadCollectionMethodInfo = typeof(EFRepositoryHelper)
+                    .GetMethod(nameof(LoadCollectionAsync),
+                        BindingFlags.NonPublic | BindingFlags.Static);
+                if (loadCollectionMethodInfo is null)
+                {
+                    throw new InvalidOperationException("Can't find method LoadCollection");
+                }
+            }
+
+            var method =
+                loadCollectionMethodInfo.MakeGenericMethod(collectionEntry.EntityEntry.Metadata.ClrType,
+                    collectionEntry.Metadata.TargetEntityType.ClrType);
+            var result = method.Invoke(null,
+                new[] { dbContext, collectionEntry.EntityEntry.Entity, collectionEntry.Metadata.Name });
+            if (result is Task<IEnumerable> task)
+            {
+                return await task;
+            }
+
+            throw new InvalidOperationException("Method invocation result is not Task<IEnumerable>");
         }
 
         public static IEnumerable CopyCollection(IEnumerable collection)
@@ -944,11 +981,19 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             return (method.Invoke(null, new object?[] { collection }) as IEnumerable)!;
         }
 
-        private static TCollection UpdateCollection<TElement, TCollection>(TCollection? collection,
+        private static async Task<IEnumerable> LoadCollectionAsync<TEntity, TProperty>(DbContext dbContext,
+            TEntity entity,
+            string collectionName) where TEntity : class where TProperty : class
+        {
+            var entry = dbContext.Entry(entity);
+            var collection = entry.Collection<TProperty>(collectionName);
+            return await collection.Query().ToListAsync();
+        }
+
+        private static TCollection UpdateCollection<TElement, TCollection>(TCollection collection,
             ICollection<IEntity> values)
             where TCollection : ICollection<TElement>, new() where TElement : class, IEntity
         {
-            collection ??= new TCollection();
             collection.Clear();
 
             foreach (var entity in values.Cast<TElement>())
