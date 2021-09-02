@@ -133,7 +133,8 @@ namespace Sitko.Core.App
                         var result = validator.Validate(options);
                         if (!result.IsValid)
                         {
-                            throw new InvalidOperationException($"Can't validate options {options}: {result}");
+                            throw new OptionsValidationException(options.GetType().Name, options.GetType(),
+                                result.Errors.Select(e => $"{options.GetType().Name}: {e}"));
                         }
                     }
                 }
