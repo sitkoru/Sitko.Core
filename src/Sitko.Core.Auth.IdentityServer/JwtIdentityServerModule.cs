@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
-using Sitko.Core.App;
 
 namespace Sitko.Core.Auth.IdentityServer
 {
@@ -9,12 +8,11 @@ namespace Sitko.Core.Auth.IdentityServer
     {
         public override string OptionsKey => "Auth:IdentityServer:Jwt";
 
-        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+        protected override void ConfigureAuthentication(AuthenticationBuilder authenticationBuilder,
             JwtIdentityServerModuleOptions startupOptions)
         {
-            base.ConfigureServices(context, services, startupOptions);
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+            authenticationBuilder.AddJwtBearer(options =>
             {
                 options.Authority = startupOptions.OidcServerUrl;
                 options.Audience = startupOptions.JwtAudience;

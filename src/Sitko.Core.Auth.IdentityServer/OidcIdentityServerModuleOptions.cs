@@ -9,19 +9,13 @@ namespace Sitko.Core.Auth.IdentityServer
         public string? OidcClientId { get; set; }
         public string? OidcClientSecret { get; set; }
         public List<string> OidcScopes { get; } = new();
-        public bool EnableRedisDataProtection { get; set; }
-        public string? RedisHost { get; set; }
-        public int RedisPort { get; set; }
-        public int RedisDb { get; set; } = -1;
-        public int DataProtectionLifeTimeInMinutes { get; set; } = 90 * 24 * 60;
         public string ResponseType { get; set; } = OidcConstants.ResponseTypes.Code;
         public bool UsePkce { get; set; } = true;
         public bool SaveTokens { get; set; } = true;
         public bool GetClaimsFromUserInfoEndpoint { get; set; } = true;
-        public string SignInScheme { get; set; } = "Cookies";
-        public string ChallengeScheme { get; set; } = "oidc";
-        public int ExpireTimeSpanInMinutes { get; set; } = 30 * 24 * 60;
-        public bool SlidingExpiration { get; set; } = true;
+        public override bool RequiresCookie => true;
+        public override string SignInScheme => "Cookies";
+        public override string ChallengeScheme => "oidc";
     }
 
     public class OidcAuthOptionsValidator : IdentityServerAuthOptionsValidator<OidcIdentityServerModuleOptions>

@@ -7,13 +7,13 @@ using Microsoft.Extensions.Options;
 
 namespace Sitko.Core.Auth
 {
-    public class AuthorizationMiddleware
+    public class AuthorizationMiddleware<TAuthOptions> where TAuthOptions : AuthOptions
     {
         private readonly RequestDelegate next;
-        private readonly IOptionsMonitor<AuthOptions> options;
+        private readonly IOptionsMonitor<TAuthOptions> options;
         private readonly IPolicyEvaluator policyEvaluator;
 
-        public AuthorizationMiddleware(RequestDelegate next, IOptionsMonitor<AuthOptions> options,
+        public AuthorizationMiddleware(RequestDelegate next, IOptionsMonitor<TAuthOptions> options,
             IPolicyEvaluator policyEvaluator)
         {
             this.next = next;
