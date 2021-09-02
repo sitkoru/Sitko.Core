@@ -1,3 +1,5 @@
+using Grpc.Core;
+
 namespace Sitko.Core.Grpc.Client
 {
     using System;
@@ -9,7 +11,7 @@ namespace Sitko.Core.Grpc.Client
     using JetBrains.Annotations;
 
     [PublicAPI]
-    public class GrpcClientModuleOptions : BaseModuleOptions
+    public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient : ClientBase<TClient>
     {
         public bool EnableHttp2UnencryptedSupport { get; set; }
         public bool DisableCertificatesValidation { get; set; }
@@ -17,7 +19,7 @@ namespace Sitko.Core.Grpc.Client
 
         internal HashSet<Type> Interceptors { get; } = new();
 
-        public GrpcClientModuleOptions AddInterceptor<TInterceptor>() where TInterceptor : Interceptor
+        public GrpcClientModuleOptions<TClient> AddInterceptor<TInterceptor>() where TInterceptor : Interceptor
         {
             Interceptors.Add(typeof(TInterceptor));
             return this;

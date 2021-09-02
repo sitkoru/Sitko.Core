@@ -1,4 +1,6 @@
-﻿namespace Sitko.Core.Grpc.Client
+﻿using JetBrains.Annotations;
+
+namespace Sitko.Core.Grpc.Client
 {
     using System;
     using App;
@@ -7,31 +9,32 @@
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
 
+    [PublicAPI]
     public static class ApplicationExtensions
     {
         public static Application AddExternalGrpcClient<TClient>(this Application application,
-            Action<IConfiguration, IHostEnvironment, ExternalGrpcClientModuleOptions> configure,
+            Action<IConfiguration, IHostEnvironment, ExternalGrpcClientModuleOptions<TClient>> configure,
             string? optionsKey = null)
             where TClient : ClientBase<TClient> =>
-            application.AddModule<ExternalGrpcClientModule<TClient>, ExternalGrpcClientModuleOptions>(configure,
+            application.AddModule<ExternalGrpcClientModule<TClient>, ExternalGrpcClientModuleOptions<TClient>>(configure,
                 optionsKey);
 
         public static Application AddExternalGrpcClient<TClient>(this Application application,
-            Action<ExternalGrpcClientModuleOptions>? configure = null,
+            Action<ExternalGrpcClientModuleOptions<TClient>>? configure = null,
             string? optionsKey = null)
             where TClient : ClientBase<TClient> =>
-            application.AddModule<ExternalGrpcClientModule<TClient>, ExternalGrpcClientModuleOptions>(configure,
+            application.AddModule<ExternalGrpcClientModule<TClient>, ExternalGrpcClientModuleOptions<TClient>>(configure,
                 optionsKey);
 
         public static TApplication AddExternalGrpcClient<TApplication, TClient>(this TApplication application,
             string address,
-            Action<GrpcClientModuleOptions>? configure = null)
+            Action<GrpcClientModuleOptions<TClient>>? configure = null)
             where TApplication : Application where TClient : ClientBase<TClient> =>
             application.AddExternalGrpcClient<TApplication, TClient>(new Uri(address), configure);
 
         public static TApplication AddExternalGrpcClient<TApplication, TClient>(this TApplication application,
             Uri address,
-            Action<GrpcClientModuleOptions>? configure = null)
+            Action<GrpcClientModuleOptions<TClient>>? configure = null)
             where TApplication : Application where TClient : ClientBase<TClient>
         {
             application.AddExternalGrpcClient<TClient>(moduleOptions =>
@@ -44,7 +47,7 @@
 
         public static TApplication AddExternalGrpcClient<TApplication, TClient>(this TApplication application,
             Func<IConfiguration, IHostEnvironment, Uri> getAddress,
-            Action<GrpcClientModuleOptions>? configure = null)
+            Action<GrpcClientModuleOptions<TClient>>? configure = null)
             where TApplication : Application where TClient : ClientBase<TClient>
         {
             application.AddExternalGrpcClient<TClient>((configuration, environment, moduleOptions) =>

@@ -49,7 +49,7 @@ namespace Sitko.Core.Grpc.Client.Tests
         {
             base.ConfigureApplication(application, name)
                 .AddModule<TestGrpcClientModule<TestService.TestServiceClient>,
-                    TestGrpcClientModuleOptions
+                    TestGrpcClientModuleOptions<TestService.TestServiceClient>
                 >(
                     moduleOptions =>
                     {
@@ -63,13 +63,14 @@ namespace Sitko.Core.Grpc.Client.Tests
 
     public class
         TestGrpcClientModule<TClient> : GrpcClientModule<TClient, TestGrpcClientResolver<TClient>,
-            TestGrpcClientModuleOptions>
+            TestGrpcClientModuleOptions<TClient>>
         where TClient : ClientBase<TClient>
     {
         public override string OptionsKey => "Grpc:Client:Test";
     }
 
-    public class TestGrpcClientModuleOptions : GrpcClientModuleOptions
+    public class TestGrpcClientModuleOptions<TClient> : GrpcClientModuleOptions<TClient>
+        where TClient : ClientBase<TClient>
     {
     }
 

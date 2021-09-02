@@ -17,7 +17,7 @@ namespace Sitko.Core.Grpc.Client.Consul
         private readonly IConsulClient consulClient;
         private readonly CancellationTokenSource cts = new();
         private readonly ILogger<ConsulGrpcServiceAddressResolver<TClient>> logger;
-        private readonly IOptionsMonitor<ConsulGrpcClientModuleOptions> optionsMonitor;
+        private readonly IOptionsMonitor<ConsulGrpcClientModuleOptions<TClient>> optionsMonitor;
 
         private readonly string serviceName =
             typeof(TClient).BaseType!.GenericTypeArguments!.First().DeclaringType!.Name;
@@ -28,7 +28,7 @@ namespace Sitko.Core.Grpc.Client.Consul
         private Uri? target;
 
         public ConsulGrpcServiceAddressResolver(IConsulClient consulClient,
-            IOptionsMonitor<ConsulGrpcClientModuleOptions> optionsMonitor,
+            IOptionsMonitor<ConsulGrpcClientModuleOptions<TClient>> optionsMonitor,
             ILogger<ConsulGrpcServiceAddressResolver<TClient>> logger)
         {
             this.consulClient = consulClient;
@@ -36,7 +36,7 @@ namespace Sitko.Core.Grpc.Client.Consul
             this.logger = logger;
         }
 
-        private ConsulGrpcClientModuleOptions Options => optionsMonitor.CurrentValue;
+        private ConsulGrpcClientModuleOptions<TClient> Options => optionsMonitor.CurrentValue;
 
         public async ValueTask DisposeAsync()
         {
@@ -80,7 +80,7 @@ namespace Sitko.Core.Grpc.Client.Consul
         {
             var serviceResponse =
                 await consulClient.Catalog.Service(serviceName, "grpc",
-                    new QueryOptions {WaitIndex = lastIndex}, cts.Token);
+                    new QueryOptions { WaitIndex = lastIndex }, cts.Token);
             if (serviceResponse.StatusCode == HttpStatusCode.OK)
             {
                 lastIndex = serviceResponse.LastIndex;

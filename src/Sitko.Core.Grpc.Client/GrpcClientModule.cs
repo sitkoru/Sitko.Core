@@ -11,14 +11,15 @@ namespace Sitko.Core.Grpc.Client
     using Microsoft.Extensions.DependencyInjection;
 
     public interface IGrpcClientModule<TClient> where TClient : ClientBase<TClient>
-    {}
+    {
+    }
 
     public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOptions> :
         BaseApplicationModule<TGrpcClientModuleOptions>,
         IGrpcClientModule<TClient>
         where TClient : ClientBase<TClient>
         where TResolver : class, IGrpcServiceAddressResolver<TClient>
-        where TGrpcClientModuleOptions : GrpcClientModuleOptions, new()
+        where TGrpcClientModuleOptions : GrpcClientModuleOptions<TClient>, new()
     {
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
             TGrpcClientModuleOptions startupOptions)

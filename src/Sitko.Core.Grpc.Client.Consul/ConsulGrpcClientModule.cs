@@ -7,16 +7,18 @@ namespace Sitko.Core.Grpc.Client.Consul
     using global::Grpc.Core;
 
     public class ConsulGrpcClientModule<TClient> : GrpcClientModule<TClient, ConsulGrpcServiceAddressResolver<TClient>,
-        ConsulGrpcClientModuleOptions>
+        ConsulGrpcClientModuleOptions<TClient>>
         where TClient : ClientBase<TClient>
     {
         public override string OptionsKey => "Grpc:Client:Consul";
 
         public override IEnumerable<Type> GetRequiredModules(ApplicationContext context,
-            ConsulGrpcClientModuleOptions options) =>
-            new List<Type> {typeof(IConsulModule)};
+            ConsulGrpcClientModuleOptions<TClient> options) =>
+            new List<Type> { typeof(IConsulModule) };
     }
 
-    public class ConsulGrpcClientModuleOptions : GrpcClientModuleOptions
-    {}
+    public class ConsulGrpcClientModuleOptions<TClient> : GrpcClientModuleOptions<TClient>
+        where TClient : ClientBase<TClient>
+    {
+    }
 }

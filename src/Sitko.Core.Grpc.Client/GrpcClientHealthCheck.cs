@@ -13,7 +13,7 @@ namespace Sitko.Core.Grpc.Client
         public GrpcClientHealthCheck(IGrpcServiceAddressResolver<TClient> resolver) => this.resolver = resolver;
 
         public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = default)
         {
             HealthCheckResult result;
             var uri = resolver.GetAddress();
