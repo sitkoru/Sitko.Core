@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using IL.FluentValidation.Extensions.Options;
+using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.App
 {
@@ -17,6 +19,7 @@ namespace Sitko.Core.App
         private readonly string? optionsKey;
         private readonly Action<IConfiguration, IHostEnvironment, TModuleOptions>? configureOptions;
         private readonly TModule instance;
+        private readonly Type? validatorType;
 
         public ApplicationModuleRegistration(
             Action<IConfiguration, IHostEnvironment, TModuleOptions>? configureOptions = null,
@@ -25,6 +28,16 @@ namespace Sitko.Core.App
             instance = Activator.CreateInstance<TModule>();
             this.configureOptions = configureOptions;
             this.optionsKey = optionsKey ?? instance.OptionsKey;
+            var optionsInstance = Activator.CreateInstance<TModuleOptions>();
+            if (optionsInstance is IModuleOptionsWithValidation moduleOptionsWithValidation)
+            {
+                validatorType = moduleOptionsWithValidation.GetValidatorType();
+            }
+            else
+            {
+                validatorType = typeof(TModuleOptions).Assembly.ExportedTypes
+                    .Where(typeof(IValidator<TModuleOptions>).IsAssignableFrom).FirstOrDefault();
+            }
         }
 
         public override Type Type => typeof(TModule);
@@ -45,17 +58,6 @@ namespace Sitko.Core.App
                         options.Configure(context);
                         configureOptions?.Invoke(context.Configuration, context.Environment, options);
                     });
-            var optionsInstance = Activator.CreateInstance<TModuleOptions>();
-            Type? validatorType;
-            if (optionsInstance is IModuleOptionsWithValidation moduleOptionsWithValidation)
-            {
-                validatorType = moduleOptionsWithValidation.GetValidatorType();
-            }
-            else
-            {
-                validatorType = typeof(TModuleOptions).Assembly.ExportedTypes
-                    .Where(typeof(IValidator<TModuleOptions>).IsAssignableFrom).FirstOrDefault();
-            }
 
             if (validatorType is not null)
             {
@@ -121,6 +123,26 @@ namespace Sitko.Core.App
             applicationContext.Configuration.Bind(optionsKey, options);
             options.Configure(applicationContext);
             configureOptions?.Invoke(applicationContext.Configuration, applicationContext.Environment, options);
+            if (validatorType is not null)
+            {
+                try
+                {
+                    if (Activator.CreateInstance(validatorType) is IValidator<TModuleOptions> validator)
+                    {
+                        var result = validator.Validate(options);
+                        if (!result.IsValid)
+                        {
+                            throw new InvalidOperationException($"Can't validate options {options}: {result}");
+                        }
+                    }
+                }
+                catch (TargetInvocationException exception)
+                {
+                    applicationContext.Logger.LogDebug(exception, "Can't create validator {ValidatorType}: {ErrorText}",
+                        validatorType, exception.ToString());
+                }
+            }
+
             return options;
         }
 
