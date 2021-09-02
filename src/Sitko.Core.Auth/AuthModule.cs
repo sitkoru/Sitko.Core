@@ -37,10 +37,9 @@ namespace Sitko.Core.Auth
                 options.DefaultScheme = startupOptions.SignInScheme;
                 options.DefaultChallengeScheme = startupOptions.ChallengeScheme;
             });
-            ConfigureAuthentication(authenticationBuilder, startupOptions);
             if (startupOptions.RequiresCookie)
             {
-                services.AddAuthentication().AddCookie(startupOptions.SignInScheme, options =>
+                authenticationBuilder.AddCookie(startupOptions.SignInScheme, options =>
                 {
                     options.ExpireTimeSpan = TimeSpan.FromMinutes(startupOptions.CookieExpireInMinutes);
                     options.SlidingExpiration = true;
@@ -51,6 +50,8 @@ namespace Sitko.Core.Auth
                     startupOptions.ConfigureCookie?.Invoke(options.Cookie);
                 });
             }
+            ConfigureAuthentication(authenticationBuilder, startupOptions);
+
 
             services.AddAuthorization(options =>
             {
