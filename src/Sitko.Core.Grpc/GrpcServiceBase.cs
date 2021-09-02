@@ -15,12 +15,12 @@
 
         [PublicAPI]
         protected TResponse CreateResponse<TResponse>() where TResponse : class, IGrpcResponse, new() =>
-            new() {ResponseInfo = new ApiResponseInfo {IsSuccess = true}};
+            new() { ResponseInfo = new ApiResponseInfo { IsSuccess = true } };
 
-        protected Task<TResponse> ProcessCall<TRequest, TResponse>(TRequest request,
+        protected Task<TResponse> ProcessCall<TResponse>(IGrpcRequest request,
             ServerCallContext context,
             Func<TResponse, GrpcCallResult> execute)
-            where TResponse : class, IGrpcResponse, new() where TRequest : class, IGrpcRequest
+            where TResponse : class, IGrpcResponse, new()
         {
             var response = CreateResponse<TResponse>();
             try
@@ -36,10 +36,10 @@
             return Task.FromResult(response);
         }
 
-        protected async Task<TResponse> ProcessCallAsync<TRequest, TResponse>(TRequest request,
+        protected async Task<TResponse> ProcessCallAsync<TResponse>(IGrpcRequest request,
             ServerCallContext context,
             Func<TResponse, Task<GrpcCallResult>> executeAsync)
-            where TResponse : class, IGrpcResponse, new() where TRequest : class, IGrpcRequest
+            where TResponse : class, IGrpcResponse, new()
         {
             {
                 var response = CreateResponse<TResponse>();
@@ -57,11 +57,11 @@
             }
         }
 
-        public async Task ProcessStreamAsync<TRequest, TResponse>(TRequest request,
+        public async Task ProcessStreamAsync<TResponse>(IGrpcRequest request,
             IServerStreamWriter<TResponse> responseStream,
             ServerCallContext context,
             Func<Func<Action<TResponse>, Task>, Task> executeAsync)
-            where TResponse : class, IGrpcResponse, new() where TRequest : class, IGrpcRequest
+            where TResponse : class, IGrpcResponse, new()
         {
             {
                 try
@@ -82,9 +82,9 @@
             }
         }
 
-        private void ProcessResult<TRequest, TResponse>(GrpcCallResult result, TRequest request, TResponse response,
+        private void ProcessResult<TResponse>(GrpcCallResult result, IGrpcRequest request, TResponse response,
             string methodName)
-            where TResponse : class, IGrpcResponse, new() where TRequest : class, IGrpcRequest
+            where TResponse : class, IGrpcResponse, new()
         {
             if (!result.IsSuccess)
             {
