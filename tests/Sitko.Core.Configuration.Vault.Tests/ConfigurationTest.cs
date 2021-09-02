@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Xunit;
 using Xunit.Abstractions;
@@ -13,7 +14,6 @@ namespace Sitko.Core.Configuration.Vault.Tests
         }
 
         [Fact]
-
         public async Task Get()
         {
             var scope = await GetScopeAsync();
@@ -34,12 +34,11 @@ namespace Sitko.Core.Configuration.Vault.Tests
         [Fact]
         public async Task ModuleConfigValidationFailure()
         {
-            var scope = await GetScopeAsync<VaultTestScopeWithValidationFailure>();
-            Assert.Throws<OptionsValidationException>(() =>
+            var result = await Assert.ThrowsAsync<OptionsValidationException>(async () =>
             {
-                var config = scope.GetService<IOptions<TestModuleWithValidationConfig>>();
-                Assert.Equal(0, config.Value.Bar);
+                await GetScopeAsync<VaultTestScopeWithValidationFailure>();
             });
+            result.Message.Should().Contain("Bar must equals zero");
         }
     }
 }
