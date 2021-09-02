@@ -25,7 +25,7 @@ namespace Sitko.Core.Repository.Tests
             {
                 var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
                 originalBar = await repository1.GetAsync(q => q.Where(b => !b.Foos.Any()));
-                Assert.NotNull(originalBar);
+                originalBar.Should().NotBeNull();
             }
 
             BarModel? bar;
@@ -33,28 +33,17 @@ namespace Sitko.Core.Repository.Tests
             {
                 var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
                 bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id));
-                Assert.NotNull(bar);
+                bar.Should().NotBeNull();
             }
 
-            Assert.NotNull(bar);
-            Assert.Empty(bar!.Foos);
-
-            AddOrUpdateOperationResult<FooModel, Guid> newTestResult;
-            using (var scope2 = scope.CreateScope())
-            {
-                var repository2 = scope2.ServiceProvider.GetRequiredService<FooRepository>();
-                newTestResult = await repository2.AddAsync(await repository2.NewAsync());
-            }
-
-            Assert.True(newTestResult.IsSuccess);
-
-            bar.Foos.Add(newTestResult.Entity);
+            bar!.Foos.Should().BeEmpty();
+            bar.Foos.Add(new FooModel());
 
             using (var scope3 = scope.CreateScope())
             {
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
                 var updateResult = await repository3.UpdateAsync(bar, originalBar);
-                Assert.True(updateResult.IsSuccess);
+                updateResult.IsSuccess.Should().BeTrue();
                 updateResult.Changes.Should().ContainSingle();
             }
 
@@ -63,7 +52,7 @@ namespace Sitko.Core.Repository.Tests
                 var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
                 var updatedBar =
                     await repository.GetAsync(q => q.Where(b => b.Id == bar.Id).Include(b => b.Foos));
-                Assert.NotEmpty(updatedBar!.Foos);
+                updatedBar!.Foos.Should().NotBeEmpty();
             }
         }
 
