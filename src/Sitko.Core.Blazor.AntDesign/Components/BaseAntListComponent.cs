@@ -9,6 +9,7 @@ using AntDesign.TableModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Blazor.Components;
+using Sitko.Core.Repository;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
@@ -63,8 +64,8 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             }
 
             await StartLoadingAsync();
-            List<Func<IQueryable<TItem>, IQueryable<TItem>>> filters = new();
-            List<Func<IQueryable<TItem>, IOrderedQueryable<TItem>>> sorts = new();
+            List<FilterOperation<TItem>> filters = new();
+            List<SortOperation<TItem>> sorts = new();
 
             if (queryModel is not null)
             {
@@ -73,21 +74,54 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
                     foreach (var sortEntry in queryModel.SortModel.Where(s =>
                         s.Sort is not null))
                     {
-                        sorts.Add(items =>
+                        sorts.Add(new SortOperation<TItem>(items =>
                         {
-                            var sortResult = sortMethod.Invoke(sortEntry, new object?[] {items});
+                            var sortResult = sortMethod.Invoke(sortEntry, new object?[] { items });
                             if (sortResult is IOrderedQueryable<TItem> orderedQueryable)
                             {
                                 return orderedQueryable;
                             }
 
                             throw new InvalidOperationException("Error sorting model");
-                        });
+                        }, sortEntry.FieldName, sortEntry.Sort == SortDirection.Descending.ToString()));
                     }
                 }
 
-                filters.AddRange(queryModel.FilterModel.Select(filterEntry =>
-                    (Func<IQueryable<TItem>, IQueryable<TItem>>)filterEntry.FilterList));
+                foreach (var filterModel in queryModel.FilterModel)
+                {
+                    var values = new List<FilterOperationValue>();
+                    foreach (var modelFilter in filterModel.Filters)
+                    {
+                        QueryContextOperator? compareOperator = modelFilter.FilterCompareOperator switch
+                        {
+                            TableFilterCompareOperator.Equals => QueryContextOperator.Equal,
+                            TableFilterCompareOperator.Contains => QueryContextOperator.Contains,
+                            TableFilterCompareOperator.StartsWith => QueryContextOperator.StartsWith,
+                            TableFilterCompareOperator.EndsWith => QueryContextOperator.EndsWith,
+                            TableFilterCompareOperator.GreaterThan => QueryContextOperator.Greater,
+                            TableFilterCompareOperator.LessThan => QueryContextOperator.Less,
+                            TableFilterCompareOperator.GreaterThanOrEquals => QueryContextOperator.GreaterOrEqual,
+                            TableFilterCompareOperator.LessThanOrEquals => QueryContextOperator.LessOrEqual,
+                            TableFilterCompareOperator.NotEquals => QueryContextOperator.NotEqual,
+                            TableFilterCompareOperator.IsNull => QueryContextOperator.IsNull,
+                            TableFilterCompareOperator.IsNotNull => QueryContextOperator.NotNull,
+                            TableFilterCompareOperator.NotContains => QueryContextOperator.NotContains,
+                            _ => null
+                        };
+                        if (compareOperator is not null)
+                        {
+                            values.Add(new FilterOperationValue(modelFilter.Value, compareOperator.Value));
+                        }
+                        else
+                        {
+                            Logger.LogWarning("Unsupported filter operator: {Operator}",
+                                modelFilter.FilterCompareOperator);
+                        }
+                    }
+
+                    filters.Add(new FilterOperation<TItem>(items => filterModel.FilterList(items),
+                        filterModel.FieldName, values.ToArray()));
+                }
             }
 
             var page = queryModel?.PageIndex ?? PageIndex;
@@ -138,8 +172,8 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
     public class LoadRequest<TItem> where TItem : class
     {
-        public LoadRequest(int page, List<Func<IQueryable<TItem>, IQueryable<TItem>>> filters,
-            List<Func<IQueryable<TItem>, IOrderedQueryable<TItem>>> sort)
+        public LoadRequest(int page, List<FilterOperation<TItem>> filters,
+            List<SortOperation<TItem>> sort)
         {
             Page = page;
             Filters = filters;
@@ -147,7 +181,47 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         }
 
         public int Page { get; }
-        public List<Func<IQueryable<TItem>, IQueryable<TItem>>> Filters { get; }
-        public List<Func<IQueryable<TItem>, IOrderedQueryable<TItem>>> Sort { get; }
+        public List<FilterOperation<TItem>> Filters { get; }
+        public List<SortOperation<TItem>> Sort { get; }
+    }
+
+    public class FilterOperation<TItem> where TItem : class
+    {
+        public Func<IQueryable<TItem>, IQueryable<TItem>> Operation { get; }
+        public string Property { get; }
+
+        public FilterOperation(Func<IQueryable<TItem>, IQueryable<TItem>> operation, string property,
+            FilterOperationValue[] values)
+        {
+            Operation = operation;
+            Property = property;
+        }
+    }
+
+    public class FilterOperationValue
+    {
+        public object Value { get; }
+        public QueryContextOperator Operator { get; }
+
+        public FilterOperationValue(object value, QueryContextOperator @operator)
+        {
+            Value = value;
+            Operator = @operator;
+        }
+    }
+
+    public class SortOperation<TItem> where TItem : class
+    {
+        public Func<IQueryable<TItem>, IOrderedQueryable<TItem>> Operation { get; }
+        public string Property { get; }
+        public bool IsDescending { get; }
+
+        public SortOperation(Func<IQueryable<TItem>, IOrderedQueryable<TItem>> operation, string property,
+            bool isDescending)
+        {
+            Operation = operation;
+            Property = property;
+            IsDescending = isDescending;
+        }
     }
 }

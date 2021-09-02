@@ -26,7 +26,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
                     await DoConfigureQuery(request, query);
                     foreach (var sort in request.Sort)
                     {
-                        query = query.Order(sort);
+                        query = query.Order(sort.Operation);
                     }
 
                     query.Paginate(request.Page, PageSize);
@@ -44,7 +44,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             {
                 foreach (var filter in request.Filters)
                 {
-                    query = query.Where(filter);
+                    query = query.Where(filter.Operation);
                 }
             }
 
