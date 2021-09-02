@@ -32,6 +32,8 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             Offset = offset;
         }
 
+        internal string QueryString => BuildQuery().ToQueryString();
+
         internal EFRepositoryQuerySource<TEntity> QuerySource { get; }
 
         internal List<Func<IQueryable<TEntity>, IQueryable<TEntity>>> WhereExpressions { get; } = new();

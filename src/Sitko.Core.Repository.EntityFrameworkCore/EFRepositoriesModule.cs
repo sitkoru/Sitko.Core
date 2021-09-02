@@ -1,6 +1,8 @@
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 
+[assembly: InternalsVisibleTo("Sitko.Core.Repository.Tests")]
 namespace Sitko.Core.Repository.EntityFrameworkCore
 {
     public class EFRepositoriesModule<TAssembly> : RepositoriesModule<TAssembly, EFRepositoriesModuleOptions>
