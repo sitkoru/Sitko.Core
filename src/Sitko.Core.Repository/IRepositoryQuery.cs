@@ -23,6 +23,7 @@ namespace Sitko.Core.Repository
         IRepositoryQuery<TEntity> Where(QueryContextCondition condition);
         IRepositoryQuery<TEntity> Where(QueryContextConditionsGroup conditionsGroup);
         IRepositoryQuery<TEntity> Where(IEnumerable<QueryContextConditionsGroup> conditionsGroups);
+        IRepositoryQuery<TEntity> Where(params QueryContextConditionsGroup[] conditionsGroups);
         IRepositoryQuery<TEntity> Like(string property, object value);
         IRepositoryQuery<TEntity> WhereByString(string whereJson);
         IRepositoryQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> orderBy);

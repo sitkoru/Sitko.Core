@@ -68,17 +68,21 @@ namespace Sitko.Core.Repository
 
         public virtual IRepositoryQuery<TEntity> Where(QueryContextCondition condition)
         {
-            Where(new QueryContextConditionsGroup(new List<QueryContextCondition> {condition}));
+            Where(new QueryContextConditionsGroup(new List<QueryContextCondition> { condition }));
             return this;
         }
 
         public IRepositoryQuery<TEntity> Where(QueryContextConditionsGroup conditionsGroup)
         {
-            Where(new[] {conditionsGroup});
+            Where(new[] { conditionsGroup });
             return this;
         }
 
-        public IRepositoryQuery<TEntity> Where(IEnumerable<QueryContextConditionsGroup> conditionsGroups) => ApplyConditions(conditionsGroups);
+        public IRepositoryQuery<TEntity> Where(IEnumerable<QueryContextConditionsGroup> conditionsGroups) =>
+            ApplyConditions(conditionsGroups);
+
+        public IRepositoryQuery<TEntity> Where(params QueryContextConditionsGroup[] conditionsGroups) =>
+            ApplyConditions(conditionsGroups);
 
         public virtual IRepositoryQuery<TEntity> Like(string property, object value)
         {
@@ -191,7 +195,7 @@ namespace Sitko.Core.Repository
 
         protected virtual void SetCondition(string property, QueryContextOperator @operator, object value)
         {
-            var condition = new QueryContextCondition(property) {Operator = @operator, Value = value};
+            var condition = new QueryContextCondition(property) { Operator = @operator, Value = value };
             Where(condition);
         }
 
@@ -208,6 +212,20 @@ namespace Sitko.Core.Repository
                 if (values != null)
                 {
                     foreach (var child in arr.Children())
+                    {
+                        values.Add(ParsePropertyValue(propertyType, child));
+                    }
+                }
+
+                return values;
+            }
+
+            if (value is not string && value is IEnumerable enumerable)
+            {
+                var values = Activator.CreateInstance(typeof(List<>).MakeGenericType(propertyType)) as IList;
+                if (values != null)
+                {
+                    foreach (var child in enumerable)
                     {
                         values.Add(ParsePropertyValue(propertyType, child));
                     }
