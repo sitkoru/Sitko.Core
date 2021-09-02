@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using IL.FluentValidation.Extensions.Options;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Sitko.Core.App
 {
@@ -73,7 +74,7 @@ namespace Sitko.Core.App
             ApplicationContext context,
             LoggerConfiguration loggerConfiguration)
         {
-            var options = CreateOptions(context);
+            var options = CreateOptions(context, true);
             instance.ConfigureLogging(context, options, loggerConfiguration);
             return this;
         }
@@ -117,13 +118,13 @@ namespace Sitko.Core.App
 
         public override bool IsEnabled(ApplicationContext context) => CreateOptions(context).Enabled;
 
-        private TModuleOptions CreateOptions(ApplicationContext applicationContext)
+        private TModuleOptions CreateOptions(ApplicationContext applicationContext, bool validateOptions = false)
         {
             var options = Activator.CreateInstance<TModuleOptions>();
             applicationContext.Configuration.Bind(optionsKey, options);
             options.Configure(applicationContext);
             configureOptions?.Invoke(applicationContext.Configuration, applicationContext.Environment, options);
-            if (validatorType is not null)
+            if (validatorType is not null && validateOptions)
             {
                 try
                 {
@@ -150,7 +151,7 @@ namespace Sitko.Core.App
             ApplicationContext context,
             IServiceCollection services)
         {
-            var options = CreateOptions(context);
+            var options = CreateOptions(context, true);
             instance.ConfigureServices(context, services, options);
             return this;
         }
