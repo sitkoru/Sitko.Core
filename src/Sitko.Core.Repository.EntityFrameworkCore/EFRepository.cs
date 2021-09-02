@@ -187,7 +187,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 return ChangeState.Changed;
             }
 
-            return ChangeState.Unknown;
+            return ChangeState.UnChanged;
         }
 
         private static ChangeState HasChanges(EntityChange[]? entityChanges, IEntity entity) =>
