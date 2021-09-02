@@ -1,10 +1,8 @@
-﻿@typeparam TEntity
-@typeparam TEntityPk
-@typeparam TRepository
-@inherits BaseAntRepositoryListComponent<TEntity, TEntityPk, TRepository>
+﻿@typeparam TItem
+@inherits Sitko.Core.App.Blazor.Components.BaseComponent
 @if (ChildContent is not null)
 {
-    <AntDesign.Table TItem="TEntity"
+    <AntDesign.Table TItem="TItem"
                      DataSource="@Items"
                      RemoteDataSource="true"
                      Total="@Count"
@@ -42,7 +40,7 @@
                      SelectedRowsChanged="@SelectedRowsChanged">
         <ChildContent>
             @ChildContent(context)
-            <AntListInitializer TEntity="TEntity" Table="Table" AntListComponent="this"></AntListInitializer>
+            <AntListInitializer TEntity="TItem" Table="Table" AntListComponent="this"></AntListInitializer>
         </ChildContent>
     </AntDesign.Table>
 }
