@@ -334,7 +334,7 @@ jobs:
 
   release:
     name: Release
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
     needs: [ build, apps, blazor, grpc, pdf, queue, repository, sonyflake, storage, vault ]
     if: ${{ github.event_name == 'push' }}
