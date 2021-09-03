@@ -1,6 +1,6 @@
 # Sitko.Core
 
-Opinionated framework on top of .NET Core and ASP.NET Core for building microservices. 
+Opinionated framework on top of .NET and ASP.NET Core for building microservices. 
 
 Provides base application and modules for fast application building.
 
@@ -15,9 +15,9 @@ Provides base application and modules for fast application building.
 - GRPC
 - Storage
 - Email 
-- Unit testing.
+- Unit testing
 
 # Using
 
-// TODO
+See [demo app](apps/Sitko.Core.Apps.Blazor) for now
 
