@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.10" />
   </ItemGroup>
   
   <ItemGroup>
