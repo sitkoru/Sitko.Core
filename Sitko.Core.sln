@@ -42,6 +42,7 @@ ProjectSection(SolutionItems) = preProject
 	LICENSE.md = LICENSE.md
 	packageIcon.png = packageIcon.png
 	nightly.cmd = nightly.cmd
+	release.config.js = release.config.js
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Db", "src\Sitko.Core.Db\Sitko.Core.Db.csproj", "{0CA239FF-3A6F-4C39-9A1A-A573E61A9A63}"
@@ -132,18 +133,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{246EC1C4-F30C-4BEB-8E08-46F944A18573}"
 ProjectSection(SolutionItems) = preProject
 	.github\workflows\release.yml = .github\workflows\release.yml
-	.github\workflows\build.yml = .github\workflows\build.yml
-	.github\workflows\pdf.yml = .github\workflows\pdf.yml
-	.github\workflows\queue.yml = .github\workflows\queue.yml
-	.github\workflows\sonyflake.yml = .github\workflows\sonyflake.yml
-	.github\workflows\storage.yml = .github\workflows\storage.yml
-	.github\workflows\repository.yml = .github\workflows\repository.yml
 	.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
-	.github\workflows\grpc.yml = .github\workflows\grpc.yml
-	.github\workflows\blazor.yml = .github\workflows\blazor.yml
-	.github\workflows\apps.yml = .github\workflows\apps.yml
 	.github\workflows\demo.yml = .github\workflows\demo.yml
-	.github\workflows\vault.yml = .github\workflows\vault.yml
+	.github\workflows\main.yml = .github\workflows\main.yml
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Email.Tests", "tests\Sitko.Core.Email.Tests\Sitko.Core.Email.Tests.csproj", "{60D9CB93-B38D-4A39-8FEB-F81FE1852DF3}"

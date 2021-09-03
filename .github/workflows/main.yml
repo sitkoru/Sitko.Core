@@ -1,0 +1,364 @@
+name: Main
+
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
+    steps:
+      - uses: actions/checkout@v2.3.4
+        with:
+          fetch-depth: 0
+      - name: Install .NET Core 3.1
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '3.1.x'
+      - name: Install .NET 5.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Install .NET 6.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+      - name: Build
+        run: dotnet build -c Release
+      - name: Create packages
+        run: dotnet pack -c Release -o $(pwd)/packages
+  apps:
+    runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
+    steps:
+      - uses: actions/checkout@v2.3.4
+      - name: Install .NET Core 3.1
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '3.1.x'
+      - name: Install .NET 5.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Install .NET 6.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+      - name: Add Github Actions logger
+        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
+      - name: Run tests
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.App.Tests/Sitko.Core.App.Tests.csproj
+
+  blazor:
+    runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
+    steps:
+      - uses: actions/checkout@v2.3.4
+      - name: Install node.js
+        uses: actions/setup-node@v2.4.0
+        with:
+          node-version: '15'
+          cache: 'npm'
+          cache-dependency-path: |
+            src/Sitko.Core.Blazor.AntDesign/Web/package.json
+      - name: Build Sitko.Core.Blazor.AntDesign js
+        working-directory: src/Sitko.Core.Blazor.AntDesign/Web
+        shell: bash
+        run: |
+          npm ci
+          npm run prod
+      - name: Install .NET Core 3.1
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '3.1.x'
+      - name: Install .NET 5.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Install .NET 6.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+      - name: Add Github Actions logger
+        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
+      - name: Run tests
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.App.Blazor.Tests/Sitko.Core.App.Blazor.Tests.csproj
+
+  grpc:
+    runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
+    env:
+      POSTGRES_HOST: postgres
+      XUNIT_USE_POSTGRES: "true"
+    services:
+      postgres:
+        image: postgres:alpine
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+    steps:
+      - uses: actions/checkout@v2.3.4
+      - name: Install .NET Core 3.1
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '3.1.x'
+      - name: Install .NET 5.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Install .NET 6.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+      - name: Add Github Actions logger
+        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
+      - name: Run tests
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Grpc.Client.Tests/Sitko.Core.Grpc.Client.Tests.csproj
+
+  pdf:
+    runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
+    env:
+      PUPPETEER_EXECUTABLE_PATH: "/usr/bin/google-chrome-stable"
+    steps:
+      - uses: actions/checkout@v2.3.4
+      - name: Install chrome
+        run: |
+          apt-get update
+          apt-get install -y google-chrome-stable
+      - name: Install .NET Core 3.1
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '3.1.x'
+      - name: Install .NET 5.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Install .NET 6.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+      - name: Add Github Actions logger
+        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
+      - name: Run tests
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
+
+  queue:
+    runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
+    env:
+      QUEUE__NATS__SERVERS__0: nats://nats:4222
+      QUEUE__NATS__CLUSTERNAME: test-cluster
+    services:
+      nats:
+        image: nats-streaming:latest
+    steps:
+      - uses: actions/checkout@v2.3.4
+      - name: Install .NET Core 3.1
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '3.1.x'
+      - name: Install .NET 5.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Install .NET 6.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+      - name: Add Github Actions logger
+        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
+      - name: Run tests Sitko.Core.Queue
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
+      - name: Run tests Sitko.Core.Queue.Nats
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj
+      - name: Run tests Sitko.Core.Queue.InMemory
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj
+
+  repository:
+    runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
+    env:
+      DB__POSTGRES__TESTDBCONTEXT__HOST: postgres
+      XUNIT_USE_POSTGRES: "true"
+    services:
+      postgres:
+        image: postgres:alpine
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+    steps:
+      - uses: actions/checkout@v2.3.4
+      - name: Install .NET Core 3.1
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '3.1.x'
+      - name: Install .NET 5.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Install .NET 6.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+      - name: Add Github Actions logger
+        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
+      - name: Run tests
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Repository.Tests/Sitko.Core.Repository.Tests.csproj
+
+  sonyflake:
+    runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
+    env:
+      IDPROVIDER__SONYFLAKE__URI: http://sonyflake
+    services:
+      sonyflake:
+        image: titpetric/sonyflake
+    steps:
+      - uses: actions/checkout@v2.3.4
+      - name: Install .NET Core 3.1
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '3.1.x'
+      - name: Install .NET 5.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Install .NET 6.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+      - name: Add Github Actions logger
+        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
+      - name: Run tests
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.SonyFlake.Tests/Sitko.Core.SonyFlake.Tests.csproj
+
+  storage:
+    runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
+    env:
+      STORAGE__S3__TESTS3STORAGESETTINGS__SERVER: http://minio:9000
+      STORAGE__S3__TESTS3STORAGESETTINGS__ACCESSKEY: ptTYf7VkCVbUjAzn
+      STORAGE__S3__TESTS3STORAGESETTINGS__SECRETKEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
+      STORAGE__METADATA__POSTGRES__TESTS3STORAGESETTINGS__HOST: postgres
+      STORAGE__METADATA__POSTGRES__TESTS3STORAGESETTINGS__USERNAME: postgres
+      STORAGE__METADATA__POSTGRES__TESTS3STORAGESETTINGS__PASSWORD: 123
+    services:
+      minio:
+        image: bitnami/minio
+        env:
+          MINIO_ACCESS_KEY: ptTYf7VkCVbUjAzn
+          MINIO_SECRET_KEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
+      postgres:
+        image: postgres:alpine
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+    steps:
+      - uses: actions/checkout@v2.3.4
+      - name: Install .NET Core 3.1
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '3.1.x'
+      - name: Install .NET 5.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Install .NET 6.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+      - name: Add Github Actions logger
+        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
+      - name: Sitko.Core.Storage.FileSystem
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
+      - name: Sitko.Core.Storage.S3
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
+      - name: Sitko.Core.Storage.Metadata.Postgres
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.Metadata.Postgres.Tests/Sitko.Core.Storage.Metadata.Postgres.Tests.csproj
+
+  vault:
+    runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
+    env:
+      VAULT__URI: http://127.0.0.1:8200
+      VAULT__TOKEN: twit3itPSAD0yok
+      VAULT__MOUNTPOINT: secret
+      VAULT__SECRETS__0: tests
+    services:
+      sonyflake:
+        image: titpetric/sonyflake
+    steps:
+      - uses: actions/checkout@v2.3.4
+      - name: Install .NET Core 3.1
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '3.1.x'
+      - name: Install .NET 5.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Install .NET 6.0.x
+        uses: actions/setup-dotnet@v1.8.1
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+      - name: Install Vault
+        run: |
+          curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
+          apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+          apt-get update && apt-get install -y vault
+          setcap cap_ipc_lock= /usr/bin/vault
+      - name: Start Vault
+        run: |
+          vault server -dev -dev-root-token-id="${VAULT__TOKEN}" &
+      - name: Seed Vault
+        run: |
+          export VAULT_ADDR=${VAULT__URI}
+          json='{"test": {"Foo": "123","Bar": 123}}'
+          echo $json > data.json
+          vault kv put ${VAULT__MOUNTPOINT}/${VAULT__SECRETS__0} @data.json
+      - name: Add Github Actions logger
+        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
+      - name: Run tests
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Configuration.Vault.Tests/Sitko.Core.Configuration.Vault.Tests.csproj
+
+  release:
+    name: Release
+    runs-on: self-hosted
+    container: ghcr.io/sitkoru/actions-container
+    needs: [ build, apps, blazor, grpc, pdf, queue, repository, sonyflake, storage, vault ]
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install node.js
+        uses: actions/setup-node@v2.4.0
+        with:
+          node-version: '16'
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v2
+        with:
+          extra_plugins: |
+            @sitkoru/semantic-release-config
+            @semantic-release/changelog
+            @semantic-release/git
+        env:
+          GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+          GIT_AUTHOR_NAME: ${{ secrets.BOT_NAME }}
+          GIT_AUTHOR_EMAIL: ${{ secrets.BOT_EMAIL }}
+          GIT_COMMITTER_NAME: ${{ secrets.BOT_NAME }}
+          GIT_COMMITTER_EMAIL: ${{ secrets.BOT_EMAIL }}
+

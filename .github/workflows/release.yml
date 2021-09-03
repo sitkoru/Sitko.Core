@@ -1,9 +1,9 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - '*.*.*'
+  release:
+    types:
+      - published
 
 jobs:
   build:
@@ -52,13 +52,14 @@ jobs:
           repository: "sitkoru/Sitko.Core"
           path: proto
           ref: "proto"
+          token: ${{ secrets.BOT_TOKEN }}
       - name: Publish proto archive
         run: |
           tar czf proto/proto.tar.gz -C src/Sitko.Core.Grpc/Proto .
           echo echo ${{ steps.prep.outputs.version }}> proto/VERSION
           cd proto
-          git config user.name sitkobot
-          git config user.email bot@sitko.ru
+          git config user.name ${{ secrets.BOT_NAME }}
+          git config user.email ${{ secrets.BOT_EMAIL }}
           git add proto.tar.gz
           git add VERSION
           git commit -m "publish proto archive ${{ steps.prep.outputs.version }}"
