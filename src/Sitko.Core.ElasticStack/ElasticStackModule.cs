@@ -14,7 +14,7 @@ using Sitko.Core.App;
 namespace Sitko.Core.ElasticStack
 {
     public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOptions>,
-        IHostBuilderModule<ElasticStackModuleOptions>
+        IHostBuilderModule<ElasticStackModuleOptions>, ILoggingModule<ElasticStackModuleOptions>
     {
         public void ConfigureHostBuilder(ApplicationContext context, IHostBuilder hostBuilder,
             ElasticStackModuleOptions startupOptions)
@@ -85,10 +85,9 @@ namespace Sitko.Core.ElasticStack
             }
         }
 
-        public override void ConfigureLogging(ApplicationContext context, ElasticStackModuleOptions options,
+        public void ConfigureLogging(ApplicationContext context, ElasticStackModuleOptions options,
             LoggerConfiguration loggerConfiguration)
         {
-            base.ConfigureLogging(context, options, loggerConfiguration);
             if (options.LoggingEnabled)
             {
                 var rolloverAlias = string.IsNullOrEmpty(options.LoggingLiferRolloverAlias)
@@ -110,10 +109,10 @@ namespace Sitko.Core.ElasticStack
                 {
                     sinkOptions.TemplateCustomSettings = new Dictionary<string, string>
                     {
-                        {"lifecycle.name", options.LoggingLifeCycleName},
-                        {"lifecycle.rollover_alias", rolloverAlias}
+                        { "lifecycle.name", options.LoggingLifeCycleName },
+                        { "lifecycle.rollover_alias", rolloverAlias }
                     };
-                    sinkOptions.IndexAliases = new[] {rolloverAlias};
+                    sinkOptions.IndexAliases = new[] { rolloverAlias };
                 }
 
                 loggerConfiguration.Enrich.WithElasticApmCorrelationInfo()

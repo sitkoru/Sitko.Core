@@ -12,14 +12,7 @@ namespace Sitko.Core.App
     {
         string OptionsKey { get; }
 
-        void ConfigureLogging(ApplicationContext context, TModuleOptions options,
-            LoggerConfiguration loggerConfiguration);
-
         void ConfigureServices(ApplicationContext context, IServiceCollection services, TModuleOptions startupOptions);
-
-        void ConfigureAppConfiguration(ApplicationContext context,
-            HostBuilderContext hostBuilderContext, IConfigurationBuilder configurationBuilder,
-            TModuleOptions startupOptions);
 
         IEnumerable<Type> GetRequiredModules(ApplicationContext context, TModuleOptions options);
     }
@@ -36,5 +29,26 @@ namespace Sitko.Core.App
 
         Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider);
+    }
+
+    public interface IHostBuilderModule<in TModuleOptions> : IApplicationModule<TModuleOptions>
+        where TModuleOptions : class, new()
+    {
+        public void ConfigureHostBuilder(ApplicationContext context, IHostBuilder hostBuilder,
+            TModuleOptions startupOptions);
+    }
+
+    public interface ILoggingModule<in TModuleOptions> : IApplicationModule<TModuleOptions>
+        where TModuleOptions : class, new()
+    {
+        void ConfigureLogging(ApplicationContext context, TModuleOptions options,
+            LoggerConfiguration loggerConfiguration);
+    }
+
+    public interface IConfigurationModule<in TModuleOptions> : IApplicationModule<TModuleOptions>
+        where TModuleOptions : class, new()
+    {
+        void ConfigureAppConfiguration(IConfigurationBuilder configurationBuilder,
+            TModuleOptions startupOptions);
     }
 }

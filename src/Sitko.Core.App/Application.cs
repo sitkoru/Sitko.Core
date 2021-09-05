@@ -208,7 +208,7 @@ namespace Sitko.Core.App
                     LogVerbose("Configure app configuration in modules");
                     foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpApplicationContext))
                     {
-                        moduleRegistration.ConfigureAppConfiguration(appContext, context, builder);
+                        moduleRegistration.ConfigureAppConfiguration(appContext, builder);
                     }
                 })
                 .ConfigureServices((context, services) =>

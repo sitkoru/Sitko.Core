@@ -74,8 +74,12 @@ namespace Sitko.Core.App
             ApplicationContext context,
             LoggerConfiguration loggerConfiguration)
         {
-            var options = CreateOptions(context, true);
-            instance.ConfigureLogging(context, options, loggerConfiguration);
+            if (instance is ILoggingModule<TModuleOptions> loggingModule)
+            {
+                var options = CreateOptions(context, true);
+                loggingModule.ConfigureLogging(context, options, loggerConfiguration);
+            }
+
             return this;
         }
 
@@ -92,10 +96,15 @@ namespace Sitko.Core.App
         }
 
         public override ApplicationModuleRegistration ConfigureAppConfiguration(ApplicationContext context,
-            HostBuilderContext hostBuilderContext, IConfigurationBuilder configurationBuilder)
+            IConfigurationBuilder configurationBuilder)
         {
-            var options = CreateOptions(context);
-            instance.ConfigureAppConfiguration(context, hostBuilderContext, configurationBuilder, options);
+            if (instance is IConfigurationModule<TModuleOptions> configurationModule)
+            {
+                var options = CreateOptions(context);
+                configurationModule.ConfigureAppConfiguration(configurationBuilder,
+                    options);
+            }
+
             return this;
         }
 
@@ -204,7 +213,7 @@ namespace Sitko.Core.App
             IHostBuilder hostBuilder);
 
         public abstract ApplicationModuleRegistration ConfigureAppConfiguration(ApplicationContext context,
-            HostBuilderContext hostBuilderContext, IConfigurationBuilder configurationBuilder);
+            IConfigurationBuilder configurationBuilder);
 
         public abstract (bool isSuccess, IEnumerable<Type> missingModules) CheckRequiredModules(
             ApplicationContext context,

@@ -10,16 +10,14 @@ using VaultSharp.Extensions.Configuration;
 
 namespace Sitko.Core.Configuration.Vault
 {
-    public class VaultConfigurationModule : BaseApplicationModule<VaultConfigurationModuleOptions>
+    public class VaultConfigurationModule : BaseApplicationModule<VaultConfigurationModuleOptions>,
+        IConfigurationModule<VaultConfigurationModuleOptions>
     {
         public override string OptionsKey => "Vault";
 
-        public override void ConfigureAppConfiguration(ApplicationContext context,
-            HostBuilderContext hostBuilderContext,
-            IConfigurationBuilder configurationBuilder, VaultConfigurationModuleOptions startupOptions)
+        public void ConfigureAppConfiguration(IConfigurationBuilder configurationBuilder,
+            VaultConfigurationModuleOptions startupOptions)
         {
-            base.ConfigureAppConfiguration(context, hostBuilderContext, configurationBuilder, startupOptions);
-
             foreach (var secret in startupOptions.Secrets)
             {
                 configurationBuilder.AddVaultConfiguration(startupOptions.GetOptions,

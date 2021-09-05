@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Serilog;
 
 namespace Sitko.Core.App
 {
@@ -22,16 +21,6 @@ namespace Sitko.Core.App
     {
         public virtual void ConfigureServices(ApplicationContext context, IServiceCollection services,
             TModuleOptions startupOptions)
-        {
-        }
-
-        public virtual void ConfigureAppConfiguration(ApplicationContext context, HostBuilderContext hostBuilderContext,
-            IConfigurationBuilder configurationBuilder, TModuleOptions startupOptions)
-        {
-        }
-
-        public virtual void ConfigureLogging(ApplicationContext context, TModuleOptions options,
-            LoggerConfiguration loggerConfiguration)
         {
         }
 
@@ -71,12 +60,5 @@ namespace Sitko.Core.App
         public virtual void Configure(ApplicationContext applicationContext)
         {
         }
-    }
-
-    public interface IHostBuilderModule<in TModuleOptions> : IApplicationModule<TModuleOptions>
-        where TModuleOptions : class, new()
-    {
-        public void ConfigureHostBuilder(ApplicationContext context, IHostBuilder hostBuilder,
-            TModuleOptions startupOptions);
     }
 }

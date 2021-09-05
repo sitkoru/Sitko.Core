@@ -4,14 +4,14 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.NewRelic.Logging
 {
-    public class NewRelicLoggingModule : BaseApplicationModule<NewRelicLoggingModuleOptions>
+    public class NewRelicLoggingModule : BaseApplicationModule<NewRelicLoggingModuleOptions>,
+        ILoggingModule<NewRelicLoggingModuleOptions>
     {
         public override string OptionsKey => "Logging:NewRelic";
 
-        public override void ConfigureLogging(ApplicationContext context, NewRelicLoggingModuleOptions options,
+        public void ConfigureLogging(ApplicationContext context, NewRelicLoggingModuleOptions options,
             LoggerConfiguration loggerConfiguration)
         {
-            base.ConfigureLogging(context, options, loggerConfiguration);
             if (options.EnableLogging)
             {
                 loggerConfiguration
