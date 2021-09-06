@@ -173,6 +173,9 @@ namespace Sitko.Core.App.Blazor.Components
             Initialize();
             await InitializeAsync();
             isInitialized = true;
+            // ReSharper disable once MethodHasAsyncOverload
+            AfterInitialized();
+            await AfterInitializedAsync();
         }
 
         protected T? GetQueryString<T>(string key) => TryGetQueryString<T>(key, out var value) ? value : default;
@@ -234,6 +237,12 @@ namespace Sitko.Core.App.Blazor.Components
         protected virtual Task InitializeAsync() => Task.CompletedTask;
 
         protected virtual void Initialize()
+        {
+        }
+
+        protected virtual Task AfterInitializedAsync() => Task.CompletedTask;
+
+        protected virtual void AfterInitialized()
         {
         }
 
