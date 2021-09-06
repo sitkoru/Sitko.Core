@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Hosting;
+
 namespace Sitko.Core.Grpc.Server
 {
     using System;
@@ -13,6 +15,7 @@ namespace Sitko.Core.Grpc.Server
         private readonly List<Action<IGrpcServerModule>> serviceRegistrations = new();
         public string? Host { get; set; }
         public int? Port { get; set; }
+        [JsonIgnore] public Action<IWebHostBuilder>? ConfigureWebHostDefaults { get; set; }
 
         public int ChecksIntervalInSeconds { get; set; } = 60;
         public int DeregisterTimeoutInSeconds { get; set; } = 60;

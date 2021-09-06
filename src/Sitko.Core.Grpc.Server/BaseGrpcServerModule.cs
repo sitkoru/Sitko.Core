@@ -11,11 +11,13 @@ namespace Sitko.Core.Grpc.Server
     using Microsoft.Extensions.Hosting;
 
     public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TConfig>, IGrpcServerModule,
+        IHostBuilderModule<TConfig>,
         IWebApplicationModule where TConfig : GrpcServerModuleOptions, new()
     {
         private readonly List<Action<IEndpointRouteBuilder>> endpointRegistrations = new();
 
-        public virtual void RegisterService<TService>() where TService : class => endpointRegistrations.Add(builder => builder.MapGrpcService<TService>());
+        public virtual void RegisterService<TService>() where TService : class =>
+            endpointRegistrations.Add(builder => builder.MapGrpcService<TService>());
 
         public void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment,
             IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
@@ -50,6 +52,17 @@ namespace Sitko.Core.Grpc.Server
             foreach (var registration in startupOptions.ServiceRegistrations)
             {
                 registration(this);
+            }
+        }
+
+        public void ConfigureHostBuilder(ApplicationContext context, IHostBuilder hostBuilder, TConfig startupOptions)
+        {
+            if (startupOptions.ConfigureWebHostDefaults is not null)
+            {
+                hostBuilder.ConfigureWebHostDefaults(builder =>
+                {
+                    startupOptions.ConfigureWebHostDefaults(builder);
+                });
             }
         }
     }
