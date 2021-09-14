@@ -11,6 +11,7 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
 using Sitko.Core.App.Localization;
+using Sitko.Core.App.Validation;
 using Tempus;
 using Thinktecture;
 using Thinktecture.Extensions.Configuration;
@@ -221,6 +222,7 @@ namespace Sitko.Core.App
                     services.AddSingleton(GetType(), this);
                     services.AddHostedService<ApplicationLifetimeService>();
                     services.AddTransient<IScheduler, Scheduler>();
+                    services.AddScoped<FluentGraphValidator>();
                     services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
 
                     var appContext = GetContext(context.HostingEnvironment, context.Configuration);
