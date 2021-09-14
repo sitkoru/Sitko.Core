@@ -9,7 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v2.3.4
         with:
@@ -33,7 +32,6 @@ jobs:
         run: dotnet pack -c Release -o $(pwd)/packages
   apps:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v2.3.4
       - name: Install .NET Core 3.1
@@ -56,7 +54,6 @@ jobs:
 
   blazor:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v2.3.4
       - name: Install node.js
@@ -92,7 +89,6 @@ jobs:
 
   grpc:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
     env:
       POSTGRES_HOST: postgres
       XUNIT_USE_POSTGRES: "true"
@@ -335,7 +331,6 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
     needs: [ build, apps, blazor, grpc, pdf, queue, repository, sonyflake, storage, vault ]
     if: ${{ github.event_name == 'push' }}
     steps:
