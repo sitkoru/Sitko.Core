@@ -51,13 +51,14 @@ namespace Sitko.Core.App.Validation
         }
 
         public async Task<ModelsValidationResult> TryValidateFieldAsync(object model, string fieldName,
+            ModelsValidationResult? result = null,
             CancellationToken cancellationToken = default)
         {
             try
             {
                 var validatorSelector = new MemberNameValidatorSelector(new[] { fieldName });
                 var validationContext = CreateValidationContext(model, validatorSelector);
-                return await TryValidateModelAsync(model, validationContext, cancellationToken);
+                return await TryValidateModelAsync(model, validationContext, result, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -69,61 +70,57 @@ namespace Sitko.Core.App.Validation
         }
 
         public async Task<ModelsValidationResult> TryValidateModelAsync(object model,
-            IValidationContext? validationContext = null, CancellationToken cancellationToken = default)
+            IValidationContext? validationContext = null, ModelsValidationResult? result = null,
+            CancellationToken cancellationToken = default)
         {
             try
             {
                 validationContext ??= CreateValidationContext(model);
-                var result = new ModelsValidationResult();
+                result ??= new ModelsValidationResult();
+                if (result.Results.Any(r => r.Model == model))
+                {
+                    return result;
+                }
+
+                var modelResult = new ModelValidationResult(model);
+                result.Results.Add(modelResult);
+
                 var validator = TryGetModelValidator(model);
                 if (validator is not null)
                 {
                     var validationResult = await validator.ValidateAsync(validationContext, cancellationToken);
                     if (!validationResult.IsValid)
                     {
-                        result.Results.Add(new ModelValidationResult(model, validationResult.Errors));
+                        modelResult.Errors.AddRange(validationResult.Errors);
                     }
+                }
 
-                    foreach (var property in model.GetType().GetProperties())
+                foreach (var property in model.GetType().GetProperties())
+                {
+                    var propertyModel = property.GetValue(model);
+
+
+                    if (propertyModel is not string && propertyModel is IEnumerable enumerable)
                     {
-                        var propertyModel = property.GetValue(model);
-
-
-                        if (propertyModel is not string && propertyModel is IEnumerable enumerable)
+                        foreach (var item in enumerable)
                         {
-                            foreach (var item in enumerable)
-                            {
-                                var itemResult = await TryValidateModelAsync(item);
-                                if (!itemResult.IsValid)
-                                {
-                                    foreach (var modelValidationResult in itemResult.Results)
-                                    {
-                                        result.Results.Add(modelValidationResult);
-                                    }
-                                }
-                            }
+                            await TryValidateModelAsync(item, result: result,
+                                cancellationToken: cancellationToken);
                         }
-                        else
+                    }
+                    else
+                    {
+                        if (propertyModel is null ||
+                            propertyModel.GetType().Module.ScopeName == "CommonLanguageRuntimeLibrary" ||
+                            propertyModel.GetType().Module.ScopeName.StartsWith("System") ||
+                            propertyModel.GetType().Namespace.StartsWith("System") ||
+                            propertyModel.GetType().Namespace.StartsWith("Microsoft"))
                         {
-                            if (propertyModel is null ||
-                                propertyModel.GetType().Module.ScopeName == "CommonLanguageRuntimeLibrary" ||
-                                propertyModel.GetType().Module.ScopeName.StartsWith("System") ||
-                                propertyModel.GetType().Namespace.StartsWith("System") ||
-                                propertyModel.GetType().Namespace.StartsWith("Microsoft"))
-                            {
-                                continue;
-                            }
-
-                            var propertyResult =
-                                await TryValidateFieldAsync(propertyModel, property.Name, cancellationToken);
-                            if (!propertyResult.IsValid)
-                            {
-                                foreach (var modelValidationResult in propertyResult.Results)
-                                {
-                                    result.Results.Add(modelValidationResult);
-                                }
-                            }
+                            continue;
                         }
+
+                        await TryValidateModelAsync(propertyModel, result: result,
+                            cancellationToken: cancellationToken);
                     }
                 }
 
