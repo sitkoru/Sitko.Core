@@ -28,6 +28,7 @@
   <ItemGroup>
     <PackageReference Include="NewRelic.LogEnrichers.Serilog" Version="1.0.1" />
     <PackageReference Include="Serilog.Sinks.NewRelic.Logs" Version="1.1.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
