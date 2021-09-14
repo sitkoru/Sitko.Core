@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Sitko.Core.App.Validation;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore
 {
@@ -15,25 +15,25 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
             RepositoryFiltersManager filtersManager,
             ILoggerFactory loggerFactory,
             EFRepositoryLock repositoryLock,
-            IEnumerable<IValidator>? validators = null,
+            FluentGraphValidator fluentGraphValidator,
             IEnumerable<IAccessChecker<TEntity, TEntityPk>>? accessCheckers = null)
         {
             this.loggerFactory = loggerFactory;
             DbContext = dbContext;
             FiltersManager = filtersManager;
             RepositoryLock = repositoryLock;
-            Validators = validators?.ToList();
+            FluentGraphValidator = fluentGraphValidator;
             AccessCheckers = accessCheckers?.ToList();
         }
 
         internal TDbContext DbContext { get; }
         public EFRepositoryLock RepositoryLock { get; }
+        public FluentGraphValidator FluentGraphValidator { get; }
 
         public ILogger<IRepository<TEntity, TEntityPk>> Logger =>
             loggerFactory.CreateLogger<EFRepository<TEntity, TEntityPk, TDbContext>>();
 
         public RepositoryFiltersManager FiltersManager { get; }
-        public List<IValidator>? Validators { get; }
         public List<IAccessChecker<TEntity, TEntityPk>>? AccessCheckers { get; }
     }
 }

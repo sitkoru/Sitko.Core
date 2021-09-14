@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
 using Sitko.Core.App.Json;
+using Sitko.Core.App.Validation;
 
 namespace Sitko.Core.Repository
 {
     public interface IRepositoryContext<TEntity, TEntityPk> where TEntity : class, IEntity<TEntityPk>
     {
         RepositoryFiltersManager FiltersManager { get; }
-        List<IValidator>? Validators { get; }
+        FluentGraphValidator FluentGraphValidator { get; }
         List<IAccessChecker<TEntity, TEntityPk>>? AccessCheckers { get; }
         ILogger<IRepository<TEntity, TEntityPk>> Logger { get; }
     }
@@ -27,13 +27,13 @@ namespace Sitko.Core.Repository
 
         protected BaseRepository(IRepositoryContext<TEntity, TEntityPk> repositoryContext)
         {
-            Validators = repositoryContext.Validators?.ToArray() ?? Array.Empty<IValidator>();
             FiltersManager = repositoryContext.FiltersManager;
+            FluentGraphValidator = repositoryContext.FluentGraphValidator;
             AccessCheckers = repositoryContext.AccessCheckers ?? new List<IAccessChecker<TEntity, TEntityPk>>();
             Logger = repositoryContext.Logger;
         }
 
-        [PublicAPI] protected IValidator[] Validators { get; }
+        [PublicAPI] protected FluentGraphValidator FluentGraphValidator { get; set; }
 
         [PublicAPI] protected RepositoryFiltersManager FiltersManager { get; }
 
@@ -698,18 +698,8 @@ namespace Sitko.Core.Repository
         protected virtual async Task<(bool isValid, IList<ValidationFailure> errors)> ValidateAsync(TEntity entity,
             bool isNew, CancellationToken cancellationToken = default)
         {
-            var failures = new List<ValidationFailure>();
-            foreach (var validator in Validators.Where(v => v.CanValidateInstancesOfType(typeof(TEntity))))
-            {
-                var result =
-                    await validator.ValidateAsync(new ValidationContext<TEntity>(entity), cancellationToken);
-                if (!result.IsValid)
-                {
-                    failures.AddRange(result.Errors);
-                }
-            }
-
-            return (!failures.Any(), failures);
+            var result = await FluentGraphValidator.TryValidateModelAsync(entity, cancellationToken: cancellationToken);
+            return (result.IsValid, result.Results.SelectMany(r => r.Errors).ToList());
         }
 
         protected virtual Task<bool> BeforeValidateAsync(TEntity item,
