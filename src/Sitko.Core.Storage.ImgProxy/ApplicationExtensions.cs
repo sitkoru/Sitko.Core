@@ -11,19 +11,19 @@ namespace Sitko.Core.Storage.ImgProxy
     public static class ApplicationExtensions
     {
         public static Application AddImgProxyStorage<TStorageOptions>(this Application application,
-            Action<IConfiguration, IHostEnvironment, ImgProxyStorageModuleOptions<TStorageOptions>> configure,
+            Action<IConfiguration, IHostEnvironment, BaseApplicationModuleOptions> configure,
             string? optionsKey = null)
             where TStorageOptions : StorageOptions =>
             application
-                .AddModule<ImgProxyStorageModule<TStorageOptions>, ImgProxyStorageModuleOptions<TStorageOptions>>(
+                .AddModule<ImgProxyStorageModule<TStorageOptions>, BaseApplicationModuleOptions>(
                     configure, optionsKey);
 
         public static Application AddImgProxyStorage<TStorageOptions>(this Application application,
-            Action<ImgProxyStorageModuleOptions<TStorageOptions>>? configure = null,
+            Action<BaseApplicationModuleOptions>? configure = null,
             string? optionsKey = null)
             where TStorageOptions : StorageOptions =>
             application
-                .AddModule<ImgProxyStorageModule<TStorageOptions>, ImgProxyStorageModuleOptions<TStorageOptions>>(
+                .AddModule<ImgProxyStorageModule<TStorageOptions>, BaseApplicationModuleOptions>(
                     configure, optionsKey);
     }
 }

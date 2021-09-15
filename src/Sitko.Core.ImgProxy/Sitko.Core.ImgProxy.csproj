@@ -13,7 +13,7 @@
     <Summary>Sitko.Core is a set of libraries to help build .NET Core applications fast</Summary>
     <Copyright>Copyright © Sitko.ru 2020 - 2021</Copyright>
     <RepositoryUrl>https://github.com/sitkoru/Sitko.Core</RepositoryUrl>
-		<PackageProjectUrl>https://github.com/sitkoru/Sitko.Core</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/sitkoru/Sitko.Core</PackageProjectUrl>
     <PackageIcon>packageIcon.png</PackageIcon>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
@@ -25,10 +25,10 @@
     <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.ImgProxy\Sitko.Core.ImgProxy.csproj" />
-    <ProjectReference Include="..\Sitko.Core.Storage\Sitko.Core.Storage.csproj" />
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="ImgProxy" Version="2.1.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
 </Project>
