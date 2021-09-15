@@ -14,15 +14,15 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '3.1.x'
       - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '5.0.x'
       - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '6.0.x'
           include-prerelease: true
@@ -35,15 +35,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2.3.4
       - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '3.1.x'
       - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '5.0.x'
       - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '6.0.x'
           include-prerelease: true
@@ -70,15 +70,15 @@ jobs:
           npm ci
           npm run prod
       - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '3.1.x'
       - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '5.0.x'
       - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '6.0.x'
           include-prerelease: true
@@ -100,15 +100,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2.3.4
       - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '3.1.x'
       - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '5.0.x'
       - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '6.0.x'
           include-prerelease: true
@@ -129,15 +129,15 @@ jobs:
           apt-get update
           apt-get install -y google-chrome-stable
       - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '3.1.x'
       - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '5.0.x'
       - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '6.0.x'
           include-prerelease: true
@@ -158,15 +158,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2.3.4
       - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '3.1.x'
       - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '5.0.x'
       - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '6.0.x'
           include-prerelease: true
@@ -193,15 +193,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2.3.4
       - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '3.1.x'
       - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '5.0.x'
       - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '6.0.x'
           include-prerelease: true
@@ -221,15 +221,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2.3.4
       - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '3.1.x'
       - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '5.0.x'
       - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '6.0.x'
           include-prerelease: true
@@ -261,15 +261,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2.3.4
       - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '3.1.x'
       - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '5.0.x'
       - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '6.0.x'
           include-prerelease: true
@@ -296,15 +296,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2.3.4
       - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '3.1.x'
       - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '5.0.x'
       - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.8.1
+        uses: actions/setup-dotnet@v1.8.2
         with:
           dotnet-version: '6.0.x'
           include-prerelease: true
