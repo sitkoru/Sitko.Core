@@ -13,7 +13,7 @@
             @context.Bar
         </AntDesign.Column>
         <ActionColumn>
-            <Popconfirm Placement="@PlacementType.Left" Title="@LocalizationProvider["Delete record?"]"
+            <Popconfirm Placement="@Placement.Left" Title="@LocalizationProvider["Delete record?"]"
                         OnConfirm="@(() => _barList.DeleteAsync(context))"
                         OkText="@LocalizationProvider["Delete"]"
                         CancelText="@LocalizationProvider["Cancel"]">
