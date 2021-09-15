@@ -17,7 +17,7 @@ namespace Sitko.Core.App.Blazor.Forms
         protected override async Task OnParametersSetAsync()
         {
             await base.OnParametersSetAsync();
-            if (EntityId?.Equals(currentEntityId) == false)
+            if (IsInitialized && EntityId?.Equals(currentEntityId) == false)
             {
                 await ResetAsync();
             }
