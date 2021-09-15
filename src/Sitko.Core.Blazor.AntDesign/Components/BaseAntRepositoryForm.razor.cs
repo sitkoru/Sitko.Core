@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using AntDesign;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -73,12 +74,22 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
         protected abstract RenderFragment ChildContentFragment { get; }
 
-        protected override async Task InitializeAsync()
+        protected override Task NotifySuccessAsync()
         {
-            await base.InitializeAsync();
-            OnSuccess ??= () => MessageService.Success(LocalizationProvider["Entity saved successfully"]);
-            OnError ??= error => MessageService.Error(error);
-            OnException ??= exception => MessageService.Error(exception.ToString());
+            MessageService.Success(LocalizationProvider["Entity saved successfully"]);
+            return Task.CompletedTask;
+        }
+
+        protected override Task NotifyErrorAsync(string errorText)
+        {
+            MessageService.Error(errorText);
+            return Task.CompletedTask;
+        }
+
+        protected override Task NotifyExceptionAsync(Exception ex)
+        {
+            MessageService.Error(ex.ToString());
+            return Task.CompletedTask;
         }
 
         protected Task OnFormErrorAsync(EditContext editContext) =>

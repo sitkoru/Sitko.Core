@@ -15,8 +15,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 #if NET6_0_OR_GREATER
         [EditorRequired]
 #endif
-        [Parameter]
-        public RenderFragment<BaseAntForm<TEntity>> ChildContent { get; set; } = null!;
+        [Parameter] public RenderFragment<BaseAntForm<TEntity>> ChildContent { get; set; } = null!;
 
         protected override RenderFragment ChildContentFragment => ChildContent(this);
     }
@@ -75,30 +74,37 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 #if NET6_0_OR_GREATER
         [EditorRequired]
 #endif
-        [Parameter]
-        public Func<TEntity, Task<FormSaveResult>>? Add { get; set; }
+        [Parameter] public Func<TEntity, Task<FormSaveResult>>? Add { get; set; }
 
 #if NET6_0_OR_GREATER
         [EditorRequired]
 #endif
-        [Parameter]
-        public Func<TEntity, Task<FormSaveResult>>? Update { get; set; }
+        [Parameter] public Func<TEntity, Task<FormSaveResult>>? Update { get; set; }
 
 #if NET6_0_OR_GREATER
         [EditorRequired]
 #endif
-        [Parameter]
-        public Func<Task<(bool IsNew, TEntity Entity)>>? GetEntity { get; set; }
-
-        protected override async Task InitializeAsync()
-        {
-            await base.InitializeAsync();
-            OnSuccess ??= () => MessageService.Success(LocalizationProvider["Entity saved successfully"]);
-            OnError ??= error => MessageService.Error(error);
-            OnException ??= exception => MessageService.Error(exception.ToString());
-        }
+        [Parameter] public Func<Task<(bool IsNew, TEntity Entity)>>? GetEntity { get; set; }
 
         protected override Task<(bool IsNew, TEntity Entity)> GetEntityAsync() => GetEntity!();
+
+        protected override Task NotifySuccessAsync()
+        {
+            MessageService.Success(LocalizationProvider["Entity saved successfully"]);
+            return Task.CompletedTask;
+        }
+
+        protected override Task NotifyErrorAsync(string errorText)
+        {
+            MessageService.Error(errorText);
+            return Task.CompletedTask;
+        }
+
+        protected override Task NotifyExceptionAsync(Exception ex)
+        {
+            MessageService.Error(ex.ToString());
+            return Task.CompletedTask;
+        }
 
         protected Task OnFormErrorAsync(EditContext editContext) =>
             MessageService.Error(string.Join(". ", editContext.GetValidationMessages()));
