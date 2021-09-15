@@ -98,8 +98,8 @@ jobs:
         runs-on: ubuntu-latest
         container: ghcr.io/sitkoru/actions-container
         env:
-            QUEUE__NATS__SERVERS__0: nats://nats:4222
-            QUEUE__NATS__CLUSTERNAME: test-cluster
+            QUEUE_NATS_HOST: nats
+            QUEUE_NATS_CLUSTER_NAME: test-cluster
         services:
             nats:
                 image: nats-streaming:latest
@@ -126,7 +126,7 @@ jobs:
         runs-on: ubuntu-latest
         container: ghcr.io/sitkoru/actions-container
         env:
-            DB__POSTGRES__TESTDBCONTEXT__HOST: postgres
+            POSTGRES_HOST: postgres
             XUNIT_USE_POSTGRES: "true"
         services:
             postgres:
@@ -152,7 +152,7 @@ jobs:
         runs-on: ubuntu-latest
         container: ghcr.io/sitkoru/actions-container
         env:
-            IDPROVIDER__SONYFLAKE__URI: http://sonyflake
+            SONYFLAKE_URI: http://sonyflake
         services:
             sonyflake:
                 image: titpetric/sonyflake
@@ -175,12 +175,12 @@ jobs:
         runs-on: ubuntu-latest
         container: ghcr.io/sitkoru/actions-container
         env:
-            STORAGE__S3__TESTS3STORAGESETTINGS__SERVER: http://minio:9000
-            STORAGE__S3__TESTS3STORAGESETTINGS__ACCESSKEY: ptTYf7VkCVbUjAzn
-            STORAGE__S3__TESTS3STORAGESETTINGS__SECRETKEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
-            STORAGE__METADATA__POSTGRES__TESTS3STORAGESETTINGS__HOST: postgres
-            STORAGE__METADATA__POSTGRES__TESTS3STORAGESETTINGS__USERNAME: postgres
-            STORAGE__METADATA__POSTGRES__TESTS3STORAGESETTINGS__PASSWORD: 123
+            MINIO_SERVER_URI: http://minio:9000
+            MINIO_ACCESS_KEY: ptTYf7VkCVbUjAzn
+            MINIO_SECRET_KEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
+            POSTGRES_HOST: postgres
+            POSTGRES_USERNAME: postgres
+            POSTGRES_PASSWORD: 123
         services:
             minio:
                 image: bitnami/minio
@@ -209,47 +209,6 @@ jobs:
                 run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
             -   name: Sitko.Core.Storage.Metadata.Postgres
                 run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.Metadata.Postgres.Tests/Sitko.Core.Storage.Metadata.Postgres.Tests.csproj
-
-    vault:
-        runs-on: ubuntu-latest
-        container: ghcr.io/sitkoru/actions-container
-        env:
-            VAULT__URI: http://127.0.0.1:8200
-            VAULT__TOKEN: twit3itPSAD0yok
-            VAULT__MOUNTPOINT: secret
-            VAULT__SECRETS__0: tests
-        services:
-            sonyflake:
-                image: titpetric/sonyflake
-        steps:
-            -   uses: actions/checkout@v2.3.4
-            -   name: Install .NET Core 3.1
-                uses: actions/setup-dotnet@v1.8.1
-                with:
-                    dotnet-version: '3.1.x'
-            -   name: Install .NET 5.0.x
-                uses: actions/setup-dotnet@v1.8.1
-                with:
-                    dotnet-version: '5.0.x'
-            -   name: Install Vault
-                run: |
-                    curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
-                    apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-                    apt-get update && apt-get install -y vault
-                    setcap cap_ipc_lock= /usr/bin/vault
-            -   name: Start Vault
-                run: |
-                    vault server -dev -dev-root-token-id="${VAULT__TOKEN}" &
-            -   name: Seed Vault
-                run: |
-                    export VAULT_ADDR=${VAULT__URI}
-                    json='{"test": {"Foo": "123","Bar": 123}}'
-                    echo $json > data.json
-                    vault kv put ${VAULT__MOUNTPOINT}/${VAULT__SECRETS__0} @data.json
-            -   name: Add Github Actions logger
-                run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
-            -   name: Run tests
-                run: dotnet test --logger GitHubActions tests/Sitko.Core.Configuration.Vault.Tests/Sitko.Core.Configuration.Vault.Tests.csproj
 
     release:
         name: Release
