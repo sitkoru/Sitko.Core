@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
@@ -30,7 +30,7 @@ namespace Sitko.Core.App.Blazor.Components
             BindingFlags.NonPublic | BindingFlags.Instance);
 
         private bool isDisposed;
-        private bool isInitialized;
+        protected bool IsInitialized { get; private set; }
 
         private ILogger? logger;
 #if NET6_0_OR_GREATER
@@ -50,7 +50,7 @@ namespace Sitko.Core.App.Blazor.Components
             {
                 HasPendingQueuedRender.SetValue(this, false);
                 HasNeverRendered.SetValue(this, false);
-                if (isInitialized) // do not call BuildRenderTree before we initialized
+                if (IsInitialized) // do not call BuildRenderTree before we initialized
                 {
                     if (ScopeType == ScopeType.Isolated)
                     {
@@ -172,7 +172,7 @@ namespace Sitko.Core.App.Blazor.Components
             // ReSharper disable once MethodHasAsyncOverload
             Initialize();
             await InitializeAsync();
-            isInitialized = true;
+            IsInitialized = true;
             // ReSharper disable once MethodHasAsyncOverload
             AfterInitialized();
             await AfterInitializedAsync();
@@ -246,7 +246,7 @@ namespace Sitko.Core.App.Blazor.Components
         {
         }
 
-        protected override bool ShouldRender() => isInitialized;
+        protected override bool ShouldRender() => IsInitialized;
 
         [PublicAPI]
         protected TService? GetService<TService>() where TService : notnull => ServiceProvider.GetService<TService>();
