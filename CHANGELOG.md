@@ -1,3 +1,10 @@
+## [7.24.1](https://github.com/sitkoru/Sitko.Core/compare/7.24.0...7.24.1) (2021-09-15)
+
+
+### Bug Fixes
+
+* **caching:** return Sitko.Core.Caching to solution ([a3f16bb](https://github.com/sitkoru/Sitko.Core/commit/a3f16bb56f5dc7cc905c073fd8c7abeb5fdde7ce))
+
 # [7.24.0](https://github.com/sitkoru/Sitko.Core/compare/7.23.0...7.24.0) (2021-09-15)
 
 
