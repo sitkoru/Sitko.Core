@@ -23,6 +23,15 @@ namespace Sitko.Core.Configuration.Vault.Tests
         }
 
         [Fact]
+        public async Task GetSecond()
+        {
+            var scope = await GetScopeAsync();
+            var config = scope.GetService<IOptionsMonitor<TestConfig2>>();
+            Assert.NotEqual(string.Empty, config.CurrentValue.Foo);
+            Assert.NotEqual(0, config.CurrentValue.Bar);
+        }
+
+        [Fact]
         public async Task Module()
         {
             var scope = await GetScopeAsync();

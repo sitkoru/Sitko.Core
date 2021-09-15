@@ -23,6 +23,7 @@ namespace Sitko.Core.Configuration.Vault.Tests
             application.ConfigureServices((_, context, collection) =>
             {
                 collection.Configure<TestConfig>(context.Configuration.GetSection("test"));
+                collection.Configure<TestConfig2>(context.Configuration.GetSection("test2"));
             });
             application.AddModule<TestModule, TestModuleConfig>();
             return application;
@@ -41,6 +42,12 @@ namespace Sitko.Core.Configuration.Vault.Tests
 
 
     public class TestConfig
+    {
+        public string Foo { get; set; }
+        public int Bar { get; set; }
+    }
+
+    public class TestConfig2
     {
         public string Foo { get; set; }
         public int Bar { get; set; }

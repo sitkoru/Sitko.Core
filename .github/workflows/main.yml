@@ -313,6 +313,7 @@ jobs:
       VAULT__TOKEN: twit3itPSAD0yok
       VAULT__MOUNTPOINT: secret
       VAULT__SECRETS__0: tests
+      VAULT__SECRETS__1: test2
     services:
       sonyflake:
         image: titpetric/sonyflake
@@ -346,6 +347,7 @@ jobs:
           json='{"test": {"Foo": "123","Bar": 123}}'
           echo $json > data.json
           vault kv put ${VAULT__MOUNTPOINT}/${VAULT__SECRETS__0} @data.json
+          vault kv put ${VAULT__MOUNTPOINT}/${VAULT__SECRETS__1} @data.json
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests
