@@ -214,7 +214,7 @@ jobs:
         name: Release
         runs-on: ubuntu-latest
         container: ghcr.io/sitkoru/actions-container
-        needs: [ build, apps, blazor, grpc, pdf, queue, repository, sonyflake, storage, vault ]
+        needs: [ build, apps, grpc, pdf, queue, repository, sonyflake, storage ]
         if: ${{ github.event_name == 'push' }}
         steps:
             -   name: Checkout
