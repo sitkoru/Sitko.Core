@@ -366,10 +366,6 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Install node.js
-        uses: actions/setup-node@v2.4.0
-        with:
-          node-version: '16'
       - name: Semantic Release
         uses: sitkoru/semantic-release-action@v1
         env:
