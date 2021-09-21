@@ -109,30 +109,38 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             }
 
             sortMethod = method.MakeGenericMethod(typeof(TItem));
+            Logger.LogDebug("Sort method stored");
         }
 
         public Task InitializeTableAsync(QueryModel queryModel)
         {
+            Logger.LogDebug("Try to initialize table");
             if (!isTableInitialized)
             {
+                Logger.LogDebug("Table is not initialized. Proceed");
                 isTableInitialized = true;
                 return OnChangeAsync(queryModel);
             }
-
+            else
+            {
+                Logger.LogDebug("Table already initialized, skip");
+            }
             return Task.CompletedTask;
         }
 
         protected async Task OnChangeAsync(QueryModel? queryModel)
         {
+            Logger.LogDebug("Table model changed. Need to load data");
             if (!isTableInitialized)
             {
+                Logger.LogDebug("Table is not initialized. Skip");
                 return;
             }
 
             await StartLoadingAsync();
             List<FilterOperation<TItem>> filters = new();
             List<SortOperation<TItem>> sorts = new();
-
+            Logger.LogDebug("Parse query model");
             if (queryModel is not null)
             {
                 if (sortMethod is not null)
@@ -192,16 +200,20 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 
             var page = queryModel?.PageIndex ?? PageIndex;
             var request = new LoadRequest<TItem>(page, filters, sorts);
+            Logger.LogDebug("LoadRequest: {@LoadRequest}", request);
             lastQueryModel = queryModel;
             try
             {
+                Logger.LogDebug("Run load data task");
                 loadTask = GetDataAsync(request);
                 var (items, itemsCount) = await loadTask;
+                Logger.LogDebug("Data loaded. Count: {Count}", itemsCount);
                 Items = items;
                 Count = itemsCount;
                 LastRequest = request;
                 if (OnDataLoaded is not null)
                 {
+                    Logger.LogDebug("Execute OnDataLoaded");
                     await OnDataLoaded();
                 }
             }
@@ -209,7 +221,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             {
                 Logger.LogError(e, "Error loading list data: {ErrorText}", e.ToString());
             }
-
+            Logger.LogDebug("Data load is complete");
             await StopLoadingAsync();
         }
 

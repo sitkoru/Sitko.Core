@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Sitko.Core.Repository;
 using System.Linq.Expressions;
+using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
@@ -30,38 +31,51 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
             Func<TRepository, Task<TResult>> operation) =>
             ExecuteServiceOperation(operation);
 
-        protected override Task<(TEntity[] items, int itemsCount)> GetDataAsync(LoadRequest<TEntity> request,
-            CancellationToken cancellationToken = default) =>
-            ExecuteRepositoryOperation(repository =>
+        protected override async Task<(TEntity[] items, int itemsCount)> GetDataAsync(LoadRequest<TEntity> request,
+            CancellationToken cancellationToken = default)
+        {
+            Logger.LogDebug("Load repository data");
+            var result = await ExecuteRepositoryOperation(repository =>
             {
-                return repository.GetAllAsync(async query =>
+                Logger.LogDebug("Execute repository operation");
+                var data = repository.GetAllAsync(async query =>
                 {
+                    Logger.LogDebug("Execute DoConfigureQuery");
                     await DoConfigureQuery(request, query);
+                    Logger.LogDebug("Apply sort");
                     foreach (var sort in request.Sort)
                     {
                         query = query.Order(sort.Operation);
                     }
-
+                    Logger.LogDebug("Apply pagination");
                     query.Paginate(request.Page, PageSize);
                 }, cancellationToken);
+                Logger.LogDebug("Repository operation is complete");
+                return data;
             });
+            Logger.LogDebug("Repository data loaded");
+            return result;
+        }
 
         private async Task DoConfigureQuery(LoadRequest<TEntity>? request, IRepositoryQuery<TEntity> query)
         {
             if (ConfigureQuery is not null)
             {
+                Logger.LogDebug("Execute ConfigureQuery");
                 await ConfigureQuery(query);
             }
 
             if (request is not null)
             {
+                Logger.LogDebug("Apply request filters");
                 foreach (var filter in request.Filters)
                 {
                     query = query.Where(filter.Operation);
                 }
             }
-
+            Logger.LogDebug("Execute ConfigureQueryAsync");
             await ConfigureQueryAsync(query);
+            Logger.LogDebug("Query configured");
         }
 
         protected virtual Task ConfigureQueryAsync(IRepositoryQuery<TEntity> query) => Task.CompletedTask;
