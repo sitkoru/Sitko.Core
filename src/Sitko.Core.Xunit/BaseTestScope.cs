@@ -46,7 +46,9 @@ namespace Sitko.Core.Xunit
 
             scopeApplication.ConfigureLogging((_, loggerConfiguration) =>
             {
-                loggerConfiguration.WriteTo.TestOutput(testOutputHelper);
+                loggerConfiguration.WriteTo.TestOutput(testOutputHelper,
+                    outputTemplate:
+                    "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}{NewLine}---------{NewLine}{Properties:j}{NewLine}---------");
             });
 
             scopeApplication = ConfigureApplication(scopeApplication, name);
@@ -101,6 +103,7 @@ namespace Sitko.Core.Xunit
 
                 await scopeApplication.DisposeAsync();
             }
+
             GC.SuppressFinalize(this);
         }
 
