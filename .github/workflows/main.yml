@@ -89,14 +89,6 @@ jobs:
 
   grpc:
     runs-on: ubuntu-latest
-    env:
-      POSTGRES_HOST: postgres
-      XUNIT_USE_POSTGRES: "true"
-    services:
-      postgres:
-        image: postgres:alpine
-        env:
-          POSTGRES_HOST_AUTH_METHOD: trust
     steps:
       - uses: actions/checkout@v2.3.4
       - name: Install .NET Core 3.1
