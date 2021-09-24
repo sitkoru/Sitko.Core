@@ -7,7 +7,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres.DB.Models
     using JetBrains.Annotations;
 
     [PublicAPI]
-    [Table("StorageItemRecords", Schema = StorageDbContext.Schema)]
+    [Table(StorageDbContext.Table, Schema = StorageDbContext.Schema)]
     public class StorageItemRecord
     {
         // Used for EF

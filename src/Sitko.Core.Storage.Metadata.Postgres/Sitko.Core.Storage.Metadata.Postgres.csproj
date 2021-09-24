@@ -29,7 +29,6 @@
     <ProjectReference Include="..\Sitko.Core.Storage\Sitko.Core.Storage.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Zack.EFCore.Batch.Npgsql" Version="1.4.9" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
 </Project>
