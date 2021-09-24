@@ -213,7 +213,7 @@ namespace Sitko.Core.Storage.S3
                     Logger.LogDebug("Get objects list from S3. Current objects count: {Count}", items.Count);
                     response = await s3Client.ListObjectsV2Async(request, cancellationToken);
                     items.AddRange(response.S3Objects.Select(s3Object =>
-                        new StorageItemInfo(s3Object.Key, s3Object.Size, s3Object.LastModified)));
+                        new StorageItemInfo(s3Object.Key, s3Object.Size, s3Object.LastModified.ToUniversalTime())));
 
                     request.ContinuationToken = response.NextContinuationToken;
                 } while (response.IsTruncated);
