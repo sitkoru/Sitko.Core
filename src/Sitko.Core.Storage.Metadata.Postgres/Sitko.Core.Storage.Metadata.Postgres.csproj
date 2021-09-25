@@ -29,11 +29,6 @@
     <ProjectReference Include="..\Sitko.Core.Storage\Sitko.Core.Storage.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Zack.EFCore.Batch.Npgsql" Version="1.4.9" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
-  <!-- Workaround for .NET 6 Preview 7 (https://devblogs.microsoft.com/dotnet/announcing-net-6-preview-7/#comment-9902)-->
-  <PropertyGroup>
-    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
-  </PropertyGroup>
 </Project>

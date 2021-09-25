@@ -24,7 +24,7 @@ jobs:
       - name: Install .NET 6.0.x
         uses: actions/setup-dotnet@v1.8.2
         with:
-          dotnet-version: '6.0.100-preview.7.21379.14'
+          dotnet-version: '6.0.x'
           include-prerelease: true
       - name: Build
         run: dotnet build -c Release
@@ -45,7 +45,7 @@ jobs:
       - name: Install .NET 6.0.x
         uses: actions/setup-dotnet@v1.8.2
         with:
-          dotnet-version: '6.0.100-preview.7.21379.14'
+          dotnet-version: '6.0.x'
           include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
@@ -80,7 +80,7 @@ jobs:
       - name: Install .NET 6.0.x
         uses: actions/setup-dotnet@v1.8.2
         with:
-          dotnet-version: '6.0.100-preview.7.21379.14'
+          dotnet-version: '6.0.x'
           include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
@@ -102,7 +102,7 @@ jobs:
       - name: Install .NET 6.0.x
         uses: actions/setup-dotnet@v1.8.2
         with:
-          dotnet-version: '6.0.100-preview.7.21379.14'
+          dotnet-version: '6.0.x'
           include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
@@ -125,7 +125,7 @@ jobs:
       - name: Install .NET 6.0.x
         uses: actions/setup-dotnet@v1.8.2
         with:
-          dotnet-version: '6.0.100-preview.7.21379.14'
+          dotnet-version: '6.0.x'
           include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
@@ -154,7 +154,7 @@ jobs:
       - name: Install .NET 6.0.x
         uses: actions/setup-dotnet@v1.8.2
         with:
-          dotnet-version: '6.0.100-preview.7.21379.14'
+          dotnet-version: '6.0.x'
           include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
@@ -183,7 +183,7 @@ jobs:
       - name: Install .NET 6.0.x
         uses: actions/setup-dotnet@v1.8.2
         with:
-          dotnet-version: '6.0.100-preview.7.21379.14'
+          dotnet-version: '6.0.x'
           include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
@@ -218,7 +218,7 @@ jobs:
       - name: Install .NET 6.0.x
         uses: actions/setup-dotnet@v1.8.2
         with:
-          dotnet-version: '6.0.100-preview.7.21379.14'
+          dotnet-version: '6.0.x'
           include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
@@ -246,7 +246,7 @@ jobs:
       - name: Install .NET 6.0.x
         uses: actions/setup-dotnet@v1.8.2
         with:
-          dotnet-version: '6.0.100-preview.7.21379.14'
+          dotnet-version: '6.0.x'
           include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
@@ -286,7 +286,7 @@ jobs:
       - name: Install .NET 6.0.x
         uses: actions/setup-dotnet@v1.8.2
         with:
-          dotnet-version: '6.0.100-preview.7.21379.14'
+          dotnet-version: '6.0.x'
           include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
@@ -322,7 +322,7 @@ jobs:
       - name: Install .NET 6.0.x
         uses: actions/setup-dotnet@v1.8.2
         with:
-          dotnet-version: '6.0.100-preview.7.21379.14'
+          dotnet-version: '6.0.x'
           include-prerelease: true
       - name: Install Vault
         run: |

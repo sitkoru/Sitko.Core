@@ -15,8 +15,4 @@
   <ItemGroup>
     <Protobuf Include="TestMsg.proto" GrpcServices="None" />
   </ItemGroup>
-  <!-- Workaround for .NET 6 Preview 7 (https://devblogs.microsoft.com/dotnet/announcing-net-6-preview-7/#comment-9902)-->
-  <PropertyGroup>
-    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
-  </PropertyGroup>
 </Project>
