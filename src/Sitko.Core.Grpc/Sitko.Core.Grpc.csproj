@@ -24,7 +24,7 @@
   <ItemGroup>
     <PackageReference Include="Grpc.Core.Api" Version="2.40.0" />
     <PackageReference Include="Grpc.Tools" Version="2.40.0" PrivateAssets="none" />
-    <PackageReference Include="Google.Protobuf" Version="3.18.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.18.1" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
     <Protobuf Include="Proto\**\*.proto" GrpcServices="None" />
     <None Pack="true" PackagePath="protos" Include="Proto\**\*.proto" />
