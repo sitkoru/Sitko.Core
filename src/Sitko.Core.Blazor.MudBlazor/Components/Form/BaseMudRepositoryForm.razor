@@ -1,0 +1,14 @@
+﻿@namespace Sitko.Core.Blazor.MudBlazorComponents
+@typeparam TEntity
+@typeparam TEntityPk
+@typeparam TRepository
+@inherits Sitko.Core.App.Blazor.Forms.BaseRepositoryForm<TEntity, TEntityPk, TRepository>
+<MudEditForm TEntity="TEntity" Entity="Entity" @ref="FormInstance">
+    <Sitko.Core.Blazor.FluentValidation.FluentValidator/>
+    <Sitko.Core.App.Blazor.Forms.FormEditContextCatcher Form="this"/>
+    @ChildContentFragment
+    @if (Debug)
+    {
+        <MudFormDebug TEntity="TEntity" Form="this"></MudFormDebug>
+    }
+</MudEditForm>

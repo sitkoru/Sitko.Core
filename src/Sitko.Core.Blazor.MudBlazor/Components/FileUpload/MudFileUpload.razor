@@ -1,0 +1,132 @@
+﻿@namespace Sitko.Core.Blazor.MudBlazorComponents
+@inherits Sitko.Core.App.Blazor.Components.BaseComponent
+@typeparam TValue
+
+@if (Files.Any())
+{
+    <MudContainer Class="d-inline-flex py-3" MaxWidth="MaxWidth.False">
+        @foreach (var file in Files)
+        {
+            @if (DisplayMode == FileUploadDisplayMode.File)
+            {
+                <MudPaper Class="d-inline-flex pa-4 mr-4">
+                    <MudIcon Icon="@Icons.Filled.AttachFile"></MudIcon>
+                    @file.StorageItem.FileName
+                    <code>@file.StorageItem.HumanSize</code>
+                    @if (ShowOrdering)
+                    {
+                        <MudTooltip Text="@LeftText">
+                            <MudIconButton Size="Size.Small" Icon="@Icons.Outlined.ArrowLeft" @onclick="() => MoveBackward(file)" disabled="@(!CanMoveBackward(file))"></MudIconButton>
+                        </MudTooltip>
+                    }
+                    <MudTooltip Text="@DownloadText">
+                        <MudIconButton Size="Size.Small" Link="@file.Url" Target="_blank" Icon="@Icons.Outlined.Download"></MudIconButton>
+                    </MudTooltip>
+                    <MudTooltip Text="@RemoveText">
+                        <MudIconButton Size="Size.Small" Icon="@Icons.Outlined.Delete" OnClick="@(async () => await ClearValueAsync())"></MudIconButton>
+                    </MudTooltip>
+                    @if (ShowOrdering)
+                    {
+                        <MudTooltip Text="@RightText">
+                            <MudIconButton Size="Size.Small" Icon="@Icons.Outlined.ArrowRight" @onclick="() => MoveForward(file)" disabled="@(!CanMoveForward(file))"></MudIconButton>
+                        </MudTooltip>
+                    }
+                </MudPaper>
+            }
+            @if (DisplayMode == FileUploadDisplayMode.Image)
+            {
+                <MudCard Elevation="2" Class="mr-4" Style="width: 120px">
+                    <MudCardMedia Image="@file.SmallPreviewUrl" Height="100" />
+                    <MudCardActions>
+                        @if (ShowOrdering)
+                        {
+                            <MudTooltip Text="@LeftText">
+                                <MudIconButton Size="Size.Small" Icon="@Icons.Outlined.ArrowLeft" @onclick="() => MoveBackward(file)" disabled="@(!CanMoveBackward(file))"></MudIconButton>
+                            </MudTooltip>
+                        }
+                        <MudTooltip Text="@PreviewText">
+                            <MudIconButton Size="Size.Small" Icon="@Icons.Outlined.Preview" OnClick="()=>PreviewItem = file"></MudIconButton>
+                        </MudTooltip>
+                        <MudTooltip Text="@RemoveText">
+                            <MudIconButton Size="Size.Small" Icon="@Icons.Outlined.Delete" OnClick="@(async () => await ClearValueAsync())"></MudIconButton>
+                        </MudTooltip>
+                        @if (ShowOrdering)
+                        {
+                            <MudTooltip Text="@RightText">
+                                <MudIconButton Size="Size.Small" Icon="@Icons.Outlined.ArrowRight" @onclick="() => MoveForward(file)" disabled="@(!CanMoveForward(file))"></MudIconButton>
+                            </MudTooltip>
+                        }
+                    </MudCardActions>
+                </MudCard>
+            }
+        }
+        @if (ShowUpload)
+        {
+            <MudPaper Class="d-inline-flex pa-4 mr-4">
+                @if (DisplayMode == FileUploadDisplayMode.File)
+                {
+                    @if (ChildContent is not null)
+                    {
+                        <InputFile id="@InputId" OnChange="UploadFilesAsync" hidden multiple="@IsMultiple"/>
+                        <MudButton Size="Size.Small" HtmlTag="label" for="@InputId">
+                            @ChildContent(this)
+                        </MudButton>
+                    }
+                    else if (IsMultiple == true && CustomUpload is not null)
+                    {
+                        <MudButton Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Filled.CloudUpload"
+                                   OnClick="@(async () => { await SetValueAsync(await CustomUpload(this)); })">
+                            @UploadText
+                        </MudButton>
+                    }
+                    else
+                    {
+                        <InputFile id="@InputId" OnChange="UploadFilesAsync" hidden multiple="@IsMultiple"/>
+                        <MudButton Size="Size.Small" HtmlTag="label"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Filled.CloudUpload"
+                                   for="@InputId">
+                            @UploadText
+                        </MudButton>
+                    }
+                }
+                @if (DisplayMode == FileUploadDisplayMode.Image)
+                {
+                    @if (ChildContent is not null)
+                    {
+                        <InputFile id="@InputId" OnChange="UploadFilesAsync" hidden multiple="@IsMultiple"/>
+                        <MudButton Size="Size.Small" HtmlTag="label" for="@InputId">
+                            @ChildContent(this)
+                        </MudButton>
+                    }
+                    else if (IsMultiple == true && CustomUpload is not null)
+                    {
+                        <MudButton Size="Size.Small" Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Filled.CloudUpload"
+                                   OnClick="@(async () => { await SetValueAsync(await CustomUpload(this)); })">
+                            @UploadText
+                        </MudButton>
+                    }
+                    else
+                    {
+                        <InputFile id="@InputId" OnChange="UploadFilesAsync" hidden multiple="@IsMultiple"/>
+                        <MudButton Size="Size.Small" HtmlTag="label"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Filled.CloudUpload"
+                                   for="@InputId">
+                            @UploadText
+                        </MudButton>
+                    }
+                }
+            </MudPaper>
+        }
+        <MudDialog IsVisible="PreviewItem!=null">
+            <DialogContent>
+                <img style="width: 100%" src="@PreviewItem!.LargePreviewUrl" alt="@PreviewItem.StorageItem.FileName"/>
+            </DialogContent>
+        </MudDialog>
+    </MudContainer>
+}

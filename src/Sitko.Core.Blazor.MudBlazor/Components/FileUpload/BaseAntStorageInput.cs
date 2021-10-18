@@ -1,0 +1,291 @@
+﻿// using System;
+// using System.Collections.Generic;
+// using System.IO;
+// using System.Linq;
+// using System.Threading.Tasks;
+// using Microsoft.AspNetCore.Components;
+// using Microsoft.AspNetCore.Components.Forms;
+// using Sitko.Core.App.Blazor.Components;
+// using Sitko.Core.App.Collections;
+// using Sitko.Core.App.Localization;
+// using Sitko.Core.Blazor.FileUpload;
+// using Sitko.Core.Storage;
+// using JetBrains.Annotations;
+//
+// namespace Sitko.Core.Blazor.MudBlazorComponents
+// {
+//     public abstract class BaseMudStorageInput<TValue> : InputBase<TValue>, IBaseComponent
+//         where TValue : class, new()
+//     {
+//         protected OrderedCollection<UploadedItem> Files { get; } = new();
+//         protected UploadedItem? PreviewItem { get; set; }
+//
+//         [Parameter] public string UploadPath { get; set; } = "";
+//         [Parameter] public Func<FileUploadRequest, FileStream, Task<object>>? GenerateMetadata { get; set; }
+//         [Parameter] public Func<TValue?, Task>? OnChange { get; set; }
+//         [Parameter] public virtual string ContentTypes { get; set; } = "";
+//         [Parameter] public long MaxFileSize { get; set; }
+//         protected virtual int? MaxAllowedFiles { get; set; }
+//         [Parameter] public string UploadText { get; set; } = "";
+//         [Parameter] public string PreviewText { get; set; } = "";
+//         [Parameter] public string DownloadText { get; set; } = "";
+//         [Parameter] public string RemoveText { get; set; } = "";
+// #if NET6_0_OR_GREATER
+//         [EditorRequired]
+// #endif
+//         [Parameter]
+//         public IStorage Storage { get; set; } = null!;
+//
+//         [Parameter] public bool EnableOrdering { get; set; } = true;
+//         [Parameter] public virtual MudStorageInputMode Mode { get; set; } = MudStorageInputMode.File;
+//         [Parameter] public Func<StorageItem, UploadedItemUrlType, string>? GeneratePreviewUrl { get; set; }
+//
+//         [Parameter] public string Size { get; set; } = "default";
+//         [Parameter] public string LeftText { get; set; } = "";
+//         [Parameter] public string RightText { get; set; } = "";
+//         [Parameter] public RenderFragment<BaseMudStorageInput<TValue>>? CustomUploadButton { get; set; }
+//         [Parameter] public Func<BaseMudStorageInput<TValue>, Task<TValue>>? CustomUpload { get; set; }
+//         [PublicAPI] protected int ItemsCount => Files.Count();
+//         protected bool ShowOrdering => EnableOrdering && ItemsCount > 1;
+//         protected IBaseFileInputComponent? FileInput { get; set; }
+//         protected bool IsLoading => FileInput?.IsLoading ?? false;
+//
+//         protected bool ShowUpload => MaxAllowedFiles is null || MaxAllowedFiles < 1 || ItemsCount < MaxAllowedFiles;
+//         protected int? MaxFilesToUpload => MaxAllowedFiles is not null ? MaxAllowedFiles - ItemsCount : null;
+//
+//         protected List<StorageItem>? Items
+//         {
+//             get => Files.Select(f => f.StorageItem).ToList();
+//             set
+//             {
+//                 if (value is not null)
+//                 {
+//                     Files.AddItems(value.Select(CreateUploadedItem));
+//                 }
+//                 else
+//                 {
+//                     Files.SetItems(Array.Empty<UploadedItem>());
+//                 }
+//
+//                 UpdateCurrentValue();
+//             }
+//         }
+//
+//
+//         [Inject]
+//         protected ILocalizationProvider<BaseMudStorageInput<TValue>> LocalizationProvider { get; set; } =
+//             null!;
+//
+//         public Task NotifyStateChangeAsync() => InvokeAsync(StateHasChanged);
+//
+//         protected override void OnParametersSet()
+//         {
+//             base.OnParametersSet();
+//
+//             if (string.IsNullOrEmpty(UploadText))
+//             {
+//                 UploadText = LocalizationProvider["Upload"];
+//             }
+//
+//             if (string.IsNullOrEmpty(PreviewText))
+//             {
+//                 PreviewText = LocalizationProvider["Preview"];
+//             }
+//
+//             if (string.IsNullOrEmpty(DownloadText))
+//             {
+//                 DownloadText = LocalizationProvider["Download"];
+//             }
+//
+//             if (string.IsNullOrEmpty(RemoveText))
+//             {
+//                 RemoveText = LocalizationProvider["Remove"];
+//             }
+//
+//             if (string.IsNullOrEmpty(LeftText))
+//             {
+//                 LeftText = LocalizationProvider["Move left"];
+//             }
+//
+//             if (string.IsNullOrEmpty(RightText))
+//             {
+//                 RightText = LocalizationProvider["Move right"];
+//             }
+//
+//             if (CurrentValue is not null)
+//             {
+//                 var value = ParseCurrentValue(CurrentValue);
+//                 Files.SetItems(value);
+//             }
+//         }
+//
+//         protected abstract IEnumerable<UploadedItem> ParseCurrentValue(TValue currentValue);
+//
+//         protected Task OnChangeAsync()
+//         {
+//             if (OnChange is not null)
+//             {
+//                 return OnChange(CurrentValue);
+//             }
+//
+//             return Task.CompletedTask;
+//         }
+//
+//         protected Task<object> GenerateMetadataAsync(FileUploadRequest request, FileStream stream)
+//         {
+//             if (GenerateMetadata is not null)
+//             {
+//                 return GenerateMetadata(request, stream);
+//             }
+//
+//             return Task.FromResult((object)null!);
+//         }
+//
+//         protected void RemoveFile(UploadedItem file)
+//         {
+//             Files.RemoveItem(file);
+//             UpdateCurrentValue();
+//         }
+//
+//         protected void UpdateCurrentValue()
+//         {
+//             var value = UpdateCurrentValue(Files.ToList());
+//             CurrentValue = value!;
+//         }
+//
+//         protected abstract TValue? UpdateCurrentValue(ICollection<UploadedItem> items);
+//
+//         protected virtual UploadedItem CreateUploadedItem(StorageItem storageItem)
+//         {
+//             var urls = new Dictionary<UploadedItemUrlType, string>
+//             {
+//                 { UploadedItemUrlType.Full, Storage.PublicUri(storageItem).ToString() }
+//             };
+//             if (Mode == MudStorageInputMode.Image)
+//             {
+//                 if (GeneratePreviewUrl is not null)
+//                 {
+//                     urls[UploadedItemUrlType.LargePreview] =
+//                         GeneratePreviewUrl(storageItem, UploadedItemUrlType.LargePreview);
+//                     urls[UploadedItemUrlType.SmallPreview] =
+//                         GeneratePreviewUrl(storageItem, UploadedItemUrlType.SmallPreview);
+//                 }
+//             }
+//
+//             return new UploadedItem(storageItem, urls);
+//         }
+//
+//         protected void PreviewFile(UploadedItem file) => PreviewItem = file;
+//
+//         protected bool CanMoveBackward(UploadedItem file) => Files.CanMoveUp(file);
+//
+//         protected bool CanMoveForward(UploadedItem file) => Files.CanMoveDown(file);
+//
+//         protected void MoveBackward(UploadedItem file)
+//         {
+//             Files.MoveUp(file);
+//             UpdateCurrentValue();
+//         }
+//
+//         protected void MoveForward(UploadedItem file)
+//         {
+//             Files.MoveDown(file);
+//             UpdateCurrentValue();
+//         }
+//
+//         protected override bool TryParseValueFromString(string? value, out TValue result,
+//             out string validationErrorMessage)
+//         {
+//             result = null!;
+//             validationErrorMessage = "";
+//             return false;
+//         }
+//
+//         public void SetValue(TValue value) => CurrentValue = value;
+//     }
+//
+//     public abstract class BaseAntMudStorageInput<TValue> : MudStorageInput<TValue>
+//         where TValue : class, ICollection<StorageItem>, new()
+//     {
+//         [Parameter]
+//         public int? MaxFiles
+//         {
+//             get => MaxAllowedFiles;
+//             set => MaxAllowedFiles = value;
+//         }
+//
+//         protected override IEnumerable<UploadedItem> ParseCurrentValue(TValue currentValue) =>
+//             currentValue.Select(CreateUploadedItem);
+//
+//         protected override TValue UpdateCurrentValue(ICollection<UploadedItem> items)
+//         {
+//             var collection = new TValue();
+//             foreach (var item in items)
+//             {
+//                 collection.Add(item.StorageItem);
+//             }
+//
+//             return collection;
+//         }
+//     }
+//
+//     public abstract class BaseMudSingleStorageInput : MudStorageInput<StorageItem>
+//     {
+//         protected override int? MaxAllowedFiles { get; set; } = 1;
+//
+//         protected override IEnumerable<UploadedItem> ParseCurrentValue(StorageItem? currentValue)
+//         {
+//             if (currentValue is not null)
+//             {
+//                 return new[] { CreateUploadedItem(currentValue) };
+//             }
+//
+//             return Array.Empty<UploadedItem>();
+//         }
+//
+//
+//         protected override StorageItem? UpdateCurrentValue(ICollection<UploadedItem> items) =>
+//             items.FirstOrDefault()?.StorageItem;
+//     }
+//
+//     public class UploadedItem : IOrdered
+//     {
+//         public UploadedItem(StorageItem storageItem, Dictionary<UploadedItemUrlType, string> urls)
+//         {
+//             StorageItem = storageItem;
+//             Urls = urls;
+//         }
+//
+//         private Dictionary<UploadedItemUrlType, string> Urls { get; }
+//         public string SmallPreviewUrl => GetUrl(UploadedItemUrlType.SmallPreview);
+//         public string LargePreviewUrl => GetUrl(UploadedItemUrlType.LargePreview);
+//         public string Url => GetUrl(UploadedItemUrlType.Full);
+//
+//         public StorageItem StorageItem { get; }
+//
+//         public int Position { get; set; }
+//
+//         private string GetUrl(UploadedItemUrlType type)
+//         {
+//             if (Urls.ContainsKey(type))
+//             {
+//                 return Urls[type];
+//             }
+//
+//             return Urls[UploadedItemUrlType.Full];
+//         }
+//     }
+//
+//     public enum UploadedItemUrlType
+//     {
+//         Full,
+//         SmallPreview,
+//         LargePreview
+//     }
+//
+//     public enum MudStorageInputMode
+//     {
+//         File,
+//         Image
+//     }
+// }

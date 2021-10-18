@@ -80,6 +80,8 @@ namespace Sitko.Core.App.Collections
             FillPositions();
         }
 
+        public void Clear() => items.Clear();
+
         public IEnumerator<TItem> GetEnumerator() => items.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

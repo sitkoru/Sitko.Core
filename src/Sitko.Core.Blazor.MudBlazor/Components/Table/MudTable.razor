@@ -1,0 +1,100 @@
+﻿@typeparam TItem
+@typeparam TFilter
+@namespace Sitko.Core.Blazor.MudBlazorComponents
+@inherits Sitko.Core.App.Blazor.Components.BaseComponent
+@if (ChildContent is not null)
+{
+    <MudTable ServerData="@(new Func<TableState, Task<TableData<TItem>>>(ServerReloadAsync))"
+              @ref="Table"
+              Dense="@Dense"
+              Hover="@Hover"
+              Bordered="@Bordered"
+              Striped="@Striped"
+              FixedHeader="@FixedHeader"
+              FixedFooter="@FixedFooter"
+              SelectedItemsChanged="@SelectedItemsChanged"
+              MultiSelection="@MultiSelection"
+              Virtualize="@Virtualize"
+              Loading="IsLoading"
+              LoadingProgressColor="@LoadingProgressColor"
+              ToolBarContent="@ToolbarTemplate"
+              Class="@Class"
+              Breakpoint="@Breakpoint"
+              Elevation="@Elevation"
+              Height="@Height"
+              Outlined="@Outlined"
+              Square="@Square"
+              Style="@Style"
+              Tag="@Tag"
+              AllowUnsorted="@AllowUnsorted"
+              CurrentPage="@CurrentPage"
+              CustomFooter="@CustomFooter"
+              CustomHeader="@CustomHeader"
+              FooterClass="@FooterClass"
+              GroupBy="@GroupBy"
+              HeaderClass="@HeaderClass"
+              QuickColumns="@QuickColumns"
+              HorizontalScrollbar="@HorizontalScrollbar"
+              ReadOnly="@ReadOnly"
+              RowClass="@RowClass"
+              RowStyle="@RowStyle"
+              SortLabel="@SortLabel"
+              UserAttributes="@UserAttributes"
+              GroupFooterClass="@GroupFooterClass"
+              GroupHeaderClass="@GroupHeaderClass"
+              GroupFooterStyle="@GroupFooterStyle"
+              GroupHeaderStyle="@GroupHeaderStyle"
+              RowStyleFunc="@RowStyleFunc"
+              OnRowClick="@OnRowClick"
+              RowClassFunc="@RowClassFunc"
+              RowsPerPage="@RowsPerPage"
+              SelectedItems="@SelectedItems"
+              SelectedItemChanged="@SelectedItemChanged"
+              SelectedItem="@SelectedItem">
+        <HeaderContent>
+            @HeaderContent
+        </HeaderContent>
+        <RowTemplate>
+            @ChildContent(context)
+        </RowTemplate>
+        <FooterContent>
+            @FooterContent
+        </FooterContent>
+        <NoRecordsContent>
+            <MudText>No matching records found</MudText>
+        </NoRecordsContent>
+        <LoadingContent>
+            <MudText>Loading...</MudText>
+        </LoadingContent>
+        <PagerContent>
+            <MudTablePager/>
+        </PagerContent>
+    </MudTable>
+}
+else
+{
+    <p>Please specify list columns</p>
+}
+
+@code{
+
+    private RenderFragment? ToolbarTemplate => HasToolbar ? @<div>
+                                                                @if (!string.IsNullOrEmpty(Title))
+                                                                {
+                                                                    <MudText Typo="Typo.h6">@Title</MudText>
+                                                                }
+                                                                @if (ToolBarContent is not null)
+                                                                {
+                                                                    <MudSpacer/>
+                                                                    @ToolBarContent
+                                                                }
+                                                                @if (EnableSearch)
+                                                                {
+                                                                    <MudSpacer/>
+                                                                    <MudTextField T="string" Value="Filter.Search" ValueChanged="OnSearchAsync" Placeholder="Search" Adornment="Adornment.Start"
+                                                                                  AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" Clearable="true">
+                                                                    </MudTextField>
+                                                                }
+                                                            </div> : null;
+
+}
