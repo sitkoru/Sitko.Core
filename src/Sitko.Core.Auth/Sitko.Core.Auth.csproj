@@ -28,7 +28,7 @@
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="3.1.20" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="5.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="5.0.11" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="6.0.0-rc.1.21452.15" />
