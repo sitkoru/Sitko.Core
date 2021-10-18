@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="3.1.19" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="3.1.20" />
   </ItemGroup>
 
 
