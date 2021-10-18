@@ -39,10 +39,10 @@ namespace Sitko.Core.Consul.Web
         public override async Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
             IServiceProvider serviceProvider)
         {
-            var consulClient = serviceProvider.GetRequiredService<IConsulClient>();
+            var consulClient = serviceProvider.GetRequiredService<IConsulClientProvider>();
             var logger = serviceProvider.GetRequiredService<ILogger<ConsulWebModule>>();
             logger.LogInformation("Remove service from Consul");
-            await consulClient.Agent.ServiceDeregister(environment.ApplicationName);
+            await consulClient.Client.Agent.ServiceDeregister(environment.ApplicationName);
         }
     }
 }

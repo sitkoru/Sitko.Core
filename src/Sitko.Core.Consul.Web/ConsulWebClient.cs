@@ -17,7 +17,7 @@ namespace Sitko.Core.Consul.Web
 {
     public class ConsulWebClient
     {
-        private readonly IConsulClient consulClient;
+        private readonly IConsulClientProvider consulClientProvider;
         private readonly IOptionsMonitor<ConsulWebModuleOptions> configMonitor;
         private ConsulWebModuleOptions Options => configMonitor.CurrentValue;
         private readonly IApplication application;
@@ -27,11 +27,11 @@ namespace Sitko.Core.Consul.Web
         private readonly string healthUrl;
         private readonly string name;
 
-        public ConsulWebClient(IServer server, IConsulClient consulClient,
+        public ConsulWebClient(IServer server, IConsulClientProvider consulClientProvider,
             IOptionsMonitor<ConsulWebModuleOptions> config,
             IHostEnvironment environment, IApplication application, ILogger<ConsulWebClient> logger)
         {
-            this.consulClient = consulClient;
+            this.consulClientProvider = consulClientProvider;
             configMonitor = config;
             this.application = application;
             this.logger = logger;
@@ -106,15 +106,15 @@ namespace Sitko.Core.Consul.Web
 
             logger.LogInformation("Registering in Consul as {Name} on {Host}:{Port}", name,
                 uri.Host, uri.Port);
-            await consulClient.Agent.ServiceDeregister(registration.ID);
-            var result = await consulClient.Agent.ServiceRegister(registration);
+            await consulClientProvider.Client.Agent.ServiceDeregister(registration.ID);
+            var result = await consulClientProvider.Client.Agent.ServiceRegister(registration);
             logger.LogInformation("Consul response code: {Code}", result.StatusCode);
         }
 
         public async Task<HealthCheckResult> CheckHealthAsync(
             CancellationToken cancellationToken = new CancellationToken())
         {
-            var serviceResponse = await consulClient.Catalog.Service(name, "metrics", cancellationToken);
+            var serviceResponse = await consulClientProvider.Client.Catalog.Service(name, "metrics", cancellationToken);
             if (serviceResponse.StatusCode == HttpStatusCode.OK)
             {
                 if (serviceResponse.Response.Any())

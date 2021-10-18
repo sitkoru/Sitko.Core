@@ -1,3 +1,5 @@
+using Sitko.Core.Consul;
+
 namespace Sitko.Core.Grpc.Server.Consul
 {
     using System;
@@ -20,7 +22,7 @@ namespace Sitko.Core.Grpc.Server.Consul
     public class ConsulGrpcServicesRegistrar : IGrpcServicesRegistrar, IAsyncDisposable
     {
         private readonly IApplication application;
-        private readonly IConsulClient? consulClient;
+        private readonly IConsulClientProvider? consulClient;
         private readonly string host = "127.0.0.1";
         private readonly bool inContainer = DockerHelper.IsRunningInDocker();
         private readonly ILogger<ConsulGrpcServicesRegistrar> logger;
@@ -35,7 +37,7 @@ namespace Sitko.Core.Grpc.Server.Consul
         public ConsulGrpcServicesRegistrar(IOptionsMonitor<ConsulDiscoveryGrpcServerModuleOptions> optionsMonitor,
             IApplication application,
             IServer server, IScheduler scheduler, ILogger<ConsulGrpcServicesRegistrar> logger,
-            IConsulClient? consulClient = null)
+            IConsulClientProvider? consulClient = null)
         {
             this.optionsMonitor = optionsMonitor;
             this.application = application;
@@ -114,11 +116,12 @@ namespace Sitko.Core.Grpc.Server.Consul
                         "Application stopping. Deregister grpc service {ServiceName} on {Address}:{Port}",
                         registeredService.Value, host,
                         port);
-                    await consulClient.Agent.ServiceDeregister(registeredService.Key);
+                    await consulClient.Client.Agent.ServiceDeregister(registeredService.Key);
                 }
 
                 disposed = true;
             }
+
             GC.SuppressFinalize(this);
         }
 
@@ -140,12 +143,12 @@ namespace Sitko.Core.Grpc.Server.Consul
                         DeregisterCriticalServiceAfter =
                             TimeSpan.FromSeconds(Options.DeregisterTimeoutInSeconds)
                     },
-                    Tags = new[] {"grpc", $"version:{application.Version}"}
+                    Tags = new[] { "grpc", $"version:{application.Version}" }
                 };
                 logger.LogInformation("Register grpc service {ServiceName} on {Address}:{Port}", serviceName, host,
                     port);
-                await consulClient.Agent.ServiceDeregister(id);
-                var result = await consulClient.Agent.ServiceRegister(registration);
+                await consulClient.Client.Agent.ServiceDeregister(id);
+                var result = await consulClient.Client.Agent.ServiceRegister(registration);
                 logger.LogInformation("Consul response code: {Code}", result.StatusCode);
             }
 
@@ -163,7 +166,7 @@ namespace Sitko.Core.Grpc.Server.Consul
             var id = GetServiceId<T>();
             var serviceName = GetServiceName<T>();
 
-            var serviceResponse = await consulClient.Catalog.Service(serviceName, "grpc", cancellationToken);
+            var serviceResponse = await consulClient.Client.Catalog.Service(serviceName, "grpc", cancellationToken);
             if (serviceResponse.StatusCode == HttpStatusCode.OK)
             {
                 if (serviceResponse.Response.Any())
@@ -215,7 +218,7 @@ namespace Sitko.Core.Grpc.Server.Consul
                     logger.LogDebug("Service: {ServiceId}/{ServiceName}", service.Key, service.Value);
                     try
                     {
-                        await consulClient.Agent.UpdateTTL("service:" + service.Key,
+                        await consulClient.Client.Agent.UpdateTTL("service:" + service.Key,
                             $"Last update: {DateTime.UtcNow:O}", TTLStatus.Pass,
                             token);
                     }

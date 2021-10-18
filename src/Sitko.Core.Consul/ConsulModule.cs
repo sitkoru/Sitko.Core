@@ -1,5 +1,4 @@
-using System;
-using Consul;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 
@@ -18,16 +17,19 @@ namespace Sitko.Core.Consul
             TConfig startupOptions)
         {
             base.ConfigureServices(context, services, startupOptions);
-            services.AddSingleton<IConsulClient, ConsulClient>(serviceProvider =>
-            {
-                var options = GetOptions(serviceProvider);
-                return new ConsulClient(config => { config.Address = new Uri(options.ConsulUri); });
-            });
+            services.AddSingleton<IConsulClientProvider, ConsulClientProvider>();
+            services.AddSingleton(provider => provider.GetRequiredService<IConsulClientProvider>().Client);
         }
     }
 
     public class ConsulModuleOptions : BaseModuleOptions
     {
         public string ConsulUri { get; set; } = "http://localhost:8500";
+    }
+
+    public class ConsulModuleOptionsValidator : AbstractValidator<ConsulModuleOptions>
+    {
+        public ConsulModuleOptionsValidator() =>
+            RuleFor(options => options.ConsulUri).NotEmpty().WithMessage("Consul uri can't be empty");
     }
 }

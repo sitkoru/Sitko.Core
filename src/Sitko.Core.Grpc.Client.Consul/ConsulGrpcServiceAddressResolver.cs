@@ -1,3 +1,5 @@
+using Sitko.Core.Consul;
+
 namespace Sitko.Core.Grpc.Client.Consul
 {
     using System;
@@ -14,7 +16,7 @@ namespace Sitko.Core.Grpc.Client.Consul
     public class ConsulGrpcServiceAddressResolver<TClient> : IGrpcServiceAddressResolver<TClient>, IAsyncDisposable
         where TClient : ClientBase<TClient>
     {
-        private readonly IConsulClient consulClient;
+        private readonly IConsulClientProvider consulClientProvider;
         private readonly CancellationTokenSource cts = new();
         private readonly ILogger<ConsulGrpcServiceAddressResolver<TClient>> logger;
         private readonly IOptionsMonitor<ConsulGrpcClientModuleOptions<TClient>> optionsMonitor;
@@ -27,11 +29,11 @@ namespace Sitko.Core.Grpc.Client.Consul
         private Task? refreshTask;
         private Uri? target;
 
-        public ConsulGrpcServiceAddressResolver(IConsulClient consulClient,
+        public ConsulGrpcServiceAddressResolver(IConsulClientProvider consulClientProvider,
             IOptionsMonitor<ConsulGrpcClientModuleOptions<TClient>> optionsMonitor,
             ILogger<ConsulGrpcServiceAddressResolver<TClient>> logger)
         {
-            this.consulClient = consulClient;
+            this.consulClientProvider = consulClientProvider;
             this.optionsMonitor = optionsMonitor;
             this.logger = logger;
         }
@@ -79,7 +81,7 @@ namespace Sitko.Core.Grpc.Client.Consul
         private async Task LoadTargetAsync()
         {
             var serviceResponse =
-                await consulClient.Catalog.Service(serviceName, "grpc",
+                await consulClientProvider.Client.Catalog.Service(serviceName, "grpc",
                     new QueryOptions { WaitIndex = lastIndex }, cts.Token);
             if (serviceResponse.StatusCode == HttpStatusCode.OK)
             {
