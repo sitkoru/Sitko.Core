@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Consul;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,15 +17,7 @@ namespace Sitko.Core.Consul.Web
         {
             base.ConfigureServices(context, services, startupOptions);
             services.AddSingleton<ConsulWebClient>();
-            services.AddHealthChecks()
-                .AddCheck<ConsulWebHealthCheck>("Consul registration")
-                .AddConsul(options =>
-                {
-                    var uri = new Uri(startupOptions.ConsulUri);
-                    options.HostName = uri.Host;
-                    options.Port = uri.Port;
-                    options.RequireHttps = false;
-                });
+            services.AddHealthChecks().AddCheck<ConsulWebHealthCheck>("Consul registration");
         }
 
         public override Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,

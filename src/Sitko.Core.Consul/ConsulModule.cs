@@ -19,6 +19,7 @@ namespace Sitko.Core.Consul
             base.ConfigureServices(context, services, startupOptions);
             services.AddSingleton<IConsulClientProvider, ConsulClientProvider>();
             services.AddSingleton(provider => provider.GetRequiredService<IConsulClientProvider>().Client);
+            services.AddHealthChecks().AddCheck<ConsulHealthCheck>("Consul connection");
         }
     }
 
