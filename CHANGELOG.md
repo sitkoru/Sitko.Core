@@ -1,3 +1,10 @@
+# [8.15.0](https://github.com/sitkoru/Sitko.Core/compare/8.14.0...8.15.0) (2021-10-19)
+
+
+### Features
+
+* **results:** add classes for operation results ([c6a9c2b](https://github.com/sitkoru/Sitko.Core/commit/c6a9c2b06b59e3f8a85c5bbf7f4a005ba9065657))
+
 # [8.14.0](https://github.com/sitkoru/Sitko.Core/compare/8.13.0...8.14.0) (2021-10-19)
 
 
