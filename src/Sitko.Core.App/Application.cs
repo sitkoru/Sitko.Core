@@ -479,6 +479,11 @@ namespace Sitko.Core.App
             string? optionsKey = null)
             where TModule : IApplicationModule<TModuleOptions>, new() where TModuleOptions : BaseModuleOptions, new()
         {
+            if (appHost is not null)
+            {
+                throw new InvalidOperationException("App host is already built. Can't add modules after it");
+            }
+
             if (moduleRegistrations.ContainsKey(typeof(TModule)))
             {
                 throw new InvalidOperationException($"Module {typeof(TModule)} already registered");
