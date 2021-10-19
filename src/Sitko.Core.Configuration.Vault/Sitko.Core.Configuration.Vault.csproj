@@ -26,8 +26,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="VaultSharp.Extensions.Configuration" Version="0.3.3" />
+    <PackageReference Include="VaultSharp.Extensions.Configuration" Version="0.4.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="17.0.63" PrivateAssets="analyzers" />
   </ItemGroup>
 
   <ItemGroup>
