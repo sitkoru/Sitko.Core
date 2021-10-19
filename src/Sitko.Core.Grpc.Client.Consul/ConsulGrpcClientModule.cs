@@ -14,7 +14,7 @@ namespace Sitko.Core.Grpc.Client.Consul
 
         public override IEnumerable<Type> GetRequiredModules(ApplicationContext context,
             ConsulGrpcClientModuleOptions<TClient> options) =>
-            new List<Type> { typeof(IConsulModule) };
+            new List<Type> { typeof(ConsulModule) };
     }
 
     public class ConsulGrpcClientModuleOptions<TClient> : GrpcClientModuleOptions<TClient>

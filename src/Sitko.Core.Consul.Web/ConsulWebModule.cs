@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +9,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Consul.Web
 {
-    public class ConsulWebModule : ConsulModule<ConsulWebModuleOptions>
+    public class ConsulWebModule : BaseApplicationModule<ConsulWebModuleOptions>
     {
         public override string OptionsKey => "Consul:Web";
 
@@ -35,5 +36,9 @@ namespace Sitko.Core.Consul.Web
             logger.LogInformation("Remove service from Consul");
             await consulClient.Client.Agent.ServiceDeregister(environment.ApplicationName);
         }
+
+        public override IEnumerable<Type>
+            GetRequiredModules(ApplicationContext context, ConsulWebModuleOptions options) =>
+            new[] { typeof(ConsulModule) };
     }
 }

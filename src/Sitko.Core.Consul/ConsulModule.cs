@@ -4,17 +4,12 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Consul
 {
-    public interface IConsulModule
-    {
-    }
-
-    public class ConsulModule<TConfig> : BaseApplicationModule<TConfig>, IConsulModule
-        where TConfig : ConsulModuleOptions, new()
+    public class ConsulModule : BaseApplicationModule<ConsulModuleOptions>
     {
         public override string OptionsKey => "Consul";
 
         public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TConfig startupOptions)
+            ConsulModuleOptions startupOptions)
         {
             base.ConfigureServices(context, services, startupOptions);
             services.AddSingleton<IConsulClientProvider, ConsulClientProvider>();
