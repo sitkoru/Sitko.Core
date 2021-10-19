@@ -362,7 +362,7 @@ namespace Sitko.Core.App
                     {
                         if (i == parts.Length - 1)
                         {
-                            current[parts[i]] = options;
+                            current[parts[i]] = JsonSerializer.Deserialize<Dictionary<string,object>>(JsonSerializer.Serialize(options));
                         }
                         else
                         {
