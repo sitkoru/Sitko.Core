@@ -1,3 +1,10 @@
+# [8.16.0](https://github.com/sitkoru/Sitko.Core/compare/8.15.0...8.16.0) (2021-10-20)
+
+
+### Features
+
+* **consul:** use maintained Consul library ([5630e7b](https://github.com/sitkoru/Sitko.Core/commit/5630e7bfc1676d178db8dc55f1dedafed4dd40e6))
+
 # [8.15.0](https://github.com/sitkoru/Sitko.Core/compare/8.14.0...8.15.0) (2021-10-19)
 
 
