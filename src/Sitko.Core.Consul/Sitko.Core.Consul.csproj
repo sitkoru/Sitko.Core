@@ -26,8 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- https://github.com/SonicGD/consuldotnet cause original lib is dead Wait for https://github.com/G-Research/consuldotnet/pull/22 -->
-    <PackageReference Include="Consul.GRPC" Version="0.7.2.6" />
+    <PackageReference Include="Consul" Version="1.6.10.3" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
