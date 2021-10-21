@@ -22,7 +22,9 @@ public class OperationResult : IOperationResult
         ErrorMessage = errorMessage;
     }
 
-    public OperationResult(Exception exception) : this(exception.Message) => Exception = exception;
+    public OperationResult(Exception exception, string? errorMessage = null) :
+        this(errorMessage ?? exception.Message) => Exception = exception;
+
 #if NET5_0_OR_GREATER
     [MemberNotNullWhen(false, nameof(ErrorMessage))]
 #endif
@@ -59,9 +61,11 @@ public class OperationResult<T> : IOperationResult
         ErrorMessage = errorMessage;
     }
 
-    public OperationResult(Exception exception) : this(exception.Message) => Exception = exception;
+    public OperationResult(Exception exception, string? errorMessage = null) :
+        this(errorMessage ?? exception.Message) => Exception = exception;
 
     public T? Result { get; private set; }
+
 #if NET5_0_OR_GREATER
     [MemberNotNullWhen(true, nameof(Result))]
     [MemberNotNullWhen(false, nameof(ErrorMessage))]
