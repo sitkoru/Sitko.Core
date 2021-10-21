@@ -1,3 +1,10 @@
+# [8.17.0](https://github.com/sitkoru/Sitko.Core/compare/8.16.0...8.17.0) (2021-10-21)
+
+
+### Features
+
+* **results:** allow to specify custom error message for exception ([a8fa681](https://github.com/sitkoru/Sitko.Core/commit/a8fa681c23603dc7243c58639f432f2443323655))
+
 # [8.16.0](https://github.com/sitkoru/Sitko.Core/compare/8.15.0...8.16.0) (2021-10-20)
 
 
