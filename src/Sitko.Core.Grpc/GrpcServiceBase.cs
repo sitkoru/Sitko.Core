@@ -1,13 +1,15 @@
-﻿namespace Sitko.Core.Grpc
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using Extensions;
-    using global::Grpc.Core;
-    using JetBrains.Annotations;
-    using Microsoft.Extensions.Logging;
+﻿using Sitko.Core.App.Results;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Sitko.Core.Grpc.Extensions;
+using Grpc.Core;
+using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 
+namespace Sitko.Core.Grpc
+{
+    [PublicAPI]
     public abstract class GrpcServiceBase : IGrpcService
     {
         protected GrpcServiceBase(ILogger<GrpcServiceBase> logger) => Logger = logger;
@@ -111,5 +113,17 @@
         protected GrpcCallResult Error(IEnumerable<string> errors) => new(errors);
 
         protected GrpcCallResult Exception(Exception ex, string? error = null) => new(ex, error);
+
+        protected GrpcCallResult Result(IOperationResult result)
+        {
+            if (result.IsSuccess)
+            {
+                return Ok();
+            }
+
+            return result.Exception is not null
+                ? Exception(result.Exception, result.ErrorMessage)
+                : Error(result.ErrorMessage!);
+        }
     }
 }
