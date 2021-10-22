@@ -1,3 +1,10 @@
+# [8.18.0](https://github.com/sitkoru/Sitko.Core/compare/8.17.0...8.18.0) (2021-10-22)
+
+
+### Features
+
+* **grpc:** support operation result responses in gRPC services ([d4e9c6c](https://github.com/sitkoru/Sitko.Core/commit/d4e9c6c39a46d7f0e9ee310532133c9e36bc14a3))
+
 # [8.17.0](https://github.com/sitkoru/Sitko.Core/compare/8.16.0...8.17.0) (2021-10-21)
 
 
