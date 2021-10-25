@@ -34,7 +34,7 @@ public abstract class BaseMudLayout : BaseLayoutComponent<MudLayoutData, MudLayo
                             Black = "#27272f",
                             Background = "rgba(15,15,15, 1)",
                             BackgroundGrey = "#27272f",
-                            Surface = "rgba(22,22,23, 1)",
+                            Surface = "rgba(30,30,31, 0.5)",
                             DrawerBackground = "rgba(22,22,23, 1)",
                             DrawerText = "rgba(255,255,255, 0.50)",
                             DrawerIcon = "rgba(255,255,255, 0.50)",
