@@ -8,6 +8,7 @@ public abstract class BaseLayoutComponent<TLayoutData, TLayoutOptions> : BaseCom
 {
     protected string PageTitle { get; set; } = "";
     protected string Title { get; set; } = "";
+    protected string Description { get; set; } = "";
     protected virtual string PageTitleSeparator => "/";
     [Inject] protected ILayoutManager<TLayoutData, TLayoutOptions> LayoutManager { get; set; } = null!;
     [Inject] protected IApplication Application { get; set; } = null!;
@@ -27,6 +28,7 @@ public abstract class BaseLayoutComponent<TLayoutData, TLayoutOptions> : BaseCom
     private void LayoutDataChanged(TLayoutData layoutData)
     {
         Title = layoutData.Title;
+        Description = layoutData.Description;
         var prefix = $" {PageTitleSeparator} {Application.Name}";
         if (!string.IsNullOrEmpty(LayoutManager.LayoutOptions.PageTitlePostfix))
         {

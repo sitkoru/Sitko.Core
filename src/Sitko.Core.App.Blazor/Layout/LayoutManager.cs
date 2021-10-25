@@ -48,5 +48,6 @@ namespace Sitko.Core.App.Blazor.Layout
     public record LayoutData
     {
         public string Title { get; init; } = "";
+        public string Description { get; init; } = "";
     }
 }
