@@ -1,3 +1,10 @@
+# [8.19.0](https://github.com/sitkoru/Sitko.Core/compare/8.18.0...8.19.0) (2021-10-27)
+
+
+### Features
+
+* **db:** support for IDbContextFactory ([d03da84](https://github.com/sitkoru/Sitko.Core/commit/d03da84b1b092f62c4701dad22cca3babc180bb1))
+
 # [8.18.0](https://github.com/sitkoru/Sitko.Core/compare/8.17.0...8.18.0) (2021-10-22)
 
 
