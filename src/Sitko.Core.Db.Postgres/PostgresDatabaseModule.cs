@@ -66,10 +66,14 @@ namespace Sitko.Core.Db.Postgres
             {
                 services.AddDbContextPool<TDbContext>((serviceProvider, options) =>
                     ConfigureNpgsql(options, serviceProvider, context.Configuration, context.Environment));
+                services.AddPooledDbContextFactory<TDbContext>((serviceProvider, options) =>
+                    ConfigureNpgsql(options, serviceProvider, context.Configuration, context.Environment));
             }
             else
             {
                 services.AddDbContext<TDbContext>((serviceProvider, options) =>
+                    ConfigureNpgsql(options, serviceProvider, context.Configuration, context.Environment));
+                services.AddDbContextFactory<TDbContext>((serviceProvider, options) =>
                     ConfigureNpgsql(options, serviceProvider, context.Configuration, context.Environment));
             }
         }

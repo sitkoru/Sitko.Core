@@ -29,6 +29,9 @@ namespace Sitko.Core.Db
     public abstract class BaseDbModuleOptions<TDbContext> : BaseModuleOptions where TDbContext : DbContext
     {
         public string Database { get; set; } = "dbname";
+        public bool EnableContextPooling { get; set; } = true;
+        public bool IncludeErrorDetails { get; set; }
+        public bool EnableSensitiveLogging { get; set; }
 
         [JsonIgnore]
         public Action<DbContextOptionsBuilder<TDbContext>, IServiceProvider, IConfiguration, IHostEnvironment>?

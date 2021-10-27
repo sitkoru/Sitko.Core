@@ -16,12 +16,7 @@ namespace Sitko.Core.Db.Postgres
         public string Username { get; set; } = "postgres";
         public string Password { get; set; } = string.Empty;
         public bool EnableNpgsqlPooling { get; set; } = true;
-        public bool IncludeErrorDetails { get; set; }
-        public bool EnableContextPooling { get; set; } = true;
-        public bool EnableSensitiveLogging { get; set; }
-
-        [JsonIgnore]
-        public Assembly? MigrationsAssembly { get; set; }
+        [JsonIgnore] public Assembly? MigrationsAssembly { get; set; }
         public bool AutoApplyMigrations { get; set; } = true;
         public Type GetValidatorType() => typeof(PostgresDatabaseModuleOptionsValidator<TDbContext>);
     }
