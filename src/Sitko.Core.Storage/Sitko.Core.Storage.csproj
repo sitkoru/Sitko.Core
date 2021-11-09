@@ -8,6 +8,6 @@
   <ItemGroup>
     <PackageReference Include="MimeMapping" Version="1.0.1.37"/>
     <PackageReference Include="Nito.AsyncEx" Version="5.1.2"/>
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="5.0.0"/>
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.0"/>
   </ItemGroup>
 </Project>
