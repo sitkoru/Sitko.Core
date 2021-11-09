@@ -2,39 +2,16 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
-    <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
-    <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Authors>George Drak</Authors>
-    <Company>Sitko.Ru</Company>
-    <Product>Sitko.Core</Product>
-    <Description>Sitko.Core is a set of libraries to help build .NET Core applications fast</Description>
-    <Summary>Sitko.Core is a set of libraries to help build .NET Core applications fast</Summary>
-    <Copyright>Copyright © Sitko.ru 2020 - 2021</Copyright>
-    <RepositoryUrl>https://github.com/sitkoru/Sitko.Core</RepositoryUrl>
-		<PackageProjectUrl>https://github.com/sitkoru/Sitko.Core</PackageProjectUrl>
-    <PackageIcon>packageIcon.png</PackageIcon>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Elastic.Apm.NetCoreAll" Version="1.11.1" />
-    <PackageReference Include="Elastic.Apm.SerilogEnricher" Version="1.5.3" />
-    <PackageReference Include="Elastic.CommonSchema.Serilog" Version="1.5.3" />
-    <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="8.4.1" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Elastic.Apm.NetCoreAll" Version="1.11.1"/>
+    <PackageReference Include="Elastic.Apm.SerilogEnricher" Version="1.5.3"/>
+    <PackageReference Include="Elastic.CommonSchema.Serilog" Version="1.5.3"/>
+    <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="8.4.1"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
-    <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\" />
+    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj"/>
   </ItemGroup>
 </Project>

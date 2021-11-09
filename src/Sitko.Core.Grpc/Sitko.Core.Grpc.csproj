@@ -2,39 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Authors>George Drak</Authors>
-    <Company>Sitko.Ru</Company>
-    <Product>Sitko.Core</Product>
-    <Description>Sitko.Core is a set of libraries to help build .NET Core applications fast</Description>
-    <Summary>Sitko.Core is a set of libraries to help build .NET Core applications fast</Summary>
-    <Copyright>Copyright © Sitko.ru 2020 - 2021</Copyright>
-    <RepositoryUrl>https://github.com/sitkoru/Sitko.Core</RepositoryUrl>
-		<PackageProjectUrl>https://github.com/sitkoru/Sitko.Core</PackageProjectUrl>
-    <PackageIcon>packageIcon.png</PackageIcon>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grpc.Core.Api" Version="2.41.1" />
-    <PackageReference Include="Grpc.Tools" Version="2.41.0" PrivateAssets="none" />
-    <PackageReference Include="Google.Protobuf" Version="3.19.0" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-    <Protobuf Include="Proto\**\*.proto" GrpcServices="None" />
-    <None Pack="true" PackagePath="protos" Include="Proto\**\*.proto" />
+    <PackageReference Include="Grpc.Core.Api" Version="2.41.1"/>
+    <PackageReference Include="Grpc.Tools" Version="2.41.0" PrivateAssets="none"/>
+    <PackageReference Include="Google.Protobuf" Version="3.19.0"/>
+    <Protobuf Include="Proto\**\*.proto" GrpcServices="None"/>
+    <None Pack="true" PackagePath="protos" Include="Proto\**\*.proto"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
-    <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\" />
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
   </ItemGroup>
 </Project>

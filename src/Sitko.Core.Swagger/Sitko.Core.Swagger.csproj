@@ -1,34 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Authors>George Drak</Authors>
-    <Company>Sitko.Ru</Company>
-    <Product>Sitko.Core</Product>
-    <Description>Sitko.Core is a set of libraries to help build .NET Core applications fast</Description>
-    <Summary>Sitko.Core is a set of libraries to help build .NET Core applications fast</Summary>
-    <Copyright>Copyright © Sitko.ru 2020 - 2021</Copyright>
-    <RepositoryUrl>https://github.com/sitkoru/Sitko.Core</RepositoryUrl>
-		<PackageProjectUrl>https://github.com/sitkoru/Sitko.Core</PackageProjectUrl>
-    <PackageIcon>packageIcon.png</PackageIcon>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<EmbedUntrackedSources>true</EmbedUntrackedSources>
     <OpenApiGenerateDocumentsOnBuild>false</OpenApiGenerateDocumentsOnBuild>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" PrivateAssets="None" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" PrivateAssets="None"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
-    <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\" />
+    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj"/>
   </ItemGroup>
 </Project>

@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{109B331E-71B9-483C-8FC1-13B10C92A7F1}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.IdProvider.SonyFlake", "src\Sitko.Core.IdProvider.SonyFlake\Sitko.Core.IdProvider.SonyFlake.csproj", "{6677865F-C349-4D25-9E19-3DEC43E92DD5}"
 EndProject
@@ -20,6 +23,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Xunit", "src\Sitko.Core.Xunit\Sitko.Core.Xunit.csproj", "{A0BEB0FD-0ED4-4259-A890-6F66214DAB8B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{10C46F0D-1B13-447E-AD22-F01DDB5A79FD}"
+	ProjectSection(SolutionItems) = preProject
+		tests\Directory.Build.props = tests\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Grpc", "src\Sitko.Core.Grpc\Sitko.Core.Grpc.csproj", "{52B78812-1CDD-4999-83BA-51B549A0A64F}"
 EndProject
@@ -178,8 +184,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Blazor.FileUploa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.App.Tests", "tests\Sitko.Core.App.Tests\Sitko.Core.App.Tests.csproj", "{C0480749-9319-4E2B-8EF7-C568C0EE1A52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.App.Perf", "tests\Sitko.Core.App.Perf\Sitko.Core.App.Perf.csproj", "{67F7AFCD-DDF0-4DFF-AEBF-43FAC0136317}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Configuration.Vault", "src\Sitko.Core.Configuration.Vault\Sitko.Core.Configuration.Vault.csproj", "{EC2307C8-50A6-49A1-B955-1C3A99EDCAC0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Configuration.Vault.Tests", "tests\Sitko.Core.Configuration.Vault.Tests\Sitko.Core.Configuration.Vault.Tests.csproj", "{A7B6173D-DDCD-4C2F-A408-2FFD60F68CD5}"
@@ -189,6 +193,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.ImgProxy", "src\Sitko.Core.ImgProxy\Sitko.Core.ImgProxy.csproj", "{AAC5C025-0908-4021-BB85-9092AD78B0AF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.ImgProxy.Tests", "tests\Sitko.Core.ImgProxy.Tests\Sitko.Core.ImgProxy.Tests.csproj", "{B5470253-A071-46CA-B20F-621DFEC89123}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{1D6582BA-2AE6-447C-A2E1-1F84FE5EC3B6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.App.Perf", "perf\Sitko.Core.App.Perf\Sitko.Core.App.Perf.csproj", "{34E124EB-E2F6-4F69-9BC2-CBD2B07FF7A7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1067,18 +1075,6 @@ Global
 		{C0480749-9319-4E2B-8EF7-C568C0EE1A52}.Release|x64.Build.0 = Release|Any CPU
 		{C0480749-9319-4E2B-8EF7-C568C0EE1A52}.Release|x86.ActiveCfg = Release|Any CPU
 		{C0480749-9319-4E2B-8EF7-C568C0EE1A52}.Release|x86.Build.0 = Release|Any CPU
-		{67F7AFCD-DDF0-4DFF-AEBF-43FAC0136317}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{67F7AFCD-DDF0-4DFF-AEBF-43FAC0136317}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{67F7AFCD-DDF0-4DFF-AEBF-43FAC0136317}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{67F7AFCD-DDF0-4DFF-AEBF-43FAC0136317}.Debug|x64.Build.0 = Debug|Any CPU
-		{67F7AFCD-DDF0-4DFF-AEBF-43FAC0136317}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{67F7AFCD-DDF0-4DFF-AEBF-43FAC0136317}.Debug|x86.Build.0 = Debug|Any CPU
-		{67F7AFCD-DDF0-4DFF-AEBF-43FAC0136317}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{67F7AFCD-DDF0-4DFF-AEBF-43FAC0136317}.Release|Any CPU.Build.0 = Release|Any CPU
-		{67F7AFCD-DDF0-4DFF-AEBF-43FAC0136317}.Release|x64.ActiveCfg = Release|Any CPU
-		{67F7AFCD-DDF0-4DFF-AEBF-43FAC0136317}.Release|x64.Build.0 = Release|Any CPU
-		{67F7AFCD-DDF0-4DFF-AEBF-43FAC0136317}.Release|x86.ActiveCfg = Release|Any CPU
-		{67F7AFCD-DDF0-4DFF-AEBF-43FAC0136317}.Release|x86.Build.0 = Release|Any CPU
 		{EC2307C8-50A6-49A1-B955-1C3A99EDCAC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EC2307C8-50A6-49A1-B955-1C3A99EDCAC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC2307C8-50A6-49A1-B955-1C3A99EDCAC0}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -1139,6 +1135,18 @@ Global
 		{B5470253-A071-46CA-B20F-621DFEC89123}.Release|x64.Build.0 = Release|Any CPU
 		{B5470253-A071-46CA-B20F-621DFEC89123}.Release|x86.ActiveCfg = Release|Any CPU
 		{B5470253-A071-46CA-B20F-621DFEC89123}.Release|x86.Build.0 = Release|Any CPU
+		{34E124EB-E2F6-4F69-9BC2-CBD2B07FF7A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34E124EB-E2F6-4F69-9BC2-CBD2B07FF7A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34E124EB-E2F6-4F69-9BC2-CBD2B07FF7A7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{34E124EB-E2F6-4F69-9BC2-CBD2B07FF7A7}.Debug|x64.Build.0 = Debug|Any CPU
+		{34E124EB-E2F6-4F69-9BC2-CBD2B07FF7A7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{34E124EB-E2F6-4F69-9BC2-CBD2B07FF7A7}.Debug|x86.Build.0 = Debug|Any CPU
+		{34E124EB-E2F6-4F69-9BC2-CBD2B07FF7A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34E124EB-E2F6-4F69-9BC2-CBD2B07FF7A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34E124EB-E2F6-4F69-9BC2-CBD2B07FF7A7}.Release|x64.ActiveCfg = Release|Any CPU
+		{34E124EB-E2F6-4F69-9BC2-CBD2B07FF7A7}.Release|x64.Build.0 = Release|Any CPU
+		{34E124EB-E2F6-4F69-9BC2-CBD2B07FF7A7}.Release|x86.ActiveCfg = Release|Any CPU
+		{34E124EB-E2F6-4F69-9BC2-CBD2B07FF7A7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6677865F-C349-4D25-9E19-3DEC43E92DD5} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
@@ -1214,11 +1222,11 @@ Global
 		{FD711E57-272D-436C-991C-62D317920DD0} = {F626F7B7-70BB-4D3B-A803-68ADA8BA4234}
 		{7D53D3F8-A9B8-4403-ADFE-C6AFC2E84B0D} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 		{C0480749-9319-4E2B-8EF7-C568C0EE1A52} = {10C46F0D-1B13-447E-AD22-F01DDB5A79FD}
-		{67F7AFCD-DDF0-4DFF-AEBF-43FAC0136317} = {10C46F0D-1B13-447E-AD22-F01DDB5A79FD}
 		{EC2307C8-50A6-49A1-B955-1C3A99EDCAC0} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 		{A7B6173D-DDCD-4C2F-A408-2FFD60F68CD5} = {10C46F0D-1B13-447E-AD22-F01DDB5A79FD}
 		{65B6D984-7A07-48ED-9B77-20751E1B3DFE} = {10C46F0D-1B13-447E-AD22-F01DDB5A79FD}
 		{AAC5C025-0908-4021-BB85-9092AD78B0AF} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 		{B5470253-A071-46CA-B20F-621DFEC89123} = {10C46F0D-1B13-447E-AD22-F01DDB5A79FD}
+		{34E124EB-E2F6-4F69-9BC2-CBD2B07FF7A7} = {1D6582BA-2AE6-447C-A2E1-1F84FE5EC3B6}
 	EndGlobalSection
 EndGlobal

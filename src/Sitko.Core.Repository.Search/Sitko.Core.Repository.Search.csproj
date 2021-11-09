@@ -1,33 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
-    <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Authors>George Drak</Authors>
-    <Company>Sitko.Ru</Company>
-    <Product>Sitko.Core</Product>
-    <Description>Sitko.Core is a set of libraries to help build .NET Core applications fast</Description>
-    <Summary>Sitko.Core is a set of libraries to help build .NET Core applications fast</Summary>
-    <Copyright>Copyright © Sitko.ru 2020 - 2021</Copyright>
-    <RepositoryUrl>https://github.com/sitkoru/Sitko.Core</RepositoryUrl>
-		<PackageProjectUrl>https://github.com/sitkoru/Sitko.Core</PackageProjectUrl>
-    <PackageIcon>packageIcon.png</PackageIcon>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Repository\Sitko.Core.Repository.csproj" />
-    <ProjectReference Include="..\Sitko.Core.Search\Sitko.Core.Search.csproj" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
-    <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\" />
+    <ProjectReference Include="..\Sitko.Core.Repository\Sitko.Core.Repository.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.Search\Sitko.Core.Search.csproj"/>
   </ItemGroup>
 </Project>

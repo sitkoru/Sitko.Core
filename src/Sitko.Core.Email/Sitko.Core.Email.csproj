@@ -1,38 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
-    <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
-    <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Authors>George Drak</Authors>
-    <Company>Sitko.Ru</Company>
-    <Product>Sitko.Core</Product>
-    <Description>Sitko.Core is a set of libraries to help build .NET Core applications fast</Description>
-    <Summary>Sitko.Core is a set of libraries to help build .NET Core applications fast</Summary>
-    <Copyright>Copyright © Sitko.ru 2020 - 2021</Copyright>
-    <RepositoryUrl>https://github.com/sitkoru/Sitko.Core</RepositoryUrl>
-		<PackageProjectUrl>https://github.com/sitkoru/Sitko.Core</PackageProjectUrl>
-    <PackageIcon>packageIcon.png</PackageIcon>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="FluentEmail.Core" Version="3.0.0" />
-    <PackageReference Include="Hangfire.Core" Version="1.7.26" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.37" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
-    <None Include="..\..\packageIcon.png" Pack="true" PackagePath="\" />
+    <PackageReference Include="FluentEmail.Core" Version="3.0.0"/>
+    <PackageReference Include="Hangfire.Core" Version="1.7.26"/>
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.37"/>
   </ItemGroup>
 </Project>
