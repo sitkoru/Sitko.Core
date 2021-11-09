@@ -1,3 +1,13 @@
+# [8.20.0](https://github.com/sitkoru/Sitko.Core/compare/8.19.0...8.20.0) (2021-11-09)
+
+
+### Features
+
+* **.net:** .NET 5.0.12 ([ceb1af7](https://github.com/sitkoru/Sitko.Core/commit/ceb1af770f6605200eb7ef2c6d3f459e03cbf241))
+* **.net:** .NET 6.0.0 ([c456461](https://github.com/sitkoru/Sitko.Core/commit/c456461eea6d7ae2ed49a497744042d8d89977d2))
+* **.net:** .NET Core 3.1.21 ([f892395](https://github.com/sitkoru/Sitko.Core/commit/f892395247781ee868f5ccecf5bc7b51ba5f35dd))
+* **.net:** use Microsoft.Extensions.* 6.0.0 ([fd56aaf](https://github.com/sitkoru/Sitko.Core/commit/fd56aaf31e3b5a79ec5468d8e422b3eddf0dc9b8))
+
 # [8.19.0](https://github.com/sitkoru/Sitko.Core/compare/8.18.0...8.19.0) (2021-10-27)
 
 
