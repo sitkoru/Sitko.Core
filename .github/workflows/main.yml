@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
         with:
           fetch-depth: 0
       - name: Install .NET Core 3.1
@@ -33,7 +33,7 @@ jobs:
   apps:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
       - name: Install .NET Core 3.1
         uses: actions/setup-dotnet@v1.8.2
         with:
@@ -55,7 +55,7 @@ jobs:
   blazor:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
       - name: Install node.js
         uses: actions/setup-node@v2.4.1
         with:
@@ -90,7 +90,7 @@ jobs:
   grpc:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
       - name: Install .NET Core 3.1
         uses: actions/setup-dotnet@v1.8.2
         with:
@@ -113,7 +113,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
       - name: Install .NET Core 3.1
         uses: actions/setup-dotnet@v1.8.2
         with:
@@ -138,7 +138,7 @@ jobs:
     env:
       PUPPETEER_EXECUTABLE_PATH: "/usr/bin/google-chrome-stable"
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
       - name: Install chrome
         run: |
           apt-get update
@@ -171,7 +171,7 @@ jobs:
       nats:
         image: nats-streaming:latest
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
       - name: Install .NET Core 3.1
         uses: actions/setup-dotnet@v1.8.2
         with:
@@ -206,7 +206,7 @@ jobs:
         env:
           POSTGRES_HOST_AUTH_METHOD: trust
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
       - name: Install .NET Core 3.1
         uses: actions/setup-dotnet@v1.8.2
         with:
@@ -234,7 +234,7 @@ jobs:
       sonyflake:
         image: titpetric/sonyflake
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
       - name: Install .NET Core 3.1
         uses: actions/setup-dotnet@v1.8.2
         with:
@@ -274,7 +274,7 @@ jobs:
         env:
           POSTGRES_HOST_AUTH_METHOD: trust
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
       - name: Install .NET Core 3.1
         uses: actions/setup-dotnet@v1.8.2
         with:
@@ -310,7 +310,7 @@ jobs:
       sonyflake:
         image: titpetric/sonyflake
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
       - name: Install .NET Core 3.1
         uses: actions/setup-dotnet@v1.8.2
         with:
@@ -354,7 +354,7 @@ jobs:
     if: ${{ github.event_name == 'push' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.5
+        uses: actions/checkout@v2.4.0
         with:
           fetch-depth: 0
           persist-credentials: false
