@@ -4,9 +4,9 @@
     <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ImgProxy" Version="2.1.0"/>
+    <PackageReference Include="ImgProxy" Version="2.2.0" />
   </ItemGroup>
 </Project>
