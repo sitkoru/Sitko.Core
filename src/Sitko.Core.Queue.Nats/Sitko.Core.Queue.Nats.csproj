@@ -11,7 +11,7 @@
   <ItemGroup>
     <PackageReference Include="NATS.Client" Version="0.14.1" />
     <PackageReference Include="STAN.Client" Version="0.3.0" />
-    <PackageReference Include="Grpc.Tools" Version="2.41.0" PrivateAssets="none" />
+    <PackageReference Include="Grpc.Tools" Version="2.41.1" PrivateAssets="none" />
     <PackageReference Include="Google.Protobuf" Version="3.19.1" />
   </ItemGroup>
 
