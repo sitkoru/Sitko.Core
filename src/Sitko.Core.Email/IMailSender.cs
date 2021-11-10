@@ -1,12 +1,12 @@
 using System.Threading.Tasks;
+using Sitko.Core.App.Results;
 
-namespace Sitko.Core.Email
+namespace Sitko.Core.Email;
+
+public interface IMailSender
 {
-    public interface IMailSender
-    {
-        Task<bool> SendHtmlMailAsync<T>(MailEntry<T> mailEntry, string templatePath);
-        Task<bool> SendHtmlMailAsync(MailEntry mailEntry, string templatePath);
-        Task<bool> SendMailAsync(MailEntry mailEntry, string body);
-        void SendInBackground<T>(MailEntry<T> mailEntry, string templatePath);
-    }
+    Task<IOperationResult> SendHtmlMailAsync<T>(MailEntry<T> mailEntry, string templatePath);
+    Task<IOperationResult> SendHtmlMailAsync(MailEntry mailEntry, string templatePath);
+    Task<IOperationResult> SendMailAsync(MailEntry mailEntry, string body);
+    void SendInBackground<T>(MailEntry<T> mailEntry, string templatePath);
 }
