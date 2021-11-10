@@ -1,3 +1,10 @@
+# [8.21.0](https://github.com/sitkoru/Sitko.Core/compare/8.20.1...8.21.0) (2021-11-10)
+
+
+### Features
+
+* **email:** return IOperation result from email sender operations ([e95e0ec](https://github.com/sitkoru/Sitko.Core/commit/e95e0eccd531da29220d4af959fcd761dc0a584e))
+
 ## [8.20.1](https://github.com/sitkoru/Sitko.Core/compare/8.20.0...8.20.1) (2021-11-10)
 
 
