@@ -1,3 +1,10 @@
+## [8.20.1](https://github.com/sitkoru/Sitko.Core/compare/8.20.0...8.20.1) (2021-11-10)
+
+
+### Bug Fixes
+
+* **deps:** bump Npgsql.EntityFrameworkCore.PostgreSQL from 6.0.0-rc.2 to 6.0.0 ([b27301a](https://github.com/sitkoru/Sitko.Core/commit/b27301adee50dcfb924abdf6e7ed88730e6ec793))
+
 # [8.20.0](https://github.com/sitkoru/Sitko.Core/compare/8.19.0...8.20.0) (2021-11-09)
 
 
