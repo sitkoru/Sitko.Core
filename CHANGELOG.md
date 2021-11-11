@@ -1,3 +1,15 @@
+# [8.22.0](https://github.com/sitkoru/Sitko.Core/compare/8.21.0...8.22.0) (2021-11-11)
+
+
+### Bug Fixes
+
+* **pdf:** download browser when BrowserWsEndpoint and PUPPETEER_EXECUTABLE_PATH is not provided ([38de058](https://github.com/sitkoru/Sitko.Core/commit/38de05879d0b4b0c87872f403ef78b5df831f357))
+
+
+### Features
+
+* **swagger:** remove swagger auth, add endpoint configuration ([87743d9](https://github.com/sitkoru/Sitko.Core/commit/87743d95528451c357d363f99f071181c9f8db7e))
+
 # [8.21.0](https://github.com/sitkoru/Sitko.Core/compare/8.20.1...8.21.0) (2021-11-10)
 
 
