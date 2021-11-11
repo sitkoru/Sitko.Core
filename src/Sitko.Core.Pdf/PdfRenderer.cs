@@ -4,149 +4,154 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PuppeteerSharp;
 
-namespace Sitko.Core.Pdf
+namespace Sitko.Core.Pdf;
+
+internal class PdfRenderer : IPdfRenderer
 {
-    internal class PdfRenderer : IPdfRenderer
+    private readonly PdfOptions defaultOptions = new() { PrintBackground = true };
+
+    private readonly ScreenshotOptions defaultScreenshotOptions =
+        new() { FullPage = true, Type = ScreenshotType.Png };
+
+    private readonly ILogger<PdfRenderer> logger;
+    private readonly ILoggerFactory loggerFactory;
+    private readonly IOptionsMonitor<PdfRendererModuleOptions> optionsMonitor;
+
+    public PdfRenderer(IOptionsMonitor<PdfRendererModuleOptions> optionsMonitor, ILoggerFactory loggerFactory,
+        ILogger<PdfRenderer> logger)
     {
-        private readonly PdfOptions defaultOptions = new() {PrintBackground = true};
+        this.optionsMonitor = optionsMonitor;
+        this.loggerFactory = loggerFactory;
+        this.logger = logger;
+    }
 
-        private readonly ScreenshotOptions defaultScreenshotOptions =
-            new() {FullPage = true, Type = ScreenshotType.Png};
+    private PdfRendererModuleOptions Options => optionsMonitor.CurrentValue;
 
-        private readonly ILogger<PdfRenderer> logger;
-        private readonly IOptionsMonitor<PdfRendererModuleOptions> optionsMonitor;
-        private readonly ILoggerFactory loggerFactory;
-
-        public PdfRenderer(IOptionsMonitor<PdfRendererModuleOptions> optionsMonitor, ILoggerFactory loggerFactory,
-            ILogger<PdfRenderer> logger)
+    public async Task<byte[]> GetPdfByUrlAsync(string url, PdfOptions? options = null, TimeSpan? delay = null)
+    {
+        try
         {
-            this.optionsMonitor = optionsMonitor;
-            this.loggerFactory = loggerFactory;
-            this.logger = logger;
+            await using var browser = await GetBrowserAsync();
+            var page = await GetPageByUrl(browser, url, delay);
+            options ??= defaultOptions;
+            var pdf = await page.PdfDataAsync(options);
+            await browser.CloseAsync();
+            return pdf;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
+            throw new Exception(ex.Message, ex);
+        }
+    }
+
+    public async Task<byte[]> GetPdfByHtmlAsync(string html, PdfOptions? options = null, TimeSpan? delay = null)
+    {
+        try
+        {
+            await using var browser = await GetBrowserAsync();
+            var page = await GetPageWithHtml(browser, html, delay);
+            options ??= defaultOptions;
+            var pdf = await page.PdfDataAsync(options);
+            await browser.CloseAsync();
+            return pdf;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error while generating pdf from html: {ErrorText}", ex.ToString());
+            throw new Exception(ex.Message, ex);
+        }
+    }
+
+    public async Task<byte[]> GetScreenshotByUrlAsync(string url, ScreenshotOptions? options = null,
+        TimeSpan? delay = null)
+    {
+        try
+        {
+            await using var browser = await GetBrowserAsync();
+            var page = await GetPageByUrl(browser, url, delay);
+            options ??= defaultScreenshotOptions;
+            var screenshot = await page.ScreenshotDataAsync(options);
+            await browser.CloseAsync();
+            return screenshot;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
+            throw new Exception(ex.Message, ex);
+        }
+    }
+
+    public async Task<byte[]> GetScreenshotByHtmlAsync(string html, ScreenshotOptions? options = null,
+        TimeSpan? delay = null)
+    {
+        try
+        {
+            await using var browser = await GetBrowserAsync();
+            var page = await GetPageWithHtml(browser, html, delay);
+            options ??= defaultScreenshotOptions;
+            var screenshot = await page.ScreenshotDataAsync(options);
+            await browser.CloseAsync();
+            return screenshot;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
+            throw new Exception(ex.Message, ex);
+        }
+    }
+
+    private async Task<Page> GetPageByUrl(Browser browser, string url, TimeSpan? delay = null)
+    {
+        var page = await browser.NewPageAsync();
+        await page.GoToAsync(url);
+        if (delay != null)
+        {
+            await Task.Delay(delay.Value);
         }
 
-        private PdfRendererModuleOptions Options => optionsMonitor.CurrentValue;
+        return page;
+    }
 
-        public async Task<byte[]> GetPdfByUrlAsync(string url, PdfOptions? options = null, TimeSpan? delay = null)
+    private async Task<Page> GetPageWithHtml(Browser browser, string html, TimeSpan? delay = null)
+    {
+        var page = await browser.NewPageAsync();
+        await page.SetContentAsync(html);
+        if (delay != null)
         {
-            try
-            {
-                await using var browser = await GetBrowserAsync();
-                var page = await GetPageByUrl(browser, url, delay);
-                options ??= defaultOptions;
-                var pdf = await page.PdfDataAsync(options);
-                await browser.CloseAsync();
-                return pdf;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
-                throw new Exception(ex.Message, ex);
-            }
+            await Task.Delay(delay.Value);
         }
 
-        public async Task<byte[]> GetPdfByHtmlAsync(string html, PdfOptions? options = null, TimeSpan? delay = null)
+        return page;
+    }
+
+    private async Task<Browser> GetBrowserAsync()
+    {
+        logger.LogInformation("Start new Browser");
+        if (!string.IsNullOrEmpty(Options.BrowserWsEndpoint))
         {
-            try
-            {
-                await using var browser = await GetBrowserAsync();
-                var page = await GetPageWithHtml(browser, html, delay);
-                options ??= defaultOptions;
-                var pdf = await page.PdfDataAsync(options);
-                await browser.CloseAsync();
-                return pdf;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error while generating pdf from html: {ErrorText}", ex.ToString());
-                throw new Exception(ex.Message, ex);
-            }
+            return await Puppeteer.ConnectAsync(
+                new ConnectOptions
+                {
+                    BrowserWSEndpoint = Options.BrowserWsEndpoint,
+                    IgnoreHTTPSErrors = Options.IgnoreHTTPSErrors,
+                    DefaultViewport = Options.ViewPortOptions
+                },
+                loggerFactory);
         }
 
-        public async Task<byte[]> GetScreenshotByUrlAsync(string url, ScreenshotOptions? options = null,
-            TimeSpan? delay = null)
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PUPPETEER_EXECUTABLE_PATH")))
         {
-            try
-            {
-                await using var browser = await GetBrowserAsync();
-                var page = await GetPageByUrl(browser, url, delay);
-                options ??= defaultScreenshotOptions;
-                var screenshot = await page.ScreenshotDataAsync(options);
-                await browser.CloseAsync();
-                return screenshot;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
-                throw new Exception(ex.Message, ex);
-            }
+            var fetcher = Puppeteer.CreateBrowserFetcher(new BrowserFetcherOptions());
+            await fetcher.DownloadAsync();
         }
 
-        public async Task<byte[]> GetScreenshotByHtmlAsync(string html, ScreenshotOptions? options = null,
-            TimeSpan? delay = null)
+        return await Puppeteer.LaunchAsync(new LaunchOptions
         {
-            try
-            {
-                await using var browser = await GetBrowserAsync();
-                var page = await GetPageWithHtml(browser, html, delay);
-                options ??= defaultScreenshotOptions;
-                var screenshot = await page.ScreenshotDataAsync(options);
-                await browser.CloseAsync();
-                return screenshot;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
-                throw new Exception(ex.Message, ex);
-            }
-        }
-
-        private async Task<Page> GetPageByUrl(Browser browser, string url, TimeSpan? delay = null)
-        {
-            var page = await browser.NewPageAsync();
-            await page.GoToAsync(url);
-            if (delay != null)
-            {
-                await Task.Delay(delay.Value);
-            }
-
-            return page;
-        }
-
-        private async Task<Page> GetPageWithHtml(Browser browser, string html, TimeSpan? delay = null)
-        {
-            var page = await browser.NewPageAsync();
-            await page.SetContentAsync(html);
-            if (delay != null)
-            {
-                await Task.Delay(delay.Value);
-            }
-
-            return page;
-        }
-
-        private async Task<Browser> GetBrowserAsync()
-        {
-            logger.LogInformation("Start new Browser");
-            if (!string.IsNullOrEmpty(Options.BrowserWsEndpoint))
-            {
-                return await Puppeteer.ConnectAsync(
-                    new ConnectOptions
-                    {
-                        BrowserWSEndpoint = Options.BrowserWsEndpoint,
-                        IgnoreHTTPSErrors = Options.IgnoreHTTPSErrors,
-                        DefaultViewport = Options.ViewPortOptions
-                    },
-                    loggerFactory);
-            }
-
-            return await Puppeteer.LaunchAsync(new LaunchOptions
-            {
-                Headless = true,
-                Args = new[] {"--no-sandbox"},
-                IgnoreHTTPSErrors = Options.IgnoreHTTPSErrors,
-                DefaultViewport = Options.ViewPortOptions
-            });
-        }
+            Headless = true,
+            Args = new[] { "--no-sandbox" },
+            IgnoreHTTPSErrors = Options.IgnoreHTTPSErrors,
+            DefaultViewport = Options.ViewPortOptions
+        });
     }
 }
