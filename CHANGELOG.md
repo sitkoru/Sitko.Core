@@ -1,3 +1,11 @@
+## [8.23.1](https://github.com/sitkoru/Sitko.Core/compare/8.23.0...8.23.1) (2021-11-17)
+
+
+### Bug Fixes
+
+* **repository:** override equality operators to simplify entities comparison ([b39ee59](https://github.com/sitkoru/Sitko.Core/commit/b39ee59e7b9d4424e584e5a6ccf2aadcfd5ca0aa))
+* **validation:** use Equals to avoid reference comparison ([c25c948](https://github.com/sitkoru/Sitko.Core/commit/c25c948b0a5030717ab8510c3174ca68084a9f0a))
+
 # [8.23.0](https://github.com/sitkoru/Sitko.Core/compare/8.22.0...8.23.0) (2021-11-17)
 
 
