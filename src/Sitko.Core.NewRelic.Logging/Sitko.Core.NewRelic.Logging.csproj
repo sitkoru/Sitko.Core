@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="NewRelic.LogEnrichers.Serilog" Version="1.0.1"/>
-    <PackageReference Include="Serilog.Sinks.NewRelic.Logs" Version="1.1.0"/>
+    <PackageReference Include="Serilog.Sinks.NewRelic.Logs" Version="1.2.0"/>
   </ItemGroup>
 
 </Project>
