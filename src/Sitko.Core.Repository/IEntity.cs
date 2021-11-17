@@ -37,6 +37,11 @@ namespace Sitko.Core.Repository
                 return true;
             }
 
+            if (GetType() != other.GetType())
+            {
+                return false;
+            }
+
             return EqualityComparer<TEntityPk>.Default.Equals(Id, other.Id);
         }
 
@@ -61,6 +66,25 @@ namespace Sitko.Core.Repository
         }
 
         public override int GetHashCode() => EqualityComparer<TEntityPk>.Default.GetHashCode(Id);
+
+        public static bool operator ==(Entity<TEntityPk>? lhs, Entity<TEntityPk>? rhs)
+        {
+            if (lhs is null)
+            {
+                if (rhs is null)
+                {
+                    return true;
+                }
+
+                // Only the left side is null.
+                return false;
+            }
+
+            // Equals handles case of null on right side.
+            return lhs.Equals(rhs);
+        }
+
+        public static bool operator !=(Entity<TEntityPk>? lhs, Entity<TEntityPk>? rhs) => !(lhs == rhs);
     }
 
     public abstract record EntityRecord<TEntityPk> : IEntity<TEntityPk>
