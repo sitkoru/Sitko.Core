@@ -1,3 +1,10 @@
+# [8.23.0](https://github.com/sitkoru/Sitko.Core/compare/8.22.0...8.23.0) (2021-11-17)
+
+
+### Features
+
+* **grpc:** add helpers to process incoming streams in grpc server ([ae66c5b](https://github.com/sitkoru/Sitko.Core/commit/ae66c5ba49b56ffadae04ad18ac8958fdabd5cdd))
+
 # [8.22.0](https://github.com/sitkoru/Sitko.Core/compare/8.21.0...8.22.0) (2021-11-11)
 
 
