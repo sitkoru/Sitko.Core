@@ -77,7 +77,7 @@ namespace Sitko.Core.App.Validation
             {
                 validationContext ??= CreateValidationContext(model);
                 result ??= new ModelsValidationResult();
-                if (result.Results.Any(r => r.Model == model))
+                if (result.Results.Any(r => r.Model.Equals( model)))
                 {
                     return result;
                 }
