@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
-    <PackageReference Include="PuppeteerSharp" Version="5.1.0"/>
+    <PackageReference Include="PuppeteerSharp" Version="6.0.0"/>
     <PackageReference Include="Nito.AsyncEx" Version="5.1.2"/>
   </ItemGroup>
 </Project>
