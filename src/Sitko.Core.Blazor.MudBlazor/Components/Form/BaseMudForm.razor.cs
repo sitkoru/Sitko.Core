@@ -4,93 +4,76 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using Sitko.Core.App.Blazor.Forms;
 
-namespace Sitko.Core.Blazor.MudBlazorComponents
-{
-    public class AntForm<TEntity> : BaseMudForm<TEntity>
-        where TEntity : class, new()
-    {
-#if NET6_0_OR_GREATER
-        [EditorRequired]
-#endif
-        [Parameter]
-        public RenderFragment<BaseMudForm<TEntity>> ChildContent { get; set; } = null!;
+namespace Sitko.Core.Blazor.MudBlazorComponents;
 
-        protected override RenderFragment ChildContentFragment => ChildContent(this);
+public class AntForm<TEntity> : BaseMudForm<TEntity>
+    where TEntity : class, new()
+{
+    [EditorRequired] [Parameter] public RenderFragment<BaseMudForm<TEntity>> ChildContent { get; set; } = null!;
+
+    protected override RenderFragment ChildContentFragment => ChildContent(this);
+}
+
+public abstract partial class BaseMudForm<TEntity>
+    where TEntity : class, new()
+{
+    protected abstract RenderFragment ChildContentFragment { get; }
+    protected MudEditForm<TEntity>? FormInstance { get; set; }
+    [Inject] public ISnackbar Snackbar { get; set; } = null!;
+    [Parameter] public bool Debug { get; set; }
+
+    [EditorRequired] [Parameter] public Func<TEntity, Task<FormSaveResult>>? Add { get; set; }
+
+    [EditorRequired] [Parameter] public Func<TEntity, Task<FormSaveResult>>? Update { get; set; }
+
+    [EditorRequired] [Parameter] public Func<Task<(bool IsNew, TEntity Entity)>>? GetEntity { get; set; }
+
+    protected override Task<(bool IsNew, TEntity Entity)> GetEntityAsync() => GetEntity!();
+
+    protected override Task NotifySuccessAsync()
+    {
+        Snackbar.Add(LocalizationProvider["Entity saved successfully"], Severity.Success);
+        return Task.CompletedTask;
     }
 
-    public abstract partial class BaseMudForm<TEntity>
-        where TEntity : class, new()
+    protected override Task NotifyErrorAsync(string errorText)
     {
-        protected abstract RenderFragment ChildContentFragment { get; }
-        protected MudEditForm<TEntity>? FormInstance { get; set; }
-        [Inject] public ISnackbar Snackbar { get; set; } = null!;
-        [Parameter] public bool Debug { get; set; }
+        Snackbar.Add(errorText, Severity.Error);
+        return Task.CompletedTask;
+    }
 
-#if NET6_0_OR_GREATER
-        [EditorRequired]
-#endif
-        [Parameter]
-        public Func<TEntity, Task<FormSaveResult>>? Add { get; set; }
+    protected override Task NotifyExceptionAsync(Exception ex)
+    {
+        Snackbar.Add(ex.ToString(), Severity.Error);
+        return Task.CompletedTask;
+    }
 
-#if NET6_0_OR_GREATER
-        [EditorRequired]
-#endif
-        [Parameter]
-        public Func<TEntity, Task<FormSaveResult>>? Update { get; set; }
-
-#if NET6_0_OR_GREATER
-        [EditorRequired]
-#endif
-        [Parameter]
-        public Func<Task<(bool IsNew, TEntity Entity)>>? GetEntity { get; set; }
-
-        protected override Task<(bool IsNew, TEntity Entity)> GetEntityAsync() => GetEntity!();
-
-        protected override Task NotifySuccessAsync()
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (GetEntity is null)
         {
-            Snackbar.Add(LocalizationProvider["Entity saved successfully"], Severity.Success);
-            return Task.CompletedTask;
+            throw new InvalidOperationException("GetEntity is not defined");
         }
 
-        protected override Task NotifyErrorAsync(string errorText)
+        if (Add is null)
         {
-            Snackbar.Add(errorText, Severity.Error);
-            return Task.CompletedTask;
+            throw new InvalidOperationException("Add is not defined");
         }
 
-        protected override Task NotifyExceptionAsync(Exception ex)
+        if (Update is null)
         {
-            Snackbar.Add(ex.ToString(), Severity.Error);
-            return Task.CompletedTask;
+            throw new InvalidOperationException("Update is not defined");
         }
+    }
 
-        protected override void OnParametersSet()
-        {
-            base.OnParametersSet();
-            if (GetEntity is null)
-            {
-                throw new InvalidOperationException("GetEntity is not defined");
-            }
+    protected override Task<FormSaveResult> AddAsync(TEntity entity) => Add!(entity);
 
-            if (Add is null)
-            {
-                throw new InvalidOperationException("Add is not defined");
-            }
+    protected override Task<FormSaveResult> UpdateAsync(TEntity entity) => Update!(entity);
 
-            if (Update is null)
-            {
-                throw new InvalidOperationException("Update is not defined");
-            }
-        }
-
-        protected override Task<FormSaveResult> AddAsync(TEntity entity) => Add!(entity);
-
-        protected override Task<FormSaveResult> UpdateAsync(TEntity entity) => Update!(entity);
-
-        public override async Task ResetAsync()
-        {
-            await base.ResetAsync();
-            FormInstance?.Reset();
-        }
+    public override async Task ResetAsync()
+    {
+        await base.ResetAsync();
+        FormInstance?.Reset();
     }
 }

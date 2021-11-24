@@ -63,10 +63,7 @@
     [Parameter]
     public string Logo { get; set; } = "";
 
-#if NET6_0_OR_GREATER
     [EditorRequired]
-#endif
-
     [Parameter]
     public RenderFragment? Menu { get; set; }
 
