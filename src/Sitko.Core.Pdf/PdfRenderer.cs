@@ -142,7 +142,7 @@ internal class PdfRenderer : IPdfRenderer
 
         if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PUPPETEER_EXECUTABLE_PATH")))
         {
-            var fetcher = Puppeteer.CreateBrowserFetcher(new BrowserFetcherOptions());
+            using var fetcher = Puppeteer.CreateBrowserFetcher(new BrowserFetcherOptions());
             await fetcher.DownloadAsync();
         }
 
