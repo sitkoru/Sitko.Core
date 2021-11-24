@@ -8,7 +8,13 @@
     <ProjectReference Include="..\..\src\Sitko.Core.Email.Smtp\Sitko.Core.Email.Smtp.csproj"/>
     <ProjectReference Include="..\Sitko.Core.Email.Tests\Sitko.Core.Email.Tests.csproj"/>
   </ItemGroup>
-
+  <ItemGroup>
+    <Content Include="appsettings.json">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
   <ItemGroup>
     <Content Include="..\Sitko.Core.Email.Tests\Data\file.txt">
       <Link>Data\file.txt</Link>
