@@ -35,6 +35,6 @@ public abstract class BasicTests<T> : BaseTest<T>
         };
 
         var result = await mailer.SendMailAsync(entry, "<strong>Test email</strong>");
-        Assert.True(result.IsSuccess);
+        Assert.True(result.IsSuccess, result.ErrorMessage);
     }
 }
