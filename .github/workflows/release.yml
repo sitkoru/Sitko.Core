@@ -17,15 +17,15 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/}
           echo ::set-output name=version::${VERSION}
       - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.8.2
+        uses: actions/setup-dotnet@v1.9.0
         with:
           dotnet-version: '3.1.x'
       - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.8.2
+        uses: actions/setup-dotnet@v1.9.0
         with:
           dotnet-version: '5.0.x'
       - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.8.2
+        uses: actions/setup-dotnet@v1.9.0
         with:
           dotnet-version: '6.0.x'
           include-prerelease: true
