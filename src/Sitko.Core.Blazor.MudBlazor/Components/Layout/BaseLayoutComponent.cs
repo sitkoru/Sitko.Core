@@ -58,7 +58,8 @@ public abstract class BaseMudLayout : BaseLayoutComponent<MudLayoutData, MudLayo
                             Dark = "#27272f",
                             TableHover = "rgba(255,255,255, 0.03)",
                             TableStriped = "rgba(255,255,255, 0.02)",
-                            GrayLight = "rgba(35,35,35, 1)"
+                            GrayLight = "rgba(35,35,35, 1)",
+                            OverlayDark = "rgba(33,33,33, 0.9)",
                         }
                     };
                 default:

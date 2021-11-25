@@ -37,7 +37,7 @@
                         @if (DisplayMode == FileUploadDisplayMode.Image)
                         {
                             <MudTooltip Text="@PreviewText">
-                                <MudIconButton Size="Size.Small" OnClick="() => PreviewFile(file)" Icon="@Icons.Outlined.Preview"></MudIconButton>
+                                <MudIconButton Size="Size.Small" @onclick="() => PreviewFile(file)" Icon="@Icons.Outlined.Preview"></MudIconButton>
                             </MudTooltip>
                         }
                         @if (DisplayMode == FileUploadDisplayMode.File)
@@ -99,8 +99,9 @@
         </MudItem>
     }
 </MudGrid>
-<MudDialog IsVisible="PreviewItem != null">
-    <DialogContent>
+@if (PreviewItem != null)
+{
+    <MudOverlay Class="mud-file-upload-preview-overlay" Visible="true" AutoClose="true" DarkBackground="true" ZIndex="@int.MaxValue" VisibleChanged="b => PreviewItem = null">
         <img style="width: 100%" src="@PreviewItem!.LargePreviewUrl" alt="@PreviewItem.StorageItem.FileName"/>
-    </DialogContent>
-</MudDialog>
+    </MudOverlay>
+}

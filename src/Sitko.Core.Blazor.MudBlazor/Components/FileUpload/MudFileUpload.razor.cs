@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
 using MudBlazor;
+using Sitko.Blazor.ScriptInjector;
 using Sitko.Core.App.Blazor.Components;
 using Sitko.Core.App.Collections;
 using Sitko.Core.App.Helpers;
@@ -34,6 +35,7 @@ public abstract partial class MudFileUpload<TValue> : BaseComponent where TValue
     protected UploadedItem? PreviewItem { get; set; }
 
     [Inject] protected ISnackbar Snackbar { get; set; } = null!;
+    [Inject] protected IScriptInjector ScriptInjector { get; set; } = null!;
 
     [Parameter] public FileUploadDisplayMode DisplayMode { get; set; } = FileUploadDisplayMode.File;
     [Parameter] public string UploadPath { get; set; } = "";
@@ -228,6 +230,16 @@ public abstract partial class MudFileUpload<TValue> : BaseComponent where TValue
         {
             fieldIdentifier = FieldIdentifier.Create(For);
             currentForValue = For;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            await ScriptInjector.InjectAsync(CssInjectRequest.FromUrl("fileUpload",
+                "_content/Sitko.Core.Blazor.MudBlazor/fileUpload.css"));
         }
     }
 

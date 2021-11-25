@@ -1,0 +1,7 @@
+.mud-file-upload-preview-overlay .mud-overlay-content img {
+  max-height: 90vh;
+}
+.mud-file-upload-preview-overlay .mud-overlay-content {
+  max-height: 100%;
+  padding: 5vh;
+}
