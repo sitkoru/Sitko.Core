@@ -13,124 +13,133 @@ using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Sitko.Core.App.Tests
+namespace Sitko.Core.App.Tests;
+
+public class FluentGraphValidatorTests : BaseTest<ValidationTestScope>
 {
-    public class FluentGraphValidatorTests : BaseTest<ValidationTestScope>
+    public FluentGraphValidatorTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
-        public FluentGraphValidatorTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
-        {
-        }
-
-        [Fact]
-        public async Task ValidateParent()
-        {
-            var scope = await GetScopeAsync();
-            var validator = scope.GetService<FluentGraphValidator>();
-            var foo = new FooModel();
-            var result = await validator.TryValidateModelAsync(foo);
-            result.IsValid.Should().BeFalse();
-            result.Results.Should().ContainSingle();
-            var fooResult = result.Results.First();
-            fooResult.Model.Should().Be(foo);
-            fooResult.Errors.Should().HaveCount(2);
-            fooResult.Errors.Should().Contain(failure => failure.PropertyName == nameof(FooModel.Id));
-            fooResult.Errors.Should().Contain(failure => failure.PropertyName == nameof(FooModel.BarModels));
-        }
-
-        [Fact]
-        public async Task ValidateChild()
-        {
-            var scope = await GetScopeAsync();
-            var validator = scope.GetService<FluentGraphValidator>();
-            var bar = new BarModel();
-            var foo = new FooModel { Id = Guid.NewGuid(), BarModels = new List<BarModel> { bar } };
-            var result = await validator.TryValidateModelAsync(foo);
-            result.IsValid.Should().BeFalse();
-            result.Results.Should().HaveCount(2);
-            result.Results.Where(r => r.IsValid).Should().ContainSingle();
-            var fooResult = result.Results.First(r => !r.IsValid);
-            fooResult.Model.Should().Be(bar);
-            fooResult.Errors.Should().HaveCount(1);
-            fooResult.Errors.Should().Contain(failure => failure.PropertyName == nameof(BarModel.TestGuid));
-        }
-
-        [Fact]
-        public async Task ValidateOnlyChildren()
-        {
-            var scope = await GetScopeAsync();
-            var validator = scope.GetService<FluentGraphValidator>();
-            var fooBar = new FooBarModel();
-            var result = await validator.TryValidateModelAsync(fooBar);
-            result.IsValid.Should().BeFalse();
-            result.Results.Should().HaveCount(2);
-            result.Results.Where(r => r.IsValid).Should().ContainSingle();
-            var fooResult = result.Results.First(r => !r.IsValid);
-            fooResult.Model.Should().Be(fooBar.Foo);
-            fooResult.Errors.Should().HaveCount(2);
-            fooResult.Errors.Should().Contain(failure => failure.PropertyName == nameof(FooModel.Id));
-            fooResult.Errors.Should().Contain(failure => failure.PropertyName == nameof(FooModel.BarModels));
-        }
-
-        [Fact]
-        public async Task ValidateField()
-        {
-            var scope = await GetScopeAsync();
-            var validator = scope.GetService<FluentGraphValidator>();
-            var fooBar = new FooBarModel();
-            var result = await validator.TryValidateFieldAsync(fooBar, nameof(FooBarModel.Foo));
-            result.IsValid.Should().BeFalse();
-            result.Results.Should().HaveCount(2);
-            result.Results.Where(r => r.IsValid).Should().ContainSingle();
-            var fooResult = result.Results.First(r => !r.IsValid);
-            fooResult.Model.Should().Be(fooBar.Foo);
-            fooResult.Errors.Should().HaveCount(2);
-            fooResult.Errors.Should().Contain(failure => failure.PropertyName == nameof(FooModel.Id));
-            fooResult.Errors.Should().Contain(failure => failure.PropertyName == nameof(FooModel.BarModels));
-        }
     }
 
-    [UsedImplicitly]
-    public class ValidationTestScope : BaseTestScope
+    [Fact]
+    public async Task ValidateParent()
     {
-        protected override IServiceCollection ConfigureServices(IConfiguration configuration,
-            IHostEnvironment environment,
-            IServiceCollection services, string name)
-        {
-            base.ConfigureServices(configuration, environment, services, name);
-            services.AddValidatorsFromAssemblyContaining<FluentGraphValidatorTests>();
-            return services;
-        }
+        var scope = await GetScopeAsync();
+        var validator = scope.GetService<FluentGraphValidator>();
+        var foo = new FooModel();
+        var result = await validator.TryValidateModelAsync(foo);
+        result.IsValid.Should().BeFalse();
+        result.Results.Should().ContainSingle();
+        var fooResult = result.Results.First();
+        fooResult.Model.Should().Be(foo);
+        fooResult.Errors.Should().HaveCount(2);
+        fooResult.Errors.Should().Contain(failure => failure.PropertyName == nameof(FooModel.Id));
+        fooResult.Errors.Should().Contain(failure => failure.PropertyName == nameof(FooModel.BarModels));
     }
 
-    public class FooModel
+    [Fact]
+    public async Task ValidateChild()
     {
-        public Guid Id { get; set; } = Guid.Empty;
-        public List<BarModel> BarModels { get; set; } = new();
+        var scope = await GetScopeAsync();
+        var validator = scope.GetService<FluentGraphValidator>();
+        var bar = new BarModel();
+        var foo = new FooModel { Id = Guid.NewGuid(), BarModels = new List<BarModel> { bar } };
+        var result = await validator.TryValidateModelAsync(foo);
+        result.IsValid.Should().BeFalse();
+        result.Results.Should().HaveCount(2);
+        result.Results.Where(r => r.IsValid).Should().ContainSingle();
+        var fooResult = result.Results.First(r => !r.IsValid);
+        fooResult.Model.Should().Be(bar);
+        fooResult.Errors.Should().HaveCount(1);
+        fooResult.Errors.Should().Contain(failure => failure.PropertyName == nameof(BarModel.TestGuid));
     }
 
-    public class BarModel
+    [Fact]
+    public async Task ValidateOnlyChildren()
     {
-        public Guid TestGuid { get; set; } = Guid.Empty;
+        var scope = await GetScopeAsync();
+        var validator = scope.GetService<FluentGraphValidator>();
+        var fooBar = new FooBarModel();
+        var result = await validator.TryValidateModelAsync(fooBar);
+        result.IsValid.Should().BeFalse();
+        result.Results.Should().HaveCount(2);
+        result.Results.Where(r => r.IsValid).Should().ContainSingle();
+        var fooResult = result.Results.First(r => !r.IsValid);
+        fooResult.Model.Should().Be(fooBar.Foo);
+        fooResult.Errors.Should().HaveCount(2);
+        fooResult.Errors.Should().Contain(failure => failure.PropertyName == nameof(FooModel.Id));
+        fooResult.Errors.Should().Contain(failure => failure.PropertyName == nameof(FooModel.BarModels));
     }
 
-    public class FooBarModel
+    [Fact]
+    public async Task ValidateField()
     {
-        public FooModel Foo { get; set; } = new();
+        var scope = await GetScopeAsync();
+        var validator = scope.GetService<FluentGraphValidator>();
+        var fooBar = new FooBarModel();
+        var result = await validator.TryValidateFieldAsync(fooBar, nameof(FooBarModel.Foo));
+        result.IsValid.Should().BeFalse();
+        result.Results.Should().HaveCount(2);
+        result.Results.Where(r => r.IsValid).Should().ContainSingle();
+        var fooResult = result.Results.First(r => !r.IsValid);
+        fooResult.Model.Should().Be(fooBar.Foo);
+        fooResult.Errors.Should().HaveCount(2);
+        fooResult.Errors.Should().Contain(failure => failure.PropertyName == nameof(FooModel.Id));
+        fooResult.Errors.Should().Contain(failure => failure.PropertyName == nameof(FooModel.BarModels));
     }
 
-    [UsedImplicitly]
-    public class FooModelValidator : AbstractValidator<FooModel>
+    [Fact]
+    public async Task ValidateSystemType()
     {
-        public FooModelValidator()
-        {
-            RuleFor(f => f.Id).NotEmpty();
-            RuleFor(f => f.BarModels).NotEmpty();
-        }
+        var scope = await GetScopeAsync();
+        var validator = scope.GetService<FluentGraphValidator>();
+        var model = "some string";
+        var result = await validator.TryValidateModelAsync(model);
+        result.IsValid.Should().BeTrue();
     }
+}
 
-    [UsedImplicitly]
-    public class BarModelValidator : AbstractValidator<BarModel>
+[UsedImplicitly]
+public class ValidationTestScope : BaseTestScope
+{
+    protected override IServiceCollection ConfigureServices(IConfiguration configuration,
+        IHostEnvironment environment,
+        IServiceCollection services, string name)
     {
-        public BarModelValidator() => RuleFor(b => b.TestGuid).NotEmpty();
+        base.ConfigureServices(configuration, environment, services, name);
+        services.AddValidatorsFromAssemblyContaining<FluentGraphValidatorTests>();
+        return services;
     }
+}
+
+public class FooModel
+{
+    public Guid Id { get; set; } = Guid.Empty;
+    public List<BarModel> BarModels { get; set; } = new();
+}
+
+public class BarModel
+{
+    public Guid TestGuid { get; set; } = Guid.Empty;
+}
+
+public class FooBarModel
+{
+    public FooModel Foo { get; set; } = new();
+}
+
+[UsedImplicitly]
+public class FooModelValidator : AbstractValidator<FooModel>
+{
+    public FooModelValidator()
+    {
+        RuleFor(f => f.Id).NotEmpty();
+        RuleFor(f => f.BarModels).NotEmpty();
+    }
+}
+
+[UsedImplicitly]
+public class BarModelValidator : AbstractValidator<BarModel>
+{
+    public BarModelValidator() => RuleFor(b => b.TestGuid).NotEmpty();
 }

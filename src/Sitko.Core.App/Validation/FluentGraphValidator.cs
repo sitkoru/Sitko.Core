@@ -91,10 +91,21 @@ public class FluentGraphValidator
         IValidationContext? validationContext = null, ModelsValidationResult? result = null,
         CancellationToken cancellationToken = default)
     {
+        result ??= new ModelsValidationResult();
+        if (model is null or string or int or double or float or bool or decimal or long or byte
+                or char or uint or ulong or short or sbyte ||
+            model.GetType().Module.ScopeName == "CommonLanguageRuntimeLibrary" ||
+            model.GetType().Module.ScopeName.StartsWith("System") ||
+            model.GetType().Namespace.StartsWith("System") ||
+            model.GetType().Namespace.StartsWith("Microsoft"))
+        {
+            return result;
+        }
+
         try
         {
             validationContext ??= CreateValidationContext(model);
-            result ??= new ModelsValidationResult();
+
             if (result.Results.Any(r => r.Model.Equals(model)))
             {
                 return result;
@@ -128,16 +139,6 @@ public class FluentGraphValidator
                 }
                 else
                 {
-                    if (propertyModel is null or string or int or double or float or bool or decimal or long or byte
-                            or char or uint or ulong or short or sbyte ||
-                        propertyModel.GetType().Module.ScopeName == "CommonLanguageRuntimeLibrary" ||
-                        propertyModel.GetType().Module.ScopeName.StartsWith("System") ||
-                        propertyModel.GetType().Namespace.StartsWith("System") ||
-                        propertyModel.GetType().Namespace.StartsWith("Microsoft"))
-                    {
-                        continue;
-                    }
-
                     await TryValidateModelAsync(propertyModel, result: result,
                         cancellationToken: cancellationToken);
                 }
