@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -14,6 +15,7 @@ namespace Sitko.Core.App.Validation;
 
 public class FluentGraphValidator
 {
+    private static readonly ConcurrentDictionary<Type, Type?> TypesValidators = new();
     private readonly ILogger<FluentGraphValidator> logger;
     private readonly IServiceScope serviceScope;
 
@@ -37,14 +39,30 @@ public class FluentGraphValidator
 
     private IValidator? TryGetModelValidator(object model)
     {
-        var validatorType = typeof(IValidator<>);
-        var formValidatorType = validatorType.MakeGenericType(model.GetType());
+        if (TypesValidators.TryGetValue(model.GetType(), out var formValidatorType))
+        {
+            if (formValidatorType is null)
+            {
+                return null;
+            }
+        }
+        else
+        {
+            var validatorType = typeof(IValidator<>);
+            formValidatorType = validatorType.MakeGenericType(model.GetType());
+        }
+
         var validator = serviceScope.ServiceProvider.GetService(formValidatorType) as IValidator;
         if (validator is null)
         {
             logger.LogWarning(
                 "FluentValidation.IValidator<{FormType}> is not registered in the application service provider",
                 model.GetType().FullName);
+            TypesValidators[model.GetType()] = null;
+        }
+        else
+        {
+            TypesValidators[model.GetType()] = formValidatorType;
         }
 
         return validator;
