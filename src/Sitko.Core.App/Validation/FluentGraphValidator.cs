@@ -110,7 +110,8 @@ public class FluentGraphValidator
                 }
                 else
                 {
-                    if (propertyModel is null ||
+                    if (propertyModel is null or string or int or double or float or bool or decimal or long or byte
+                            or char or uint or ulong or short or sbyte ||
                         propertyModel.GetType().Module.ScopeName == "CommonLanguageRuntimeLibrary" ||
                         propertyModel.GetType().Module.ScopeName.StartsWith("System") ||
                         propertyModel.GetType().Namespace.StartsWith("System") ||
