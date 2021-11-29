@@ -8,6 +8,7 @@ using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.App.Localization;
 
 namespace Sitko.Core.App.Blazor.Components
@@ -168,14 +169,50 @@ namespace Sitko.Core.App.Blazor.Components
 #endif
             }
 
-            NavigationManager.LocationChanged += HandleLocationChanged;
-            // ReSharper disable once MethodHasAsyncOverload
-            Initialize();
-            await InitializeAsync();
-            IsInitialized = true;
-            // ReSharper disable once MethodHasAsyncOverload
-            AfterInitialized();
-            await AfterInitializedAsync();
+            try
+            {
+                NavigationManager.LocationChanged += HandleLocationChanged;
+                // ReSharper disable once MethodHasAsyncOverload
+                Initialize();
+                await InitializeAsync();
+                IsInitialized = true;
+                // ReSharper disable once MethodHasAsyncOverload
+                AfterInitialized();
+                await AfterInitializedAsync();
+            }
+            catch (ObjectDisposedException)
+            {
+                // We got ObjectDisposedException during initialization. It may be caused by cancelled request. In such case
+                // ParentScope would be disposed before component initialization is completed.
+                var parentDisposed = false;
+                if (ParentScope is not null)
+                {
+                    // We have parent scope. Let's check if it is disposed
+                    try
+                    {
+                        var unused = ParentScope.ServiceProvider.CreateScope();
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // Scope is disposed
+                        parentDisposed = true;
+                    }
+                }
+
+                if (!parentDisposed)
+                {
+                    // Parent scope was not disposed, so problem lies inside initialization code
+                    // Pass exception
+                    throw;
+                }
+
+                // Parent scope was disposed. Indicate in logs and suppress exception.
+                GlobalServiceProvider.GetRequiredService<ILogger<BaseComponent>>()
+                    .Log(
+                        GlobalServiceProvider.GetRequiredService<IHostEnvironment>().IsDevelopment()
+                            ? LogLevel.Warning
+                            : LogLevel.Debug, "Parent scope was disposed in {Component}", GetType());
+            }
         }
 
         protected T? GetQueryString<T>(string key) => TryGetQueryString<T>(key, out var value) ? value : default;
