@@ -110,13 +110,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.IsNull));
-#if NET6_0_OR_GREATER
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE b.\"Baz\" IS NULL");
-#else
         CompareSql(query,
             "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NULL)");
-#endif
     }
 
     [Fact]
@@ -126,13 +121,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.NotNull));
-#if NET6_0_OR_GREATER
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE b.\"Baz\" IS NOT NULL");
-#else
         CompareSql(query,
             "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NOT NULL)");
-#endif
     }
 
     [Fact]
@@ -188,13 +178,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.StartsWith, "123"));
-#if NET6_0_OR_GREATER
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE b.\"Baz\" IS NOT NULL AND (b.\"Baz\" LIKE '123%')");
-#else
         CompareSql(query,
             "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NOT NULL) AND (b.\"Baz\" LIKE '123%')");
-#endif
     }
 
     [Fact]
@@ -204,13 +189,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.NotStartsWith, "123"));
-#if NET6_0_OR_GREATER
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE b.\"Baz\" IS NOT NULL AND NOT (b.\"Baz\" LIKE '123%')");
-#else
         CompareSql(query,
             "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NOT NULL) AND NOT (b.\"Baz\" LIKE '123%')");
-#endif
     }
 
     [Fact]
@@ -221,13 +201,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.StartsWithCaseInsensitive,
             "AbC"));
-#if NET6_0_OR_GREATER
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE b.\"Baz\" IS NOT NULL AND (lower(b.\"Baz\") LIKE 'abc%')");
-#else
         CompareSql(query,
             "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NOT NULL) AND (lower(b.\"Baz\") LIKE 'abc%')");
-#endif
     }
 
     [Fact]
@@ -238,13 +213,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz),
             QueryContextOperator.NotStartsWithCaseInsensitive, "AbC"));
-#if NET6_0_OR_GREATER
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE b.\"Baz\" IS NOT NULL AND NOT (lower(b.\"Baz\") LIKE 'abc%')");
-#else
         CompareSql(query,
             "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NOT NULL) AND NOT (lower(b.\"Baz\") LIKE 'abc%')");
-#endif
     }
 
     [Fact]
@@ -254,13 +224,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.EndsWith, "123"));
-#if NET6_0_OR_GREATER
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE b.\"Baz\" IS NOT NULL AND (b.\"Baz\" LIKE '%123')");
-#else
         CompareSql(query,
             "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NOT NULL) AND (b.\"Baz\" LIKE '%123')");
-#endif
     }
 
     [Fact]
@@ -270,13 +235,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.NotEndsWith, "AbC"));
-#if NET6_0_OR_GREATER
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE b.\"Baz\" IS NOT NULL AND NOT (b.\"Baz\" LIKE '%AbC')");
-#else
         CompareSql(query,
             "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NOT NULL) AND NOT (b.\"Baz\" LIKE '%AbC')");
-#endif
     }
 
     [Fact]
@@ -287,13 +247,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.EndsWithCaseInsensitive,
             "AbC"));
-#if NET6_0_OR_GREATER
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE b.\"Baz\" IS NOT NULL AND (lower(b.\"Baz\") LIKE '%abc')");
-#else
         CompareSql(query,
             "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NOT NULL) AND (lower(b.\"Baz\") LIKE '%abc')");
-#endif
     }
 
     [Fact]
@@ -304,13 +259,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.NotEndsWithCaseInsensitive,
             "AbC"));
-#if NET6_0_OR_GREATER
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE b.\"Baz\" IS NOT NULL AND NOT (lower(b.\"Baz\") LIKE '%abc')");
-#else
         CompareSql(query,
             "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NOT NULL) AND NOT (lower(b.\"Baz\") LIKE '%abc')");
-#endif
     }
 
     [Fact]
