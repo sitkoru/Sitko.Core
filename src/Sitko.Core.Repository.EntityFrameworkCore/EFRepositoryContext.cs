@@ -2,38 +2,37 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Sitko.Core.App.Validation;
+using Sitko.FluentValidation.Graph;
 
-namespace Sitko.Core.Repository.EntityFrameworkCore
+namespace Sitko.Core.Repository.EntityFrameworkCore;
+
+public class EFRepositoryContext<TEntity, TEntityPk, TDbContext> : IRepositoryContext<TEntity, TEntityPk>
+    where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext
 {
-    public class EFRepositoryContext<TEntity, TEntityPk, TDbContext> : IRepositoryContext<TEntity, TEntityPk>
-        where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext
+    private readonly ILoggerFactory loggerFactory;
+
+    public EFRepositoryContext(IDbContextFactory<TDbContext> dbContextFactory,
+        RepositoryFiltersManager filtersManager,
+        ILoggerFactory loggerFactory,
+        EFRepositoryLock repositoryLock,
+        FluentGraphValidator fluentGraphValidator,
+        IEnumerable<IAccessChecker<TEntity, TEntityPk>>? accessCheckers = null)
     {
-        private readonly ILoggerFactory loggerFactory;
-
-        public EFRepositoryContext(IDbContextFactory<TDbContext> dbContextFactory,
-            RepositoryFiltersManager filtersManager,
-            ILoggerFactory loggerFactory,
-            EFRepositoryLock repositoryLock,
-            FluentGraphValidator fluentGraphValidator,
-            IEnumerable<IAccessChecker<TEntity, TEntityPk>>? accessCheckers = null)
-        {
-            this.loggerFactory = loggerFactory;
-            DbContext = dbContextFactory.CreateDbContext();
-            FiltersManager = filtersManager;
-            RepositoryLock = repositoryLock;
-            FluentGraphValidator = fluentGraphValidator;
-            AccessCheckers = accessCheckers?.ToList();
-        }
-
-        internal TDbContext DbContext { get; }
-        public EFRepositoryLock RepositoryLock { get; }
-        public FluentGraphValidator FluentGraphValidator { get; }
-
-        public ILogger<IRepository<TEntity, TEntityPk>> Logger =>
-            loggerFactory.CreateLogger<EFRepository<TEntity, TEntityPk, TDbContext>>();
-
-        public RepositoryFiltersManager FiltersManager { get; }
-        public List<IAccessChecker<TEntity, TEntityPk>>? AccessCheckers { get; }
+        this.loggerFactory = loggerFactory;
+        DbContext = dbContextFactory.CreateDbContext();
+        FiltersManager = filtersManager;
+        RepositoryLock = repositoryLock;
+        FluentGraphValidator = fluentGraphValidator;
+        AccessCheckers = accessCheckers?.ToList();
     }
+
+    internal TDbContext DbContext { get; }
+    public EFRepositoryLock RepositoryLock { get; }
+    public FluentGraphValidator FluentGraphValidator { get; }
+
+    public ILogger<IRepository<TEntity, TEntityPk>> Logger =>
+        loggerFactory.CreateLogger<EFRepository<TEntity, TEntityPk, TDbContext>>();
+
+    public RepositoryFiltersManager FiltersManager { get; }
+    public List<IAccessChecker<TEntity, TEntityPk>>? AccessCheckers { get; }
 }
