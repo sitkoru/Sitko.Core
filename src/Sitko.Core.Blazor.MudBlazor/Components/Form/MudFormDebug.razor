@@ -1,0 +1,55 @@
+﻿@namespace Sitko.Core.Blazor.MudBlazorComponents
+@inherits Sitko.Core.App.Blazor.Components.BaseComponent
+@typeparam TEntity
+<MudDivider Class="mb-6 mt-6"></MudDivider>
+<MudExpansionPanels MultiExpansion="true">
+    <MudExpansionPanel Text="Debug">
+        @if (Form.IsNew)
+        {
+            <MudText Typo="Typo.h6">
+                @LocalizationProvider["New entity"]
+            </MudText>
+        }
+        @if (!Form.IsValid)
+        {
+            <MudText Strong Style="font-size: 16px;">
+                @LocalizationProvider["Errors"]
+            </MudText>
+            @foreach (var error in Form.Errors)
+            {
+                <MudText>
+                    <MudIcon Icon="@Icons.Material.Outlined.Error"/> @error
+                </MudText>
+            }
+        }
+        else
+        {
+            <MudText Strong Style="font-size: 16px;">
+                @LocalizationProvider["No errors"]
+            </MudText>
+        }
+        @if (Form.HasChanges)
+        {
+            <MudText Strong Style="font-size: 16px;">
+                @LocalizationProvider["Changes"]
+            </MudText>
+            @foreach (var change in Form.Changes)
+            {
+                <MudIcon Icon="@Icons.Material.Outlined.Edit"/>
+                @change
+            }
+        }
+        else
+        {
+            <MudText Strong Style="font-size: 16px;">
+                @LocalizationProvider["No changes"]
+            </MudText>
+        }
+        <MudText Strong Style="font-size: 16px;">
+            @LocalizationProvider["Entity"]
+        </MudText>
+        <MudText>
+            <pre>@EntityJson</pre>
+        </MudText>
+    </MudExpansionPanel>
+</MudExpansionPanels>

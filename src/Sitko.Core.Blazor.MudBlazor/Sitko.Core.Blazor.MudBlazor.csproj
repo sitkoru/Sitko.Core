@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <RootNamespace>Sitko.Core.Blazor.MudBlazorComponents</RootNamespace>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sitko.Core.App.Blazor\Sitko.Core.App.Blazor.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Blazor.FileUpload\Sitko.Core.Blazor.FileUpload.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Blazor.FluentValidation\Sitko.Core.Blazor.FluentValidation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MudBlazor" Version="6.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\*.json" />
+  </ItemGroup>
+</Project>

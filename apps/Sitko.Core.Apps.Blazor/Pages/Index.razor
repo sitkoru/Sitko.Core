@@ -108,7 +108,7 @@
                           OnChange="@(_ => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
     </AntStorageImageInput>
 </AntDesign.FormItem>
-<AntDesign.FormItem Label="Single large image">
+<AntDesign.FormItem Label="Single large image" Class="mb-4">
     <AntStorageImageInput Storage="@Storage"
                           Size="large"
                           MaxFileSize="@(2 * 1024 * 1024)"
@@ -118,7 +118,7 @@
                           OnChange="@(_ => { Logger.LogInformation("File uploaded"); return Task.CompletedTask;})">
     </AntStorageImageInput>
 </AntDesign.FormItem>
-<FormItem Label="Multiple images">
+<FormItem Label="Multiple images" Class="mb-4">
     <AntStorageImagesInput
         TValue="ValueCollection<StorageItem>"
         Storage="@Storage"

@@ -1,0 +1,70 @@
+﻿@namespace Sitko.Core.Blazor.MudBlazorComponents
+@inherits BaseMudLayout
+<MudThemeProvider Theme="Theme"/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
+<PageTitle>@PageTitle</PageTitle>
+<MudLayout>
+    <MudAppBar Fixed="true" Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@DrawerToggle"/>
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudIcon Icon="@Logo" Size="Size.Large"/>
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudIconButton Icon="@Icons.Material.Outlined.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(_ => DrawerToggle())"/>
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.Xs">
+            <MudText Typo="Typo.h6" Class="ml-4">@Application.Name</MudText>
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
+            <MudText Typo="Typo.subtitle2">@Application.Name</MudText>
+        </MudHidden>
+        <MudSpacer/>
+    </MudAppBar>
+    @if (Menu is not null)
+    {
+        <MudDrawer @bind-Open="DrawerOpen" ClipMode="DrawerClipMode.Always" Variant="@DrawerVariant.Mini" Elevation="1" PreserveOpenState="true">
+            @Menu
+        </MudDrawer>
+    }
+    <MudMainContent>
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            @if (Extra is not  null || Breadcrumbs.Count > 0)
+            {
+                <MudToolBar DisableGutters="true" Class="px-4">
+                    <MudBreadcrumbs Items="Breadcrumbs"></MudBreadcrumbs>
+                    @if (Extra is not null)
+                    {
+                        <MudSpacer/>
+                        @Extra
+                    }
+                </MudToolBar>
+            }
+        </MudHidden>
+        <MudContainer MaxWidth="MaxWidth.False" Class="mb-10">
+            @if (!string.IsNullOrEmpty(Title))
+            {
+                <MudText Typo="Typo.h3" Class="mb-2">@Title</MudText>
+            }
+            @if (!string.IsNullOrEmpty(Description))
+            {
+                <MudText Typo="Typo.subtitle1">@Description</MudText>
+            }
+        </MudContainer>
+        <MudContainer MaxWidth="MaxWidth.False" Class="pb-10">
+            @ChildContent
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+
+@code {
+
+    [Parameter]
+    public string Logo { get; set; } = "";
+
+    [EditorRequired]
+    [Parameter]
+    public RenderFragment? Menu { get; set; }
+
+}

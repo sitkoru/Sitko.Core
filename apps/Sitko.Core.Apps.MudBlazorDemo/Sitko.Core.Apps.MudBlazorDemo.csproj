@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <UserSecretsId>123</UserSecretsId>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Sitko.Core.Apps.MudBlazorDemo</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Sitko.Core.Blazor.MudBlazor\Sitko.Core.Blazor.MudBlazor.csproj" />
+    <ProjectReference Include="..\..\src\Sitko.Core.Db.InMemory\Sitko.Core.Db.InMemory.csproj" />
+    <ProjectReference Include="..\..\src\Sitko.Core.Repository.EntityFrameworkCore\Sitko.Core.Repository.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\src\Sitko.Core.Storage.FileSystem\Sitko.Core.Storage.FileSystem.csproj" />
+    <ProjectReference Include="..\..\src\Sitko.Core.Storage.Metadata.Postgres\Sitko.Core.Storage.Metadata.Postgres.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\*.json" />
+  </ItemGroup>
+</Project>

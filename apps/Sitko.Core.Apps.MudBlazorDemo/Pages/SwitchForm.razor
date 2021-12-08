@@ -1,0 +1,67 @@
+﻿@page "/Switch/Add"
+@page "/Switch/{Id:guid}/Edit"
+@inherits BaseComponent
+@if (editMode)
+{
+    <BarForm EntityId="Id" Debug="true" OnAfterSave="@(_ => {editMode = false; return NotifyStateChangeAsync();})">
+        <MudTextField Label="Bar" @bind-Value="@context.Entity.Bar" For="() => context.Entity.Bar"></MudTextField>
+        <MudText>Simple Foo</MudText>
+        @if (context.Entity.Foo is not null)
+        {
+            <MudTextField Label="Foo" @bind-Value="@context.Entity.Foo.Foo" For="() => context.Entity.Foo.Foo"></MudTextField>
+        }
+        <MudButton Color="Color.Warning" Variant="Variant.Filled" OnClick="() => context.DeleteFoo()">Delete foo</MudButton>
+        <MudText>Multiple foo</MudText>
+        @foreach (var foo in context.Entity.Foos)
+        {
+            <MudTextField Label="Foo" @bind-Value="@foo.Foo" For="() => foo.Foo"></MudTextField>
+            <MudButton Color="Color.Warning" Variant="Variant.Filled" OnClick="() => { context.Entity.Foos.Remove(foo); context.NotifyChange();}">Remove foo</MudButton>
+        }
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => context.AddFoo()">Add foo</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => context.SetFoo()">Set foo</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!context.CanSave())" OnClick="@context.SaveEntityAsync">Save</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="@(!context.HasChanges)" OnClick="@context.ResetAsync">Reset</MudButton>
+    </BarForm>
+@*     <BarForm Layout="@FormLayout.Vertical" EntityId="Id" Debug="true" OnAfterSave="@(_ => {editMode = false; return NotifyStateChangeAsync();})"> *@
+@*         <AntFormItem Label="Bar" Hint="Bar help"> *@
+@*             <AntDesign.Input @bind-Value="@context.Entity.Bar"/> *@
+@*         </AntFormItem> *@
+@*         <p>Simple Foo</p> *@
+@*         @if (context.Entity.Foo is not null) *@
+@*         { *@
+@*             <AntDesign.FormItem Label="Foo"> *@
+@*                 <p>Foo id: @context.Entity.Foo.Id</p> *@
+@*                 <AntDesign.Input @bind-Value="@context.Entity.Foo.Foo"/> *@
+@*             </AntDesign.FormItem> *@
+@*         } *@
+@*         <Button OnClick="() => context.DeleteFoo()">Delete foo</Button> *@
+@*         <p>Multiple foo</p> *@
+@*         @foreach (var foo in context.Entity.Foos) *@
+@*         { *@
+@*             <AntDesign.FormItem Label="Foo"> *@
+@*                 <p>Foo id: @foo.Id</p> *@
+@*                 <AntDesign.Input @bind-Value="@foo.Foo"/> *@
+@*             </AntDesign.FormItem> *@
+@*             <Button OnClick="() => { context.Entity.Foos.Remove(foo); context.NotifyChange();}">Remove foo</Button> *@
+@*         } *@
+@*         <div> *@
+@*             <Button OnClick="() => context.AddFoo()">Add foo</Button> *@
+@*             <Button OnClick="() => context.SetFoo()">Set foo</Button> *@
+@*             <Button Disabled="@(!context.CanSave())" OnClick="@context.Save">Save</Button> *@
+@*             <Button Disabled="@(!context.HasChanges)" OnClick="@context.ResetAsync">Reset</Button> *@
+@*         </div> *@
+@*     </BarForm> *@
+}
+else
+{
+    <MudText>Edit Bar @Id</MudText>
+    <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="@(() => editMode = true)">Edit me</MudButton>
+}
+
+@code {
+
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private bool editMode;
+}
