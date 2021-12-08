@@ -1,3 +1,21 @@
+# [8.26.0](https://github.com/sitkoru/Sitko.Core/compare/8.25.0...8.26.0) (2021-12-08)
+
+
+### Bug Fixes
+
+* **mudblazor:** improve image preview dialog in file upload component ([319c501](https://github.com/sitkoru/Sitko.Core/commit/319c5014b1972ca6dcaf977170a23140b2147e34))
+
+
+### Features
+
+* **blazor:** add description to layout ([352551b](https://github.com/sitkoru/Sitko.Core/commit/352551b8925bcc8f0459290a9aa9f2217756a59b))
+* **mudblazor:** change surface background in dark theme to support nesting ([8d52d7a](https://github.com/sitkoru/Sitko.Core/commit/8d52d7aaa604bd300634122bd885fd12bd14dc1e))
+* **mudblazor:** improve file upload markup ([a5b7515](https://github.com/sitkoru/Sitko.Core/commit/a5b7515238d5353273ac12a13334a6805892de13))
+* **mudblazor:** restructure layout to support descriptions and mini-drawer ([88912ad](https://github.com/sitkoru/Sitko.Core/commit/88912adf92cbdc4fdc2dd4cf3f5c89e818f2cf4e))
+* **mudblazor:** start adding MudBlazor library ([a687b7d](https://github.com/sitkoru/Sitko.Core/commit/a687b7dce5ac00218c3391721523089f02102170))
+* **mudblazor:** switch to MudBlazor 6.0.2, target only .NET 6 ([5c6e25e](https://github.com/sitkoru/Sitko.Core/commit/5c6e25e9f5b5ed29a157e0a74f0c89ad3407c3bf))
+* **mudblazor:** upd demo ([3ba9338](https://github.com/sitkoru/Sitko.Core/commit/3ba9338344d573ba0567c4c3ea8417db92dce85c))
+
 # [8.25.0](https://github.com/sitkoru/Sitko.Core/compare/8.24.1...8.25.0) (2021-12-06)
 
 
