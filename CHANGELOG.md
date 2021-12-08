@@ -1,3 +1,30 @@
+# [8.25.0](https://github.com/sitkoru/Sitko.Core/compare/8.24.1...8.25.0) (2021-12-06)
+
+
+### Features
+
+* **validation:** move FluentGraphValidator to separate library Sitko.FluentValidation ([96eb71f](https://github.com/sitkoru/Sitko.Core/commit/96eb71f18c9616b9e0ad3d7cde22809b411346e8))
+
+## [8.24.1](https://github.com/sitkoru/Sitko.Core/compare/8.24.0...8.24.1) (2021-11-29)
+
+
+### Bug Fixes
+
+* **blazor:** suppress dispose exceptions in components when it's caused by parent component dispose ([b69fa94](https://github.com/sitkoru/Sitko.Core/commit/b69fa94b991b3b008901e72626c7e23b1b6b76ae))
+
+# [8.24.0](https://github.com/sitkoru/Sitko.Core/compare/8.23.1...8.24.0) (2021-11-26)
+
+
+### Bug Fixes
+
+* **validation:** don't validate system types at all ([3427bf3](https://github.com/sitkoru/Sitko.Core/commit/3427bf3947f921cdc6f508a40c425f1ddae06a3d))
+* **validation:** implicitly exclude system types from validation ([a3614dd](https://github.com/sitkoru/Sitko.Core/commit/a3614dd89732b7f5c85970768d0d6c99f955e075))
+
+
+### Features
+
+* **validation:** add validator types cache ([19d262d](https://github.com/sitkoru/Sitko.Core/commit/19d262dfbff96a505f9a08ce2412d3073e13c6fc))
+
 ## [8.23.1](https://github.com/sitkoru/Sitko.Core/compare/8.23.0...8.23.1) (2021-11-17)
 
 
