@@ -58,7 +58,7 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
 
     [Parameter] public object Tag { get; set; } = new { };
     [Parameter] public int RowsPerPage { get; set; } = 50;
-    [Parameter] public int CurrentPage { get; set; } = 1;
+    // [Parameter] public int CurrentPage { get; set; } = 1; TODO: until https://github.com/MudBlazor/MudBlazor/issues/1403
     [Parameter] public bool CustomFooter { get; set; }
     [Parameter] public bool CustomHeader { get; set; }
     [Parameter] public string FooterClass { get; set; } = "";
