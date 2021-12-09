@@ -1,3 +1,10 @@
+## [8.26.1](https://github.com/sitkoru/Sitko.Core/compare/8.26.0...8.26.1) (2021-12-09)
+
+
+### Bug Fixes
+
+* **mudblazor:** remove CurrentPage parameter from table until https://github.com/MudBlazor/MudBlazor/issues/1403 is fixed ([1773278](https://github.com/sitkoru/Sitko.Core/commit/1773278e10653c7cb111a270ba54196ac5af4744))
+
 # [8.26.0](https://github.com/sitkoru/Sitko.Core/compare/8.25.0...8.26.0) (2021-12-08)
 
 
