@@ -3,25 +3,27 @@ using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 
 [assembly: InternalsVisibleTo("Sitko.Core.Repository.Tests")]
-namespace Sitko.Core.Repository.EntityFrameworkCore
+
+namespace Sitko.Core.Repository.EntityFrameworkCore;
+
+public class EFRepositoriesModule<TAssembly> : RepositoriesModule<TAssembly, EFRepositoriesModuleOptions>
 {
-    public class EFRepositoriesModule<TAssembly> : RepositoriesModule<TAssembly, EFRepositoriesModuleOptions>
+    public override string OptionsKey => $"Repositories:EF:{typeof(TAssembly).Name}";
+
+    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+        EFRepositoriesModuleOptions startupOptions)
     {
-        public override string OptionsKey => $"Repositories:EF:{typeof(TAssembly).Name}";
+        base.ConfigureServices(context, services, startupOptions);
+        services.AddScoped(typeof(EFRepositoryContext<,,>));
+        services.AddScoped(typeof(EFRepositoryDbContextProvider<>));
+        services.AddScoped<EFRepositoryLock>();
 
-        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            EFRepositoriesModuleOptions startupOptions)
-        {
-            base.ConfigureServices(context, services, startupOptions);
-            services.AddScoped(typeof(EFRepositoryContext<,,>));
-            services.AddScoped<EFRepositoryLock>();
-
-            services.Scan(s =>
-                s.FromAssemblyOf<TAssembly>().AddClasses(classes => classes.AssignableTo(typeof(EFRepository<,,>)))
-                    .AsSelfWithInterfaces().WithScopedLifetime());
-        }
+        services.Scan(s =>
+            s.FromAssemblyOf<TAssembly>().AddClasses(classes => classes.AssignableTo(typeof(EFRepository<,,>)))
+                .AsSelfWithInterfaces().WithScopedLifetime());
     }
+}
 
-    public class EFRepositoriesModuleOptions : BaseModuleOptions
-    {}
+public class EFRepositoriesModuleOptions : BaseModuleOptions
+{
 }

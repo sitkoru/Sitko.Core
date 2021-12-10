@@ -11,7 +11,7 @@ public class EFRepositoryContext<TEntity, TEntityPk, TDbContext> : IRepositoryCo
 {
     private readonly ILoggerFactory loggerFactory;
 
-    public EFRepositoryContext(IDbContextFactory<TDbContext> dbContextFactory,
+    public EFRepositoryContext(EFRepositoryDbContextProvider<TDbContext> dbContextProvider,
         RepositoryFiltersManager filtersManager,
         ILoggerFactory loggerFactory,
         EFRepositoryLock repositoryLock,
@@ -19,7 +19,7 @@ public class EFRepositoryContext<TEntity, TEntityPk, TDbContext> : IRepositoryCo
         IEnumerable<IAccessChecker<TEntity, TEntityPk>>? accessCheckers = null)
     {
         this.loggerFactory = loggerFactory;
-        DbContext = dbContextFactory.CreateDbContext();
+        DbContext = dbContextProvider.DbContext;
         FiltersManager = filtersManager;
         RepositoryLock = repositoryLock;
         FluentGraphValidator = fluentGraphValidator;
