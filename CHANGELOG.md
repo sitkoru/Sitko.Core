@@ -1,3 +1,10 @@
+## [8.26.2](https://github.com/sitkoru/Sitko.Core/compare/8.26.1...8.26.2) (2021-12-10)
+
+
+### Bug Fixes
+
+* **repository:** inject common dbcontext to all scope repositories ([98a15bd](https://github.com/sitkoru/Sitko.Core/commit/98a15bd623e3cfaab4c8de919886e69ee4fea00e))
+
 ## [8.26.1](https://github.com/sitkoru/Sitko.Core/compare/8.26.0...8.26.1) (2021-12-09)
 
 
