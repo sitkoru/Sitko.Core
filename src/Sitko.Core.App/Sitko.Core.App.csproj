@@ -4,7 +4,7 @@
     <TargetFrameworks>netstandard2.1;net6.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="10.3.5"/>
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="10.3.6"/>
     <PackageReference Include="IL.FluentValidation.Extensions.Options" Version="10.0.1"/>
     <PackageReference Include="JetBrains.Annotations" Version="2021.3.0"/>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1"/>
