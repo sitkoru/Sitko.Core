@@ -104,75 +104,141 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
     public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddAsync(TEntity item,
         CancellationToken cancellationToken = default)
     {
-        (bool isValid, IList<ValidationFailure> errors) validationResult = (false, new List<ValidationFailure>());
-        if (await BeforeValidateAsync(item, validationResult, true, cancellationToken))
+        var result = await AddAsync(new[] { item }, cancellationToken);
+        return result.First();
+    }
+
+    public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> AddAsync(IEnumerable<TEntity> items,
+        CancellationToken cancellationToken = default)
+    {
+        var results = new List<AddOrUpdateOperationResult<TEntity, TEntityPk>>();
+        await BeginBatchAsync(cancellationToken);
+        var hasErrors = false;
+        foreach (var item in items)
         {
-            validationResult = await ValidateAsync(item, true, cancellationToken);
-            if (validationResult.isValid)
+            (bool isValid, IList<ValidationFailure> errors) validationResult = (false, new List<ValidationFailure>());
+            if (await BeforeValidateAsync(item, validationResult, true, cancellationToken))
             {
-                if (await BeforeSaveAsync(item, validationResult, true, cancellationToken))
+                validationResult = await ValidateAsync(item, true, cancellationToken);
+                if (validationResult.isValid)
                 {
-                    await DoAddAsync(item, cancellationToken);
+                    if (await BeforeSaveAsync(item, validationResult, true, cancellationToken))
+                    {
+                        await DoAddAsync(item, cancellationToken);
+                    }
                 }
             }
+
+            hasErrors = !validationResult.isValid;
+            if (!hasErrors)
+            {
+                await SaveAsync(new RepositoryRecord<TEntity, TEntityPk>(item), cancellationToken);
+            }
+
+            results.Add(new AddOrUpdateOperationResult<TEntity, TEntityPk>(item, validationResult.errors,
+                Array.Empty<PropertyChange>()));
         }
 
-        if (validationResult.isValid)
+        if (!hasErrors)
         {
-            await SaveAsync(new RepositoryRecord<TEntity, TEntityPk>(item), cancellationToken);
+            await CommitBatchAsync(cancellationToken);
+        }
+        else
+        {
+            await RollbackBatchAsync(cancellationToken);
         }
 
-        return new AddOrUpdateOperationResult<TEntity, TEntityPk>(item, validationResult.errors,
-            new PropertyChange[0]);
+        return results.ToArray();
     }
 
     public virtual Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity entity,
         CancellationToken cancellationToken = default) => UpdateAsync(entity, null, cancellationToken);
 
+    public Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> UpdateAsync(IEnumerable<TEntity> entities,
+        CancellationToken cancellationToken = default) =>
+        UpdateAsync(entities.Select(e => (e, (TEntity?)null)), cancellationToken);
+
     public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity entity,
         TEntity? oldEntity,
         CancellationToken cancellationToken = default)
     {
-        var changes = Array.Empty<PropertyChange>();
-        (bool isValid, IList<ValidationFailure> errors) validationResult = (false, new List<ValidationFailure>());
-        if (await BeforeValidateAsync(entity, validationResult, false, cancellationToken))
+        var result = await UpdateAsync(new[] { (entity, oldEntity) }, cancellationToken);
+        return result.First();
+    }
+
+    public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> UpdateAsync(
+        IEnumerable<(TEntity entity, TEntity? oldEntity)> entities,
+        CancellationToken cancellationToken = default)
+    {
+        var results = new List<AddOrUpdateOperationResult<TEntity, TEntityPk>>();
+        await BeginBatchAsync(cancellationToken);
+        var hasErrors = false;
+        foreach (var entityTuple in entities)
         {
-            validationResult = await ValidateAsync(entity, false, cancellationToken);
-            if (validationResult.isValid)
+            var changes = Array.Empty<PropertyChange>();
+            (bool isValid, IList<ValidationFailure> errors) validationResult = (false, new List<ValidationFailure>());
+            if (await BeforeValidateAsync(entityTuple.entity, validationResult, false, cancellationToken))
             {
-                if (await BeforeSaveAsync(entity, validationResult, false, cancellationToken))
+                validationResult = await ValidateAsync(entityTuple.entity, false, cancellationToken);
+                if (validationResult.isValid)
                 {
-                    changes = await DoUpdateAsync(entity, oldEntity, cancellationToken);
-                    await SaveAsync(new RepositoryRecord<TEntity, TEntityPk>(entity, false, changes),
-                        cancellationToken);
+                    if (await BeforeSaveAsync(entityTuple.entity, validationResult, false, cancellationToken))
+                    {
+                        changes = await DoUpdateAsync(entityTuple.entity, entityTuple.oldEntity, cancellationToken);
+                        if (!hasErrors)
+                        {
+                            await SaveAsync(
+                                new RepositoryRecord<TEntity, TEntityPk>(entityTuple.entity, false, changes),
+                                cancellationToken);
+                        }
+                    }
                 }
             }
+
+            var result =
+                new AddOrUpdateOperationResult<TEntity, TEntityPk>(entityTuple.entity, validationResult.errors,
+                    changes);
+            results.Add(result);
+            hasErrors = !result.IsSuccess;
         }
 
-        return new AddOrUpdateOperationResult<TEntity, TEntityPk>(entity, validationResult.errors, changes);
-    }
-
-    public virtual async Task<bool> DeleteAsync(TEntityPk id, CancellationToken cancellationToken = default)
-    {
-        var item = await GetByIdAsync(id, cancellationToken);
-        if (item == null)
+        if (!hasErrors)
         {
-            return false;
+            await CommitBatchAsync(cancellationToken);
+        }
+        else
+        {
+            await RollbackBatchAsync(cancellationToken);
         }
 
-        return await DeleteAsync(item, cancellationToken);
+        return results.ToArray();
     }
 
-    public virtual async Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public virtual Task<bool> DeleteAsync(TEntityPk id, CancellationToken cancellationToken = default) =>
+        DeleteAsync(new[] { id }, cancellationToken);
+
+    public virtual async Task<bool> DeleteAsync(IEnumerable<TEntityPk> ids,
+        CancellationToken cancellationToken = default)
     {
-        await BeforeDeleteAsync(entity, cancellationToken);
-        await DoDeleteAsync(entity, cancellationToken);
-        if (batch == null)
+        var items = await GetByIdsAsync(ids.ToArray(), cancellationToken);
+        return await DeleteAsync(items, cancellationToken);
+    }
+
+    public virtual Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+        DeleteAsync(new[] { entity }, cancellationToken);
+
+    public virtual async Task<bool> DeleteAsync(IEnumerable<TEntity> entities,
+        CancellationToken cancellationToken = default)
+    {
+        await BeginBatchAsync(cancellationToken);
+        foreach (var entity in entities)
         {
+            await BeforeDeleteAsync(entity, cancellationToken);
+            await DoDeleteAsync(entity, cancellationToken);
             await DoSaveAsync(cancellationToken);
         }
 
-        return true;
+        return await CommitBatchAsync(cancellationToken);
     }
 
     public virtual async Task<TEntity?> GetAsync(CancellationToken cancellationToken = default)
@@ -219,7 +285,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
     {
         var query = await CreateRepositoryQueryAsync(cancellationToken);
 
-        (var items, var needCount) = await DoGetAllAsync(query, cancellationToken);
+        var (items, needCount) = await DoGetAllAsync(query, cancellationToken);
 
         var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
             ? await CountAsync(cancellationToken)
@@ -235,7 +301,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         var query = await CreateRepositoryQueryAsync(cancellationToken);
         query.Configure(configureQuery);
 
-        (var items, var needCount) = await DoGetAllAsync(query, cancellationToken);
+        var (items, needCount) = await DoGetAllAsync(query, cancellationToken);
 
         var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
             ? await CountAsync(configureQuery, cancellationToken)
@@ -551,7 +617,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         var query = await CreateRepositoryQueryAsync(cancellationToken);
         query.Where(i => ids.Contains(i.Id));
 
-        (var items, _) = await DoGetAllAsync(query, cancellationToken);
+        var (items, _) = await DoGetAllAsync(query, cancellationToken);
 
         await AfterLoadEntitiesAsync(items, cancellationToken);
 
@@ -565,7 +631,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         query.Where(i => ids.Contains(i.Id));
         await query.ConfigureAsync(configureQuery, cancellationToken);
 
-        (var items, _) = await DoGetAllAsync(query, cancellationToken);
+        var (items, _) = await DoGetAllAsync(query, cancellationToken);
 
         await AfterLoadEntitiesAsync(items, cancellationToken);
 
@@ -578,7 +644,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         var query = await CreateRepositoryQueryAsync(cancellationToken);
         query.Where(i => ids.Contains(i.Id)).Configure(configureQuery);
 
-        (var items, _) = await DoGetAllAsync(query, cancellationToken);
+        var (items, _) = await DoGetAllAsync(query, cancellationToken);
 
         await AfterLoadEntitiesAsync(items, cancellationToken);
 
