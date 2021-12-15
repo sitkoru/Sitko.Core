@@ -21,6 +21,6 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0"/>
     <PackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="6.0.0"/>
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0"/>
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="6.0.0"/>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="6.0.1"/>
   </ItemGroup>
 </Project>
