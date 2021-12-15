@@ -1,3 +1,10 @@
+# [8.28.0](https://github.com/sitkoru/Sitko.Core/compare/8.27.0...8.28.0) (2021-12-15)
+
+
+### Features
+
+* **repository:** add methods to bulk add/update/delete entities ([9bb789e](https://github.com/sitkoru/Sitko.Core/commit/9bb789e8e89d5f2db19dedf7660349ad2058e356))
+
 # [8.27.0](https://github.com/sitkoru/Sitko.Core/compare/8.26.2...8.27.0) (2021-12-15)
 
 
