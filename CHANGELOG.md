@@ -1,3 +1,11 @@
+# [8.29.0](https://github.com/sitkoru/Sitko.Core/compare/8.28.0...8.29.0) (2021-12-17)
+
+
+### Features
+
+* **puppeteer:** move Puppeteer to separate module ([c9c8fbf](https://github.com/sitkoru/Sitko.Core/commit/c9c8fbf93786380fa3bed7592b06bd64a2e41bf8))
+* **xunit:** rework tests to use IConfiguration ([9983061](https://github.com/sitkoru/Sitko.Core/commit/9983061675c97bead42f640eca2e0a4b330715b2))
+
 # [8.28.0](https://github.com/sitkoru/Sitko.Core/compare/8.27.0...8.28.0) (2021-12-15)
 
 
