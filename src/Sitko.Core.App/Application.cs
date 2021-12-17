@@ -35,7 +35,7 @@ public abstract class Application : IApplication, IAsyncDisposable
     private readonly List<Action<ApplicationContext, LoggerConfiguration>>
         loggerConfigurationActions = new();
 
-    private readonly Dictionary<Type, ApplicationModuleRegistration> moduleRegistrations =
+    private readonly List<ApplicationModuleRegistration> moduleRegistrations =
         new();
 
     private readonly List<Action<ApplicationContext, HostBuilderContext, IServiceCollection>>
@@ -146,7 +146,7 @@ public abstract class Application : IApplication, IAsyncDisposable
 
     protected IReadOnlyList<ApplicationModuleRegistration>
         GetEnabledModuleRegistrations(ApplicationContext context) => moduleRegistrations
-        .Where(r => r.Value.IsEnabled(context)).Select(r => r.Value).ToList();
+        .Where(r => r.IsEnabled(context)).ToList();
 
     private void LogVerbose(string message)
     {
@@ -348,7 +348,7 @@ public abstract class Application : IApplication, IAsyncDisposable
                 GetApplicationOptions(applicationContext.Environment, applicationContext.Configuration)
             }
         };
-        foreach (var moduleRegistration in moduleRegistrations.Values)
+        foreach (var moduleRegistration in moduleRegistrations)
         {
             var (configKey, options) = moduleRegistration.GetOptions(applicationContext);
             if (!string.IsNullOrEmpty(configKey))
@@ -482,13 +482,14 @@ public abstract class Application : IApplication, IAsyncDisposable
             throw new InvalidOperationException("App host is already built. Can't add modules after it");
         }
 
-        if (moduleRegistrations.ContainsKey(typeof(TModule)))
+        var instance = new TModule();
+        if (!instance.AllowMultiple && HasModule<TModule>())
         {
             throw new InvalidOperationException($"Module {typeof(TModule)} already registered");
         }
 
-        moduleRegistrations.Add(typeof(TModule),
-            new ApplicationModuleRegistration<TModule, TModuleOptions>(configureOptions, optionsKey));
+        moduleRegistrations.Add(
+            new ApplicationModuleRegistration<TModule, TModuleOptions>(instance, configureOptions, optionsKey));
     }
 
     protected virtual void InitApplication()
@@ -612,7 +613,7 @@ public abstract class Application : IApplication, IAsyncDisposable
         Task.CompletedTask;
 
     public bool HasModule<TModule>() where TModule : IApplicationModule =>
-        moduleRegistrations.ContainsKey(typeof(TModule));
+        moduleRegistrations.Any(r => r.Type == typeof(TModule));
 
 
     public void Set(string key, object value) => store[key] = value;
