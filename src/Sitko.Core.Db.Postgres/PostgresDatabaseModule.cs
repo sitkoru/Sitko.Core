@@ -9,111 +9,112 @@ using Microsoft.Extensions.Logging;
 using Npgsql;
 using Sitko.Core.App;
 
-namespace Sitko.Core.Db.Postgres
+namespace Sitko.Core.Db.Postgres;
+
+public class
+    PostgresDatabaseModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleOptions<TDbContext>>
+    where TDbContext : DbContext
 {
-    public class
-        PostgresDatabaseModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleOptions<TDbContext>>
-        where TDbContext : DbContext
+    public override string OptionsKey => $"Db:Postgres:{typeof(TDbContext).Name}";
+
+    public override async Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider)
     {
-        public override string OptionsKey => $"Db:Postgres:{typeof(TDbContext).Name}";
-
-        public override async Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider)
+        await base.InitAsync(context, serviceProvider);
+        var options = GetOptions(serviceProvider);
+        if (options.AutoApplyMigrations)
         {
-            await base.InitAsync(context, serviceProvider);
-            if (GetOptions(serviceProvider).AutoApplyMigrations)
+            var logger = serviceProvider.GetRequiredService<ILogger<PostgresDatabaseModule<TDbContext>>>();
+            var migrated = false;
+            for (var i = 1; i <= options.MaxMigrationsApplyTryCount; i++)
             {
-                var logger = serviceProvider.GetRequiredService<ILogger<PostgresDatabaseModule<TDbContext>>>();
-                var migrated = false;
-                for (var i = 1; i <= 10; i++)
+                logger.LogInformation("Migrate database {Database}. Try #{Try}", options.Database, i);
+                try
                 {
-                    logger.LogInformation("Migrate database");
-                    try
+                    var dbContext = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<TDbContext>();
+                    if ((await dbContext.Database.GetPendingMigrationsAsync()).Any())
                     {
-                        var dbContext = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<TDbContext>();
-                        if ((await dbContext.Database.GetPendingMigrationsAsync()).Any())
-                        {
-                            await dbContext.Database.MigrateAsync();
-                        }
-
-                        migrated = true;
-                        break;
+                        await dbContext.Database.MigrateAsync();
                     }
-                    catch (NpgsqlException ex)
-                    {
-                        logger.LogError(ex, "Error migrating database: {ErrorText}. Try #{TryNumber}", ex.ToString(),
-                            i);
-                        await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, i)));
-                    }
-                }
 
-                if (migrated)
-                {
-                    logger.LogInformation("Database migrated");
+                    migrated = true;
+                    break;
                 }
-                else
+                catch (NpgsqlException ex)
                 {
-                    throw new InvalidOperationException("Can't migrate database after 10 tries. See previous errors");
+                    logger.LogError(ex, "Error migrating database {Database}: {ErrorText}. Try #{TryNumber}",
+                        options.Database, ex.ToString(),
+                        i);
+                    await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, i)));
                 }
             }
-        }
 
-        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            PostgresDatabaseModuleOptions<TDbContext> startupOptions)
-        {
-            base.ConfigureServices(context, services, startupOptions);
-            services.AddMemoryCache();
-            if (startupOptions.EnableContextPooling)
+            if (migrated)
             {
-                services.AddDbContextPool<TDbContext>((serviceProvider, options) =>
-                    ConfigureNpgsql(options, serviceProvider, context.Configuration, context.Environment));
-                services.AddPooledDbContextFactory<TDbContext>((serviceProvider, options) =>
-                    ConfigureNpgsql(options, serviceProvider, context.Configuration, context.Environment));
+                logger.LogInformation("Database {Database} migrated", options.Database);
             }
             else
             {
-                services.AddDbContext<TDbContext>((serviceProvider, options) =>
-                    ConfigureNpgsql(options, serviceProvider, context.Configuration, context.Environment));
-                services.AddDbContextFactory<TDbContext>((serviceProvider, options) =>
-                    ConfigureNpgsql(options, serviceProvider, context.Configuration, context.Environment));
+                throw new InvalidOperationException("Can't migrate database after 10 tries. See previous errors");
             }
         }
+    }
 
-        private static NpgsqlConnectionStringBuilder CreateBuilder(
-            PostgresDatabaseModuleOptions<TDbContext> options)
+    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+        PostgresDatabaseModuleOptions<TDbContext> startupOptions)
+    {
+        base.ConfigureServices(context, services, startupOptions);
+        services.AddMemoryCache();
+        if (startupOptions.EnableContextPooling)
         {
-            var connBuilder = new NpgsqlConnectionStringBuilder
-            {
-                Host = options.Host,
-                Port = options.Port,
-                Username = options.Username,
-                Password = options.Password,
-                Database = options.Database,
-                Pooling = options.EnableNpgsqlPooling,
+            services.AddDbContextPool<TDbContext>((serviceProvider, options) =>
+                ConfigureNpgsql(options, serviceProvider, context.Configuration, context.Environment));
+            services.AddPooledDbContextFactory<TDbContext>((serviceProvider, options) =>
+                ConfigureNpgsql(options, serviceProvider, context.Configuration, context.Environment));
+        }
+        else
+        {
+            services.AddDbContext<TDbContext>((serviceProvider, options) =>
+                ConfigureNpgsql(options, serviceProvider, context.Configuration, context.Environment));
+            services.AddDbContextFactory<TDbContext>((serviceProvider, options) =>
+                ConfigureNpgsql(options, serviceProvider, context.Configuration, context.Environment));
+        }
+    }
+
+    private static NpgsqlConnectionStringBuilder CreateBuilder(
+        PostgresDatabaseModuleOptions<TDbContext> options)
+    {
+        var connBuilder = new NpgsqlConnectionStringBuilder
+        {
+            Host = options.Host,
+            Port = options.Port,
+            Username = options.Username,
+            Password = options.Password,
+            Database = options.Database,
+            Pooling = options.EnableNpgsqlPooling,
 #if NET6_0_OR_GREATER
-                IncludeErrorDetail = options.IncludeErrorDetails
+            IncludeErrorDetail = options.IncludeErrorDetails
 #else
                 IncludeErrorDetails = options.IncludeErrorDetails
 #endif
-            };
-            return connBuilder;
-        }
+        };
+        return connBuilder;
+    }
 
-        private void ConfigureNpgsql(DbContextOptionsBuilder options,
-            IServiceProvider serviceProvider, IConfiguration configuration, IHostEnvironment environment)
+    private void ConfigureNpgsql(DbContextOptionsBuilder options,
+        IServiceProvider serviceProvider, IConfiguration configuration, IHostEnvironment environment)
+    {
+        var config = GetOptions(serviceProvider);
+        options.UseNpgsql(CreateBuilder(config).ConnectionString,
+            builder => builder.MigrationsAssembly(config.MigrationsAssembly != null
+                ? config.MigrationsAssembly.FullName
+                : typeof(TDbContext).Assembly.FullName));
+        if (config.EnableSensitiveLogging)
         {
-            var config = GetOptions(serviceProvider);
-            options.UseNpgsql(CreateBuilder(config).ConnectionString,
-                builder => builder.MigrationsAssembly(config.MigrationsAssembly != null
-                    ? config.MigrationsAssembly.FullName
-                    : typeof(TDbContext).Assembly.FullName));
-            if (config.EnableSensitiveLogging)
-            {
-                options.EnableSensitiveDataLogging();
-            }
-
-            config.ConfigureDbContextOptions?.Invoke((DbContextOptionsBuilder<TDbContext>)options, serviceProvider,
-                configuration,
-                environment);
+            options.EnableSensitiveDataLogging();
         }
+
+        config.ConfigureDbContextOptions?.Invoke((DbContextOptionsBuilder<TDbContext>)options, serviceProvider,
+            configuration,
+            environment);
     }
 }
