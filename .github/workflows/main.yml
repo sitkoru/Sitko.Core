@@ -193,7 +193,7 @@ jobs:
     container: ghcr.io/sitkoru/actions-container
     env:
       DB__POSTGRES__TESTDBCONTEXT__HOST: postgres
-      XUNIT_USE_POSTGRES: "true"
+      TESTS__USEPOSTGRES: "true"
     services:
       postgres:
         image: postgres:alpine
