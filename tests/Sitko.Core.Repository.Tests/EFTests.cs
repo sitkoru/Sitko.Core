@@ -224,4 +224,19 @@ public class EFTests : BaseTest<EFTestScope>
         var res = await fooRepository.AddAsync(foo);
         res.IsSuccess.Should().BeTrue();
     }
+
+    [Fact]
+    public async Task MultipleDbContexts()
+    {
+        var scope = await GetScopeAsync();
+        var barRepository = scope.GetService<IRepository<BarModel, Guid>>();
+        var fooBarRepository = scope.GetService<IRepository<FooBarModel, Guid>>();
+
+        var bars = (await barRepository.GetAllAsync()).items;
+        bars.Should().NotBeEmpty();
+
+        var fooBar = new FooBarModel { Id = Guid.NewGuid(), BarId = bars.First().Id };
+        var res = await fooBarRepository.AddAsync(fooBar);
+        res.IsSuccess.Should().BeTrue();
+    }
 }

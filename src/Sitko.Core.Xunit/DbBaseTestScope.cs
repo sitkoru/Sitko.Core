@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -12,14 +13,19 @@ using Sitko.Core.Db.Postgres;
 namespace Sitko.Core.Xunit;
 
 [PublicAPI]
-public abstract class DbBaseTestScope<TApplication, TDbContext, TConfig> : BaseTestScope<TApplication, TConfig>
-    where TDbContext : DbContext where TApplication : Application where TConfig : BaseDbTestConfig, new()
+public abstract class DbBaseTestScope<TApplication, TConfig> : BaseTestScope<TApplication, TConfig>
+    where TApplication : Application where TConfig : BaseDbTestConfig, new()
 {
-    private TDbContext? scopeDbContext;
+    private readonly List<DbContext> dbContexts = new();
 
-    protected override TApplication ConfigureApplication(TApplication application, string name)
+    private readonly List<Func<Task>> dbInitActions = new();
+
+    protected void AddDbContext<TDbContext>(TApplication application, string name, Action<DbContextOptionsBuilder,
+        IConfiguration, IHostEnvironment>? configureInMemory = null, Action<IConfiguration,
+        IHostEnvironment, PostgresDatabaseModuleOptions<TDbContext>, Guid,
+        string>? configurePostgres = null, Func<TDbContext, Task>? initDbContext = null) where TDbContext : DbContext
     {
-        base.ConfigureApplication(application, name);
+        var dbName = $"{typeof(TDbContext).Name}_{name}";
         application.AddInMemoryDatabase<TDbContext>((configuration, _, moduleOptions) =>
         {
             if (GetConfig(configuration).UsePostgres)
@@ -28,10 +34,10 @@ public abstract class DbBaseTestScope<TApplication, TDbContext, TConfig> : BaseT
             }
             else
             {
-                moduleOptions.Database = name;
+                moduleOptions.Database = dbName;
                 moduleOptions.ConfigureDbContextOptions = (builder, _, conf, env) =>
                 {
-                    ConfigureInMemoryDatabaseModule(builder, conf, env);
+                    configureInMemory?.Invoke(builder, conf, env);
                 };
             }
         });
@@ -39,10 +45,10 @@ public abstract class DbBaseTestScope<TApplication, TDbContext, TConfig> : BaseT
         {
             if (GetConfig(configuration).UsePostgres)
             {
-                moduleOptions.Database = $"{application.Id}_{name}";
+                moduleOptions.Database = $"{application.Id}_{dbName}";
                 moduleOptions.EnableSensitiveLogging = true;
                 moduleOptions.IncludeErrorDetails = true;
-                ConfigurePostgresDatabaseModule(configuration, environment, moduleOptions, application.Id, name);
+                configurePostgres?.Invoke(configuration, environment, moduleOptions, application.Id, dbName);
             }
             else
             {
@@ -50,50 +56,43 @@ public abstract class DbBaseTestScope<TApplication, TDbContext, TConfig> : BaseT
             }
         });
 
-        return application;
-    }
+        dbInitActions.Add(async () =>
+        {
+            var dbContext = ServiceProvider!.GetService<TDbContext>();
+            if (dbContext == null)
+            {
+                throw new InvalidOperationException("Can't create db context");
+            }
 
-    protected virtual void ConfigureInMemoryDatabaseModule(DbContextOptionsBuilder builder,
-        IConfiguration configuration, IHostEnvironment environment)
-    {
+            await dbContext.Database.EnsureDeletedAsync();
+            await dbContext.Database.EnsureCreatedAsync();
+            if (initDbContext is not null)
+            {
+                await initDbContext(dbContext);
+            }
+
+            dbContexts.Add(dbContext);
+        });
     }
 
     public override async Task OnCreatedAsync()
     {
-        scopeDbContext = ServiceProvider!.GetService<TDbContext>();
-        if (scopeDbContext == null)
+        await base.OnCreatedAsync();
+        foreach (var dbInitAction in dbInitActions)
         {
-            throw new InvalidOperationException("Can't create db context");
+            await dbInitAction();
         }
-
-        await scopeDbContext.Database.EnsureDeletedAsync();
-        await scopeDbContext.Database.EnsureCreatedAsync();
-        await InitDbContextAsync(scopeDbContext);
     }
 
-    public TDbContext GetDbContext()
-    {
-        if (scopeDbContext == null)
-        {
-            throw new InvalidOperationException("Db context is null");
-        }
-
-        return scopeDbContext;
-    }
-
-    protected virtual Task InitDbContextAsync(TDbContext dbContext) => Task.CompletedTask;
-
-    protected virtual void ConfigurePostgresDatabaseModule(IConfiguration configuration,
-        IHostEnvironment environment, PostgresDatabaseModuleOptions<TDbContext> moduleOptions, Guid applicationId,
-        string dbName)
-    {
-    }
+    public TDbContext GetDbContext<TDbContext>() where TDbContext : DbContext =>
+        (TDbContext)(dbContexts.Find(dbContext => dbContext is TDbContext) ??
+                     throw new InvalidOperationException("Db context is null"));
 
     public override async ValueTask DisposeAsync()
     {
-        if (scopeDbContext != null)
+        foreach (var dbContext in dbContexts)
         {
-            await scopeDbContext.Database.EnsureDeletedAsync();
+            await dbContext.Database.EnsureDeletedAsync();
         }
 
         await base.DisposeAsync();
@@ -101,13 +100,36 @@ public abstract class DbBaseTestScope<TApplication, TDbContext, TConfig> : BaseT
     }
 }
 
-public abstract class DbBaseTestScope<TDbContext> : DbBaseTestScope<TestApplication, TDbContext, BaseDbTestConfig>
-    where TDbContext : DbContext
+[PublicAPI]
+public abstract class DbBaseTestScope<TApplication, TDbContext, TConfig> : DbBaseTestScope<TApplication, TConfig>
+    where TDbContext : DbContext where TApplication : Application where TConfig : BaseDbTestConfig, new()
 {
+    protected override TApplication ConfigureApplication(TApplication application, string name)
+    {
+        base.ConfigureApplication(application, name);
+        AddDbContext<TDbContext>(application, name, ConfigureInMemoryDatabaseModule, ConfigurePostgresDatabaseModule,
+            InitDbContextAsync);
+        return application;
+    }
+
+
+    protected virtual void ConfigureInMemoryDatabaseModule(DbContextOptionsBuilder builder,
+        IConfiguration configuration, IHostEnvironment environment)
+    {
+    }
+
+    public TDbContext GetDbContext() => GetDbContext<TDbContext>();
+
+    protected virtual Task InitDbContextAsync(TDbContext dbContext) => Task.CompletedTask;
+
+    protected virtual void ConfigurePostgresDatabaseModule<TSomeDbContext>(IConfiguration configuration,
+        IHostEnvironment environment, PostgresDatabaseModuleOptions<TSomeDbContext> moduleOptions, Guid applicationId,
+        string dbName) where TSomeDbContext : DbContext
+    {
+    }
 }
 
-public abstract class
-    DbBaseTestScope<TApplication, TDbContext> : DbBaseTestScope<TApplication, TDbContext, BaseDbTestConfig>
-    where TDbContext : DbContext where TApplication : Application
+public abstract class DbBaseTestScope<TDbContext> : DbBaseTestScope<TestApplication, TDbContext, BaseDbTestConfig>
+    where TDbContext : DbContext
 {
 }
