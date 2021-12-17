@@ -1,3 +1,13 @@
+# [8.30.0](https://github.com/sitkoru/Sitko.Core/compare/8.29.0...8.30.0) (2021-12-17)
+
+
+### Features
+
+* **core:** allow multiple module instances registration if supported by module ([b67ba30](https://github.com/sitkoru/Sitko.Core/commit/b67ba30060911756d183426916b16b37c0b2234f))
+* **postgres:** allow to configure maximum migrations apply try count ([d947684](https://github.com/sitkoru/Sitko.Core/commit/d9476846a1433254dffbff15e46eedfe1be5add0))
+* **repository:** rework repositories registration ([46fedd2](https://github.com/sitkoru/Sitko.Core/commit/46fedd24e1d5d00e62c67de6485e318ffb18c406))
+* **xunit:** support multiple db contexts in test scope ([f835ffa](https://github.com/sitkoru/Sitko.Core/commit/f835ffa2ee50e7d9d1e5e19061311c66c7c408ed))
+
 # [8.29.0](https://github.com/sitkoru/Sitko.Core/compare/8.28.0...8.29.0) (2021-12-17)
 
 
