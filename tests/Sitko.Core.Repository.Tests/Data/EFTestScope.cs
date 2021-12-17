@@ -12,8 +12,13 @@ public class EFTestScope : BaseEFTestScope
 {
     protected override TestApplication ConfigureApplication(TestApplication application, string name)
     {
-        AddDbContext<SecondTestDbContext>(application, name);
-        application.AddEFRepositories<EFTestScope>();
+        application.AddEFRepositories(options =>
+        {
+            options.AddRepository<BarRepository>();
+            options.AddRepository<FooRepository>();
+            options.AddRepository<TestRepository>();
+            options.AddRepository<BazRepository>();
+        });
         application.ConfigureLogging((_, configuration) =>
         {
             configuration.MinimumLevel.Override("Sitko.Core.Repository", LogEventLevel.Debug);

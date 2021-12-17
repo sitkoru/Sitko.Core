@@ -1,29 +1,26 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sitko.Core.App;
 
 [assembly: InternalsVisibleTo("Sitko.Core.Repository.Tests")]
 
 namespace Sitko.Core.Repository.EntityFrameworkCore;
 
-public class EFRepositoriesModule<TAssembly> : RepositoriesModule<TAssembly, EFRepositoriesModuleOptions>
+public class EFRepositoriesModule : RepositoriesModule<EFRepositoriesModuleOptions, IEFRepository>
 {
-    public override string OptionsKey => $"Repositories:EF:{typeof(TAssembly).Name}";
+    public override string OptionsKey => "Repositories:EF";
 
     public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
         EFRepositoriesModuleOptions startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);
-        services.AddScoped(typeof(EFRepositoryContext<,,>));
-        services.AddScoped(typeof(EFRepositoryDbContextProvider<>));
-        services.AddScoped<EFRepositoryLock>();
-
-        services.Scan(s =>
-            s.FromAssemblyOf<TAssembly>().AddClasses(classes => classes.AssignableTo(typeof(EFRepository<,,>)))
-                .AsSelfWithInterfaces().WithScopedLifetime());
+        services.TryAddScoped(typeof(EFRepositoryContext<,,>));
+        services.TryAddScoped(typeof(EFRepositoryDbContextProvider<>));
+        services.TryAddScoped<EFRepositoryLock>();
     }
 }
 
-public class EFRepositoriesModuleOptions : BaseModuleOptions
+public class EFRepositoriesModuleOptions : RepositoriesModuleOptions<IEFRepository>
 {
 }

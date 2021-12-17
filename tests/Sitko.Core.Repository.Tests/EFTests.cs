@@ -228,7 +228,7 @@ public class EFTests : BaseTest<EFTestScope>
     [Fact]
     public async Task MultipleDbContexts()
     {
-        var scope = await GetScopeAsync();
+        var scope = await GetScopeAsync<MultipleDbContextsTestScope>();
         var barRepository = scope.GetService<IRepository<BarModel, Guid>>();
         var fooBarRepository = scope.GetService<IRepository<FooBarModel, Guid>>();
 

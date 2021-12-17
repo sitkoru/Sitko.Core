@@ -1,25 +1,42 @@
 ﻿using System;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
-namespace Sitko.Core.Repository.EntityFrameworkCore
+namespace Sitko.Core.Repository.EntityFrameworkCore;
+
+[PublicAPI]
+public static class ApplicationExtensions
 {
-    using JetBrains.Annotations;
+    public static Application AddEFRepositories(this Application application,
+        Action<IConfiguration, IHostEnvironment, EFRepositoriesModuleOptions> configure,
+        string? optionsKey = null) =>
+        application.AddModule<EFRepositoriesModule, EFRepositoriesModuleOptions>(configure, optionsKey);
 
-    [PublicAPI]
-    public static class ApplicationExtensions
-    {
-        public static Application AddEFRepositories<TAssembly>(this Application application,
-            Action<IConfiguration, IHostEnvironment, EFRepositoriesModuleOptions> configure,
-            string? optionsKey = null) =>
-            application.AddModule<EFRepositoriesModule<TAssembly>, EFRepositoriesModuleOptions>(configure,
-                optionsKey);
+    public static Application AddEFRepositories(this Application application,
+        Action<EFRepositoriesModuleOptions>? configure = null,
+        string? optionsKey = null) =>
+        application.AddModule<EFRepositoriesModule, EFRepositoriesModuleOptions>(configure, optionsKey);
 
-        public static Application AddEFRepositories<TAssembly>(this Application application,
-            Action<EFRepositoriesModuleOptions>? configure = null,
-            string? optionsKey = null) =>
-            application.AddModule<EFRepositoriesModule<TAssembly>, EFRepositoriesModuleOptions>(configure,
-                optionsKey);
-    }
+    public static Application AddEFRepositories<TAssembly>(this Application application,
+        Action<IConfiguration, IHostEnvironment, EFRepositoriesModuleOptions> configure,
+        string? optionsKey = null) =>
+        application.AddModule<EFRepositoriesModule, EFRepositoriesModuleOptions>(
+            (configuration, environment, moduleOptions) =>
+            {
+                moduleOptions.AddRepositoriesFromAssemblyOf<TAssembly>();
+                configure(configuration, environment, moduleOptions);
+            },
+            optionsKey);
+
+    public static Application AddEFRepositories<TAssembly>(this Application application,
+        Action<EFRepositoriesModuleOptions>? configure = null,
+        string? optionsKey = null) =>
+        application.AddModule<EFRepositoriesModule, EFRepositoriesModuleOptions>(moduleOptions =>
+            {
+                moduleOptions.AddRepositoriesFromAssemblyOf<TAssembly>();
+                configure?.Invoke(moduleOptions);
+            },
+            optionsKey);
 }
