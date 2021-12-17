@@ -193,6 +193,7 @@ jobs:
     container: ghcr.io/sitkoru/actions-container
     env:
       DB__POSTGRES__TESTDBCONTEXT__HOST: postgres
+      DB__POSTGRES__SECONDTESTDBCONTEXT__HOST: postgres
       TESTS__USEPOSTGRES: "true"
     services:
       postgres:
