@@ -1,29 +1,22 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
-using PuppeteerSharp;
 using Sitko.Core.App;
+using Sitko.Core.Puppeteer;
 
-namespace Sitko.Core.Pdf
+namespace Sitko.Core.Pdf;
+
+public class PdfRendererModule : BaseApplicationModule
 {
-    using System.Text.Json.Serialization;
+    public override string OptionsKey => "PdfRenderer";
 
-    public class PdfRendererModule : BaseApplicationModule<PdfRendererModuleOptions>
+    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+        BaseApplicationModuleOptions startupOptions)
     {
-        public override string OptionsKey => "PdfRenderer";
-
-        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            PdfRendererModuleOptions startupOptions)
-        {
-            base.ConfigureServices(context, services, startupOptions);
-            services.AddTransient<IPdfRenderer, PdfRenderer>();
-        }
+        base.ConfigureServices(context, services, startupOptions);
+        services.AddTransient<IPdfRenderer, PdfRenderer>();
     }
 
-    public class PdfRendererModuleOptions : BaseModuleOptions
-    {
-        public string? BrowserWsEndpoint { get; set; }
-        public bool IgnoreHTTPSErrors { get; set; } = false;
-
-        [JsonIgnore]
-        public ViewPortOptions ViewPortOptions { get; set; } = ViewPortOptions.Default;
-    }
+    public override IEnumerable<Type> GetRequiredModules(ApplicationContext context,
+        BaseApplicationModuleOptions options) => new[] { typeof(PuppeteerModule) };
 }
