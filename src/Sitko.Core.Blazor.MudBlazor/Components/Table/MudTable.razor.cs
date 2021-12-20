@@ -119,13 +119,13 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
 public class
     MudRepositoryTable<TEntity, TEntityPk, TRepository> : MudRepositoryTable<TEntity, TEntityPk, TRepository
         , MudTableFilter>
-    where TEntity : class, IEntity<TEntityPk>, new()
+    where TEntity : class, IEntity<TEntityPk>
     where TRepository : IRepository<TEntity, TEntityPk>
 {
 }
 
 public abstract class MudRepositoryTable<TEntity, TEntityPk, TRepository, TFilter> : MudTable<TEntity, TFilter>
-    where TEntity : class, IEntity<TEntityPk>, new()
+    where TEntity : class, IEntity<TEntityPk>
     where TRepository : IRepository<TEntity, TEntityPk>
     where TFilter : MudTableFilter, new()
 {
