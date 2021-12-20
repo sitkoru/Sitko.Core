@@ -1,3 +1,10 @@
+# [8.31.0](https://github.com/sitkoru/Sitko.Core/compare/8.30.0...8.31.0) (2021-12-20)
+
+
+### Features
+
+* **mudblazor:** remove new() constraint from MudRepositoryTable to allow abstract classes ([909c51e](https://github.com/sitkoru/Sitko.Core/commit/909c51ee91b08630694ac9c8095bcba366db2e4f))
+
 # [8.30.0](https://github.com/sitkoru/Sitko.Core/compare/8.29.0...8.30.0) (2021-12-17)
 
 
