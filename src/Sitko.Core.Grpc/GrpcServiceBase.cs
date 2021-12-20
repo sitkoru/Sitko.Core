@@ -128,19 +128,26 @@ public abstract class GrpcServiceBase : IGrpcService
     {
         if (!result.IsSuccess)
         {
-            if (result.Exception is not null)
-            {
-                Logger.LogError(result.Exception,
-                    "Error in method {MethodName}. Request: {@Request}. Error: {ErrorText}",
-                    methodName,
-                    request, result.Exception.ToString());
-                response.SetException(result.Exception);
-            }
+            FillErrors(result, request, response, methodName);
+        }
+    }
 
-            if (result.Error.Length > 0)
-            {
-                response.SetErrors(result.Error);
-            }
+    protected void FillErrors<TResponse>(GrpcCallResult result, IGrpcRequest? request, TResponse response,
+        string methodName)
+        where TResponse : class, IGrpcResponse, new()
+    {
+        if (result.Exception is not null)
+        {
+            Logger.LogError(result.Exception,
+                "Error in method {MethodName}. Request: {@Request}. Error: {ErrorText}",
+                methodName,
+                request, result.Exception.ToString());
+            response.SetException(result.Exception);
+        }
+
+        if (result.Error.Length > 0)
+        {
+            response.SetErrors(result.Error);
         }
     }
 
