@@ -1,3 +1,10 @@
+# [8.32.0](https://github.com/sitkoru/Sitko.Core/compare/8.31.0...8.32.0) (2021-12-20)
+
+
+### Features
+
+* **grpc:** expose FillErrors method to gRPC services ([109e6c9](https://github.com/sitkoru/Sitko.Core/commit/109e6c9e77a9ea67abea955b6b829ee61476da37))
+
 # [8.31.0](https://github.com/sitkoru/Sitko.Core/compare/8.30.0...8.31.0) (2021-12-20)
 
 
