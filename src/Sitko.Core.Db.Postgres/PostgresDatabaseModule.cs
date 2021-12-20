@@ -54,7 +54,8 @@ public class
             }
             else
             {
-                throw new InvalidOperationException("Can't migrate database after 10 tries. See previous errors");
+                throw new InvalidOperationException(
+                    $"Can't migrate database after {options.MaxMigrationsApplyTryCount} tries. See previous errors");
             }
         }
     }
