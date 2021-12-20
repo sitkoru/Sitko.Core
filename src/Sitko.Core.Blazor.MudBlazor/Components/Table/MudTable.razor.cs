@@ -20,11 +20,8 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
 
     [Parameter] public string? Title { get; set; }
     [Parameter] public bool EnableSearch { get; set; } = true;
-#if NET6_0_OR_GREATER
-    [EditorRequired]
-#endif
-    [Parameter]
-    public RenderFragment? HeaderContent { get; set; }
+
+    [EditorRequired] [Parameter] public RenderFragment? HeaderContent { get; set; }
 
     [Parameter] public RenderFragment? FooterContent { get; set; }
 
@@ -57,7 +54,9 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
     [Parameter] public bool AllowUnsorted { get; set; }
 
     [Parameter] public object Tag { get; set; } = new { };
+
     [Parameter] public int RowsPerPage { get; set; } = 50;
+
     // [Parameter] public int CurrentPage { get; set; } = 1; TODO: until https://github.com/MudBlazor/MudBlazor/issues/1403
     [Parameter] public bool CustomFooter { get; set; }
     [Parameter] public bool CustomHeader { get; set; }
