@@ -1,3 +1,10 @@
+# [8.33.0](https://github.com/sitkoru/Sitko.Core/compare/8.32.0...8.33.0) (2021-12-23)
+
+
+### Features
+
+* **blazor:** add method to load data in same scope as entity ([e2348ae](https://github.com/sitkoru/Sitko.Core/commit/e2348ae78caf4b94fa491589675f073cec57c579))
+
 # [8.32.0](https://github.com/sitkoru/Sitko.Core/compare/8.31.0...8.32.0) (2021-12-20)
 
 
