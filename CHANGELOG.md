@@ -1,3 +1,10 @@
+## [8.33.1](https://github.com/sitkoru/Sitko.Core/compare/8.33.0...8.33.1) (2021-12-23)
+
+
+### Bug Fixes
+
+* **blazor:** pass loaded or new entity to LoadDataAsync method ([18c7ccf](https://github.com/sitkoru/Sitko.Core/commit/18c7ccf8531c9f02f484e7bf739d14b8d115a65a))
+
 # [8.33.0](https://github.com/sitkoru/Sitko.Core/compare/8.32.0...8.33.0) (2021-12-23)
 
 
