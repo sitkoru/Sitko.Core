@@ -53,11 +53,11 @@ namespace Sitko.Core.App.Blazor.Forms
                 isNew = true;
             }
 
-            await LoadDataAsync(scope.ServiceProvider);
+            await LoadDataAsync(isNew, entity, scope.ServiceProvider);
             return (isNew, entity);
         }
 
-        protected virtual Task LoadDataAsync(IServiceProvider serviceProvider) => Task.CompletedTask;
+        protected virtual Task LoadDataAsync(bool isNew, TEntity entity, IServiceProvider serviceProvider) => Task.CompletedTask;
 
         protected virtual Task ConfigureQueryAsync(IRepositoryQuery<TEntity> query) => Task.CompletedTask;
 
