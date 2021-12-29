@@ -39,7 +39,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
 
     [PublicAPI] protected List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers { get; }
 
-    protected ILogger Logger { get; }
+    protected ILogger<IRepository<TEntity, TEntityPk>> Logger { get; }
 
     public abstract Task<bool> BeginTransactionAsync(CancellationToken cancellationToken = default);
 
