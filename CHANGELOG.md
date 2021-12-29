@@ -1,3 +1,21 @@
+# [8.34.0](https://github.com/sitkoru/Sitko.Core/compare/8.33.1...8.34.0) (2021-12-29)
+
+
+### Bug Fixes
+
+* **repository:** make logger in repository more specific type ([0b8e913](https://github.com/sitkoru/Sitko.Core/commit/0b8e9130fdaedeb1445dd530c94ef371c7f2e01a))
+
+
+### Features
+
+* **antdesing:** update AntDesign from 0.10.2 to 0.10.3.1 ([67be530](https://github.com/sitkoru/Sitko.Core/commit/67be530adc2cbd89e90047bb7935c88b01bbc6fd))
+* **consul:** update Consul from 1.6.10.3 to 1.6.10.4 ([f71fb8e](https://github.com/sitkoru/Sitko.Core/commit/f71fb8e71e657258547da73b25eefffd15432c8a))
+* **fileupload:** update Tewr.Blazor.FileReader from 3.3.0.21348 to 3.3.1.21360 ([183edce](https://github.com/sitkoru/Sitko.Core/commit/183edceb53cc9b01c37d0dfbd7a2dd72cbba76bd))
+* **hangfire:** update Hangfire.PostgreSql from 1.9.4 to 1.9.5 ([f3003ac](https://github.com/sitkoru/Sitko.Core/commit/f3003ac3abcffa2ab0a1fb6524d4d2d468bcfcc1))
+* **postgres:** update Npgsql.EntityFrameworkCore.PostgreSQL from 6.0.1 to 6.0.2 ([0fd949a](https://github.com/sitkoru/Sitko.Core/commit/0fd949acd72aa0ca36b4bdc57dc555e0fea217e7))
+* **puppeteer:** update PuppeteerSharp from 6.0.0 to 6.1.0 ([c739d65](https://github.com/sitkoru/Sitko.Core/commit/c739d65e48a5c21c153ac26a0f029a3e18a73297))
+* **s3:** update AWSSDK.S3 from 3.7.7.3 to 3.7.7.5 ([1ef86db](https://github.com/sitkoru/Sitko.Core/commit/1ef86dbb9e34dfcf24f5465de8d0b4b4cb61ee6d))
+
 ## [8.33.1](https://github.com/sitkoru/Sitko.Core/compare/8.33.0...8.33.1) (2021-12-23)
 
 
