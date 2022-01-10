@@ -507,11 +507,18 @@ public abstract class Application : IApplication, IAsyncDisposable
             using var scope = host.Services.CreateScope();
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<Application>>();
             logger.LogInformation("Init modules");
-            foreach (var module in GetEnabledModuleRegistrations(GetContext(scope.ServiceProvider)))
+            var registrations = GetEnabledModuleRegistrations(GetContext(scope.ServiceProvider));
+            var context = GetContext(scope.ServiceProvider);
+            foreach (var configurationModule in registrations.Select(module => module.GetInstance())
+                         .OfType<IConfigurationModule>())
             {
-                logger.LogInformation("Init module {Module}", module.Type);
-                await module.InitAsync(
-                    GetContext(scope.ServiceProvider), scope.ServiceProvider);
+                configurationModule.CheckConfiguration(context, scope.ServiceProvider);
+            }
+
+            foreach (var registration in registrations)
+            {
+                logger.LogInformation("Init module {Module}", registration.Type);
+                await registration.InitAsync(context, scope.ServiceProvider);
             }
         }
 

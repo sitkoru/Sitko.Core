@@ -46,7 +46,12 @@ public interface ILoggingModule<in TModuleOptions> : IApplicationModule<TModuleO
         LoggerConfiguration loggerConfiguration);
 }
 
-public interface IConfigurationModule<in TModuleOptions> : IApplicationModule<TModuleOptions>
+public interface IConfigurationModule
+{
+    void CheckConfiguration(ApplicationContext context, IServiceProvider serviceProvider);
+}
+
+public interface IConfigurationModule<in TModuleOptions> : IApplicationModule<TModuleOptions>, IConfigurationModule
     where TModuleOptions : class, new()
 {
     void ConfigureAppConfiguration(IConfigurationBuilder configurationBuilder,
