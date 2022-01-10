@@ -12,7 +12,7 @@ jobs:
       DEMO_PROJECT: Sitko.Core.Apps.Blazor
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v2
         with:
           fetch-depth: 0
           ref: ${{ github.sha }}
