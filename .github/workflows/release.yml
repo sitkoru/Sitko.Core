@@ -10,14 +10,14 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
     steps:
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v2
       - name: Prepare
         id: prep
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           echo ::set-output name=version::${VERSION}
       - name: Install node.js
-        uses: actions/setup-node@v2.5.0
+        uses: actions/setup-node@v2
         with:
           node-version: '15'
           cache: 'npm'
@@ -34,7 +34,7 @@ jobs:
       - name: Push to Nuget
         run: find packages -type f -name '*.nupkg' -print0 |  xargs -0 -n 10 -P 4 dotnet nuget push -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
       - name: Download Sitko.Core
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v2
         with:
           repository: "sitkoru/Sitko.Core"
           path: proto
