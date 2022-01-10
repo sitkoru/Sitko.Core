@@ -58,8 +58,9 @@ public class VaultConfigurationModule : BaseApplicationModule<VaultConfiguration
         var options = serviceProvider.GetRequiredService<IOptions<VaultConfigurationModuleOptions>>();
         if (emptySecrets.Any() && options.Value.ThrowOnEmptySecrets)
         {
-            throw new InvalidOperationException(
-                $"No data loaded from Vault secrets {string.Join(", ", emptySecrets)}");
+            var names = string.Join(", ", emptySecrets);
+            throw new OptionsValidationException(names, GetType(),
+                new[] { $"No data loaded from Vault secrets {names}" });
         }
     }
 
