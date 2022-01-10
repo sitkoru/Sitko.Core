@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,25 +29,8 @@ public class VaultConfigurationModule : BaseApplicationModule<VaultConfiguration
         }
     }
 
-    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-        VaultConfigurationModuleOptions startupOptions)
+    public void CheckConfiguration(ApplicationContext context, IServiceProvider serviceProvider)
     {
-        base.ConfigureServices(context, services, startupOptions);
-        if (startupOptions.ReloadOnChange)
-        {
-            services.TryAddSingleton((IConfigurationRoot)context.Configuration);
-            services.AddHostedService<VaultChangeWatcher>();
-        }
-
-        if (startupOptions.RenewToken)
-        {
-            services.AddHostedService<VaultTokenRenewService>();
-        }
-    }
-
-    public override async Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider)
-    {
-        await base.InitAsync(context, serviceProvider).ConfigureAwait(true);
         var root = serviceProvider.GetRequiredService<IConfigurationRoot>();
         var providers = root.Providers.OfType<VaultConfigurationProvider>().ToList();
         if (!providers.Any())
@@ -78,6 +60,22 @@ public class VaultConfigurationModule : BaseApplicationModule<VaultConfiguration
         {
             throw new InvalidOperationException(
                 $"No data loaded from Vault secrets {string.Join(", ", emptySecrets)}");
+        }
+    }
+
+    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+        VaultConfigurationModuleOptions startupOptions)
+    {
+        base.ConfigureServices(context, services, startupOptions);
+        if (startupOptions.ReloadOnChange)
+        {
+            services.TryAddSingleton((IConfigurationRoot)context.Configuration);
+            services.AddHostedService<VaultChangeWatcher>();
+        }
+
+        if (startupOptions.RenewToken)
+        {
+            services.AddHostedService<VaultTokenRenewService>();
         }
     }
 }
