@@ -9,38 +9,20 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v2.4.0
         with:
           fetch-depth: 0
-      - name: Install .NET
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: |
-            3.1.x
-            5.0.x
-            6.0.x
       - name: Build
         run: dotnet build -c Release
       - name: Create packages
         run: dotnet pack -c Release -o $(pwd)/packages
   apps:
     runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v2.4.0
-      - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '3.1.x'
-      - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '5.0.x'
-      - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '6.0.x'
-          include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests
@@ -48,6 +30,7 @@ jobs:
 
   blazor:
     runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v2.4.0
       - name: Install node.js
@@ -63,19 +46,6 @@ jobs:
         run: |
           npm ci
           npm run prod
-      - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '3.1.x'
-      - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '5.0.x'
-      - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '6.0.x'
-          include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests
@@ -83,21 +53,9 @@ jobs:
 
   grpc:
     runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v2.4.0
-      - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '3.1.x'
-      - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '5.0.x'
-      - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '6.0.x'
-          include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests
@@ -108,19 +66,6 @@ jobs:
     container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v2.4.0
-      - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '3.1.x'
-      - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '5.0.x'
-      - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '6.0.x'
-          include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests
@@ -137,19 +82,6 @@ jobs:
         run: |
           apt-get update
           apt-get install -y google-chrome-stable
-      - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '3.1.x'
-      - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '5.0.x'
-      - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '6.0.x'
-          include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests
@@ -166,19 +98,6 @@ jobs:
         image: nats-streaming:latest
     steps:
       - uses: actions/checkout@v2.4.0
-      - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '3.1.x'
-      - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '5.0.x'
-      - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '6.0.x'
-          include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests Sitko.Core.Queue
@@ -202,19 +121,6 @@ jobs:
           POSTGRES_HOST_AUTH_METHOD: trust
     steps:
       - uses: actions/checkout@v2.4.0
-      - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '3.1.x'
-      - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '5.0.x'
-      - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '6.0.x'
-          include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests
@@ -230,19 +136,6 @@ jobs:
         image: titpetric/sonyflake
     steps:
       - uses: actions/checkout@v2.4.0
-      - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '3.1.x'
-      - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '5.0.x'
-      - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '6.0.x'
-          include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests
@@ -270,19 +163,6 @@ jobs:
           POSTGRES_HOST_AUTH_METHOD: trust
     steps:
       - uses: actions/checkout@v2.4.0
-      - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '3.1.x'
-      - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '5.0.x'
-      - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '6.0.x'
-          include-prerelease: true
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Sitko.Core.Storage.FileSystem
@@ -306,19 +186,6 @@ jobs:
         image: titpetric/sonyflake
     steps:
       - uses: actions/checkout@v2.4.0
-      - name: Install .NET Core 3.1
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '3.1.x'
-      - name: Install .NET 5.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '5.0.x'
-      - name: Install .NET 6.0.x
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: '6.0.x'
-          include-prerelease: true
       - name: Install Vault
         run: |
           curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -

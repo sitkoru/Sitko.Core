@@ -43,13 +43,6 @@ jobs:
           cache: 'npm'
           cache-dependency-path: |
             src/Sitko.Core.Blazor.AntDesign/Web/package.json
-      - name: Install .NET
-        uses: actions/setup-dotnet@v1.9.0
-        with:
-          dotnet-version: |
-            3.1.x
-            5.0.x
-            6.0.x
       - name: Build blazor js
         working-directory: src/${{ env.FRONTNED_PROJECT }}/Web
         shell: bash
