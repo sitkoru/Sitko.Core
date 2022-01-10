@@ -1,3 +1,17 @@
+# [8.35.0](https://github.com/sitkoru/Sitko.Core/compare/8.34.0...8.35.0) (2022-01-10)
+
+
+### Features
+
+* **configuration:** run configuration checks before modules init ([7db3dd0](https://github.com/sitkoru/Sitko.Core/commit/7db3dd07a0b506acd2f2bc487b9a82c45718f92d))
+* **graylog:** update Serilog.Sinks.Graylog from 2.2.2 to 2.3.0 ([2669deb](https://github.com/sitkoru/Sitko.Core/commit/2669deb433389481a6c7dd9759d269adbf9ae02a))
+* **grpc:** grpc 2.43.0 and protobuf 3.19.2 ([4cb0146](https://github.com/sitkoru/Sitko.Core/commit/4cb0146f28a7d284a698f455886b8670135e1b70))
+* **mudblazor:** update MudBlazor from 6.0.2 to 6.0.4 ([76ebc1d](https://github.com/sitkoru/Sitko.Core/commit/76ebc1d221956599f81b4fb6d928c3559172968c))
+* **nats:** update NATS.Client from 0.14.3 to 0.14.4 ([f674438](https://github.com/sitkoru/Sitko.Core/commit/f674438e5353de8333bff50723977fa42304dc9a))
+* **s3:** update AWSSDK.S3 from 3.7.7.5 to 3.7.7.10 ([2f4f3ba](https://github.com/sitkoru/Sitko.Core/commit/2f4f3ba7b335b124147880186ac4e4a75e057561))
+* **vault:** add option to throw on empty secrets ([935fce4](https://github.com/sitkoru/Sitko.Core/commit/935fce4f2c5cdfede9b281b0cb323b7d7700f59d))
+* **xunit:** update FluentAssertions from 6.2.0 to 6.3.0 ([e5753b2](https://github.com/sitkoru/Sitko.Core/commit/e5753b2b1ead6b607a215015dcf9a9fed8cf261d))
+
 # [8.34.0](https://github.com/sitkoru/Sitko.Core/compare/8.33.1...8.34.0) (2021-12-29)
 
 
