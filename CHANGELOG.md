@@ -1,3 +1,10 @@
+# [8.36.0](https://github.com/sitkoru/Sitko.Core/compare/8.35.0...8.36.0) (2022-01-11)
+
+
+### Features
+
+* **grpc:** manually create grpc clients and channel to fix issue with service address update not applying to channel ([e25d951](https://github.com/sitkoru/Sitko.Core/commit/e25d95113a2f0a5d38d7557f3148b5562cde8431))
+
 # [8.35.0](https://github.com/sitkoru/Sitko.Core/compare/8.34.0...8.35.0) (2022-01-10)
 
 
