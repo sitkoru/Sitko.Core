@@ -1,3 +1,10 @@
+## [8.36.1](https://github.com/sitkoru/Sitko.Core/compare/8.36.0...8.36.1) (2022-01-12)
+
+
+### Bug Fixes
+
+* google auth module now correctly rejects unlisted users ([892e344](https://github.com/sitkoru/Sitko.Core/commit/892e344e591767b6e0507eea8a3698ec6779fd71))
+
 # [8.36.0](https://github.com/sitkoru/Sitko.Core/compare/8.35.0...8.36.0) (2022-01-11)
 
 
