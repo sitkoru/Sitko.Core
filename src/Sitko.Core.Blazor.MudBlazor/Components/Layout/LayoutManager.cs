@@ -2,24 +2,23 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using MudBlazor;
-using Sitko.Core.App.Blazor.Layout;
+using Sitko.Core.Blazor.Layout;
 
-namespace Sitko.Core.Blazor.MudBlazorComponents
+namespace Sitko.Core.Blazor.MudBlazorComponents;
+
+public class MudLayoutManager : BaseLayoutManager<MudLayoutData, MudLayoutOptions>
 {
-    public class MudLayoutManager : BaseLayoutManager<MudLayoutData, MudLayoutOptions>
+    public MudLayoutManager(IOptionsMonitor<MudLayoutOptions> optionsMonitor) : base(optionsMonitor)
     {
-        public MudLayoutManager(IOptionsMonitor<MudLayoutOptions> optionsMonitor) : base(optionsMonitor)
-        {
-        }
     }
+}
 
-    public class MudLayoutOptions : LayoutOptions
-    {
-    }
+public class MudLayoutOptions : LayoutOptions
+{
+}
 
-    public record MudLayoutData : LayoutData
-    {
-        public RenderFragment? Extra { get; init; }
-        public List<BreadcrumbItem> Breadcrumbs { get; init; } = new();
-    }
+public record MudLayoutData : LayoutData
+{
+    public RenderFragment? Extra { get; init; }
+    public List<BreadcrumbItem> Breadcrumbs { get; init; } = new();
 }

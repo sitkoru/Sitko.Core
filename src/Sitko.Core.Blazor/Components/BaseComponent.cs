@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Web;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Sitko.Core.App;
 using Sitko.Core.App.Localization;
 
-namespace Sitko.Core.App.Blazor.Components;
+namespace Sitko.Core.Blazor.Components;
 
 public interface IBaseComponent
 {
@@ -37,7 +37,7 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposab
 #if NET6_0_OR_GREATER
     private AsyncServiceScope? scope;
 #else
-        private IServiceScope? scope;
+    private IServiceScope? scope;
 #endif
 
     protected BaseComponent()
@@ -131,7 +131,7 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposab
 #if NET6_0_OR_GREATER
                 await scope.Value.DisposeAsync();
 #else
-                    scope.Dispose();
+                scope.Dispose();
 #endif
             }
 
@@ -165,7 +165,7 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposab
 #if NET6_0_OR_GREATER
             scope = ServiceProvider.CreateAsyncScope();
 #else
-                scope = ServiceProvider.CreateScope();
+            scope = ServiceProvider.CreateScope();
 #endif
         }
 
@@ -209,7 +209,7 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposab
             // Parent scope was disposed. Indicate in logs and suppress exception.
             GlobalServiceProvider.GetRequiredService<ILogger<BaseComponent>>()
                 .Log(
-                    GlobalServiceProvider.GetRequiredService<IHostEnvironment>().IsDevelopment()
+                    GlobalServiceProvider.GetRequiredService<IAppEnvironment>().IsDevelopment()
                         ? LogLevel.Warning
                         : LogLevel.Debug, "Parent scope was disposed in {Component}", GetType());
         }
@@ -221,7 +221,8 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposab
     {
         var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
 
-        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue(key, out var valueFromQueryString))
+        var valueFromQueryString = HttpUtility.ParseQueryString(uri.Query).Get(key);
+        if (!string.IsNullOrEmpty(valueFromQueryString))
         {
             if (typeof(T) == typeof(int) && int.TryParse(valueFromQueryString, out var valueAsInt))
             {
@@ -231,7 +232,7 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposab
 
             if (typeof(T) == typeof(string))
             {
-                value = (T)(object)valueFromQueryString.ToString();
+                value = (T)(object)valueFromQueryString;
                 return true;
             }
 

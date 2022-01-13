@@ -1,7 +1,7 @@
 ﻿@typeparam TItem
 @typeparam TFilter
 @namespace Sitko.Core.Blazor.MudBlazorComponents
-@inherits Sitko.Core.App.Blazor.Components.BaseComponent
+@inherits Sitko.Core.Blazor.Components.BaseComponent
 @if (ChildContent is not null)
 {
     <MudTable ServerData="@(new Func<TableState, Task<TableData<TItem>>>(ServerReloadAsync))"

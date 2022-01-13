@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Sitko.Core.App.Blazor.Components;
+using Sitko.Core.App;
+using Sitko.Core.Blazor.Components;
 
-namespace Sitko.Core.App.Blazor.Layout;
+namespace Sitko.Core.Blazor.Layout;
 
 public abstract class BaseLayoutComponent<TLayoutData, TLayoutOptions> : BaseComponent
     where TLayoutData : LayoutData where TLayoutOptions : LayoutOptions
@@ -16,8 +17,7 @@ public abstract class BaseLayoutComponent<TLayoutData, TLayoutOptions> : BaseCom
 #if NET6_0_OR_GREATER
     [EditorRequired]
 #endif
-    [Parameter]
-    public RenderFragment ChildContent { get; set; } = null!;
+    [Parameter] public RenderFragment ChildContent { get; set; } = null!;
 
     protected override void Initialize()
     {
