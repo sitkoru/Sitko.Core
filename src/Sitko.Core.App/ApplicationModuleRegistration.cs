@@ -17,14 +17,14 @@ namespace Sitko.Core.App;
 internal class ApplicationModuleRegistration<TModule, TModuleOptions> : ApplicationModuleRegistration
     where TModule : IApplicationModule<TModuleOptions>, new() where TModuleOptions : BaseModuleOptions, new()
 {
-    private readonly Action<IConfiguration, IHostEnvironment, TModuleOptions>? configureOptions;
+    private readonly Action<IConfiguration, IAppEnvironment, TModuleOptions>? configureOptions;
     private readonly TModule instance;
     private readonly string? optionsKey;
     private readonly Type? validatorType;
 
     public ApplicationModuleRegistration(
         TModule instance,
-        Action<IConfiguration, IHostEnvironment, TModuleOptions>? configureOptions = null,
+        Action<IConfiguration, IAppEnvironment, TModuleOptions>? configureOptions = null,
         string? optionsKey = null)
     {
         this.instance = instance;
@@ -167,15 +167,15 @@ internal class ApplicationModuleRegistration<TModule, TModuleOptions> : Applicat
         return this;
     }
 
-    public override Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
+    public override Task ApplicationStopped(IConfiguration configuration, IAppEnvironment environment,
         IServiceProvider serviceProvider) =>
         instance.ApplicationStopped(configuration, environment, serviceProvider);
 
-    public override Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
+    public override Task ApplicationStopping(IConfiguration configuration, IAppEnvironment environment,
         IServiceProvider serviceProvider) =>
         instance.ApplicationStopping(configuration, environment, serviceProvider);
 
-    public override Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
+    public override Task ApplicationStarted(IConfiguration configuration, IAppEnvironment environment,
         IServiceProvider serviceProvider) =>
         instance.ApplicationStarted(configuration, environment, serviceProvider);
 
@@ -199,13 +199,13 @@ public abstract class ApplicationModuleRegistration
     public abstract ApplicationModuleRegistration ConfigureServices(ApplicationContext context,
         IServiceCollection services);
 
-    public abstract Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
+    public abstract Task ApplicationStopped(IConfiguration configuration, IAppEnvironment environment,
         IServiceProvider serviceProvider);
 
-    public abstract Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
+    public abstract Task ApplicationStopping(IConfiguration configuration, IAppEnvironment environment,
         IServiceProvider serviceProvider);
 
-    public abstract Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
+    public abstract Task ApplicationStarted(IConfiguration configuration, IAppEnvironment environment,
         IServiceProvider serviceProvider);
 
     public abstract Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider);

@@ -22,13 +22,13 @@ public interface IApplicationModule
 {
     Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider);
 
-    Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
+    Task ApplicationStarted(IConfiguration configuration, IAppEnvironment environment,
         IServiceProvider serviceProvider);
 
-    Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
+    Task ApplicationStopping(IConfiguration configuration, IAppEnvironment environment,
         IServiceProvider serviceProvider);
 
-    Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
+    Task ApplicationStopped(IConfiguration configuration, IAppEnvironment environment,
         IServiceProvider serviceProvider);
 }
 

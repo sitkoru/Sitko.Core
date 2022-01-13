@@ -13,43 +13,23 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
-using Sitko.Core.App.Localization;
-using Sitko.FluentValidation;
-using Tempus;
-using Thinktecture;
-using Thinktecture.Extensions.Configuration;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Sitko.Core.App;
 
 public abstract class Application : IApplication, IAsyncDisposable
 {
-    private readonly List<Action<ApplicationContext, HostBuilderContext, IConfigurationBuilder>>
-        appConfigurationActions = new();
-
-    private readonly string[] args;
     private readonly List<ApplicationCommand> commands = new();
-
-    private readonly Dictionary<string, LogEventLevel> logEventLevels = new();
-
-    private readonly List<Action<ApplicationContext, LoggerConfiguration>>
-        loggerConfigurationActions = new();
 
     private readonly List<ApplicationModuleRegistration> moduleRegistrations =
         new();
 
-    private readonly List<Action<ApplicationContext, HostBuilderContext, IServiceCollection>>
-        servicesConfigurationActions = new();
-
     private readonly Dictionary<string, object> store = new();
-
-    private IHost? appHost;
-
-    private ApplicationCommand? currentCommand;
+    private bool disposed;
 
     protected Application(string[] args)
     {
-        this.args = args;
+        Args = args;
         Console.OutputEncoding = Encoding.UTF8;
         var loggerConfiguration = new LoggerConfiguration();
         loggerConfiguration
@@ -59,21 +39,44 @@ public abstract class Application : IApplication, IAsyncDisposable
         ProcessArguments();
     }
 
+    protected List<Action<ApplicationContext, IConfigurationBuilder>>
+        AppConfigurationActions { get; } = new();
+
+    protected Dictionary<string, LogEventLevel> LogEventLevels { get; } = new();
+
+    protected List<Action<ApplicationContext, LoggerConfiguration>>
+        LoggerConfigurationActions { get; } = new();
+
+    protected List<Action<ApplicationContext, IServiceCollection>>
+        ServicesConfigurationActions { get; } = new();
+
+
+    internal ApplicationCommand? CurrentCommand { get; private set; }
+
+    protected string[] Args { get; }
+
     protected virtual string ApplicationOptionsKey => nameof(Application);
 
     public Guid Id { get; } = Guid.NewGuid();
 
-    private ILogger<Application> InternalLogger { get; }
+    protected ILogger<Application> InternalLogger { get; }
 
     public string Name => GetApplicationOptions().Name;
     public string Version => GetApplicationOptions().Version;
 
-    public virtual ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        appHost?.Dispose();
+        if (disposed)
+        {
+            return;
+        }
+
+        await DisposeAsync(true);
         GC.SuppressFinalize(this);
-        return new ValueTask();
+        disposed = true;
     }
+
+    protected virtual ValueTask DisposeAsync(bool disposing) => new();
 
     private void ProcessArguments()
     {
@@ -96,19 +99,20 @@ public abstract class Application : IApplication, IAsyncDisposable
                 return Task.FromResult(false);
             }));
         commands.Add(new ApplicationCommand("run"));
-        if (args.Length > 0)
+        if (Args.Length > 0)
         {
-            var commandName = args[0];
-            currentCommand = GetCommand(commandName);
-            if (currentCommand is null)
+            var commandName = Args[0];
+            CurrentCommand = GetCommand(commandName);
+            if (CurrentCommand is null)
             {
                 throw new ArgumentException($"Unknown command {commandName}. Supported commands: {commands}",
-                    nameof(args));
+                    nameof(Args));
             }
 
-            InternalLogger.LogInformation("Run command {CommandName}", currentCommand.Name);
+            InternalLogger.LogInformation("Run command {CommandName}", CurrentCommand.Name);
         }
     }
+
 
     private ApplicationCommand? GetCommand(string commandName) =>
         commands.FirstOrDefault(c => c.Name == commandName);
@@ -119,7 +123,7 @@ public abstract class Application : IApplication, IAsyncDisposable
         GetApplicationOptions(GetContext().Environment, GetContext().Configuration);
 
     [PublicAPI]
-    protected ApplicationOptions GetApplicationOptions(IHostEnvironment environment, IConfiguration configuration)
+    protected ApplicationOptions GetApplicationOptions(IAppEnvironment environment, IConfiguration configuration)
     {
         var options = new ApplicationOptions();
         configuration.Bind(ApplicationOptionsKey, options);
@@ -139,7 +143,7 @@ public abstract class Application : IApplication, IAsyncDisposable
         return options;
     }
 
-    protected virtual void ConfigureApplicationOptions(IHostEnvironment environment, IConfiguration configuration,
+    protected virtual void ConfigureApplicationOptions(IAppEnvironment environment, IConfiguration configuration,
         ApplicationOptions options)
     {
     }
@@ -148,178 +152,14 @@ public abstract class Application : IApplication, IAsyncDisposable
         GetEnabledModuleRegistrations(ApplicationContext context) => moduleRegistrations
         .Where(r => r.IsEnabled(context)).ToList();
 
-    private void LogVerbose(string message)
+    protected void LogVerbose(string message)
     {
-        if (currentCommand?.EnableVerboseLogging == true)
+        if (CurrentCommand?.EnableVerboseLogging == true)
         {
             InternalLogger.LogInformation("Check log: {Message}", message);
         }
     }
 
-    private IHostBuilder ConfigureHostBuilder(Action<IHostBuilder>? configure = null)
-    {
-        LogVerbose("Configure host builder start");
-
-        LogVerbose("Create tmp host builder");
-
-        using var tmpHost = CreateHostBuilder(args)
-            .UseDefaultServiceProvider(options =>
-            {
-                options.ValidateOnBuild = false;
-                options.ValidateScopes = true;
-            })
-            .ConfigureLogging(builder => { builder.SetMinimumLevel(LogLevel.Information); }).Build();
-
-        var tmpConfiguration = tmpHost.Services.GetRequiredService<IConfiguration>();
-        var tmpEnvironment = tmpHost.Services.GetRequiredService<IHostEnvironment>();
-
-        var tmpApplicationContext = GetContext(tmpEnvironment, tmpConfiguration);
-
-        LogVerbose("Init application");
-
-        InitApplication();
-
-        LogVerbose("Create main host builder");
-        var loggingConfiguration = new SerilogConfiguration();
-        var hostBuilder = CreateHostBuilder(args)
-            .UseDefaultServiceProvider(options =>
-            {
-                options.ValidateOnBuild = true;
-                options.ValidateScopes = true;
-            })
-            .ConfigureHostConfiguration(builder =>
-            {
-                builder.AddJsonFile("appsettings.json", true, false);
-                builder.AddJsonFile($"appsettings.{tmpApplicationContext.Environment.EnvironmentName}.json", true,
-                    false);
-            })
-            .ConfigureAppConfiguration((context, builder) =>
-            {
-                LogVerbose("Configure app configuration");
-                builder.AddLoggingConfiguration(loggingConfiguration, "Serilog");
-                var appContext = GetContext(context.HostingEnvironment, context.Configuration);
-                foreach (var appConfigurationAction in appConfigurationActions)
-                {
-                    appConfigurationAction(appContext, context, builder);
-                }
-
-                LogVerbose("Configure app configuration in modules");
-                foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpApplicationContext))
-                {
-                    moduleRegistration.ConfigureAppConfiguration(appContext, builder);
-                }
-            })
-            .ConfigureServices((context, services) =>
-            {
-                LogVerbose("Configure app services");
-                services.AddSingleton<ISerilogConfiguration>(loggingConfiguration);
-                services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
-                services.AddSingleton(typeof(IApplication), this);
-                services.AddSingleton(typeof(Application), this);
-                services.AddSingleton(GetType(), this);
-                services.AddHostedService<ApplicationLifetimeService>();
-                services.AddTransient<IScheduler, Scheduler>();
-                services.AddFluentValidationExtensions();
-                services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
-
-                var appContext = GetContext(context.HostingEnvironment, context.Configuration);
-                foreach (var servicesConfigurationAction in servicesConfigurationActions)
-                {
-                    servicesConfigurationAction(appContext, context, services);
-                }
-
-                foreach (var moduleRegistration in GetEnabledModuleRegistrations(appContext))
-                {
-                    moduleRegistration.ConfigureOptions(appContext, services);
-                    moduleRegistration.ConfigureServices(appContext, services);
-                }
-            }).ConfigureLogging((context, builder) =>
-            {
-                var applicationOptions = GetApplicationOptions(context.HostingEnvironment, context.Configuration);
-                LogVerbose("Configure logging");
-                builder.AddConfiguration(context.Configuration.GetSection("Logging"));
-                var loggerConfiguration = new LoggerConfiguration();
-                loggerConfiguration.ReadFrom.Configuration(context.Configuration);
-                loggerConfiguration
-                    .Enrich.FromLogContext()
-                    .Enrich.WithMachineName()
-                    .Enrich.WithProperty("App", applicationOptions.Name)
-                    .Enrich.WithProperty("AppVersion", applicationOptions.Version);
-
-                if (applicationOptions.EnableConsoleLogging == true)
-                {
-                    loggerConfiguration.WriteTo.Console(outputTemplate: applicationOptions.ConsoleLogFormat);
-                }
-
-                var appContext = GetContext(context.HostingEnvironment, context.Configuration);
-                ConfigureLogging(appContext,
-                    loggerConfiguration);
-                foreach (var (key, value) in
-                         logEventLevels)
-                {
-                    loggerConfiguration.MinimumLevel.Override(key, value);
-                }
-
-                foreach (var moduleRegistration in GetEnabledModuleRegistrations(appContext))
-                {
-                    moduleRegistration.ConfigureLogging(tmpApplicationContext, loggerConfiguration);
-                }
-
-                foreach (var loggerConfigurationAction in loggerConfigurationActions)
-                {
-                    loggerConfigurationAction(appContext, loggerConfiguration);
-                }
-
-                Log.Logger = loggerConfiguration.CreateLogger();
-            });
-
-        LogVerbose("Configure host builder in modules");
-        foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpApplicationContext))
-        {
-            moduleRegistration.ConfigureHostBuilder(tmpApplicationContext, hostBuilder);
-        }
-
-        LogVerbose("Configure host builder");
-        configure?.Invoke(hostBuilder);
-        LogVerbose("Create host builder done");
-        return hostBuilder;
-    }
-
-    protected IHost CreateAppHost(Action<IHostBuilder>? configure = null)
-    {
-        LogVerbose("Create app host start");
-
-        if (appHost is not null)
-        {
-            LogVerbose("App host is already built");
-
-            return appHost;
-        }
-
-        LogVerbose("Configure host builder");
-
-        var hostBuilder = ConfigureHostBuilder(configure);
-
-        LogVerbose("Build host");
-        var host = hostBuilder.Build();
-
-        appHost = host;
-        LogVerbose("Create app host done");
-        return appHost;
-    }
-
-    private IHostBuilder CreateHostBuilder(string[] hostBuilderArgs)
-    {
-        var builder = Host.CreateDefaultBuilder(hostBuilderArgs);
-        ConfigureHostBuilder(builder);
-        return builder;
-    }
-
-    protected virtual void ConfigureHostBuilder(IHostBuilder builder)
-    {
-        builder.ConfigureHostConfiguration(ConfigureHostConfiguration);
-        builder.ConfigureAppConfiguration(ConfigureAppConfiguration);
-    }
 
     protected virtual void ConfigureHostConfiguration(IConfigurationBuilder configurationBuilder)
     {
@@ -384,9 +224,9 @@ public abstract class Application : IApplication, IAsyncDisposable
 
     public async Task RunAsync()
     {
-        if (currentCommand?.OnBeforeRunAsync is not null)
+        if (CurrentCommand?.OnBeforeRunAsync is not null)
         {
-            var shouldContinue = await currentCommand.OnBeforeRunAsync();
+            var shouldContinue = await CurrentCommand.OnBeforeRunAsync();
             if (!shouldContinue)
             {
                 return;
@@ -395,10 +235,9 @@ public abstract class Application : IApplication, IAsyncDisposable
 
         LogVerbose("Run app start");
         LogVerbose("Build and init");
-        var host = await BuildAndInitAsync();
+        var context = await BuildAppContextAsync();
 
         InternalLogger.LogInformation("Check required modules");
-        var context = GetContext(host.Services);
         var modulesCheckSuccess = true;
         foreach (var registration in GetEnabledModuleRegistrations(context))
         {
@@ -425,86 +264,30 @@ public abstract class Application : IApplication, IAsyncDisposable
         }
 
 
-        if (currentCommand?.OnAfterRunAsync is not null)
+        if (CurrentCommand?.OnAfterRunAsync is not null)
         {
-            var shouldContinue = await currentCommand.OnAfterRunAsync();
+            var shouldContinue = await CurrentCommand.OnAfterRunAsync();
             if (!shouldContinue)
             {
                 return;
             }
         }
 
-        await host.RunAsync();
+        await DoRunAsync();
     }
 
-    public async Task<IHost> StartAsync()
-    {
-        var host = await BuildAndInitAsync();
+    protected abstract Task DoRunAsync();
 
-        await host.StartAsync();
-        return host;
-    }
+    protected abstract Task<ApplicationContext> BuildAppContextAsync();
 
-    public async Task StopAsync() => await CreateAppHost().StopAsync();
+    public abstract Task StopAsync();
 
-    public async Task ExecuteAsync(Func<IServiceProvider, Task> command)
-    {
-        var host = await BuildAndInitAsync(builder => builder.UseConsoleLifetime());
-
-        var serviceProvider = host.Services;
-
-        try
-        {
-            using var scope = serviceProvider.CreateScope();
-            await command(scope.ServiceProvider);
-        }
-        catch (Exception ex)
-        {
-            var logger = serviceProvider.GetRequiredService<ILogger<Application>>();
-            logger.LogError(ex, "Error: {ErrorText}", ex.ToString());
-        }
-    }
-
-    public IHostBuilder GetHostBuilder() => ConfigureHostBuilder();
-
-    public IServiceProvider GetServiceProvider() => CreateAppHost().Services;
-
-    public T? GetService<T>() => GetServiceProvider().GetService<T>();
-
-    [PublicAPI]
-    protected void RegisterModule<TModule, TModuleOptions>(
-        Action<IConfiguration, IHostEnvironment, TModuleOptions>? configureOptions = null,
-        string? optionsKey = null)
-        where TModule : IApplicationModule<TModuleOptions>, new() where TModuleOptions : BaseModuleOptions, new()
-    {
-        if (appHost is not null)
-        {
-            throw new InvalidOperationException("App host is already built. Can't add modules after it");
-        }
-
-        var instance = new TModule();
-        if (!instance.AllowMultiple && HasModule<TModule>())
-        {
-            throw new InvalidOperationException($"Module {typeof(TModule)} already registered");
-        }
-
-        moduleRegistrations.Add(
-            new ApplicationModuleRegistration<TModule, TModuleOptions>(instance, configureOptions, optionsKey));
-    }
-
-    protected virtual void InitApplication()
-    {
-    }
-
-    public async Task<IHost> BuildAndInitAsync(Action<IHostBuilder>? configure = null)
+    protected async Task InitAsync(IServiceProvider serviceProvider)
     {
         LogVerbose("Build and init async start");
-
-        var host = CreateAppHost(configure);
-
-        if (currentCommand?.IsInitDisabled != true)
+        if (CurrentCommand?.IsInitDisabled != true)
         {
-            using var scope = host.Services.CreateScope();
+            using var scope = serviceProvider.CreateScope();
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<Application>>();
             logger.LogInformation("Init modules");
             var registrations = GetEnabledModuleRegistrations(GetContext(scope.ServiceProvider));
@@ -523,22 +306,44 @@ public abstract class Application : IApplication, IAsyncDisposable
         }
 
         LogVerbose("Build and init async done");
-
-        return host;
     }
 
-    [PublicAPI]
-    protected ApplicationContext GetContext() => appHost is not null
-        ? GetContext(appHost.Services)
-        : throw new InvalidOperationException("App host is not built yet");
+
+    protected abstract bool CanAddModule();
 
     [PublicAPI]
-    protected ApplicationContext GetContext(IServiceProvider serviceProvider) =>
-        GetContext(serviceProvider.GetRequiredService<IHostEnvironment>(),
-            serviceProvider.GetRequiredService<IConfiguration>(),
-            serviceProvider.GetRequiredService<ILogger<Application>>());
+    protected void RegisterModule<TModule, TModuleOptions>(
+        Action<IConfiguration, IAppEnvironment, TModuleOptions>? configureOptions = null,
+        string? optionsKey = null)
+        where TModule : IApplicationModule<TModuleOptions>, new() where TModuleOptions : BaseModuleOptions, new()
+    {
+        if (!CanAddModule())
+        {
+            throw new InvalidOperationException("App host is already built. Can't add modules after it");
+        }
 
-    protected ApplicationContext GetContext(IHostEnvironment environment, IConfiguration configuration,
+        var instance = new TModule();
+        if (!instance.AllowMultiple && HasModule<TModule>())
+        {
+            throw new InvalidOperationException($"Module {typeof(TModule)} already registered");
+        }
+
+        moduleRegistrations.Add(
+            new ApplicationModuleRegistration<TModule, TModuleOptions>(instance, configureOptions, optionsKey));
+    }
+
+    protected virtual void InitApplication()
+    {
+    }
+
+
+    [PublicAPI]
+    protected abstract ApplicationContext GetContext();
+
+    [PublicAPI]
+    protected abstract ApplicationContext GetContext(IServiceProvider serviceProvider);
+
+    protected ApplicationContext GetContext(IAppEnvironment environment, IConfiguration configuration,
         ILogger<Application>? logger = null)
     {
         var applicationOptions = GetApplicationOptions(environment, configuration);
@@ -547,7 +352,7 @@ public abstract class Application : IApplication, IAsyncDisposable
             logger ?? InternalLogger);
     }
 
-    public async Task OnStarted(IConfiguration configuration, IHostEnvironment environment,
+    public async Task OnStarted(IConfiguration configuration, IAppEnvironment environment,
         IServiceProvider serviceProvider)
     {
         var logger = serviceProvider.GetRequiredService<ILogger<Application>>();
@@ -567,11 +372,11 @@ public abstract class Application : IApplication, IAsyncDisposable
         }
     }
 
-    protected virtual Task OnStartedAsync(IConfiguration configuration, IHostEnvironment environment,
+    protected virtual Task OnStartedAsync(IConfiguration configuration, IAppEnvironment environment,
         IServiceProvider serviceProvider) =>
         Task.CompletedTask;
 
-    public async Task OnStopping(IConfiguration configuration, IHostEnvironment environment,
+    public async Task OnStopping(IConfiguration configuration, IAppEnvironment environment,
         IServiceProvider serviceProvider)
     {
         var logger = serviceProvider.GetRequiredService<ILogger<Application>>();
@@ -591,11 +396,11 @@ public abstract class Application : IApplication, IAsyncDisposable
         }
     }
 
-    protected virtual Task OnStoppingAsync(IConfiguration configuration, IHostEnvironment environment,
+    protected virtual Task OnStoppingAsync(IConfiguration configuration, IAppEnvironment environment,
         IServiceProvider serviceProvider) =>
         Task.CompletedTask;
 
-    public async Task OnStopped(IConfiguration configuration, IHostEnvironment environment,
+    public async Task OnStopped(IConfiguration configuration, IAppEnvironment environment,
         IServiceProvider serviceProvider)
     {
         var logger = serviceProvider.GetRequiredService<ILogger<Application>>();
@@ -615,7 +420,7 @@ public abstract class Application : IApplication, IAsyncDisposable
         }
     }
 
-    protected virtual Task OnStoppedAsync(IConfiguration configuration, IHostEnvironment environment,
+    protected virtual Task OnStoppedAsync(IConfiguration configuration, IAppEnvironment environment,
         IServiceProvider serviceProvider) =>
         Task.CompletedTask;
 
@@ -639,26 +444,26 @@ public abstract class Application : IApplication, IAsyncDisposable
 
     public Application ConfigureLogLevel(string source, LogEventLevel level)
     {
-        logEventLevels.Add(source, level);
+        LogEventLevels.Add(source, level);
         return this;
     }
 
     public Application ConfigureLogging(Action<ApplicationContext, LoggerConfiguration> configure)
     {
-        loggerConfigurationActions.Add(configure);
+        LoggerConfigurationActions.Add(configure);
         return this;
     }
 
     public Application ConfigureServices(
-        Action<ApplicationContext, HostBuilderContext, IServiceCollection> configure)
+        Action<ApplicationContext, IServiceCollection> configure)
     {
-        servicesConfigurationActions.Add(configure);
+        ServicesConfigurationActions.Add(configure);
         return this;
     }
 
     public Application ConfigureServices(Action<IServiceCollection> configure)
     {
-        servicesConfigurationActions.Add((_, _, services) =>
+        ServicesConfigurationActions.Add((_, services) =>
         {
             configure(services);
         });
@@ -666,9 +471,9 @@ public abstract class Application : IApplication, IAsyncDisposable
     }
 
     public Application ConfigureAppConfiguration(
-        Action<ApplicationContext, HostBuilderContext, IConfigurationBuilder> configure)
+        Action<ApplicationContext, IConfigurationBuilder> configure)
     {
-        appConfigurationActions.Add(configure);
+        AppConfigurationActions.Add(configure);
         return this;
     }
 
@@ -680,7 +485,7 @@ public abstract class Application : IApplication, IAsyncDisposable
     }
 
     public Application AddModule<TModule, TModuleOptions>(
-        Action<IConfiguration, IHostEnvironment, TModuleOptions> configureOptions,
+        Action<IConfiguration, IAppEnvironment, TModuleOptions> configureOptions,
         string? optionsKey = null)
         where TModule : IApplicationModule<TModuleOptions>, new()
         where TModuleOptions : BaseModuleOptions, new()
@@ -703,7 +508,7 @@ public abstract class Application : IApplication, IAsyncDisposable
 [PublicAPI]
 public class ApplicationContext
 {
-    public ApplicationContext(string name, string version, IHostEnvironment environment,
+    public ApplicationContext(string name, string version, IAppEnvironment environment,
         IConfiguration configuration, ILogger logger)
     {
         Name = name;
@@ -715,17 +520,27 @@ public class ApplicationContext
 
     public string Name { get; }
     public string Version { get; }
-    public IHostEnvironment Environment { get; }
+    public IAppEnvironment Environment { get; }
     public IConfiguration Configuration { get; }
     public ILogger Logger { get; }
 }
 
-internal class DummyEnvironment : IHostEnvironment
+public interface IAppEnvironment
 {
-    public string EnvironmentName { get; set; } = "";
-    public string ApplicationName { get; set; } = "";
+    string EnvironmentName { get; }
+    string ApplicationName { get; }
+    bool IsDevelopment();
+    bool IsProduction();
+}
+
+internal class DummyEnvironment : IAppEnvironment
+{
     public string ContentRootPath { get; set; } = "";
     public IFileProvider ContentRootFileProvider { get; set; } = null!;
+    public string ApplicationName { get; } = "";
+    public string EnvironmentName { get; } = "";
+    public bool IsDevelopment() => true;
+    public bool IsProduction() => false;
 }
 
 internal record ApplicationCommand(string Name, bool IsInitDisabled = false, bool EnableVerboseLogging = false,
