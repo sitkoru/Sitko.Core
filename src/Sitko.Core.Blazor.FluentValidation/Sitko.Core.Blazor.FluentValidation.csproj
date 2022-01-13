@@ -7,5 +7,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App.Blazor\Sitko.Core.App.Blazor.csproj"/>
   </ItemGroup>
-  
+
 </Project>
