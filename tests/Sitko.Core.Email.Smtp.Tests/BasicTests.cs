@@ -20,7 +20,7 @@ public class SmtpTestsScope : BaseTestScope<TestApplication>
     protected override TestApplication CreateApplication()
     {
         var app = new TestApplication(Array.Empty<string>());
-        app.ConfigureAppConfiguration((_, _, builder) =>
+        app.ConfigureAppConfiguration((_, builder) =>
         {
             builder.AddJsonFile("appsettings.json");
         });

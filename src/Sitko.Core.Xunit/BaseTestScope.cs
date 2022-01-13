@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Serilog;
@@ -24,13 +23,13 @@ public interface IBaseTestScope : IAsyncDisposable
 }
 
 public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
-    where TApplication : Application where TConfig : BaseTestConfig, new()
+    where TApplication : HostedApplication where TConfig : BaseTestConfig, new()
 {
     private bool isApplicationStarted;
     private TApplication? scopeApplication;
     protected IServiceProvider? ServiceProvider { get; set; }
     [PublicAPI] protected IConfiguration? Configuration { get; set; }
-    [PublicAPI] protected IHostEnvironment? Environment { get; set; }
+    [PublicAPI] protected IAppEnvironment? Environment { get; set; }
     [PublicAPI] protected string? Name { get; private set; }
 
     public TConfig Config => GetService<IOptions<TConfig>>().Value;
@@ -40,15 +39,15 @@ public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
         Name = name;
         scopeApplication = CreateApplication();
 
-        scopeApplication.ConfigureAppConfiguration((_, builderContext, builder) =>
+        scopeApplication.ConfigureAppConfiguration((applicationContext, builder) =>
         {
             builder.AddJsonFile("appsettings.json", true);
-            builder.AddJsonFile($"appsettings.{builderContext.HostingEnvironment.EnvironmentName}.json", true);
+            builder.AddJsonFile($"appsettings.{applicationContext.Environment.EnvironmentName}.json", true);
         });
 
-        scopeApplication.ConfigureServices((_, context, services) =>
+        scopeApplication.ConfigureServices((context, services) =>
         {
-            ConfigureServices(context.Configuration, context.HostingEnvironment, services, name);
+            ConfigureServices(context.Configuration, context.Environment, services, name);
             services.Configure<TConfig>(context.Configuration.GetSection("Tests"));
         });
 
@@ -60,10 +59,9 @@ public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
         });
 
         scopeApplication = ConfigureApplication(scopeApplication, name);
-        var host = await scopeApplication.BuildAndInitAsync();
-        ServiceProvider = host.Services.CreateScope().ServiceProvider;
+        ServiceProvider = (await scopeApplication.GetServiceProviderAsync()).CreateScope().ServiceProvider;
         Configuration = ServiceProvider.GetService<IConfiguration>();
-        Environment = ServiceProvider.GetService<IHostEnvironment>();
+        Environment = ServiceProvider.GetService<IAppEnvironment>();
     }
 
 
@@ -127,14 +125,14 @@ public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
     protected virtual TApplication ConfigureApplication(TApplication application, string name) => application;
 
     protected virtual IServiceCollection ConfigureServices(IConfiguration configuration,
-        IHostEnvironment environment, IServiceCollection services, string name) =>
+        IAppEnvironment environment, IServiceCollection services, string name) =>
         services;
 
     public IServiceScope CreateScope() => ServiceProvider!.CreateScope();
 }
 
 public abstract class BaseTestScope<TApplication> : BaseTestScope<TApplication, BaseTestConfig>
-    where TApplication : Application
+    where TApplication : HostedApplication
 {
 }
 
@@ -142,7 +140,7 @@ public abstract class BaseTestScope : BaseTestScope<TestApplication, BaseTestCon
 {
 }
 
-public class TestApplication : Application
+public class TestApplication : HostedApplication
 {
     public TestApplication(string[] args) : base(args)
     {

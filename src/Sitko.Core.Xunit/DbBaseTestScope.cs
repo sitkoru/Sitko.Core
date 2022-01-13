@@ -5,7 +5,6 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.Db.InMemory;
 using Sitko.Core.Db.Postgres;
@@ -14,15 +13,15 @@ namespace Sitko.Core.Xunit;
 
 [PublicAPI]
 public abstract class DbBaseTestScope<TApplication, TConfig> : BaseTestScope<TApplication, TConfig>
-    where TApplication : Application where TConfig : BaseDbTestConfig, new()
+    where TApplication : HostedApplication where TConfig : BaseDbTestConfig, new()
 {
     private readonly List<DbContext> dbContexts = new();
 
     private readonly List<Func<Task>> dbInitActions = new();
 
     protected void AddDbContext<TDbContext>(TApplication application, string name, Action<DbContextOptionsBuilder,
-        IConfiguration, IHostEnvironment>? configureInMemory = null, Action<IConfiguration,
-        IHostEnvironment, PostgresDatabaseModuleOptions<TDbContext>, Guid,
+        IConfiguration, IAppEnvironment>? configureInMemory = null, Action<IConfiguration,
+        IAppEnvironment, PostgresDatabaseModuleOptions<TDbContext>, Guid,
         string>? configurePostgres = null, Func<TDbContext, Task>? initDbContext = null) where TDbContext : DbContext
     {
         var dbName = $"{typeof(TDbContext).Name}_{name}";
@@ -102,7 +101,7 @@ public abstract class DbBaseTestScope<TApplication, TConfig> : BaseTestScope<TAp
 
 [PublicAPI]
 public abstract class DbBaseTestScope<TApplication, TDbContext, TConfig> : DbBaseTestScope<TApplication, TConfig>
-    where TDbContext : DbContext where TApplication : Application where TConfig : BaseDbTestConfig, new()
+    where TDbContext : DbContext where TApplication : HostedApplication where TConfig : BaseDbTestConfig, new()
 {
     protected override TApplication ConfigureApplication(TApplication application, string name)
     {
@@ -114,7 +113,7 @@ public abstract class DbBaseTestScope<TApplication, TDbContext, TConfig> : DbBas
 
 
     protected virtual void ConfigureInMemoryDatabaseModule(DbContextOptionsBuilder builder,
-        IConfiguration configuration, IHostEnvironment environment)
+        IConfiguration configuration, IAppEnvironment environment)
     {
     }
 
@@ -123,7 +122,7 @@ public abstract class DbBaseTestScope<TApplication, TDbContext, TConfig> : DbBas
     protected virtual Task InitDbContextAsync(TDbContext dbContext) => Task.CompletedTask;
 
     protected virtual void ConfigurePostgresDatabaseModule<TSomeDbContext>(IConfiguration configuration,
-        IHostEnvironment environment, PostgresDatabaseModuleOptions<TSomeDbContext> moduleOptions, Guid applicationId,
+        IAppEnvironment environment, PostgresDatabaseModuleOptions<TSomeDbContext> moduleOptions, Guid applicationId,
         string dbName) where TSomeDbContext : DbContext
     {
     }

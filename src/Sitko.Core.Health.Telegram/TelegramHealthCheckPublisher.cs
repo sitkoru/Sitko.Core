@@ -3,56 +3,55 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sitko.Core.App;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace Sitko.Core.Health.Telegram
+namespace Sitko.Core.Health.Telegram;
+
+public class TelegramHealthCheckPublisher : BaseHealthCheckPublisher<TelegramHealthReporterModuleOptions>
 {
-    public class TelegramHealthCheckPublisher : BaseHealthCheckPublisher<TelegramHealthReporterModuleOptions>
+    private readonly ChatId chatId;
+    private readonly ITelegramBotClient telegramBotClient;
+
+    public TelegramHealthCheckPublisher(IOptionsMonitor<TelegramHealthReporterModuleOptions> options,
+        ILogger<TelegramHealthCheckPublisher> logger, IAppEnvironment hostingEnvironment,
+        IHttpClientFactory httpClientFactory) : base(options, logger, hostingEnvironment)
     {
-        private readonly ChatId chatId;
-        private readonly ITelegramBotClient telegramBotClient;
+        chatId = new ChatId(Options.ChatId);
+        telegramBotClient = new TelegramBotClient(Options.Token,
+            httpClientFactory.CreateClient());
+    }
 
-        public TelegramHealthCheckPublisher(IOptionsMonitor<TelegramHealthReporterModuleOptions> options,
-            ILogger<TelegramHealthCheckPublisher> logger, IHostEnvironment hostingEnvironment,
-            IHttpClientFactory httpClientFactory) : base(options, logger, hostingEnvironment)
+    protected override Task DoSendAsync(string checkName, HealthReportEntry entry,
+        CancellationToken cancellationToken)
+    {
+        var serviceName = $"{HostingEnvironment.ApplicationName} ({Dns.GetHostName()})";
+        var title = entry.Status switch
         {
-            chatId = new ChatId(Options.ChatId);
-            telegramBotClient = new TelegramBotClient(Options.Token,
-                httpClientFactory.CreateClient());
-        }
+            HealthStatus.Unhealthy => $"Error in {serviceName}. Check: {checkName}",
+            HealthStatus.Degraded => $"Check {checkName} in {serviceName} is degraded",
+            HealthStatus.Healthy => $"Check {checkName} in {serviceName} is restored",
+            _ => $"Unknown check {checkName} status {entry.Status}"
+        };
+        var summary = string.IsNullOrEmpty(entry.Description) ? "No description" : entry.Description;
 
-        protected override Task DoSendAsync(string checkName, HealthReportEntry entry,
-            CancellationToken cancellationToken)
+
+        var text = $"{TelegramExtensions.TelegramRaw(title)}\n{TelegramExtensions.TelegramRaw(summary)}";
+
+        if (entry.Status == HealthStatus.Unhealthy || entry.Status == HealthStatus.Degraded)
         {
-            var serviceName = $"{HostingEnvironment.ApplicationName} ({Dns.GetHostName()})";
-            string title = entry.Status switch
+            if (entry.Exception != null)
             {
-                HealthStatus.Unhealthy => $"Error in {serviceName}. Check: {checkName}",
-                HealthStatus.Degraded => $"Check {checkName} in {serviceName} is degraded",
-                HealthStatus.Healthy => $"Check {checkName} in {serviceName} is restored",
-                _ => $"Unknown check {checkName} status {entry.Status}"
-            };
-            string summary = string.IsNullOrEmpty(entry.Description) ? "No description" : entry.Description;
-
-
-            string text = $"{TelegramExtensions.TelegramRaw(title)}\n{TelegramExtensions.TelegramRaw(summary)}";
-
-            if (entry.Status == HealthStatus.Unhealthy || entry.Status == HealthStatus.Degraded)
-            {
-                if (entry.Exception != null)
-                {
-                    text += $"\n`{entry.Exception}`";
-                }
+                text += $"\n`{entry.Exception}`";
             }
-
-            return telegramBotClient.SendTextMessageAsync(chatId,
-                text, ParseMode.Markdown,
-                cancellationToken: cancellationToken);
         }
+
+        return telegramBotClient.SendTextMessageAsync(chatId,
+            text, ParseMode.Markdown,
+            cancellationToken: cancellationToken);
     }
 }

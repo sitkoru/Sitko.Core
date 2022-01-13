@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using Sitko.Core.App;
@@ -102,7 +101,7 @@ public class
     }
 
     private void ConfigureNpgsql(DbContextOptionsBuilder options,
-        IServiceProvider serviceProvider, IConfiguration configuration, IHostEnvironment environment)
+        IServiceProvider serviceProvider, IConfiguration configuration, IAppEnvironment environment)
     {
         var config = GetOptions(serviceProvider);
         options.UseNpgsql(CreateBuilder(config).ConnectionString,

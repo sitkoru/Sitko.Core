@@ -2,7 +2,6 @@ using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Sitko.Core.App;
 using Sitko.Core.App.Web;
@@ -13,7 +12,7 @@ public class SwaggerModule : BaseApplicationModule<SwaggerModuleOptions>, IWebAp
 {
     public override string OptionsKey => "Swagger";
 
-    public void ConfigureAfterUseRouting(IConfiguration configuration, IHostEnvironment environment,
+    public void ConfigureAfterUseRouting(IConfiguration configuration, IAppEnvironment environment,
         IApplicationBuilder appBuilder)
     {
         var config = GetOptions(appBuilder.ApplicationServices);

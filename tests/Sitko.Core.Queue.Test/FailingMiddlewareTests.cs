@@ -1,85 +1,84 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Sitko.Core.Queue.Tests
+namespace Sitko.Core.Queue.Tests;
+
+public class FailingMiddlewareTests : BaseTestQueueTest<FailingMiddlewareQueueTestScope>
 {
-    public class FailingMiddlewareTests : BaseTestQueueTest<FailingMiddlewareQueueTestScope>
+    public FailingMiddlewareTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
-        public FailingMiddlewareTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
-        {
-        }
-
-        [Fact]
-        public async Task FailingPublish()
-        {
-            var scope = await GetScopeAsync();
-
-            var queue = scope.GetService<IQueue>();
-
-            var publishResult = await queue.PublishAsync(new TestMessage());
-            Assert.False(publishResult.IsSuccess);
-        }
-
-        [Fact]
-        public async Task FailingReceive()
-        {
-            var scope = await GetScopeAsync();
-
-            var queue = scope.GetService<IQueue>();
-
-            var mw = scope.GetService<FailingMiddleware>();
-
-
-            var received = false;
-            await queue.SubscribeAsync<TestMessage>((_, _) =>
-            {
-                received = true;
-                return Task.FromResult(true);
-            });
-
-            mw.FailOnPublish = false;
-            var publishResult = await queue.PublishAsync(new TestMessage());
-            Assert.True(publishResult.IsSuccess);
-            Assert.False(received);
-
-            mw.FailOnReceive = false;
-
-            publishResult = await queue.PublishAsync(new TestMessage());
-            Assert.True(publishResult.IsSuccess);
-            Assert.True(received);
-        }
     }
 
-    public class FailingMiddlewareQueueTestScope : BaseTestQueueTestScope
+    [Fact]
+    public async Task FailingPublish()
     {
-        protected override void Configure(IConfiguration configuration, IHostEnvironment environment,
-            TestQueueOptions options, string name) =>
-            options.RegisterMiddleware<FailingMiddleware>();
+        var scope = await GetScopeAsync();
+
+        var queue = scope.GetService<IQueue>();
+
+        var publishResult = await queue.PublishAsync(new TestMessage());
+        Assert.False(publishResult.IsSuccess);
     }
 
-    public class FailingMiddleware : BaseQueueMiddleware
+    [Fact]
+    public async Task FailingReceive()
     {
-        public bool FailOnPublish { get; set; } = true;
-        public bool FailOnReceive { get; set; } = true;
+        var scope = await GetScopeAsync();
 
-        public override Task<QueuePublishResult> PublishAsync<T>(T message, QueueMessageContext messageContext,
-            PublishAsyncDelegate<T>? callback = null)
+        var queue = scope.GetService<IQueue>();
+
+        var mw = scope.GetService<FailingMiddleware>();
+
+
+        var received = false;
+        await queue.SubscribeAsync<TestMessage>((_, _) =>
         {
-            if (!FailOnPublish)
-            {
-                return base.PublishAsync(message, messageContext, callback);
-            }
+            received = true;
+            return Task.FromResult(true);
+        });
 
-            var result = new QueuePublishResult();
-            result.SetError("Middleware failed publish");
-            return Task.FromResult(result);
+        mw.FailOnPublish = false;
+        var publishResult = await queue.PublishAsync(new TestMessage());
+        Assert.True(publishResult.IsSuccess);
+        Assert.False(received);
+
+        mw.FailOnReceive = false;
+
+        publishResult = await queue.PublishAsync(new TestMessage());
+        Assert.True(publishResult.IsSuccess);
+        Assert.True(received);
+    }
+}
+
+public class FailingMiddlewareQueueTestScope : BaseTestQueueTestScope
+{
+    protected override void Configure(IConfiguration configuration, IAppEnvironment environment,
+        TestQueueOptions options, string name) =>
+        options.RegisterMiddleware<FailingMiddleware>();
+}
+
+public class FailingMiddleware : BaseQueueMiddleware
+{
+    public bool FailOnPublish { get; set; } = true;
+    public bool FailOnReceive { get; set; } = true;
+
+    public override Task<QueuePublishResult> PublishAsync<T>(T message, QueueMessageContext messageContext,
+        PublishAsyncDelegate<T>? callback = null)
+    {
+        if (!FailOnPublish)
+        {
+            return base.PublishAsync(message, messageContext, callback);
         }
 
-        public override Task<bool> ReceiveAsync<T>(T message, QueueMessageContext messageContext,
-            ReceiveAsyncDelegate<T>? callback = null) =>
-            FailOnReceive ? Task.FromResult(false) : base.ReceiveAsync(message, messageContext, callback);
+        var result = new QueuePublishResult();
+        result.SetError("Middleware failed publish");
+        return Task.FromResult(result);
     }
+
+    public override Task<bool> ReceiveAsync<T>(T message, QueueMessageContext messageContext,
+        ReceiveAsyncDelegate<T>? callback = null) =>
+        FailOnReceive ? Task.FromResult(false) : base.ReceiveAsync(message, messageContext, callback);
 }

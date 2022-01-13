@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -13,12 +14,12 @@ public class ConfigurationTests : BaseTest
     }
 
     [Fact]
-    public void NestedModules()
+    public async Task NestedModules()
     {
         var app = new TestApplication(Array.Empty<string>());
         app.AddModule<TestModuleFoo, TestModuleFooOptions>();
         app.AddModule<TestModuleFooBar, TestModuleFooBarOptions>();
-        app.GetServiceProvider();
+        await app.GetServiceProviderAsync();
         var options = app.GetModulesOptions();
         options.Should().HaveCount(2);
     }
