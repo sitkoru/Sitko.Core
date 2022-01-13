@@ -1,36 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Sitko.Core.App.Blazor.Forms;
-using Sitko.Core.App.Collections;
+using Microsoft.AspNetCore.Components;
 using Sitko.Core.Apps.Blazor.Data.Entities;
+using Sitko.Core.Apps.Blazor.Data.Repositories;
+using Sitko.Core.Blazor.AntDesignComponents.Components;
 using Sitko.Core.Repository;
-using Sitko.Core.Storage;
 
-namespace Sitko.Core.Apps.Blazor.Forms
+namespace Sitko.Core.Apps.Blazor.Forms;
+
+public class BarForm : BaseAntRepositoryForm<BarModel, Guid, BarRepository>
 {
-    using Core.Blazor.AntDesignComponents.Components;
-    using Data.Repositories;
-    using Microsoft.AspNetCore.Components;
-    using Microsoft.EntityFrameworkCore;
+    [Parameter] public RenderFragment<BarForm> ChildContent { get; set; } = null!;
 
-    public class BarForm : BaseAntRepositoryForm<BarModel, Guid, BarRepository>
+    protected override RenderFragment ChildContentFragment => ChildContent(this);
+
+    protected override Task ConfigureQueryAsync(IRepositoryQuery<BarModel> query)
     {
-        protected override Task ConfigureQueryAsync(IRepositoryQuery<BarModel> query)
-        {
-            query.Include(bar => bar.Foos).Include(bar => bar.Foo);
-            return Task.CompletedTask;
-        }
-
-        public void SetFoo() => Entity.Foo = new FooModel();
-
-        public void AddFoo() => Entity.Foos.Add(new FooModel());
-
-        public void DeleteFoo() => Entity.Foo = null;
-
-        [Parameter] public RenderFragment<BarForm> ChildContent { get; set; } = null!;
-
-        protected override RenderFragment ChildContentFragment => ChildContent(this);
+        query.Include(bar => bar.Foos).Include(bar => bar.Foo);
+        return Task.CompletedTask;
     }
+
+    public void SetFoo() => Entity.Foo = new FooModel();
+
+    public void AddFoo() => Entity.Foos.Add(new FooModel());
+
+    public void DeleteFoo() => Entity.Foo = null;
 }
