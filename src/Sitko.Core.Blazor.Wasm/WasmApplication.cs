@@ -58,18 +58,6 @@ public abstract class WasmApplication : Application
 
         LogInternal("Create tmp host builder");
 
-        var tmpHostBuilder = CreateHostBuilder(Args);
-        // .UseDefaultServiceProvider(options =>
-        // {
-        //     options.ValidateOnBuild = false;
-        //     options.ValidateScopes = true;
-        // })
-        // .ConfigureLogging(builder => { builder.SetMinimumLevel(LogLevel.Information); }).Build();
-        tmpHostBuilder.Logging.SetMinimumLevel(LogLevel.Information);
-        //tmpHostBuilder.ConfigureContainer(options => { });;
-        var tmpHost = tmpHostBuilder.Build();
-        var tmpApplicationContext =
-            GetContext(tmpHostBuilder.HostEnvironment, tmpHost.Configuration);
 
         LogInternal("Init application");
 
@@ -77,41 +65,37 @@ public abstract class WasmApplication : Application
 
         LogInternal("Create host builder");
         var hostBuilder = CreateHostBuilder(Args);
-        // TODO: appsettings?
-        // var hostBuilder = CreateHostBuilder(Args)
-        LogVerbose("Configure app configuration");
-        var tmpContext = GetContext(tmpHost.Services);
+        var applicationContext = GetContext(hostBuilder.HostEnvironment, hostBuilder.Configuration);
+        var enabledModuleRegistrations = GetEnabledModuleRegistrations(applicationContext);
+        LogInternal("Configure app configuration");
         foreach (var appConfigurationAction in AppConfigurationActions)
         {
-            appConfigurationAction(tmpContext, hostBuilder.Configuration);
+            appConfigurationAction(applicationContext, hostBuilder.Configuration);
         }
 
-        LogVerbose("Configure app configuration in modules");
-        foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpApplicationContext))
+        LogInternal("Configure app configuration in modules");
+        foreach (var moduleRegistration in enabledModuleRegistrations)
         {
-            moduleRegistration.ConfigureAppConfiguration(tmpContext, hostBuilder.Configuration);
+            moduleRegistration.ConfigureAppConfiguration(applicationContext, hostBuilder.Configuration);
         }
 
-        LogVerbose("Configure app services");
-        hostBuilder.Services.AddSingleton<ISerilogConfiguration>(loggingConfiguration);
-        hostBuilder.Services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
+        LogInternal("Configure app services");
         hostBuilder.Services.AddSingleton(typeof(IApplication), this);
         hostBuilder.Services.AddSingleton(typeof(Application), this);
         hostBuilder.Services.AddSingleton(GetType(), this);
         hostBuilder.Services.AddSingleton<IApplicationContext, WasmApplicationContext>();
-        //hostBuilder.Services.AddHostedService<ApplicationLifetimeService>();
         hostBuilder.Services.AddTransient<IScheduler, Scheduler>();
         hostBuilder.Services.AddFluentValidationExtensions();
         hostBuilder.Services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
         foreach (var servicesConfigurationAction in ServicesConfigurationActions)
         {
-            servicesConfigurationAction(tmpContext, hostBuilder.Services);
+            servicesConfigurationAction(applicationContext, hostBuilder.Services);
         }
 
-        foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpContext))
+        foreach (var moduleRegistration in enabledModuleRegistrations)
         {
-            moduleRegistration.ConfigureOptions(tmpContext, hostBuilder.Services);
-            moduleRegistration.ConfigureServices(tmpContext, hostBuilder.Services);
+            moduleRegistration.ConfigureOptions(applicationContext, hostBuilder.Services);
+            moduleRegistration.ConfigureServices(applicationContext, hostBuilder.Services);
         }
 
         LogVerbose("Configure logging");
@@ -133,21 +117,21 @@ public abstract class WasmApplication : Application
             loggerConfiguration.MinimumLevel.Override(key, value);
         }
 
-        foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpContext))
+        foreach (var moduleRegistration in enabledModuleRegistrations)
         {
-            moduleRegistration.ConfigureLogging(tmpApplicationContext, loggerConfiguration);
+            moduleRegistration.ConfigureLogging(applicationContext, loggerConfiguration);
         }
 
         foreach (var loggerConfigurationAction in LoggerConfigurationActions)
         {
-            loggerConfigurationAction(tmpContext, loggerConfiguration);
+            loggerConfigurationAction(applicationContext, loggerConfiguration);
         }
 
         Log.Logger = loggerConfiguration.CreateLogger();
         hostBuilder.Logging.AddSerilog();
 
         LogInternal("Configure host builder in modules");
-        foreach (var configurationModule in GetEnabledModuleRegistrations(applicationContext)
+        foreach (var configurationModule in enabledModuleRegistrations
                      .Select(module => module.GetInstance())
                      .OfType<IWasmApplicationModule>())
         {
