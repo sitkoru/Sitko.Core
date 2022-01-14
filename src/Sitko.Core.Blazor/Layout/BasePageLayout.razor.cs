@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 
-namespace Sitko.Core.App.Blazor.Layout;
+namespace Sitko.Core.Blazor.Layout;
 
 public abstract partial class BasePageLayout<TLayoutData, TLayoutOptions>
     where TLayoutData : LayoutData where TLayoutOptions : LayoutOptions

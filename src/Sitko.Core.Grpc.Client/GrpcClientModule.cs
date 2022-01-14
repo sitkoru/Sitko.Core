@@ -20,7 +20,7 @@ public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOpti
     where TResolver : class, IGrpcServiceAddressResolver<TClient>
     where TGrpcClientModuleOptions : GrpcClientModuleOptions<TClient>, new()
 {
-    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
         TGrpcClientModuleOptions startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);
@@ -44,7 +44,7 @@ public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOpti
             .AddCheck<GrpcClientHealthCheck<TClient>>($"GRPC Client check: {typeof(TClient)}");
     }
 
-    public override async Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider)
+    public override async Task InitAsync(IApplicationContext context, IServiceProvider serviceProvider)
     {
         await base.InitAsync(context, serviceProvider);
         var resolver = serviceProvider.GetRequiredService<IGrpcServiceAddressResolver<TClient>>();

@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
 using MudBlazor;
 using Sitko.Blazor.ScriptInjector;
-using Sitko.Core.App.Blazor.Components;
 using Sitko.Core.App.Collections;
 using Sitko.Core.App.Helpers;
+using Sitko.Core.Blazor.Components;
 using Sitko.Core.Blazor.FileUpload;
 using Sitko.Core.Storage;
 

@@ -16,7 +16,7 @@ namespace Sitko.Core.ElasticStack;
 public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOptions>,
     IHostBuilderModule<ElasticStackModuleOptions>, ILoggingModule<ElasticStackModuleOptions>
 {
-    public void ConfigureHostBuilder(ApplicationContext context, IHostBuilder hostBuilder,
+    public void ConfigureHostBuilder(IApplicationContext context, IHostBuilder hostBuilder,
         ElasticStackModuleOptions startupOptions)
     {
         if (startupOptions.ApmEnabled)
@@ -87,13 +87,13 @@ public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOption
 
     public override string OptionsKey => "ElasticApm";
 
-    public void ConfigureLogging(ApplicationContext context, ElasticStackModuleOptions options,
+    public void ConfigureLogging(IApplicationContext context, ElasticStackModuleOptions options,
         LoggerConfiguration loggerConfiguration)
     {
         if (options.LoggingEnabled)
         {
             var rolloverAlias = string.IsNullOrEmpty(options.LoggingLiferRolloverAlias)
-                ? $"dotnet-logs-{context.Name.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}-{context.Environment.EnvironmentName.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}"
+                ? $"dotnet-logs-{context.Name.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}-{context.EnvironmentName.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}"
                 : options.LoggingLiferRolloverAlias;
             var sinkOptions = new ElasticsearchSinkOptions(options.ElasticSearchUrls)
             {

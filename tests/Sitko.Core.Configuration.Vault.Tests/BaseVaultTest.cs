@@ -21,7 +21,7 @@ public class VaultTestScope : BaseTestScope
         base.ConfigureApplication(application, name);
 
         application.AddVaultConfiguration();
-        application.ConfigureServices((_, context, collection) =>
+        application.ConfigureServices((context, collection) =>
         {
             collection.Configure<TestConfig>(context.Configuration.GetSection("test"));
             collection.Configure<TestConfig2>(context.Configuration.GetSection("test2"));

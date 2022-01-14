@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using Sitko.Core.App.Blazor.Layout;
+using Sitko.Core.Blazor.Layout;
 
 namespace Sitko.Core.Blazor.MudBlazorComponents;
 
@@ -13,8 +13,6 @@ public abstract class BaseMudLayout : BaseLayoutComponent<MudLayoutData, MudLayo
     protected RenderFragment? Extra { get; private set; }
 
     protected List<BreadcrumbItem> Breadcrumbs { get; private set; } = new();
-
-    protected void DrawerToggle() => DrawerOpen = !DrawerOpen;
 
     protected virtual MudTheme Theme
     {
@@ -59,7 +57,7 @@ public abstract class BaseMudLayout : BaseLayoutComponent<MudLayoutData, MudLayo
                             TableHover = "rgba(255,255,255, 0.03)",
                             TableStriped = "rgba(255,255,255, 0.02)",
                             GrayLight = "rgba(35,35,35, 1)",
-                            OverlayDark = "rgba(33,33,33, 0.9)",
+                            OverlayDark = "rgba(33,33,33, 0.9)"
                         }
                     };
                 default:
@@ -67,6 +65,8 @@ public abstract class BaseMudLayout : BaseLayoutComponent<MudLayoutData, MudLayo
             }
         }
     }
+
+    protected void DrawerToggle() => DrawerOpen = !DrawerOpen;
 
     protected override void ProcessLayoutDataChange(MudLayoutData layoutData)
     {

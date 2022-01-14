@@ -2,11 +2,11 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using Sitko.Core.App.Blazor.Forms;
+using Sitko.Core.Blazor.Forms;
 
 namespace Sitko.Core.Blazor.MudBlazorComponents;
 
-public class AntForm<TEntity> : BaseMudForm<TEntity>
+public class MudEntityForm<TEntity> : BaseMudForm<TEntity>
     where TEntity : class, new()
 {
     [EditorRequired] [Parameter] public RenderFragment<BaseMudForm<TEntity>> ChildContent { get; set; } = null!;

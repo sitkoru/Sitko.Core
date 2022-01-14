@@ -19,7 +19,7 @@ public abstract class RepositoriesModule<TConfig, TRepositoryType> : BaseApplica
 {
     public override bool AllowMultiple => true;
 
-    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
         TConfig startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);

@@ -17,14 +17,14 @@ namespace Sitko.Core.App;
 internal class ApplicationModuleRegistration<TModule, TModuleOptions> : ApplicationModuleRegistration
     where TModule : IApplicationModule<TModuleOptions>, new() where TModuleOptions : BaseModuleOptions, new()
 {
-    private readonly Action<IConfiguration, IHostEnvironment, TModuleOptions>? configureOptions;
+    private readonly Action<IApplicationContext, TModuleOptions>? configureOptions;
     private readonly TModule instance;
     private readonly string? optionsKey;
     private readonly Type? validatorType;
 
     public ApplicationModuleRegistration(
         TModule instance,
-        Action<IConfiguration, IHostEnvironment, TModuleOptions>? configureOptions = null,
+        Action<IApplicationContext, TModuleOptions>? configureOptions = null,
         string? optionsKey = null)
     {
         this.instance = instance;
@@ -46,10 +46,10 @@ internal class ApplicationModuleRegistration<TModule, TModuleOptions> : Applicat
 
     public override IApplicationModule GetInstance() => instance;
 
-    public override (string? optionsKey, object options) GetOptions(ApplicationContext applicationContext) =>
+    public override (string? optionsKey, object options) GetOptions(IApplicationContext applicationContext) =>
         (optionsKey, CreateOptions(applicationContext));
 
-    public override ApplicationModuleRegistration ConfigureOptions(ApplicationContext context,
+    public override ApplicationModuleRegistration ConfigureOptions(IApplicationContext context,
         IServiceCollection services)
     {
         var builder = services.AddOptions<TModuleOptions>()
@@ -58,7 +58,7 @@ internal class ApplicationModuleRegistration<TModule, TModuleOptions> : Applicat
                 options =>
                 {
                     options.Configure(context);
-                    configureOptions?.Invoke(context.Configuration, context.Environment, options);
+                    configureOptions?.Invoke(context, options);
                 });
 
         if (validatorType is not null)
@@ -72,7 +72,7 @@ internal class ApplicationModuleRegistration<TModule, TModuleOptions> : Applicat
     }
 
     public override ApplicationModuleRegistration ConfigureLogging(
-        ApplicationContext context,
+        IApplicationContext context,
         LoggerConfiguration loggerConfiguration)
     {
         if (instance is ILoggingModule<TModuleOptions> loggingModule)
@@ -84,7 +84,7 @@ internal class ApplicationModuleRegistration<TModule, TModuleOptions> : Applicat
         return this;
     }
 
-    public override ApplicationModuleRegistration ConfigureHostBuilder(ApplicationContext context,
+    public override ApplicationModuleRegistration ConfigureHostBuilder(IApplicationContext context,
         IHostBuilder hostBuilder)
     {
         if (instance is IHostBuilderModule<TModuleOptions> hostBuilderModule)
@@ -96,7 +96,7 @@ internal class ApplicationModuleRegistration<TModule, TModuleOptions> : Applicat
         return this;
     }
 
-    public override ApplicationModuleRegistration ConfigureAppConfiguration(ApplicationContext context,
+    public override ApplicationModuleRegistration ConfigureAppConfiguration(IApplicationContext context,
         IConfigurationBuilder configurationBuilder)
     {
         if (instance is IConfigurationModule<TModuleOptions> configurationModule)
@@ -110,7 +110,7 @@ internal class ApplicationModuleRegistration<TModule, TModuleOptions> : Applicat
     }
 
     public override (bool isSuccess, IEnumerable<Type> missingModules) CheckRequiredModules(
-        ApplicationContext context,
+        IApplicationContext context,
         Type[] registeredModules)
     {
         var options = CreateOptions(context);
@@ -126,14 +126,14 @@ internal class ApplicationModuleRegistration<TModule, TModuleOptions> : Applicat
         return (!missingModules.Any(), missingModules);
     }
 
-    public override bool IsEnabled(ApplicationContext context) => CreateOptions(context).Enabled;
+    public override bool IsEnabled(IApplicationContext context) => CreateOptions(context).Enabled;
 
-    private TModuleOptions CreateOptions(ApplicationContext applicationContext, bool validateOptions = false)
+    private TModuleOptions CreateOptions(IApplicationContext applicationContext, bool validateOptions = false)
     {
         var options = Activator.CreateInstance<TModuleOptions>();
         applicationContext.Configuration.Bind(optionsKey, options);
         options.Configure(applicationContext);
-        configureOptions?.Invoke(applicationContext.Configuration, applicationContext.Environment, options);
+        configureOptions?.Invoke(applicationContext, options);
         if (validatorType is not null && validateOptions)
         {
             try
@@ -159,7 +159,7 @@ internal class ApplicationModuleRegistration<TModule, TModuleOptions> : Applicat
     }
 
     public override ApplicationModuleRegistration ConfigureServices(
-        ApplicationContext context,
+        IApplicationContext context,
         IServiceCollection services)
     {
         var options = CreateOptions(context, true);
@@ -167,19 +167,19 @@ internal class ApplicationModuleRegistration<TModule, TModuleOptions> : Applicat
         return this;
     }
 
-    public override Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
+    public override Task ApplicationStopped(IApplicationContext applicationContext,
         IServiceProvider serviceProvider) =>
-        instance.ApplicationStopped(configuration, environment, serviceProvider);
+        instance.ApplicationStopped(applicationContext, serviceProvider);
 
-    public override Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
+    public override Task ApplicationStopping(IApplicationContext applicationContext,
         IServiceProvider serviceProvider) =>
-        instance.ApplicationStopping(configuration, environment, serviceProvider);
+        instance.ApplicationStopping(applicationContext, serviceProvider);
 
-    public override Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
+    public override Task ApplicationStarted(IApplicationContext applicationContext,
         IServiceProvider serviceProvider) =>
-        instance.ApplicationStarted(configuration, environment, serviceProvider);
+        instance.ApplicationStarted(applicationContext, serviceProvider);
 
-    public override Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider) =>
+    public override Task InitAsync(IApplicationContext context, IServiceProvider serviceProvider) =>
         instance.InitAsync(context, serviceProvider);
 }
 
@@ -188,37 +188,36 @@ public abstract class ApplicationModuleRegistration
     public abstract Type Type { get; }
     public abstract IApplicationModule GetInstance();
 
-    public abstract (string? optionsKey, object options) GetOptions(ApplicationContext applicationContext);
+    public abstract (string? optionsKey, object options) GetOptions(IApplicationContext applicationContext);
 
-    public abstract ApplicationModuleRegistration ConfigureOptions(ApplicationContext context,
+    public abstract ApplicationModuleRegistration ConfigureOptions(IApplicationContext context,
         IServiceCollection services);
 
-    public abstract ApplicationModuleRegistration ConfigureLogging(ApplicationContext context,
+    public abstract ApplicationModuleRegistration ConfigureLogging(IApplicationContext context,
         LoggerConfiguration loggerConfiguration);
 
-    public abstract ApplicationModuleRegistration ConfigureServices(ApplicationContext context,
+    public abstract ApplicationModuleRegistration ConfigureServices(IApplicationContext context,
         IServiceCollection services);
 
-    public abstract Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
+    public abstract Task ApplicationStopped(IApplicationContext applicationContext,
         IServiceProvider serviceProvider);
 
-    public abstract Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
+    public abstract Task ApplicationStopping(IApplicationContext applicationContext, IServiceProvider serviceProvider);
+
+    public abstract Task ApplicationStarted(IApplicationContext applicationContext,
         IServiceProvider serviceProvider);
 
-    public abstract Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
-        IServiceProvider serviceProvider);
+    public abstract Task InitAsync(IApplicationContext context, IServiceProvider serviceProvider);
 
-    public abstract Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider);
-
-    public abstract ApplicationModuleRegistration ConfigureHostBuilder(ApplicationContext context,
+    public abstract ApplicationModuleRegistration ConfigureHostBuilder(IApplicationContext context,
         IHostBuilder hostBuilder);
 
-    public abstract ApplicationModuleRegistration ConfigureAppConfiguration(ApplicationContext context,
+    public abstract ApplicationModuleRegistration ConfigureAppConfiguration(IApplicationContext context,
         IConfigurationBuilder configurationBuilder);
 
     public abstract (bool isSuccess, IEnumerable<Type> missingModules) CheckRequiredModules(
-        ApplicationContext context,
+        IApplicationContext context,
         Type[] registeredModules);
 
-    public abstract bool IsEnabled(ApplicationContext context);
+    public abstract bool IsEnabled(IApplicationContext context);
 }

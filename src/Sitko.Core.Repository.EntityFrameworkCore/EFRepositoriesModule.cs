@@ -11,7 +11,7 @@ public class EFRepositoriesModule : RepositoriesModule<EFRepositoriesModuleOptio
 {
     public override string OptionsKey => "Repositories:EF";
 
-    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
         EFRepositoriesModuleOptions startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);

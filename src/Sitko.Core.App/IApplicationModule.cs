@@ -13,42 +13,48 @@ public interface IApplicationModule<in TModuleOptions> : IApplicationModule wher
     string OptionsKey { get; }
     bool AllowMultiple { get; }
 
-    void ConfigureServices(ApplicationContext context, IServiceCollection services, TModuleOptions startupOptions);
+    void ConfigureServices(IApplicationContext context, IServiceCollection services, TModuleOptions startupOptions);
 
-    IEnumerable<Type> GetRequiredModules(ApplicationContext context, TModuleOptions options);
+    IEnumerable<Type> GetRequiredModules(IApplicationContext context, TModuleOptions options);
 }
 
 public interface IApplicationModule
 {
-    Task InitAsync(ApplicationContext context, IServiceProvider serviceProvider);
+    Task InitAsync(IApplicationContext context, IServiceProvider serviceProvider);
 
-    Task ApplicationStarted(IConfiguration configuration, IHostEnvironment environment,
+    Task ApplicationStarted(IApplicationContext applicationContext,
         IServiceProvider serviceProvider);
 
-    Task ApplicationStopping(IConfiguration configuration, IHostEnvironment environment,
+    Task ApplicationStopping(IApplicationContext applicationContext,
         IServiceProvider serviceProvider);
 
-    Task ApplicationStopped(IConfiguration configuration, IHostEnvironment environment,
+    Task ApplicationStopped(IApplicationContext applicationContext,
         IServiceProvider serviceProvider);
+
+    Task<bool> OnBeforeRunAsync(Application application, IApplicationContext applicationContext,
+        string[] args);
+
+    Task<bool> OnAfterRunAsync(Application application, IApplicationContext applicationContext,
+        string[] args);
 }
 
 public interface IHostBuilderModule<in TModuleOptions> : IApplicationModule<TModuleOptions>
     where TModuleOptions : class, new()
 {
-    public void ConfigureHostBuilder(ApplicationContext context, IHostBuilder hostBuilder,
+    public void ConfigureHostBuilder(IApplicationContext context, IHostBuilder hostBuilder,
         TModuleOptions startupOptions);
 }
 
 public interface ILoggingModule<in TModuleOptions> : IApplicationModule<TModuleOptions>
     where TModuleOptions : class, new()
 {
-    void ConfigureLogging(ApplicationContext context, TModuleOptions options,
+    void ConfigureLogging(IApplicationContext context, TModuleOptions options,
         LoggerConfiguration loggerConfiguration);
 }
 
 public interface IConfigurationModule
 {
-    void CheckConfiguration(ApplicationContext context, IServiceProvider serviceProvider);
+    void CheckConfiguration(IApplicationContext context, IServiceProvider serviceProvider);
 }
 
 public interface IConfigurationModule<in TModuleOptions> : IApplicationModule<TModuleOptions>, IConfigurationModule
