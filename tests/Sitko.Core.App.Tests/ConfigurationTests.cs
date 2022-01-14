@@ -21,7 +21,7 @@ public class ConfigurationTests : BaseTest
         app.AddModule<TestModuleFooBar, TestModuleFooBarOptions>();
         await app.GetServiceProviderAsync();
         var options = app.GetModulesOptions();
-        options.Should().HaveCount(2);
+        options.Should().HaveCount(3);
     }
 }
 
