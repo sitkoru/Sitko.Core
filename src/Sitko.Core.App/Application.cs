@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -11,7 +10,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
-using Serilog.Extensions.Logging;
 
 namespace Sitko.Core.App;
 
@@ -26,12 +24,6 @@ public abstract class Application : IApplication, IAsyncDisposable
     protected Application(string[] args)
     {
         Args = args;
-        Console.OutputEncoding = Encoding.UTF8;
-        var loggerConfiguration = new LoggerConfiguration();
-        loggerConfiguration
-            .WriteTo.Console(outputTemplate: ApplicationOptions.BaseConsoleLogFormat,
-                restrictedToMinimumLevel: LogEventLevel.Debug);
-        InternalLogger = new SerilogLoggerFactory(loggerConfiguration.CreateLogger()).CreateLogger<Application>();
         AddModule<CommandsModule>();
     }
 
@@ -51,8 +43,6 @@ public abstract class Application : IApplication, IAsyncDisposable
     public static string OptionsKey => nameof(Application);
 
     public Guid Id { get; } = Guid.NewGuid();
-
-    protected ILogger<Application> InternalLogger { get; }
 
     public string Name => GetApplicationOptions().Name;
     public string Version => GetApplicationOptions().Version;
@@ -78,8 +68,6 @@ public abstract class Application : IApplication, IAsyncDisposable
     protected IReadOnlyList<ApplicationModuleRegistration>
         GetEnabledModuleRegistrations(IApplicationContext context) => moduleRegistrations
         .Where(r => r.IsEnabled(context)).ToList();
-
-    protected void LogVerbose(string message) => InternalLogger.LogInformation("Check log: {Message}", message);
 
 
     protected virtual void ConfigureHostConfiguration(IConfigurationBuilder configurationBuilder)
@@ -139,8 +127,8 @@ public abstract class Application : IApplication, IAsyncDisposable
 
     public async Task RunAsync()
     {
-        LogVerbose("Run app start");
-        LogVerbose("Build and init");
+        LogInternal("Run app start");
+        LogInternal("Build and init");
         var context = await BuildAppContextAsync();
 
         var enabledModules = GetEnabledModuleRegistrations(context).ToArray();
@@ -153,7 +141,7 @@ public abstract class Application : IApplication, IAsyncDisposable
             }
         }
 
-        InternalLogger.LogInformation("Check required modules");
+        LogInternal("Check required modules");
         var modulesCheckSuccess = true;
         foreach (var registration in enabledModules)
         {
@@ -164,9 +152,7 @@ public abstract class Application : IApplication, IAsyncDisposable
             {
                 foreach (var missingModule in result.missingModules)
                 {
-                    InternalLogger.LogCritical(
-                        "Required module {MissingModule} for module {Module} is not registered",
-                        missingModule, registration.Type);
+                    LogInternal($"Required module {missingModule} for module {registration.Type} is not registered");
                 }
 
                 modulesCheckSuccess = false;
@@ -175,7 +161,7 @@ public abstract class Application : IApplication, IAsyncDisposable
 
         if (!modulesCheckSuccess)
         {
-            InternalLogger.LogError("Check required modules failed");
+            LogInternal("Check required modules failed");
             return;
         }
 
@@ -199,7 +185,7 @@ public abstract class Application : IApplication, IAsyncDisposable
 
     protected async Task InitAsync(IServiceProvider serviceProvider)
     {
-        LogVerbose("Build and init async start");
+        LogInternal("Build and init async start");
         using var scope = serviceProvider.CreateScope();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Application>>();
         logger.LogInformation("Init modules");
@@ -217,9 +203,10 @@ public abstract class Application : IApplication, IAsyncDisposable
             await registration.InitAsync(context, scope.ServiceProvider);
         }
 
-        LogVerbose("Build and init async done");
+        LogInternal("Build and init async done");
     }
 
+    protected virtual void LogInternal(string message) { }
 
     protected abstract bool CanAddModule();
 
