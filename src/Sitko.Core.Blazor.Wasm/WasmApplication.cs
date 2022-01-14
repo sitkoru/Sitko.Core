@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Sitko.Blazor.ScriptInjector;
 using Sitko.Core.App;
 using Sitko.Core.App.Localization;
 using Sitko.Core.Blazor.Components;
@@ -89,6 +90,7 @@ public abstract class WasmApplication : Application
         hostBuilder.Services.AddTransient<IScheduler, Scheduler>();
         hostBuilder.Services.AddFluentValidationExtensions();
         hostBuilder.Services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
+        hostBuilder.Services.AddScriptInjector();
         hostBuilder.Services.AddScoped<CompressedPersistentComponentState>();
         foreach (var servicesConfigurationAction in ServicesConfigurationActions)
         {
