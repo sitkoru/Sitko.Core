@@ -1,3 +1,19 @@
+# [9.0.0-beta.3](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.2...9.0.0-beta.3) (2022-01-14)
+
+
+### Features
+
+* **blazor:** add BaseStateComponent with state persistence and compression ([b2923d4](https://github.com/sitkoru/Sitko.Core/commit/b2923d491774ae961cd7632ad4f6bb2a8ddc377a))
+* **blazorserver:** support CompressedPersistentComponentState ([083315d](https://github.com/sitkoru/Sitko.Core/commit/083315d57a10a8b6d45adce45dc5a746fbe894f8))
+* **blazorwasm:** configure wasm host builder via IWasmApplicationModule ([a44d04e](https://github.com/sitkoru/Sitko.Core/commit/a44d04ed23a834b37279cd98f191f5b57ce26cf2))
+* **blazorwasm:** implement LogInternal ([30d2216](https://github.com/sitkoru/Sitko.Core/commit/30d221622c38b77d60ab2917df33d309e1d58391))
+* **blazorwasm:** rework logging configuration ([cf34cb5](https://github.com/sitkoru/Sitko.Core/commit/cf34cb56d16f6434694c27062dca8dbd226bd41c))
+* **blazorwasm:** support CompressedPersistentComponentState ([c5e65b5](https://github.com/sitkoru/Sitko.Core/commit/c5e65b5a77bd15e200ea1b6380d0e4f9efcd7b41))
+* **blazorwasm:** support ScriptInjector ([13b9e84](https://github.com/sitkoru/Sitko.Core/commit/13b9e84bfec3a6e4c04019cc1906fd843246a9aa))
+* **blazorwasm:** use single hostbuilder to create application ([45932fc](https://github.com/sitkoru/Sitko.Core/commit/45932fc8028c783e626226b0d1e4a185f21e5a7c))
+* **logging:** unify serilog integration ([a102ef1](https://github.com/sitkoru/Sitko.Core/commit/a102ef1340070c14e1709f1027654de56c40062a))
+* move internal logging from base application ([f3c0cb1](https://github.com/sitkoru/Sitko.Core/commit/f3c0cb118dca577edd214a185e12c648714bd907))
+
 # [9.0.0-beta.2](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.1...9.0.0-beta.2) (2022-01-14)
 
 
