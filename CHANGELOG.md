@@ -1,3 +1,10 @@
+# [9.0.0-beta.2](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.1...9.0.0-beta.2) (2022-01-14)
+
+
+### Features
+
+* make WasmApplication abstract and force client app to configure WebAssemblyHostBuilder ([fadb4ed](https://github.com/sitkoru/Sitko.Core/commit/fadb4edfbe01f634fea76f1cd3a8c28323b0d3cb))
+
 # [9.0.0-beta.1](https://github.com/sitkoru/Sitko.Core/compare/8.36.1...9.0.0-beta.1) (2022-01-14)
 
 
