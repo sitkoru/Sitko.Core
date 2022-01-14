@@ -422,9 +422,10 @@ public interface IApplicationContext
 
 public abstract class BaseApplicationContext : IApplicationContext
 {
+    private ApplicationOptions? applicationOptions;
+
     protected BaseApplicationContext(IConfiguration configuration)
     {
-        Options = GetApplicationOptions(configuration);
         Configuration = configuration;
         var loggerConfiguration = new LoggerConfiguration();
         loggerConfiguration
@@ -433,7 +434,7 @@ public abstract class BaseApplicationContext : IApplicationContext
         Logger = new SerilogLoggerFactory(loggerConfiguration.CreateLogger()).CreateLogger<IApplicationContext>();
     }
 
-    public ApplicationOptions Options { get; }
+    public ApplicationOptions Options => GetApplicationOptions();
 
     public string Name => Options.Name;
     public string Version => Options.Version;
@@ -445,22 +446,27 @@ public abstract class BaseApplicationContext : IApplicationContext
 
     public abstract bool IsProduction();
 
-    protected ApplicationOptions GetApplicationOptions(IConfiguration configuration)
+    private ApplicationOptions GetApplicationOptions()
     {
-        var options = new ApplicationOptions();
-        configuration.Bind(Application.OptionsKey, options);
-        if (string.IsNullOrEmpty(options.Name))
+        if (applicationOptions is not null)
         {
-            options.Name = GetType().Assembly.GetName().Name ?? "App";
+            return applicationOptions;
         }
 
-        if (string.IsNullOrEmpty(options.Version))
+        applicationOptions = new ApplicationOptions();
+        Configuration.Bind(Application.OptionsKey, applicationOptions);
+        if (string.IsNullOrEmpty(applicationOptions.Name))
         {
-            options.Version = GetType().Assembly.GetName().Version?.ToString() ?? "dev";
+            applicationOptions.Name = GetType().Assembly.GetName().Name ?? "App";
         }
 
-        ConfigureApplicationOptions(options);
-        return options;
+        if (string.IsNullOrEmpty(applicationOptions.Version))
+        {
+            applicationOptions.Version = GetType().Assembly.GetName().Version?.ToString() ?? "dev";
+        }
+
+        ConfigureApplicationOptions(applicationOptions);
+        return applicationOptions;
     }
 
     protected virtual void ConfigureApplicationOptions(ApplicationOptions options)
