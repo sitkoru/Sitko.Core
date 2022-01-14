@@ -6,6 +6,7 @@ using Serilog;
 using Serilog.Extensions.Logging;
 using Sitko.Core.App;
 using Sitko.Core.App.Localization;
+using Sitko.Core.Blazor.Components;
 using Sitko.FluentValidation;
 using Tempus;
 using Thinktecture;
@@ -88,6 +89,7 @@ public abstract class WasmApplication : Application
         hostBuilder.Services.AddTransient<IScheduler, Scheduler>();
         hostBuilder.Services.AddFluentValidationExtensions();
         hostBuilder.Services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
+        hostBuilder.Services.AddScoped<CompressedPersistentComponentState>();
         foreach (var servicesConfigurationAction in ServicesConfigurationActions)
         {
             servicesConfigurationAction(applicationContext, hostBuilder.Services);
