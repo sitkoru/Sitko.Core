@@ -8,6 +8,7 @@ using Sitko.Core.App;
 using Sitko.Core.App.Localization;
 using Sitko.FluentValidation;
 using Tempus;
+using Thinktecture;
 using Thinktecture.Extensions.Configuration;
 
 namespace Sitko.Core.Blazor.Wasm;
@@ -98,21 +99,22 @@ public abstract class WasmApplication : Application
             moduleRegistration.ConfigureServices(applicationContext, hostBuilder.Services);
         }
 
-        LogVerbose("Configure logging");
-        //hostBuilder.Configuration.AddConfiguration(tmpContext.Configuration.GetSection("Logging"));
+        LogInternal("Configure logging");
         var loggerConfiguration = new LoggerConfiguration();
-        loggerConfiguration.ReadFrom.Configuration(tmpContext.Configuration);
+        loggerConfiguration.ReadFrom.Configuration(applicationContext.Configuration);
         loggerConfiguration
             .Enrich.FromLogContext()
-            .Enrich.WithMachineName()
-            .Enrich.WithProperty("App", tmpContext.Name)
-            .Enrich.WithProperty("AppVersion", tmpContext.Version);
-        //loggerConfiguration.WriteTo.BrowserConsole();
+            .Enrich.WithProperty("App", applicationContext.Name)
+            .Enrich.WithProperty("AppVersion", applicationContext.Version).WriteTo
+            .BrowserConsole(
+                outputTemplate:
+                "{Level:u3}{SourceContext}{Message:lj}{NewLine}{Exception}");
 
-        //hostBuilder.Configuration.AddLoggingConfiguration(loggingConfiguration, "Serilog");
-        ConfigureLogging(tmpContext, loggerConfiguration);
-        foreach (var (key, value) in
-                 LogEventLevels)
+        var loggingConfiguration = new SerilogConfiguration();
+        hostBuilder.Configuration.AddLoggingConfiguration(loggingConfiguration, "Serilog");
+        hostBuilder.Services.AddSingleton<ISerilogConfiguration>(loggingConfiguration);
+        ConfigureLogging(applicationContext, loggerConfiguration);
+        foreach (var (key, value) in LogEventLevels)
         {
             loggerConfiguration.MinimumLevel.Override(key, value);
         }
@@ -128,6 +130,7 @@ public abstract class WasmApplication : Application
         }
 
         Log.Logger = loggerConfiguration.CreateLogger();
+        hostBuilder.Logging.ClearProviders();
         hostBuilder.Logging.AddSerilog();
 
         LogInternal("Configure host builder in modules");
