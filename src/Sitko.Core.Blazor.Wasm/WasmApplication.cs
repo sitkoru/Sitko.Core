@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+﻿using JetBrains.Annotations;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -184,7 +185,9 @@ public abstract class WasmApplication : Application
         ? GetContext(appHost.Services)
         : throw new InvalidOperationException("App host is not built yet");
 
-    protected IApplicationContext GetContext(IWebAssemblyHostEnvironment environment, IConfiguration configuration) =>
+    [PublicAPI]
+    protected static IApplicationContext GetContext(IWebAssemblyHostEnvironment environment,
+        IConfiguration configuration) =>
         new WasmApplicationContext(configuration, environment);
 
     protected override IApplicationContext GetContext(IServiceProvider serviceProvider) => GetContext(
