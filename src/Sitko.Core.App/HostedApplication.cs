@@ -9,9 +9,9 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
 using Sitko.Core.App.Localization;
+using Sitko.Core.App.Logging;
 using Sitko.FluentValidation;
 using Tempus;
-using Thinktecture;
 using Thinktecture.Extensions.Configuration;
 
 namespace Sitko.Core.App;
@@ -104,7 +104,7 @@ public abstract class HostedApplication : Application
         InitApplication();
 
         LogInternal("Create main host builder");
-        var loggingConfiguration = new SerilogConfiguration();
+        var serilogConfiguration = new SerilogConfiguration();
         var hostBuilder = CreateHostBuilder(Args)
             .UseDefaultServiceProvider(options =>
             {
@@ -120,13 +120,13 @@ public abstract class HostedApplication : Application
             .ConfigureAppConfiguration((context, builder) =>
             {
                 LogInternal("Configure app configuration");
-                builder.AddLoggingConfiguration(loggingConfiguration, "Serilog");
                 var appContext = GetContext(context.HostingEnvironment, context.Configuration);
                 foreach (var appConfigurationAction in AppConfigurationActions)
                 {
                     appConfigurationAction(appContext, builder);
                 }
 
+                LoggingExtensions.ConfigureSerilogConfiguration(builder, serilogConfiguration);
                 LogInternal("Configure app configuration in modules");
                 foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpApplicationContext))
                 {
@@ -136,8 +136,6 @@ public abstract class HostedApplication : Application
             .ConfigureServices((context, services) =>
             {
                 LogInternal("Configure app services");
-                services.AddSingleton<ISerilogConfiguration>(loggingConfiguration);
-                services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
                 services.AddSingleton(typeof(IApplication), this);
                 services.AddSingleton(typeof(Application), this);
                 services.AddSingleton(GetType(), this);
@@ -160,42 +158,18 @@ public abstract class HostedApplication : Application
                 }
             }).ConfigureLogging((context, builder) =>
             {
-                var appContext = GetContext(context.HostingEnvironment, context.Configuration);
                 LogInternal("Configure logging");
-                builder.AddConfiguration(context.Configuration.GetSection("Logging"));
-                var loggerConfiguration = new LoggerConfiguration();
-                loggerConfiguration.ReadFrom.Configuration(context.Configuration);
-                loggerConfiguration
-                    .Enrich.FromLogContext()
-                    .Enrich.WithMachineName()
-                    .Enrich.WithProperty("App", appContext.Name)
-                    .Enrich.WithProperty("AppVersion", appContext.Version);
-
-                if (appContext.Options.EnableConsoleLogging == true)
+                var appContext = GetContext(context.HostingEnvironment, context.Configuration);
+                LoggingExtensions.ConfigureSerilog(appContext, builder, serilogConfiguration, configuration =>
                 {
-                    loggerConfiguration.WriteTo.Console(outputTemplate: appContext.Options.ConsoleLogFormat);
-                }
+                    configuration.Enrich.WithMachineName();
+                    if (appContext.Options.EnableConsoleLogging == true)
+                    {
+                        configuration.WriteTo.Console(outputTemplate: appContext.Options.ConsoleLogFormat);
+                    }
 
-
-                ConfigureLogging(appContext,
-                    loggerConfiguration);
-                foreach (var (key, value) in
-                         LogEventLevels)
-                {
-                    loggerConfiguration.MinimumLevel.Override(key, value);
-                }
-
-                foreach (var moduleRegistration in GetEnabledModuleRegistrations(appContext))
-                {
-                    moduleRegistration.ConfigureLogging(tmpApplicationContext, loggerConfiguration);
-                }
-
-                foreach (var loggerConfigurationAction in LoggerConfigurationActions)
-                {
-                    loggerConfigurationAction(appContext, loggerConfiguration);
-                }
-
-                Log.Logger = loggerConfiguration.CreateLogger();
+                    ConfigureLogging(appContext, configuration);
+                });
             });
 
         LogInternal("Configure host builder in modules");
