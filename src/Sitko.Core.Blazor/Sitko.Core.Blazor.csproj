@@ -12,4 +12,8 @@
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
     <ProjectReference Include="..\Sitko.Core.Repository\Sitko.Core.Repository.csproj"/>
   </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="6.0.1"/>
+  </ItemGroup>
 </Project>
