@@ -146,11 +146,13 @@ public abstract class WasmApplication : Application
         Log.Logger = loggerConfiguration.CreateLogger();
         hostBuilder.Logging.AddSerilog();
 
-        LogVerbose("Configure host builder in modules");
-        // foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpApplicationContext))
-        // {
-        //     moduleRegistration.ConfigureHostBuilder(tmpApplicationContext, hostBuilder);
-        // }
+        LogInternal("Configure host builder in modules");
+        foreach (var configurationModule in GetEnabledModuleRegistrations(applicationContext)
+                     .Select(module => module.GetInstance())
+                     .OfType<IWasmApplicationModule>())
+        {
+            configurationModule.ConfigureHostBuilder(applicationContext, hostBuilder);
+        }
 
         LogInternal("Configure host builder");
         configure?.Invoke(hostBuilder);
