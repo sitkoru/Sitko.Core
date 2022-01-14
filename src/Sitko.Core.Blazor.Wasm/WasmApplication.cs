@@ -22,24 +22,24 @@ public abstract class WasmApplication : Application
 
     protected WebAssemblyHost CreateAppHost(Action<WebAssemblyHostBuilder>? configure = null)
     {
-        LogVerbose("Create app host start");
+        LogInternal("Create app host start");
 
         if (appHost is not null)
         {
-            LogVerbose("App host is already built");
+            LogInternal("App host is already built");
 
             return appHost;
         }
 
-        LogVerbose("Configure host builder");
+        LogInternal("Configure host builder");
 
         var hostBuilder = ConfigureHostBuilder(configure);
 
-        LogVerbose("Build host");
+        LogInternal("Build host");
         var newHost = hostBuilder.Build();
 
         appHost = newHost;
-        LogVerbose("Create app host done");
+        LogInternal("Create app host done");
         return appHost;
     }
 
@@ -54,9 +54,9 @@ public abstract class WasmApplication : Application
 
     private WebAssemblyHostBuilder ConfigureHostBuilder(Action<WebAssemblyHostBuilder>? configure = null)
     {
-        LogVerbose("Configure host builder start");
+        LogInternal("Configure host builder start");
 
-        LogVerbose("Create tmp host builder");
+        LogInternal("Create tmp host builder");
 
         var tmpHostBuilder = CreateHostBuilder(Args);
         // .UseDefaultServiceProvider(options =>
@@ -71,12 +71,11 @@ public abstract class WasmApplication : Application
         var tmpApplicationContext =
             GetContext(tmpHostBuilder.HostEnvironment, tmpHost.Configuration);
 
-        LogVerbose("Init application");
+        LogInternal("Init application");
 
         InitApplication();
 
-        LogVerbose("Create main host builder");
-        var loggingConfiguration = new SerilogConfiguration();
+        LogInternal("Create host builder");
         var hostBuilder = CreateHostBuilder(Args);
         // TODO: appsettings?
         // var hostBuilder = CreateHostBuilder(Args)
@@ -153,11 +152,13 @@ public abstract class WasmApplication : Application
         //     moduleRegistration.ConfigureHostBuilder(tmpApplicationContext, hostBuilder);
         // }
 
-        LogVerbose("Configure host builder");
+        LogInternal("Configure host builder");
         configure?.Invoke(hostBuilder);
-        LogVerbose("Create host builder done");
+        LogInternal("Create host builder done");
         return hostBuilder;
     }
+
+    protected override void LogInternal(string message) => Log.Logger.Debug("Internal: {Message}", message);
 
     protected async Task<WebAssemblyHost> GetOrCreateHostAsync(Action<WebAssemblyHostBuilder>? configure = null)
     {
