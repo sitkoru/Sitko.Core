@@ -1,13 +1,12 @@
-﻿using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+﻿using JetBrains.Annotations;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.Extensions.Logging;
+using Sitko.Blazor.ScriptInjector;
 using Sitko.Core.App;
-using Sitko.Core.App.Localization;
-using Sitko.FluentValidation;
-using Tempus;
+using Sitko.Core.App.Logging;
+using Sitko.Core.Blazor.Components;
 using Thinktecture.Extensions.Configuration;
 
 namespace Sitko.Core.Blazor.Wasm;
@@ -22,24 +21,24 @@ public abstract class WasmApplication : Application
 
     protected WebAssemblyHost CreateAppHost(Action<WebAssemblyHostBuilder>? configure = null)
     {
-        LogVerbose("Create app host start");
+        LogInternal("Create app host start");
 
         if (appHost is not null)
         {
-            LogVerbose("App host is already built");
+            LogInternal("App host is already built");
 
             return appHost;
         }
 
-        LogVerbose("Configure host builder");
+        LogInternal("Configure host builder");
 
         var hostBuilder = ConfigureHostBuilder(configure);
 
-        LogVerbose("Build host");
+        LogInternal("Build host");
         var newHost = hostBuilder.Build();
 
         appHost = newHost;
-        LogVerbose("Create app host done");
+        LogInternal("Create app host done");
         return appHost;
     }
 
@@ -54,112 +53,56 @@ public abstract class WasmApplication : Application
 
     private WebAssemblyHostBuilder ConfigureHostBuilder(Action<WebAssemblyHostBuilder>? configure = null)
     {
-        LogVerbose("Configure host builder start");
-
-        LogVerbose("Create tmp host builder");
-
-        var tmpHostBuilder = CreateHostBuilder(Args);
-        // .UseDefaultServiceProvider(options =>
-        // {
-        //     options.ValidateOnBuild = false;
-        //     options.ValidateScopes = true;
-        // })
-        // .ConfigureLogging(builder => { builder.SetMinimumLevel(LogLevel.Information); }).Build();
-        tmpHostBuilder.Logging.SetMinimumLevel(LogLevel.Information);
-        //tmpHostBuilder.ConfigureContainer(options => { });;
-        var tmpHost = tmpHostBuilder.Build();
-        var tmpApplicationContext =
-            GetContext(tmpHostBuilder.HostEnvironment, tmpHost.Configuration);
-
-        LogVerbose("Init application");
-
+        LogInternal("Configure host builder start");
+        LogInternal("Init application");
         InitApplication();
 
-        LogVerbose("Create main host builder");
-        var loggingConfiguration = new SerilogConfiguration();
+        LogInternal("Create host builder");
         var hostBuilder = CreateHostBuilder(Args);
-        // TODO: appsettings?
-        // var hostBuilder = CreateHostBuilder(Args)
-        LogVerbose("Configure app configuration");
-        var tmpContext = GetContext(tmpHost.Services);
-        foreach (var appConfigurationAction in AppConfigurationActions)
+        var applicationContext = GetContext(hostBuilder.HostEnvironment, hostBuilder.Configuration);
+        var enabledModuleRegistrations = GetEnabledModuleRegistrations(applicationContext);
+        // App configuration
+        ConfigureConfiguration(applicationContext, hostBuilder.Configuration);
+        // App services
+        RegisterApplicationServices<WasmApplicationContext>(applicationContext, hostBuilder.Services);
+        hostBuilder.Services.AddScriptInjector();
+        hostBuilder.Services.AddScoped<CompressedPersistentComponentState>();
+        // Logging
+        LogInternal("Configure logging");
+        var serilogConfiguration = new SerilogConfiguration();
+        LoggingExtensions.ConfigureSerilogConfiguration(hostBuilder.Configuration, serilogConfiguration);
+        LoggingExtensions.ConfigureSerilog(applicationContext, hostBuilder.Logging, serilogConfiguration,
+            configuration =>
+            {
+                configuration.WriteTo.BrowserConsole(
+                    outputTemplate: "{Level:u3}{SourceContext}{Message:lj}{NewLine}{Exception}");
+                if (applicationContext.Options.EnableConsoleLogging == true)
+                {
+                    configuration.WriteTo.Console(outputTemplate: applicationContext.Options.ConsoleLogFormat);
+                }
+
+                ConfigureLogging(applicationContext, configuration);
+            });
+
+        // Host builder via modules
+        LogInternal("Configure host builder in modules");
+        foreach (var configurationModule in enabledModuleRegistrations
+                     .Select(module => module.GetInstance())
+                     .OfType<IWasmApplicationModule>())
         {
-            appConfigurationAction(tmpContext, hostBuilder.Configuration);
+            configurationModule.ConfigureHostBuilder(applicationContext, hostBuilder);
         }
 
-        LogVerbose("Configure app configuration in modules");
-        foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpApplicationContext))
-        {
-            moduleRegistration.ConfigureAppConfiguration(tmpContext, hostBuilder.Configuration);
-        }
-
-        LogVerbose("Configure app services");
-        hostBuilder.Services.AddSingleton<ISerilogConfiguration>(loggingConfiguration);
-        hostBuilder.Services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
-        hostBuilder.Services.AddSingleton(typeof(IApplication), this);
-        hostBuilder.Services.AddSingleton(typeof(Application), this);
-        hostBuilder.Services.AddSingleton(GetType(), this);
-        hostBuilder.Services.AddSingleton<IApplicationContext, WasmApplicationContext>();
-        //hostBuilder.Services.AddHostedService<ApplicationLifetimeService>();
-        hostBuilder.Services.AddTransient<IScheduler, Scheduler>();
-        hostBuilder.Services.AddFluentValidationExtensions();
-        hostBuilder.Services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
-        foreach (var servicesConfigurationAction in ServicesConfigurationActions)
-        {
-            servicesConfigurationAction(tmpContext, hostBuilder.Services);
-        }
-
-        foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpContext))
-        {
-            moduleRegistration.ConfigureOptions(tmpContext, hostBuilder.Services);
-            moduleRegistration.ConfigureServices(tmpContext, hostBuilder.Services);
-        }
-
-        LogVerbose("Configure logging");
-        //hostBuilder.Configuration.AddConfiguration(tmpContext.Configuration.GetSection("Logging"));
-        var loggerConfiguration = new LoggerConfiguration();
-        loggerConfiguration.ReadFrom.Configuration(tmpContext.Configuration);
-        loggerConfiguration
-            .Enrich.FromLogContext()
-            .Enrich.WithMachineName()
-            .Enrich.WithProperty("App", tmpContext.Name)
-            .Enrich.WithProperty("AppVersion", tmpContext.Version);
-        //loggerConfiguration.WriteTo.BrowserConsole();
-
-        //hostBuilder.Configuration.AddLoggingConfiguration(loggingConfiguration, "Serilog");
-        ConfigureLogging(tmpContext, loggerConfiguration);
-        foreach (var (key, value) in
-                 LogEventLevels)
-        {
-            loggerConfiguration.MinimumLevel.Override(key, value);
-        }
-
-        foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpContext))
-        {
-            moduleRegistration.ConfigureLogging(tmpApplicationContext, loggerConfiguration);
-        }
-
-        foreach (var loggerConfigurationAction in LoggerConfigurationActions)
-        {
-            loggerConfigurationAction(tmpContext, loggerConfiguration);
-        }
-
-        Log.Logger = loggerConfiguration.CreateLogger();
-        hostBuilder.Logging.AddSerilog();
-
-        LogVerbose("Configure host builder in modules");
-        // foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpApplicationContext))
-        // {
-        //     moduleRegistration.ConfigureHostBuilder(tmpApplicationContext, hostBuilder);
-        // }
-
-        LogVerbose("Configure host builder");
+        // Host builder via action
+        LogInternal("Configure host builder");
         configure?.Invoke(hostBuilder);
-        LogVerbose("Create host builder done");
+        LogInternal("Create host builder done");
         return hostBuilder;
     }
 
-    protected async Task<WebAssemblyHost> GetOrCreateHostAsync(Action<WebAssemblyHostBuilder>? configure = null)
+    protected override void LogInternal(string message) => Log.Logger.Debug("Internal: {Message}", message);
+
+    private async Task<WebAssemblyHost> GetOrCreateHostAsync(Action<WebAssemblyHostBuilder>? configure = null)
     {
         if (appHost is not null)
         {
@@ -192,7 +135,9 @@ public abstract class WasmApplication : Application
         ? GetContext(appHost.Services)
         : throw new InvalidOperationException("App host is not built yet");
 
-    protected IApplicationContext GetContext(IWebAssemblyHostEnvironment environment, IConfiguration configuration) =>
+    [PublicAPI]
+    protected static IApplicationContext GetContext(IWebAssemblyHostEnvironment environment,
+        IConfiguration configuration) =>
         new WasmApplicationContext(configuration, environment);
 
     protected override IApplicationContext GetContext(IServiceProvider serviceProvider) => GetContext(
