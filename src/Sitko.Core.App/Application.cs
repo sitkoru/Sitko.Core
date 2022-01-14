@@ -82,6 +82,20 @@ public abstract class Application : IApplication, IAsyncDisposable
     protected virtual void ConfigureLogging(IApplicationContext applicationContext,
         LoggerConfiguration loggerConfiguration)
     {
+        foreach (var (key, value) in LogEventLevels)
+        {
+            loggerConfiguration.MinimumLevel.Override(key, value);
+        }
+
+        foreach (var moduleRegistration in GetEnabledModuleRegistrations(applicationContext))
+        {
+            moduleRegistration.ConfigureLogging(applicationContext, loggerConfiguration);
+        }
+
+        foreach (var loggerConfigurationAction in LoggerConfigurationActions)
+        {
+            loggerConfigurationAction(applicationContext, loggerConfiguration);
+        }
     }
 
     [PublicAPI]

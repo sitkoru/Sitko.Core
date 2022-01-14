@@ -2,15 +2,14 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Serilog;
 using Sitko.Blazor.ScriptInjector;
 using Sitko.Core.App;
 using Sitko.Core.App.Localization;
+using Sitko.Core.App.Logging;
 using Sitko.Core.Blazor.Components;
 using Sitko.FluentValidation;
 using Tempus;
-using Thinktecture;
 using Thinktecture.Extensions.Configuration;
 
 namespace Sitko.Core.Blazor.Wasm;
@@ -104,38 +103,20 @@ public abstract class WasmApplication : Application
         }
 
         LogInternal("Configure logging");
-        var loggerConfiguration = new LoggerConfiguration();
-        loggerConfiguration.ReadFrom.Configuration(applicationContext.Configuration);
-        loggerConfiguration
-            .Enrich.FromLogContext()
-            .Enrich.WithProperty("App", applicationContext.Name)
-            .Enrich.WithProperty("AppVersion", applicationContext.Version).WriteTo
-            .BrowserConsole(
-                outputTemplate:
-                "{Level:u3}{SourceContext}{Message:lj}{NewLine}{Exception}");
+        var serilogConfiguration = new SerilogConfiguration();
+        LoggingExtensions.ConfigureSerilogConfiguration(hostBuilder.Configuration, serilogConfiguration);
+        LoggingExtensions.ConfigureSerilog(applicationContext, hostBuilder.Logging, serilogConfiguration,
+            configuration =>
+            {
+                configuration.WriteTo.BrowserConsole(
+                    outputTemplate: "{Level:u3}{SourceContext}{Message:lj}{NewLine}{Exception}");
+                if (applicationContext.Options.EnableConsoleLogging == true)
+                {
+                    configuration.WriteTo.Console(outputTemplate: applicationContext.Options.ConsoleLogFormat);
+                }
 
-        var loggingConfiguration = new SerilogConfiguration();
-        hostBuilder.Configuration.AddLoggingConfiguration(loggingConfiguration, "Serilog");
-        hostBuilder.Services.AddSingleton<ISerilogConfiguration>(loggingConfiguration);
-        ConfigureLogging(applicationContext, loggerConfiguration);
-        foreach (var (key, value) in LogEventLevels)
-        {
-            loggerConfiguration.MinimumLevel.Override(key, value);
-        }
-
-        foreach (var moduleRegistration in enabledModuleRegistrations)
-        {
-            moduleRegistration.ConfigureLogging(applicationContext, loggerConfiguration);
-        }
-
-        foreach (var loggerConfigurationAction in LoggerConfigurationActions)
-        {
-            loggerConfigurationAction(applicationContext, loggerConfiguration);
-        }
-
-        Log.Logger = loggerConfiguration.CreateLogger();
-        hostBuilder.Logging.ClearProviders();
-        hostBuilder.Logging.AddSerilog();
+                ConfigureLogging(applicationContext, configuration);
+            });
 
         LogInternal("Configure host builder in modules");
         foreach (var configurationModule in enabledModuleRegistrations
