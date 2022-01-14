@@ -75,7 +75,7 @@ public class WasmApplication<TApp> : Application where TApp : IComponent
         //tmpHostBuilder.ConfigureContainer(options => { });;
         var tmpHost = tmpHostBuilder.Build();
         var tmpApplicationContext =
-            GetContext(new WasmAppEnvironment(tmpHostBuilder.HostEnvironment), tmpHost.Configuration);
+            GetContext(tmpHostBuilder.HostEnvironment, tmpHost.Configuration);
 
         LogVerbose("Init application");
 
@@ -105,6 +105,7 @@ public class WasmApplication<TApp> : Application where TApp : IComponent
         hostBuilder.Services.AddSingleton(typeof(IApplication), this);
         hostBuilder.Services.AddSingleton(typeof(Application), this);
         hostBuilder.Services.AddSingleton(GetType(), this);
+        hostBuilder.Services.AddSingleton<IApplicationContext, WasmApplicationContext>();
         //hostBuilder.Services.AddHostedService<ApplicationLifetimeService>();
         hostBuilder.Services.AddTransient<IScheduler, Scheduler>();
         hostBuilder.Services.AddFluentValidationExtensions();
@@ -120,7 +121,6 @@ public class WasmApplication<TApp> : Application where TApp : IComponent
             moduleRegistration.ConfigureServices(tmpContext, hostBuilder.Services);
         }
 
-        var applicationOptions = GetApplicationOptions(tmpContext.Environment, tmpContext.Configuration);
         LogVerbose("Configure logging");
         //hostBuilder.Configuration.AddConfiguration(tmpContext.Configuration.GetSection("Logging"));
         var loggerConfiguration = new LoggerConfiguration();
@@ -128,8 +128,8 @@ public class WasmApplication<TApp> : Application where TApp : IComponent
         loggerConfiguration
             .Enrich.FromLogContext()
             .Enrich.WithMachineName()
-            .Enrich.WithProperty("App", applicationOptions.Name)
-            .Enrich.WithProperty("AppVersion", applicationOptions.Version);
+            .Enrich.WithProperty("App", tmpContext.Name)
+            .Enrich.WithProperty("AppVersion", tmpContext.Version);
         //loggerConfiguration.WriteTo.BrowserConsole();
 
         //hostBuilder.Configuration.AddLoggingConfiguration(loggingConfiguration, "Serilog");
@@ -185,7 +185,7 @@ public class WasmApplication<TApp> : Application where TApp : IComponent
         await currentHost.RunAsync();
     }
 
-    protected override async Task<ApplicationContext> BuildAppContextAsync()
+    protected override async Task<IApplicationContext> BuildAppContextAsync()
     {
         var currentHost = await GetOrCreateHostAsync();
         return GetContext(currentHost.Services);
@@ -194,23 +194,28 @@ public class WasmApplication<TApp> : Application where TApp : IComponent
     public override Task StopAsync() => throw new NotImplementedException();
     protected override bool CanAddModule() => true;
 
-    protected override ApplicationContext GetContext() => appHost is not null
+    protected override IApplicationContext GetContext() => appHost is not null
         ? GetContext(appHost.Services)
         : throw new InvalidOperationException("App host is not built yet");
 
-    protected override ApplicationContext GetContext(IServiceProvider serviceProvider) => GetContext(
-        new WasmAppEnvironment(serviceProvider.GetRequiredService<IWebAssemblyHostEnvironment>()),
-        serviceProvider.GetRequiredService<IConfiguration>(),
-        serviceProvider.GetRequiredService<ILogger<Application>>());
+    protected IApplicationContext GetContext(IWebAssemblyHostEnvironment environment, IConfiguration configuration) =>
+        new WasmApplicationContext(configuration, environment);
+
+    protected override IApplicationContext GetContext(IServiceProvider serviceProvider) => GetContext(
+        serviceProvider.GetRequiredService<IWebAssemblyHostEnvironment>(),
+        serviceProvider.GetRequiredService<IConfiguration>());
 }
 
-public class WasmAppEnvironment : IAppEnvironment
+public class WasmApplicationContext : BaseApplicationContext
 {
     private readonly IWebAssemblyHostEnvironment environment;
 
-    public WasmAppEnvironment(IWebAssemblyHostEnvironment environment) => this.environment = environment;
-    public string EnvironmentName => environment.Environment;
-    public string ApplicationName => environment.Environment;
-    public bool IsDevelopment() => environment.IsDevelopment();
-    public bool IsProduction() => environment.IsProduction();
+    public WasmApplicationContext(IConfiguration configuration, IWebAssemblyHostEnvironment environment)
+        : base(configuration) =>
+        this.environment = environment;
+
+    public override string EnvironmentName => environment.Environment;
+    public override bool IsDevelopment() => environment.IsDevelopment();
+
+    public override bool IsProduction() => environment.IsProduction();
 }

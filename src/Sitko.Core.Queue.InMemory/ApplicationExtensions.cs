@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Queue.InMemory;
@@ -7,7 +6,7 @@ namespace Sitko.Core.Queue.InMemory;
 public static class ApplicationExtensions
 {
     public static Application AddInMemoryQueue(this Application application,
-        Action<IConfiguration, IAppEnvironment, InMemoryQueueModuleOptions> configure,
+        Action<IApplicationContext, InMemoryQueueModuleOptions> configure,
         string? optionsKey = null) =>
         application.AddModule<InMemoryQueueModule, InMemoryQueueModuleOptions>(configure, optionsKey);
 

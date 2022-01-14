@@ -1,6 +1,5 @@
 ﻿using System;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Server.Consul;
@@ -9,7 +8,7 @@ namespace Sitko.Core.Grpc.Server.Consul;
 public static class ApplicationExtensions
 {
     public static Application AddConsulGrpcServer(this Application application,
-        Action<IConfiguration, IAppEnvironment, ConsulDiscoveryGrpcServerModuleOptions> configure,
+        Action<IApplicationContext, ConsulDiscoveryGrpcServerModuleOptions> configure,
         string? optionsKey = null) =>
         application.AddModule<ConsulDiscoveryGrpcServerModule, ConsulDiscoveryGrpcServerModuleOptions>(
             configure, optionsKey);

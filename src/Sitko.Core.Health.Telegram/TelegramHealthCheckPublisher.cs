@@ -18,8 +18,8 @@ public class TelegramHealthCheckPublisher : BaseHealthCheckPublisher<TelegramHea
     private readonly ITelegramBotClient telegramBotClient;
 
     public TelegramHealthCheckPublisher(IOptionsMonitor<TelegramHealthReporterModuleOptions> options,
-        ILogger<TelegramHealthCheckPublisher> logger, IAppEnvironment hostingEnvironment,
-        IHttpClientFactory httpClientFactory) : base(options, logger, hostingEnvironment)
+        ILogger<TelegramHealthCheckPublisher> logger, IApplicationContext applicationContext,
+        IHttpClientFactory httpClientFactory) : base(options, logger, applicationContext)
     {
         chatId = new ChatId(Options.ChatId);
         telegramBotClient = new TelegramBotClient(Options.Token,
@@ -29,7 +29,7 @@ public class TelegramHealthCheckPublisher : BaseHealthCheckPublisher<TelegramHea
     protected override Task DoSendAsync(string checkName, HealthReportEntry entry,
         CancellationToken cancellationToken)
     {
-        var serviceName = $"{HostingEnvironment.ApplicationName} ({Dns.GetHostName()})";
+        var serviceName = $"{ApplicationContext.Name} ({Dns.GetHostName()})";
         var title = entry.Status switch
         {
             HealthStatus.Unhealthy => $"Error in {serviceName}. Check: {checkName}",

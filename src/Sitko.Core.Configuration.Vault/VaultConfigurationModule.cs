@@ -29,7 +29,7 @@ public class VaultConfigurationModule : BaseApplicationModule<VaultConfiguration
         }
     }
 
-    public void CheckConfiguration(ApplicationContext context, IServiceProvider serviceProvider)
+    public void CheckConfiguration(IApplicationContext context, IServiceProvider serviceProvider)
     {
         var root = serviceProvider.GetRequiredService<IConfigurationRoot>();
         var providers = root.Providers.OfType<VaultConfigurationProvider>().ToList();
@@ -64,7 +64,7 @@ public class VaultConfigurationModule : BaseApplicationModule<VaultConfiguration
         }
     }
 
-    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
         VaultConfigurationModuleOptions startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);
@@ -102,7 +102,7 @@ public class VaultConfigurationModuleOptions : BaseModuleOptions
         new(Uri, Token, VaultSecret, VaultRoleId, ReloadOnChange, ReloadCheckIntervalSeconds,
             OmitVaultKeyName, AdditionalCharactersForConfigurationPath);
 
-    public override void Configure(ApplicationContext applicationContext)
+    public override void Configure(IApplicationContext applicationContext)
     {
         if (!Secrets.Any())
         {

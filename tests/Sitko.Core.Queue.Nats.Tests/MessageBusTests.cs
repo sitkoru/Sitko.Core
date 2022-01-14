@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using MediatR;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 using Sitko.Core.MediatR;
 using Sitko.Core.Queue.Tests;
@@ -45,10 +44,9 @@ public class MessageBusTests : BaseTest<NatsMessageBusTestScope>
 
 public class NatsMessageBusTestScope : NatsQueueTestScope
 {
-    protected override void ConfigureQueue(NatsQueueModuleOptions options, IConfiguration configuration,
-        IAppEnvironment environment)
+    protected override void ConfigureQueue(NatsQueueModuleOptions options, IApplicationContext applicationContext)
     {
-        base.ConfigureQueue(options, configuration, environment);
+        base.ConfigureQueue(options, applicationContext);
         options.TranslateMediatRNotification<TestRequest>();
     }
 

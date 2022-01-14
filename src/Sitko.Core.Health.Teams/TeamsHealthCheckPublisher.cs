@@ -16,14 +16,14 @@ public class TeamsHealthCheckPublisher : BaseHealthCheckPublisher<TeamsHealthRep
     private readonly IHttpClientFactory httpClientFactory;
 
     public TeamsHealthCheckPublisher(IOptionsMonitor<TeamsHealthReporterModuleOptions> options,
-        ILogger<TeamsHealthCheckPublisher> logger, IAppEnvironment hostingEnvironment,
-        IHttpClientFactory httpClientFactory) : base(options, logger, hostingEnvironment) =>
+        ILogger<TeamsHealthCheckPublisher> logger, IApplicationContext applicationContext,
+        IHttpClientFactory httpClientFactory) : base(options, logger, applicationContext) =>
         this.httpClientFactory = httpClientFactory;
 
     protected override Task DoSendAsync(string checkName, HealthReportEntry entry,
         CancellationToken cancellationToken)
     {
-        var serviceName = $"{HostingEnvironment.ApplicationName} ({Dns.GetHostName()})";
+        var serviceName = $"{ApplicationContext.Name} ({Dns.GetHostName()})";
         var title = entry.Status switch
         {
             HealthStatus.Unhealthy => $"Error in {serviceName}. Check: {checkName}",

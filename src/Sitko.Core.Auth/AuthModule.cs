@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.App.Web;
@@ -19,7 +18,7 @@ public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOpti
     IAuthModule
     where TAuthOptions : AuthOptions, new()
 {
-    public virtual void ConfigureAfterUseRouting(IConfiguration configuration, IAppEnvironment environment,
+    public virtual void ConfigureAfterUseRouting(IApplicationContext applicationContext,
         IApplicationBuilder appBuilder)
     {
         appBuilder.UseAuthentication()
@@ -27,7 +26,7 @@ public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOpti
         appBuilder.UseMiddleware<AuthorizationMiddleware<TAuthOptions>>();
     }
 
-    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
         TAuthOptions startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);
@@ -55,7 +54,7 @@ public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOpti
 
         services.AddAuthorization(options =>
         {
-            foreach ((var name, var policy) in startupOptions.Policies)
+            foreach (var (name, policy) in startupOptions.Policies)
             {
                 options.AddPolicy(name, policy);
             }

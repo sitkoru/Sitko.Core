@@ -1,6 +1,5 @@
 using System;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Sitko.Core.App;
@@ -12,7 +11,7 @@ public class SwaggerModule : BaseApplicationModule<SwaggerModuleOptions>, IWebAp
 {
     public override string OptionsKey => "Swagger";
 
-    public void ConfigureAfterUseRouting(IConfiguration configuration, IAppEnvironment environment,
+    public void ConfigureAfterUseRouting(IApplicationContext applicationContext,
         IApplicationBuilder appBuilder)
     {
         var config = GetOptions(appBuilder.ApplicationServices);
@@ -21,7 +20,7 @@ public class SwaggerModule : BaseApplicationModule<SwaggerModuleOptions>, IWebAp
         appBuilder.UseSwaggerUI(c => { c.SwaggerEndpoint(endPoint, $"{config.Title} ({config.Version})"); });
     }
 
-    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
         SwaggerModuleOptions startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);

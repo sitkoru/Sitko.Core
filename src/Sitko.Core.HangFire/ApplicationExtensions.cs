@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.HangFire;
@@ -7,7 +6,7 @@ namespace Sitko.Core.HangFire;
 public static class ApplicationExtensions
 {
     public static Application AddHangfirePostgres(this Application application,
-        Action<IConfiguration, IAppEnvironment, HangfirePostgresModuleOptions> configure,
+        Action<IApplicationContext, HangfirePostgresModuleOptions> configure,
         string? optionsKey = null) =>
         application.AddModule<HangfireModule<HangfirePostgresModuleOptions>, HangfirePostgresModuleOptions>(
             configure, optionsKey);

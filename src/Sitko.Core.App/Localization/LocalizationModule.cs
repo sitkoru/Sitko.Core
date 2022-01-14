@@ -2,24 +2,23 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Localization;
 
-namespace Sitko.Core.App.Localization
+namespace Sitko.Core.App.Localization;
+
+public abstract class LocalizationModule<TModuleOptions, TFactory> : BaseApplicationModule<TModuleOptions>
+    where TModuleOptions : LocalizationModuleOptions, new()
+    where TFactory : class, IStringLocalizerFactory
 {
-    public abstract class LocalizationModule<TModuleOptions, TFactory> : BaseApplicationModule<TModuleOptions>
-        where TModuleOptions : LocalizationModuleOptions, new()
-        where TFactory : class, IStringLocalizerFactory
-    {
-        public override string OptionsKey => "Localization";
+    public override string OptionsKey => "Localization";
 
-        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TModuleOptions startupOptions)
-        {
-            base.ConfigureServices(context, services, startupOptions);
-            services.TryAddSingleton<IStringLocalizerFactory, TFactory>();
-            services.TryAddTransient(typeof(IStringLocalizer<>), typeof(StringLocalizer<>));
-        }
-    }
-
-    public class LocalizationModuleOptions : BaseModuleOptions
+    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+        TModuleOptions startupOptions)
     {
+        base.ConfigureServices(context, services, startupOptions);
+        services.TryAddSingleton<IStringLocalizerFactory, TFactory>();
+        services.TryAddTransient(typeof(IStringLocalizer<>), typeof(StringLocalizer<>));
     }
+}
+
+public class LocalizationModuleOptions : BaseModuleOptions
+{
 }

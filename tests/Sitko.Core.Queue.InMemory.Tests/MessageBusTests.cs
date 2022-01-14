@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using MediatR;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 using Sitko.Core.MediatR;
 using Sitko.Core.Queue.Tests;
@@ -45,11 +44,11 @@ public class MessageBusTests : BaseTest<InMemoryMessageBusTestScope>
 
 public class InMemoryMessageBusTestScope : InMemoryQueueTestScope
 {
-    protected override void Configure(IConfiguration configuration, IAppEnvironment environment,
+    protected override void Configure(IApplicationContext applicationContext,
         InMemoryQueueModuleOptions options,
         string name)
     {
-        base.Configure(configuration, environment, options, name);
+        base.Configure(applicationContext, options, name);
         options.TranslateMediatRNotification<TestRequest>();
     }
 

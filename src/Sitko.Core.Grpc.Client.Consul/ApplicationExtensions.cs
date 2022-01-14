@@ -1,7 +1,6 @@
 ﻿using System;
 using Grpc.Core;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Client.Consul;
@@ -10,7 +9,7 @@ namespace Sitko.Core.Grpc.Client.Consul;
 public static class ApplicationExtensions
 {
     public static Application AddConsulGrpcClient<TClient>(this Application application,
-        Action<IConfiguration, IAppEnvironment, ConsulGrpcClientModuleOptions<TClient>> configure,
+        Action<IApplicationContext, ConsulGrpcClientModuleOptions<TClient>> configure,
         string? optionsKey = null)
         where TClient : ClientBase<TClient> =>
         application.AddModule<ConsulGrpcClientModule<TClient>, ConsulGrpcClientModuleOptions<TClient>>(configure,

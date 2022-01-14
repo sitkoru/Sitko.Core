@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using MediatR;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 using Sitko.Core.MediatR;
 using Sitko.Core.Xunit;
@@ -51,7 +50,7 @@ public class MessageBusTestScope : BaseTestQueueTestScope
         return application;
     }
 
-    protected override void Configure(IConfiguration configuration, IAppEnvironment environment,
+    protected override void Configure(IApplicationContext applicationContext,
         TestQueueOptions options, string name) =>
         options.TranslateMediatRNotification<TestRequest>();
 }

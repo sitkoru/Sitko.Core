@@ -23,11 +23,11 @@ public abstract class BaseStartup
     protected BaseStartup(IConfiguration configuration, IHostEnvironment environment)
     {
         Configuration = configuration;
-        Environment = new HostedAppEnvironment(environment);
+        Environment = environment;
     }
 
     protected IConfiguration Configuration { get; }
-    protected IAppEnvironment Environment { get; }
+    protected IHostEnvironment Environment { get; }
 
     protected virtual bool EnableMvc { get; } = true;
     protected virtual bool AddHttpContextAccessor { get; } = true;
@@ -62,7 +62,7 @@ public abstract class BaseStartup
         {
             services.AddCors(options =>
             {
-                foreach ((var name, (var policy, _)) in corsPolicies)
+                foreach (var (name, (policy, _)) in corsPolicies)
                 {
                     options.AddPolicy(name, policy);
                 }
@@ -133,7 +133,8 @@ public abstract class BaseStartup
         }
     }
 
-    public void Configure(IApplicationBuilder appBuilder, WebApplication application)
+    public void Configure(IApplicationBuilder appBuilder, WebApplication application,
+        IApplicationContext applicationContext)
     {
         if (Environment.IsProduction())
         {
@@ -141,7 +142,7 @@ public abstract class BaseStartup
         }
 
         ConfigureHook(appBuilder);
-        application.AppBuilderHook(Configuration, Environment, appBuilder);
+        application.AppBuilderHook(applicationContext, appBuilder);
 
         if (Environment.IsDevelopment())
         {
@@ -163,7 +164,7 @@ public abstract class BaseStartup
         }
 
         ConfigureBeforeRoutingModulesHook(appBuilder);
-        application.BeforeRoutingHook(Configuration, Environment, appBuilder);
+        application.BeforeRoutingHook(applicationContext, appBuilder);
         ConfigureBeforeRoutingMiddleware(appBuilder);
         appBuilder.UseRouting();
         if (corsPolicies.Any())
@@ -177,12 +178,12 @@ public abstract class BaseStartup
         }
 
         ConfigureAfterRoutingMiddleware(appBuilder);
-        application.AfterRoutingHook(Configuration, Environment, appBuilder);
+        application.AfterRoutingHook(applicationContext, appBuilder);
         ConfigureAfterRoutingModulesHook(appBuilder);
 
         appBuilder.UseEndpoints(endpoints =>
         {
-            application.EndpointsHook(Configuration, Environment, appBuilder, endpoints);
+            application.EndpointsHook(applicationContext, appBuilder, endpoints);
             ConfigureEndpoints(appBuilder, endpoints);
         });
     }

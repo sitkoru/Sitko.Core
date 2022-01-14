@@ -1,6 +1,5 @@
 ﻿using System;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.S3;
@@ -9,7 +8,7 @@ namespace Sitko.Core.Storage.S3;
 public static class ApplicationExtensions
 {
     public static Application AddS3Storage<TStorageOptions>(this Application application,
-        Action<IConfiguration, IAppEnvironment, TStorageOptions> configure, string? optionsKey = null)
+        Action<IApplicationContext, TStorageOptions> configure, string? optionsKey = null)
         where TStorageOptions : S3StorageOptions, new() =>
         application.AddModule<S3StorageModule<TStorageOptions>, TStorageOptions>(configure, optionsKey);
 
@@ -19,7 +18,7 @@ public static class ApplicationExtensions
         application.AddModule<S3StorageModule<TStorageOptions>, TStorageOptions>(configure, optionsKey);
 
     public static Application AddS3StorageMetadata<TStorageOptions>(this Application application,
-        Action<IConfiguration, IAppEnvironment, S3StorageMetadataModuleOptions<TStorageOptions>> configure,
+        Action<IApplicationContext, S3StorageMetadataModuleOptions<TStorageOptions>> configure,
         string? optionsKey = null)
         where TStorageOptions : S3StorageOptions, new() =>
         application

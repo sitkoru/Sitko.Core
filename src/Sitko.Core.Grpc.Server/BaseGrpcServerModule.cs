@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
@@ -19,7 +18,7 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
     public virtual void RegisterService<TService>() where TService : class =>
         endpointRegistrations.Add(builder => builder.MapGrpcService<TService>());
 
-    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
         TConfig startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);
@@ -39,7 +38,7 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
         }
     }
 
-    public void ConfigureHostBuilder(ApplicationContext context, IHostBuilder hostBuilder, TConfig startupOptions)
+    public void ConfigureHostBuilder(IApplicationContext context, IHostBuilder hostBuilder, TConfig startupOptions)
     {
         if (startupOptions.ConfigureWebHostDefaults is not null)
         {
@@ -50,7 +49,7 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
         }
     }
 
-    public void ConfigureEndpoints(IConfiguration configuration, IAppEnvironment environment,
+    public void ConfigureEndpoints(IApplicationContext applicationContext,
         IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
     {
         var config = GetOptions(appBuilder.ApplicationServices);

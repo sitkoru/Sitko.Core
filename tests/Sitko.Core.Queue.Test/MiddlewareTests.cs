@@ -1,6 +1,5 @@
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.Xunit;
@@ -90,31 +89,29 @@ public class MiddlewareTests : BaseTest
 
 public class MiddlewareQueueTestScope : BaseTestQueueTestScope
 {
-    protected override void Configure(IConfiguration configuration, IAppEnvironment environment,
+    protected override void Configure(IApplicationContext applicationContext,
         TestQueueOptions options, string name) =>
         options.RegisterMiddleware<CountMiddleware>();
 }
 
 public class MultipleMiddlewareQueueTestScope : BaseTestQueueTestScope
 {
-    protected override IServiceCollection ConfigureServices(IConfiguration configuration,
-        IAppEnvironment environment,
+    protected override IServiceCollection ConfigureServices(IApplicationContext applicationContext,
         IServiceCollection services, string name) =>
-        base.ConfigureServices(configuration, environment, services, name).AddSingleton<ChainState>();
+        base.ConfigureServices(applicationContext, services, name).AddSingleton<ChainState>();
 
-    protected override void Configure(IConfiguration configuration, IAppEnvironment environment,
+    protected override void Configure(IApplicationContext applicationContext,
         TestQueueOptions options, string name) =>
         options.RegisterMiddlewares<MiddlewareTests>();
 }
 
 public class ChainMiddlewareQueueTestScope : BaseTestQueueTestScope
 {
-    protected override IServiceCollection ConfigureServices(IConfiguration configuration,
-        IAppEnvironment environment,
+    protected override IServiceCollection ConfigureServices(IApplicationContext applicationContext,
         IServiceCollection services, string name) =>
-        base.ConfigureServices(configuration, environment, services, name).AddSingleton<ChainState>();
+        base.ConfigureServices(applicationContext, services, name).AddSingleton<ChainState>();
 
-    protected override void Configure(IConfiguration configuration, IAppEnvironment environment,
+    protected override void Configure(IApplicationContext applicationContext,
         TestQueueOptions options, string name)
     {
         options.RegisterMiddleware<ChainFooMiddleware>();

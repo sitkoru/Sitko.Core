@@ -40,14 +40,14 @@ public class NatsQueue : BaseQueue<NatsQueueModuleOptions>
     private bool disposed;
 
     public NatsQueue(IOptionsMonitor<NatsQueueModuleOptions> config, QueueContext context,
-        IAppEnvironment environment,
+        IApplicationContext applicationContext,
         ILogger<NatsQueue> logger) : base(config,
         context, logger)
     {
-        clientName = environment.ApplicationName.Replace('.', '_');
+        clientName = applicationContext.Name.Replace('.', '_');
         consumerGroupName = !string.IsNullOrEmpty(Config.ConsumerGroupName)
             ? Config.ConsumerGroupName
-            : environment.ApplicationName;
+            : applicationContext.Name;
     }
 
     protected override Task DoStartAsync()

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 using Sitko.Core.Queue.Tests;
 using Sitko.Core.Xunit;
@@ -41,10 +40,9 @@ public class OptionsTest : BaseTest<NatsQueueTestScopeWithOptions>
 
 public class NatsQueueTestScopeWithOptions : NatsQueueTestScope
 {
-    protected override void ConfigureQueue(NatsQueueModuleOptions options, IConfiguration configuration,
-        IAppEnvironment environment)
+    protected override void ConfigureQueue(NatsQueueModuleOptions options, IApplicationContext applicationContext)
     {
-        base.ConfigureQueue(options, configuration, environment);
+        base.ConfigureQueue(options, applicationContext);
         options.ConfigureMessage(new NatsMessageOptions<TestMessage>
         {
             StartAt = TimeSpan.FromMinutes(30), ManualAck = true

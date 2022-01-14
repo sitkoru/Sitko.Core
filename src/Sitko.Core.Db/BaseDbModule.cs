@@ -2,7 +2,6 @@ using System;
 using System.Text.Json.Serialization;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 
@@ -16,7 +15,7 @@ public abstract class BaseDbModule<TDbContext, TConfig> : BaseApplicationModule<
     where TDbContext : DbContext
     where TConfig : BaseDbModuleOptions<TDbContext>, new()
 {
-    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
         TConfig startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);
@@ -32,7 +31,7 @@ public abstract class BaseDbModuleOptions<TDbContext> : BaseModuleOptions where 
     public bool EnableSensitiveLogging { get; set; }
 
     [JsonIgnore]
-    public Action<DbContextOptionsBuilder<TDbContext>, IServiceProvider, IConfiguration, IAppEnvironment>?
+    public Action<DbContextOptionsBuilder<TDbContext>, IServiceProvider, IApplicationContext>?
         ConfigureDbContextOptions { get; set; }
 }
 

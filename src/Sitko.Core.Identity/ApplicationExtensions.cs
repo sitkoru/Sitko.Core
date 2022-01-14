@@ -1,7 +1,6 @@
 ﻿using System;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Identity;
@@ -9,7 +8,7 @@ namespace Sitko.Core.Identity;
 public static class ApplicationExtensions
 {
     public static Application AddIdentity<TUser, TRole, TPk, TDbContext>(this Application application,
-        Action<IConfiguration, IAppEnvironment, IdentityModuleOptions> configure, string? optionsKey = null)
+        Action<IApplicationContext, IdentityModuleOptions> configure, string? optionsKey = null)
         where TUser : IdentityUser<TPk>
         where TRole : IdentityRole<TPk>
         where TPk : IEquatable<TPk>

@@ -4,22 +4,21 @@ using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.ImgProxy;
 
-namespace Sitko.Core.Storage.ImgProxy
+namespace Sitko.Core.Storage.ImgProxy;
+
+public class
+    ImgProxyStorageModule<TStorageOptions> : BaseApplicationModule
+    where TStorageOptions : StorageOptions
 {
-    public class
-        ImgProxyStorageModule<TStorageOptions> : BaseApplicationModule
-        where TStorageOptions : StorageOptions
+    public override string OptionsKey => $"Storage:ImgProxy:{typeof(TStorageOptions).Name}";
+
+    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+        BaseApplicationModuleOptions startupOptions)
     {
-        public override string OptionsKey => $"Storage:ImgProxy:{typeof(TStorageOptions).Name}";
-
-        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            BaseApplicationModuleOptions startupOptions)
-        {
-            base.ConfigureServices(context, services, startupOptions);
-            services.AddSingleton<IImgProxyUrlGenerator<TStorageOptions>, ImgProxyUrlGenerator<TStorageOptions>>();
-        }
-
-        public override IEnumerable<Type> GetRequiredModules(ApplicationContext context,
-            BaseApplicationModuleOptions options) => new[] { typeof(IStorageModule), typeof(ImgProxyModule) };
+        base.ConfigureServices(context, services, startupOptions);
+        services.AddSingleton<IImgProxyUrlGenerator<TStorageOptions>, ImgProxyUrlGenerator<TStorageOptions>>();
     }
+
+    public override IEnumerable<Type> GetRequiredModules(IApplicationContext context,
+        BaseApplicationModuleOptions options) => new[] { typeof(IStorageModule), typeof(ImgProxyModule) };
 }

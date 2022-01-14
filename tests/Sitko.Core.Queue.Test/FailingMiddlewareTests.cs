@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 using Xunit;
 using Xunit.Abstractions;
@@ -55,7 +54,7 @@ public class FailingMiddlewareTests : BaseTestQueueTest<FailingMiddlewareQueueTe
 
 public class FailingMiddlewareQueueTestScope : BaseTestQueueTestScope
 {
-    protected override void Configure(IConfiguration configuration, IAppEnvironment environment,
+    protected override void Configure(IApplicationContext applicationContext,
         TestQueueOptions options, string name) =>
         options.RegisterMiddleware<FailingMiddleware>();
 }

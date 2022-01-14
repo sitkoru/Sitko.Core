@@ -1,6 +1,5 @@
 ﻿using System;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.ImgProxy;
@@ -9,7 +8,7 @@ namespace Sitko.Core.ImgProxy;
 public static class ApplicationExtensions
 {
     public static Application AddImgProxy(this Application application,
-        Action<IConfiguration, IAppEnvironment, ImgProxyModuleOptions> configure,
+        Action<IApplicationContext, ImgProxyModuleOptions> configure,
         string? optionsKey = null) => application
         .AddModule<ImgProxyModule, ImgProxyModuleOptions>(
             configure, optionsKey);

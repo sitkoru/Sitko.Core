@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Search.ElasticSearch;
@@ -7,7 +6,7 @@ namespace Sitko.Core.Search.ElasticSearch;
 public static class ApplicationExtensions
 {
     public static Application AddElasticSearch(this Application application,
-        Action<IConfiguration, IAppEnvironment, ElasticSearchModuleOptions> configure,
+        Action<IApplicationContext, ElasticSearchModuleOptions> configure,
         string? optionsKey = null) =>
         application.AddModule<ElasticSearchModule, ElasticSearchModuleOptions>(configure, optionsKey);
 

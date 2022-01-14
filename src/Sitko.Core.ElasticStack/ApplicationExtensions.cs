@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.ElasticStack;
@@ -7,7 +6,7 @@ namespace Sitko.Core.ElasticStack;
 public static class ApplicationExtensions
 {
     public static Application AddElasticStack(this Application application,
-        Action<IConfiguration, IAppEnvironment, ElasticStackModuleOptions> configure, string? optionsKey = null) =>
+        Action<IApplicationContext, ElasticStackModuleOptions> configure, string? optionsKey = null) =>
         application.AddModule<ElasticStackModule, ElasticStackModuleOptions>(configure, optionsKey);
 
     public static Application AddElasticStack(this Application application,

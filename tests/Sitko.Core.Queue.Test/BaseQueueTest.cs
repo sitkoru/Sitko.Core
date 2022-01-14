@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 using Sitko.Core.Xunit;
 using Xunit.Abstractions;
@@ -25,13 +24,12 @@ public abstract class BaseQueueTestScope<TQueueModule, TQueue, TQueueModuleOptio
     {
         base.ConfigureApplication(application, name);
         application.AddModule<TQueueModule, TQueueModuleOptions>((
-            configuration, environment, moduleOptions) => Configure(configuration, environment, moduleOptions, name));
+            applicationContext, moduleOptions) => Configure(applicationContext, moduleOptions, name));
 
         return application;
     }
 
-    protected abstract void Configure(IConfiguration configuration, IAppEnvironment environment,
-        TQueueModuleOptions options,
+    protected abstract void Configure(IApplicationContext applicationContext, TQueueModuleOptions options,
         string name);
 }
 

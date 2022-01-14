@@ -209,7 +209,7 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposab
             // Parent scope was disposed. Indicate in logs and suppress exception.
             GlobalServiceProvider.GetRequiredService<ILogger<BaseComponent>>()
                 .Log(
-                    GlobalServiceProvider.GetRequiredService<IAppEnvironment>().IsDevelopment()
+                    GlobalServiceProvider.GetRequiredService<IApplicationContext>().IsDevelopment()
                         ? LogLevel.Warning
                         : LogLevel.Debug, "Parent scope was disposed in {Component}", GetType());
         }

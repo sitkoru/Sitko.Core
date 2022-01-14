@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.NewRelic.Logging;
@@ -7,7 +6,7 @@ namespace Sitko.Core.NewRelic.Logging;
 public static class ApplicationExtensions
 {
     public static Application AddNewRelicLogging(this Application application,
-        Action<IConfiguration, IAppEnvironment, NewRelicLoggingModuleOptions> configure,
+        Action<IApplicationContext, NewRelicLoggingModuleOptions> configure,
         string? optionsKey = null) =>
         application.AddModule<NewRelicLoggingModule, NewRelicLoggingModuleOptions>(configure, optionsKey);
 

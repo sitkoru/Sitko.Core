@@ -1,6 +1,5 @@
 ﻿using System;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Configuration;
 
 namespace Sitko.Core.App.Localization;
 
@@ -8,7 +7,7 @@ namespace Sitko.Core.App.Localization;
 public static class ApplicationExtensions
 {
     public static Application AddJsonLocalization(this Application application,
-        Action<IConfiguration, IAppEnvironment, JsonLocalizationModuleOptions> configure,
+        Action<IApplicationContext, JsonLocalizationModuleOptions> configure,
         string? optionsKey = null) =>
         application.AddModule<JsonLocalizationModule, JsonLocalizationModuleOptions>(configure, optionsKey);
 

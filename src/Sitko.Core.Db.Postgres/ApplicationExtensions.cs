@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Db.Postgres;
@@ -8,7 +7,7 @@ namespace Sitko.Core.Db.Postgres;
 public static class ApplicationExtensions
 {
     public static Application AddPostgresDatabase<TDbContext>(this Application application,
-        Action<IConfiguration, IAppEnvironment, PostgresDatabaseModuleOptions<TDbContext>> configure,
+        Action<IApplicationContext, PostgresDatabaseModuleOptions<TDbContext>> configure,
         string? optionsKey = null)
         where TDbContext : DbContext =>
         application

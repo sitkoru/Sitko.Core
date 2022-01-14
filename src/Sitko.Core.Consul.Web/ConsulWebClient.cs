@@ -27,14 +27,14 @@ public class ConsulWebClient
 
     public ConsulWebClient(IServer server, IConsulClientProvider consulClientProvider,
         IOptionsMonitor<ConsulWebModuleOptions> config,
-        IAppEnvironment environment, IApplication application, ILogger<ConsulWebClient> logger)
+        IApplicationContext applicationContext, IApplication application, ILogger<ConsulWebClient> logger)
     {
         this.consulClientProvider = consulClientProvider;
         configMonitor = config;
         this.application = application;
         this.logger = logger;
 
-        name = environment.ApplicationName;
+        name = applicationContext.Name;
         if (Options.ServiceUri != null)
         {
             uri = Options.ServiceUri;

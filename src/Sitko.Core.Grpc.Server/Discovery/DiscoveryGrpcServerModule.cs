@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 
@@ -14,7 +13,7 @@ public abstract class DiscoveryGrpcServerModule<TRegistrar, TConfig> : BaseGrpcS
 
     private readonly List<Func<IGrpcServicesRegistrar, Task>> serviceRegistrations = new();
 
-    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
         TConfig startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);
@@ -26,7 +25,7 @@ public abstract class DiscoveryGrpcServerModule<TRegistrar, TConfig> : BaseGrpcS
         }
     }
 
-    public override async Task ApplicationStarted(IConfiguration configuration, IAppEnvironment environment,
+    public override async Task ApplicationStarted(IApplicationContext applicationContext,
         IServiceProvider serviceProvider)
     {
         var registrar = serviceProvider.GetRequiredService<IGrpcServicesRegistrar>();

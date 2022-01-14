@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Automapper;
@@ -7,7 +6,7 @@ namespace Sitko.Core.Automapper;
 public static class ApplicationExtensions
 {
     public static Application AddAutoMapper(this Application application,
-        Action<IConfiguration, IAppEnvironment, AutoMapperModuleOptions> configure,
+        Action<IApplicationContext, AutoMapperModuleOptions> configure,
         string? optionsKey = null) =>
         application.AddModule<AutoMapperModule, AutoMapperModuleOptions>(configure, optionsKey);
 

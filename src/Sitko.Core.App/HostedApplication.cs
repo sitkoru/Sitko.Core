@@ -11,6 +11,7 @@ using Sitko.FluentValidation;
 using Tempus;
 using Thinktecture;
 using Thinktecture.Extensions.Configuration;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Sitko.Core.App;
 
@@ -58,6 +59,15 @@ public abstract class HostedApplication : Application
         return appHost;
     }
 
+    protected virtual void ConfigureApplicationOptions(IHostEnvironment environment, IConfiguration configuration,
+        ApplicationOptions options)
+    {
+    }
+
+
+    protected IApplicationContext GetContext(IHostEnvironment environment, IConfiguration configuration) =>
+        new HostedApplicationContext(configuration, environment);
+
     protected IHostBuilder ConfigureHostBuilder(Action<IHostBuilder>? configure = null)
     {
         LogVerbose("Configure host builder start");
@@ -73,7 +83,7 @@ public abstract class HostedApplication : Application
             .ConfigureLogging(builder => { builder.SetMinimumLevel(LogLevel.Information); }).Build();
 
         var tmpConfiguration = tmpHost.Services.GetRequiredService<IConfiguration>();
-        var tmpEnvironment = new HostedAppEnvironment(tmpHost.Services.GetRequiredService<IHostEnvironment>());
+        var tmpEnvironment = tmpHost.Services.GetRequiredService<IHostEnvironment>();
 
         var tmpApplicationContext = GetContext(tmpEnvironment, tmpConfiguration);
 
@@ -92,15 +102,14 @@ public abstract class HostedApplication : Application
             .ConfigureHostConfiguration(builder =>
             {
                 builder.AddJsonFile("appsettings.json", true, false);
-                builder.AddJsonFile($"appsettings.{tmpApplicationContext.Environment.EnvironmentName}.json", true,
+                builder.AddJsonFile($"appsettings.{tmpApplicationContext.EnvironmentName}.json", true,
                     false);
             })
             .ConfigureAppConfiguration((context, builder) =>
             {
                 LogVerbose("Configure app configuration");
                 builder.AddLoggingConfiguration(loggingConfiguration, "Serilog");
-                var appContext = GetContext(new HostedAppEnvironment(context.HostingEnvironment),
-                    context.Configuration);
+                var appContext = GetContext(context.HostingEnvironment, context.Configuration);
                 foreach (var appConfigurationAction in AppConfigurationActions)
                 {
                     appConfigurationAction(appContext, builder);
@@ -120,13 +129,13 @@ public abstract class HostedApplication : Application
                 services.AddSingleton(typeof(IApplication), this);
                 services.AddSingleton(typeof(Application), this);
                 services.AddSingleton(GetType(), this);
+                services.AddSingleton<IApplicationContext, HostedApplicationContext>();
                 services.AddHostedService<ApplicationLifetimeService>();
                 services.AddTransient<IScheduler, Scheduler>();
                 services.AddFluentValidationExtensions();
                 services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
 
-                var appContext = GetContext(new HostedAppEnvironment(context.HostingEnvironment),
-                    context.Configuration);
+                var appContext = GetContext(context.HostingEnvironment, context.Configuration);
                 foreach (var servicesConfigurationAction in ServicesConfigurationActions)
                 {
                     servicesConfigurationAction(appContext, services);
@@ -139,8 +148,7 @@ public abstract class HostedApplication : Application
                 }
             }).ConfigureLogging((context, builder) =>
             {
-                var applicationOptions = GetApplicationOptions(new HostedAppEnvironment(context.HostingEnvironment),
-                    context.Configuration);
+                var appContext = GetContext(context.HostingEnvironment, context.Configuration);
                 LogVerbose("Configure logging");
                 builder.AddConfiguration(context.Configuration.GetSection("Logging"));
                 var loggerConfiguration = new LoggerConfiguration();
@@ -148,16 +156,15 @@ public abstract class HostedApplication : Application
                 loggerConfiguration
                     .Enrich.FromLogContext()
                     .Enrich.WithMachineName()
-                    .Enrich.WithProperty("App", applicationOptions.Name)
-                    .Enrich.WithProperty("AppVersion", applicationOptions.Version);
+                    .Enrich.WithProperty("App", appContext.Name)
+                    .Enrich.WithProperty("AppVersion", appContext.Version);
 
-                if (applicationOptions.EnableConsoleLogging == true)
+                if (appContext.Options.EnableConsoleLogging == true)
                 {
-                    loggerConfiguration.WriteTo.Console(outputTemplate: applicationOptions.ConsoleLogFormat);
+                    loggerConfiguration.WriteTo.Console(outputTemplate: appContext.Options.ConsoleLogFormat);
                 }
 
-                var appContext = GetContext(new HostedAppEnvironment(context.HostingEnvironment),
-                    context.Configuration);
+
                 ConfigureLogging(appContext,
                     loggerConfiguration);
                 foreach (var (key, value) in
@@ -223,7 +230,7 @@ public abstract class HostedApplication : Application
     protected override bool CanAddModule() => appHost is null;
     public IHostBuilder GetHostBuilder() => ConfigureHostBuilder();
 
-    protected override ApplicationContext GetContext() => appHost is not null
+    protected override IApplicationContext GetContext() => appHost is not null
         ? GetContext(appHost.Services)
         : throw new InvalidOperationException("App host is not built yet");
 
@@ -241,7 +248,7 @@ public abstract class HostedApplication : Application
         return appHost;
     }
 
-    protected override async Task<ApplicationContext> BuildAppContextAsync()
+    protected override async Task<IApplicationContext> BuildAppContextAsync()
     {
         var currentHost = await GetOrCreateHostAsync();
         return GetContext(currentHost.Services);
@@ -262,20 +269,24 @@ public abstract class HostedApplication : Application
 
     public async Task<IServiceProvider> GetServiceProviderAsync() => (await GetOrCreateHostAsync()).Services;
 
-    protected override ApplicationContext GetContext(IServiceProvider serviceProvider) => GetContext(
-        new HostedAppEnvironment(serviceProvider.GetRequiredService<IHostEnvironment>()),
-        serviceProvider.GetRequiredService<IConfiguration>(),
-        serviceProvider.GetRequiredService<ILogger<Application>>());
+    protected override IApplicationContext GetContext(IServiceProvider serviceProvider) => GetContext(
+        serviceProvider.GetRequiredService<IHostEnvironment>(),
+        serviceProvider.GetRequiredService<IConfiguration>());
 }
 
-public class HostedAppEnvironment : IAppEnvironment
+public class HostedApplicationContext : BaseApplicationContext
 {
     private readonly IHostEnvironment environment;
 
-    public HostedAppEnvironment(IHostEnvironment environment) => this.environment = environment;
+    public HostedApplicationContext(IConfiguration configuration, IHostEnvironment environment) : base(
+        configuration) =>
+        this.environment = environment;
 
-    public string EnvironmentName => environment.EnvironmentName;
-    public string ApplicationName => environment.ApplicationName;
-    public bool IsDevelopment() => environment.IsDevelopment();
-    public bool IsProduction() => environment.IsProduction();
+    public override string EnvironmentName => environment.EnvironmentName;
+    public override bool IsDevelopment() => environment.IsDevelopment();
+
+    public override bool IsProduction() => environment.IsDevelopment();
+
+    protected override void ConfigureApplicationOptions(ApplicationOptions options) =>
+        options.EnableConsoleLogging ??= environment.IsDevelopment();
 }

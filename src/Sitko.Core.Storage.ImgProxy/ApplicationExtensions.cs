@@ -1,6 +1,5 @@
 ﻿using System;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.ImgProxy;
@@ -9,7 +8,7 @@ namespace Sitko.Core.Storage.ImgProxy;
 public static class ApplicationExtensions
 {
     public static Application AddImgProxyStorage<TStorageOptions>(this Application application,
-        Action<IConfiguration, IAppEnvironment, BaseApplicationModuleOptions> configure,
+        Action<IApplicationContext, BaseApplicationModuleOptions> configure,
         string? optionsKey = null)
         where TStorageOptions : StorageOptions =>
         application

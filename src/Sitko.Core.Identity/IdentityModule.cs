@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.App.Web;
@@ -19,7 +18,7 @@ public class IdentityModule<TUser, TRole, TPk, TDbContext> : BaseApplicationModu
 {
     public override string OptionsKey => "Identity";
 
-    public void ConfigureEndpoints(IConfiguration configuration, IAppEnvironment environment,
+    public void ConfigureEndpoints(IApplicationContext applicationContext,
         IApplicationBuilder appBuilder,
         IEndpointRouteBuilder endpoints)
     {
@@ -30,14 +29,14 @@ public class IdentityModule<TUser, TRole, TPk, TDbContext> : BaseApplicationModu
         }
     }
 
-    public void ConfigureAfterUseRouting(IConfiguration configuration, IAppEnvironment environment,
+    public void ConfigureAfterUseRouting(IApplicationContext applicationContext,
         IApplicationBuilder appBuilder)
     {
         appBuilder.UseAuthentication();
         appBuilder.UseAuthorization();
     }
 
-    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
         IdentityModuleOptions startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);

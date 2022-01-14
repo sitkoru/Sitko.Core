@@ -7,7 +7,6 @@ using Hangfire.Dashboard;
 using Hangfire.PostgreSql;
 using HealthChecks.Hangfire;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.App.Web;
@@ -20,7 +19,7 @@ public class HangfireModule<THangfireConfig> : BaseApplicationModule<THangfireCo
 {
     public override string OptionsKey => "Hangfire";
 
-    public virtual void ConfigureAfterUseRouting(IConfiguration configuration, IAppEnvironment environment,
+    public virtual void ConfigureAfterUseRouting(IApplicationContext applicationContext,
         IApplicationBuilder appBuilder)
     {
         var config = GetOptions(appBuilder.ApplicationServices);
@@ -36,7 +35,7 @@ public class HangfireModule<THangfireConfig> : BaseApplicationModule<THangfireCo
         }
     }
 
-    public virtual void ConfigureBeforeUseRouting(IConfiguration configuration, IAppEnvironment environment,
+    public virtual void ConfigureBeforeUseRouting(IApplicationContext applicationContext,
         IApplicationBuilder appBuilder)
     {
         var config = GetOptions(appBuilder.ApplicationServices);
@@ -49,7 +48,7 @@ public class HangfireModule<THangfireConfig> : BaseApplicationModule<THangfireCo
         }
     }
 
-    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
         THangfireConfig startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);

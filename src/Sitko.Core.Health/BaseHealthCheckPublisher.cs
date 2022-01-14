@@ -16,16 +16,16 @@ public abstract class BaseHealthCheckPublisher<TOptions> : IHealthCheckPublisher
 
     public BaseHealthCheckPublisher(IOptionsMonitor<TOptions> options,
         ILogger<BaseHealthCheckPublisher<TOptions>> logger,
-        IAppEnvironment hostingEnvironment)
+        IApplicationContext applicationContext)
     {
         optionsMonitor = options;
         Logger = logger;
-        HostingEnvironment = hostingEnvironment;
+        ApplicationContext = applicationContext;
     }
 
     protected TOptions Options => optionsMonitor.CurrentValue;
     protected ILogger<BaseHealthCheckPublisher<TOptions>> Logger { get; }
-    protected IAppEnvironment HostingEnvironment { get; }
+    protected IApplicationContext ApplicationContext { get; }
 
     public async Task PublishAsync(HealthReport report, CancellationToken cancellationToken)
     {

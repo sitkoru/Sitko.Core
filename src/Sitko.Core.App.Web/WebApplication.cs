@@ -15,43 +15,43 @@ public abstract class WebApplication : HostedApplication
     {
     }
 
-    protected List<IWebApplicationModule> GetWebModules(ApplicationContext context) =>
+    protected List<IWebApplicationModule> GetWebModules(IApplicationContext context) =>
         GetEnabledModuleRegistrations(context).Select(r => r.GetInstance()).OfType<IWebApplicationModule>()
             .ToList();
 
-    public virtual void AppBuilderHook(IConfiguration configuration, IAppEnvironment environment,
+    public virtual void AppBuilderHook(IApplicationContext applicationContext,
         IApplicationBuilder appBuilder)
     {
-        foreach (var webModule in GetWebModules(GetContext(environment, configuration)))
+        foreach (var webModule in GetWebModules(applicationContext))
         {
-            webModule.ConfigureAppBuilder(configuration, environment, appBuilder);
+            webModule.ConfigureAppBuilder(applicationContext, appBuilder);
         }
     }
 
-    public virtual void BeforeRoutingHook(IConfiguration configuration, IAppEnvironment environment,
+    public virtual void BeforeRoutingHook(IApplicationContext applicationContext,
         IApplicationBuilder appBuilder)
     {
-        foreach (var webModule in GetWebModules(GetContext(environment, configuration)))
+        foreach (var webModule in GetWebModules(applicationContext))
         {
-            webModule.ConfigureBeforeUseRouting(configuration, environment, appBuilder);
+            webModule.ConfigureBeforeUseRouting(applicationContext, appBuilder);
         }
     }
 
-    public virtual void AfterRoutingHook(IConfiguration configuration, IAppEnvironment environment,
+    public virtual void AfterRoutingHook(IApplicationContext applicationContext,
         IApplicationBuilder appBuilder)
     {
-        foreach (var webModule in GetWebModules(GetContext(environment, configuration)))
+        foreach (var webModule in GetWebModules(applicationContext))
         {
-            webModule.ConfigureAfterUseRouting(configuration, environment, appBuilder);
+            webModule.ConfigureAfterUseRouting(applicationContext, appBuilder);
         }
     }
 
-    public virtual void EndpointsHook(IConfiguration configuration, IAppEnvironment environment,
+    public virtual void EndpointsHook(IApplicationContext applicationContext,
         IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
     {
-        foreach (var webModule in GetWebModules(GetContext(environment, configuration)))
+        foreach (var webModule in GetWebModules(applicationContext))
         {
-            webModule.ConfigureEndpoints(configuration, environment, appBuilder, endpoints);
+            webModule.ConfigureEndpoints(applicationContext, appBuilder, endpoints);
         }
     }
 }

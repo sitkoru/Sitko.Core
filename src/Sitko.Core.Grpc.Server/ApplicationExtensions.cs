@@ -1,6 +1,5 @@
 ﻿using System;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Server;
@@ -9,7 +8,7 @@ namespace Sitko.Core.Grpc.Server;
 public static class ApplicationExtensions
 {
     public static Application AddGrpcServer(this Application application,
-        Action<IConfiguration, IAppEnvironment, GrpcServerModuleOptions> configure,
+        Action<IApplicationContext, GrpcServerModuleOptions> configure,
         string? optionsKey = null) =>
         application.AddModule<GrpcServerModule, GrpcServerModuleOptions>(configure, optionsKey);
 

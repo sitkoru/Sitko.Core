@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.IdProvider.SonyFlake;
@@ -7,7 +6,7 @@ namespace Sitko.Core.IdProvider.SonyFlake;
 public static class ApplicationExtensions
 {
     public static Application AddSonyFlakeIdProvider(this Application application,
-        Action<IConfiguration, IAppEnvironment, SonyFlakeIdProviderModuleOptions> configure,
+        Action<IApplicationContext, SonyFlakeIdProviderModuleOptions> configure,
         string? optionsKey = null) =>
         application.AddModule<SonyFlakeIdProviderModule, SonyFlakeIdProviderModuleOptions>(configure,
             optionsKey);

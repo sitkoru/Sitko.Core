@@ -1,6 +1,5 @@
 ﻿using System;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.Metadata.Postgres;
@@ -9,7 +8,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres;
 public static class ApplicationExtensions
 {
     public static Application AddPostgresStorageMetadata<TStorageOptions>(this Application application,
-        Action<IConfiguration, IAppEnvironment, PostgresStorageMetadataModuleOptions<TStorageOptions>> configure,
+        Action<IApplicationContext, PostgresStorageMetadataModuleOptions<TStorageOptions>> configure,
         string? optionsKey = null)
         where TStorageOptions : StorageOptions =>
         application

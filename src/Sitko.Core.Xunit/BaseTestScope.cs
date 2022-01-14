@@ -28,8 +28,7 @@ public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
     private bool isApplicationStarted;
     private TApplication? scopeApplication;
     protected IServiceProvider? ServiceProvider { get; set; }
-    [PublicAPI] protected IConfiguration? Configuration { get; set; }
-    [PublicAPI] protected IAppEnvironment? Environment { get; set; }
+    [PublicAPI] protected IApplicationContext? ApplicationContext { get; set; }
     [PublicAPI] protected string? Name { get; private set; }
 
     public TConfig Config => GetService<IOptions<TConfig>>().Value;
@@ -42,12 +41,12 @@ public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
         scopeApplication.ConfigureAppConfiguration((applicationContext, builder) =>
         {
             builder.AddJsonFile("appsettings.json", true);
-            builder.AddJsonFile($"appsettings.{applicationContext.Environment.EnvironmentName}.json", true);
+            builder.AddJsonFile($"appsettings.{applicationContext.EnvironmentName}.json", true);
         });
 
         scopeApplication.ConfigureServices((context, services) =>
         {
-            ConfigureServices(context.Configuration, context.Environment, services, name);
+            ConfigureServices(context, services, name);
             services.Configure<TConfig>(context.Configuration.GetSection("Tests"));
         });
 
@@ -60,8 +59,7 @@ public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
 
         scopeApplication = ConfigureApplication(scopeApplication, name);
         ServiceProvider = (await scopeApplication.GetServiceProviderAsync()).CreateScope().ServiceProvider;
-        Configuration = ServiceProvider.GetService<IConfiguration>();
-        Environment = ServiceProvider.GetService<IAppEnvironment>();
+        ApplicationContext = ServiceProvider.GetService<IApplicationContext>();
     }
 
 
@@ -124,8 +122,8 @@ public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
 
     protected virtual TApplication ConfigureApplication(TApplication application, string name) => application;
 
-    protected virtual IServiceCollection ConfigureServices(IConfiguration configuration,
-        IAppEnvironment environment, IServiceCollection services, string name) =>
+    protected virtual IServiceCollection ConfigureServices(IApplicationContext applicationContext,
+        IServiceCollection services, string name) =>
         services;
 
     public IServiceScope CreateScope() => ServiceProvider!.CreateScope();

@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.MediatR;
@@ -7,7 +6,7 @@ namespace Sitko.Core.MediatR;
 public static class ApplicationExtensions
 {
     public static Application AddMediatR<TAssembly>(this Application application,
-        Action<IConfiguration, IAppEnvironment, MediatRModuleOptions<TAssembly>> configure,
+        Action<IApplicationContext, MediatRModuleOptions<TAssembly>> configure,
         string? optionsKey = null) =>
         application.AddModule<MediatRModule<TAssembly>, MediatRModuleOptions<TAssembly>>(configure,
             optionsKey);

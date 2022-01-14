@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.FileSystem;
@@ -7,7 +6,7 @@ namespace Sitko.Core.Storage.FileSystem;
 public static class ApplicationExtensions
 {
     public static Application AddFileSystemStorage<TStorageOptions>(this Application application,
-        Action<IConfiguration, IAppEnvironment, TStorageOptions> configure, string? optionsKey = null)
+        Action<IApplicationContext, TStorageOptions> configure, string? optionsKey = null)
         where TStorageOptions : StorageOptions, IFileSystemStorageOptions, new() =>
         application.AddModule<FileSystemStorageModule<TStorageOptions>, TStorageOptions>(configure,
             optionsKey);
@@ -19,7 +18,7 @@ public static class ApplicationExtensions
             optionsKey);
 
     public static Application AddFileSystemStorageMetadata<TStorageOptions>(this Application application,
-        Action<IConfiguration, IAppEnvironment, FileSystemStorageMetadataModuleOptions<TStorageOptions>>
+        Action<IApplicationContext, FileSystemStorageMetadataModuleOptions<TStorageOptions>>
             configure, string? optionsKey = null)
         where TStorageOptions : StorageOptions, IFileSystemStorageOptions, new() =>
         application
