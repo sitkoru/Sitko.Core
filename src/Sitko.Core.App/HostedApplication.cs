@@ -1,17 +1,18 @@
 ﻿using System;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Events;
 using Serilog.Extensions.Logging;
 using Sitko.Core.App.Localization;
 using Sitko.FluentValidation;
 using Tempus;
 using Thinktecture;
 using Thinktecture.Extensions.Configuration;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Sitko.Core.App;
 
@@ -21,7 +22,15 @@ public abstract class HostedApplication : Application
 
     protected HostedApplication(string[] args) : base(args)
     {
+        Console.OutputEncoding = Encoding.UTF8;
+        var loggerConfiguration = new LoggerConfiguration();
+        loggerConfiguration
+            .WriteTo.Console(outputTemplate: ApplicationOptions.BaseConsoleLogFormat,
+                restrictedToMinimumLevel: LogEventLevel.Debug);
+        InternalLogger = new SerilogLoggerFactory(loggerConfiguration.CreateLogger()).CreateLogger<Application>();
     }
+
+    protected ILogger<Application> InternalLogger { get; }
 
     private IHostBuilder CreateHostBuilder(string[] hostBuilderArgs)
     {
@@ -36,26 +45,29 @@ public abstract class HostedApplication : Application
         builder.ConfigureAppConfiguration(ConfigureAppConfiguration);
     }
 
+    protected override void LogInternal(string message) =>
+        InternalLogger.LogInformation("Check log: {Message}", message);
+
     protected IHost CreateAppHost(Action<IHostBuilder>? configure = null)
     {
-        LogVerbose("Create app host start");
+        LogInternal("Create app host start");
 
         if (appHost is not null)
         {
-            LogVerbose("App host is already built");
+            LogInternal("App host is already built");
 
             return appHost;
         }
 
-        LogVerbose("Configure host builder");
+        LogInternal("Configure host builder");
 
         var hostBuilder = ConfigureHostBuilder(configure);
 
-        LogVerbose("Build host");
+        LogInternal("Build host");
         var newHost = hostBuilder.Build();
 
         appHost = newHost;
-        LogVerbose("Create app host done");
+        LogInternal("Create app host done");
         return appHost;
     }
 
@@ -70,9 +82,9 @@ public abstract class HostedApplication : Application
 
     protected IHostBuilder ConfigureHostBuilder(Action<IHostBuilder>? configure = null)
     {
-        LogVerbose("Configure host builder start");
+        LogInternal("Configure host builder start");
 
-        LogVerbose("Create tmp host builder");
+        LogInternal("Create tmp host builder");
 
         using var tmpHost = CreateHostBuilder(Args)
             .UseDefaultServiceProvider(options =>
@@ -87,11 +99,11 @@ public abstract class HostedApplication : Application
 
         var tmpApplicationContext = GetContext(tmpEnvironment, tmpConfiguration);
 
-        LogVerbose("Init application");
+        LogInternal("Init application");
 
         InitApplication();
 
-        LogVerbose("Create main host builder");
+        LogInternal("Create main host builder");
         var loggingConfiguration = new SerilogConfiguration();
         var hostBuilder = CreateHostBuilder(Args)
             .UseDefaultServiceProvider(options =>
@@ -107,7 +119,7 @@ public abstract class HostedApplication : Application
             })
             .ConfigureAppConfiguration((context, builder) =>
             {
-                LogVerbose("Configure app configuration");
+                LogInternal("Configure app configuration");
                 builder.AddLoggingConfiguration(loggingConfiguration, "Serilog");
                 var appContext = GetContext(context.HostingEnvironment, context.Configuration);
                 foreach (var appConfigurationAction in AppConfigurationActions)
@@ -115,7 +127,7 @@ public abstract class HostedApplication : Application
                     appConfigurationAction(appContext, builder);
                 }
 
-                LogVerbose("Configure app configuration in modules");
+                LogInternal("Configure app configuration in modules");
                 foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpApplicationContext))
                 {
                     moduleRegistration.ConfigureAppConfiguration(appContext, builder);
@@ -123,7 +135,7 @@ public abstract class HostedApplication : Application
             })
             .ConfigureServices((context, services) =>
             {
-                LogVerbose("Configure app services");
+                LogInternal("Configure app services");
                 services.AddSingleton<ISerilogConfiguration>(loggingConfiguration);
                 services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory());
                 services.AddSingleton(typeof(IApplication), this);
@@ -149,7 +161,7 @@ public abstract class HostedApplication : Application
             }).ConfigureLogging((context, builder) =>
             {
                 var appContext = GetContext(context.HostingEnvironment, context.Configuration);
-                LogVerbose("Configure logging");
+                LogInternal("Configure logging");
                 builder.AddConfiguration(context.Configuration.GetSection("Logging"));
                 var loggerConfiguration = new LoggerConfiguration();
                 loggerConfiguration.ReadFrom.Configuration(context.Configuration);
@@ -186,15 +198,15 @@ public abstract class HostedApplication : Application
                 Log.Logger = loggerConfiguration.CreateLogger();
             });
 
-        LogVerbose("Configure host builder in modules");
+        LogInternal("Configure host builder in modules");
         foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpApplicationContext))
         {
             moduleRegistration.ConfigureHostBuilder(tmpApplicationContext, hostBuilder);
         }
 
-        LogVerbose("Configure host builder");
+        LogInternal("Configure host builder");
         configure?.Invoke(hostBuilder);
-        LogVerbose("Create host builder done");
+        LogInternal("Create host builder done");
         return hostBuilder;
     }
 
