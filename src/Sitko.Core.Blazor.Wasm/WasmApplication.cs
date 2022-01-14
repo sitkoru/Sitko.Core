@@ -205,17 +205,3 @@ public class WasmApplication<TApp> : Application where TApp : IComponent
         serviceProvider.GetRequiredService<IWebAssemblyHostEnvironment>(),
         serviceProvider.GetRequiredService<IConfiguration>());
 }
-
-public class WasmApplicationContext : BaseApplicationContext
-{
-    private readonly IWebAssemblyHostEnvironment environment;
-
-    public WasmApplicationContext(IConfiguration configuration, IWebAssemblyHostEnvironment environment)
-        : base(configuration) =>
-        this.environment = environment;
-
-    public override string EnvironmentName => environment.Environment;
-    public override bool IsDevelopment() => environment.IsDevelopment();
-
-    public override bool IsProduction() => environment.IsProduction();
-}
