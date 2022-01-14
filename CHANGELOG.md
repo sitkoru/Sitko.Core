@@ -1,3 +1,30 @@
+# [9.0.0-beta.1](https://github.com/sitkoru/Sitko.Core/compare/8.36.1...9.0.0-beta.1) (2022-01-14)
+
+
+### Bug Fixes
+
+* lazy init for app context options ([c94d703](https://github.com/sitkoru/Sitko.Core/commit/c94d703f7380170fa767650ff9e135d59c8063a5))
+
+
+### Features
+
+* **app:** base application should be independent of hosting model ([3ea04db](https://github.com/sitkoru/Sitko.Core/commit/3ea04db3ae059621bcdcfa2c8fcd0e8e5399d9a5))
+* **blazor:** create new base application for BlazorWasm ([9dfba19](https://github.com/sitkoru/Sitko.Core/commit/9dfba194199fffa693a812348eb09cf005edd26a))
+* **blazor:** Split blazor modules. Create separate packages for BlazorServer ([dab20f2](https://github.com/sitkoru/Sitko.Core/commit/dab20f2102c20a23f478d07cc706223d9af485a2))
+* **blazor:** upd .sln ([34b7ea4](https://github.com/sitkoru/Sitko.Core/commit/34b7ea45fcbf8028e8ddb03589d40219d41df5af))
+* **demo:** upd demo ([4cc93a2](https://github.com/sitkoru/Sitko.Core/commit/4cc93a2a0211bb284eaffd7259f69090a7881b79))
+* introduce IApplicationContext to combine IConfiguration, IAppEnvironment and application options ([f2a7b5f](https://github.com/sitkoru/Sitko.Core/commit/f2a7b5f361a548e738a59cf811cd5aff589f690d))
+* rebase WebApplication onto HostedApplication ([2f9ab6c](https://github.com/sitkoru/Sitko.Core/commit/2f9ab6c79d1d3055ee77146a25e01d89e2e3e2f6))
+* switch modules to use IAppEnvironment instead of IHostEnvironment ([d713865](https://github.com/sitkoru/Sitko.Core/commit/d71386507abfbe7a663481b6dc8ad4020d2514c9))
+
+
+### BREAKING CHANGES
+
+* All modules must use IApplicationContext
+* **blazor:** Sitko.Core.App.Blazor is split to Sitko.Core.Blazor and Sitko.Core.Blazor.Server
+* All modules must be updated
+* **app:** Application class is runtime-independent now. HostedApplication is new base class for web/console applications.
+
 ## [8.36.1](https://github.com/sitkoru/Sitko.Core/compare/8.36.0...8.36.1) (2022-01-12)
 
 
