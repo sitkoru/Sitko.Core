@@ -8,10 +8,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
-using Sitko.Core.App.Localization;
 using Sitko.Core.App.Logging;
-using Sitko.FluentValidation;
-using Tempus;
 using Thinktecture.Extensions.Configuration;
 
 namespace Sitko.Core.App;
@@ -119,43 +116,15 @@ public abstract class HostedApplication : Application
             })
             .ConfigureAppConfiguration((context, builder) =>
             {
-                LogInternal("Configure app configuration");
                 var appContext = GetContext(context.HostingEnvironment, context.Configuration);
-                foreach (var appConfigurationAction in AppConfigurationActions)
-                {
-                    appConfigurationAction(appContext, builder);
-                }
-
+                ConfigureConfiguration(appContext, builder);
                 LoggingExtensions.ConfigureSerilogConfiguration(builder, serilogConfiguration);
-                LogInternal("Configure app configuration in modules");
-                foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpApplicationContext))
-                {
-                    moduleRegistration.ConfigureAppConfiguration(appContext, builder);
-                }
             })
             .ConfigureServices((context, services) =>
             {
-                LogInternal("Configure app services");
-                services.AddSingleton(typeof(IApplication), this);
-                services.AddSingleton(typeof(Application), this);
-                services.AddSingleton(GetType(), this);
-                services.AddSingleton<IApplicationContext, HostedApplicationContext>();
-                services.AddHostedService<ApplicationLifetimeService>();
-                services.AddTransient<IScheduler, Scheduler>();
-                services.AddFluentValidationExtensions();
-                services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
-
                 var appContext = GetContext(context.HostingEnvironment, context.Configuration);
-                foreach (var servicesConfigurationAction in ServicesConfigurationActions)
-                {
-                    servicesConfigurationAction(appContext, services);
-                }
-
-                foreach (var moduleRegistration in GetEnabledModuleRegistrations(appContext))
-                {
-                    moduleRegistration.ConfigureOptions(appContext, services);
-                    moduleRegistration.ConfigureServices(appContext, services);
-                }
+                RegisterApplicationServices<HostedApplicationContext>(appContext, services);
+                services.AddHostedService<ApplicationLifetimeService>();
             }).ConfigureLogging((context, builder) =>
             {
                 LogInternal("Configure logging");

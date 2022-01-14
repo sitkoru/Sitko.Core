@@ -10,6 +10,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
+using Sitko.Core.App.Localization;
+using Sitko.FluentValidation;
+using Tempus;
 
 namespace Sitko.Core.App;
 
@@ -77,6 +80,44 @@ public abstract class Application : IApplication, IAsyncDisposable
     protected virtual void ConfigureAppConfiguration(HostBuilderContext context,
         IConfigurationBuilder configurationBuilder)
     {
+    }
+
+    protected void RegisterApplicationServices<TApplicationContext>(IApplicationContext applicationContext,
+        IServiceCollection services) where TApplicationContext : class, IApplicationContext
+    {
+        LogInternal("Configure app services");
+        services.AddSingleton(typeof(IApplication), this);
+        services.AddSingleton(typeof(Application), this);
+        services.AddSingleton(GetType(), this);
+        services.AddSingleton<IApplicationContext, TApplicationContext>();
+        services.AddTransient<IScheduler, Scheduler>();
+        services.AddFluentValidationExtensions();
+        services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
+        foreach (var servicesConfigurationAction in ServicesConfigurationActions)
+        {
+            servicesConfigurationAction(applicationContext, services);
+        }
+
+        foreach (var moduleRegistration in GetEnabledModuleRegistrations(applicationContext))
+        {
+            moduleRegistration.ConfigureOptions(applicationContext, services);
+            moduleRegistration.ConfigureServices(applicationContext, services);
+        }
+    }
+
+    protected void ConfigureConfiguration(IApplicationContext appContext, IConfigurationBuilder builder)
+    {
+        LogInternal("Configure app configuration");
+        foreach (var appConfigurationAction in AppConfigurationActions)
+        {
+            appConfigurationAction(appContext, builder);
+        }
+
+        LogInternal("Configure app configuration in modules");
+        foreach (var moduleRegistration in GetEnabledModuleRegistrations(appContext))
+        {
+            moduleRegistration.ConfigureAppConfiguration(appContext, builder);
+        }
     }
 
     protected virtual void ConfigureLogging(IApplicationContext applicationContext,

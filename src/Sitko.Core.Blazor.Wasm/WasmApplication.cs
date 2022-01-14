@@ -5,11 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Sitko.Blazor.ScriptInjector;
 using Sitko.Core.App;
-using Sitko.Core.App.Localization;
 using Sitko.Core.App.Logging;
 using Sitko.Core.Blazor.Components;
-using Sitko.FluentValidation;
-using Tempus;
 using Thinktecture.Extensions.Configuration;
 
 namespace Sitko.Core.Blazor.Wasm;
@@ -57,51 +54,20 @@ public abstract class WasmApplication : Application
     private WebAssemblyHostBuilder ConfigureHostBuilder(Action<WebAssemblyHostBuilder>? configure = null)
     {
         LogInternal("Configure host builder start");
-
-        LogInternal("Create tmp host builder");
-
-
         LogInternal("Init application");
-
         InitApplication();
 
         LogInternal("Create host builder");
         var hostBuilder = CreateHostBuilder(Args);
         var applicationContext = GetContext(hostBuilder.HostEnvironment, hostBuilder.Configuration);
         var enabledModuleRegistrations = GetEnabledModuleRegistrations(applicationContext);
-        LogInternal("Configure app configuration");
-        foreach (var appConfigurationAction in AppConfigurationActions)
-        {
-            appConfigurationAction(applicationContext, hostBuilder.Configuration);
-        }
-
-        LogInternal("Configure app configuration in modules");
-        foreach (var moduleRegistration in enabledModuleRegistrations)
-        {
-            moduleRegistration.ConfigureAppConfiguration(applicationContext, hostBuilder.Configuration);
-        }
-
-        LogInternal("Configure app services");
-        hostBuilder.Services.AddSingleton(typeof(IApplication), this);
-        hostBuilder.Services.AddSingleton(typeof(Application), this);
-        hostBuilder.Services.AddSingleton(GetType(), this);
-        hostBuilder.Services.AddSingleton<IApplicationContext, WasmApplicationContext>();
-        hostBuilder.Services.AddTransient<IScheduler, Scheduler>();
-        hostBuilder.Services.AddFluentValidationExtensions();
-        hostBuilder.Services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
+        // App configuration
+        ConfigureConfiguration(applicationContext, hostBuilder.Configuration);
+        // App services
+        RegisterApplicationServices<WasmApplicationContext>(applicationContext, hostBuilder.Services);
         hostBuilder.Services.AddScriptInjector();
         hostBuilder.Services.AddScoped<CompressedPersistentComponentState>();
-        foreach (var servicesConfigurationAction in ServicesConfigurationActions)
-        {
-            servicesConfigurationAction(applicationContext, hostBuilder.Services);
-        }
-
-        foreach (var moduleRegistration in enabledModuleRegistrations)
-        {
-            moduleRegistration.ConfigureOptions(applicationContext, hostBuilder.Services);
-            moduleRegistration.ConfigureServices(applicationContext, hostBuilder.Services);
-        }
-
+        // Logging
         LogInternal("Configure logging");
         var serilogConfiguration = new SerilogConfiguration();
         LoggingExtensions.ConfigureSerilogConfiguration(hostBuilder.Configuration, serilogConfiguration);
@@ -118,6 +84,7 @@ public abstract class WasmApplication : Application
                 ConfigureLogging(applicationContext, configuration);
             });
 
+        // Host builder via modules
         LogInternal("Configure host builder in modules");
         foreach (var configurationModule in enabledModuleRegistrations
                      .Select(module => module.GetInstance())
@@ -126,6 +93,7 @@ public abstract class WasmApplication : Application
             configurationModule.ConfigureHostBuilder(applicationContext, hostBuilder);
         }
 
+        // Host builder via action
         LogInternal("Configure host builder");
         configure?.Invoke(hostBuilder);
         LogInternal("Create host builder done");
@@ -134,7 +102,7 @@ public abstract class WasmApplication : Application
 
     protected override void LogInternal(string message) => Log.Logger.Debug("Internal: {Message}", message);
 
-    protected async Task<WebAssemblyHost> GetOrCreateHostAsync(Action<WebAssemblyHostBuilder>? configure = null)
+    private async Task<WebAssemblyHost> GetOrCreateHostAsync(Action<WebAssemblyHostBuilder>? configure = null)
     {
         if (appHost is not null)
         {
