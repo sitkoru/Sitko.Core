@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,7 +12,7 @@ using Thinktecture.Extensions.Configuration;
 
 namespace Sitko.Core.Blazor.Wasm;
 
-public class WasmApplication<TApp> : Application where TApp : IComponent
+public abstract class WasmApplication : Application
 {
     private WebAssemblyHost? appHost;
 
@@ -52,11 +50,7 @@ public class WasmApplication<TApp> : Application where TApp : IComponent
         return builder;
     }
 
-    protected virtual void ConfigureHostBuilder(WebAssemblyHostBuilder builder)
-    {
-        builder.RootComponents.Add<TApp>("#app");
-        builder.RootComponents.Add<HeadOutlet>("head::after");
-    }
+    protected abstract void ConfigureHostBuilder(WebAssemblyHostBuilder builder);
 
     private WebAssemblyHostBuilder ConfigureHostBuilder(Action<WebAssemblyHostBuilder>? configure = null)
     {
