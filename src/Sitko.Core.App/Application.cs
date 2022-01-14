@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -472,40 +471,4 @@ public abstract class BaseApplicationContext : IApplicationContext
     protected virtual void ConfigureApplicationOptions(ApplicationOptions options)
     {
     }
-}
-
-// [PublicAPI]
-// public class ApplicationContext
-// {
-//     public ApplicationContext(string name, string version, IAppEnvironment environment,
-//         IConfiguration configuration, ILogger logger)
-//     {
-//         Name = name;
-//         Version = version;
-//         Environment = environment;
-//         Configuration = configuration;
-//         Logger = logger;
-//     }
-//
-//     public string Name { get; }
-//     public string Version { get; }
-//     public IAppEnvironment Environment { get; }
-//     public IConfiguration Configuration { get; }
-//     public ILogger Logger { get; }
-// }
-
-// public interface IAppEnvironment
-// {
-//     string EnvironmentName { get; }
-//     string ApplicationName { get; }
-//     bool IsDevelopment();
-//     bool IsProduction();
-// }
-
-internal class DummyEnvironment : IHostEnvironment
-{
-    public string ContentRootPath { get; set; } = "";
-    public IFileProvider ContentRootFileProvider { get; set; } = null!;
-    public string ApplicationName { get; set; } = "";
-    public string EnvironmentName { get; set; } = "";
 }
