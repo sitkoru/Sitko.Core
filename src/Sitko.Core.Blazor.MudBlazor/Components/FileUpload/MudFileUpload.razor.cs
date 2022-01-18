@@ -39,7 +39,7 @@ public abstract partial class MudFileUpload<TValue> : BaseComponent where TValue
 
     [Parameter] public FileUploadDisplayMode DisplayMode { get; set; } = FileUploadDisplayMode.File;
     [Parameter] public string UploadPath { get; set; } = "";
-    [Parameter] public Func<FileUploadInfo, FileStream, Task<object>>? GenerateMetadata { get; set; }
+    [Parameter] public Func<FileUploadRequest, FileStream, Task<object>>? GenerateMetadata { get; set; }
     [Parameter] public Func<TValue?, Task>? OnChange { get; set; }
     [Parameter] public virtual string ContentTypes { get; set; } = "";
     [Parameter] public long MaxFileSize { get; set; } = long.MaxValue;
@@ -104,11 +104,11 @@ public abstract partial class MudFileUpload<TValue> : BaseComponent where TValue
         }
     }
 
-    protected Task<object> GenerateMetadataAsync(FileUploadInfo uploadInfo, FileStream stream)
+    protected Task<object> GenerateMetadataAsync(FileUploadRequest request, FileStream stream)
     {
         if (GenerateMetadata is not null)
         {
-            return GenerateMetadata(uploadInfo, stream);
+            return GenerateMetadata(request, stream);
         }
 
         return Task.FromResult((object)null!);
@@ -190,7 +190,7 @@ public abstract partial class MudFileUpload<TValue> : BaseComponent where TValue
                 await using (FileStream fs = new(path, FileMode.Create))
                 {
                     await file.OpenReadStream(MaxFileSize).CopyToAsync(fs);
-                    var uploadInfo = new FileUploadInfo(file.Name, file.ContentType, file.Size, file.LastModified);
+                    var uploadInfo = new FileUploadRequest(file.Name, file.ContentType, file.Size, file.LastModified);
                     var result = await Storage.SaveAsync(fs, file.Name, UploadPath,
                         GenerateMetadataAsync(uploadInfo, fs));
                     results.Add(result);
@@ -301,8 +301,6 @@ public class MudFilesUpload<TCollection> : MudFileUpload<TCollection>
         return collection;
     }
 }
-
-public record FileUploadInfo(string Name, string ContentType, long Size, DateTimeOffset LastModified);
 
 public enum FileUploadDisplayMode
 {
