@@ -91,13 +91,7 @@ public abstract class BaseFileInputComponent<TUploadResult, TValue> : InputBase<
                 await using (FileStream fs = new(path, FileMode.Create))
                 {
                     await (await file.OpenReadAsync()).CopyToAsync(fs);
-                    var request = new FileUploadRequest
-                    {
-                        Name = info.Name,
-                        Type = info.Type,
-                        Size = info.Size,
-                        LastModifiedDate = info.LastModifiedDate
-                    };
+                    var request = new FileUploadRequest(info.Name, info.Type, info.Size, info.LastModifiedDate);
                     results.Add(await SaveFileAsync(request, fs));
                 }
 
