@@ -1,3 +1,10 @@
+# [9.0.0-beta.4](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.3...9.0.0-beta.4) (2022-01-18)
+
+
+### Features
+
+* **fileupload:** merge FileUploadRequest and FileUploadInfo ([f02aa61](https://github.com/sitkoru/Sitko.Core/commit/f02aa6121d968cb285e45ccd2100adf2378fde67))
+
 # [9.0.0-beta.3](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.2...9.0.0-beta.3) (2022-01-14)
 
 
