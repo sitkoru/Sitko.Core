@@ -1,10 +1,10 @@
 using System.IO;
 
-namespace Sitko.Core.Storage
+namespace Sitko.Core.Storage.Internal
 {
-    internal static class Helpers
+    public static class Helpers
     {
-        internal static string? PreparePath(string? path)
+        public static string? PreparePath(string? path)
         {
             if (path?.StartsWith('/') == true)
             {
@@ -14,7 +14,7 @@ namespace Sitko.Core.Storage
             return path?.Replace("\\", "/").Replace("//", "/");
         }
 
-        internal static string GetPathWithoutPrefix(string? prefix, string filePath)
+        public static string GetPathWithoutPrefix(string? prefix, string filePath)
         {
             if (!string.IsNullOrEmpty(prefix))
             {
