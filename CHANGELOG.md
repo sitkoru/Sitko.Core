@@ -1,3 +1,17 @@
+# [9.0.0-beta.5](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.4...9.0.0-beta.5) (2022-01-19)
+
+
+### Bug Fixes
+
+* **mudblazor:** use more appropriate preview icon in MudFileUpload ([98cb564](https://github.com/sitkoru/Sitko.Core/commit/98cb5647b7ee201d3b76f4c2e786443522db539f))
+
+
+### Features
+
+* **demo:** upd mudblazor demo ([e86a8b0](https://github.com/sitkoru/Sitko.Core/commit/e86a8b0730e59cbba96e42d0277a75677a9d620a))
+* **mudblazor:** add Label, HelperText and errors display to MudFileUpload ([4912fa9](https://github.com/sitkoru/Sitko.Core/commit/4912fa9aa7f096698f04adbefcc6cf9269d28503))
+* **mudblazor:** add MudValidationMessage component to display validation messages for Field ([9392350](https://github.com/sitkoru/Sitko.Core/commit/9392350a79b6f3836b0dedeb3a1d840aaedfbf14))
+
 # [9.0.0-beta.4](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.3...9.0.0-beta.4) (2022-01-18)
 
 
