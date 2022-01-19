@@ -284,24 +284,6 @@ public class MudFileUpload : MudFileUpload<StorageItem>
     protected override StorageItem? GetValue() => Files.FirstOrDefault()?.StorageItem ?? null;
 }
 
-public class MudFilesUpload<TCollection> : MudFileUpload<TCollection>
-    where TCollection : class, ICollection<StorageItem>, new()
-{
-    protected override bool IsMultiple => true;
-    protected override IEnumerable<UploadedItem> GetFiles(TCollection value) => value.Select(CreateUploadedItem);
-
-    protected override TCollection GetValue()
-    {
-        var collection = new TCollection();
-        foreach (var file in Files)
-        {
-            collection.Add(file.StorageItem);
-        }
-
-        return collection;
-    }
-}
-
 public enum FileUploadDisplayMode
 {
     File = 1,
