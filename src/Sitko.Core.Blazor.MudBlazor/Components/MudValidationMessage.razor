@@ -1,0 +1,28 @@
+﻿@namespace Sitko.Core.Blazor.MudBlazorComponents
+@{
+    var errors = CurrentEditContext.GetValidationMessages(FieldIdentifier).Distinct().ToArray();
+}
+@if (errors.Length > 0)
+{
+    <div class="mud-input-control-helper-container">
+        @foreach (var message in errors)
+        {
+            <p class="mud-input-helper-text mud-input-error">
+                <div class="d-flex">
+                    <div class="mr-auto">@message</div>
+                </div>
+            </p>
+        }
+    </div>
+}
+
+
+@code
+{
+    [EditorRequired]
+    [Parameter]
+    public FieldIdentifier FieldIdentifier { get; set; }
+
+    [CascadingParameter]
+    public EditContext CurrentEditContext { get; set; } = null!;
+}
