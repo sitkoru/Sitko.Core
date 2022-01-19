@@ -108,14 +108,14 @@ public abstract partial class MudFileUpload<TValue> : BaseComponent where TValue
         }
     }
 
-    protected Task<object> GenerateMetadataAsync(FileUploadRequest request, FileStream stream)
+    protected async Task<object?> GenerateMetadataAsync(FileUploadRequest request, FileStream stream)
     {
         if (GenerateMetadata is not null)
         {
-            return GenerateMetadata(request, stream);
+            return await GenerateMetadata(request, stream);
         }
 
-        return Task.FromResult((object)null!);
+        return null!;
     }
 
     protected void RemoveFile(UploadedItem file) => Files.RemoveItem(file);
@@ -196,7 +196,7 @@ public abstract partial class MudFileUpload<TValue> : BaseComponent where TValue
                     await file.OpenReadStream(MaxFileSize).CopyToAsync(fs);
                     var uploadInfo = new FileUploadRequest(file.Name, file.ContentType, file.Size, file.LastModified);
                     var result = await Storage.SaveAsync(fs, file.Name, UploadPath,
-                        GenerateMetadataAsync(uploadInfo, fs));
+                       await GenerateMetadataAsync(uploadInfo, fs));
                     results.Add(result);
                 }
 
