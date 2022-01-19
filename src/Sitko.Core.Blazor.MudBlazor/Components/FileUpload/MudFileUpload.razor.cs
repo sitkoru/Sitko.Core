@@ -37,6 +37,8 @@ public abstract partial class MudFileUpload<TValue> : BaseComponent where TValue
     [Inject] protected ISnackbar Snackbar { get; set; } = null!;
     [Inject] protected IScriptInjector ScriptInjector { get; set; } = null!;
 
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? HelperText { get; set; }
     [Parameter] public FileUploadDisplayMode DisplayMode { get; set; } = FileUploadDisplayMode.File;
     [Parameter] public string UploadPath { get; set; } = "";
     [Parameter] public Func<FileUploadRequest, FileStream, Task<object>>? GenerateMetadata { get; set; }
@@ -63,6 +65,8 @@ public abstract partial class MudFileUpload<TValue> : BaseComponent where TValue
 
     [Parameter] public TValue? Value { get; set; }
 
+    protected bool IsValid => fieldIdentifier is null ||
+                              EditContext?.GetValidationMessages(fieldIdentifier.Value).Any() == false;
 
     protected override void OnParametersSet()
     {
