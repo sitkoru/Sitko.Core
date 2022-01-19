@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nito.AsyncEx;
+using Sitko.Core.Storage.Internal;
 
 namespace Sitko.Core.Storage.Metadata
 {
