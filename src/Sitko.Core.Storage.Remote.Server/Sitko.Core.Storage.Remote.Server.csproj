@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Storage.Remote\Sitko.Core.Storage.Remote.csproj" />
     <ProjectReference Include="..\Sitko.Core.Storage\Sitko.Core.Storage.csproj" />
   </ItemGroup>
 </Project>
