@@ -101,7 +101,7 @@ public interface IStorage : IStorageInstance
     /// <returns>Public URI</returns>
     Uri PublicUri(string filePath);
 
-    internal Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
+    public Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
         CancellationToken cancellationToken = default);
 }
 
