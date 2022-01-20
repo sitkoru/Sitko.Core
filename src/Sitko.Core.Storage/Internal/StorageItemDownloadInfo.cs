@@ -7,8 +7,11 @@ namespace Sitko.Core.Storage.Internal;
 
 public class StorageItemDownloadInfo
 {
-    public StorageItemDownloadInfo(long fileSize, DateTimeOffset date, Func<Task<Stream>> getStreamAsync)
+    private readonly string path;
+
+    public StorageItemDownloadInfo(string path, long fileSize, DateTimeOffset date, Func<Task<Stream>> getStreamAsync)
     {
+        this.path = path;
         FileSize = fileSize;
         Date = date;
         GetStreamAsync = getStreamAsync;
@@ -21,6 +24,8 @@ public class StorageItemDownloadInfo
 
     public long FileSize { get; }
     public DateTimeOffset Date { get; }
+
+    public StorageItem StorageItem => new(path, Metadata) { FileSize = FileSize, LastModified = Date };
 
     public void SetMetadata(StorageItemMetadata metadata) => Metadata = metadata;
 }

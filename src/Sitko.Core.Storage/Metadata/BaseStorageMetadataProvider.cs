@@ -50,8 +50,7 @@ public abstract class
     {
         foreach (var storageItem in storageItems)
         {
-            await DoSaveMetadataAsync(new StorageItem(storageItem, StorageOptions.CurrentValue.Prefix),
-                cancellationToken: cancellationToken);
+            await DoSaveMetadataAsync(storageItem.GetStorageItem(), cancellationToken: cancellationToken);
         }
     }
 

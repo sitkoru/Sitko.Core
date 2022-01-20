@@ -18,6 +18,7 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
     where TStorageOptions : StorageOptions, IRemoteStorageOptions
 {
     private readonly HttpClient httpClient;
+    private readonly IHttpClientFactory httpClientFactory;
 
     public RemoteStorage(HttpClient httpClient, IOptionsMonitor<TStorageOptions> options,
         ILogger<RemoteStorage<TStorageOptions>> logger,
@@ -96,19 +97,25 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
     protected override async Task<StorageItemDownloadInfo?> DoGetFileAsync(string path,
         CancellationToken cancellationToken = default)
     {
-        var response = await httpClient.GetJsonAsync<StorageItem?>($"Get?path={path}");
+        var response = await httpClient.GetJsonAsync<RemoteStorageItem?>($"?path={path}");
         if (response is null)
         {
             return null;
         }
 
-        var url = PublicUri(response);
-
-        return new StorageItemDownloadInfo(response.FileSize, response.LastModified, async () =>
+        var info = new StorageItemDownloadInfo(path, response.StorageItem.FileSize, response.StorageItem.LastModified,
+            async () =>
+            {
+                var client = httpClientFactory.CreateClient();
+                var fileResponse = await client.GetStreamAsync(response.PublicUri);
+                return fileResponse;
+            });
+        info.SetMetadata(new StorageItemMetadata
         {
-            var fileResponse = await httpClient.GetStreamAsync(url);
-            return fileResponse;
+            FileName = response.StorageItem.FileName, Data = response.StorageItem.MetadataJson
         });
+
+        return info;
     }
 
     protected override async Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,

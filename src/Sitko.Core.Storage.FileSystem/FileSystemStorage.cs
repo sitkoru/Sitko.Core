@@ -37,8 +37,7 @@ public sealed class FileSystemStorage<TStorageOptions> : Storage<TStorageOptions
         await using var fileStream = File.Create(fullPath);
         uploadRequest.Stream.Seek(0, SeekOrigin.Begin);
         await uploadRequest.Stream.CopyToAsync(fileStream, cancellationToken);
-        return new StorageItem(destinationPath, DateTimeOffset.UtcNow, uploadRequest.FileName.Length, Options.Prefix,
-            uploadRequest.Metadata);
+        return uploadRequest.GetStorageItem(Helpers.GetPathWithoutPrefix(Options.Prefix, destinationPath));
     }
 
     protected override Task<bool> DoDeleteAsync(string filePath, CancellationToken cancellationToken = default)
@@ -86,7 +85,7 @@ public sealed class FileSystemStorage<TStorageOptions> : Storage<TStorageOptions
 
         if (fileInfo.Exists)
         {
-            result = new StorageItemDownloadInfo(fileInfo.Length, fileInfo.LastWriteTimeUtc,
+            result = new StorageItemDownloadInfo(path, fileInfo.Length, fileInfo.LastWriteTimeUtc,
                 () => Task.FromResult<Stream>(new FileStream(fullPath, FileMode.Open)));
         }
 
