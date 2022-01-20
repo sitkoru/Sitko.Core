@@ -20,7 +20,8 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
     private readonly HttpClient httpClient;
     private readonly IHttpClientFactory httpClientFactory;
 
-    public RemoteStorage(HttpClient httpClient, IOptionsMonitor<TStorageOptions> options,
+    public RemoteStorage(HttpClient httpClient, IHttpClientFactory httpClientFactory,
+        IOptionsMonitor<TStorageOptions> options,
         ILogger<RemoteStorage<TStorageOptions>> logger,
         IStorageCache<TStorageOptions>? cache = null,
         IStorageMetadataProvider<TStorageOptions>? metadataProvider = null) : base(options,
@@ -29,23 +30,27 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
     {
         httpClient.BaseAddress = Options.RemoteUrl;
         this.httpClient = httpClient;
+        this.httpClientFactory = httpClientFactory;
     }
 
     protected override async Task<StorageItem> DoSaveAsync(UploadRequest uploadRequest,
         CancellationToken cancellationToken = default)
     {
-        var destinationPath = GetDestinationPath(uploadRequest);
-        using var request = new HttpRequestMessage(HttpMethod.Post, "Upload");
+        using var request = new HttpRequestMessage(HttpMethod.Post, "");
         using var content = new MultipartFormDataContent
         {
             // file
             { new StreamContent(uploadRequest.Stream), "file", Path.GetFileName(uploadRequest.FileName) },
 
             // payload
-            { new StringContent(destinationPath), "path" },
-            { new StringContent(uploadRequest.FileName), "fileName" },
-            { new StringContent(uploadRequest.Metadata?.Data), "metadata" }
+            { new StringContent(uploadRequest.Path), "path" },
+            { new StringContent(uploadRequest.FileName), "fileName" }
         };
+
+        if (uploadRequest.Metadata?.Data is not null)
+        {
+            content.Add(new StringContent(uploadRequest.Metadata?.Data), "metadata");
+        }
 
         request.Content = content;
 
@@ -67,14 +72,13 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
 
     protected override async Task<bool> DoDeleteAsync(string filePath, CancellationToken cancellationToken = default)
     {
-        var form = new StringContent(filePath);
-        var response = await httpClient.PostAsync($"Delete?path={filePath}", form, cancellationToken);
+        var response = await httpClient.DeleteAsync($"?path={filePath}", cancellationToken);
         if (response.IsSuccessStatusCode)
         {
             return true;
         }
 
-        throw new InvalidOperationException(response.ReasonPhrase);
+        return false;
     }
 
     protected override async Task<bool> DoIsFileExistsAsync(StorageItem item,
@@ -86,8 +90,7 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
 
     protected override async Task DoDeleteAllAsync(CancellationToken cancellationToken = default)
     {
-        var form = new StringContent("all");
-        var response = await httpClient.PostAsync("DeleteAll", form, cancellationToken);
+        var response = await httpClient.DeleteAsync("", cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
             throw new InvalidOperationException(response.ReasonPhrase);
@@ -119,5 +122,6 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
     }
 
     protected override async Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
-        CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        CancellationToken cancellationToken = default) =>
+        await httpClient.GetJsonAsync<StorageItemInfo[]>($"List?path={path}") ?? Array.Empty<StorageItemInfo>();
 }
