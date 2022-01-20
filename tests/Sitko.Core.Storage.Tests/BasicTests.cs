@@ -62,14 +62,18 @@ namespace Sitko.Core.Storage.Tests
 
             var downloaded = await storage.DownloadAsync(uploaded.FilePath);
 
-            Assert.NotNull(downloaded);
-            await using (downloaded)
+        Assert.NotNull(downloaded);
+        await using (downloaded)
+        {
+            Assert.Equal(fileLength, downloaded?.StorageItem.FileSize);
+            if (downloaded?.Stream.CanSeek == true)
             {
-                Assert.Equal(fileLength, downloaded?.StorageItem.FileSize);
                 Assert.Equal(fileLength, downloaded?.Stream.Length);
-                Assert.Equal(fileName, downloaded?.StorageItem.FileName);
             }
+
+            Assert.Equal(fileName, downloaded?.StorageItem.FileName);
         }
+    }
 
         [Fact]
         public async Task DeleteFile()
