@@ -30,7 +30,7 @@ public abstract class BaseRemoteStorageController<TStorageOptions, TMetadata> : 
         HttpRequest request);
 
     [HttpGet]
-    public async Task<ActionResult<StorageItem?>> Get(string path)
+    public async Task<ActionResult<RemoteStorageItem?>> Get(string path)
     {
         var canRead = await CanReadAsync(path, Request);
         if (!canRead.IsSuccess)
@@ -39,7 +39,12 @@ public abstract class BaseRemoteStorageController<TStorageOptions, TMetadata> : 
         }
 
         var item = await storage.GetAsync(path, HttpContext.RequestAborted);
-        return Ok(item);
+        if (item is not null)
+        {
+            return Ok(JsonSerializer.Serialize(new RemoteStorageItem(item, storage.PublicUri(item))));
+        }
+
+        return NotFound();
     }
 
     [HttpPost]
