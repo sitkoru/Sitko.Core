@@ -7,61 +7,61 @@ using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Sitko.Core.Storage.Tests
+namespace Sitko.Core.Storage.Tests;
+
+public abstract class BasicTests<T> : BaseTest<T>
+    where T : IBaseTestScope
 {
-    public abstract class BasicTests<T> : BaseTest<T>
-        where T : BaseTestScope
+    protected BasicTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
-        protected BasicTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+    }
+
+    [Fact]
+    public async Task UploadFile()
+    {
+        var scope = await GetScopeAsync();
+
+        var storage = scope.GetService<IStorage>();
+
+        Assert.NotNull(storage);
+
+        StorageItem uploaded;
+        const string fileName = "file.txt";
+        const string path = "upload";
+        await using (var file = File.Open("Data/file.txt", FileMode.Open))
         {
+            uploaded = await storage.SaveAsync(file, fileName, path);
         }
 
-        [Fact]
-        public async Task UploadFile()
+        Assert.NotNull(uploaded);
+        Assert.NotEqual(0, uploaded.FileSize);
+        Assert.Equal(fileName, uploaded.FileName);
+        Assert.Equal("text/plain", uploaded.MimeType);
+        Assert.Equal(path, uploaded.Path);
+    }
+
+    [Fact]
+    public async Task DownloadFile()
+    {
+        var scope = await GetScopeAsync();
+
+        var storage = scope.GetService<IStorage>();
+
+        Assert.NotNull(storage);
+
+        StorageItem uploaded;
+        long fileLength;
+        const string fileName = "file.txt";
+        await using (var file = File.Open("Data/file.txt", FileMode.Open))
         {
-            var scope = await GetScopeAsync();
-
-            var storage = scope.GetService<IStorage>();
-
-            Assert.NotNull(storage);
-
-            StorageItem uploaded;
-            const string fileName = "file.txt";
-            const string path = "upload";
-            await using (var file = File.Open("Data/file.txt", FileMode.Open))
-            {
-                uploaded = await storage.SaveAsync(file, fileName, path);
-            }
-
-            Assert.NotNull(uploaded);
-            Assert.NotEqual(0, uploaded.FileSize);
-            Assert.Equal(fileName, uploaded.FileName);
-            Assert.Equal("text/plain", uploaded.MimeType);
-            Assert.Equal(path, uploaded.Path);
+            fileLength = file.Length;
+            uploaded = await storage.SaveAsync(file, fileName, "upload");
         }
 
-        [Fact]
-        public async Task DownloadFile()
-        {
-            var scope = await GetScopeAsync();
+        Assert.NotNull(uploaded);
+        Assert.NotNull(uploaded.FilePath);
 
-            var storage = scope.GetService<IStorage>();
-
-            Assert.NotNull(storage);
-
-            StorageItem uploaded;
-            long fileLength;
-            const string fileName = "file.txt";
-            await using (var file = File.Open("Data/file.txt", FileMode.Open))
-            {
-                fileLength = file.Length;
-                uploaded = await storage.SaveAsync(file, fileName, "upload");
-            }
-
-            Assert.NotNull(uploaded);
-            Assert.NotNull(uploaded.FilePath);
-
-            var downloaded = await storage.DownloadAsync(uploaded.FilePath);
+        var downloaded = await storage.DownloadAsync(uploaded.FilePath);
 
         Assert.NotNull(downloaded);
         await using (downloaded)
@@ -76,64 +76,64 @@ namespace Sitko.Core.Storage.Tests
         }
     }
 
-        [Fact]
-        public async Task DeleteFile()
+    [Fact]
+    public async Task DeleteFile()
+    {
+        var scope = await GetScopeAsync();
+
+        var storage = scope.GetService<IStorage>();
+
+        Assert.NotNull(storage);
+
+        StorageItem uploaded;
+        const string fileName = "file.txt";
+        await using (var file = File.Open("Data/file.txt", FileMode.Open))
         {
-            var scope = await GetScopeAsync();
-
-            var storage = scope.GetService<IStorage>();
-
-            Assert.NotNull(storage);
-
-            StorageItem uploaded;
-            const string fileName = "file.txt";
-            await using (var file = File.Open("Data/file.txt", FileMode.Open))
-            {
-                uploaded = await storage.SaveAsync(file, fileName, "upload");
-            }
-
-            Assert.NotNull(uploaded);
-
-            var result = await storage.DeleteAsync(uploaded.FilePath);
-
-            Assert.True(result);
+            uploaded = await storage.SaveAsync(file, fileName, "upload");
         }
 
-        [Fact]
-        public async Task DeleteFileError()
+        Assert.NotNull(uploaded);
+
+        var result = await storage.DeleteAsync(uploaded.FilePath);
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public async Task DeleteFileError()
+    {
+        var scope = await GetScopeAsync();
+
+        var storage = scope.GetService<IStorage>();
+
+        Assert.NotNull(storage);
+
+        var result = await storage.DeleteAsync(Guid.NewGuid().ToString());
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task Traverse()
+    {
+        var scope = await GetScopeAsync();
+
+        var storage = scope.GetService<IStorage>();
+
+        Assert.NotNull(storage);
+
+        StorageItem uploaded;
+        const string fileName = "file.txt";
+        var metaData = new FileMetaData();
+        await using (var file = File.Open("Data/file.txt", FileMode.Open))
         {
-            var scope = await GetScopeAsync();
-
-            var storage = scope.GetService<IStorage>();
-
-            Assert.NotNull(storage);
-
-            var result = await storage.DeleteAsync(Guid.NewGuid().ToString());
-
-            Assert.False(result);
+            uploaded = await storage.SaveAsync(file, fileName, "upload/dir1/dir2", metaData);
         }
 
-        [Fact]
-        public async Task Traverse()
-        {
-            var scope = await GetScopeAsync();
+        Assert.NotNull(uploaded);
 
-            var storage = scope.GetService<IStorage>();
-
-            Assert.NotNull(storage);
-
-            StorageItem uploaded;
-            const string fileName = "file.txt";
-            var metaData = new FileMetaData();
-            await using (var file = File.Open("Data/file.txt", FileMode.Open))
-            {
-                uploaded = await storage.SaveAsync(file, fileName, "upload/dir1/dir2", metaData);
-            }
-
-            Assert.NotNull(uploaded);
-
-            await CheckFoldersContent(storage, uploaded, metaData);
-        }
+        await CheckFoldersContent(storage, uploaded, metaData);
+    }
 
     protected static async Task CheckFoldersContent(IStorage storage, StorageItem uploaded,
         FileMetaData? metaData)
@@ -169,65 +169,64 @@ namespace Sitko.Core.Storage.Tests
         }
     }
 
-        [Fact]
-        public async Task Metadata()
-        {
-            var scope = await GetScopeAsync();
-
-            var storage = scope.GetService<IStorage>();
-
-            Assert.NotNull(storage);
-
-            StorageItem uploaded;
-            const string fileName = "file.txt";
-            var metaData = new FileMetaData();
-            await using (var file = File.Open("Data/file.txt", FileMode.Open))
-            {
-                uploaded = await storage.SaveAsync(file, fileName, "upload/dir1/dir2", metaData);
-            }
-
-            Assert.NotNull(uploaded);
-
-            var item = await storage.GetAsync(uploaded.FilePath);
-
-            Assert.NotNull(item);
-
-            var itemMetaData = item!.GetMetadata<FileMetaData>();
-            Assert.NotNull(itemMetaData);
-            Assert.Equal(metaData.Id, itemMetaData!.Id);
-        }
-
-        [Fact]
-        public async Task UpdateMetadata()
-        {
-            var scope = await GetScopeAsync();
-            var storage = scope.GetService<IStorage>();
-            StorageItem uploaded;
-            const string fileName = "file.txt";
-            var metaData = new FileMetaData();
-            await using (var file = File.Open("Data/file.txt", FileMode.Open))
-            {
-                uploaded = await storage.SaveAsync(file, fileName, "upload/dir1/dir2", metaData);
-            }
-
-            Assert.NotNull(uploaded);
-
-            var newFileName = "fileNew.txt";
-            var newMetaData = new FileMetaData();
-
-            await storage.UpdateMetaDataAsync(uploaded, newFileName, newMetaData);
-
-            var newItem = await storage.GetAsync(uploaded.FilePath);
-            Assert.NotNull(newItem);
-            Assert.Equal(newFileName, newItem!.FileName);
-            var itemMetaData = newItem.GetMetadata<FileMetaData>();
-            Assert.NotNull(itemMetaData);
-            Assert.Equal(newMetaData.Id, itemMetaData!.Id);
-        }
-    }
-
-    public class FileMetaData
+    [Fact]
+    public async Task Metadata()
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
+        var scope = await GetScopeAsync();
+
+        var storage = scope.GetService<IStorage>();
+
+        Assert.NotNull(storage);
+
+        StorageItem uploaded;
+        const string fileName = "file.txt";
+        var metaData = new FileMetaData();
+        await using (var file = File.Open("Data/file.txt", FileMode.Open))
+        {
+            uploaded = await storage.SaveAsync(file, fileName, "upload/dir1/dir2", metaData);
+        }
+
+        Assert.NotNull(uploaded);
+
+        var item = await storage.GetAsync(uploaded.FilePath);
+
+        Assert.NotNull(item);
+
+        var itemMetaData = item!.GetMetadata<FileMetaData>();
+        Assert.NotNull(itemMetaData);
+        Assert.Equal(metaData.Id, itemMetaData!.Id);
     }
+
+    [Fact]
+    public async Task UpdateMetadata()
+    {
+        var scope = await GetScopeAsync();
+        var storage = scope.GetService<IStorage>();
+        StorageItem uploaded;
+        const string fileName = "file.txt";
+        var metaData = new FileMetaData();
+        await using (var file = File.Open("Data/file.txt", FileMode.Open))
+        {
+            uploaded = await storage.SaveAsync(file, fileName, "upload/dir1/dir2", metaData);
+        }
+
+        Assert.NotNull(uploaded);
+
+        var newFileName = "fileNew.txt";
+        var newMetaData = new FileMetaData();
+
+        await storage.UpdateMetaDataAsync(uploaded, newFileName, newMetaData);
+
+        var newItem = await storage.GetAsync(uploaded.FilePath);
+        Assert.NotNull(newItem);
+        Assert.Equal(newFileName, newItem!.FileName);
+        var itemMetaData = newItem.GetMetadata<FileMetaData>();
+        Assert.NotNull(itemMetaData);
+        Assert.Equal(newMetaData.Id, itemMetaData!.Id);
+    }
+}
+
+public class FileMetaData
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
 }
