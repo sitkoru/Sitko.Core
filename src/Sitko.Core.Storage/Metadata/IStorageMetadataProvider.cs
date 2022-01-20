@@ -38,6 +38,11 @@ public interface IStorageMetadataProvider<TStorageOptions, TOptions> : IStorageM
 {
 }
 
+public interface IEmbedStorageMetadataProvider
+{
+    void SetStorage(IStorage currentStorage);
+}
+
 // ReSharper disable once UnusedTypeParameter
 public abstract class StorageMetadataModuleOptions<TStorageOptions> : BaseModuleOptions
     where TStorageOptions : StorageOptions
