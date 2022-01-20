@@ -156,7 +156,7 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
                                                        "A header you provided implies functionality that is not implemented"))
                 {
                     await DeleteAllObjectsInBucket(cancellationToken);
-                    await s3Client.DeleteBucketAsync(Options.Bucket);
+                    await s3Client.DeleteBucketAsync(Options.Bucket, cancellationToken);
                 }
             }
             else
@@ -168,7 +168,7 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
 
     private async Task DeleteAllObjectsInBucket(CancellationToken cancellationToken = default)
     {
-        var objects = await GetAllItemsAsync("/");
+        var objects = await GetAllItemsAsync("/", cancellationToken);
         foreach (var chunk in SplitList(objects.ToList(), 1000))
         {
             var request = new DeleteObjectsRequest
