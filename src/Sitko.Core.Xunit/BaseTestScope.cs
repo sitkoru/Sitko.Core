@@ -19,6 +19,7 @@ public interface IBaseTestScope : IAsyncDisposable
     IEnumerable<T> GetServices<T>();
     ILogger<T> GetLogger<T>();
     Task OnCreatedAsync();
+    Task BeforeConfiguredAsync();
     Task StartApplicationAsync();
 }
 
@@ -74,6 +75,7 @@ public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
 
     public ILogger<T> GetLogger<T>() => ServiceProvider!.GetRequiredService<ILogger<T>>();
 
+    public virtual Task BeforeConfiguredAsync() => Task.CompletedTask;
     public virtual Task OnCreatedAsync() => Task.CompletedTask;
 
 
