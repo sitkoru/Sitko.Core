@@ -77,9 +77,7 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
     {
         var destinationPath = GetDestinationPath(uploadRequest);
         await DoSaveInternalAsync(destinationPath, uploadRequest.Stream, cancellationToken);
-        return new StorageItem(destinationPath, DateTimeOffset.UtcNow, uploadRequest.FileName.Length,
-            Options.Prefix,
-            uploadRequest.Metadata);
+        return uploadRequest.GetStorageItem(Helpers.GetPathWithoutPrefix(Options.Prefix, destinationPath));
     }
 
     internal Task<bool> IsObjectExistsAsync(string filePath, CancellationToken cancellationToken = default) =>
@@ -205,7 +203,7 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
             return null;
         }
 
-        return new StorageItemDownloadInfo(fileResponse.ContentLength, fileResponse.LastModified,
+        return new StorageItemDownloadInfo(path, fileResponse.ContentLength, fileResponse.LastModified,
             () => Task.FromResult(fileResponse.ResponseStream));
     }
 
@@ -222,7 +220,8 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
                 Logger.LogDebug("Get objects list from S3. Current objects count: {Count}", items.Count);
                 response = await s3Client.ListObjectsV2Async(request, cancellationToken);
                 items.AddRange(response.S3Objects.Select(s3Object =>
-                    new StorageItemInfo(s3Object.Key, s3Object.Size, s3Object.LastModified.ToUniversalTime())));
+                    new StorageItemInfo(Helpers.GetPathWithoutPrefix(Options.Prefix, s3Object.Key), s3Object.Size,
+                        s3Object.LastModified.ToUniversalTime())));
 
                 request.ContinuationToken = response.NextContinuationToken;
             } while (response.IsTruncated);
