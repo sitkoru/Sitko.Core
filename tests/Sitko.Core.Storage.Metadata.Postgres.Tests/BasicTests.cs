@@ -37,9 +37,12 @@ namespace Sitko.Core.Storage.Metadata.Postgres.Tests
 
             await storage.RefreshDirectoryContentsAsync("upload");
 
-            uploaded.FileName = Path.GetFileName(uploaded.FilePath); // cause we lost all metadata
+        var restored =
+            new StorageItem(uploaded.FilePath)
+            {
+                FileName = Path.GetFileName(uploaded.FilePath)
+            }; // cause we lost all metadata
 
-            await CheckFoldersContent(storage, uploaded, null);
-        }
+        await CheckFoldersContent(storage, restored, null);
     }
 }
