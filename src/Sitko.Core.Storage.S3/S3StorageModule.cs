@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using Amazon;
+using Amazon.Auth.AccessControlPolicy;
 using Amazon.S3;
 using FluentValidation;
 using HealthChecks.Aws.S3;
@@ -49,6 +51,24 @@ public class S3StorageOptions : StorageOptions, IModuleOptionsWithValidation
     public string AccessKey { get; set; } = string.Empty;
     public string SecretKey { get; set; } = string.Empty;
     public RegionEndpoint Region { get; set; } = RegionEndpoint.USEast1;
+
+    public bool GeneratePreSignedUrls { get; set; }
+    public int PreSignedUrlsExpirationInHours { get; set; } = 1;
+    public Policy? BucketPolicy { get; set; }
+
+    public Policy AnonymousReadPolicy => new()
+    {
+        Statements = new List<Statement>
+        {
+            new(Statement.StatementEffect.Allow)
+            {
+                Principals = new List<Principal> { new("*") },
+                Actions = new List<ActionIdentifier> { new("s3:GetObject"), new("s3:GetObjectVersion") },
+                Resources = new List<Resource> { new($"arn:aws:s3:::{Bucket}/*") },
+                Id = "PublicRead"
+            }
+        }
+    };
 
     public Type GetValidatorType() => typeof(S3StorageOptionsValidator);
 }
