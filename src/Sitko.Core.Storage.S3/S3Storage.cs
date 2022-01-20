@@ -38,6 +38,12 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
                 var putBucketRequest = new PutBucketRequest { BucketName = bucketName, UseClientRegion = true };
 
                 await s3Client.PutBucketAsync(putBucketRequest, cancellationToken);
+                if (Options.BucketPolicy is not null)
+                {
+                    await s3Client.PutBucketPolicyAsync(bucketName,
+                        Options.BucketPolicy.ToJson(),
+                        cancellationToken);
+                }
             }
         }
         catch (Exception ex)
@@ -179,6 +185,20 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
             };
             await s3Client.DeleteObjectsAsync(request, cancellationToken);
         }
+    }
+
+    public override Uri PublicUri(string filePath)
+    {
+        if (Options.GeneratePreSignedUrls)
+        {
+            var url = s3Client.GetPreSignedURL(new GetPreSignedUrlRequest
+            {
+                Key = filePath, Expires = DateTime.UtcNow.AddHours(Options.PreSignedUrlsExpirationInHours)
+            });
+            return new Uri(url);
+        }
+
+        return base.PublicUri(filePath);
     }
 
     public static IEnumerable<List<TItem>> SplitList<TItem>(List<TItem> locations, int nSize = 30)
