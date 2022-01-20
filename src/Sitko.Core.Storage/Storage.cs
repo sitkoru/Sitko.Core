@@ -24,6 +24,11 @@ public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsy
         Logger = logger;
         this.cache = cache;
         MetadataProvider = metadataProvider;
+        if (metadataProvider is IEmbedStorageMetadataProvider embedStorageMetadataProvider)
+        {
+            embedStorageMetadataProvider.SetStorage(this);
+        }
+
         optionsMonitor = options;
     }
 
@@ -83,7 +88,7 @@ public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsy
         var info = await GetStorageItemInfoAsync(path, cancellationToken);
         if (info != null)
         {
-            var item = new StorageItem(path, info, Options.Prefix);
+            var item = info.StorageItem;
             return new DownloadResult(item, await info.GetStreamAsync());
         }
 
@@ -158,7 +163,7 @@ public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsy
 
     public Uri PublicUri(StorageItem item) => PublicUri(item.FilePath);
 
-    public Uri PublicUri(string filePath) => new(Options.PublicUri!, filePath);
+    public virtual Uri PublicUri(string filePath) => new(Options.PublicUri!, filePath);
 
     public bool IsDefault => Options.IsDefault;
 
@@ -224,7 +229,7 @@ public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsy
         if (cache != null)
         {
             result = await cache.GetOrAddItemAsync(path,
-                async () => await DoGetFileAsync(GetPathWithPrefix(path)), cancellationToken);
+                async () => await DoGetFileAsync(GetPathWithPrefix(path), cancellationToken), cancellationToken);
         }
         else
         {
@@ -247,9 +252,7 @@ public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsy
     {
         var result = await GetStorageItemInfoAsync(path, cancellationToken);
 
-        return result != null
-            ? new StorageItem(path, result.Date, result.FileSize, Options.Prefix, result.Metadata)
-            : null;
+        return result?.StorageItem;
     }
 
     protected abstract Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
