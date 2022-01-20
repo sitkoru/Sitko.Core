@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Sitko.Core.Storage.Internal;
 using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.S3;
@@ -41,10 +40,8 @@ public class S3StorageMetadataProvider<TStorageOptions> : EmbedStorageMetadataPr
     {
         if (metadata is not null)
         {
-            var uploadRequest =
-                new UploadRequest(new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(metadata))),
-                    GetMetaDataPath(storageItem.FilePath), Path.GetFileName(storageItem.FilePath));
-            await Storage.DoSaveInternalAsync(uploadRequest, cancellationToken);
+            await Storage.DoSaveInternalAsync(GetMetaDataPath(storageItem.FilePath),
+                new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(metadata))), cancellationToken);
         }
     }
 

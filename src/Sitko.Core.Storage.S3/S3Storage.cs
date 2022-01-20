@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,33 +50,36 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
     private Task<bool> IsBucketExistsAsync(string bucketName) =>
         AmazonS3Util.DoesS3BucketExistV2Async(s3Client, bucketName);
 
-    internal Task<StorageItem> DoSaveInternalAsync(UploadRequest uploadRequest,
-        CancellationToken cancellationToken = default) =>
-        DoSaveAsync(uploadRequest, cancellationToken);
-
-    protected override async Task<StorageItem> DoSaveAsync(UploadRequest uploadRequest,
+    internal async Task<bool> DoSaveInternalAsync(string destinationPath, Stream stream,
         CancellationToken cancellationToken = default)
     {
-        var destinationPath = GetDestinationPath(uploadRequest);
         await CreateBucketAsync(Options.Bucket, cancellationToken);
         using var fileTransferUtility = new TransferUtility(s3Client);
         try
         {
             var request = new TransferUtilityUploadRequest
             {
-                InputStream = uploadRequest.Stream, Key = destinationPath, BucketName = Options.Bucket
+                InputStream = stream, Key = destinationPath, BucketName = Options.Bucket
             };
             await fileTransferUtility.UploadAsync(request, cancellationToken);
 
-            return new StorageItem(destinationPath, DateTimeOffset.UtcNow, uploadRequest.FileName.Length,
-                Options.Prefix,
-                uploadRequest.Metadata);
+            return true;
         }
         catch (Exception e)
         {
             Logger.LogError(e, "Error uploading file {File}: {ErrorText}", destinationPath, e.ToString());
             throw;
         }
+    }
+
+    protected override async Task<StorageItem> DoSaveAsync(UploadRequest uploadRequest,
+        CancellationToken cancellationToken = default)
+    {
+        var destinationPath = GetDestinationPath(uploadRequest);
+        await DoSaveInternalAsync(destinationPath, uploadRequest.Stream, cancellationToken);
+        return new StorageItem(destinationPath, DateTimeOffset.UtcNow, uploadRequest.FileName.Length,
+            Options.Prefix,
+            uploadRequest.Metadata);
     }
 
     internal Task<bool> IsObjectExistsAsync(string filePath, CancellationToken cancellationToken = default) =>
