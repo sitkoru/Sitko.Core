@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -134,44 +135,39 @@ namespace Sitko.Core.Storage.Tests
             await CheckFoldersContent(storage, uploaded, metaData);
         }
 
-        protected static async Task CheckFoldersContent(IStorage storage, StorageItem uploaded,
-            FileMetaData? metaData)
+    protected static async Task CheckFoldersContent(IStorage storage, StorageItem uploaded,
+        FileMetaData? metaData)
+    {
+        var uploadDirectoryContent = (await storage.GetDirectoryContentsAsync("upload")).ToArray();
+        uploadDirectoryContent.Should().NotBeEmpty().And.ContainSingle();
+        var first = uploadDirectoryContent.First();
+        first.Should().NotBeNull().And.BeOfType<StorageNode>();
+        first.Name.Should().Be("dir1");
+
+        var dir1DirectoryContent = await storage.GetDirectoryContentsAsync(first.FullPath);
+        dir1DirectoryContent.Should().NotBeEmpty().And.ContainSingle();
+        var second = dir1DirectoryContent.First();
+        second.Should().NotBeNull().And.BeOfType<StorageNode>();
+        second.Name.Should().Be("dir2");
+
+        var dir2DirectoryContent = await storage.GetDirectoryContentsAsync(second.FullPath);
+        dir2DirectoryContent.Should().NotBeEmpty().And.ContainSingle();
+        var fileNode = dir2DirectoryContent.First();
+        fileNode.Should().NotBeNull();
+        fileNode.Type.Should().Be(StorageNodeType.StorageItem);
+        if (fileNode.StorageItem != null)
         {
-            var uploadDirectoryContent = (await storage.GetDirectoryContentsAsync("upload")).ToArray();
-            Assert.NotEmpty(uploadDirectoryContent);
-            Assert.Single(uploadDirectoryContent);
-            var first = uploadDirectoryContent.First();
-            Assert.NotNull(first);
-            Assert.IsType<StorageNode>(first);
-            Assert.Equal("dir1", first.Name);
+            fileNode.FullPath.Should().Be(uploaded.FilePath);
+            fileNode.Name.Should().Be(uploaded.FileName);
 
-            var dir1DirectoryContent = await storage.GetDirectoryContentsAsync(first.FullPath);
-            Assert.NotEmpty(dir1DirectoryContent);
-            Assert.Single(dir1DirectoryContent);
-            var second = dir1DirectoryContent.First();
-            Assert.NotNull(second);
-            Assert.IsType<StorageNode>(second);
-            Assert.Equal("dir2", second.Name);
-
-            var dir2DirectoryContent = await storage.GetDirectoryContentsAsync(second.FullPath);
-            Assert.NotEmpty(dir2DirectoryContent);
-            Assert.Single(dir2DirectoryContent);
-            var fileNode = dir2DirectoryContent.First();
-            Assert.NotNull(fileNode);
-            Assert.Equal(StorageNodeType.StorageItem, fileNode.Type);
-            if (fileNode.StorageItem != null)
+            if (metaData is not null)
             {
-                Assert.Equal(uploaded.FilePath, fileNode.FullPath);
-                Assert.Equal(uploaded.FileName, fileNode.Name);
-
-                if (metaData is not null)
-                {
-                    var itemMetaData = fileNode.StorageItem.GetMetadata<FileMetaData>();
-                    Assert.NotNull(itemMetaData);
-                    Assert.Equal(metaData.Id, itemMetaData!.Id);
-                }
+                var itemMetaData = fileNode.StorageItem.GetMetadata<FileMetaData>();
+                itemMetaData.Should().NotBeNull();
+                itemMetaData!.Id.Should().Be(metaData.Id);
             }
         }
+    }
 
         [Fact]
         public async Task Metadata()
