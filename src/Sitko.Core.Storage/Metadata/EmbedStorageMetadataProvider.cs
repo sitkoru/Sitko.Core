@@ -51,7 +51,7 @@ namespace Sitko.Core.Storage.Metadata
 
         protected string GetMetaDataPath(string filePath)
         {
-            filePath = filePath + MetaDataExtension;
+            filePath += MetaDataExtension;
             if (!string.IsNullOrEmpty(StorageOptions.CurrentValue.Prefix) &&
                 !filePath.StartsWith(StorageOptions.CurrentValue.Prefix))
             {
