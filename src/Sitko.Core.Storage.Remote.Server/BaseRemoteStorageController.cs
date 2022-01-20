@@ -24,6 +24,7 @@ public abstract class BaseRemoteStorageController<TStorageOptions, TMetadata> : 
     protected ILogger<BaseRemoteStorageController<TStorageOptions, TMetadata>> Logger { get; }
     protected abstract Task<IOperationResult> CanReadAsync(string path, HttpRequest request);
     protected abstract Task<IOperationResult> CanDeleteAsync(string? path, HttpRequest request);
+    protected abstract Task<IOperationResult> CanListAsync(string? path, HttpRequest request);
 
     protected abstract Task<IOperationResult> CanUploadAsync(UploadStorageItem<TMetadata> uploadStorageItem,
         HttpRequest request);
@@ -100,6 +101,19 @@ public abstract class BaseRemoteStorageController<TStorageOptions, TMetadata> : 
         }
 
         return Ok();
+    }
+
+    [HttpGet("List")]
+    public async Task<IActionResult> List(string path)
+    {
+        var canList = await CanListAsync(path, Request);
+        if (!canList.IsSuccess)
+        {
+            return BadRequest(canList.ErrorMessage);
+        }
+
+        var result = await storage.GetAllItemsAsync(path, HttpContext.RequestAborted);
+        return Ok(JsonSerializer.Serialize(result));
     }
 }
 
