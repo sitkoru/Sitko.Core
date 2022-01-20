@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
+using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.Remote;
 
@@ -15,7 +16,9 @@ public class
     {
         base.ConfigureServices(context, services, startupOptions);
         services.AddHttpClient<RemoteStorage<TStorageOptions>>();
-        services.AddSingleton<IStorage<TStorageOptions>, RemoteStorage<TStorageOptions>>();
+        services
+            .AddSingleton<IStorageMetadataProvider<TStorageOptions>, RemoteStorageMetadataProvider<TStorageOptions>>();
+        services.AddSingleton<RemoteStorageMetadataProvider<TStorageOptions>>();
     }
 }
 
