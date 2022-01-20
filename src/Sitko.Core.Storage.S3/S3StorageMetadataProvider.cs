@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -14,10 +13,9 @@ public class S3StorageMetadataProvider<TStorageOptions> : EmbedStorageMetadataPr
     TStorageOptions, S3StorageMetadataModuleOptions<TStorageOptions>>
     where TStorageOptions : S3StorageOptions, new()
 {
-    public S3StorageMetadataProvider(IServiceProvider serviceProvider,
-        IOptionsMonitor<S3StorageMetadataModuleOptions<TStorageOptions>> options,
+    public S3StorageMetadataProvider(IOptionsMonitor<S3StorageMetadataModuleOptions<TStorageOptions>> options,
         IOptionsMonitor<TStorageOptions> storageOptions,
-        ILogger<S3StorageMetadataProvider<TStorageOptions>> logger) : base(serviceProvider, options, storageOptions,
+        ILogger<S3StorageMetadataProvider<TStorageOptions>> logger) : base(options, storageOptions,
         logger)
     {
     }
