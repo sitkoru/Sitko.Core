@@ -108,8 +108,8 @@ namespace Sitko.Core.Storage.Metadata
                         continue;
                     }
 
-                    var metadata = await DoGetMetadataAsync(info.Path, cancellationToken);
-                    var item = new StorageItem(info, StorageOptions.CurrentValue.Prefix, metadata);
+                var metadata = await DoGetMetadataAsync(info.Path, cancellationToken);
+                var item = info.GetStorageItem(metadata);
 
                     tree.AddItem(item);
                 }

@@ -71,7 +71,7 @@ public abstract class
                 }
 
                 Logger.LogDebug("Add file {Key} to cache", key);
-                return new StorageItemDownloadInfo(record.FileSize, record.Date,
+                return new StorageItemDownloadInfo(path, record.FileSize, record.Date,
                     () => Task.FromResult(record.OpenRead()));
             }
         });
@@ -89,7 +89,7 @@ public abstract class
 
         return Task.FromResult(cacheEntry is null
             ? null
-            : new StorageItemDownloadInfo(cacheEntry.FileSize, cacheEntry.Date,
+            : new StorageItemDownloadInfo(path, cacheEntry.FileSize, cacheEntry.Date,
                 () => Task.FromResult(cacheEntry.OpenRead())));
     }
 

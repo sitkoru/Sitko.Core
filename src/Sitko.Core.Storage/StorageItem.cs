@@ -1,5 +1,6 @@
 using System;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using MimeMapping;
 using Sitko.Core.App.Helpers;
 using Sitko.Core.Storage.Internal;
@@ -9,62 +10,44 @@ namespace Sitko.Core.Storage;
 
 public sealed record StorageItem
 {
+    [JsonConstructor]
     public StorageItem()
     {
     }
 
-    public StorageItem(string destinationPath,
-        DateTimeOffset date,
-        long fileSize, string? prefix, StorageItemMetadata? metadata = null)
+    public StorageItem(string path, StorageItemMetadata? metadata = null)
     {
-        destinationPath = Helpers.GetPathWithoutPrefix(prefix, destinationPath);
-        var fileName = metadata?.FileName ?? System.IO.Path.GetFileName(destinationPath);
-        Path = Helpers.PreparePath(System.IO.Path.GetDirectoryName(destinationPath))!;
-        FileName = fileName;
-        LastModified = date;
-        FileSize = fileSize;
-        FilePath = destinationPath;
+        FilePath = path;
+        Path = Helpers.PreparePath(System.IO.Path.GetDirectoryName(path))!;
+        FileName = metadata?.FileName ?? System.IO.Path.GetFileName(path);
         MetadataJson = metadata?.Data;
-        MimeType = MimeUtility.GetMimeMapping(fileName);
-    }
-
-    internal StorageItem(string path, StorageItemDownloadInfo storageItemInfo, string? prefix) : this(path,
-        storageItemInfo.Date,
-        storageItemInfo.FileSize, prefix, storageItemInfo.Metadata)
-    {
-    }
-
-    internal StorageItem(StorageItemInfo storageItemInfo, string? prefix, StorageItemMetadata? metadata = null) :
-        this(storageItemInfo.Path,
-            storageItemInfo.Date,
-            storageItemInfo.FileSize, prefix, metadata)
-    {
+        MimeType = MimeUtility.GetMimeMapping(path);
     }
 
     /// <summary>
     ///     Name of uploaded file
     /// </summary>
-    public string? FileName { get; set; } = string.Empty;
+    public string FileName { get; init; } = string.Empty;
 
     /// <summary>
     ///     Size of uploaded file
     /// </summary>
-    public long FileSize { get; set; }
+    public long FileSize { get; init; }
 
     /// <summary>
     ///     MimeType of uploaded file
     /// </summary>
-    public string MimeType { get; set; } = string.Empty;
+    public string MimeType { get; init; } = string.Empty;
 
     /// <summary>
     ///     Full path to uploaded file in storage
     /// </summary>
-    public string FilePath { get; set; } = string.Empty;
+    public string FilePath { get; init; } = string.Empty;
 
     /// <summary>
     ///     Last modified date of uploaded file
     /// </summary>
-    public DateTimeOffset LastModified { get; set; } = DateTimeOffset.Now;
+    public DateTimeOffset LastModified { get; init; } = DateTimeOffset.UtcNow;
 
     /// <summary>
     ///     Path without file name to uploaded file in storage
@@ -74,7 +57,7 @@ public sealed record StorageItem
     /// <summary>
     ///     Uploaded file metadata JSON. Read-only.
     /// </summary>
-    public string? MetadataJson { get; set; }
+    public string? MetadataJson { get; init; }
 
     /// <summary>
     ///     Uploaded file size in human-readable format
