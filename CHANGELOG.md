@@ -1,3 +1,10 @@
+# [9.0.0-beta.8](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.7...9.0.0-beta.8) (2022-01-21)
+
+
+### Features
+
+* **validation:** update Sitko.FluentValidation to 1.2.0 ([0a58b75](https://github.com/sitkoru/Sitko.Core/commit/0a58b75954070db08727a8a689ed87d6ea9ff165))
+
 # [9.0.0-beta.7](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.6...9.0.0-beta.7) (2022-01-21)
 
 
