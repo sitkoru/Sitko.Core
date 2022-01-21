@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -29,11 +28,15 @@ public class RemoteStorageMetadataProvider<TStorageOptions> : EmbedStorageMetada
         CancellationToken cancellationToken = default) => Task.FromResult<StorageItemMetadata?>(null);
 
     protected override Task DoSaveMetadataAsync(StorageItem storageItem, StorageItemMetadata? metadata = null,
-        CancellationToken cancellationToken = default) => Task.CompletedTask;
+        bool isNew = true,
+        CancellationToken cancellationToken = default) => isNew
+        ? Task.CompletedTask
+        : metadata is null
+            ? Task.CompletedTask
+            : Storage.DoUpdateMetaDataAsync(storageItem, metadata, cancellationToken);
 }
 
 public class RemoteStorageMetadataModuleOptions<TStorageOptions> : EmbedStorageMetadataModuleOptions<TStorageOptions>
     where TStorageOptions : StorageOptions
 {
-    public Uri RemoteUrl { get; set; }
 }

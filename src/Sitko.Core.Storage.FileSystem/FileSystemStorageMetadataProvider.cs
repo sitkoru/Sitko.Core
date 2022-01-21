@@ -57,6 +57,7 @@ public class FileSystemStorageMetadataProvider<TStorageOptions> : EmbedStorageMe
     }
 
     protected override async Task DoSaveMetadataAsync(StorageItem storageItem, StorageItemMetadata? metadata = null,
+        bool isNew = true,
         CancellationToken cancellationToken = default)
     {
         if (metadata is not null)

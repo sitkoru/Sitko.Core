@@ -124,4 +124,19 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
     protected override async Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
         CancellationToken cancellationToken = default) =>
         await httpClient.GetJsonAsync<StorageItemInfo[]>($"List?path={path}") ?? Array.Empty<StorageItemInfo>();
+
+    public async Task DoUpdateMetaDataAsync(StorageItem storageItem, StorageItemMetadata metadata,
+        CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"UpdateMetadata?path={storageItem.FilePath}");
+        using var content = new MultipartFormDataContent();
+        var json = JsonSerializer.Serialize(metadata);
+        content.Add(new StringContent(json), "metadataJson");
+        request.Content = content;
+        var response = await httpClient.SendAsync(request, cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException($"Can't update metadata: {response.ReasonPhrase}");
+        }
+    }
 }

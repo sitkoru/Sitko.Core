@@ -56,7 +56,7 @@ public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsy
         var storageItem = await SaveStorageItemAsync(request, cancellationToken);
         if (MetadataProvider != null)
         {
-            await MetadataProvider.SaveMetadataAsync(storageItem, itemMetadata, cancellationToken);
+            await MetadataProvider.SaveMetadataAsync(storageItem, itemMetadata, true, cancellationToken);
         }
 
         return storageItem;
@@ -78,7 +78,7 @@ public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsy
             itemMetadata.SetData(metadata);
         }
 
-        await MetadataProvider.SaveMetadataAsync(item, itemMetadata, cancellationToken);
+        await MetadataProvider.SaveMetadataAsync(item, itemMetadata, false, cancellationToken);
         item = (await GetStorageItemInternalAsync(item.FilePath, cancellationToken))!;
         return item;
     }
