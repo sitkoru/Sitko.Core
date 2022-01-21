@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Serilog;
 using Sitko.Blazor.ScriptInjector;
 using Sitko.Core.App;
@@ -59,6 +60,7 @@ public abstract class WasmApplication : Application
 
         LogInternal("Create host builder");
         var hostBuilder = CreateHostBuilder(Args);
+        var tmpHost = hostBuilder.Build();
         var applicationContext = GetContext(hostBuilder.HostEnvironment, hostBuilder.Configuration);
         var enabledModuleRegistrations = GetEnabledModuleRegistrations(applicationContext);
         // App configuration
@@ -75,11 +77,7 @@ public abstract class WasmApplication : Application
             configuration =>
             {
                 configuration.WriteTo.BrowserConsole(
-                    outputTemplate: "{Level:u3}{SourceContext}{Message:lj}{NewLine}{Exception}");
-                if (applicationContext.Options.EnableConsoleLogging == true)
-                {
-                    configuration.WriteTo.Console(outputTemplate: applicationContext.Options.ConsoleLogFormat);
-                }
+                    outputTemplate: applicationContext.Options.ConsoleLogFormat, jsRuntime: tmpHost.Services.GetRequiredService<IJSRuntime>());
 
                 ConfigureLogging(applicationContext, configuration);
             });
