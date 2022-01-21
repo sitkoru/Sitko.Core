@@ -16,7 +16,7 @@ public abstract class WasmApplication : Application
 {
     private WebAssemblyHost? appHost;
 
-    public WasmApplication(string[] args) : base(args)
+    protected WasmApplication(string[] args) : base(args)
     {
     }
 
