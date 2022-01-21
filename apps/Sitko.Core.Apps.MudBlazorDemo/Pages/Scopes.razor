@@ -126,7 +126,7 @@
     [Parameter]
     public Guid Id { get; set; }
 
-    private IStorage Storage => GetRequiredService<IStorage>();
+    private IStorage<TestRemoteStorageOptions> Storage => GetRequiredService<IStorage<TestRemoteStorageOptions>>();
 
     private static Task<object> GenerateMetadataAsync()
     {
