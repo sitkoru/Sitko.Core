@@ -25,14 +25,22 @@ public abstract class BaseRemoteStorageController<TStorageOptions, TMetadata> : 
     }
 
     protected ILogger<BaseRemoteStorageController<TStorageOptions, TMetadata>> Logger { get; }
-    protected abstract Task<IOperationResult> CanReadAsync(string path, HttpRequest request);
-    protected abstract Task<IOperationResult> CanDeleteAsync(string? path, HttpRequest request);
-    protected abstract Task<IOperationResult> CanListAsync(string? path, HttpRequest request);
+
+    protected virtual Task<IOperationResult> CanUploadAsync(UploadStorageItem<TMetadata> uploadStorageItem,
+        HttpRequest request) =>
+        Task.FromResult<IOperationResult>(new OperationResult());
+
+    protected virtual Task<IOperationResult> CanReadAsync(string path, HttpRequest request) =>
+        Task.FromResult<IOperationResult>(new OperationResult());
+
+    protected virtual Task<IOperationResult> CanDeleteAsync(string? path, HttpRequest request) =>
+        Task.FromResult<IOperationResult>(new OperationResult());
+
+    protected virtual Task<IOperationResult> CanListAsync(string? path, HttpRequest request) =>
+        Task.FromResult<IOperationResult>(new OperationResult());
 
     protected virtual Task<IOperationResult> CanUpdateMetadataAsync(string? path, HttpRequest request) =>
         Task.FromResult<IOperationResult>(new OperationResult());
-
-
 
     [HttpGet]
     public async Task<ActionResult<RemoteStorageItem?>> Get(string path)
