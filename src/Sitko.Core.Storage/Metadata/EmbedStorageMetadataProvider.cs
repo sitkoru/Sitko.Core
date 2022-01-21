@@ -123,7 +123,12 @@ public abstract class
                     continue;
                 }
 
-                var metadata = await DoGetMetadataAsync(info.Path, cancellationToken);
+                StorageItemMetadata? metadata = null;
+                if (info.Metadata is null)
+                {
+                    metadata = await DoGetMetadataAsync(info.Path, cancellationToken);
+                }
+
                 var item = info.GetStorageItem(metadata);
 
                 tree.AddItem(item);

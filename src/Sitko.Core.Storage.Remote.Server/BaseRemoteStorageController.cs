@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Results;
+using Sitko.Core.Storage.Internal;
+using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.Remote.Server;
 
@@ -120,6 +123,27 @@ public abstract class BaseRemoteStorageController<TStorageOptions, TMetadata> : 
         }
 
         var result = await storage.GetAllItemsAsync(path, HttpContext.RequestAborted);
+        var storageMetadataProvider =
+            HttpContext.RequestServices.GetService<IStorageMetadataProvider<TStorageOptions>>();
+        if (storageMetadataProvider is not null)
+        {
+            var items = new List<StorageItemInfo>();
+            foreach (var itemInfo in result)
+            {
+                var metadata = await storageMetadataProvider.GetMetadataAsync(itemInfo.Path);
+                if (metadata is not null)
+                {
+                    items.Add(itemInfo with { Metadata = metadata });
+                }
+                else
+                {
+                    items.Add(itemInfo);
+                }
+            }
+
+            return Ok(JsonSerializer.Serialize(items));
+        }
+
         return Ok(JsonSerializer.Serialize(result));
     }
 

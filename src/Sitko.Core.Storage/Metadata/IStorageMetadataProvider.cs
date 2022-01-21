@@ -27,7 +27,7 @@ public interface IStorageMetadataProvider<TStorageOptions> where TStorageOptions
     internal Task RefreshDirectoryContentsAsync(IEnumerable<StorageItemInfo> storageItems,
         CancellationToken cancellationToken = default);
 
-    internal Task<StorageItemMetadata?>
+    public Task<StorageItemMetadata?>
         GetMetadataAsync(string path, CancellationToken cancellationToken = default);
 }
 
