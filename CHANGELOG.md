@@ -1,3 +1,10 @@
+# [9.0.0-beta.7](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.6...9.0.0-beta.7) (2022-01-21)
+
+
+### Bug Fixes
+
+* **wasm:** pass real IJsRuntime from current application to logger sink ([96abbcc](https://github.com/sitkoru/Sitko.Core/commit/96abbcc7c60201f6d2cd6f7d0d403c66d5cdc827))
+
 # [9.0.0-beta.6](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.5...9.0.0-beta.6) (2022-01-21)
 
 
