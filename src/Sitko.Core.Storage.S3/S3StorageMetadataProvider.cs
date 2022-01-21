@@ -34,6 +34,7 @@ public class S3StorageMetadataProvider<TStorageOptions> : EmbedStorageMetadataPr
         Task.CompletedTask;
 
     protected override async Task DoSaveMetadataAsync(StorageItem storageItem, StorageItemMetadata? metadata = null,
+        bool isNew = true,
         CancellationToken cancellationToken = default)
     {
         if (metadata is not null)

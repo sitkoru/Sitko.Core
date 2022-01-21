@@ -28,9 +28,9 @@ public abstract class
     Task IStorageMetadataProvider<TStorageOptions>.InitAsync() => DoInitAsync();
 
     Task IStorageMetadataProvider<TStorageOptions>.SaveMetadataAsync(StorageItem storageItem,
-        StorageItemMetadata itemMetadata,
+        StorageItemMetadata itemMetadata, bool isNew,
         CancellationToken cancellationToken) =>
-        DoSaveMetadataAsync(storageItem, itemMetadata, cancellationToken);
+        DoSaveMetadataAsync(storageItem, itemMetadata, isNew, cancellationToken);
 
     Task IStorageMetadataProvider<TStorageOptions>.DeleteMetadataAsync(string filePath,
         CancellationToken cancellationToken) =>
@@ -75,5 +75,6 @@ public abstract class
         CancellationToken cancellationToken = default);
 
     protected abstract Task DoSaveMetadataAsync(StorageItem storageItem, StorageItemMetadata? metadata = null,
+        bool isNew = true,
         CancellationToken cancellationToken = default);
 }

@@ -26,8 +26,10 @@ public abstract class BaseRemoteStorageController<TStorageOptions, TMetadata> : 
     protected abstract Task<IOperationResult> CanDeleteAsync(string? path, HttpRequest request);
     protected abstract Task<IOperationResult> CanListAsync(string? path, HttpRequest request);
 
-    protected abstract Task<IOperationResult> CanUploadAsync(UploadStorageItem<TMetadata> uploadStorageItem,
-        HttpRequest request);
+    protected virtual Task<IOperationResult> CanUpdateMetadataAsync(string? path, HttpRequest request) =>
+        Task.FromResult<IOperationResult>(new OperationResult());
+
+
 
     [HttpGet]
     public async Task<ActionResult<RemoteStorageItem?>> Get(string path)
@@ -118,6 +120,39 @@ public abstract class BaseRemoteStorageController<TStorageOptions, TMetadata> : 
         }
 
         var result = await storage.GetAllItemsAsync(path, HttpContext.RequestAborted);
+        return Ok(JsonSerializer.Serialize(result));
+    }
+
+    [HttpPost("UpdateMetadata")]
+    public async Task<IActionResult> UpdateMetadata(string path, [FromForm] string metadataJson)
+    {
+        var canUpdateMetadata = await CanUpdateMetadataAsync(path, Request);
+        if (!canUpdateMetadata.IsSuccess)
+        {
+            return BadRequest(canUpdateMetadata.ErrorMessage);
+        }
+
+        var metadata = JsonSerializer.Deserialize<StorageItemMetadata>(metadataJson);
+        if (metadata is null)
+        {
+            return BadRequest("Empty request");
+        }
+
+        if (string.IsNullOrEmpty(metadata.FileName))
+        {
+            return BadRequest("Empty file name");
+        }
+
+        var item = await storage.GetAsync(path, HttpContext.RequestAborted);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        var metadataObj = metadata.Data is not null ? JsonSerializer.Deserialize<TMetadata>(metadata.Data) : default;
+        var result =
+            await storage.UpdateMetaDataAsync(item, metadata.FileName, metadataObj, HttpContext.RequestAborted);
         return Ok(JsonSerializer.Serialize(result));
     }
 }

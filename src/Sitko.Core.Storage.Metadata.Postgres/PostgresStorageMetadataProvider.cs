@@ -95,6 +95,7 @@ public class
     }
 
     protected override async Task DoSaveMetadataAsync(StorageItem storageItem, StorageItemMetadata? metadata = null,
+        bool isNew = true,
         CancellationToken cancellationToken = default)
     {
         await using var dbContext = GetDbContext();

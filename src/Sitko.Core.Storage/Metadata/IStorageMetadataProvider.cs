@@ -15,7 +15,7 @@ public interface IStorageMetadataProvider<TStorageOptions> where TStorageOptions
 {
     internal Task InitAsync();
 
-    internal Task SaveMetadataAsync(StorageItem storageItem, StorageItemMetadata itemMetadata,
+    internal Task SaveMetadataAsync(StorageItem storageItem, StorageItemMetadata itemMetadata, bool isNew,
         CancellationToken cancellationToken = default);
 
     internal Task DeleteMetadataAsync(string filePath, CancellationToken cancellationToken = default);
