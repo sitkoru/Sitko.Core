@@ -1,3 +1,40 @@
+# [9.0.0-beta.6](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.5...9.0.0-beta.6) (2022-01-21)
+
+
+### Bug Fixes
+
+* **mudblazor:** await metadata result ([624f5e3](https://github.com/sitkoru/Sitko.Core/commit/624f5e34e3551944a40f267a7fcd43291481fa68))
+* **s3storage:** fix saving metadata ([a2a174b](https://github.com/sitkoru/Sitko.Core/commit/a2a174b82ebf32057cfb041c9afb2c5806835bbd))
+* **s3storage:** pass cancellation tokens ([f843719](https://github.com/sitkoru/Sitko.Core/commit/f843719bff3bd09a28f163745b4ff732e3551db1))
+* **s3storage:** support presigned urls and settings bucket policy ([f3c7174](https://github.com/sitkoru/Sitko.Core/commit/f3c71743c1e321f5afaa5d449e8a54871d298f0b))
+
+
+### Features
+
+* **demo:** use remote storage ([d396b57](https://github.com/sitkoru/Sitko.Core/commit/d396b57ea0113536e331604b19a683bf37b41f25))
+* **filestorage:** switch to UploadRequest ([3d6e65d](https://github.com/sitkoru/Sitko.Core/commit/3d6e65d55a5d4c32fa27258df1460dcafb468778))
+* **remotestorage:** add to sln ([cbc55a1](https://github.com/sitkoru/Sitko.Core/commit/cbc55a10679ccd1858eac2dbee6563438c381464))
+* **remotestorage:** empty storage ([85c8949](https://github.com/sitkoru/Sitko.Core/commit/85c89495e0775d5dac8cf60b935d39d595f393a8))
+* **remotestorage:** fix urls, passing data and file downloading ([6438253](https://github.com/sitkoru/Sitko.Core/commit/6438253f7b40f1321624a4b32d4f5330065a28b8))
+* **remotestorage:** implement base server controller ([858ab71](https://github.com/sitkoru/Sitko.Core/commit/858ab71749b5d06488bac7d987d06cb79e4d7587))
+* **remotestorage:** implement RemoteStorageMetadataProvider (not finished) ([6b26f8e](https://github.com/sitkoru/Sitko.Core/commit/6b26f8e0249d6697953d2a14aeaa722e30b3ba49))
+* **remotestorage:** implement storage list in controller ([8db06a0](https://github.com/sitkoru/Sitko.Core/commit/8db06a08a234d3ba598a9a12f5cd1e57a1b4db48))
+* **remotestorage:** implement traverse with metadata ([090c1c8](https://github.com/sitkoru/Sitko.Core/commit/090c1c8c7016a853d9cc7b8294d58f6169c83d38))
+* **remotestorage:** implement updating metadata ([998841f](https://github.com/sitkoru/Sitko.Core/commit/998841f960c40aaea4610fe57edf21607afa06f6))
+* **remotestorage:** implement upload, download and existence check methods ([be8c184](https://github.com/sitkoru/Sitko.Core/commit/be8c1846543a9030a24afe5bbf7741053c8a2685))
+* **remotestorage:** make access check methods virtual with default implementation ([004d893](https://github.com/sitkoru/Sitko.Core/commit/004d89365bc93004a5fec9bb46638894d6969d3d))
+* **remotestorage:** return RemoteStorageItem with metadata from controller ([5daf6d8](https://github.com/sitkoru/Sitko.Core/commit/5daf6d83e0e3a14f369830a9b68b2d721f06efc1))
+* **s3storage:** don't inject storage into metadata provider, pass from storage itself ([a5e9568](https://github.com/sitkoru/Sitko.Core/commit/a5e95682e2c8ec0c852cd5562b509a87ca498ac5))
+* **s3storage:** switch to UploadRequest ([1547c1c](https://github.com/sitkoru/Sitko.Core/commit/1547c1ca58efa8befaa9817cb56af8f1423eec48))
+* **storage:** don't inject storage into metadata provider, pass from storage itself ([ad08dd6](https://github.com/sitkoru/Sitko.Core/commit/ad08dd66cf5f314f16ed55d1827ad4e332c3e1c1))
+* **storage:** implement upload via UploadRequest, final storage must return StorageItem ([3dba35f](https://github.com/sitkoru/Sitko.Core/commit/3dba35f6372a3eb4dcc7ef5677ec99007e44823a))
+* **storage:** make GetAllItemsAsync public for now to use in controller ([a67c183](https://github.com/sitkoru/Sitko.Core/commit/a67c18361a67459c9624b4b221aa48189727ebd9))
+* **storage:** move internal classes into Internal namespace and make them public ([cb2dbae](https://github.com/sitkoru/Sitko.Core/commit/cb2dbaeaafc0a3e928533f8754f022391c6691de))
+* **storage:** move StorageItemDownloadInfo into Internal namespace and make it public. Make GetStream async ([1cf8e4f](https://github.com/sitkoru/Sitko.Core/commit/1cf8e4fef3288272a3d87593df58e3160337f434))
+* **storage:** rework storage item creation ([4d969ea](https://github.com/sitkoru/Sitko.Core/commit/4d969ea4bf72a7216f865a8b4e17c8dde1527dad))
+* **storage:** rework storage item creation ([5e6cbbc](https://github.com/sitkoru/Sitko.Core/commit/5e6cbbc4305eea68d482ce48ad093007efd69e41))
+* **xunit:** add BeforeConfiguredAsync hook ([8e6d924](https://github.com/sitkoru/Sitko.Core/commit/8e6d92454301606d8b93e3903ccb9f023d507abf))
+
 # [9.0.0-beta.5](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.4...9.0.0-beta.5) (2022-01-19)
 
 
