@@ -169,6 +169,8 @@ jobs:
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
       - name: Sitko.Core.Storage.S3
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
+      - name: Sitko.Core.Storage.Remote
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.Remote.Tests/Sitko.Core.Storage.Remote.Tests.csproj
       - name: Sitko.Core.Storage.Metadata.Postgres
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.Metadata.Postgres.Tests/Sitko.Core.Storage.Metadata.Postgres.Tests.csproj
 
