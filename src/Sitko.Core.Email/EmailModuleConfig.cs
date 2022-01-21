@@ -1,10 +1,9 @@
 using FluentValidation;
 using Sitko.Core.App;
-using Sitko.Core.App.Web.Razor;
 
 namespace Sitko.Core.Email
 {
-    public abstract class EmailModuleOptions : BaseModuleOptions, IViewToStringRendererServiceOptions
+    public abstract class EmailModuleOptions : BaseModuleOptions
     {
         public string Host { get; set; } = "localhost";
         public string Scheme { get; set; } = "http";

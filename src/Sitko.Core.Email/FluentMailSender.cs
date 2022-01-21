@@ -8,8 +8,8 @@ using FluentEmail.Core.Models;
 using Hangfire;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
+using Razor.Templating.Core;
 using Sitko.Core.App.Results;
-using Sitko.Core.App.Web.Razor;
 
 namespace Sitko.Core.Email;
 
@@ -18,27 +18,24 @@ public class FluentMailSender<TOptions> : IMailSender where TOptions : EmailModu
     private readonly IBackgroundJobClient? backgroundJobClient;
     private readonly IFluentEmailFactory emailFactory;
     private readonly ILogger<FluentMailSender<TOptions>> logger;
-    private readonly ViewToStringRendererService<TOptions> renderer;
 
     public FluentMailSender(IFluentEmailFactory emailFactory,
-        ViewToStringRendererService<TOptions> renderer,
         ILogger<FluentMailSender<TOptions>> logger, IBackgroundJobClient? backgroundJobClient = null)
     {
         this.emailFactory = emailFactory;
-        this.renderer = renderer;
         this.logger = logger;
         this.backgroundJobClient = backgroundJobClient;
     }
 
     public async Task<IOperationResult> SendHtmlMailAsync<T>(MailEntry<T> mailEntry, string templatePath)
     {
-        var html = await renderer.RenderViewToStringAsync(templatePath, mailEntry);
+        var html = await RazorTemplateEngine.RenderAsync(templatePath, mailEntry);
         return await SendMailAsync(mailEntry, html);
     }
 
     public async Task<IOperationResult> SendHtmlMailAsync(MailEntry mailEntry, string templatePath)
     {
-        var html = await renderer.RenderViewToStringAsync(templatePath, mailEntry);
+        var html = await RazorTemplateEngine.RenderAsync(templatePath, mailEntry);
         return await SendMailAsync(mailEntry, html);
     }
 
