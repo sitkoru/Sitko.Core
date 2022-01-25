@@ -29,9 +29,12 @@ public abstract class HostedApplication : Application
 
     protected ILogger<Application> InternalLogger { get; }
 
+    protected virtual IHostBuilder CreateHostBuilderBase(string[] hostBuilderArgs) =>
+        Host.CreateDefaultBuilder(hostBuilderArgs);
+
     private IHostBuilder CreateHostBuilder(string[] hostBuilderArgs)
     {
-        var builder = Host.CreateDefaultBuilder(hostBuilderArgs);
+        var builder = CreateHostBuilderBase(hostBuilderArgs);
         ConfigureHostBuilder(builder);
         return builder;
     }
@@ -68,14 +71,8 @@ public abstract class HostedApplication : Application
         return appHost;
     }
 
-    protected virtual void ConfigureApplicationOptions(IHostEnvironment environment, IConfiguration configuration,
-        ApplicationOptions options)
-    {
-    }
-
-
     protected IApplicationContext GetContext(IHostEnvironment environment, IConfiguration configuration) =>
-        new HostedApplicationContext(configuration, environment);
+        new HostedApplicationContext(this, configuration, environment);
 
     protected IHostBuilder ConfigureHostBuilder(Action<IHostBuilder>? configure = null)
     {
@@ -233,8 +230,9 @@ public class HostedApplicationContext : BaseApplicationContext
 {
     private readonly IHostEnvironment environment;
 
-    public HostedApplicationContext(IConfiguration configuration, IHostEnvironment environment) : base(
-        configuration) =>
+    public HostedApplicationContext(Application application, IConfiguration configuration, IHostEnvironment environment)
+        : base(application,
+            configuration) =>
         this.environment = environment;
 
     public override string EnvironmentName => environment.EnvironmentName;

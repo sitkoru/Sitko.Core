@@ -8,8 +8,9 @@ public class WasmApplicationContext : BaseApplicationContext
 {
     private readonly IWebAssemblyHostEnvironment environment;
 
-    public WasmApplicationContext(IConfiguration configuration, IWebAssemblyHostEnvironment environment)
-        : base(configuration) =>
+    public WasmApplicationContext(Application application, IConfiguration configuration,
+        IWebAssemblyHostEnvironment environment)
+        : base(application, configuration) =>
         this.environment = environment;
 
     public override string EnvironmentName => environment.Environment;

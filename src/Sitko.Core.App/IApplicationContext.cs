@@ -21,10 +21,12 @@ public interface IApplicationContext
 
 public abstract class BaseApplicationContext : IApplicationContext
 {
+    private readonly Application application;
     private ApplicationOptions? applicationOptions;
 
-    protected BaseApplicationContext(IConfiguration configuration)
+    protected BaseApplicationContext(Application application, IConfiguration configuration)
     {
+        this.application = application;
         Configuration = configuration;
         var loggerConfiguration = new LoggerConfiguration();
         loggerConfiguration
@@ -56,12 +58,12 @@ public abstract class BaseApplicationContext : IApplicationContext
         Configuration.Bind(Application.OptionsKey, applicationOptions);
         if (string.IsNullOrEmpty(applicationOptions.Name))
         {
-            applicationOptions.Name = GetType().Assembly.GetName().Name ?? "App";
+            applicationOptions.Name = application.GetType().Assembly.GetName().Name ?? "App";
         }
 
         if (string.IsNullOrEmpty(applicationOptions.Version))
         {
-            applicationOptions.Version = GetType().Assembly.GetName().Version?.ToString() ?? "dev";
+            applicationOptions.Version = application.GetType().Assembly.GetName().Version?.ToString() ?? "dev";
         }
 
         ConfigureApplicationOptions(applicationOptions);

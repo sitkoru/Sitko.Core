@@ -77,7 +77,8 @@ public abstract class WasmApplication : Application
             configuration =>
             {
                 configuration.WriteTo.BrowserConsole(
-                    outputTemplate: applicationContext.Options.ConsoleLogFormat, jsRuntime: tmpHost.Services.GetRequiredService<IJSRuntime>());
+                    outputTemplate: applicationContext.Options.ConsoleLogFormat,
+                    jsRuntime: tmpHost.Services.GetRequiredService<IJSRuntime>());
 
                 ConfigureLogging(applicationContext, configuration);
             });
@@ -134,9 +135,9 @@ public abstract class WasmApplication : Application
         : throw new InvalidOperationException("App host is not built yet");
 
     [PublicAPI]
-    protected static IApplicationContext GetContext(IWebAssemblyHostEnvironment environment,
+    protected IApplicationContext GetContext(IWebAssemblyHostEnvironment environment,
         IConfiguration configuration) =>
-        new WasmApplicationContext(configuration, environment);
+        new WasmApplicationContext(this, configuration, environment);
 
     protected override IApplicationContext GetContext(IServiceProvider serviceProvider) => GetContext(
         serviceProvider.GetRequiredService<IWebAssemblyHostEnvironment>(),
