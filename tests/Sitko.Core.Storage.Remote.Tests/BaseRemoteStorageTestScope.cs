@@ -31,7 +31,7 @@ public class BaseRemoteStorageTestScope : BaseTestScope
                 moduleOptions.HttpClientFactory = () =>
                 {
                     var client = server.CreateClient();
-                    client.BaseAddress = new Uri(client.BaseAddress!, "Upload");
+                    client.BaseAddress = new Uri(client.BaseAddress!, "Upload/");
                     return client;
                 };
             }
