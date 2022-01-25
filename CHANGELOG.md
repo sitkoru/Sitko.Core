@@ -1,3 +1,12 @@
+# [9.0.0-beta.9](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.8...9.0.0-beta.9) (2022-01-25)
+
+
+### Bug Fixes
+
+* **mudblazor:** set stream buffer size to max if MaxFileSize = 0 ([9b5960e](https://github.com/sitkoru/Sitko.Core/commit/9b5960efcfec119537b62f574551f3eaa6b439d4))
+* **remotestorage:** don't inject HttpClient, create via options of IHttpClientFactory to support dynamic options ([4071c4a](https://github.com/sitkoru/Sitko.Core/commit/4071c4aaaafab33f4f1db52c3d02aa76f406c038))
+* **remotestorage:** support upload to empty path ([4b9c3d6](https://github.com/sitkoru/Sitko.Core/commit/4b9c3d6a61b44259a7c7ac68c3016bd6a3510c15))
+
 # [9.0.0-beta.8](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.7...9.0.0-beta.8) (2022-01-21)
 
 
