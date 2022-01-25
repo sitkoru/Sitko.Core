@@ -1,3 +1,10 @@
+# [9.0.0-beta.10](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.9...9.0.0-beta.10) (2022-01-25)
+
+
+### Bug Fixes
+
+* **app:** get assembly name and version from current application instance ([f7a88dd](https://github.com/sitkoru/Sitko.Core/commit/f7a88dd4fc661e894e94cfe98c82089e4e9dea48))
+
 # [9.0.0-beta.9](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.8...9.0.0-beta.9) (2022-01-25)
 
 
