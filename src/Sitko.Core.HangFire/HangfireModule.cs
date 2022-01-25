@@ -35,19 +35,6 @@ public class HangfireModule<THangfireConfig> : BaseApplicationModule<THangfireCo
         }
     }
 
-    public virtual void ConfigureBeforeUseRouting(IApplicationContext applicationContext,
-        IApplicationBuilder appBuilder)
-    {
-        var config = GetOptions(appBuilder.ApplicationServices);
-        if (config.IsWorkersEnabled)
-        {
-            appBuilder.UseHangfireServer(new BackgroundJobServerOptions
-            {
-                WorkerCount = config.Workers, Queues = config.Queues
-            });
-        }
-    }
-
     public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
         THangfireConfig startupOptions)
     {
@@ -61,6 +48,15 @@ public class HangfireModule<THangfireConfig> : BaseApplicationModule<THangfireCo
             services.AddHealthChecks().AddHangfire(options =>
             {
                 startupOptions.ConfigureHealthChecks?.Invoke(options);
+            });
+        }
+
+        if (startupOptions.IsWorkersEnabled)
+        {
+            services.AddHangfireServer(options =>
+            {
+                options.WorkerCount = startupOptions.Workers;
+                options.Queues = startupOptions.Queues;
             });
         }
     }
