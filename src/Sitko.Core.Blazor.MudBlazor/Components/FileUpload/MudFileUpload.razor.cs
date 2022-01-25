@@ -193,10 +193,10 @@ public abstract partial class MudFileUpload<TValue> : BaseComponent where TValue
 
                 await using (FileStream fs = new(path, FileMode.Create))
                 {
-                    await file.OpenReadStream(MaxFileSize).CopyToAsync(fs);
+                    await file.OpenReadStream(MaxFileSize > 0 ? MaxFileSize : long.MaxValue).CopyToAsync(fs);
                     var uploadInfo = new FileUploadRequest(file.Name, file.ContentType, file.Size, file.LastModified);
                     var result = await Storage.SaveAsync(fs, file.Name, UploadPath,
-                       await GenerateMetadataAsync(uploadInfo, fs));
+                        await GenerateMetadataAsync(uploadInfo, fs));
                     results.Add(result);
                 }
 
