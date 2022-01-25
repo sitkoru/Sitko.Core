@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Hangfire;
-using Hangfire.Dashboard;
 using Hangfire.PostgreSql;
 using HealthChecks.Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.App.Web;
-using Sitko.Core.HangFire.Components;
 
 namespace Sitko.Core.HangFire;
 
@@ -25,13 +22,10 @@ public class HangfireModule<THangfireConfig> : BaseApplicationModule<THangfireCo
         var config = GetOptions(appBuilder.ApplicationServices);
         if (config.IsDashboardEnabled)
         {
-            var authFilters = new List<IDashboardAuthorizationFilter>();
-            if (config.DashboardAuthorizationCheck != null)
-            {
-                authFilters.Add(new HangfireDashboardAuthorizationFilter(config.DashboardAuthorizationCheck));
-            }
+            var options = new DashboardOptions();
+            config.DashboardConfigure?.Invoke(options);
 
-            appBuilder.UseHangfireDashboard(options: new DashboardOptions { Authorization = authFilters });
+            appBuilder.UseHangfireDashboard(options: options);
         }
     }
 
@@ -72,10 +66,10 @@ public abstract class HangfireModuleOptions : BaseModuleOptions
 
     [JsonIgnore] public bool IsDashboardEnabled { get; private set; }
 
-    [JsonIgnore] public Func<DashboardContext, bool>? DashboardAuthorizationCheck { get; private set; }
-
     [JsonIgnore] public bool IsHealthChecksEnabled { get; private set; }
     [JsonIgnore] public Action<HangfireOptions>? ConfigureHealthChecks { get; private set; }
+
+    public Action<DashboardOptions>? DashboardConfigure { get; set; }
 
     public void EnableWorker(int workersCount = 10, string[]? queues = null)
     {
@@ -87,11 +81,10 @@ public abstract class HangfireModuleOptions : BaseModuleOptions
         }
     }
 
-    public void EnableDashboard(Func<DashboardContext, bool>? configureAuthorizationCheck = null)
+    public void EnableDashboard(Action<DashboardOptions>? configure = null)
     {
         IsDashboardEnabled = true;
-        DashboardAuthorizationCheck = context =>
-            configureAuthorizationCheck == null || configureAuthorizationCheck.Invoke(context);
+        DashboardConfigure = configure;
     }
 
     public void EnableHealthChecks(Action<HangfireOptions>? configure = null)
