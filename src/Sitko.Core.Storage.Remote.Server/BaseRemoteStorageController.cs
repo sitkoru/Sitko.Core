@@ -70,7 +70,7 @@ public abstract class BaseRemoteStorageController<TStorageOptions, TMetadata> : 
 
         if (string.IsNullOrEmpty(uploadData.Path))
         {
-            return BadRequest("No file path");
+            uploadData.Path = "";
         }
 
         if (string.IsNullOrEmpty(uploadData.FileName))

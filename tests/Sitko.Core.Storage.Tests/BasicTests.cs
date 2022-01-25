@@ -224,6 +224,26 @@ public abstract class BasicTests<T> : BaseTest<T>
         Assert.NotNull(itemMetaData);
         Assert.Equal(newMetaData.Id, itemMetaData!.Id);
     }
+
+    [Fact]
+    public async Task UploadToRoot()
+    {
+        var scope = await GetScopeAsync();
+
+        var storage = scope.GetService<IStorage>();
+
+        Assert.NotNull(storage);
+
+        StorageItem uploaded;
+        const string fileName = "file.txt";
+        const string path = "";
+        await using (var file = File.Open("Data/file.txt", FileMode.Open))
+        {
+            uploaded = await storage.SaveAsync(file, fileName, path);
+        }
+
+        uploaded.Should().NotBeNull();
+    }
 }
 
 public class FileMetaData
