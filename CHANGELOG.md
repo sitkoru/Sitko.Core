@@ -1,3 +1,12 @@
+# [9.0.0-beta.11](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.10...9.0.0-beta.11) (2022-01-25)
+
+
+### Features
+
+* **hangfire:** allow to configure all hangfire dashboard options ([acdaeb4](https://github.com/sitkoru/Sitko.Core/commit/acdaeb46c1dacdf0f8085725d20bc43db3527647))
+* **hangfire:** provide some hangfire dashboard auth filters ([39f3dc8](https://github.com/sitkoru/Sitko.Core/commit/39f3dc81af59d99ea2bdb10f707dabab1ae11201))
+* **hangfire:** switch to use AddHangfireServer ([c504ae3](https://github.com/sitkoru/Sitko.Core/commit/c504ae3255b9cc3f5294a14431d56b24270398ac))
+
 # [9.0.0-beta.10](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.9...9.0.0-beta.10) (2022-01-25)
 
 
