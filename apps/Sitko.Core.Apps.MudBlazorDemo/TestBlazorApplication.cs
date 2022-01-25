@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Http;
 using Sitko.Core.App.Localization;
 using Sitko.Core.Apps.MudBlazorDemo.Data;
 using Sitko.Core.Blazor.MudBlazor.Server;
@@ -30,4 +31,5 @@ public class TestBlazorApplication : MudBlazorApplication<Startup>
 public class TestRemoteStorageOptions : StorageOptions, IRemoteStorageOptions
 {
     public Uri RemoteUrl { get; set; } = new("https://localhost");
+    public Func<HttpClient>? HttpClientFactory { get; set; }
 }

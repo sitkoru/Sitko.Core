@@ -1,10 +1,7 @@
 using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Sitko.Core.App;
 using Sitko.Core.Storage.Remote.Tests.Server;
 using Sitko.Core.Xunit;
 
@@ -31,24 +28,17 @@ public class BaseRemoteStorageTestScope : BaseTestScope
             if (server is not null)
             {
                 moduleOptions.RemoteUrl = new Uri(server.BaseAddress, "Upload/");
+                moduleOptions.HttpClientFactory = () =>
+                {
+                    var client = server.CreateClient();
+                    client.BaseAddress = new Uri(client.BaseAddress!, "Upload");
+                    return client;
+                };
             }
         });
 
         return application;
     }
-
-    protected override IServiceCollection ConfigureServices(IApplicationContext applicationContext,
-        IServiceCollection services, string name)
-    {
-        base.ConfigureServices(applicationContext, services, name);
-        if (server is not null)
-        {
-            services.AddTransient<HttpClient>(_ => server.CreateClient());
-        }
-
-        return services;
-    }
-
 
     public override async ValueTask DisposeAsync()
     {

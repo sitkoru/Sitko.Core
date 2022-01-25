@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.Storage.Metadata;
@@ -25,4 +26,5 @@ public class
 public interface IRemoteStorageOptions
 {
     public Uri RemoteUrl { get; }
+    public Func<HttpClient>? HttpClientFactory { get; }
 }

@@ -17,20 +17,30 @@ namespace Sitko.Core.Storage.Remote;
 public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
     where TStorageOptions : StorageOptions, IRemoteStorageOptions
 {
-    private readonly HttpClient httpClient;
     private readonly IHttpClientFactory httpClientFactory;
 
-    public RemoteStorage(HttpClient httpClient, IHttpClientFactory httpClientFactory,
+    public RemoteStorage(IHttpClientFactory httpClientFactory,
         IOptionsMonitor<TStorageOptions> options,
         ILogger<RemoteStorage<TStorageOptions>> logger,
         IStorageCache<TStorageOptions>? cache = null,
         IStorageMetadataProvider<TStorageOptions>? metadataProvider = null) : base(options,
         logger,
-        cache, metadataProvider)
-    {
-        httpClient.BaseAddress = Options.RemoteUrl;
-        this.httpClient = httpClient;
+        cache, metadataProvider) =>
         this.httpClientFactory = httpClientFactory;
+
+    private HttpClient HttpClient
+    {
+        get
+        {
+            if (Options.HttpClientFactory is not null)
+            {
+                return Options.HttpClientFactory();
+            }
+
+            var client = httpClientFactory.CreateClient();
+            client.BaseAddress = Options.RemoteUrl;
+            return client;
+        }
     }
 
     protected override async Task<StorageItem> DoSaveAsync(UploadRequest uploadRequest,
@@ -43,7 +53,7 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
             { new StreamContent(uploadRequest.Stream), "file", Path.GetFileName(uploadRequest.FileName) },
 
             // payload
-            { new StringContent(uploadRequest.Path), "path" },
+            { new StringContent(string.IsNullOrEmpty(uploadRequest.Path) ? "" : uploadRequest.Path), "path" },
             { new StringContent(uploadRequest.FileName), "fileName" }
         };
 
@@ -54,7 +64,7 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
 
         request.Content = content;
 
-        var response = await httpClient.SendAsync(request, cancellationToken);
+        var response = await HttpClient.SendAsync(request, cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
@@ -72,7 +82,7 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
 
     protected override async Task<bool> DoDeleteAsync(string filePath, CancellationToken cancellationToken = default)
     {
-        var response = await httpClient.DeleteAsync($"?path={filePath}", cancellationToken);
+        var response = await HttpClient.DeleteAsync($"?path={filePath}", cancellationToken);
         if (response.IsSuccessStatusCode)
         {
             return true;
@@ -90,7 +100,7 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
 
     protected override async Task DoDeleteAllAsync(CancellationToken cancellationToken = default)
     {
-        var response = await httpClient.DeleteAsync("", cancellationToken);
+        var response = await HttpClient.DeleteAsync("", cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
             throw new InvalidOperationException(response.ReasonPhrase);
@@ -100,7 +110,7 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
     protected override async Task<StorageItemDownloadInfo?> DoGetFileAsync(string path,
         CancellationToken cancellationToken = default)
     {
-        var response = await httpClient.GetJsonAsync<RemoteStorageItem?>($"?path={path}");
+        var response = await HttpClient.GetJsonAsync<RemoteStorageItem?>($"?path={path}");
         if (response is null)
         {
             return null;
@@ -123,7 +133,7 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
 
     protected override async Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
         CancellationToken cancellationToken = default) =>
-        await httpClient.GetJsonAsync<StorageItemInfo[]>($"List?path={path}") ?? Array.Empty<StorageItemInfo>();
+        await HttpClient.GetJsonAsync<StorageItemInfo[]>($"List?path={path}") ?? Array.Empty<StorageItemInfo>();
 
     public async Task DoUpdateMetaDataAsync(StorageItem storageItem, StorageItemMetadata metadata,
         CancellationToken cancellationToken)
@@ -133,7 +143,7 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
         var json = JsonSerializer.Serialize(metadata);
         content.Add(new StringContent(json), "metadataJson");
         request.Content = content;
-        var response = await httpClient.SendAsync(request, cancellationToken);
+        var response = await HttpClient.SendAsync(request, cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
             throw new InvalidOperationException($"Can't update metadata: {response.ReasonPhrase}");
