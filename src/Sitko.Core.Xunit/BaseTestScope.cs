@@ -78,21 +78,26 @@ public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
     public virtual Task BeforeConfiguredAsync() => Task.CompletedTask;
     public virtual Task OnCreatedAsync() => Task.CompletedTask;
 
+    private bool isDisposed;
 
     public async ValueTask DisposeAsync()
     {
-        await OnDisposeAsync();
-        if (scopeApplication != null)
+        if (!isDisposed)
         {
-            if (isApplicationStarted)
+            await OnDisposeAsync();
+            if (scopeApplication != null)
             {
-                await scopeApplication.StopAsync();
+                if (isApplicationStarted)
+                {
+                    await scopeApplication.StopAsync();
+                }
+
+                await scopeApplication.DisposeAsync();
             }
 
-            await scopeApplication.DisposeAsync();
+            GC.SuppressFinalize(this);
+            isDisposed = true;
         }
-
-        GC.SuppressFinalize(this);
     }
 
     public async Task StartApplicationAsync()
