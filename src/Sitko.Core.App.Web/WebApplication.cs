@@ -16,7 +16,8 @@ public abstract class WebApplication : HostedApplication
     }
 
     protected List<IWebApplicationModule> GetWebModules(IApplicationContext context) =>
-        GetEnabledModuleRegistrations(context).Select(r => r.GetInstance()).OfType<IWebApplicationModule>()
+        GetEnabledModuleRegistrations<IWebApplicationModule>(context).Select(r => r.GetInstance())
+            .OfType<IWebApplicationModule>()
             .ToList();
 
     public virtual void AppBuilderHook(IApplicationContext applicationContext,

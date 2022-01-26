@@ -117,7 +117,7 @@ public abstract class Application : IApplication, IAsyncDisposable
         }
 
         LogInternal("Configure app configuration in modules");
-        foreach (var moduleRegistration in GetEnabledModuleRegistrations(appContext))
+        foreach (var moduleRegistration in GetEnabledModuleRegistrations<IConfigurationModule>(appContext))
         {
             moduleRegistration.ConfigureAppConfiguration(appContext, builder);
         }
@@ -131,7 +131,7 @@ public abstract class Application : IApplication, IAsyncDisposable
             loggerConfiguration.MinimumLevel.Override(key, value);
         }
 
-        foreach (var moduleRegistration in GetEnabledModuleRegistrations(applicationContext))
+        foreach (var moduleRegistration in GetEnabledModuleRegistrations<ILoggingModule>(applicationContext))
         {
             moduleRegistration.ConfigureLogging(applicationContext, loggerConfiguration);
         }
