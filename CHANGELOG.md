@@ -1,3 +1,15 @@
+# [9.0.0-beta.13](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.12...9.0.0-beta.13) (2022-01-26)
+
+
+### Bug Fixes
+
+* **xunit:** pass scope name to BeforeConfiguredAsync hook ([fb78aa3](https://github.com/sitkoru/Sitko.Core/commit/fb78aa38712641b64238f0efe46c41791a492ed6))
+
+
+### Features
+
+* **xunitweb:** implement base scope with test server for WebApplication ([5300efe](https://github.com/sitkoru/Sitko.Core/commit/5300efe1c43890261db15856817693b9f1d81284))
+
 # [9.0.0-beta.12](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.11...9.0.0-beta.12) (2022-01-26)
 
 
