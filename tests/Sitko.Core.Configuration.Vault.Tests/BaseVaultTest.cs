@@ -20,6 +20,14 @@ public abstract class BaseVaultTest : BaseTest<VaultTestScope>
 
 public class VaultTestScope : BaseTestScope
 {
+    private readonly Guid firstSecretId = Guid.NewGuid();
+    private readonly Guid secondSecretId = Guid.NewGuid();
+    private readonly VaultClient vaultClient;
+
+    public VaultTestScope() =>
+        vaultClient = new VaultClient(new VaultClientSettings(Environment.GetEnvironmentVariable("VAULT__URI"),
+            new TokenAuthMethodInfo(Environment.GetEnvironmentVariable("VAULT__TOKEN"))));
+
     public TestConfig FirstConfig { get; } = new() { Bar = Guid.NewGuid(), Foo = Guid.NewGuid().ToString() };
     public TestConfig2 SecondConfig { get; } = new() { Bar = Guid.NewGuid(), Foo = Guid.NewGuid().ToString() };
 
@@ -27,7 +35,10 @@ public class VaultTestScope : BaseTestScope
     {
         base.ConfigureApplication(application, name);
 
-        application.AddVaultConfiguration();
+        application.AddVaultConfiguration(options =>
+        {
+            options.Secrets = new List<string> { firstSecretId.ToString(), secondSecretId.ToString() };
+        });
         application.ConfigureServices((context, collection) =>
         {
             collection.Configure<TestConfig>(context.Configuration.GetSection("test"));
@@ -40,16 +51,22 @@ public class VaultTestScope : BaseTestScope
     public override async Task BeforeConfiguredAsync()
     {
         await base.BeforeConfiguredAsync();
-        var vaultClient = new VaultClient(new VaultClientSettings(Environment.GetEnvironmentVariable("VAULT__URI"),
-            new TokenAuthMethodInfo(Environment.GetEnvironmentVariable("VAULT__TOKEN"))));
+
         await vaultClient.V1.Secrets.KeyValue.V2.WriteSecretAsync(
-            Environment.GetEnvironmentVariable("VAULT__SECRETS__0"),
+            firstSecretId.ToString(),
             new { test = FirstConfig },
             mountPoint: "/secret");
         await vaultClient.V1.Secrets.KeyValue.V2.WriteSecretAsync(
-            Environment.GetEnvironmentVariable("VAULT__SECRETS__1"),
+            secondSecretId.ToString(),
             new { test2 = SecondConfig },
             mountPoint: "/secret");
+    }
+
+    protected override async Task OnDisposeAsync()
+    {
+        await base.OnDisposeAsync();
+        await vaultClient.V1.Secrets.KeyValue.V2.DeleteMetadataAsync(firstSecretId.ToString(), "/secret");
+        await vaultClient.V1.Secrets.KeyValue.V2.DeleteMetadataAsync(secondSecretId.ToString(), "/secret");
     }
 }
 
