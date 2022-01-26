@@ -126,31 +126,30 @@ public abstract class HostedApplication : Application
         }
 
         LogInternal("Configure host builder");
-        hostBuilder.ConfigureAppConfiguration((context, builder) =>
+        hostBuilder.ConfigureAppConfiguration((_, builder) =>
             {
-                var appContext = GetContext(context.HostingEnvironment, context.Configuration);
-                ConfigureConfiguration(appContext, builder);
+                ConfigureConfiguration(bootApplicationContext, builder);
                 LoggingExtensions.ConfigureSerilogConfiguration(builder, serilogConfiguration);
             })
-            .ConfigureServices((context, services) =>
+            .ConfigureServices((_, services) =>
             {
-                var appContext = GetContext(context.HostingEnvironment, context.Configuration);
-                RegisterApplicationServices<HostedApplicationContext>(appContext, services);
+                RegisterApplicationServices<HostedApplicationContext>(bootApplicationContext, services);
                 services.AddHostedService<ApplicationLifetimeService>();
             }).ConfigureLogging((context, builder) =>
             {
                 LogInternal("Configure logging");
-                var appContext = GetContext(context.HostingEnvironment, context.Configuration);
-                LoggingExtensions.ConfigureSerilog(appContext, builder, serilogConfiguration, configuration =>
-                {
-                    configuration.Enrich.WithMachineName();
-                    if (appContext.Options.EnableConsoleLogging == true)
+                LoggingExtensions.ConfigureSerilog(bootApplicationContext, builder, serilogConfiguration,
+                    configuration =>
                     {
-                        configuration.WriteTo.Console(outputTemplate: appContext.Options.ConsoleLogFormat);
-                    }
+                        configuration.Enrich.WithMachineName();
+                        if (bootApplicationContext.Options.EnableConsoleLogging == true)
+                        {
+                            configuration.WriteTo.Console(
+                                outputTemplate: bootApplicationContext.Options.ConsoleLogFormat);
+                        }
 
-                    ConfigureLogging(appContext, configuration);
-                });
+                        ConfigureLogging(bootApplicationContext, configuration);
+                    });
             });
         configure?.Invoke(hostBuilder);
         LogInternal("Create host builder done");
