@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
@@ -80,18 +81,22 @@ public abstract class HostedApplication : Application
 
         LogInternal("Create tmp host builder");
 
-        using var tmpHost = CreateHostBuilder(Args)
-            .UseDefaultServiceProvider(options =>
-            {
-                options.ValidateOnBuild = false;
-                options.ValidateScopes = true;
-            })
-            .ConfigureLogging(builder => { builder.SetMinimumLevel(LogLevel.Information); }).Build();
+        var startEnvironment = new HostingEnvironment
+        {
+            ApplicationName = GetType().Assembly.FullName,
+            EnvironmentName = Environment.GetEnvironmentVariable($"DOTNET_{HostDefaults.EnvironmentKey}") ??
+                              Environment.GetEnvironmentVariable($"ASPNETCORE_{HostDefaults.EnvironmentKey}") ??
+                              Environments.Production
+        };
 
-        var tmpConfiguration = tmpHost.Services.GetRequiredService<IConfiguration>();
-        var tmpEnvironment = tmpHost.Services.GetRequiredService<IHostEnvironment>();
-
-        var tmpApplicationContext = GetContext(tmpEnvironment, tmpConfiguration);
+        var configBuilder = new ConfigurationBuilder()
+            .AddEnvironmentVariables()
+            .AddEnvironmentVariables("DOTNET_")
+            .AddEnvironmentVariables("ASPNETCORE_")
+            .AddJsonFile("appsettings.json", true, false)
+            .AddJsonFile($"appsettings.{startEnvironment.EnvironmentName}.json", true, false);
+        var startApplicationContext = GetContext(startEnvironment, configBuilder.Build());
+        ConfigureConfiguration(startApplicationContext, configBuilder);
 
         LogInternal("Init application");
 
@@ -104,14 +109,24 @@ public abstract class HostedApplication : Application
             {
                 options.ValidateOnBuild = true;
                 options.ValidateScopes = true;
-            })
-            .ConfigureHostConfiguration(builder =>
-            {
-                builder.AddJsonFile("appsettings.json", true, false);
-                builder.AddJsonFile($"appsettings.{tmpApplicationContext.EnvironmentName}.json", true,
-                    false);
-            })
-            .ConfigureAppConfiguration((context, builder) =>
+            });
+
+        LogInternal("Configure host builder in modules");
+        var bootConfiguration = configBuilder.Build();
+        var bootEnvironment = new HostingEnvironment
+        {
+            ApplicationName = bootConfiguration[HostDefaults.ApplicationKey],
+            EnvironmentName = bootConfiguration[HostDefaults.EnvironmentKey] ?? Environments.Production
+        };
+        var bootApplicationContext = GetContext(bootEnvironment, bootConfiguration);
+
+        foreach (var moduleRegistration in GetEnabledModuleRegistrations<IHostBuilderModule>(bootApplicationContext))
+        {
+            moduleRegistration.ConfigureHostBuilder(bootApplicationContext, hostBuilder);
+        }
+
+        LogInternal("Configure host builder");
+        hostBuilder.ConfigureAppConfiguration((context, builder) =>
             {
                 var appContext = GetContext(context.HostingEnvironment, context.Configuration);
                 ConfigureConfiguration(appContext, builder);
@@ -137,14 +152,6 @@ public abstract class HostedApplication : Application
                     ConfigureLogging(appContext, configuration);
                 });
             });
-
-        LogInternal("Configure host builder in modules");
-        foreach (var moduleRegistration in GetEnabledModuleRegistrations(tmpApplicationContext))
-        {
-            moduleRegistration.ConfigureHostBuilder(tmpApplicationContext, hostBuilder);
-        }
-
-        LogInternal("Configure host builder");
         configure?.Invoke(hostBuilder);
         LogInternal("Create host builder done");
         return hostBuilder;

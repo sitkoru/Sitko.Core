@@ -67,10 +67,13 @@ public abstract class Application : IApplication, IAsyncDisposable
     [PublicAPI]
     public ApplicationOptions GetApplicationOptions() => GetContext().Options;
 
+    protected IReadOnlyList<ApplicationModuleRegistration> GetEnabledModuleRegistrations(IApplicationContext context) =>
+        GetEnabledModuleRegistrations<IApplicationModule>(context);
 
     protected IReadOnlyList<ApplicationModuleRegistration>
-        GetEnabledModuleRegistrations(IApplicationContext context) => moduleRegistrations
-        .Where(r => r.IsEnabled(context)).ToList();
+        GetEnabledModuleRegistrations<TModule>(IApplicationContext context) where TModule : IApplicationModule =>
+        moduleRegistrations
+            .Where(r => r.GetInstance() is TModule && r.IsEnabled(context)).ToList();
 
 
     protected virtual void ConfigureHostConfiguration(IConfigurationBuilder configurationBuilder)

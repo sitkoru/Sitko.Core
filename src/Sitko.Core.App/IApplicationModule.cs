@@ -38,7 +38,11 @@ public interface IApplicationModule
         string[] args);
 }
 
-public interface IHostBuilderModule<in TModuleOptions> : IApplicationModule<TModuleOptions>
+public interface IHostBuilderModule : IApplicationModule
+{
+}
+
+public interface IHostBuilderModule<in TModuleOptions> : IHostBuilderModule, IApplicationModule<TModuleOptions>
     where TModuleOptions : class, new()
 {
     public void ConfigureHostBuilder(IApplicationContext context, IHostBuilder hostBuilder,
