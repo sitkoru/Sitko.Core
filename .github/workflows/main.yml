@@ -197,15 +197,6 @@ jobs:
       - name: Start Vault
         run: |
           vault server -dev -dev-root-token-id="${VAULT__TOKEN}" &
-      - name: Seed Vault
-        run: |
-          export VAULT_ADDR=${VAULT__URI}
-          json='{"test": {"Foo": "123","Bar": 123}}'
-          echo $json > data.json
-          vault kv put ${VAULT__MOUNTPOINT}/${VAULT__SECRETS__0} @data.json
-          json='{"test2": {"Foo": "123","Bar": 123}}'
-          echo $json > data.json
-          vault kv put ${VAULT__MOUNTPOINT}/${VAULT__SECRETS__1} @data.json
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests
