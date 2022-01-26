@@ -1,22 +1,29 @@
 using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.Storage.Remote.Tests.Server;
+using Sitko.Core.Storage.S3;
 using Sitko.Core.Xunit;
+using Sitko.Core.Xunit.Web;
 
 namespace Sitko.Core.Storage.Remote.Tests;
 
-public class BaseRemoteStorageTestScope : BaseTestScope
+public class BaseRemoteStorageTestScope : WebTestScope
 {
-    private IHost? host;
-    private TestServer? server;
+    private Guid bucketName = Guid.NewGuid();
 
-    public override async Task BeforeConfiguredAsync()
+    protected override WebTestApplication ConfigureWebApplication(WebTestApplication application, string name)
     {
-        var application = new RemoteStorageServerApplication(Array.Empty<string>());
-        host = await application.StartAsync();
-        server = host.GetTestServer();
+        base.ConfigureWebApplication(application, name);
+        application.AddS3Storage<TestS3StorageSettings>(moduleOptions =>
+            {
+                moduleOptions.Bucket = bucketName.ToString().ToLowerInvariant();
+                moduleOptions.Prefix = "test";
+                var baseUrl = moduleOptions.Server!;
+                var path = moduleOptions.Bucket;
+                moduleOptions.PublicUri = new Uri(baseUrl, path + "/");
+                moduleOptions.BucketPolicy = moduleOptions.AnonymousReadPolicy;
+            })
+            .AddS3StorageMetadata<TestS3StorageSettings>();
+        return application;
     }
 
     protected override TestApplication ConfigureApplication(TestApplication application, string name)
@@ -25,12 +32,12 @@ public class BaseRemoteStorageTestScope : BaseTestScope
         application.AddRemoteStorage<TestRemoteStorageSettings>(moduleOptions =>
         {
             moduleOptions.PublicUri = new Uri("https://localhost");
-            if (server is not null)
+            if (Server is not null)
             {
-                moduleOptions.RemoteUrl = new Uri(server.BaseAddress, "Upload/");
+                moduleOptions.RemoteUrl = new Uri(Server.BaseAddress, "Upload/");
                 moduleOptions.HttpClientFactory = () =>
                 {
-                    var client = server.CreateClient();
+                    var client = Server.CreateClient();
                     client.BaseAddress = new Uri(client.BaseAddress!, "Upload/");
                     return client;
                 };
@@ -38,17 +45,5 @@ public class BaseRemoteStorageTestScope : BaseTestScope
         });
 
         return application;
-    }
-
-    protected override async Task OnDisposeAsync()
-    {
-        await base.OnDisposeAsync();
-        var storage = GetService<IStorage<TestRemoteStorageSettings>>();
-        await storage.DeleteAllAsync();
-        if (host is not null)
-        {
-            await host.StopAsync();
-            host.Dispose();
-        }
     }
 }

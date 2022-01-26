@@ -8,6 +8,7 @@
     <ProjectReference Include="..\..\src\Sitko.Core.Storage.S3\Sitko.Core.Storage.S3.csproj" />
     <ProjectReference Include="..\..\src\Sitko.Core.Storage.Remote.Server\Sitko.Core.Storage.Remote.Server.csproj" />
     <ProjectReference Include="..\..\src\Sitko.Core.Storage.Remote\Sitko.Core.Storage.Remote.csproj" />
+    <ProjectReference Include="..\..\src\Sitko.Core.Xunit.Web\Sitko.Core.Xunit.Web.csproj" />
     <ProjectReference Include="..\Sitko.Core.Storage.Tests\Sitko.Core.Storage.Tests.csproj" />
   </ItemGroup>
 
