@@ -79,8 +79,9 @@ public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
     public virtual Task OnCreatedAsync() => Task.CompletedTask;
 
 
-    public virtual async ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
+        await OnDisposeAsync();
         if (scopeApplication != null)
         {
             if (isApplicationStarted)
@@ -102,6 +103,8 @@ public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
             isApplicationStarted = true;
         }
     }
+
+    protected virtual Task OnDisposeAsync() => Task.CompletedTask;
 
     public TConfig GetConfig(IConfiguration configuration)
     {
