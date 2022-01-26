@@ -67,10 +67,13 @@ public abstract class Application : IApplication, IAsyncDisposable
     [PublicAPI]
     public ApplicationOptions GetApplicationOptions() => GetContext().Options;
 
+    protected IReadOnlyList<ApplicationModuleRegistration> GetEnabledModuleRegistrations(IApplicationContext context) =>
+        GetEnabledModuleRegistrations<IApplicationModule>(context);
 
     protected IReadOnlyList<ApplicationModuleRegistration>
-        GetEnabledModuleRegistrations(IApplicationContext context) => moduleRegistrations
-        .Where(r => r.IsEnabled(context)).ToList();
+        GetEnabledModuleRegistrations<TModule>(IApplicationContext context) where TModule : IApplicationModule =>
+        moduleRegistrations
+            .Where(r => r.GetInstance() is TModule && r.IsEnabled(context)).ToList();
 
 
     protected virtual void ConfigureHostConfiguration(IConfigurationBuilder configurationBuilder)
@@ -114,7 +117,7 @@ public abstract class Application : IApplication, IAsyncDisposable
         }
 
         LogInternal("Configure app configuration in modules");
-        foreach (var moduleRegistration in GetEnabledModuleRegistrations(appContext))
+        foreach (var moduleRegistration in GetEnabledModuleRegistrations<IConfigurationModule>(appContext))
         {
             moduleRegistration.ConfigureAppConfiguration(appContext, builder);
         }
@@ -128,7 +131,7 @@ public abstract class Application : IApplication, IAsyncDisposable
             loggerConfiguration.MinimumLevel.Override(key, value);
         }
 
-        foreach (var moduleRegistration in GetEnabledModuleRegistrations(applicationContext))
+        foreach (var moduleRegistration in GetEnabledModuleRegistrations<ILoggingModule>(applicationContext))
         {
             moduleRegistration.ConfigureLogging(applicationContext, loggerConfiguration);
         }
@@ -202,7 +205,7 @@ public abstract class Application : IApplication, IAsyncDisposable
         {
             var result =
                 registration.CheckRequiredModules(context,
-                    GetEnabledModuleRegistrations(context).Select(r => r.Type).ToArray());
+                    enabledModules.Select(r => r.Type).ToArray());
             if (!result.isSuccess)
             {
                 foreach (var missingModule in result.missingModules)

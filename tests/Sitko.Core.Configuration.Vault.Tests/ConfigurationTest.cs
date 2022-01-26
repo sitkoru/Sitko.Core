@@ -18,8 +18,8 @@ public class ConfigurationTest : BaseVaultTest
     {
         var scope = await GetScopeAsync();
         var config = scope.GetService<IOptionsMonitor<TestConfig>>();
-        Assert.NotEqual(string.Empty, config.CurrentValue.Foo);
-        Assert.NotEqual(0, config.CurrentValue.Bar);
+        config.CurrentValue.Foo.Should().Be(scope.FirstConfig.Foo);
+        config.CurrentValue.Bar.Should().Be(scope.FirstConfig.Bar);
     }
 
     [Fact]
@@ -27,8 +27,8 @@ public class ConfigurationTest : BaseVaultTest
     {
         var scope = await GetScopeAsync();
         var config = scope.GetService<IOptionsMonitor<TestConfig2>>();
-        Assert.NotEqual(string.Empty, config.CurrentValue.Foo);
-        Assert.NotEqual(0, config.CurrentValue.Bar);
+        config.CurrentValue.Foo.Should().Be(scope.SecondConfig.Foo);
+        config.CurrentValue.Bar.Should().Be(scope.SecondConfig.Bar);
     }
 
     [Fact]
@@ -36,8 +36,8 @@ public class ConfigurationTest : BaseVaultTest
     {
         var scope = await GetScopeAsync();
         var config = scope.GetService<IOptionsMonitor<TestModuleConfig>>();
-        Assert.NotEqual(string.Empty, config.CurrentValue.Foo);
-        Assert.NotEqual(0, config.CurrentValue.Bar);
+        config.CurrentValue.Foo.Should().Be(scope.FirstConfig.Foo);
+        config.CurrentValue.Bar.Should().Be(scope.FirstConfig.Bar);
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class ConfigurationTest : BaseVaultTest
         {
             await GetScopeAsync<VaultTestScopeWithValidationFailure>();
         });
-        result.Message.Should().Contain("Bar must equals zero");
+        result.Message.Should().Contain("Bar must be empty!");
     }
 
     [Fact]

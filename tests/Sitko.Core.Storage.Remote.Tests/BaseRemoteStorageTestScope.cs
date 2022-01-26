@@ -40,17 +40,15 @@ public class BaseRemoteStorageTestScope : BaseTestScope
         return application;
     }
 
-    public override async ValueTask DisposeAsync()
+    protected override async Task OnDisposeAsync()
     {
+        await base.OnDisposeAsync();
         var storage = GetService<IStorage<TestRemoteStorageSettings>>();
         await storage.DeleteAllAsync();
-        await base.DisposeAsync();
         if (host is not null)
         {
             await host.StopAsync();
             host.Dispose();
         }
-
-        GC.SuppressFinalize(this);
     }
 }

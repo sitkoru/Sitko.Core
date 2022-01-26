@@ -87,15 +87,13 @@ public abstract class DbBaseTestScope<TApplication, TConfig> : BaseTestScope<TAp
         (TDbContext)(dbContexts.Find(dbContext => dbContext is TDbContext) ??
                      throw new InvalidOperationException("Db context is null"));
 
-    public override async ValueTask DisposeAsync()
+    protected override async Task OnDisposeAsync()
     {
+        await base.OnDisposeAsync();
         foreach (var dbContext in dbContexts)
         {
             await dbContext.Database.EnsureDeletedAsync();
         }
-
-        await base.DisposeAsync();
-        GC.SuppressFinalize(this);
     }
 }
 

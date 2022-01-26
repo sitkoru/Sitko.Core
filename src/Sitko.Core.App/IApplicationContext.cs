@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
@@ -9,6 +10,7 @@ namespace Sitko.Core.App;
 
 public interface IApplicationContext
 {
+    Guid Id { get; }
     string Name { get; }
     string Version { get; }
     ApplicationOptions Options { get; }
@@ -37,6 +39,7 @@ public abstract class BaseApplicationContext : IApplicationContext
 
     public ApplicationOptions Options => GetApplicationOptions();
 
+    public Guid Id { get; } = Guid.NewGuid();
     public string Name => Options.Name;
     public string Version => Options.Version;
 

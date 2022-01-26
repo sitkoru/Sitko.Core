@@ -38,21 +38,29 @@ public interface IApplicationModule
         string[] args);
 }
 
-public interface IHostBuilderModule<in TModuleOptions> : IApplicationModule<TModuleOptions>
+public interface IHostBuilderModule : IApplicationModule
+{
+}
+
+public interface IHostBuilderModule<in TModuleOptions> : IHostBuilderModule, IApplicationModule<TModuleOptions>
     where TModuleOptions : class, new()
 {
     public void ConfigureHostBuilder(IApplicationContext context, IHostBuilder hostBuilder,
         TModuleOptions startupOptions);
 }
 
-public interface ILoggingModule<in TModuleOptions> : IApplicationModule<TModuleOptions>
+public interface ILoggingModule : IApplicationModule
+{
+}
+
+public interface ILoggingModule<in TModuleOptions> : ILoggingModule, IApplicationModule<TModuleOptions>
     where TModuleOptions : class, new()
 {
     void ConfigureLogging(IApplicationContext context, TModuleOptions options,
         LoggerConfiguration loggerConfiguration);
 }
 
-public interface IConfigurationModule
+public interface IConfigurationModule : IApplicationModule
 {
     void CheckConfiguration(IApplicationContext context, IServiceProvider serviceProvider);
 }

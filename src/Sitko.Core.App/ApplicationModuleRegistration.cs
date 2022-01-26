@@ -19,6 +19,8 @@ internal class ApplicationModuleRegistration<TModule, TModuleOptions> : Applicat
 {
     private readonly Action<IApplicationContext, TModuleOptions>? configureOptions;
     private readonly TModule instance;
+
+    private readonly Dictionary<Guid, TModuleOptions> optionsCache = new();
     private readonly string? optionsKey;
     private readonly Type? validatorType;
 
@@ -130,10 +132,20 @@ internal class ApplicationModuleRegistration<TModule, TModuleOptions> : Applicat
 
     private TModuleOptions CreateOptions(IApplicationContext applicationContext, bool validateOptions = false)
     {
-        var options = Activator.CreateInstance<TModuleOptions>();
-        applicationContext.Configuration.Bind(optionsKey, options);
-        options.Configure(applicationContext);
-        configureOptions?.Invoke(applicationContext, options);
+        TModuleOptions options;
+        if (optionsCache.ContainsKey(applicationContext.Id))
+        {
+            options = optionsCache[applicationContext.Id];
+        }
+        else
+        {
+            options = Activator.CreateInstance<TModuleOptions>();
+            applicationContext.Configuration.Bind(optionsKey, options);
+            options.Configure(applicationContext);
+            configureOptions?.Invoke(applicationContext, options);
+            optionsCache[applicationContext.Id] = options;
+        }
+
         if (validatorType is not null && validateOptions)
         {
             try
