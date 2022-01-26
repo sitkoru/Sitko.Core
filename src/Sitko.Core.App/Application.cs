@@ -205,7 +205,7 @@ public abstract class Application : IApplication, IAsyncDisposable
         {
             var result =
                 registration.CheckRequiredModules(context,
-                    GetEnabledModuleRegistrations(context).Select(r => r.Type).ToArray());
+                    enabledModules.Select(r => r.Type).ToArray());
             if (!result.isSuccess)
             {
                 foreach (var missingModule in result.missingModules)
