@@ -48,9 +48,9 @@ public class VaultTestScope : BaseTestScope
         return application;
     }
 
-    public override async Task BeforeConfiguredAsync()
+    public override async Task BeforeConfiguredAsync(string name)
     {
-        await base.BeforeConfiguredAsync();
+        await base.BeforeConfiguredAsync(name);
 
         await vaultClient.V1.Secrets.KeyValue.V2.WriteSecretAsync(
             firstSecretId.ToString(),

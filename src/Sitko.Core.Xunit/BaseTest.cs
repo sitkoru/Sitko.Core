@@ -38,7 +38,7 @@ public abstract class BaseTest : IAsyncDisposable, IAsyncLifetime
         if (!Scopes.ContainsKey(name))
         {
             scope = Activator.CreateInstance<T>();
-            await scope.BeforeConfiguredAsync();
+            await scope.BeforeConfiguredAsync(name);
             await scope.ConfigureAsync(name, TestOutputHelper);
             await scope.OnCreatedAsync();
             Scopes.Add(name, scope);

@@ -19,7 +19,7 @@ public interface IBaseTestScope : IAsyncDisposable
     IEnumerable<T> GetServices<T>();
     ILogger<T> GetLogger<T>();
     Task OnCreatedAsync();
-    Task BeforeConfiguredAsync();
+    Task BeforeConfiguredAsync(string name);
     Task StartApplicationAsync();
 }
 
@@ -27,6 +27,8 @@ public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
     where TApplication : HostedApplication where TConfig : BaseTestConfig, new()
 {
     private bool isApplicationStarted;
+
+    private bool isDisposed;
     private TApplication? scopeApplication;
     protected IServiceProvider? ServiceProvider { get; set; }
     [PublicAPI] protected IApplicationContext? ApplicationContext { get; set; }
@@ -75,10 +77,8 @@ public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
 
     public ILogger<T> GetLogger<T>() => ServiceProvider!.GetRequiredService<ILogger<T>>();
 
-    public virtual Task BeforeConfiguredAsync() => Task.CompletedTask;
+    public virtual Task BeforeConfiguredAsync(string name) => Task.CompletedTask;
     public virtual Task OnCreatedAsync() => Task.CompletedTask;
-
-    private bool isDisposed;
 
     public async ValueTask DisposeAsync()
     {
