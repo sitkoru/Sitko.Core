@@ -45,7 +45,6 @@ public class BaseRemoteStorageTestScope : BaseTestScope
         await base.OnDisposeAsync();
         var storage = GetService<IStorage<TestRemoteStorageSettings>>();
         await storage.DeleteAllAsync();
-        await DisposeAsync();
         if (host is not null)
         {
             await host.StopAsync();
