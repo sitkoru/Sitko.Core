@@ -1,3 +1,24 @@
+# [9.0.0-beta.12](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.11...9.0.0-beta.12) (2022-01-26)
+
+
+### Bug Fixes
+
+* **app:** fix module options validation ([ea1a14e](https://github.com/sitkoru/Sitko.Core/commit/ea1a14eaf936c1199b16087f7c5ee316751809df))
+* **app:** use existing list of enabled modules ([8a12a3a](https://github.com/sitkoru/Sitko.Core/commit/8a12a3abb29982f8a19c169220d2214bf9af3f8f))
+* **xunit:** prevent dispose cycle ([db0b40c](https://github.com/sitkoru/Sitko.Core/commit/db0b40c9291c14b538a3b2a713203541e6dae052))
+
+
+### Features
+
+* **app:** drop tmp host builder, create configuration and env manually ([d298c34](https://github.com/sitkoru/Sitko.Core/commit/d298c34389fa77dcc18245a7cdbf0387a29de19f))
+* **app:** proceed only specific modules to reduce options building ([3f17438](https://github.com/sitkoru/Sitko.Core/commit/3f17438b9d1b61db51970741a41b6532c7aac985))
+* **xunit:** rework test scope dispose ([b327591](https://github.com/sitkoru/Sitko.Core/commit/b32759173d351c59d673f801073f950a5505d046))
+
+
+### Performance Improvements
+
+* **app:** reuse application context, cache module options ([e1a1029](https://github.com/sitkoru/Sitko.Core/commit/e1a102901e1b2b2141c619ceb9736c5f8775255b))
+
 # [9.0.0-beta.11](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.10...9.0.0-beta.11) (2022-01-25)
 
 
