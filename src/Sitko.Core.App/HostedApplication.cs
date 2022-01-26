@@ -135,7 +135,7 @@ public abstract class HostedApplication : Application
             {
                 RegisterApplicationServices<HostedApplicationContext>(bootApplicationContext, services);
                 services.AddHostedService<ApplicationLifetimeService>();
-            }).ConfigureLogging((context, builder) =>
+            }).ConfigureLogging((_, builder) =>
             {
                 LogInternal("Configure logging");
                 LoggingExtensions.ConfigureSerilog(bootApplicationContext, builder, serilogConfiguration,
