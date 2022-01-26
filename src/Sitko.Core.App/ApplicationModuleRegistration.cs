@@ -132,15 +132,20 @@ internal class ApplicationModuleRegistration<TModule, TModuleOptions> : Applicat
 
     private TModuleOptions CreateOptions(IApplicationContext applicationContext, bool validateOptions = false)
     {
+        TModuleOptions options;
         if (optionsCache.ContainsKey(applicationContext.Id))
         {
-            return optionsCache[applicationContext.Id];
+            options = optionsCache[applicationContext.Id];
+        }
+        else
+        {
+            options = Activator.CreateInstance<TModuleOptions>();
+            applicationContext.Configuration.Bind(optionsKey, options);
+            options.Configure(applicationContext);
+            configureOptions?.Invoke(applicationContext, options);
+            optionsCache[applicationContext.Id] = options;
         }
 
-        var options = Activator.CreateInstance<TModuleOptions>();
-        applicationContext.Configuration.Bind(optionsKey, options);
-        options.Configure(applicationContext);
-        configureOptions?.Invoke(applicationContext, options);
         if (validatorType is not null && validateOptions)
         {
             try
@@ -162,7 +167,6 @@ internal class ApplicationModuleRegistration<TModule, TModuleOptions> : Applicat
             }
         }
 
-        optionsCache[applicationContext.Id] = options;
         return options;
     }
 
