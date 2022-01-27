@@ -31,6 +31,7 @@ public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
     private bool isDisposed;
     private TApplication? scopeApplication;
     protected IServiceProvider? ServiceProvider { get; set; }
+    protected Guid Id { get; } = Guid.NewGuid();
     [PublicAPI] protected IApplicationContext? ApplicationContext { get; set; }
     [PublicAPI] protected string? Name { get; private set; }
 

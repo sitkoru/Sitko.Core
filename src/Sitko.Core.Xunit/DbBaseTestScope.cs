@@ -44,10 +44,10 @@ public abstract class DbBaseTestScope<TApplication, TConfig> : BaseTestScope<TAp
         {
             if (GetConfig(applicationContext.Configuration).UsePostgres)
             {
-                moduleOptions.Database = $"{application.Id}_{dbName}";
+                moduleOptions.Database = $"{Id}_{dbName}";
                 moduleOptions.EnableSensitiveLogging = true;
                 moduleOptions.IncludeErrorDetails = true;
-                configurePostgres?.Invoke(applicationContext, moduleOptions, application.Id, dbName);
+                configurePostgres?.Invoke(applicationContext, moduleOptions, Id, dbName);
             }
             else
             {
