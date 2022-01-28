@@ -46,6 +46,7 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
 
     protected override void ApplySort((string propertyName, bool isDescending) sortQuery)
     {
+        //make dynamic linq or expression
         if (sortQuery.isDescending)
         {
             orderByDescendingExpressions.Add(entity => sortQuery.propertyName);
