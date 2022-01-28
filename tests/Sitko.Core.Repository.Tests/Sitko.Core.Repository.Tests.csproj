@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Sitko.Core.Repository.EntityFrameworkCore\Sitko.Core.Repository.EntityFrameworkCore.csproj"/>
-    <ProjectReference Include="..\..\src\Sitko.Core.Repository\Sitko.Core.Repository.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.Repository.EntityFrameworkCore\Sitko.Core.Repository.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\src\Sitko.Core.Repository\Sitko.Core.Repository.csproj" />
   </ItemGroup>
 </Project>
