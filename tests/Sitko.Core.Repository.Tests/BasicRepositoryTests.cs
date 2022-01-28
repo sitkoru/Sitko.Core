@@ -15,9 +15,9 @@ using Xunit.Abstractions;
 
 namespace Sitko.Core.Repository.Tests;
 
-public class EFTests : BaseTest<EFTestScope>
+public abstract class BasicRepositoryTests<TScope> : BaseTest<TScope> where TScope : IBaseTestScope
 {
-    public EFTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+    protected BasicRepositoryTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
     }
 
