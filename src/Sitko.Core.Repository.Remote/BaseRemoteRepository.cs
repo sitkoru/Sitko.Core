@@ -7,36 +7,20 @@ using Sitko.FluentValidation.Graph;
 
 namespace Sitko.Core.Repository.Remote;
 
-public class BaseRemoteRepository<TEntity, TEntityPk, TQuery, TRepositoryOptions> : BaseRepository<TEntity, TEntityPk, TQuery> where TEntity : class, IEntity<TEntityPk>
+public class BaseRemoteRepository<TEntity, TEntityPk, TQuery> : BaseRepository<TEntity, TEntityPk, TQuery> where TEntity : class, IEntity<TEntityPk>
     where TQuery : IRepositoryQuery<TEntity>
-    where TRepositoryOptions : RemoteRepositoryOptions
 {
     private readonly IRemoteRepositoryTransport repositoryTransport;
-    private readonly IOptionsMonitor<TRepositoryOptions> optionsMonitor;
 
     private List<RepositoryRecord<TEntity, TEntityPk>>? batch;
 
     //Url problems for different controllers
     //1. conventional /digitclub/api/{TEntity} api - from Options
 
-    protected BaseRemoteRepository(IRepositoryContext<TEntity, TEntityPk> repositoryContext, IRemoteRepositoryTransport repositoryTransport, IOptionsMonitor<TRepositoryOptions> optionsMonitor) : base(repositoryContext)
+    protected BaseRemoteRepository(IRepositoryContext<TEntity, TEntityPk> repositoryContext, IRemoteRepositoryTransport repositoryTransport) : base(repositoryContext)
     {
         this.repositoryTransport = repositoryTransport;
-        this.optionsMonitor = optionsMonitor;
-        FiltersManager = repositoryContext.FiltersManager;
-        FluentGraphValidator = repositoryContext.FluentGraphValidator;
-        AccessCheckers = repositoryContext.AccessCheckers ?? new List<IAccessChecker<TEntity, TEntityPk>>();
-        Logger = repositoryContext.Logger;
     }
-
-    protected TRepositoryOptions Options => optionsMonitor.CurrentValue;
-    [PublicAPI] protected FluentGraphValidator FluentGraphValidator { get; set; }
-
-    [PublicAPI] protected RepositoryFiltersManager FiltersManager { get; }
-
-    [PublicAPI] protected List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers { get; }
-
-    protected ILogger<IRepository<TEntity, TEntityPk>> Logger { get; }
 
 
     public override Task<(TEntity[] items, int itemsCount)> GetAllAsync(CancellationToken cancellationToken = default) =>
