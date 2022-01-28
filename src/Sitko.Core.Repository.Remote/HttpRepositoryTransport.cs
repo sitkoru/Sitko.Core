@@ -1,19 +1,33 @@
 ﻿using System.Text.Json;
+using Microsoft.Extensions.Options;
 using Sitko.Core.App.Json;
 
 namespace Sitko.Core.Repository.Remote;
 
-public class HttpRepositoryTransport : IRemoteRepositoryTransport
+public class HttpRepositoryTransport<TRepositoryOptions> : IRemoteRepositoryTransport  where TRepositoryOptions : RemoteRepositoryOptions
 {
     private readonly IHttpClientFactory httpClientFactory;
-    public HttpRepositoryTransport(IHttpClientFactory httpClientFactory) => this.httpClientFactory = httpClientFactory;
+    private readonly IOptionsMonitor<TRepositoryOptions> optionsMonitor;
+
+    public HttpRepositoryTransport(IHttpClientFactory httpClientFactory, IOptionsMonitor<TRepositoryOptions> optionsMonitor)
+    {
+        this.httpClientFactory = httpClientFactory;
+        this.optionsMonitor = optionsMonitor;
+    }
+
+    protected TRepositoryOptions Options => optionsMonitor.CurrentValue;
 
     private HttpClient HttpClient
     {
         get
         {
+            if (Options.HttpClientFactory is not null)
+            {
+                return Options.HttpClientFactory();
+            }
+
             var client = httpClientFactory.CreateClient();
-            //client.BaseAddress = ;
+            client.BaseAddress = Options.RepositoryControllerApiRoute;
             return client;
         }
     }
@@ -26,10 +40,10 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
 
         if (!result.IsSuccessStatusCode)
         {
-            throw new Exception();
+            throw new InvalidOperationException(result.ReasonPhrase);
         }
 
-        return JsonSerializer.Deserialize<(TEntity[], int)>(result.Content.ToString());
+        return JsonSerializer.Deserialize<(TEntity[], int)>(await result.Content.ReadAsStringAsync());
     }
 
 
