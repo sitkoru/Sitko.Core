@@ -7,9 +7,13 @@ using Sitko.FluentValidation.Graph;
 
 namespace Sitko.Core.Repository.Remote;
 
-public class BaseRemoteRepository<TEntity, TEntityPk, TQuery> : BaseRepository<TEntity, TEntityPk, TQuery> where TEntity : class, IEntity<TEntityPk>
-    where TQuery : IRepositoryQuery<TEntity>
+public interface IRemoteRepository : IRepository
 {
+}
+
+public abstract class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, TEntityPk, RemoteRepositoryQuery<TEntity>> where TEntity : class, IEntity<TEntityPk>
+{
+
     private readonly IRemoteRepositoryTransport repositoryTransport;
 
     private List<RepositoryRecord<TEntity, TEntityPk>>? batch;
@@ -73,34 +77,6 @@ public class BaseRemoteRepository<TEntity, TEntityPk, TQuery> : BaseRepository<T
     public override Task<bool> RollbackTransactionAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
     public override Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-    protected override Task<TQuery> CreateRepositoryQueryAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-    protected override Task<(TEntity[] items, bool needCount)> DoGetAllAsync(TQuery query, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-    protected override Task<int> DoCountAsync(TQuery query, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-    protected override Task<int> DoSumAsync(TQuery query, Expression<Func<TEntity, int>> selector, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-    protected override Task<long> DoSumAsync(TQuery query, Expression<Func<TEntity, long>> selector, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-    protected override Task<double> DoSumAsync(TQuery query, Expression<Func<TEntity, double>> selector, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-    protected override Task<float> DoSumAsync(TQuery query, Expression<Func<TEntity, float>> selector, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-    protected override Task<decimal> DoSumAsync(TQuery query, Expression<Func<TEntity, decimal>> selector, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-    protected override Task<int?> DoSumAsync(TQuery query, Expression<Func<TEntity, int?>> selector, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-    protected override Task<long?> DoSumAsync(TQuery query, Expression<Func<TEntity, long?>> selector, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-    protected override Task<double?> DoSumAsync(TQuery query, Expression<Func<TEntity, double?>> selector, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-    protected override Task<float?> DoSumAsync(TQuery query, Expression<Func<TEntity, float?>> selector, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-    protected override Task<decimal?> DoSumAsync(TQuery query, Expression<Func<TEntity, decimal?>> selector, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-    protected override Task<TEntity?> DoGetAsync(TQuery query, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
     protected override Task DoSaveAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
 

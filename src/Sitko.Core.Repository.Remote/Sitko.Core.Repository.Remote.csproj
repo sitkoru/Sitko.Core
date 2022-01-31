@@ -1,17 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;net6.0</TargetFrameworks>
+    <ImplicitUsings>true</ImplicitUsings>
+  </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Sitko.Core.Repository\Sitko.Core.Repository.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Sitko.Core.Repository\Sitko.Core.Repository.csproj" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Serialize.Linq" Version="2.0.0" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Serialize.Linq" Version="2.0.0" />
+  </ItemGroup>
 
 </Project>
