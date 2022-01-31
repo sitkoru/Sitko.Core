@@ -1,15 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
+    <ImplicitUsings>true</ImplicitUsings>
+  </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj" />
-    <ProjectReference Include="..\Sitko.Core.Repository.EntityFrameworkCore\Sitko.Core.Repository.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\Sitko.Core.Repository.Remote\Sitko.Core.Repository.Remote.csproj" />
-    <ProjectReference Include="..\Sitko.Core.Storage.Remote\Sitko.Core.Repository.Remote.csproj" />
-    <ProjectReference Include="..\Sitko.Core.Storage\Sitko.Core.Repository.csproj" />
+    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.Repository.Remote\Sitko.Core.Repository.Remote.csproj"/>
   </ItemGroup>
 </Project>
