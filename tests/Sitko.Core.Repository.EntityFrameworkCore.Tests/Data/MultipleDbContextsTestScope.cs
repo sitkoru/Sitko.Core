@@ -1,7 +1,7 @@
-﻿using Sitko.Core.Repository.EntityFrameworkCore;
+﻿using Sitko.Core.Repository.Tests.Data;
 using Sitko.Core.Xunit;
 
-namespace Sitko.Core.Repository.Tests.Data;
+namespace Sitko.Core.Repository.EntityFrameworkCore.Tests.Data;
 
 public class MultipleDbContextsTestScope : EFTestScope
 {

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Serilog.Events;
-using Sitko.Core.Repository.EntityFrameworkCore;
+using Sitko.Core.Repository.Tests.Data;
 using Sitko.Core.Xunit;
 
-namespace Sitko.Core.Repository.Tests.Data;
+namespace Sitko.Core.Repository.EntityFrameworkCore.Tests.Data;
 
 public class EFTestScope : BaseEFTestScope
 {

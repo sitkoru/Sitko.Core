@@ -1,134 +1,31 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Sitko.Core.Repository.EntityFrameworkCore.Tests.Data;
 using Sitko.Core.Repository.Tests.Data;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Sitko.Core.Repository.Tests
+namespace Sitko.Core.Repository.EntityFrameworkCore.Tests
 {
-    public class EFDisconnectedOneToOneTests : BaseTest<EFTestScope>
+    public class EFDisconnectedOneToManyTests : BaseTest<EFTestScope>
     {
-        public EFDisconnectedOneToOneTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        public EFDisconnectedOneToManyTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
         }
 
         [Fact]
-        public async Task Set()
+        public async Task Add()
         {
             var scope = await GetScopeAsync();
             BarModel? originalBar;
             using (var scope1 = scope.CreateScope())
             {
                 var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
-                originalBar = await repository1.GetAsync(q => q.Where(b => b.TestId == null));
-                Assert.NotNull(originalBar);
-            }
-
-            BarModel? bar;
-            using (var scope1 = scope.CreateScope())
-            {
-                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
-                bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id));
-                Assert.NotNull(bar);
-            }
-
-            Assert.Null(bar!.Test);
-            Assert.Equal(default, bar.TestId);
-
-            AddOrUpdateOperationResult<TestModel, Guid> newTestResult;
-            using (var scope2 = scope.CreateScope())
-            {
-                var repository2 = scope2.ServiceProvider.GetRequiredService<IRepository<TestModel, Guid>>();
-                newTestResult = await repository2.AddAsync(await repository2.NewAsync());
-            }
-
-            Assert.True(newTestResult.IsSuccess);
-
-            bar.Test = newTestResult.Entity;
-
-            using (var scope3 = scope.CreateScope())
-            {
-                var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
-                var updateResult =
-                    await repository3.UpdateAsync(bar, originalBar);
-                Assert.True(updateResult.IsSuccess);
-                updateResult.Changes.Should().ContainSingle();
-            }
-
-            using (var finalScope = scope.CreateScope())
-            {
-                var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
-                var updatedBar =
-                    await repository.GetAsync(q => q.Where(b => b.Id == bar.Id));
-                Assert.Equal(newTestResult.Entity.Id, updatedBar!.TestId);
-            }
-        }
-
-        [Fact]
-        public async Task SetViaProperty()
-        {
-            var scope = await GetScopeAsync();
-            BarModel? originalBar;
-            using (var scope1 = scope.CreateScope())
-            {
-                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
-                originalBar = await repository1.GetAsync(q => q.Where(b => b.TestId == null));
-                Assert.NotNull(originalBar);
-            }
-
-            BarModel? bar;
-            using (var scope1 = scope.CreateScope())
-            {
-                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
-                bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id));
-                Assert.NotNull(bar);
-            }
-
-            Assert.Null(bar!.Test);
-            Assert.Equal(default, bar.TestId);
-
-            AddOrUpdateOperationResult<TestModel, Guid> newTestResult;
-            using (var scope2 = scope.CreateScope())
-            {
-                var repository2 = scope2.ServiceProvider.GetRequiredService<IRepository<TestModel, Guid>>();
-                newTestResult = await repository2.AddAsync(await repository2.NewAsync());
-            }
-
-            Assert.True(newTestResult.IsSuccess);
-
-            bar.TestId = newTestResult.Entity.Id;
-
-
-            using (var scope3 = scope.CreateScope())
-            {
-                var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
-                var updateResult =
-                    await repository3.UpdateAsync(bar, originalBar);
-                Assert.True(updateResult.IsSuccess);
-                updateResult.Changes.Should().ContainSingle();
-            }
-
-            using (var finalScope = scope.CreateScope())
-            {
-                var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
-                var updatedBar =
-                    await repository.GetAsync(q => q.Where(b => b.Id == bar.Id));
-                Assert.Equal(newTestResult.Entity.Id, updatedBar!.TestId);
-            }
-        }
-
-        [Fact]
-        public async Task UpdateViaProperty()
-        {
-            var scope = await GetScopeAsync();
-            BarModel? originalBar;
-            using (var scope1 = scope.CreateScope())
-            {
-                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
-                originalBar = await repository1.GetAsync(q => q.Where(b => b.TestId != null).Include(b => b.Test));
+                originalBar = await repository1.GetAsync(q => q.Where(b => !b.Foos.Any()));
                 originalBar.Should().NotBeNull();
             }
 
@@ -136,30 +33,17 @@ namespace Sitko.Core.Repository.Tests
             using (var scope1 = scope.CreateScope())
             {
                 var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
-                bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id).Include(b => b.Test));
+                bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id));
                 bar.Should().NotBeNull();
             }
 
-            bar!.Test.Should().NotBeNull();
-            bar.TestId.Should().NotBe(default(Guid));
-
-            AddOrUpdateOperationResult<TestModel, Guid> newTestResult;
-            using (var scope2 = scope.CreateScope())
-            {
-                var repository2 = scope2.ServiceProvider.GetRequiredService<IRepository<TestModel, Guid>>();
-                newTestResult = await repository2.AddAsync(await repository2.NewAsync());
-            }
-
-            newTestResult.IsSuccess.Should().BeTrue();
-
-            bar.TestId = newTestResult.Entity.Id;
-
+            bar!.Foos.Should().BeEmpty();
+            bar.Foos.Add(new FooModel());
 
             using (var scope3 = scope.CreateScope())
             {
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
-                var updateResult =
-                    await repository3.UpdateAsync(bar, originalBar);
+                var updateResult = await repository3.UpdateAsync(bar, originalBar);
                 updateResult.IsSuccess.Should().BeTrue();
                 updateResult.Changes.Should().ContainSingle();
             }
@@ -168,8 +52,86 @@ namespace Sitko.Core.Repository.Tests
             {
                 var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
                 var updatedBar =
-                    await repository.GetAsync(q => q.Where(b => b.Id == bar.Id));
-                updatedBar!.TestId.Should().Be(newTestResult.Entity.Id);
+                    await repository.GetAsync(q => q.Where(b => b.Id == bar.Id).Include(b => b.Foos));
+                updatedBar!.Foos.Should().NotBeEmpty();
+            }
+        }
+
+        [Fact]
+        public async Task Append()
+        {
+            var scope = await GetScopeAsync();
+            BarModel? originalBar;
+            using (var scope1 = scope.CreateScope())
+            {
+                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
+                originalBar = await repository1.GetAsync(q => q.Where(b => b.Foos.Any()).Include(b=>b.Foos));
+                originalBar.Should().NotBeNull();
+            }
+
+            BarModel? bar;
+            using (var scope1 = scope.CreateScope())
+            {
+                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
+                bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id).Include(b=>b.Foos));
+                bar.Should().NotBeNull();
+            }
+
+            bar!.Foos.Should().NotBeEmpty();
+            var count = bar.Foos.Count;
+
+            bar.Foos.Add(new FooModel{Id = Guid.NewGuid()});
+
+            using (var scope3 = scope.CreateScope())
+            {
+                var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
+                var updateResult = await repository3.UpdateAsync(bar, originalBar);
+                updateResult.IsSuccess.Should().BeTrue();
+                updateResult.Changes.Should().ContainSingle();
+            }
+
+            using (var finalScope = scope.CreateScope())
+            {
+                var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
+                var updatedBar =
+                    await repository.GetAsync(q => q.Where(b => b.Id == bar.Id).Include(b => b.Foos));
+                updatedBar!.Foos.Should().NotBeEmpty();
+                updatedBar.Foos.Should().HaveCount(count + 1);
+            }
+        }
+
+        [Fact]
+        public async Task AddNew()
+        {
+            var scope = await GetScopeAsync();
+            BarModel? originalBar;
+            using (var scope1 = scope.CreateScope())
+            {
+                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
+                originalBar = await repository1.GetAsync(q => q.Where(b => !b.Foos.Any()));
+                Assert.NotNull(originalBar);
+            }
+
+            Assert.Empty(originalBar!.Foos);
+
+            var foo = new FooModel();
+
+            originalBar.Foos.Add(foo);
+
+            using (var scope3 = scope.CreateScope())
+            {
+                var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
+                var updateResult = await repository3.UpdateAsync(originalBar);
+                Assert.True(updateResult.IsSuccess);
+                updateResult.Changes.Should().ContainSingle();
+            }
+
+            using (var finalScope = scope.CreateScope())
+            {
+                var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
+                var updatedBar =
+                    await repository.GetAsync(q => q.Where(b => b.Id == originalBar.Id).Include(b => b.Foos));
+                Assert.NotEmpty(updatedBar!.Foos);
             }
         }
 
@@ -181,7 +143,7 @@ namespace Sitko.Core.Repository.Tests
             using (var scope1 = scope.CreateScope())
             {
                 var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
-                originalBar = await repository1.GetAsync(q => q.Where(b => b.TestId != null).Include(b => b.Test));
+                originalBar = await repository1.GetAsync(q => q.Where(b => b.Foos.Any()).Include(b => b.Foos));
                 Assert.NotNull(originalBar);
             }
 
@@ -189,13 +151,14 @@ namespace Sitko.Core.Repository.Tests
             using (var scope1 = scope.CreateScope())
             {
                 var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
-                bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id).Include(b => b.Test));
+                bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id).Include(b => b.Foos));
                 Assert.NotNull(bar);
             }
 
-
-            Assert.NotNull(bar!.Test);
-            bar.Test!.FooId = 10;
+            Assert.NotEmpty(bar!.Foos);
+            var foo = bar.Foos.OrderBy(_ => Guid.NewGuid()).First(); // change random
+            var newText = Guid.NewGuid().ToString();
+            foo.FooText = newText;
 
             using (var scope3 = scope.CreateScope())
             {
@@ -209,20 +172,20 @@ namespace Sitko.Core.Repository.Tests
             {
                 var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
                 var updatedBar =
-                    await repository.GetAsync(q => q.Where(b => b.Id == bar.Id).Include(b => b.Test));
-                Assert.Equal(10, updatedBar!.Test!.FooId);
+                    await repository.GetAsync(q => q.Where(b => b.Id == bar.Id).Include(b => b.Foos));
+                Assert.Equal(newText, updatedBar!.Foos.First(f => f.Id == foo.Id).FooText);
             }
         }
 
         [Fact]
-        public async Task Unset()
+        public async Task AddAndRemove()
         {
             var scope = await GetScopeAsync();
             BarModel? originalBar;
             using (var scope1 = scope.CreateScope())
             {
                 var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
-                originalBar = await repository1.GetAsync(q => q.Where(b => b.TestId != null).Include(b => b.Test));
+                originalBar = await repository1.GetAsync(q => q.Where(b => b.Foos.Any()));
                 Assert.NotNull(originalBar);
             }
 
@@ -230,13 +193,63 @@ namespace Sitko.Core.Repository.Tests
             using (var scope1 = scope.CreateScope())
             {
                 var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
-                bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id).Include(b => b.Test));
+                bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id));
                 Assert.NotNull(bar);
             }
 
-            Assert.NotNull(bar!.Test);
-            bar.Test = null;
+            Assert.NotEmpty(bar!.Foos);
+            var count = bar.Foos.Count;
+            var foo1 = new FooModel();
+            var foo2 = new FooModel();
+            bar.Foos.Remove(bar.Foos.OrderBy(_ => Guid.NewGuid()).First());
+            bar.Foos.Add(foo1);
+            bar.Foos.Add(foo2);
 
+            using (var scope3 = scope.CreateScope())
+            {
+                var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
+                var updateResult = await repository3.UpdateAsync(bar, originalBar);
+                Assert.True(updateResult.IsSuccess);
+                updateResult.Changes.Should().ContainSingle();
+            }
+
+            using (var finalScope = scope.CreateScope())
+            {
+                var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
+                var updatedBar =
+                    await repository.GetAsync(q => q.Where(b => b.Id == bar.Id).Include(b => b.Foos));
+                Assert.NotEmpty(updatedBar!.Foos);
+                Assert.Equal(count + 1, updatedBar.Foos.Count);
+            }
+        }
+
+        [Fact]
+        public async Task Remove()
+        {
+            var scope = await GetScopeAsync();
+            BarModel? originalBar;
+            using (var scope1 = scope.CreateScope())
+            {
+                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
+                originalBar = await repository1.GetAsync(q => q.Where(b => b.Foos.Any()).Include(b => b.Foos));
+                Assert.NotNull(originalBar);
+            }
+
+            BarModel? bar;
+            using (var scope1 = scope.CreateScope())
+            {
+                var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
+                bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id).Include(b => b.Foos));
+                Assert.NotNull(bar);
+            }
+
+
+            Assert.NotNull(bar);
+            Assert.NotEmpty(bar!.Foos);
+            var count = bar.Foos.Count;
+            Assert.Equal(3, count);
+
+            bar.Foos.Remove(bar.Foos.OrderBy(_ => Guid.NewGuid()).First()); // delete random
             using (var scope3 = scope.CreateScope())
             {
                 var repository3 = scope3.ServiceProvider.GetRequiredService<BarRepository>();
@@ -251,8 +264,7 @@ namespace Sitko.Core.Repository.Tests
                 var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
                 var updatedBar =
                     await repository.GetAsync(q => q.Where(b => b.Id == bar.Id).Include(b => b.Foos));
-                Assert.Null(updatedBar!.Test);
-                Assert.Null(updatedBar.TestId);
+                Assert.Equal(count - 1, updatedBar!.Foos.Count);
             }
         }
     }

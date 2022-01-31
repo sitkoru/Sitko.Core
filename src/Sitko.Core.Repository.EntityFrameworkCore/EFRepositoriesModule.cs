@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sitko.Core.App;
 
-[assembly: InternalsVisibleTo("Sitko.Core.Repository.Tests")]
+[assembly: InternalsVisibleTo("Sitko.Core.Repository.EntityFrameworkCore.Tests")]
 
 namespace Sitko.Core.Repository.EntityFrameworkCore;
 

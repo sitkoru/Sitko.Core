@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using FluentValidation;
 using Microsoft.Extensions.Configuration.UserSecrets;
-using Sitko.Core.Repository.EntityFrameworkCore;
 using Sitko.Core.Repository.Tests.Data;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -112,7 +111,7 @@ public abstract class BasicRepositoryTests<TScope> : BaseTest<TScope> where TSco
     {
         var scope = await GetScopeAsync();
 
-        var repository = scope.GetService<BarRepository>();
+        var repository = scope.GetService<IRepository<BarModel, Guid>>();
 
         Assert.NotNull(repository);
 
@@ -139,27 +138,27 @@ public abstract class BasicRepositoryTests<TScope> : BaseTest<TScope> where TSco
         Assert.Equal(item.Id, item.Bars.First().TestId);
     }
 
-    [Fact]
-    public async Task ThenInclude()
-    {
-        var scope = await GetScopeAsync();
-
-        var repository = scope.GetService<IRepository<TestModel, Guid>>();
-        Assert.NotNull(repository);
-
-        var item = await repository.GetAsync(query => query.Where(model => model.Bars.Any())
-            .Include(testModel => testModel.Bars).ThenInclude(barModel => barModel.Foos));
-        Assert.NotNull(item);
-        Assert.NotNull(item!.Bars);
-        Assert.NotEmpty(item.Bars);
-        Assert.Single(item.Bars);
-        var bar = item.Bars.First();
-        Assert.Equal(item.Id, bar.TestId);
-        Assert.NotEmpty(bar.Foos);
-        var foo = bar.Foos.First();
-        Assert.NotNull(foo.Bar);
-        Assert.NotNull(foo.Bar!.Test);
-    }
+    // [Fact]
+    // public async Task ThenInclude()
+    // {
+    //     var scope = await GetScopeAsync();
+    //
+    //     var repository = scope.GetService<IRepository<TestModel, Guid>>();
+    //     Assert.NotNull(repository);
+    //
+    //     var item = await repository.GetAsync(query => query.Where(model => model.Bars.Any())
+    //         .Include(testModel => testModel.Bars).ThenInclude(barModel => barModel.Foos));
+    //     Assert.NotNull(item);
+    //     Assert.NotNull(item!.Bars);
+    //     Assert.NotEmpty(item.Bars);
+    //     Assert.Single(item.Bars);
+    //     var bar = item.Bars.First();
+    //     Assert.Equal(item.Id, bar.TestId);
+    //     Assert.NotEmpty(bar.Foos);
+    //     var foo = bar.Foos.First();
+    //     Assert.NotNull(foo.Bar);
+    //     Assert.NotNull(foo.Bar!.Test);
+    // }
 
     [Fact]
     public async Task IncludeWithPagination()
@@ -180,7 +179,7 @@ public abstract class BasicRepositoryTests<TScope> : BaseTest<TScope> where TSco
         var scope = await GetScopeAsync();
 
         var testRepository = scope.GetService<IRepository<TestModel, Guid>>();
-        var barRepository = scope.GetService<BarRepository>();
+        var barRepository = scope.GetService<IRepository<TestModel, Guid>>();
 
         var tasks = new List<Task> { testRepository.GetAllAsync(), barRepository.GetAllAsync() };
 
@@ -222,21 +221,6 @@ public abstract class BasicRepositoryTests<TScope> : BaseTest<TScope> where TSco
 
         var foo = new FooModel { Id = Guid.NewGuid(), FooText = "Foo", Bar = bar };
         var res = await fooRepository.AddAsync(foo);
-        res.IsSuccess.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task MultipleDbContexts()
-    {
-        var scope = await GetScopeAsync<MultipleDbContextsTestScope>();
-        var barRepository = scope.GetService<IRepository<BarModel, Guid>>();
-        var fooBarRepository = scope.GetService<IRepository<FooBarModel, Guid>>();
-
-        var bars = (await barRepository.GetAllAsync()).items;
-        bars.Should().NotBeEmpty();
-
-        var fooBar = new FooBarModel { Id = Guid.NewGuid(), BarId = bars.First().Id };
-        var res = await fooBarRepository.AddAsync(fooBar);
         res.IsSuccess.Should().BeTrue();
     }
 }
