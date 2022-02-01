@@ -15,7 +15,7 @@ public class RemoteRepositoryModule : RepositoriesModule<RemoteRepositoryModuleO
         RemoteRepositoryModuleOptions startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);
-        services.AddHttpClient<>();
+        services.AddHttpClient<IRemoteRepository>();
     }
 }
 
