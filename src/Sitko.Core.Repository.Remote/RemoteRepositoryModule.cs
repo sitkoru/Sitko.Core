@@ -15,6 +15,7 @@ public class RemoteRepositoryModule : RepositoriesModule<RemoteRepositoryModuleO
         RemoteRepositoryModuleOptions startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);
+        services.TryAddScoped(typeof(RemoteRepositoryContext<,>));
         services.AddHttpClient<IRemoteRepository>();
     }
 }

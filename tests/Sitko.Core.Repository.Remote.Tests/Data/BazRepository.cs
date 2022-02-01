@@ -6,7 +6,7 @@ namespace Sitko.Core.Repository.Remote.Tests.Data;
 
 public class BazRepository : BaseRemoteRepository<BazModel, Guid>
 {
-    protected BazRepository([NotNull] IRepositoryContext<BazModel, Guid> repositoryContext, [NotNull] IRemoteRepositoryTransport repositoryTransport) : base(repositoryContext, repositoryTransport)
+    public BazRepository(IRepositoryContext<BazModel, Guid> repositoryContext, IRemoteRepositoryTransport repositoryTransport) : base(repositoryContext, repositoryTransport)
     {
     }
 }
