@@ -17,7 +17,6 @@ public class RemoteRepositoryTestScope : WebTestScope
     {
         base.ConfigureWebApplication(application, name);
         application.AddInMemoryDatabase<TestDbContext>();
-        //application.add
         return application;
     }
 
