@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using Sitko.Core.Repository.EntityFrameworkCore;
 
 namespace Sitko.Core.Repository.Remote.Server;
 
