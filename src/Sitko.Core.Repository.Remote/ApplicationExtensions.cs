@@ -10,17 +10,17 @@ public static class ApplicationExtensions
     public static Application AddRemoteRepositories(this Application application,
         Action<IApplicationContext, RemoteRepositoryModuleOptions> configure,
         string? optionsKey = null) =>
-        application.AddModule<RemoteRepositoryOptions, RemoteRepositoryModuleOptions>(configure, optionsKey);
+        application.AddModule<RemoteRepositoryModule, RemoteRepositoryModuleOptions>(configure, optionsKey);
 
     public static Application AddRemoteRepositories(this Application application,
         Action<RemoteRepositoryModuleOptions>? configure = null,
         string? optionsKey = null) =>
-        application.AddModule<EFRepositoriesModule, RemoteRepositoryModuleOptions>(configure, optionsKey);
+        application.AddModule<RemoteRepositoryModule, RemoteRepositoryModuleOptions>(configure, optionsKey);
 
     public static Application AddRemoteRepositories<TAssembly>(this Application application,
         Action<IApplicationContext, RemoteRepositoryModuleOptions> configure,
         string? optionsKey = null) =>
-        application.AddModule<EFRepositoriesModule, RemoteRepositoryModuleOptions>(
+        application.AddModule<RemoteRepositoryModule, RemoteRepositoryModuleOptions>(
             (applicationContext, moduleOptions) =>
             {
                 moduleOptions.AddRepositoriesFromAssemblyOf<TAssembly>();
@@ -31,7 +31,7 @@ public static class ApplicationExtensions
     public static Application AddRemoteRepositories<TAssembly>(this Application application,
         Action<RemoteRepositoryModuleOptions>? configure = null,
         string? optionsKey = null) =>
-        application.AddModule<EFRepositoriesModule, RemoteRepositoryModuleOptions>(moduleOptions =>
+        application.AddModule<RemoteRepositoryModule, RemoteRepositoryModuleOptions>(moduleOptions =>
             {
                 moduleOptions.AddRepositoriesFromAssemblyOf<TAssembly>();
                 configure?.Invoke(moduleOptions);
