@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Sitko.Core.Repository.Remote.Tests.Data;
 using Sitko.Core.Repository.Tests;
 using Sitko.Core.Repository.Tests.Data;
 using Xunit;
