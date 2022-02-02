@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Sitko.Core.Repository.Remote.Server\Sitko.Core.Repository.Remote.Server.csproj" />
     <ProjectReference Include="..\..\src\Sitko.Core.Repository.Remote\Sitko.Core.Repository.Remote.csproj" />
     <ProjectReference Include="..\..\src\Sitko.Core.Repository\Sitko.Core.Repository.csproj" />
     <ProjectReference Include="..\..\src\Sitko.Core.Xunit.Web\Sitko.Core.Xunit.Web.csproj" />
