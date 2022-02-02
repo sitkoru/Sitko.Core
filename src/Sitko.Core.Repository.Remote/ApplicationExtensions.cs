@@ -8,19 +8,19 @@ public static class ApplicationExtensions
 {
 
     public static Application AddRemoteRepositories(this Application application,
-        Action<IApplicationContext, RemoteRepositoryModuleOptions> configure,
+        Action<IApplicationContext, RemoteRepositoryOptions> configure,
         string? optionsKey = null) =>
-        application.AddModule<RemoteRepositoryModule, RemoteRepositoryModuleOptions>(configure, optionsKey);
+        application.AddModule<RemoteRepositoryModule, RemoteRepositoryOptions>(configure, optionsKey);
 
     public static Application AddRemoteRepositories(this Application application,
-        Action<RemoteRepositoryModuleOptions>? configure = null,
+        Action<RemoteRepositoryOptions>? configure = null,
         string? optionsKey = null) =>
-        application.AddModule<RemoteRepositoryModule, RemoteRepositoryModuleOptions>(configure, optionsKey);
+        application.AddModule<RemoteRepositoryModule, RemoteRepositoryOptions>(configure, optionsKey);
 
     public static Application AddRemoteRepositories<TAssembly>(this Application application,
-        Action<IApplicationContext, RemoteRepositoryModuleOptions> configure,
+        Action<IApplicationContext, RemoteRepositoryOptions> configure,
         string? optionsKey = null) =>
-        application.AddModule<RemoteRepositoryModule, RemoteRepositoryModuleOptions>(
+        application.AddModule<RemoteRepositoryModule, RemoteRepositoryOptions>(
             (applicationContext, moduleOptions) =>
             {
                 moduleOptions.AddRepositoriesFromAssemblyOf<TAssembly>();
@@ -29,9 +29,9 @@ public static class ApplicationExtensions
             optionsKey);
 
     public static Application AddRemoteRepositories<TAssembly>(this Application application,
-        Action<RemoteRepositoryModuleOptions>? configure = null,
+        Action<RemoteRepositoryOptions>? configure = null,
         string? optionsKey = null) =>
-        application.AddModule<RemoteRepositoryModule, RemoteRepositoryModuleOptions>(moduleOptions =>
+        application.AddModule<RemoteRepositoryModule, RemoteRepositoryOptions>(moduleOptions =>
             {
                 moduleOptions.AddRepositoriesFromAssemblyOf<TAssembly>();
                 configure?.Invoke(moduleOptions);
