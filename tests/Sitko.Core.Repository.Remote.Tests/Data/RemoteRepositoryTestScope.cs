@@ -27,7 +27,21 @@ public class RemoteRepositoryTestScope : WebTestScope
         {
             options.AddRepository<BarRepository>();
             options.AddRepository<FooRepository>();
+            //options.AddRepository<FooBarRepository>();
             options.AddRepository<BazRepository>();
+            options.AddRepository<TestRepository>();
+
+            options.RepositoryControllerApiRoute = new Uri(Server.BaseAddress, "http://localhost");
+
+            if (Server is not null)
+            {
+                options.HttpClientFactory = () =>
+                {
+                    var client = Server.CreateClient();
+                    client.BaseAddress = new Uri(client.BaseAddress!, "/api");
+                    return client;
+                };
+            }
         });
         application.ConfigureLogging((_, configuration) =>
         {
