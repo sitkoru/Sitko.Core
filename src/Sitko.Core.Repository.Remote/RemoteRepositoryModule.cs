@@ -7,19 +7,16 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Repository.Remote;
 
-public class RemoteRepositoryModule : RepositoriesModule<RemoteRepositoryModuleOptions, IRemoteRepository>
+public class RemoteRepositoryModule : RepositoriesModule<RemoteRepositoryOptions, IRemoteRepository>
 {
     public override string OptionsKey => "Repositories:Remote";
 
     public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
-        RemoteRepositoryModuleOptions startupOptions)
+        RemoteRepositoryOptions startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);
         services.TryAddScoped(typeof(RemoteRepositoryContext<,>));
-        services.AddHttpClient<IRemoteRepository>();
+        services.AddHttpClient<HttpRepositoryTransport<RemoteRepositoryOptions>>();
+        services.AddSingleton<IRemoteRepositoryTransport, HttpRepositoryTransport<RemoteRepositoryOptions>>();
     }
-}
-
-public class RemoteRepositoryModuleOptions : RepositoriesModuleOptions<IRemoteRepository>
-{
 }
