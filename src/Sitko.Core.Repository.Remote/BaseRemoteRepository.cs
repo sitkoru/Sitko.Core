@@ -21,7 +21,7 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
     //Url problems for different controllers
     //1. conventional /digitclub/api/{TEntity} api - from Options
 
-    protected BaseRemoteRepository(IRepositoryContext<TEntity, TEntityPk> repositoryContext, IRemoteRepositoryTransport repositoryTransport) : base(repositoryContext)
+    protected BaseRemoteRepository(RemoteRepositoryContext<TEntity, TEntityPk> repositoryContext, IRemoteRepositoryTransport repositoryTransport) : base(repositoryContext)
     {
         this.repositoryTransport = repositoryTransport;
     }
@@ -78,9 +78,23 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
 
     public override Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
-    protected override Task<RemoteRepositoryQuery<TEntity>> CreateRepositoryQueryAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    protected override Task<RemoteRepositoryQuery<TEntity>> CreateRepositoryQueryAsync(
+        CancellationToken cancellationToken = default)=>
+        Task.FromResult(new RemoteRepositoryQuery<TEntity>());
 
-    protected override Task<(TEntity[] items, bool needCount)> DoGetAllAsync(RemoteRepositoryQuery<TEntity> query, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    protected override async Task<(TEntity[] items, bool needCount)> DoGetAllAsync(RemoteRepositoryQuery<TEntity> query,
+        CancellationToken cancellationToken = default)
+    {
+        var serialized = query.Serialize();
+
+        //send it to server through remote transport service and recieve items
+        var result = await repositoryTransport.GetAllAsync(serialized, cancellationToken);
+
+        await AfterLoadEntitiesAsync(result.items, cancellationToken);
+        bool needCount = query.Offset != null || query.Limit != null;
+
+        return (result.items, needCount);
+    }
 
     protected override Task<int> DoCountAsync(RemoteRepositoryQuery<TEntity> query, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
