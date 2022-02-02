@@ -38,9 +38,24 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
 
     public override IRepositoryQuery<TEntity> Order(Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> order) => throw new NotImplementedException();
 
-    public override IRepositoryQuery<TEntity> Configure(Action<IRepositoryQuery<TEntity>>? configureQuery = null) => throw new NotImplementedException();
+    public override IRepositoryQuery<TEntity> Configure(Action<IRepositoryQuery<TEntity>>? configureQuery = null)
+    {
+        configureQuery?.Invoke(this);
 
-    public override Task<IRepositoryQuery<TEntity>> ConfigureAsync(Func<IRepositoryQuery<TEntity>, Task>? configureQuery = null, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        return this;
+    }
+
+    public override async Task<IRepositoryQuery<TEntity>> ConfigureAsync(
+        Func<IRepositoryQuery<TEntity>, Task>? configureQuery = null, CancellationToken cancellationToken = default)
+    {
+        if (configureQuery != null)
+        {
+            await configureQuery(this);
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return this;
+    }
 
     public override IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(Expression<Func<TEntity, TProperty>> navigationPropertyPath) => throw new NotImplementedException();
 
