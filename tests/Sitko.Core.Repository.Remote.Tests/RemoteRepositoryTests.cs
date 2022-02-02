@@ -17,27 +17,13 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
     }
 
     [Fact]
-    public async Task Add()
+    public async Task GetAll()
     {
         var scope = await GetScopeAsync();
+        var repo = scope.GetService<TestRepository>();
+        var result = await repo.GetAllAsync(q => q.Where(t=>t.Status == TestStatus.Enabled));
 
-        var repository = scope.GetService<BaseRemoteRepository<TestModel, Guid>>();
-
-        var item = await repository.GetAsync();
-
-        Assert.NotNull(item);
-        var oldValue = item!.Status;
-        item.Status = TestStatus.Disabled;
-
-        var result = await repository.UpdateAsync(item);
-        Assert.True(result.IsSuccess);
-        Assert.Empty(result.Errors);
-        Assert.NotEmpty(result.Changes);
-        Assert.NotEmpty(result.Changes.Where(c => c.Name == nameof(item.Status)));
-        var change = result.Changes.First(c => c.Name == nameof(item.Status));
-        Assert.Equal(oldValue, change.OriginalValue);
-        Assert.Equal(item.Status, change.CurrentValue);
-        await repository.RefreshAsync(item);
-        Assert.Equal(TestStatus.Disabled, item.Status);
+        Assert.NotNull(result.items);
     }
+
 }
