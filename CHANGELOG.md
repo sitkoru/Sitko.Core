@@ -1,3 +1,10 @@
+# [9.0.0-beta.14](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.13...9.0.0-beta.14) (2022-02-03)
+
+
+### Bug Fixes
+
+* **app:** fix IsProduction override in HostedApplication ([d73a3b7](https://github.com/sitkoru/Sitko.Core/commit/d73a3b750d6d65b9bcc38ef78e0073cf009ecb1c))
+
 # [9.0.0-beta.13](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.12...9.0.0-beta.13) (2022-01-26)
 
 
