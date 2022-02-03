@@ -244,7 +244,7 @@ public class HostedApplicationContext : BaseApplicationContext
     public override string EnvironmentName => environment.EnvironmentName;
     public override bool IsDevelopment() => environment.IsDevelopment();
 
-    public override bool IsProduction() => environment.IsDevelopment();
+    public override bool IsProduction() => environment.IsProduction();
 
     protected override void ConfigureApplicationOptions(ApplicationOptions options) =>
         options.EnableConsoleLogging ??= environment.IsDevelopment();
