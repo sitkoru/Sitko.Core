@@ -21,7 +21,7 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
     {
         var scope = await GetScopeAsync();
         var repo = scope.GetService<TestRemoteRepository>();
-        var result = await repo.GetAllAsync(q => q.Where(t=>t.Status == TestStatus.Enabled));
+        var result = await repo.GetAllAsync();
 
         Assert.NotNull(result.items);
     }

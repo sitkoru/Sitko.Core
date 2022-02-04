@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Serilog.Events;
 using Sitko.Core.Db.InMemory;
-using Sitko.Core.Db.Postgres;
 using Sitko.Core.Repository.EntityFrameworkCore;
+using Sitko.Core.Repository.Remote.Tests.Server;
 using Sitko.Core.Repository.Tests.Data;
 using Sitko.Core.Xunit;
 using Sitko.Core.Xunit.Web;
@@ -20,9 +17,9 @@ public class RemoteRepositoryTestScope : WebTestScope
         application.AddInMemoryDatabase<TestDbContext>();
         application.AddEFRepositories(options =>
         {
-            //options.AddRepository<BarRemoteRepository>();
+            options.AddRepository<BarEFRepository>();
             options.AddRepository<TestEFRepository>();
-
+            options.AddRepository<FooEFRepository>();
         });
         return application;
     }
@@ -32,8 +29,8 @@ public class RemoteRepositoryTestScope : WebTestScope
         base.ConfigureApplication(application, name);
         application.AddRemoteRepositories(options =>
         {
-            //options.AddRepository<BarRemoteRepository>();
-            //options.AddRepository<FooRepository>();
+            options.AddRepository<BarRemoteRepository>();
+            options.AddRepository<FooRemoteRepository>();
             //options.AddRepository<FooBarRepository>();
             //options.AddRepository<BazRepository>();
             options.AddRepository<TestRemoteRepository>();
@@ -45,7 +42,7 @@ public class RemoteRepositoryTestScope : WebTestScope
                 options.HttpClientFactory = () =>
                 {
                     var client = Server.CreateClient();
-                    client.BaseAddress = new Uri(client.BaseAddress!, "test");
+                    client.BaseAddress = new Uri(client.BaseAddress!, "");
                     return client;
                 };
             }
