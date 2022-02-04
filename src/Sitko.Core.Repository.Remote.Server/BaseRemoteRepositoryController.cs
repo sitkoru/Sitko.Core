@@ -3,48 +3,82 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Sitko.Core.Repository.Remote.Server;
 
-
-public class BaseRemoteRepositoryController<TEntity, TEntityPK> : Controller where TEntity : class, IEntity<TEntityPK> where TEntityPK: class
+public class BaseRemoteRepositoryController<TEntity, TEntityPK> : Controller where TEntity : class, IEntity<TEntityPK>
 {
-    protected readonly IRepository<TEntity, TEntityPK> repository;
+    private readonly IRepository<TEntity, TEntityPK> repository;
 
     public BaseRemoteRepositoryController(IRepository<TEntity, TEntityPK> repository) => this.repository = repository;
 
 
-    [HttpGet("list")]
-    public async Task<(TEntity[] items, int itemsCount)> GetAllAsync(SerializedQuery<TEntity> query)
+    // [HttpGet("GetAll")]
+    // public async Task<string> GetAllAsync()
+    // {
+    //     var result = await repository.GetAllAsync();
+    //     return JsonSerializer.Serialize(result);
+    // }
+
+    [HttpGet("GetAll")]
+    public async Task<string> GetAllAsync(string json)
     {
-        return await repository.GetAllAsync(repositoryQuery => query.Apply(repositoryQuery));
+        var query = JsonSerializer.Deserialize<SerializedQuery<TEntity>>(json);
+        var result = await repository.GetAllAsync(repositoryQuery => query.Apply(repositoryQuery));
+        return JsonSerializer.Serialize(result);
     }
 
-    [HttpGet]
-    public async Task<TEntity?> GetAsync(SerializedQuery<TEntity> query)
+    [HttpGet("Get")]
+    public async Task<string> GetAsync(string json)
     {
-        return await repository.GetAsync(repositoryQuery => query.Apply(repositoryQuery));
+        var query = JsonSerializer.Deserialize<SerializedQuery<TEntity>>(json);
+        var result = await repository.GetAsync(repositoryQuery => query.Apply(repositoryQuery));
+        return JsonSerializer.Serialize(result);
     }
 
-    [HttpGet("{TEntityPK}")]
+    [HttpGet("GetById")]
     public async Task<TEntity?> GetByIdAsync(TEntityPK key)
     {
         return await repository.GetByIdAsync(key);
     }
 
-    [HttpPost]
-    public async Task<AddOrUpdateOperationResult<TEntity, TEntityPK>> AddAsync(TEntity entity)
+    [HttpPost("Add")]
+    public async Task<string> AddAsync(string json)
     {
-        return await repository.AddAsync(entity);
+        var entity = JsonSerializer.Deserialize<TEntity>(json);
+        var result = repository.AddAsync(entity);
+        return JsonSerializer.Serialize(result);
     }
 
-    [HttpPost("update")]
-    public async Task<AddOrUpdateOperationResult<TEntity, TEntityPK>> UpdateAsync(TEntity entity)
+    [HttpPost("AddRange")]
+    public async Task<string> AddRangeAsync(string json)
     {
-        return await repository.UpdateAsync(entity);
+        var entity = JsonSerializer.Deserialize<TEntity[]>(json);
+        var result = repository.AddAsync(entity);
+        return JsonSerializer.Serialize(result);
     }
 
-    [HttpGet("count")]
+    [HttpPost("Update")]
+    public async Task<string> UpdateAsync(string json)
+    {
+        var entity = JsonSerializer.Deserialize<UpdateModel<TEntity>>(json);
+        var result = await repository.UpdateAsync(entity.Entity, entity.OldEntity);
+        return JsonSerializer.Serialize(result);
+    }
+
+    [HttpGet("Count")]
     public async Task<int> CountAsync()
     {
         return await repository.CountAsync();
+    }
+
+    [HttpGet("Count")]
+    public async Task<int> CountAsync(SerializedQuery<TEntity> query)
+    {
+        return await repository.CountAsync(q=>query.Apply(q));
+    }
+
+    [HttpGet("Sum")]
+    public async Task<int> SumAsync(SerializedQuery<TEntity> query)
+    {
+        return await repository.SumAsync(q=>query.Apply(q), null);
     }
 
     [HttpDelete]
