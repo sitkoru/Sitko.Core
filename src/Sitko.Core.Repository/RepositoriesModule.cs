@@ -34,7 +34,11 @@ public abstract class RepositoriesModule<TConfig, TRepositoryType> : BaseApplica
             }
         }
 
-        var assemblies = types.Select(type => type.Assembly).Distinct();
+        var assemblies = types.Select(type => type.Assembly).ToHashSet();
+        foreach (var assembly in startupOptions.Assemblies)
+        {
+            assemblies.Add(assembly);
+        }
         var entityTypes = types.Distinct().Select(type =>
                 type
                     .GetInterfaces().First(implementedInterface =>
