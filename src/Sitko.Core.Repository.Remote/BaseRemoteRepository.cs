@@ -29,6 +29,7 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
 
     public override Task<bool> RollbackTransactionAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
+    //go to server map model and update existing obj. Automapper?
     public override Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
     protected override Task<RemoteRepositoryQuery<TEntity>> CreateRepositoryQueryAsync(
@@ -94,8 +95,7 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
         return await repositoryTransport.GetAsync(serialized, cancellationToken);
     }
 
-    protected override async Task DoSaveAsync(CancellationToken cancellationToken = default) =>
-        throw new NotImplementedException();
+    protected override Task DoSaveAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
     protected override async Task<PropertyChange[]> GetChangesAsync(TEntity item) => throw new NotImplementedException();
     protected override async Task DoAddAsync(TEntity entity, CancellationToken cancellationToken = default)
