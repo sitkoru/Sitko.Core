@@ -39,12 +39,15 @@ public class WebTestScope<TWebApplication, TWebStartup, TApplication, TConfig> :
             });
             Host = await application.StartAsync();
             Server = Host.GetTestServer();
+            await InitWebApplicationAsync(Host.Services);
         }
         else
         {
             throw new InvalidOperationException($"Can't create {typeof(TWebApplication)}");
         }
     }
+
+    protected virtual Task InitWebApplicationAsync(IServiceProvider hostServices) => Task.CompletedTask;
 
     protected override async Task OnDisposeAsync()
     {
