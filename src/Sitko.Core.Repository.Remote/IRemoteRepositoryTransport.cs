@@ -7,8 +7,6 @@ public interface IRemoteRepositoryTransport
     Task<TEntity?> GetAsync<TEntity>(SerializedQuery<TEntity> query,
         CancellationToken cancellationToken = default) where TEntity : class;
 
-    Task<int> CountAsync<TEntity>(CancellationToken cancellationToken = default) where TEntity : class;
-
     Task<int> CountAsync<TEntity>(SerializedQuery<TEntity> configureQuery,
         CancellationToken cancellationToken = default) where TEntity : class;
 
@@ -27,7 +25,4 @@ public interface IRemoteRepositoryTransport
 
     Task<(TEntity[] items, int itemsCount)> GetAllAsync<TEntity>(SerializedQuery<TEntity> query,
         CancellationToken cancellationToken = default) where TEntity : class;
-
-    Task<(TEntity[] items, int itemsCount)> GetAllAsync<TEntity>(CancellationToken cancellationToken = default)
-        where TEntity : class;
 }

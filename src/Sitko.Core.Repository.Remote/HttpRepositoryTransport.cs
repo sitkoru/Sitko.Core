@@ -48,18 +48,6 @@ public class HttpRepositoryTransport<TRepositoryOptions> : IRemoteRepositoryTran
         return answer;
     }
 
-    public async Task<int> CountAsync<TEntity>(CancellationToken cancellationToken = default) where TEntity : class
-    {
-        var result = await HttpClient.GetAsync(HttpClient.BaseAddress + $"/{typeof(TEntity).Name}" + "/count", cancellationToken);
-        if (!result.IsSuccessStatusCode)
-        {
-            throw new InvalidOperationException(result.ReasonPhrase);
-        }
-
-        var answer = JsonSerializer.Deserialize<int>(await result.Content.ReadAsStringAsync());
-        return answer;
-    }
-
     public async Task<int> CountAsync<TEntity>(SerializedQuery<TEntity> configureQuery,
         CancellationToken cancellationToken = default) where TEntity : class
     {
@@ -80,7 +68,7 @@ public class HttpRepositoryTransport<TRepositoryOptions> : IRemoteRepositoryTran
     {
         var json = JsonSerializer.Serialize(configureQuery);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var result = await HttpClient.PostAsync(HttpClient.BaseAddress + $"/{typeof(TEntity).Name}" + "/sum", content, cancellationToken);
+        var result = await HttpClient.PostAsync(HttpClient.BaseAddress + $"/{typeof(TEntity).Name}" + "/Sum", content, cancellationToken);
         if (!result.IsSuccessStatusCode)
         {
             throw new InvalidOperationException(result.ReasonPhrase);
@@ -163,20 +151,6 @@ public class HttpRepositoryTransport<TRepositoryOptions> : IRemoteRepositoryTran
         var json = JsonSerializer.Serialize(query);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
         var result = await HttpClient.PostAsync(HttpClient.BaseAddress + $"/{typeof(TEntity).Name}" + "/GetAll", content, cancellationToken);
-
-        if (!result.IsSuccessStatusCode)
-        {
-            throw new InvalidOperationException(result.ReasonPhrase);
-        }
-
-        var answer = JsonSerializer.Deserialize<(TEntity[], int)>(await result.Content.ReadAsStringAsync());
-        return answer;
-    }
-
-    public async Task<(TEntity[] items, int itemsCount)> GetAllAsync<TEntity>(CancellationToken cancellationToken = default)
-        where TEntity : class
-    {
-        var result = await HttpClient.GetAsync(HttpClient.BaseAddress + $"/{typeof(TEntity).Name}" + "/GetAll", cancellationToken);
 
         if (!result.IsSuccessStatusCode)
         {
