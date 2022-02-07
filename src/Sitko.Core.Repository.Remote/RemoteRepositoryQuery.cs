@@ -20,6 +20,8 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
         return this;
     }
 
+    //public IRepositoryQuery<TEntity> Select()
+
     public override IRepositoryQuery<TEntity> Where(Func<IQueryable<TEntity>, IQueryable<TEntity>> @where) => throw new NotImplementedException();
 
     public override IRepositoryQuery<TEntity> Where(string whereStr, object?[] values) => throw new NotImplementedException();
@@ -57,7 +59,13 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
         return this;
     }
 
-    public override IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(Expression<Func<TEntity, TProperty>> navigationPropertyPath) => throw new NotImplementedException();
+    public override IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(
+        Expression<Func<TEntity, TProperty>> navigationPropertyPath) => throw new NotImplementedException();
+
+        //instead of including query it should be written in something? Linked list??
+        //QuerySource.Query = QuerySource.Query.Include(navigationPropertyPath);
+        //return new EFIncludableRepositoryQuery<TEntity, TProperty>(this);
+
 
     protected override void ApplySort((string propertyName, bool isDescending) sortQuery)
     {
