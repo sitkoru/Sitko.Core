@@ -6,7 +6,7 @@ using Sitko.Core.Repository.Tests.Data;
 
 namespace Sitko.Core.Repository.Remote.Tests.Server;
 
-[Route("FooModel")]
+[Route("/api/FooModel")]
 public class FooController : BaseRemoteRepositoryController<FooModel, Guid>
 {
     public FooController(FooEFRepository repository) : base(repository)

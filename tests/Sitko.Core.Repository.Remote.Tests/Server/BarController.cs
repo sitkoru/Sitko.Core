@@ -6,7 +6,7 @@ using Sitko.Core.Repository.Tests.Data;
 
 namespace Sitko.Core.Repository.Remote.Tests.Server;
 
-[Route("BarModel")]
+[Route("/api/BarModel")]
 public class BarController : BaseRemoteRepositoryController<BarModel,Guid>
 {
     public BarController(BarEFRepository repository) : base(repository)
