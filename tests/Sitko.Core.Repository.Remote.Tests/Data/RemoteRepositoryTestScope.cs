@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Threading.Tasks;
+using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog.Events;
 using Sitko.Core.Db.InMemory;
 using Sitko.Core.Repository.EntityFrameworkCore;
@@ -24,6 +27,13 @@ public class RemoteRepositoryTestScope : WebTestScope
         return application;
     }
 
+    protected override async Task InitWebApplicationAsync(IServiceProvider hostServices)
+    {
+        await base.InitWebApplicationAsync(hostServices);
+        var dbContext = hostServices.CreateScope().ServiceProvider.GetRequiredService<TestDbContext>();
+        //add data
+    }
+
     protected override TestApplication ConfigureApplication(TestApplication application, string name)
     {
         base.ConfigureApplication(application, name);
@@ -31,22 +41,24 @@ public class RemoteRepositoryTestScope : WebTestScope
         {
             options.AddRepository<BarRemoteRepository>();
             options.AddRepository<FooRemoteRepository>();
-            //options.AddRepository<FooBarRepository>();
-            //options.AddRepository<BazRepository>();
             options.AddRepository<TestRemoteRepository>();
 
             options.RepositoryControllerApiRoute = new Uri(Server.BaseAddress, "http://localhost");
-
+            options.AddRepositoriesFromAssemblyOf<TestModel>();
             if (Server is not null)
             {
                 options.HttpClientFactory = () =>
                 {
                     var client = Server.CreateClient();
-                    client.BaseAddress = new Uri(client.BaseAddress!, "");
+                    client.BaseAddress = new Uri(client.BaseAddress!, "/api");
                     return client;
                 };
             }
         });
+        // application.ConfigureServices(collection =>
+        // {
+        //     collection.AddValidatorsFromAssembly(typeof(TestModel).Assembly);
+        // });
         application.ConfigureLogging((_, configuration) =>
         {
             configuration.MinimumLevel.Override("Sitko.Core.Repository", LogEventLevel.Debug);
