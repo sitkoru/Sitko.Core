@@ -40,6 +40,8 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
         internal List<Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>> OrderExpressions { get; } = new();
 
+        internal List<string> IncludeProperties { get; } = new();
+
         public IQueryable<TEntity> BuildQuery()
         {
             foreach (var func in WhereExpressions)
@@ -52,9 +54,25 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
                 QuerySource.Query = orderBy(QuerySource.Query);
             }
 
+            if (IncludeProperties.Any())
+            {
+                var includesString = string.Empty;
+                foreach (var property in IncludeProperties)
+                {
+                    includesString += includesString == "" ? property : "." + property;
+                }
+                QuerySource.Query = QuerySource.Query.Include(includesString);
+            }
+
             return QuerySource.Query;
         }
 
+
+        public override IRepositoryQuery<TEntity> Include(string navigationPropertyPath)
+        {
+            IncludeProperties.Add(navigationPropertyPath);
+            return this;
+        }
 
         public override IRepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> where)
         {
