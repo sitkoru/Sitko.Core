@@ -4,13 +4,13 @@ namespace Sitko.Core.Repository.Remote;
 
 public interface IRemoteRepositoryTransport
 {
-    Task<TEntity?> GetAsync<TEntity>(SerializedQuery<TEntity> query,
+    Task<TEntity?> GetAsync<TEntity>(RemoteRepositoryQuery<TEntity> query,
         CancellationToken cancellationToken = default) where TEntity : class;
 
-    Task<int> CountAsync<TEntity>(SerializedQuery<TEntity> configureQuery,
+    Task<int> CountAsync<TEntity>(RemoteRepositoryQuery<TEntity> configureQuery,
         CancellationToken cancellationToken = default) where TEntity : class;
 
-    Task<int> SumAsync<TEntity>(SerializedQuery<TEntity> configureQuery, CancellationToken cancellationToken = default) where TEntity : class;
+    Task<TReturn?> SumAsync<TEntity, TReturn>(RemoteRepositoryQuery<TEntity> configureQuery, CancellationToken cancellationToken = default) where TEntity : class where TReturn : struct;
 
     Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddAsync<TEntity, TEntityPk>(TEntity entity,
         CancellationToken cancellationToken = default) where TEntity : class, IEntity<TEntityPk>;
@@ -18,11 +18,11 @@ public interface IRemoteRepositoryTransport
     Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> AddAsync<TEntity, TEntityPk>(IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default) where TEntity : class, IEntity<TEntityPk>;
 
-    Task<PropertyChange[]> UpdateAsync<TEntity>(TEntity entity, TEntity? oldEntity,
-        CancellationToken cancellationToken = default) where TEntity : class;
+    Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync<TEntity, TEntityPk>(TEntity entity, TEntity? oldEntity,
+        CancellationToken cancellationToken = default) where TEntity : class, IEntity<TEntityPk>;
 
     Task<bool> DeleteAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class;
 
-    Task<(TEntity[] items, int itemsCount)> GetAllAsync<TEntity>(SerializedQuery<TEntity> query,
+    Task<(TEntity[] items, int itemsCount)> GetAllAsync<TEntity>(RemoteRepositoryQuery<TEntity> query,
         CancellationToken cancellationToken = default) where TEntity : class;
 }
