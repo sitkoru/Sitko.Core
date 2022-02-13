@@ -33,132 +33,88 @@ public class HttpRepositoryTransport<TRepositoryOptions> : IRemoteRepositoryTran
         }
     }
 
-    public async Task<TEntity?> GetAsync<TEntity>(SerializedQuery<TEntity> query,
-        CancellationToken cancellationToken = default) where TEntity : class
+    private static StringContent CreateJsonContent<TEntity>(TEntity content) where TEntity : class
     {
-        var json = JsonSerializer.Serialize(query);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var result = await HttpClient.PostAsync(HttpClient.BaseAddress + $"/{typeof(TEntity).Name}" + "/get", content, cancellationToken);
+        var json = JsonSerializer.Serialize(content);
+        return new StringContent(json, Encoding.UTF8, "application/json");
+    }
+
+    private async Task<TEntity> SendHttpRequestAsync<TEntity>(StringContent content, CancellationToken cancellationToken)
+    {
+        var result = await HttpClient.PostAsync(HttpClient.BaseAddress + $"/{typeof(TEntity).Name}" + "/get", content , cancellationToken);
         if (!result.IsSuccessStatusCode)
         {
             throw new InvalidOperationException(result.ReasonPhrase);
         }
 
-        var answer = JsonSerializer.Deserialize<TEntity?>(await result.Content.ReadAsStringAsync());
+        var answer = JsonSerializer.Deserialize<TEntity>(await result.Content.ReadAsStringAsync());
         return answer;
     }
 
-    public async Task<int> CountAsync<TEntity>(SerializedQuery<TEntity> configureQuery,
+    public async Task<TEntity?> GetAsync<TEntity>(RemoteRepositoryQuery<TEntity> configureQuery,
         CancellationToken cancellationToken = default) where TEntity : class
     {
-        var json = JsonSerializer.Serialize(configureQuery);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var result = await HttpClient.PostAsync(HttpClient.BaseAddress + $"/{typeof(TEntity).Name}" + "/count", content, cancellationToken);
-        if (!result.IsSuccessStatusCode)
-        {
-            throw new InvalidOperationException(result.ReasonPhrase);
-        }
-
-        var answer = JsonSerializer.Deserialize<int>(await result.Content.ReadAsStringAsync());
-        return answer;
+        var serialized = configureQuery.Serialize();
+        var content = CreateJsonContent(serialized);
+        return await SendHttpRequestAsync<TEntity?>(content, cancellationToken);
     }
 
-    public async Task<int> SumAsync<TEntity>(SerializedQuery<TEntity> configureQuery,
+    public async Task<int> CountAsync<TEntity>(RemoteRepositoryQuery<TEntity> configureQuery,
         CancellationToken cancellationToken = default) where TEntity : class
     {
-        var json = JsonSerializer.Serialize(configureQuery);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var result = await HttpClient.PostAsync(HttpClient.BaseAddress + $"/{typeof(TEntity).Name}" + "/Sum", content, cancellationToken);
-        if (!result.IsSuccessStatusCode)
-        {
-            throw new InvalidOperationException(result.ReasonPhrase);
-        }
+        var serialized = configureQuery.Serialize();
+        var content = CreateJsonContent(serialized);
+        return await SendHttpRequestAsync<int>(content, cancellationToken);
+    }
 
-        var answer = JsonSerializer.Deserialize<int>(await result.Content.ReadAsStringAsync());
-        return answer;
+    public async Task<TReturn?> SumAsync<TEntity, TReturn>(RemoteRepositoryQuery<TEntity> configureQuery,
+        CancellationToken cancellationToken = default) where TEntity : class where TReturn : struct
+    {
+        var serialized = configureQuery.Serialize();
+        var content = CreateJsonContent(serialized);
+        return await SendHttpRequestAsync<TReturn?>(content, cancellationToken);
     }
 
     public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddAsync<TEntity, TEntityPk>(TEntity entity,
         CancellationToken cancellationToken = default) where TEntity : class, IEntity<TEntityPk>
     {
-        var json = JsonSerializer.Serialize(entity);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var result = await HttpClient.PostAsync(HttpClient.BaseAddress + $"/{typeof(TEntity).Name}" + "/add", content, cancellationToken);
-        if (!result.IsSuccessStatusCode)
-        {
-            throw new InvalidOperationException(result.ReasonPhrase);
-        }
-
-        var answer = JsonSerializer.Deserialize<AddOrUpdateOperationResult<TEntity, TEntityPk>>(await result.Content.ReadAsStringAsync());
-        return answer;
+        var content = CreateJsonContent(entity);
+        return await SendHttpRequestAsync<AddOrUpdateOperationResult<TEntity, TEntityPk>>(content, cancellationToken);
     }
 
     public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> AddAsync<TEntity, TEntityPk>(
         IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
         where TEntity : class, IEntity<TEntityPk>
     {
-        var json = JsonSerializer.Serialize(entities);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var result = await HttpClient.PostAsync(HttpClient.BaseAddress + $"/{typeof(TEntity).Name}" + "/AddRange", content, cancellationToken);
-        if (!result.IsSuccessStatusCode)
-        {
-            throw new InvalidOperationException(result.ReasonPhrase);
-        }
-
-        var answer = JsonSerializer.Deserialize<AddOrUpdateOperationResult<TEntity, TEntityPk>[]>(await result.Content.ReadAsStringAsync());
-        return answer;
+        var content = CreateJsonContent(entities);
+        return await SendHttpRequestAsync<AddOrUpdateOperationResult<TEntity, TEntityPk>[]>(content, cancellationToken);
     }
 
-    public async Task<PropertyChange[]> UpdateAsync<TEntity>(TEntity entity, TEntity? oldEntity,
-        CancellationToken cancellationToken = default) where TEntity : class
+    public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync<TEntity, TEntityPk>(TEntity entity, TEntity? oldEntity,
+        CancellationToken cancellationToken = default) where TEntity : class, IEntity<TEntityPk>
     {
         var jsonEntity = new UpdateModel<TEntity>
         {
             Entity = entity,
             OldEntity = oldEntity
         };
-        var json = JsonSerializer.Serialize(jsonEntity);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var result = await HttpClient.PostAsync(HttpClient.BaseAddress + $"/{typeof(TEntity).Name}" + "/update", content);
-        if (!result.IsSuccessStatusCode)
-        {
-            throw new InvalidOperationException(result.ReasonPhrase);
-        }
-
-        var answer = JsonSerializer.Deserialize<PropertyChange[]>(await result.Content.ReadAsStringAsync());
-        return answer;
+        var content = CreateJsonContent(jsonEntity);
+        return await SendHttpRequestAsync<AddOrUpdateOperationResult<TEntity, TEntityPk>>(content, cancellationToken);
     }
 
     public async Task<bool> DeleteAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default)
         where TEntity : class
     {
-        var json = JsonSerializer.Serialize(entity);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var result = await HttpClient.PostAsync(HttpClient.BaseAddress + $"/{typeof(TEntity).Name}" + "/delete", content,
-            cancellationToken);
-        if (!result.IsSuccessStatusCode)
-        {
-            throw new InvalidOperationException(result.ReasonPhrase);
-        }
-
-        var answer = JsonSerializer.Deserialize<bool>(await result.Content.ReadAsStringAsync());
-        return answer;
+        var content = CreateJsonContent(entity);
+        return await SendHttpRequestAsync<bool>(content, cancellationToken);
     }
 
-    public async Task<(TEntity[] items, int itemsCount)> GetAllAsync<TEntity>(SerializedQuery<TEntity> query,
+    public async Task<(TEntity[] items, int itemsCount)> GetAllAsync<TEntity>(RemoteRepositoryQuery<TEntity> query,
         CancellationToken cancellationToken = default) where TEntity : class
     {
-        var json = JsonSerializer.Serialize(query);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var result = await HttpClient.PostAsync(HttpClient.BaseAddress + $"/{typeof(TEntity).Name}" + "/GetAll", content, cancellationToken);
-
-        if (!result.IsSuccessStatusCode)
-        {
-            throw new InvalidOperationException(result.ReasonPhrase);
-        }
-
-        var answer = JsonSerializer.Deserialize<(TEntity[], int)>(await result.Content.ReadAsStringAsync());
-        return answer;
+        var serialized = query.Serialize();
+        var content = CreateJsonContent(serialized);
+        return await SendHttpRequestAsync<(TEntity[] items, int itemsCount)>(content, cancellationToken);
     }
 }
 
