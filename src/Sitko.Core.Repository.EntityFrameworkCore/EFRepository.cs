@@ -293,7 +293,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         }
     }
 
-    protected override async Task<(TEntity[] items, bool needCount)> DoGetAllAsync(EFRepositoryQuery<TEntity> query,
+    protected override async Task<(TEntity[] items, int itemsCount, bool needCount)> DoGetAllAsync(EFRepositoryQuery<TEntity> query,
         CancellationToken cancellationToken = default)
     {
         var dbQuery = query.BuildQuery();
@@ -313,7 +313,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         var result = await ExecuteDbContextOperationAsync(_ => AddIncludes(dbQuery).ToArrayAsync(cancellationToken),
             cancellationToken);
 
-        return (result, needCount);
+        return (result, result.Length, needCount);
     }
 
 

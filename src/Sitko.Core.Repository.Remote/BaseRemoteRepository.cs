@@ -36,7 +36,7 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
         CancellationToken cancellationToken = default)=>
         Task.FromResult(new RemoteRepositoryQuery<TEntity>());
 
-    protected override async Task<(TEntity[] items, bool needCount)> DoGetAllAsync(RemoteRepositoryQuery<TEntity> query,
+    protected override async Task<(TEntity[] items, int itemsCount, bool needCount)> DoGetAllAsync(RemoteRepositoryQuery<TEntity> query,
         CancellationToken cancellationToken = default)
     {
         var serialized = query.Serialize();
@@ -44,9 +44,7 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
         //send it to server through remote transport service and recieve items
         var result = await repositoryTransport.GetAllAsync(serialized, cancellationToken);
 
-        bool needCount = query.Offset != null || query.Limit != null;
-
-        return (result.items, needCount);
+        return (result.items, result.itemsCount, false);
     }
 
     protected override async Task<int> DoCountAsync(RemoteRepositoryQuery<TEntity> query,

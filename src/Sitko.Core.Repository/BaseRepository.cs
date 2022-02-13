@@ -285,7 +285,8 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
     {
         var query = await CreateRepositoryQueryAsync(cancellationToken);
 
-        var (items, needCount) = await DoGetAllAsync(query, cancellationToken);
+        var result = await DoGetAllAsync(query, cancellationToken);
+        var (items, needCount) = (result.items, result.needCount);
 
         var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
             ? await CountAsync(cancellationToken)
@@ -301,7 +302,8 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         var query = await CreateRepositoryQueryAsync(cancellationToken);
         query.Configure(configureQuery);
 
-        var (items, needCount) = await DoGetAllAsync(query, cancellationToken);
+        var result = await DoGetAllAsync(query, cancellationToken);
+        var (items, needCount) = (result.items, result.needCount);
 
         var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
             ? await CountAsync(configureQuery, cancellationToken)
@@ -316,7 +318,9 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
     {
         var query = await CreateRepositoryQueryAsync(cancellationToken);
         await query.ConfigureAsync(configureQuery, cancellationToken);
-        var (items, needCount) = await DoGetAllAsync(query, cancellationToken);
+
+        var result = await DoGetAllAsync(query, cancellationToken);
+        var (items, needCount) = (result.items, result.needCount);
 
         var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
             ? await CountAsync(configureQuery, cancellationToken)
@@ -617,7 +621,8 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         var query = await CreateRepositoryQueryAsync(cancellationToken);
         query.Where(i => ids.Contains(i.Id));
 
-        var (items, _) = await DoGetAllAsync(query, cancellationToken);
+        var result = await DoGetAllAsync(query, cancellationToken);
+        var (items,_) = (result.items, result.itemsCount);
 
         await AfterLoadEntitiesAsync(items, cancellationToken);
 
@@ -631,7 +636,8 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         query.Where(i => ids.Contains(i.Id));
         await query.ConfigureAsync(configureQuery, cancellationToken);
 
-        var (items, _) = await DoGetAllAsync(query, cancellationToken);
+        var result = await DoGetAllAsync(query, cancellationToken);
+        var (items,_) = (result.items, result.itemsCount);
 
         await AfterLoadEntitiesAsync(items, cancellationToken);
 
@@ -644,7 +650,8 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         var query = await CreateRepositoryQueryAsync(cancellationToken);
         query.Where(i => ids.Contains(i.Id)).Configure(configureQuery);
 
-        var (items, _) = await DoGetAllAsync(query, cancellationToken);
+        var result = await DoGetAllAsync(query, cancellationToken);
+        var (items,_) = (result.items, result.itemsCount);
 
         await AfterLoadEntitiesAsync(items, cancellationToken);
 
@@ -653,7 +660,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
 
     protected abstract Task<TQuery> CreateRepositoryQueryAsync(CancellationToken cancellationToken = default);
 
-    protected abstract Task<(TEntity[] items, bool needCount)> DoGetAllAsync(TQuery query,
+    protected abstract Task<(TEntity[] items, int itemsCount, bool needCount)> DoGetAllAsync(TQuery query,
         CancellationToken cancellationToken = default);
 
     protected abstract Task<int> DoCountAsync(TQuery query, CancellationToken cancellationToken = default);
