@@ -18,11 +18,10 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
 
     private List<RepositoryRecord<TEntity, TEntityPk>>? batch;
 
-    protected BaseRemoteRepository(RemoteRepositoryContext<TEntity, TEntityPk> repositoryContext, IRemoteRepositoryTransport repositoryTransport) : base(repositoryContext)
+    protected BaseRemoteRepository(RemoteRepositoryContext<TEntity, TEntityPk> repositoryContext) : base(
+        repositoryContext)
     {
-        this.repositoryTransport = repositoryTransport;
     }
-
     public override Task<bool> BeginTransactionAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
     public override Task<bool> CommitTransactionAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
@@ -39,10 +38,8 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
     protected override async Task<(TEntity[] items, int itemsCount, bool needCount)> DoGetAllAsync(RemoteRepositoryQuery<TEntity> query,
         CancellationToken cancellationToken = default)
     {
-        var serialized = query.Serialize();
-
         //send it to server through remote transport service and recieve items
-        var result = await repositoryTransport.GetAllAsync(serialized, cancellationToken);
+        var result = await repositoryTransport.GetAllAsync(query, cancellationToken);
 
         return (result.items, result.itemsCount, false);
     }
@@ -50,47 +47,73 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
     protected override async Task<int> DoCountAsync(RemoteRepositoryQuery<TEntity> query,
         CancellationToken cancellationToken = default)
     {
-        var serialized = query.Serialize();
-        return await repositoryTransport.CountAsync(serialized, cancellationToken);
+        return await repositoryTransport.CountAsync(query, cancellationToken);
     }
 
     protected override async Task<int> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
         Expression<Func<TEntity, int>> selector, CancellationToken cancellationToken = default)
     {
-        var serialized = query.Serialize();
-        return await repositoryTransport.SumAsync(serialized, cancellationToken);
+        return (int)await repositoryTransport.SumAsync<TEntity, int>(query, cancellationToken);
     }
 
     protected override async Task<long> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
         Expression<Func<TEntity, long>> selector, CancellationToken cancellationToken = default)
     {
-        var serialized = query.Serialize();
-        return await repositoryTransport.SumAsync(serialized, cancellationToken);
+        return (long)await repositoryTransport.SumAsync<TEntity, long>(query, cancellationToken);
     }
 
-    protected override Task<double> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
-        Expression<Func<TEntity, double>> selector, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    protected override async Task<double> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
+        Expression<Func<TEntity, double>> selector, CancellationToken cancellationToken = default)
+    {
+        return (double)await repositoryTransport.SumAsync<TEntity, double>(query, cancellationToken);
+    }
 
-    protected override Task<float> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
-        Expression<Func<TEntity, float>> selector, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    protected override async Task<float> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
+        Expression<Func<TEntity, float>> selector, CancellationToken cancellationToken = default)
+    {
+        return (float)await repositoryTransport.SumAsync<TEntity, float>(query, cancellationToken);
+    }
 
-    protected override Task<decimal> DoSumAsync(RemoteRepositoryQuery<TEntity> query, Expression<Func<TEntity, decimal>> selector, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    protected override async Task<decimal> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
+        Expression<Func<TEntity, decimal>> selector, CancellationToken cancellationToken = default)
+    {
+        return (decimal)await repositoryTransport.SumAsync<TEntity, decimal>(query, cancellationToken);
+    }
 
-    protected override Task<int?> DoSumAsync(RemoteRepositoryQuery<TEntity> query, Expression<Func<TEntity, int?>> selector, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    protected override async Task<int?> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
+        Expression<Func<TEntity, int?>> selector, CancellationToken cancellationToken = default)
+    {
+        return await repositoryTransport.SumAsync<TEntity, int>(query, cancellationToken);
+    }
 
-    protected override Task<long?> DoSumAsync(RemoteRepositoryQuery<TEntity> query, Expression<Func<TEntity, long?>> selector, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    protected override async Task<long?> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
+        Expression<Func<TEntity, long?>> selector, CancellationToken cancellationToken = default)
+    {
+        return await repositoryTransport.SumAsync<TEntity, long>(query, cancellationToken);
+    }
 
-    protected override Task<double?> DoSumAsync(RemoteRepositoryQuery<TEntity> query, Expression<Func<TEntity, double?>> selector, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    protected override async Task<double?> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
+        Expression<Func<TEntity, double?>> selector, CancellationToken cancellationToken = default)
+    {
+        return await repositoryTransport.SumAsync<TEntity, double>(query, cancellationToken);
+    }
 
-    protected override Task<float?> DoSumAsync(RemoteRepositoryQuery<TEntity> query, Expression<Func<TEntity, float?>> selector, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    protected override async Task<float?> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
+        Expression<Func<TEntity, float?>> selector, CancellationToken cancellationToken = default)
+    {
+        return await repositoryTransport.SumAsync<TEntity, float>(query, cancellationToken);
+    }
 
-    protected override Task<decimal?> DoSumAsync(RemoteRepositoryQuery<TEntity> query, Expression<Func<TEntity, decimal?>> selector, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    protected override async Task<decimal?> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
+        Expression<Func<TEntity, decimal?>> selector, CancellationToken cancellationToken = default)
+    {
+        return await repositoryTransport.SumAsync<TEntity, decimal>(query, cancellationToken);
+    }
 
     protected override async Task<TEntity?> DoGetAsync(RemoteRepositoryQuery<TEntity> query,
         CancellationToken cancellationToken = default)
     {
-        var serialized = query.Serialize();
-        return await repositoryTransport.GetAsync(serialized, cancellationToken);
+        return await repositoryTransport.GetAsync(query, cancellationToken);
     }
 
     protected override Task DoSaveAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
