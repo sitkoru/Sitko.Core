@@ -14,6 +14,14 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
     private List<Expression<Func<TEntity, object>>> orderByExpressions = new();
     private List<Expression<Func<TEntity, object>>> orderByDescendingExpressions = new();
 
+    internal List<string> IncludeProperties { get; } = new();
+
+    public override IRepositoryQuery<TEntity> Include(string navigationPropertyPath)
+    {
+        IncludeProperties.Add(navigationPropertyPath);
+        return this;
+    }
+
     public override IRepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> @where)
     {
         whereExpressions.Add(where);
