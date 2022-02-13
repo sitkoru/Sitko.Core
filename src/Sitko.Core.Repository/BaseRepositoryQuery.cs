@@ -27,6 +27,8 @@ namespace Sitko.Core.Repository
             return this;
         }
 
+        public abstract IRepositoryQuery<TEntity> Include(string navigationPropertyPath);
+
         public abstract IRepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> where);
         public abstract IRepositoryQuery<TEntity> Where(Func<IQueryable<TEntity>, IQueryable<TEntity>> where);
         public abstract IRepositoryQuery<TEntity> Where(string whereStr, object?[] values);
