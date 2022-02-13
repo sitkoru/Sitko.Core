@@ -13,6 +13,8 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
     private List<Expression<Func<TEntity, bool>>> whereExpressions = new();
     private List<Expression<Func<TEntity, object>>> orderByExpressions = new();
     private List<Expression<Func<TEntity, object>>> orderByDescendingExpressions = new();
+    private List<Expression<Func<TEntity, int>>> intSelectExpressions = new();
+    private List<Expression<Func<TEntity, long>>> longSelectExpressions = new();
 
     internal List<string> IncludeProperties { get; } = new();
 
@@ -28,7 +30,17 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
         return this;
     }
 
-    //public IRepositoryQuery<TEntity> Select()
+    public IRepositoryQuery<TEntity> Select(Expression<Func<TEntity, int>> intSelect)
+    {
+        intSelectExpressions.Add(intSelect);
+        return this;
+    }
+
+    public IRepositoryQuery<TEntity> Select(Expression<Func<TEntity, long>> longSelect)
+    {
+        longSelectExpressions.Add(longSelect);
+        return this;
+    }
 
     public override IRepositoryQuery<TEntity> Where(Func<IQueryable<TEntity>, IQueryable<TEntity>> @where) => throw new NotImplementedException();
 
