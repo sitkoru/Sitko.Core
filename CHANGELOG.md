@@ -1,3 +1,15 @@
+# [9.0.0-beta.15](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.14...9.0.0-beta.15) (2022-02-14)
+
+
+### Bug Fixes
+
+* **xunit:** use scope id for database name generation ([7225355](https://github.com/sitkoru/Sitko.Core/commit/7225355e7cc98afcaa871392e6bf532775122571))
+
+
+### Features
+
+* **grpc:** add grpc web wrapper module ([91e35da](https://github.com/sitkoru/Sitko.Core/commit/91e35dab2cfc9133d2f89d78ac33bcfb1773ef57))
+
 # [9.0.0-beta.14](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.13...9.0.0-beta.14) (2022-02-03)
 
 
