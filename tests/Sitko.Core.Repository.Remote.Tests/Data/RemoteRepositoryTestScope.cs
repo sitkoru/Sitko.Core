@@ -104,9 +104,12 @@ public class RemoteRepositoryTestScope : WebTestScope
             options.AddRepository<BarRemoteRepository>();
             options.AddRepository<FooRemoteRepository>();
             options.AddRepository<TestRemoteRepository>();
-
-            options.RepositoryControllerApiRoute = new Uri(Server.BaseAddress, "http://localhost");
             options.AddRepositoriesFromAssemblyOf<TestModel>();
+
+        });
+        application.AddHttpRepositoryTransport(options =>
+        {
+            options.RepositoryControllerApiRoute = new Uri(Server.BaseAddress, "http://localhost");
             if (Server is not null)
             {
                 options.HttpClientFactory = () =>
