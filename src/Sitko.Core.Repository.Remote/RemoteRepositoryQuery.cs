@@ -18,6 +18,10 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
     private List<IRemoteIncludableQuery> _includableQueries;
     private List<string> _includes = new ();
 
+    public RemoteRepositoryQuery()
+    {
+    }
+
     internal RemoteRepositoryQuery(RemoteRepositoryQuery<TEntity> source)
     {
        this.whereExpressions = source.whereExpressions;
