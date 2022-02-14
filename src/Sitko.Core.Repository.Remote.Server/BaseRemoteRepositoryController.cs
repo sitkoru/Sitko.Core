@@ -57,11 +57,27 @@ public class BaseRemoteRepositoryController<TEntity, TEntityPK> : Controller whe
         return await repository.CountAsync(q=>query.Apply(q));
     }
 
-    [HttpPost("Sum")]
-    public async Task<int> SumAsync([FromBody]SerializedQuery<TEntity> query)
+    [HttpPost("SumInt")]
+    public async Task<int?> SumIntAsync([FromBody]SerializedQuery<TEntity> query)
     {
         return await repository.SumAsync(q=>query.Apply(q), null);
     }
+    [HttpPost("SumLong")]
+    public async Task<long?> SumLongAsync([FromBody]SerializedQuery<TEntity> query)
+    {
+        return await repository.SumAsync(q=>query.Apply(q), null);
+    }
+    [HttpPost("SumDouble")]
+    public async Task<double?> SumDoubleAsync([FromBody]SerializedQuery<TEntity> query)
+    {
+        return await repository.SumAsync(q=>query.Apply(q), null);
+    }
+    [HttpPost("SumFloat")]
+    public async Task<float?> SumFloatAsync([FromBody]SerializedQuery<TEntity> query)
+    {
+        return await repository.SumAsync(q=>query.Apply(q), null);
+    }
+
 
     [HttpDelete]
     public async Task<bool> DeleteAsync(TEntityPK key)
