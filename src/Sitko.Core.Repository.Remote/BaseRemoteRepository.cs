@@ -1,8 +1,10 @@
 ﻿using System.Linq.Expressions;
 using System.Text.Json;
 using JetBrains.Annotations;
+using KellermanSoftware.CompareNetObjects;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sitko.Core.App.Json;
 using Sitko.FluentValidation.Graph;
 
 namespace Sitko.Core.Repository.Remote;
@@ -17,8 +19,11 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
     private readonly IRemoteRepositoryTransport repositoryTransport;
 
     private bool isTransactionStarted;
+    private CompareLogic? comparer;
+
     private List<RepositoryRecord<TEntity, TEntityPk>>? batch;
     private List<Func<Task>> TransactionActions { get; }
+    private Dictionary<TEntityPk, TEntity> Snapshots { get; }
 
     protected BaseRemoteRepository(RemoteRepositoryContext<TEntity, TEntityPk> repositoryContext) : base(
         repositoryContext) =>
@@ -80,7 +85,10 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
     {
         //send it to server through remote transport service and recieve items
         var result = await repositoryTransport.GetAllAsync(query, cancellationToken);
-
+        foreach (var item in result.items)
+        {
+            Snapshots.Add(item.Id, CreateEntitySnapshot(item));
+        }
         return (result.items, result.itemsCount, false);
     }
 
@@ -153,15 +161,50 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
     protected override async Task<TEntity?> DoGetAsync(RemoteRepositoryQuery<TEntity> query,
         CancellationToken cancellationToken = default)
     {
-        return await repositoryTransport.GetAsync(query, cancellationToken);
+        var result = await repositoryTransport.GetAsync(query, cancellationToken);
+        Snapshots.Add(result.Id, CreateEntitySnapshot(result));
+        return result;
     }
 
     protected override Task DoSaveAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
-    protected override async Task<PropertyChange[]> GetChangesAsync(TEntity item) => throw new NotImplementedException();
+    private CompareLogic GetComparer()
+    {
+        if (comparer is null)
+        {
+            var comparerOptions =
+                new ComparisonConfig { MaxDifferences = 100, Caching = true, AutoClearCache = true };
+            ConfigureComparer(comparerOptions);
+            comparer = new CompareLogic(comparerOptions);
+        }
 
+        return comparer;
+    }
+    protected virtual void ConfigureComparer(ComparisonConfig comparisonConfig)
+    {
+    }
+    protected override async Task<PropertyChange[]> GetChangesAsync(TEntity item)
+    {
+        var changes = new List<PropertyChange>();
+        if (Snapshots[item.Id] is not null)
+        {
+            var differences = GetComparer().Compare(Snapshots[item.Id], CreateEntitySnapshot(item));
+            if (!differences.AreEqual)
+            {
+                foreach (var difference in differences.Differences)
+                {
+                    var change = new PropertyChange(difference.GetShortItem(),difference.Object1Value,difference.Object2Value, ChangeType.Modified);
+                    changes.Add(change);
+                }
+            }
+        }
+
+        return changes.ToArray();
+    }
+    protected virtual TEntity? CreateEntitySnapshot(TEntity? entity) => JsonHelper.Clone(entity);
     protected override async Task DoAddAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
+        Snapshots.Add(entity.Id, CreateEntitySnapshot(entity));
         if (isTransactionStarted)
         {
             TransactionActions.Add(()=>repositoryTransport.AddAsync<TEntity, TEntityPk>(entity, cancellationToken));
@@ -175,6 +218,7 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
     protected override async Task<PropertyChange[]> DoUpdateAsync(TEntity entity, TEntity? oldEntity,
         CancellationToken cancellationToken = default)
     {
+        Snapshots.Add(entity.Id, CreateEntitySnapshot(entity));
         var changes = await GetChangesAsync(entity);
         if (isTransactionStarted)
         {
@@ -196,6 +240,11 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
         else
         {
             await repositoryTransport.DeleteAsync(entity, cancellationToken);
+        }
+
+        if (Snapshots[entity.Id] is not null)
+        {
+            Snapshots.Remove(entity.Id);
         }
     }
 }
