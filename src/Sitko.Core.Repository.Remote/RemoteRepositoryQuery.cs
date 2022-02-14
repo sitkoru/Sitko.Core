@@ -15,6 +15,17 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
     private List<Expression<Func<TEntity, object>>> orderByDescendingExpressions = new();
     private List<Expression<Func<TEntity, int>>> intSelectExpressions = new();
     private List<Expression<Func<TEntity, long>>> longSelectExpressions = new();
+    private List<IRemoteIncludableQuery> _includableQueries;
+    private List<string> _includes = new ();
+
+    internal RemoteRepositoryQuery(RemoteRepositoryQuery<TEntity> source)
+    {
+       this.whereExpressions = source.whereExpressions;
+       this.orderByExpressions = source.orderByExpressions;
+       this.orderByDescendingExpressions = source.orderByExpressions;
+       this.intSelectExpressions = source.intSelectExpressions;
+       this.longSelectExpressions = source.longSelectExpressions;
+    }
 
     internal List<string> IncludeProperties { get; } = new();
 
@@ -80,25 +91,112 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
     }
 
     public override IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(
-        Expression<Func<TEntity, TProperty>> navigationPropertyPath) => throw new NotImplementedException();
-
-        //instead of including query it should be written in something? Linked list??
-        //QuerySource.Query = QuerySource.Query.Include(navigationPropertyPath);
-        //return new EFIncludableRepositoryQuery<TEntity, TProperty>(this);
-
-
-    protected override void ApplySort((string propertyName, bool isDescending) sortQuery)
+        Expression<Func<TEntity, TProperty>> navigationPropertyPath)
     {
-        //make dynamic linq or expression
-        if (sortQuery.isDescending)
+        var propertyName = GetPropertyName(navigationPropertyPath);
+        var includableQuery = new IncludableRemoteRepositoryQuery<TEntity, TProperty>(this, propertyName);
+        _includableQueries.Add(includableQuery);
+        return includableQuery;
+    }
+
+    protected static string GetPropertyName<TExpressionEntity, TProperty>(Expression<Func<TExpressionEntity, TProperty>> navigationPropertyPath)
+    {
+        var expression =  (MemberExpression)navigationPropertyPath.Body;
+        return expression.Member.Name;
+    }
+
+
+    protected override void ApplySort((string propertyName, bool isDescending) sortQuery) => throw new NotImplementedException();
+    // {
+    //     //make dynamic linq or expression
+    //     if (sortQuery.isDescending)
+    //     {
+    //         orderByDescendingExpressions.Add(entity => sortQuery.propertyName);
+    //     }
+    // }
+
+    public SerializedQuery<TEntity>
+        Serialize()
+    {
+        foreach (var includableQuery in _includableQueries)
         {
-            orderByDescendingExpressions.Add(entity => sortQuery.propertyName);
+            _includes.Add(includableQuery.GetFullPath());
+        }
+        return new SerializedQuery<TEntity>(whereExpressions,
+            orderByExpressions,
+            orderByDescendingExpressions, intSelectExpressions, longSelectExpressions,_includes, Limit, Offset);
+    }
+
+}
+
+public class IncludableRemoteRepositoryQuery<TEntity, TProperty> : RemoteRepositoryQuery<TEntity>, IIncludableRepositoryQuery<TEntity, TProperty>, IRemoteIncludableQuery where TEntity : class
+{
+
+    private readonly RemoteRepositoryQuery<TEntity> source;
+    private readonly string propertyName;
+
+    internal IncludableRemoteRepositoryQuery(RemoteRepositoryQuery<TEntity> source, string propertyName) : base(source)
+    {
+        this.source = source;
+        this.propertyName = propertyName;
+        if (source is IRemoteIncludableQuery includableSource)
+        {
+            includableSource.SetChild(this);
         }
     }
 
-    public SerializedQuery<TEntity>
-        Serialize() =>
-        new SerializedQuery<TEntity>(whereExpressions,
-            orderByExpressions,
-            orderByDescendingExpressions, Limit, Offset);
+    private IRemoteIncludableQuery? child { get; set; }
+    public void SetChild(IRemoteIncludableQuery query)
+    {
+        child = query;
+    }
+    public string GetFullPath()
+    {
+        var path = propertyName;
+        if (child is not null)
+        {
+            path += $".{child.GetFullPath()}";
+        }
+
+        return path;
+    }
+
+
+    internal static IncludableRemoteRepositoryQuery<TEntity, TNextProperty> ThenInclude<TPreviousProperty,
+        TNextProperty>(
+        IIncludableRepositoryQuery<TEntity, IEnumerable<TPreviousProperty>> source,
+        Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath)
+    {
+        var efQuery = (RemoteRepositoryQuery<TEntity>)source;
+        var propertyName = GetPropertyName<TPreviousProperty, TNextProperty>(navigationPropertyPath);
+        return new IncludableRemoteRepositoryQuery<TEntity, TNextProperty>(efQuery, propertyName);
+    }
+
+    internal static IncludableRemoteRepositoryQuery<TEntity, TNextProperty> ThenInclude<TPreviousProperty,
+        TNextProperty>(
+        IIncludableRepositoryQuery<TEntity, TPreviousProperty> source,
+        Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath)
+    {
+        var efQuery = (RemoteRepositoryQuery<TEntity>)source;
+        var propertyName = GetPropertyName(navigationPropertyPath);
+        return new IncludableRemoteRepositoryQuery<TEntity, TNextProperty>(efQuery, propertyName);
+    }
+
+    public override IRepositoryQuery<TEntity> Take(int take)
+    {
+        source.Take(take);
+        return this;
+    }
+
+    public override IRepositoryQuery<TEntity> Skip(int take)
+    {
+        source.Skip(take);
+        return this;
+    }
+}
+
+public interface IRemoteIncludableQuery
+{
+    public  string GetFullPath();
+    public  void SetChild(IRemoteIncludableQuery query);
 }
