@@ -1,3 +1,29 @@
+# [9.0.0-beta.16](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.15...9.0.0-beta.16) (2022-02-14)
+
+
+### Bug Fixes
+
+* **grpc:** don't need separate module, just add external and configure handler wrapper ([97527d1](https://github.com/sitkoru/Sitko.Core/commit/97527d187eecaafc492ded457c9506cdebc3d769))
+
+
+### Features
+
+* **.net:** .NET 5.0.14 ([8dcd63f](https://github.com/sitkoru/Sitko.Core/commit/8dcd63f6ff8b62e3bfbee41203bb35f4947159ce))
+* **.net:** .NET 6.0.2 ([ee32cc5](https://github.com/sitkoru/Sitko.Core/commit/ee32cc545b492abde6081aa0f38551095f75ee24))
+* **auth:** update idunno.Authentication.Basic from 2.2.2 to 2.2.3 ([6a8bf9a](https://github.com/sitkoru/Sitko.Core/commit/6a8bf9a950a84562dd38d8818e55e2a2ff22659e))
+* **blazor:** update CompareNETObjects from 4.74.0 to 4.75.0 ([d1d0c64](https://github.com/sitkoru/Sitko.Core/commit/d1d0c64e73f4d66945de831f95f717dd5aca3aaa))
+* **elasticsearch:** update NEST from 7.16.0 to 7.17.0 ([78cd828](https://github.com/sitkoru/Sitko.Core/commit/78cd8286c85bca4e219630b4f869c6e4709f81bf))
+* **elasticstack:** update Elastic.Apm.NetCoreAll from 1.12.1 to 1.14.0 ([930e6dc](https://github.com/sitkoru/Sitko.Core/commit/930e6dc446a46630150c836ce2152ca078142998))
+* **email:** update HtmlAgilityPack from 1.11.39 to 1.11.42 ([774c8ad](https://github.com/sitkoru/Sitko.Core/commit/774c8ad8b1ae50734d89595f0638001c94ea5a45))
+* **email:** update MailKit from 3.0.0 to 3.1.1 ([742be4c](https://github.com/sitkoru/Sitko.Core/commit/742be4cbc0ab40e22989aef292e3ba6e335550d2))
+* **grpc:** update Grpc.Net from 2.41.0 to 2.42.0 ([8ddceee](https://github.com/sitkoru/Sitko.Core/commit/8ddceeed51b10e71db40541e69844e916e24d9e1))
+* **hangfire:** update Hangfire.PostgreSql from 1.9.5 to 1.9.6 ([4386a4a](https://github.com/sitkoru/Sitko.Core/commit/4386a4a1d2b7ec407b5c60d8dd53de388e91e751))
+* **mudblazor:** update MudBlazor from 6.0.4 to 6.0.6 ([f71bd0d](https://github.com/sitkoru/Sitko.Core/commit/f71bd0dc618f352e76b036e018034d78ac2646a5))
+* **nats:** update NATS.Client from 0.14.4 to 0.14.5 ([45f788b](https://github.com/sitkoru/Sitko.Core/commit/45f788bf92a895fe21861a8767a3696de6783361))
+* **protobuf:** update Google.Protobuf from 3.19.2 to 3.19.4 ([ffc2226](https://github.com/sitkoru/Sitko.Core/commit/ffc2226550efda491b019938bd0db41894c0573a))
+* **s3:** update AWSSDK.S3 from 3.7.7.10 to 3.7.7.21 ([cc98e8a](https://github.com/sitkoru/Sitko.Core/commit/cc98e8a64e669b7a29ee25b6f3912836ad954ff9))
+* **xunit:** update FluentAssertions from 6.3.0 to 6.5.1 ([bea9635](https://github.com/sitkoru/Sitko.Core/commit/bea96351b47a1d86197a1150ba1a2cbf18ed9cc5))
+
 # [9.0.0-beta.15](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.14...9.0.0-beta.15) (2022-02-14)
 
 
