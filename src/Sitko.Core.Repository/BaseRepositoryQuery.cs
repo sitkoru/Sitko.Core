@@ -140,6 +140,10 @@ namespace Sitko.Core.Repository
             return this;
         }
 
+        public IRepositoryQuery<TEntity> Select(Expression<Func<TEntity, int>> intSelect) => throw new NotImplementedException();
+
+        public IRepositoryQuery<TEntity> Select(Expression<Func<TEntity, long>> longSelect) => throw new NotImplementedException();
+
         public abstract IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(
             Expression<Func<TEntity, TProperty>> navigationPropertyPath);
         public abstract IRepositoryQuery<TEntity> Include(string navigationPropertyPath);
