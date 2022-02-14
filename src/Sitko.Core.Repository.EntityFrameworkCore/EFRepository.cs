@@ -280,8 +280,11 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         return false;
     }
 
-    public override Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+    public override async Task<TEntity> RefreshAsync(TEntity entity, CancellationToken cancellationToken = default)
+    {
         dbContext.Entry(entity).ReloadAsync(cancellationToken);
+        return entity;
+    }
 
     [PublicAPI]
     protected async Task<T> ExecuteDbContextOperationAsync<T>(Func<TDbContext, Task<T>> operation,
