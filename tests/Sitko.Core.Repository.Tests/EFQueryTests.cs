@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Sitko.Core.Repository.EntityFrameworkCore;
 using Sitko.Core.Repository.Tests.Data;
 using Sitko.Core.Xunit;
@@ -15,14 +17,14 @@ public class EFQueryTests : BaseTest<EFTestScope>
     }
 
     [Fact]
-    public async Task Equals()
+    public async Task IsEquals()
     {
         var scope = await GetScopeAsync();
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<TestModel>(dbContext.Set<TestModel>());
         query.Where(new QueryContextCondition(nameof(TestModel.FooId), QueryContextOperator.Equal, 1));
-        CompareSql(query,
-            "SELECT t.\"Id\", t.\"FooId\", t.\"Status\" FROM \"TestModels\" AS t WHERE t.\"FooId\" = 1");
+        var dbQuery = dbContext.Set<TestModel>().Where(model => model.FooId == 1);
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -32,8 +34,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<TestModel>(dbContext.Set<TestModel>());
         query.Where(new QueryContextCondition(nameof(TestModel.FooId), QueryContextOperator.NotEqual, 1));
-        CompareSql(query,
-            "SELECT t.\"Id\", t.\"FooId\", t.\"Status\" FROM \"TestModels\" AS t WHERE t.\"FooId\" <> 1");
+        var dbQuery = dbContext.Set<TestModel>().Where(model => model.FooId != 1);
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -43,8 +45,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<TestModel>(dbContext.Set<TestModel>());
         query.Where(new QueryContextCondition(nameof(TestModel.FooId), QueryContextOperator.Greater, 1));
-        CompareSql(query,
-            "SELECT t.\"Id\", t.\"FooId\", t.\"Status\" FROM \"TestModels\" AS t WHERE t.\"FooId\" > 1");
+        var dbQuery = dbContext.Set<TestModel>().Where(model => model.FooId > 1);
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -54,8 +56,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<TestModel>(dbContext.Set<TestModel>());
         query.Where(new QueryContextCondition(nameof(TestModel.FooId), QueryContextOperator.GreaterOrEqual, 1));
-        CompareSql(query,
-            "SELECT t.\"Id\", t.\"FooId\", t.\"Status\" FROM \"TestModels\" AS t WHERE t.\"FooId\" >= 1");
+        var dbQuery = dbContext.Set<TestModel>().Where(model => model.FooId >= 1);
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -65,8 +67,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<TestModel>(dbContext.Set<TestModel>());
         query.Where(new QueryContextCondition(nameof(TestModel.FooId), QueryContextOperator.Less, 1));
-        CompareSql(query,
-            "SELECT t.\"Id\", t.\"FooId\", t.\"Status\" FROM \"TestModels\" AS t WHERE t.\"FooId\" < 1");
+        var dbQuery = dbContext.Set<TestModel>().Where(model => model.FooId < 1);
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -76,8 +78,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<TestModel>(dbContext.Set<TestModel>());
         query.Where(new QueryContextCondition(nameof(TestModel.FooId), QueryContextOperator.LessOrEqual, 1));
-        CompareSql(query,
-            "SELECT t.\"Id\", t.\"FooId\", t.\"Status\" FROM \"TestModels\" AS t WHERE t.\"FooId\" <= 1");
+        var dbQuery = dbContext.Set<TestModel>().Where(model => model.FooId <= 1);
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -86,9 +88,9 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var scope = await GetScopeAsync();
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<TestModel>(dbContext.Set<TestModel>());
-        query.Where(new QueryContextCondition(nameof(TestModel.FooId), QueryContextOperator.In, new[] { 1, 2, 3 }));
-        CompareSql(query,
-            "SELECT t.\"Id\", t.\"FooId\", t.\"Status\" FROM \"TestModels\" AS t WHERE t.\"FooId\" IN (1, 2, 3)");
+        query.Where(new QueryContextCondition(nameof(TestModel.FooId), QueryContextOperator.In, new[] {1, 2, 3}));
+        var dbQuery = dbContext.Set<TestModel>().Where(model => new[] {1, 2, 3}.Contains(model.FooId));
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -98,9 +100,9 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<TestModel>(dbContext.Set<TestModel>());
         query.Where(new QueryContextCondition(nameof(TestModel.FooId), QueryContextOperator.NotIn,
-            new[] { 1, 2, 3 }));
-        CompareSql(query,
-            "SELECT t.\"Id\", t.\"FooId\", t.\"Status\" FROM \"TestModels\" AS t WHERE t.\"FooId\" NOT IN (1, 2, 3)");
+            new[] {1, 2, 3}));
+        var dbQuery = dbContext.Set<TestModel>().Where(model => !new[] {1, 2, 3}.Contains(model.FooId));
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -110,8 +112,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.IsNull));
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NULL)");
+        var dbQuery = dbContext.Set<BarModel>().Where(model => model.Baz == null);
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -121,8 +123,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.NotNull));
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NOT NULL)");
+        var dbQuery = dbContext.Set<BarModel>().Where(model => model.Baz != null);
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -132,8 +134,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.Contains, "123"));
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE strpos(b.\"Baz\", '123') > 0");
+        var dbQuery = dbContext.Set<BarModel>().Where(model => model.Baz!.Contains("123"));
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -143,8 +145,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.NotContains, "123"));
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE NOT (strpos(b.\"Baz\", '123') > 0)");
+        var dbQuery = dbContext.Set<BarModel>().Where(model => !model.Baz!.Contains("123"));
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -155,8 +157,10 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.ContainsCaseInsensitive,
             "AbC"));
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE strpos(lower(b.\"Baz\"), 'abc') > 0");
+#pragma warning disable CA1304
+        var dbQuery = dbContext.Set<BarModel>().Where(model => model.Baz!.ToLower().Contains("AbC".ToLower()));
+#pragma warning restore CA1304
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -167,8 +171,10 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.NotContainsCaseInsensitive,
             "AbC"));
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE NOT (strpos(lower(b.\"Baz\"), 'abc') > 0)");
+#pragma warning disable CA1304
+        var dbQuery = dbContext.Set<BarModel>().Where(model => !model.Baz!.ToLower().Contains("AbC".ToLower()));
+#pragma warning restore CA1304
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -178,8 +184,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.StartsWith, "123"));
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NOT NULL) AND (b.\"Baz\" LIKE '123%')");
+        var dbQuery = dbContext.Set<BarModel>().Where(model => model.Baz!.StartsWith("123"));
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -189,8 +195,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.NotStartsWith, "123"));
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NOT NULL) AND NOT (b.\"Baz\" LIKE '123%')");
+        var dbQuery = dbContext.Set<BarModel>().Where(model => !model.Baz!.StartsWith("123"));
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -201,8 +207,10 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.StartsWithCaseInsensitive,
             "AbC"));
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NOT NULL) AND (lower(b.\"Baz\") LIKE 'abc%')");
+#pragma warning disable CA1304
+        var dbQuery = dbContext.Set<BarModel>().Where(model => model.Baz!.ToLower().StartsWith("AbC".ToLower()));
+#pragma warning restore CA1304
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -213,8 +221,10 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz),
             QueryContextOperator.NotStartsWithCaseInsensitive, "AbC"));
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NOT NULL) AND NOT (lower(b.\"Baz\") LIKE 'abc%')");
+#pragma warning disable CA1304
+        var dbQuery = dbContext.Set<BarModel>().Where(model => !model.Baz!.ToLower().StartsWith("AbC".ToLower()));
+#pragma warning restore CA1304
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -222,10 +232,11 @@ public class EFQueryTests : BaseTest<EFTestScope>
     {
         var scope = await GetScopeAsync();
         var dbContext = scope.GetService<TestDbContext>();
+
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.EndsWith, "123"));
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NOT NULL) AND (b.\"Baz\" LIKE '%123')");
+        var dbQuery = dbContext.Set<BarModel>().Where(model => model.Baz!.EndsWith("123"));
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -235,8 +246,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.NotEndsWith, "AbC"));
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NOT NULL) AND NOT (b.\"Baz\" LIKE '%AbC')");
+        var dbQuery = dbContext.Set<BarModel>().Where(model => !model.Baz!.EndsWith("AbC"));
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -247,8 +258,10 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.EndsWithCaseInsensitive,
             "AbC"));
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NOT NULL) AND (lower(b.\"Baz\") LIKE '%abc')");
+#pragma warning disable CA1304
+        var dbQuery = dbContext.Set<BarModel>().Where(model => model.Baz!.ToLower().EndsWith("AbC".ToLower()));
+#pragma warning restore CA1304
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -259,8 +272,10 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.NotEndsWithCaseInsensitive,
             "AbC"));
-        CompareSql(query,
-            "SELECT b.\"Id\", b.\"Baz\", b.\"JsonModels\", b.\"TestId\" FROM \"BarModel\" AS b WHERE (b.\"Baz\" IS NOT NULL) AND NOT (lower(b.\"Baz\") LIKE '%abc')");
+#pragma warning disable CA1304
+        var dbQuery = dbContext.Set<BarModel>().Where(model => !model.Baz!.ToLower().EndsWith("AbC".ToLower()));
+#pragma warning restore CA1304
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -273,8 +288,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
             new QueryContextCondition(nameof(TestModel.FooId), QueryContextOperator.Equal, 1),
             new QueryContextCondition(nameof(TestModel.FooId), QueryContextOperator.NotEqual, 2)
         ));
-        CompareSql(query,
-            "SELECT t.\"Id\", t.\"FooId\", t.\"Status\" FROM \"TestModels\" AS t WHERE (t.\"FooId\" = 1) OR (t.\"FooId\" <> 2)");
+        var dbQuery = dbContext.Set<TestModel>().Where(model => model.FooId == 1 || model.FooId != 2);
+        CompareSql(query, dbQuery);
     }
 
     [Fact]
@@ -289,14 +304,15 @@ public class EFQueryTests : BaseTest<EFTestScope>
             new QueryContextConditionsGroup(new QueryContextCondition(nameof(TestModel.FooId),
                 QueryContextOperator.NotEqual, 2))
         );
-        CompareSql(query,
-            "SELECT t.\"Id\", t.\"FooId\", t.\"Status\" FROM \"TestModels\" AS t WHERE (t.\"FooId\" = 1) AND (t.\"FooId\" <> 2)");
+        var dbQuery = dbContext.Set<TestModel>().Where(model => model.FooId == 1 && model.FooId != 2);
+        CompareSql(query, dbQuery);
     }
 
-    private static void CompareSql<TItem>(EFRepositoryQuery<TItem> query, string expectedSql)
+    private static void CompareSql<TItem>(EFRepositoryQuery<TItem> query, IQueryable<TItem> expectedQuery)
         where TItem : class
     {
         var sql = query.QueryString.Replace("\n", " ").Replace("\r", "");
+        var expectedSql = expectedQuery.ToQueryString().Replace("\n", " ").Replace("\r", "");
         sql.Should().Be(expectedSql);
     }
 }
