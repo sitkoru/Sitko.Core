@@ -4,7 +4,7 @@
     <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="idunno.Authentication.Basic" Version="2.2.2" />
+    <PackageReference Include="idunno.Authentication.Basic" Version="2.2.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Auth\Sitko.Core.Auth.csproj" />
