@@ -5,18 +5,18 @@ using Sitko.Core.App.Json;
 
 namespace Sitko.Core.Repository.Remote;
 
-public class HttpRepositoryTransport<TRepositoryOptions> : IRemoteRepositoryTransport  where TRepositoryOptions : RemoteRepositoryOptions
+public class HttpRepositoryTransport : IRemoteRepositoryTransport
 {
     private readonly IHttpClientFactory httpClientFactory;
-    private readonly IOptionsMonitor<TRepositoryOptions> optionsMonitor;
+    private readonly IOptionsMonitor<HttpRepositoryTransportOptions> optionsMonitor;
 
-    public HttpRepositoryTransport(IHttpClientFactory httpClientFactory, IOptionsMonitor<TRepositoryOptions> optionsMonitor)
+    public HttpRepositoryTransport(IHttpClientFactory httpClientFactory, IOptionsMonitor<HttpRepositoryTransportOptions> optionsMonitor)
     {
         this.httpClientFactory = httpClientFactory;
         this.optionsMonitor = optionsMonitor;
     }
 
-    protected TRepositoryOptions Options => optionsMonitor.CurrentValue;
+    protected HttpRepositoryTransportOptions Options => optionsMonitor.CurrentValue;
 
     private HttpClient HttpClient
     {
@@ -33,14 +33,10 @@ public class HttpRepositoryTransport<TRepositoryOptions> : IRemoteRepositoryTran
         }
     }
 
-    private static StringContent CreateJsonContent<TEntity>(TEntity content) where TEntity : class
+    private async Task<TResponse?> PostRequestAsync<TRequest, TResponse>(string url, TRequest request, CancellationToken cancellationToken)
     {
-        var json = JsonSerializer.Serialize(content);
-        return new StringContent(json, Encoding.UTF8, "application/json");
-    }
-
-    private async Task<TResponse?> PostRequestAsync<TResponse>(StringContent content, string url, CancellationToken cancellationToken)
-    {
+        var json = JsonSerializer.Serialize(request);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
         var result = await HttpClient.PostAsync(HttpClient.BaseAddress + $"/{typeof(TResponse).Name}" + url, content , cancellationToken);
         if (!result.IsSuccessStatusCode)
         {
@@ -55,39 +51,34 @@ public class HttpRepositoryTransport<TRepositoryOptions> : IRemoteRepositoryTran
         CancellationToken cancellationToken = default) where TEntity : class
     {
         var serialized = configureQuery.Serialize();
-        var content = CreateJsonContent(serialized);
-        return await PostRequestAsync<TEntity?>(content,"/Get", cancellationToken);
+        return await PostRequestAsync<SerializedQuery<TEntity>, TEntity?>("/Get", serialized, cancellationToken);
     }
 
     public async Task<int> CountAsync<TEntity>(RemoteRepositoryQuery<TEntity> configureQuery,
         CancellationToken cancellationToken = default) where TEntity : class
     {
         var serialized = configureQuery.Serialize();
-        var content = CreateJsonContent(serialized);
-        return await PostRequestAsync<int>(content,"/Count", cancellationToken);
+        return await PostRequestAsync<SerializedQuery<TEntity>, int>("/Count", serialized, cancellationToken);
     }
 
     public async Task<TReturn?> SumAsync<TEntity, TReturn>(RemoteRepositoryQuery<TEntity> configureQuery,
         CancellationToken cancellationToken = default) where TEntity : class where TReturn : struct
     {
         var serialized = configureQuery.Serialize();
-        var content = CreateJsonContent(serialized);
-        return await PostRequestAsync<TReturn?>(content,"/Sum"+nameof(TReturn), cancellationToken);
+        return await PostRequestAsync<SerializedQuery<TEntity>,TReturn?>("/Sum"+nameof(TReturn), serialized, cancellationToken);
     }
 
     public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddAsync<TEntity, TEntityPk>(TEntity entity,
         CancellationToken cancellationToken = default) where TEntity : class, IEntity<TEntityPk>
     {
-        var content = CreateJsonContent(entity);
-        return await PostRequestAsync<AddOrUpdateOperationResult<TEntity, TEntityPk>>(content,"/Add", cancellationToken);
+        return await PostRequestAsync<TEntity, AddOrUpdateOperationResult<TEntity, TEntityPk>>("/Add",entity, cancellationToken);
     }
 
     public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> AddAsync<TEntity, TEntityPk>(
         IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
         where TEntity : class, IEntity<TEntityPk>
     {
-        var content = CreateJsonContent(entities);
-        return await PostRequestAsync<AddOrUpdateOperationResult<TEntity, TEntityPk>[]>(content,"/Add", cancellationToken);
+        return await PostRequestAsync<IEnumerable<TEntity>, AddOrUpdateOperationResult<TEntity, TEntityPk>[]>("/Add", entities, cancellationToken);
     }
 
     public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync<TEntity, TEntityPk>(TEntity entity, TEntity? oldEntity,
@@ -98,23 +89,20 @@ public class HttpRepositoryTransport<TRepositoryOptions> : IRemoteRepositoryTran
             Entity = entity,
             OldEntity = oldEntity
         };
-        var content = CreateJsonContent(jsonEntity);
-        return await PostRequestAsync<AddOrUpdateOperationResult<TEntity, TEntityPk>>(content,"/Update", cancellationToken);
+        return await PostRequestAsync<UpdateModel<TEntity>, AddOrUpdateOperationResult<TEntity, TEntityPk>>("/Update", jsonEntity, cancellationToken);
     }
 
     public async Task<bool> DeleteAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default)
         where TEntity : class
     {
-        var content = CreateJsonContent(entity);
-        return await PostRequestAsync<bool>(content,"/Delete", cancellationToken);
+        return await PostRequestAsync<TEntity, bool>("/Delete", entity, cancellationToken);
     }
 
     public async Task<(TEntity[] items, int itemsCount)> GetAllAsync<TEntity>(RemoteRepositoryQuery<TEntity> query,
         CancellationToken cancellationToken = default) where TEntity : class
     {
         var serialized = query.Serialize();
-        var content = CreateJsonContent(serialized);
-        return await PostRequestAsync<(TEntity[] items, int itemsCount)>(content,"/GetAll", cancellationToken);
+        return await PostRequestAsync<SerializedQuery<TEntity>, (TEntity[] items, int itemsCount)>("/GetAll", serialized, cancellationToken);
     }
 }
 
