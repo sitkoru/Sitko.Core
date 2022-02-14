@@ -6,7 +6,6 @@ namespace Sitko.Core.Repository.Remote;
 [PublicAPI]
 public static class ApplicationExtensions
 {
-
     public static Application AddRemoteRepositories(this Application application,
         Action<IApplicationContext, RemoteRepositoryOptions> configure,
         string? optionsKey = null) =>
@@ -37,4 +36,8 @@ public static class ApplicationExtensions
                 configure?.Invoke(moduleOptions);
             },
             optionsKey);
+
+    public static Application AddHttpRepositoryTransport(this Application application,
+        Action<HttpRepositoryTransportOptions>? configure = null, string? optionsKey = null) =>
+        application.AddModule<HttpRepositoryTransportModule, HttpRepositoryTransportOptions>();
 }
