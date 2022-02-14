@@ -56,12 +56,10 @@ namespace Sitko.Core.Repository.EntityFrameworkCore
 
             if (IncludeProperties.Any())
             {
-                var includesString = string.Empty;
                 foreach (var property in IncludeProperties)
                 {
-                    includesString += includesString == "" ? property : "." + property;
+                    QuerySource.Query = QuerySource.Query.Include(property);
                 }
-                QuerySource.Query = QuerySource.Query.Include(includesString);
             }
 
             return QuerySource.Query;
