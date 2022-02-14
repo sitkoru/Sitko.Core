@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sitko.Core.Consul\Sitko.Core.Consul.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Grpc.Client\Sitko.Core.Grpc.Client.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Grpc.Net.Client.Web" Version="2.41.0" />
+  </ItemGroup>
+
+</Project>
