@@ -286,14 +286,13 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         var query = await CreateRepositoryQueryAsync(cancellationToken);
 
         var result = await DoGetAllAsync(query, cancellationToken);
-        var (items, needCount) = (result.items, result.needCount);
 
-        var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
+        var itemsCount = result.needCount && (query.Offset > 0 || result.items.Length == query.Limit)
             ? await CountAsync(cancellationToken)
-            : items.Length;
-        await AfterLoadEntitiesAsync(items, cancellationToken);
+            : result.items.Length;
+        await AfterLoadEntitiesAsync(result.items, cancellationToken);
 
-        return (items, itemsCount);
+        return (result.items, itemsCount);
     }
 
     public virtual async Task<(TEntity[] items, int itemsCount)> GetAllAsync(
@@ -303,14 +302,13 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         query.Configure(configureQuery);
 
         var result = await DoGetAllAsync(query, cancellationToken);
-        var (items, needCount) = (result.items, result.needCount);
 
-        var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
+        var itemsCount = result.needCount && (query.Offset > 0 || result.items.Length == query.Limit)
             ? await CountAsync(configureQuery, cancellationToken)
-            : items.Length;
-        await AfterLoadEntitiesAsync(items, cancellationToken);
+            : result.items.Length;
+        await AfterLoadEntitiesAsync(result.items, cancellationToken);
 
-        return (items, itemsCount);
+        return (result.items, itemsCount);
     }
 
     public virtual async Task<(TEntity[] items, int itemsCount)> GetAllAsync(
@@ -320,14 +318,13 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         await query.ConfigureAsync(configureQuery, cancellationToken);
 
         var result = await DoGetAllAsync(query, cancellationToken);
-        var (items, needCount) = (result.items, result.needCount);
 
-        var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
+        var itemsCount = result.needCount && (query.Offset > 0 || result.items.Length == query.Limit)
             ? await CountAsync(configureQuery, cancellationToken)
-            : items.Length;
-        await AfterLoadEntitiesAsync(items, cancellationToken);
+            : result.items.Length;
+        await AfterLoadEntitiesAsync(result.items, cancellationToken);
 
-        return (items, itemsCount);
+        return (result.items, itemsCount);
     }
 
     public virtual async Task<int> SumAsync(Expression<Func<TEntity, int>> selector,
@@ -622,11 +619,10 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         query.Where(i => ids.Contains(i.Id));
 
         var result = await DoGetAllAsync(query, cancellationToken);
-        var (items,_) = (result.items, result.itemsCount);
 
-        await AfterLoadEntitiesAsync(items, cancellationToken);
+        await AfterLoadEntitiesAsync(result.items, cancellationToken);
 
-        return items;
+        return result.items;
     }
 
     public virtual async Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids,
@@ -637,11 +633,10 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         await query.ConfigureAsync(configureQuery, cancellationToken);
 
         var result = await DoGetAllAsync(query, cancellationToken);
-        var (items,_) = (result.items, result.itemsCount);
 
-        await AfterLoadEntitiesAsync(items, cancellationToken);
+        await AfterLoadEntitiesAsync(result.items, cancellationToken);
 
-        return items;
+        return result.items;
     }
 
     public virtual async Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids,
@@ -651,11 +646,10 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         query.Where(i => ids.Contains(i.Id)).Configure(configureQuery);
 
         var result = await DoGetAllAsync(query, cancellationToken);
-        var (items,_) = (result.items, result.itemsCount);
 
-        await AfterLoadEntitiesAsync(items, cancellationToken);
+        await AfterLoadEntitiesAsync(result.items, cancellationToken);
 
-        return items;
+        return result.items;
     }
 
     protected abstract Task<TQuery> CreateRepositoryQueryAsync(CancellationToken cancellationToken = default);
