@@ -37,7 +37,8 @@ namespace Sitko.Core.Repository
             CancellationToken cancellationToken = default);
 
         IRepositoryQuery<TEntity> Paginate(int page, int itemsPerPage);
-
+        IRepositoryQuery<TEntity> Select(Expression<Func<TEntity, int>> intSelect);
+        IRepositoryQuery<TEntity> Select(Expression<Func<TEntity, long>> longSelect);
         IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(
             Expression<Func<TEntity, TProperty>> navigationPropertyPath);
         IRepositoryQuery<TEntity> Include(string navigationPropertyPath);
