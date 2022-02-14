@@ -46,7 +46,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
     public abstract Task<bool> CommitTransactionAsync(CancellationToken cancellationToken = default);
     public abstract Task<bool> RollbackTransactionAsync(CancellationToken cancellationToken = default);
 
-    public abstract Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default);
+    public abstract Task<TEntity> RefreshAsync(TEntity entity, CancellationToken cancellationToken = default);
 
     public async Task<bool> HasChangesAsync(TEntity entity)
     {
