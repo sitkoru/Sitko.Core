@@ -27,8 +27,6 @@ namespace Sitko.Core.Repository
             return this;
         }
 
-        public abstract IRepositoryQuery<TEntity> Include(string navigationPropertyPath);
-
         public abstract IRepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> where);
         public abstract IRepositoryQuery<TEntity> Where(Func<IQueryable<TEntity>, IQueryable<TEntity>> where);
         public abstract IRepositoryQuery<TEntity> Where(string whereStr, object?[] values);
@@ -144,6 +142,7 @@ namespace Sitko.Core.Repository
 
         public abstract IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(
             Expression<Func<TEntity, TProperty>> navigationPropertyPath);
+        public abstract IRepositoryQuery<TEntity> Include(string navigationPropertyPath);
 
         protected abstract void ApplySort((string propertyName, bool isDescending) sortQuery);
 

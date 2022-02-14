@@ -16,7 +16,6 @@ namespace Sitko.Core.Repository
         public int? Offset { get; }
         IRepositoryQuery<TEntity> Take(int take);
         IRepositoryQuery<TEntity> Skip(int skip);
-        IRepositoryQuery<TEntity> Include(string navigationPropertyPath);
         IRepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> where);
         IRepositoryQuery<TEntity> Where(Func<IQueryable<TEntity>, IQueryable<TEntity>> where);
         IRepositoryQuery<TEntity> Where(string whereStr, object[] values);
@@ -41,6 +40,8 @@ namespace Sitko.Core.Repository
 
         IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(
             Expression<Func<TEntity, TProperty>> navigationPropertyPath);
+        IRepositoryQuery<TEntity> Include(string navigationPropertyPath);
+
     }
 
     // ReSharper disable once UnusedTypeParameter
