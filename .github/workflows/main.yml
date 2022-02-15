@@ -123,8 +123,10 @@ jobs:
       - uses: actions/checkout@v2
       - name: Add Github Actions logger
         run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
-      - name: Run tests
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.Repository.Tests/Sitko.Core.Repository.Tests.csproj
+      - name: Run EF Core tests
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Repository.EntityFrameworkCore.Tests/Sitko.Core.Repository.EntityFrameworkCore.Tests.csproj
+      - name: Run Remote tests
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Repository.Remote.Tests/Sitko.Core.Repository.Remote.Tests.csproj
 
   sonyflake:
     runs-on: ubuntu-latest
