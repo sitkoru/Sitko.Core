@@ -15,7 +15,7 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
     private List<Expression<Func<TEntity, object>>> orderByDescendingExpressions = new();
     private List<Expression<Func<TEntity, int>>> intSelectExpressions = new();
     private List<Expression<Func<TEntity, long>>> longSelectExpressions = new();
-    private List<IRemoteIncludableQuery> _includableQueries;
+    private List<IRemoteIncludableQuery> _includableQueries = new();
     private List<string> _includes = new ();
 
     public RemoteRepositoryQuery()
