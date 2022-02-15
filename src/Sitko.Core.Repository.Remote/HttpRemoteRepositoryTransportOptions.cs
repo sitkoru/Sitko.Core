@@ -11,7 +11,7 @@ public class HttpRepositoryTransportOptions : BaseModuleOptions
     [PublicAPI] public Uri RepositoryControllerApiRoute { get; set; }
 }
 
-public abstract class RepositoryOptionsValidator : AbstractValidator<HttpRepositoryTransportOptions>
+public class RepositoryOptionsValidator : AbstractValidator<HttpRepositoryTransportOptions>
 {
     public RepositoryOptionsValidator() => RuleFor(o => o.RepositoryControllerApiRoute).NotEmpty()
         .WithMessage($"Repository {typeof(HttpRepositoryTransportOptions)} api route is empty");
