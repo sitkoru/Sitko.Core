@@ -106,7 +106,14 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
         CancellationToken cancellationToken = default) where TEntity : class
     {
         var serialized = query.Serialize();
-        return await PostRequestAsync<SerializedQuery<TEntity>, (TEntity[] items, int itemsCount)>($"/{typeof(TEntity).Name}"+"/GetAll", serialized, cancellationToken);
+        var result = await PostRequestAsync<SerializedQueryData, ListResult<TEntity>>(
+            $"/{typeof(TEntity).Name}" + "/GetAll", serialized.Data, cancellationToken);
+        if (result is null)
+        {
+            return (Array.Empty<TEntity>(), 0);
+        }
+
+        return (result.Items, result.ItemsCount);
     }
 }
 
@@ -115,3 +122,5 @@ public class UpdateModel<TEntity> where TEntity : class
     public TEntity Entity { get; set; }
     public TEntity? OldEntity { get; set; }
 }
+
+public record ListResult<TEntity>(TEntity[] Items, int ItemsCount);
