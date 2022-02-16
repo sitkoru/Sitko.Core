@@ -29,15 +29,15 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
         repositoryContext) =>
         repositoryTransport = repositoryContext.RepositoryTransport;
 
-    public override async Task<bool> BeginTransactionAsync(CancellationToken cancellationToken = default)
+    public override Task<bool> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
         isTransactionStarted = true;
-        if (TransactionActions.Any())
+        if (transactionActions.Any())
         {
-            throw new Exception();
+            throw new InvalidOperationException("Transaction already started");
         }
 
-        return true;
+        return Task.FromResult(true);
     }
 
     public override async Task<bool> CommitTransactionAsync(CancellationToken cancellationToken = default)
@@ -45,30 +45,34 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
         //if not active = throw or something
         if (!isTransactionStarted)
         {
-            throw new Exception();
+            throw new InvalidOperationException("Transaction was not started");
         }
+
         //if active - do all from list and close
-        foreach (var action in TransactionActions)
+        foreach (var action in transactionActions)
         {
             await action();
         }
+
         return true;
     }
 
-    public override async Task<bool> RollbackTransactionAsync(CancellationToken cancellationToken = default)
+    public override Task<bool> RollbackTransactionAsync(CancellationToken cancellationToken = default)
     {
         //if not active do nothing
         if (!isTransactionStarted)
         {
-            return false;
+            return Task.FromResult(false);
         }
+
         //if active and actions not null - clear list and close
-        if (TransactionActions.Any())
+        if (transactionActions.Any())
         {
-            TransactionActions.Clear();
+            transactionActions.Clear();
             isTransactionStarted = false;
         }
-        return true;
+
+        return Task.FromResult(true);
     }
 
     public override async Task<TEntity> RefreshAsync(TEntity entity, CancellationToken cancellationToken = default)
@@ -247,7 +251,7 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
     {
         if (isTransactionStarted)
         {
-            TransactionActions.Add(()=>repositoryTransport.DeleteAsync(entity, cancellationToken));
+            transactionActions.Add(() => repositoryTransport.DeleteAsync(entity, cancellationToken));
         }
         else
         {
