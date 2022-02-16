@@ -38,6 +38,7 @@ public static class ApplicationExtensions
             optionsKey);
 
     public static Application AddHttpRepositoryTransport(this Application application,
-        Action<HttpRepositoryTransportOptions>? configure = null, string? optionsKey = null) =>
-        application.AddModule<HttpRepositoryTransportModule, HttpRepositoryTransportOptions>();
+        Action<HttpRepositoryTransportOptions>? configure = null,
+        string? optionsKey = null) =>
+        application.AddModule<HttpRepositoryTransportModule, HttpRepositoryTransportOptions>(configure,optionsKey);
 }
