@@ -19,12 +19,11 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
     private readonly IRemoteRepositoryTransport repositoryTransport;
     private readonly Dictionary<TEntityPk, TEntity> snapshots = new();
 
-    private bool isTransactionStarted;
+    private readonly List<Func<Task>> transactionActions = new();
+
     private CompareLogic? comparer;
 
-    private List<RepositoryRecord<TEntity, TEntityPk>>? batch;
-    private List<Func<Task>> TransactionActions { get; }
-    private Dictionary<TEntityPk, TEntity> Snapshots { get; }
+    private bool isTransactionStarted;
 
     protected BaseRemoteRepository(RemoteRepositoryContext<TEntity, TEntityPk> repositoryContext) : base(
         repositoryContext) =>
