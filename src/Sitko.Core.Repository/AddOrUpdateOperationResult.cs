@@ -7,7 +7,6 @@ public record AddOrUpdateOperationResult<T, TId>(T Entity, ValidationFailure[] E
     where T : IEntity<TId>
 {
     public bool IsSuccess => Errors.Length == 0;
-    public T Entity { get; }
 
     public string ErrorsString => string.Join(" ", Errors.Select(e => e.ErrorMessage));
 }
