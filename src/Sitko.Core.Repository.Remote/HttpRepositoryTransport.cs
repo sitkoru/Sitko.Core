@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Sitko.Core.App.Json;
 
@@ -10,7 +9,8 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
     private readonly IHttpClientFactory httpClientFactory;
     private readonly IOptionsMonitor<HttpRepositoryTransportOptions> optionsMonitor;
 
-    public HttpRepositoryTransport(IHttpClientFactory httpClientFactory, IOptionsMonitor<HttpRepositoryTransportOptions> optionsMonitor)
+    public HttpRepositoryTransport(IHttpClientFactory httpClientFactory,
+        IOptionsMonitor<HttpRepositoryTransportOptions> optionsMonitor)
     {
         this.httpClientFactory = httpClientFactory;
         this.optionsMonitor = optionsMonitor;
@@ -31,20 +31,6 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
             client.BaseAddress = Options.RepositoryControllerApiRoute;
             return client;
         }
-    }
-
-    private async Task<TResponse?> PostRequestAsync<TRequest, TResponse>(string url, TRequest request, CancellationToken cancellationToken)
-    {
-        var json = JsonSerializer.Serialize(request);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var result = await HttpClient.PostAsync(HttpClient.BaseAddress + url, content , cancellationToken);
-        if (!result.IsSuccessStatusCode)
-        {
-            throw new InvalidOperationException(result.ReasonPhrase);
-        }
-
-        var answer = JsonSerializer.Deserialize<TResponse>(await result.Content.ReadAsStringAsync());
-        return answer;
     }
 
     public async Task<TEntity?> GetAsync<TEntity>(RemoteRepositoryQuery<TEntity> configureQuery,
@@ -73,34 +59,28 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
     }
 
     public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddAsync<TEntity, TEntityPk>(TEntity entity,
-        CancellationToken cancellationToken = default) where TEntity : class, IEntity<TEntityPk>
-    {
-        return await PostRequestAsync<TEntity, AddOrUpdateOperationResult<TEntity, TEntityPk>>($"/{typeof(TEntity).Name}"+"/Add",entity, cancellationToken);
-    }
+        CancellationToken cancellationToken = default) where TEntity : class, IEntity<TEntityPk> =>
+        await PostRequestAsync<TEntity, AddOrUpdateOperationResult<TEntity, TEntityPk>>(
+            $"/{typeof(TEntity).Name}" + "/Add", entity, cancellationToken);
 
     public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> AddAsync<TEntity, TEntityPk>(
         IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity<TEntityPk>
-    {
-        return await PostRequestAsync<IEnumerable<TEntity>, AddOrUpdateOperationResult<TEntity, TEntityPk>[]>($"/{typeof(TEntity).Name}"+"/Add", entities, cancellationToken);
-    }
+        where TEntity : class, IEntity<TEntityPk> =>
+        await PostRequestAsync<IEnumerable<TEntity>, AddOrUpdateOperationResult<TEntity, TEntityPk>[]>(
+            $"/{typeof(TEntity).Name}" + "/Add", entities, cancellationToken);
 
-    public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync<TEntity, TEntityPk>(TEntity entity, TEntity? oldEntity,
+    public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync<TEntity, TEntityPk>(TEntity entity,
+        TEntity? oldEntity,
         CancellationToken cancellationToken = default) where TEntity : class, IEntity<TEntityPk>
     {
-        var jsonEntity = new UpdateModel<TEntity>
-        {
-            Entity = entity,
-            OldEntity = oldEntity
-        };
-        return await PostRequestAsync<UpdateModel<TEntity>, AddOrUpdateOperationResult<TEntity, TEntityPk>>($"/{typeof(TEntity).Name}"+"/Update", jsonEntity, cancellationToken);
+        var jsonEntity = new UpdateModel<TEntity> { Entity = entity, OldEntity = oldEntity };
+        return await PostRequestAsync<UpdateModel<TEntity>, AddOrUpdateOperationResult<TEntity, TEntityPk>>(
+            $"/{typeof(TEntity).Name}" + "/Update", jsonEntity, cancellationToken);
     }
 
     public async Task<bool> DeleteAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default)
-        where TEntity : class
-    {
-        return await PostRequestAsync<TEntity, bool>($"/{typeof(TEntity).Name}"+"/Delete", entity, cancellationToken);
-    }
+        where TEntity : class =>
+        await PostRequestAsync<TEntity, bool>($"/{typeof(TEntity).Name}" + "/Delete", entity, cancellationToken);
 
     public async Task<(TEntity[] items, int itemsCount)> GetAllAsync<TEntity>(RemoteRepositoryQuery<TEntity> query,
         CancellationToken cancellationToken = default) where TEntity : class
@@ -114,6 +94,26 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
         }
 
         return (result.Items, result.ItemsCount);
+    }
+
+    private async Task<TResponse?> PostRequestAsync<TRequest, TResponse>(string url, TRequest request,
+        CancellationToken cancellationToken)
+    {
+        var requestJson = JsonHelper.SerializeWithMetadata(request);
+        var content = new StringContent(requestJson, Encoding.UTF8, "application/json");
+        var result = await HttpClient.PostAsync(HttpClient.BaseAddress + url, content, cancellationToken);
+        if (!result.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException(result.ReasonPhrase);
+        }
+
+#if NET6_0_OR_GREATER
+        var responseJson = await result.Content.ReadAsStringAsync(cancellationToken);
+#else
+        var responseJson = await result.Content.ReadAsStringAsync();
+#endif
+        var answer = JsonHelper.DeserializeWithMetadata<TResponse>(responseJson);
+        return answer;
     }
 }
 

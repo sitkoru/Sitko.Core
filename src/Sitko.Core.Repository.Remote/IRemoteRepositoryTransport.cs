@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-
-namespace Sitko.Core.Repository.Remote;
+﻿namespace Sitko.Core.Repository.Remote;
 
 public interface IRemoteRepositoryTransport
 {
@@ -19,10 +17,12 @@ public interface IRemoteRepositoryTransport
     Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> AddAsync<TEntity, TEntityPk>(IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default) where TEntity : class, IEntity<TEntityPk>;
 
-    Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync<TEntity, TEntityPk>(TEntity entity, TEntity? oldEntity,
+    Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync<TEntity, TEntityPk>(TEntity entity,
+        TEntity? oldEntity,
         CancellationToken cancellationToken = default) where TEntity : class, IEntity<TEntityPk>;
 
-    Task<bool> DeleteAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class;
+    Task<bool> DeleteAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default)
+        where TEntity : class;
 
     Task<(TEntity[] items, int itemsCount)> GetAllAsync<TEntity>(RemoteRepositoryQuery<TEntity> query,
         CancellationToken cancellationToken = default) where TEntity : class;
