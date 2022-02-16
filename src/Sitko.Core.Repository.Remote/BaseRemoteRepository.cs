@@ -17,6 +17,7 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
 {
 
     private readonly IRemoteRepositoryTransport repositoryTransport;
+    private readonly Dictionary<TEntityPk, TEntity> snapshots = new();
 
     private bool isTransactionStarted;
     private CompareLogic? comparer;
@@ -87,8 +88,9 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
         var result = await repositoryTransport.GetAllAsync(query, cancellationToken);
         foreach (var item in result.items)
         {
-            Snapshots.Add(item.Id, CreateEntitySnapshot(item));
+            snapshots[item.Id] = CreateEntitySnapshot(item);
         }
+
         return (result.items, result.itemsCount, false);
     }
 
@@ -144,7 +146,11 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
         CancellationToken cancellationToken = default)
     {
         var result = await repositoryTransport.GetAsync(query, cancellationToken);
-        Snapshots.Add(result.Id, CreateEntitySnapshot(result));
+        if (result is not null)
+        {
+            snapshots[result.Id] = CreateEntitySnapshot(result);
+        }
+
         return result;
     }
 
@@ -168,9 +174,9 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
     protected override async Task<PropertyChange[]> GetChangesAsync(TEntity item)
     {
         var changes = new List<PropertyChange>();
-        if (Snapshots[item.Id] is not null)
+        if (snapshots.ContainsKey(item.Id))
         {
-            var differences = GetComparer().Compare(Snapshots[item.Id], CreateEntitySnapshot(item));
+            var differences = GetComparer().Compare(snapshots[item.Id], CreateEntitySnapshot(item));
             if (!differences.AreEqual)
             {
                 foreach (var difference in differences.Differences)
@@ -189,11 +195,22 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
         Snapshots.Add(entity.Id, CreateEntitySnapshot(entity));
         if (isTransactionStarted)
         {
-            TransactionActions.Add(()=>repositoryTransport.AddAsync<TEntity, TEntityPk>(entity, cancellationToken));
+            transactionActions.Add(async () =>
+            {
+                var result = await repositoryTransport.AddAsync<TEntity, TEntityPk>(entity, cancellationToken);
+                if (result.IsSuccess)
+                {
+                    snapshots[entity.Id] = CreateEntitySnapshot(result.Entity);
+                }
+            });
         }
         else
         {
-            await repositoryTransport.AddAsync<TEntity, TEntityPk>(entity, cancellationToken);
+            var result = await repositoryTransport.AddAsync<TEntity, TEntityPk>(entity, cancellationToken);
+            if (result.IsSuccess)
+            {
+                snapshots[entity.Id] = CreateEntitySnapshot(result.Entity);
+            }
         }
     }
 
@@ -204,12 +221,26 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
         var changes = await GetChangesAsync(entity);
         if (isTransactionStarted)
         {
-            TransactionActions.Add(()=>repositoryTransport.UpdateAsync<TEntity, TEntityPk>(entity, oldEntity, cancellationToken));
+            transactionActions.Add(async () =>
+            {
+                var result =
+                    await repositoryTransport.UpdateAsync<TEntity, TEntityPk>(entity, oldEntity, cancellationToken);
+                if (result.IsSuccess)
+                {
+                    snapshots.Add(entity.Id, CreateEntitySnapshot(result.Entity));
+                }
+            });
         }
         else
         {
-            await repositoryTransport.UpdateAsync<TEntity, TEntityPk>(entity, oldEntity, cancellationToken);
+            var result =
+                await repositoryTransport.UpdateAsync<TEntity, TEntityPk>(entity, oldEntity, cancellationToken);
+            if (result.IsSuccess)
+            {
+                snapshots[entity.Id] = CreateEntitySnapshot(result.Entity);
+            }
         }
+
         return changes;
     }
 
@@ -224,9 +255,9 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
             await repositoryTransport.DeleteAsync(entity, cancellationToken);
         }
 
-        if (Snapshots[entity.Id] is not null)
+        if (snapshots.ContainsKey(entity.Id))
         {
-            Snapshots.Remove(entity.Id);
+            snapshots.Remove(entity.Id);
         }
     }
 }
