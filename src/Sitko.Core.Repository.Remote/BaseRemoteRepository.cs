@@ -1,11 +1,6 @@
 ﻿using System.Linq.Expressions;
-using System.Text.Json;
-using JetBrains.Annotations;
 using KellermanSoftware.CompareNetObjects;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Sitko.Core.App.Json;
-using Sitko.FluentValidation.Graph;
 
 namespace Sitko.Core.Repository.Remote;
 
@@ -13,9 +8,10 @@ public interface IRemoteRepository : IRepository
 {
 }
 
-public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, TEntityPk, RemoteRepositoryQuery<TEntity>>, IRemoteRepository where TEntity : class, IEntity<TEntityPk>
+public class
+    BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, TEntityPk, RemoteRepositoryQuery<TEntity>>,
+        IRemoteRepository where TEntity : class, IEntity<TEntityPk> where TEntityPk : notnull
 {
-
     private readonly IRemoteRepositoryTransport repositoryTransport;
     private readonly Dictionary<TEntityPk, TEntity> snapshots = new();
 
@@ -75,16 +71,15 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
         return Task.FromResult(true);
     }
 
-    public override async Task<TEntity> RefreshAsync(TEntity entity, CancellationToken cancellationToken = default)
-    {
-        return await GetByIdAsync(entity.Id);
-    }
+    public override Task<TEntity> RefreshAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+        GetByIdAsync(entity.Id, cancellationToken)!;
 
     protected override Task<RemoteRepositoryQuery<TEntity>> CreateRepositoryQueryAsync(
-        CancellationToken cancellationToken = default)=>
+        CancellationToken cancellationToken = default) =>
         Task.FromResult(new RemoteRepositoryQuery<TEntity>());
 
-    protected override async Task<(TEntity[] items, int itemsCount, bool needCount)> DoGetAllAsync(RemoteRepositoryQuery<TEntity> query,
+    protected override async Task<(TEntity[] items, int itemsCount, bool needCount)> DoGetAllAsync(
+        RemoteRepositoryQuery<TEntity> query,
         CancellationToken cancellationToken = default)
     {
         //send it to server through remote transport service and recieve items
@@ -98,10 +93,8 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
     }
 
     protected override async Task<int> DoCountAsync(RemoteRepositoryQuery<TEntity> query,
-        CancellationToken cancellationToken = default)
-    {
-        return await repositoryTransport.CountAsync(query, cancellationToken);
-    }
+        CancellationToken cancellationToken = default) =>
+        await repositoryTransport.CountAsync(query, cancellationToken);
 
     protected override async Task<int> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
         Expression<Func<TEntity, int>> selector, CancellationToken cancellationToken = default) =>
@@ -171,10 +164,12 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
 
         return comparer;
     }
+
     protected virtual void ConfigureComparer(ComparisonConfig comparisonConfig)
     {
     }
-    protected override async Task<PropertyChange[]> GetChangesAsync(TEntity item)
+
+    protected override Task<PropertyChange[]> GetChangesAsync(TEntity item)
     {
         var changes = new List<PropertyChange>();
         if (snapshots.ContainsKey(item.Id))
@@ -191,12 +186,13 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
             }
         }
 
-        return changes.ToArray();
+        return Task.FromResult(changes.ToArray());
     }
-    protected virtual TEntity? CreateEntitySnapshot(TEntity? entity) => JsonHelper.Clone(entity);
+
+    protected virtual TEntity CreateEntitySnapshot(TEntity entity) => JsonHelper.Clone(entity)!;
+
     protected override async Task DoAddAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        Snapshots.Add(entity.Id, CreateEntitySnapshot(entity));
         if (isTransactionStarted)
         {
             transactionActions.Add(async () =>
