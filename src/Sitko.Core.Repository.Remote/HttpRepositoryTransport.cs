@@ -63,11 +63,13 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
             cancellationToken);
     }
 
-    public async Task<TReturn?> SumAsync<TEntity, TReturn>(RemoteRepositoryQuery<TEntity> configureQuery,
+    public async Task<TReturn> SumAsync<TEntity, TReturn>(RemoteRepositoryQuery<TEntity> configureQuery,
+        SumType type,
         CancellationToken cancellationToken = default) where TEntity : class where TReturn : struct
     {
         var serialized = configureQuery.Serialize();
-        return await PostRequestAsync<SerializedQuery<TEntity>,TReturn?>($"/{typeof(TEntity).Name}"+"/Sum"+nameof(TReturn), serialized, cancellationToken);
+        return await PostRequestAsync<SerializedQueryData, TReturn>(
+            $"/{typeof(TEntity).Name}" + "/Sum?type=" + type, serialized.Data, cancellationToken);
     }
 
     public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddAsync<TEntity, TEntityPk>(TEntity entity,
