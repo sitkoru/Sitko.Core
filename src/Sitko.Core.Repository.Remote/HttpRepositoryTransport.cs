@@ -37,7 +37,7 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
     {
         var json = JsonSerializer.Serialize(request);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var result = await HttpClient.PostAsync(HttpClient.BaseAddress + $"/{typeof(TResponse).Name}" + url, content , cancellationToken);
+        var result = await HttpClient.PostAsync(HttpClient.BaseAddress + url, content , cancellationToken);
         if (!result.IsSuccessStatusCode)
         {
             throw new InvalidOperationException(result.ReasonPhrase);
@@ -51,34 +51,34 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
         CancellationToken cancellationToken = default) where TEntity : class
     {
         var serialized = configureQuery.Serialize();
-        return await PostRequestAsync<SerializedQuery<TEntity>, TEntity?>("/Get", serialized, cancellationToken);
+        return await PostRequestAsync<SerializedQuery<TEntity>, TEntity?>($"/{typeof(TEntity).Name}"+"/Get", serialized, cancellationToken);
     }
 
     public async Task<int> CountAsync<TEntity>(RemoteRepositoryQuery<TEntity> configureQuery,
         CancellationToken cancellationToken = default) where TEntity : class
     {
         var serialized = configureQuery.Serialize();
-        return await PostRequestAsync<SerializedQuery<TEntity>, int>("/Count", serialized, cancellationToken);
+        return await PostRequestAsync<SerializedQuery<TEntity>, int>($"/{typeof(TEntity).Name}"+"/Count", serialized, cancellationToken);
     }
 
     public async Task<TReturn?> SumAsync<TEntity, TReturn>(RemoteRepositoryQuery<TEntity> configureQuery,
         CancellationToken cancellationToken = default) where TEntity : class where TReturn : struct
     {
         var serialized = configureQuery.Serialize();
-        return await PostRequestAsync<SerializedQuery<TEntity>,TReturn?>("/Sum"+nameof(TReturn), serialized, cancellationToken);
+        return await PostRequestAsync<SerializedQuery<TEntity>,TReturn?>($"/{typeof(TEntity).Name}"+"/Sum"+nameof(TReturn), serialized, cancellationToken);
     }
 
     public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddAsync<TEntity, TEntityPk>(TEntity entity,
         CancellationToken cancellationToken = default) where TEntity : class, IEntity<TEntityPk>
     {
-        return await PostRequestAsync<TEntity, AddOrUpdateOperationResult<TEntity, TEntityPk>>("/Add",entity, cancellationToken);
+        return await PostRequestAsync<TEntity, AddOrUpdateOperationResult<TEntity, TEntityPk>>($"/{typeof(TEntity).Name}"+"/Add",entity, cancellationToken);
     }
 
     public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> AddAsync<TEntity, TEntityPk>(
         IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
         where TEntity : class, IEntity<TEntityPk>
     {
-        return await PostRequestAsync<IEnumerable<TEntity>, AddOrUpdateOperationResult<TEntity, TEntityPk>[]>("/Add", entities, cancellationToken);
+        return await PostRequestAsync<IEnumerable<TEntity>, AddOrUpdateOperationResult<TEntity, TEntityPk>[]>($"/{typeof(TEntity).Name}"+"/Add", entities, cancellationToken);
     }
 
     public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync<TEntity, TEntityPk>(TEntity entity, TEntity? oldEntity,
@@ -89,20 +89,20 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
             Entity = entity,
             OldEntity = oldEntity
         };
-        return await PostRequestAsync<UpdateModel<TEntity>, AddOrUpdateOperationResult<TEntity, TEntityPk>>("/Update", jsonEntity, cancellationToken);
+        return await PostRequestAsync<UpdateModel<TEntity>, AddOrUpdateOperationResult<TEntity, TEntityPk>>($"/{typeof(TEntity).Name}"+"/Update", jsonEntity, cancellationToken);
     }
 
     public async Task<bool> DeleteAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default)
         where TEntity : class
     {
-        return await PostRequestAsync<TEntity, bool>("/Delete", entity, cancellationToken);
+        return await PostRequestAsync<TEntity, bool>($"/{typeof(TEntity).Name}"+"/Delete", entity, cancellationToken);
     }
 
     public async Task<(TEntity[] items, int itemsCount)> GetAllAsync<TEntity>(RemoteRepositoryQuery<TEntity> query,
         CancellationToken cancellationToken = default) where TEntity : class
     {
         var serialized = query.Serialize();
-        return await PostRequestAsync<SerializedQuery<TEntity>, (TEntity[] items, int itemsCount)>("/GetAll", serialized, cancellationToken);
+        return await PostRequestAsync<SerializedQuery<TEntity>, (TEntity[] items, int itemsCount)>($"/{typeof(TEntity).Name}"+"/GetAll", serialized, cancellationToken);
     }
 }
 
