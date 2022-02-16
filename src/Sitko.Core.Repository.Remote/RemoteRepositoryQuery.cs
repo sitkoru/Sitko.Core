@@ -122,13 +122,33 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
     public SerializedQuery<TEntity>
         Serialize()
     {
-        foreach (var includableQuery in _includableQueries)
+        foreach (var includableQuery in includableQueries)
         {
-            _includes.Add(includableQuery.GetFullPath());
+            includes.Add(includableQuery.GetFullPath());
         }
-        return new SerializedQuery<TEntity>(whereExpressions,
-            orderByExpressions,
-            orderByDescendingExpressions, intSelectExpressions, longSelectExpressions,_includes, Limit, Offset);
+
+        var serializedQuery = new SerializedQuery<TEntity>()
+            .AddWhereExpressions(whereExpressions)
+            .AddWhereByStringExpressions(whereByStringExpressions)
+            .AddOrderByExpressions(orderByExpressions)
+            .AddOrderByDescendingExpressions(orderByDescendingExpressions)
+            .AddIncludes(includes);
+        if (selectExpression is not null)
+        {
+            serializedQuery.SetSelectExpression(selectExpression);
+        }
+
+        if (Limit > 0)
+        {
+            serializedQuery.SetLimit(Limit.Value);
+        }
+
+        if (Offset > 0)
+        {
+            serializedQuery.SetOffset(Offset.Value);
+        }
+
+        return serializedQuery;
     }
 
 }

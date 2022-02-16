@@ -51,14 +51,16 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
         CancellationToken cancellationToken = default) where TEntity : class
     {
         var serialized = configureQuery.Serialize();
-        return await PostRequestAsync<SerializedQuery<TEntity>, TEntity?>($"/{typeof(TEntity).Name}"+"/Get", serialized, cancellationToken);
+        return await PostRequestAsync<SerializedQueryData, TEntity?>($"/{typeof(TEntity).Name}" + "/Get",
+            serialized.Data, cancellationToken);
     }
 
     public async Task<int> CountAsync<TEntity>(RemoteRepositoryQuery<TEntity> configureQuery,
         CancellationToken cancellationToken = default) where TEntity : class
     {
         var serialized = configureQuery.Serialize();
-        return await PostRequestAsync<SerializedQuery<TEntity>, int>($"/{typeof(TEntity).Name}"+"/Count", serialized, cancellationToken);
+        return await PostRequestAsync<SerializedQueryData, int>($"/{typeof(TEntity).Name}" + "/Count", serialized.Data,
+            cancellationToken);
     }
 
     public async Task<TReturn?> SumAsync<TEntity, TReturn>(RemoteRepositoryQuery<TEntity> configureQuery,
