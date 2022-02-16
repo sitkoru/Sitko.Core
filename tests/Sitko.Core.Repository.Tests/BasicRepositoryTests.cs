@@ -84,8 +84,8 @@ public abstract class BasicRepositoryTests<TScope> : BaseTest<TScope> where TSco
         item.Status = TestStatus.Disabled;
 
         Assert.NotEqual(oldValue, item.Status);
-        await repository.RefreshAsync(item);
-        Assert.Equal(oldValue, item.Status);
+        var newItem = await repository.RefreshAsync(item);
+        Assert.Equal(oldValue, newItem.Status);
     }
 
 
