@@ -10,13 +10,13 @@ internal class RemoteRepositoryQuerySource<TEntity> where TEntity : class
 
 public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where TEntity : class
 {
-    private List<Expression<Func<TEntity, bool>>> whereExpressions = new();
-    private List<Expression<Func<TEntity, object>>> orderByExpressions = new();
-    private List<Expression<Func<TEntity, object>>> orderByDescendingExpressions = new();
-    private List<Expression<Func<TEntity, int>>> intSelectExpressions = new();
-    private List<Expression<Func<TEntity, long>>> longSelectExpressions = new();
-    private List<IRemoteIncludableQuery> _includableQueries = new();
-    private List<string> _includes = new ();
+    private readonly List<IRemoteIncludableQuery> includableQueries = new();
+    private readonly List<string> includes = new();
+    private readonly List<Expression<Func<TEntity, object>>> orderByDescendingExpressions = new();
+    private readonly List<Expression<Func<TEntity, object>>> orderByExpressions = new();
+    private readonly List<string> whereByStringExpressions = new();
+    private readonly List<Expression<Func<TEntity, bool>>> whereExpressions = new();
+    private Expression? selectExpression;
 
     public RemoteRepositoryQuery()
     {
@@ -24,11 +24,13 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
 
     internal RemoteRepositoryQuery(RemoteRepositoryQuery<TEntity> source)
     {
-       this.whereExpressions = source.whereExpressions;
-       this.orderByExpressions = source.orderByExpressions;
-       this.orderByDescendingExpressions = source.orderByExpressions;
-       this.intSelectExpressions = source.intSelectExpressions;
-       this.longSelectExpressions = source.longSelectExpressions;
+        whereExpressions = source.whereExpressions;
+        whereByStringExpressions = source.whereByStringExpressions;
+        orderByExpressions = source.orderByExpressions;
+        orderByDescendingExpressions = source.orderByExpressions;
+        includes = source.includes;
+        includableQueries = source.includableQueries;
+        selectExpression = source.selectExpression;
     }
 
     internal List<string> IncludeProperties { get; } = new();
@@ -45,15 +47,9 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
         return this;
     }
 
-    public IRepositoryQuery<TEntity> Select(Expression<Func<TEntity, int>> intSelect)
+    public override IRepositoryQuery<TEntity> WhereByString(string whereJson)
     {
-        intSelectExpressions.Add(intSelect);
-        return this;
-    }
-
-    public IRepositoryQuery<TEntity> Select(Expression<Func<TEntity, long>> longSelect)
-    {
-        longSelectExpressions.Add(longSelect);
+        whereByStringExpressions.Add(whereJson);
         return this;
     }
 
@@ -99,7 +95,7 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
     {
         var propertyName = GetPropertyName(navigationPropertyPath);
         var includableQuery = new IncludableRemoteRepositoryQuery<TEntity, TProperty>(this, propertyName);
-        _includableQueries.Add(includableQuery);
+        includableQueries.Add(includableQuery);
         return includableQuery;
     }
 
@@ -151,6 +147,11 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
         return serializedQuery;
     }
 
+    public RemoteRepositoryQuery<TEntity> Select(Expression selectExpression)
+    {
+        this.selectExpression = selectExpression;
+        return this;
+    }
 }
 
 public class IncludableRemoteRepositoryQuery<TEntity, TProperty> : RemoteRepositoryQuery<TEntity>, IIncludableRepositoryQuery<TEntity, TProperty>, IRemoteIncludableQuery where TEntity : class
