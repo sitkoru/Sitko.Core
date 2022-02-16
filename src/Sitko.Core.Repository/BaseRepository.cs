@@ -135,7 +135,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
                 await SaveAsync(new RepositoryRecord<TEntity, TEntityPk>(item), cancellationToken);
             }
 
-            results.Add(new AddOrUpdateOperationResult<TEntity, TEntityPk>(item, validationResult.errors,
+            results.Add(new AddOrUpdateOperationResult<TEntity, TEntityPk>(item, validationResult.errors.ToArray(),
                 Array.Empty<PropertyChange>()));
         }
 
@@ -196,7 +196,8 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
             }
 
             var result =
-                new AddOrUpdateOperationResult<TEntity, TEntityPk>(entityTuple.entity, validationResult.errors,
+                new AddOrUpdateOperationResult<TEntity, TEntityPk>(entityTuple.entity,
+                    validationResult.errors.ToArray(),
                     changes);
             results.Add(result);
             hasErrors = !result.IsSuccess;
