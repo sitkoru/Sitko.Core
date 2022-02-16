@@ -220,7 +220,6 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
     protected override async Task<PropertyChange[]> DoUpdateAsync(TEntity entity, TEntity? oldEntity,
         CancellationToken cancellationToken = default)
     {
-        Snapshots.Add(entity.Id, CreateEntitySnapshot(entity));
         var changes = await GetChangesAsync(entity);
         if (isTransactionStarted)
         {
