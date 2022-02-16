@@ -37,7 +37,7 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
 
     public override IRepositoryQuery<TEntity> Include(string navigationPropertyPath)
     {
-        IncludeProperties.Add(navigationPropertyPath);
+        includes.Add(navigationPropertyPath);
         return this;
     }
 
