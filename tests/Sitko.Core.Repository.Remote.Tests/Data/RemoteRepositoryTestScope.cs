@@ -18,7 +18,7 @@ public class RemoteRepositoryTestScope : WebTestScope
     protected override WebTestApplication ConfigureWebApplication(WebTestApplication application, string name)
     {
         base.ConfigureWebApplication(application, name);
-        application.AddInMemoryDatabase<TestDbContext>(options =>
+        application.AddInMemoryDatabase<TestDbContext>(options => // TODO: Switch to postgres?
         {
             options.Database = name;
         });
