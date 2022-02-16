@@ -184,7 +184,8 @@ public class BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, 
             {
                 foreach (var difference in differences.Differences)
                 {
-                    var change = new PropertyChange(difference.GetShortItem(),difference.Object1Value,difference.Object2Value, ChangeType.Modified);
+                    var change = new PropertyChange(difference.GetShortItem(), difference.Object1,
+                        difference.Object2, ChangeType.Modified);
                     changes.Add(change);
                 }
             }
