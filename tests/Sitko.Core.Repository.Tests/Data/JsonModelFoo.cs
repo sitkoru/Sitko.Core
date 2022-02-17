@@ -1,7 +1,6 @@
-﻿namespace Sitko.Core.Repository.Tests.Data
+﻿namespace Sitko.Core.Repository.Tests.Data;
+
+public record JsonModelFoo : BaseJsonModel
 {
-    public record JsonModelFoo : BaseJsonModel
-    {
-        public string Foo { get; set; } = "";
-    }
+    public string Foo { get; set; } = "";
 }

@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using JetBrains.Annotations;
 using Sitko.Core.Repository.EntityFrameworkCore.Tests.Data;
 using Sitko.Core.Repository.Tests;
 using Sitko.Core.Repository.Tests.Data;

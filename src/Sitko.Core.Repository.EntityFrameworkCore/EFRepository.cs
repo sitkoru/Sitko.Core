@@ -868,7 +868,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
 
     protected override Task<PropertyChange[]> GetChangesAsync(TEntity item)
     {
-        var modifiedStates = new[] {EntityState.Added, EntityState.Deleted, EntityState.Modified};
+        var modifiedStates = new[] { EntityState.Added, EntityState.Deleted, EntityState.Modified };
         var changes = new List<PropertyChange>();
         if (dbContext.ChangeTracker.HasChanges())
         {
@@ -944,7 +944,7 @@ public static class EFRepositoryHelper
         var method =
             updateCollectionMethodInfo.MakeGenericMethod(collection.GetType().GetGenericArguments().First(),
                 collection.GetType());
-        return (method.Invoke(null, new object[] {collection, newValues}) as IEnumerable)!;
+        return (method.Invoke(null, new object[] { collection, newValues }) as IEnumerable)!;
     }
 
     public static async Task<IEnumerable> LoadCollectionAsync(CollectionEntry collectionEntry, DbContext dbContext)
@@ -964,7 +964,7 @@ public static class EFRepositoryHelper
             loadCollectionMethodInfo.MakeGenericMethod(collectionEntry.EntityEntry.Metadata.ClrType,
                 collectionEntry.Metadata.TargetEntityType.ClrType);
         var result = method.Invoke(null,
-            new[] {dbContext, collectionEntry.EntityEntry.Entity, collectionEntry.Metadata.Name});
+            new[] { dbContext, collectionEntry.EntityEntry.Entity, collectionEntry.Metadata.Name });
         if (result is Task<IEnumerable> task)
         {
             return await task;
@@ -988,7 +988,7 @@ public static class EFRepositoryHelper
 
         var method = copyCollectionMethodInfo.MakeGenericMethod(collection.GetType().GetGenericArguments().First(),
             collection.GetType());
-        return (method.Invoke(null, new object?[] {collection}) as IEnumerable)!;
+        return (method.Invoke(null, new object?[] { collection }) as IEnumerable)!;
     }
 
     private static async Task<IEnumerable> LoadCollectionAsync<TEntity, TProperty>(DbContext dbContext,

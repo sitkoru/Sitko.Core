@@ -1,10 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using JetBrains.Annotations;
+﻿using System.Threading.Tasks;
 using Sitko.Core.Repository.Remote.Tests.Data;
 using Sitko.Core.Repository.Tests;
-using Sitko.Core.Repository.Tests.Data;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -25,5 +21,4 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
 
         Assert.NotNull(result.items);
     }
-
 }

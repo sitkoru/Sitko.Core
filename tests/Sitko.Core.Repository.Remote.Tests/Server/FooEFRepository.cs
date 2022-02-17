@@ -7,7 +7,8 @@ namespace Sitko.Core.Repository.Remote.Tests.Server;
 
 public class FooEFRepository : EFRepository<FooModel, Guid, TestDbContext>
 {
-    public FooEFRepository([NotNull] EFRepositoryContext<FooModel, Guid, TestDbContext> repositoryContext) : base(repositoryContext)
+    public FooEFRepository([NotNull] EFRepositoryContext<FooModel, Guid, TestDbContext> repositoryContext) : base(
+        repositoryContext)
     {
     }
 }

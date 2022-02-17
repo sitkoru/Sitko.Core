@@ -39,6 +39,7 @@ public abstract class RepositoriesModule<TConfig, TRepositoryType> : BaseApplica
         {
             assemblies.Add(assembly);
         }
+
         var entityTypes = types.Distinct().Select(type =>
                 type
                     .GetInterfaces().First(implementedInterface =>

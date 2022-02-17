@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Sitko.Core.Repository.EntityFrameworkCore;
 using Sitko.Core.Repository.EntityFrameworkCore.Tests.Data;
 using Sitko.Core.Repository.Tests.Data;
 using Sitko.Core.Xunit;
@@ -89,8 +88,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var scope = await GetScopeAsync();
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<TestModel>(dbContext.Set<TestModel>());
-        query.Where(new QueryContextCondition(nameof(TestModel.FooId), QueryContextOperator.In, new[] {1, 2, 3}));
-        var dbQuery = dbContext.Set<TestModel>().Where(model => new[] {1, 2, 3}.Contains(model.FooId));
+        query.Where(new QueryContextCondition(nameof(TestModel.FooId), QueryContextOperator.In, new[] { 1, 2, 3 }));
+        var dbQuery = dbContext.Set<TestModel>().Where(model => new[] { 1, 2, 3 }.Contains(model.FooId));
         CompareSql(query, dbQuery);
     }
 
@@ -101,8 +100,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<TestModel>(dbContext.Set<TestModel>());
         query.Where(new QueryContextCondition(nameof(TestModel.FooId), QueryContextOperator.NotIn,
-            new[] {1, 2, 3}));
-        var dbQuery = dbContext.Set<TestModel>().Where(model => !new[] {1, 2, 3}.Contains(model.FooId));
+            new[] { 1, 2, 3 }));
+        var dbQuery = dbContext.Set<TestModel>().Where(model => !new[] { 1, 2, 3 }.Contains(model.FooId));
         CompareSql(query, dbQuery);
     }
 

@@ -19,12 +19,14 @@ public class RemoteRepositoryContext<TEntity, TEntityPk> : IRepositoryContext<TE
         FiltersManager = filtersManager;
         FluentGraphValidator = fluentGraphValidator;
         AccessCheckers = accessCheckers?.ToList();
-        RepositoryTransport = repositoryTransport ?? throw new InvalidOperationException("You need to connect remote repository transport module");
+        RepositoryTransport = repositoryTransport ??
+                              throw new InvalidOperationException(
+                                  "You need to connect remote repository transport module");
     }
 
-    public FluentGraphValidator FluentGraphValidator { get; }
+    public IRemoteRepositoryTransport RepositoryTransport { get; }
 
-    public  IRemoteRepositoryTransport RepositoryTransport { get; }
+    public FluentGraphValidator FluentGraphValidator { get; }
 
     public ILogger<IRepository<TEntity, TEntityPk>> Logger =>
         loggerFactory.CreateLogger<BaseRemoteRepository<TEntity, TEntityPk>>();

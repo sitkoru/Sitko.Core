@@ -7,7 +7,8 @@ namespace Sitko.Core.Repository.Remote.Tests.Server;
 
 public class BarEFRepository : EFRepository<BarModel, Guid, TestDbContext>
 {
-    public BarEFRepository([NotNull] EFRepositoryContext<BarModel, Guid, TestDbContext> repositoryContext) : base(repositoryContext)
+    public BarEFRepository([NotNull] EFRepositoryContext<BarModel, Guid, TestDbContext> repositoryContext) : base(
+        repositoryContext)
     {
     }
 }
