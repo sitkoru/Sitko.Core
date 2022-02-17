@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
 using Microsoft.Extensions.Options;
 using Sitko.Core.App.Json;
 
@@ -104,16 +105,29 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
         var result = await HttpClient.PostAsync(HttpClient.BaseAddress + url, content, cancellationToken);
         if (!result.IsSuccessStatusCode)
         {
+            if (result.StatusCode == HttpStatusCode.BadRequest &&
+                await ReadResponseAsync(result, cancellationToken) is
+                    { } error)
+            {
+                throw new InvalidOperationException($"Remote error: {error}");
+            }
+
             throw new InvalidOperationException(result.ReasonPhrase);
         }
 
+        var response = await ReadResponseAsync(result, cancellationToken);
+        return JsonHelper.DeserializeWithMetadata<TResponse>(response);
+    }
+
+    private async Task<string> ReadResponseAsync(HttpResponseMessage responseMessage,
+        CancellationToken cancellationToken)
+    {
 #if NET6_0_OR_GREATER
-        var responseJson = await result.Content.ReadAsStringAsync(cancellationToken);
+        var responseJson = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
 #else
-        var responseJson = await result.Content.ReadAsStringAsync();
+        var responseJson = await responseMessage.Content.ReadAsStringAsync();
 #endif
-        var answer = JsonHelper.DeserializeWithMetadata<TResponse>(responseJson);
-        return answer;
+        return responseJson;
     }
 }
 

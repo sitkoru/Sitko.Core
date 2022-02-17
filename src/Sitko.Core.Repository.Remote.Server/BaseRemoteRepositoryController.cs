@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Json;
 
 namespace Sitko.Core.Repository.Remote.Server;
@@ -8,7 +10,14 @@ public class BaseRemoteRepositoryController<TEntity, TEntityPK> : Controller whe
 {
     private readonly IRepository<TEntity, TEntityPK> repository;
 
-    public BaseRemoteRepositoryController(IRepository<TEntity, TEntityPK> repository) => this.repository = repository;
+    public BaseRemoteRepositoryController(IRepository<TEntity, TEntityPK> repository,
+        ILogger<BaseRemoteRepositoryController<TEntity, TEntityPK>> logger)
+    {
+        Logger = logger;
+        this.repository = repository;
+    }
+
+    protected ILogger<BaseRemoteRepositoryController<TEntity, TEntityPK>> Logger { get; }
 
 
     [HttpPost("GetAll")]
@@ -22,33 +31,47 @@ public class BaseRemoteRepositoryController<TEntity, TEntityPK> : Controller whe
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return Error(ex);
         }
     }
 
     [HttpPost("Get")]
     public async Task<IActionResult> GetAsync([FromBody] SerializedQueryData queryData)
     {
-        var result = await repository.GetAsync(repositoryQuery =>
-            new SerializedQuery<TEntity>(queryData).Apply(repositoryQuery));
-        if (result is null)
+        try
         {
-            return NotFound();
-        }
+            var result = await repository.GetAsync(repositoryQuery =>
+                new SerializedQuery<TEntity>(queryData).Apply(repositoryQuery));
+            if (result is null)
+            {
+                return NotFound();
+            }
 
-        return Ok(JsonHelper.SerializeWithMetadata(result));
+            return Ok(JsonHelper.SerializeWithMetadata(result));
+        }
+        catch (Exception ex)
+        {
+            return Error(ex);
+        }
     }
 
     [HttpPost("GetById")]
     public async Task<IActionResult> GetByIdAsync([FromBody] TEntityPK key)
     {
-        var result = await repository.GetByIdAsync(key);
-        if (result is null)
+        try
         {
-            return NotFound();
-        }
+            var result = await repository.GetByIdAsync(key);
+            if (result is null)
+            {
+                return NotFound();
+            }
 
-        return Ok(JsonHelper.SerializeWithMetadata(result));
+            return Ok(JsonHelper.SerializeWithMetadata(result));
+        }
+        catch (Exception ex)
+        {
+            return Error(ex);
+        }
     }
 
     private async Task<string> ReadBodyAsJsonAsync()
@@ -59,70 +82,117 @@ public class BaseRemoteRepositoryController<TEntity, TEntityPK> : Controller whe
         return await reader.ReadToEndAsync();
     }
 
+    private IActionResult Error(Exception ex, [CallerMemberName] string methodName = "")
+    {
+        Logger.LogError(ex, "Error in method {MethodName}: {ErrorText}", methodName, ex.ToString());
+        return BadRequest(ex.ToString());
+    }
+
+    private IActionResult Error(string error, [CallerMemberName] string methodName = "")
+    {
+        Logger.LogError("Error in method {MethodName}: {ErrorText}", methodName, error);
+        return BadRequest(error);
+    }
+
     [HttpPost("Add")]
     public async Task<IActionResult> AddAsync()
     {
-        var json = await ReadBodyAsJsonAsync();
-        var entity = JsonHelper.DeserializeWithMetadata<TEntity>(json);
-        if (entity is null)
+        try
         {
-            return BadRequest("Empty request");
-        }
+            var json = await ReadBodyAsJsonAsync();
+            var entity = JsonHelper.DeserializeWithMetadata<TEntity>(json);
+            if (entity is null)
+            {
+                return Error("Empty request");
+            }
 
-        var result = await repository.AddAsync(entity);
-        return Created("", JsonHelper.SerializeWithMetadata(result));
+            var result = await repository.AddAsync(entity);
+            return Created("", JsonHelper.SerializeWithMetadata(result));
+        }
+        catch (Exception ex)
+        {
+            return Error(ex);
+        }
     }
 
     [HttpPost("AddRange")]
     public async Task<IActionResult> AddRangeAsync()
     {
-        var json = await ReadBodyAsJsonAsync();
-        var entities = JsonHelper.DeserializeWithMetadata<TEntity[]>(json);
-        if (entities is null)
+        try
         {
-            return BadRequest("Empty request");
-        }
+            var json = await ReadBodyAsJsonAsync();
+            var entities = JsonHelper.DeserializeWithMetadata<TEntity[]>(json);
+            if (entities is null)
+            {
+                return Error("Empty request");
+            }
 
-        var result = await repository.AddAsync(entities);
-        return Created("", JsonHelper.SerializeWithMetadata(result));
+            var result = await repository.AddAsync(entities);
+            return Created("", JsonHelper.SerializeWithMetadata(result));
+        }
+        catch (Exception ex)
+        {
+            return Error(ex);
+        }
     }
 
     [HttpPost("Update")]
     public async Task<IActionResult> UpdateAsync()
     {
-        var json = await ReadBodyAsJsonAsync();
-        var model = JsonHelper.DeserializeWithMetadata<UpdateModel<TEntity>>(json);
-        if (model is null)
+        try
         {
-            return BadRequest("Empty request");
-        }
+            var json = await ReadBodyAsJsonAsync();
+            var model = JsonHelper.DeserializeWithMetadata<UpdateModel<TEntity>>(json);
+            if (model is null)
+            {
+                return Error("Empty request");
+            }
 
-        var result = await repository.UpdateAsync(model.Entity, model.OldEntity);
-        return Accepted("", JsonHelper.SerializeWithMetadata(result));
+            var result = await repository.UpdateAsync(model.Entity, model.OldEntity);
+            return Accepted("", JsonHelper.SerializeWithMetadata(result));
+        }
+        catch (Exception ex)
+        {
+            return Error(ex);
+        }
     }
 
     [HttpPost("Count")]
     public async Task<IActionResult> CountAsync([FromBody] SerializedQueryData queryData)
     {
-        var result = await repository.CountAsync(q => new SerializedQuery<TEntity>(queryData).Apply(q));
-        return Ok(JsonHelper.SerializeWithMetadata(result));
+        try
+        {
+            var result = await repository.CountAsync(q => new SerializedQuery<TEntity>(queryData).Apply(q));
+            return Ok(JsonHelper.SerializeWithMetadata(result));
+        }
+        catch (Exception ex)
+        {
+            return Error(ex);
+        }
     }
 
     [HttpPost("Sum")]
     public async Task<IActionResult> SumAsync([FromBody] SerializedQueryData queryData, SumType type)
     {
-        var query = new SerializedQuery<TEntity>(queryData);
-        object result = type switch
+        try
         {
-            SumType.Int => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<int>()),
-            SumType.Double => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<double>()),
-            SumType.Float => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<float>()),
-            SumType.Decimal => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<decimal>()),
-            SumType.Long => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<long>()),
-            _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unknown sum type")
-        };
+            var query = new SerializedQuery<TEntity>(queryData);
+            object result = type switch
+            {
+                SumType.Int => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<int>()),
+                SumType.Double => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<double>()),
+                SumType.Float => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<float>()),
+                SumType.Decimal => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<decimal>()),
+                SumType.Long => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<long>()),
+                _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unknown sum type")
+            };
 
-        return Ok(JsonHelper.SerializeWithMetadata(result));
+            return Ok(JsonHelper.SerializeWithMetadata(result));
+        }
+        catch (Exception ex)
+        {
+            return Error(ex);
+        }
     }
 
     [HttpDelete]
@@ -133,9 +203,9 @@ public class BaseRemoteRepositoryController<TEntity, TEntityPK> : Controller whe
             await repository.DeleteAsync(key);
             return Accepted();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            return BadRequest(e.Message);
+            return Error(ex);
         }
     }
 }
