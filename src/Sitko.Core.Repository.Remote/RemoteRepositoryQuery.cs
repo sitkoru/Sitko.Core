@@ -222,3 +222,19 @@ public interface IRemoteIncludableQuery
     public string GetFullPath();
     public void SetChild(IRemoteIncludableQuery query);
 }
+
+
+public static class IncludableRepositoryQueryExtensions
+{
+    public static IIncludableRepositoryQuery<TEntity, TProperty> ThenInclude<TEntity, TPreviousProperty, TProperty>(
+        this IIncludableRepositoryQuery<TEntity, IEnumerable<TPreviousProperty>> source,
+        Expression<Func<TPreviousProperty, TProperty>> navigationPropertyPath)
+        where TEntity : class
+        => IncludableRemoteRepositoryQuery<TEntity, TProperty>.ThenInclude(source, navigationPropertyPath);
+
+    public static IIncludableRepositoryQuery<TEntity, TProperty> ThenInclude<TEntity, TPreviousProperty, TProperty>(
+        this IIncludableRepositoryQuery<TEntity, TPreviousProperty> source,
+        Expression<Func<TPreviousProperty, TProperty>> navigationPropertyPath)
+        where TEntity : class
+        => IncludableRemoteRepositoryQuery<TEntity, TProperty>.ThenInclude(source, navigationPropertyPath);
+}
