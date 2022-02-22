@@ -104,7 +104,10 @@ public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOption
                 IndexFormat =
                     options.LoggingIndexFormat ??
                     $"dotnet-logs-{context.Name.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}-{context.Name.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
-                TemplateName = rolloverAlias
+                TemplateName = rolloverAlias,
+                EmitEventFailure = options.EmitEventFailure,
+                FailureCallback = options.FailureCallback,
+                FailureSink = options.FailureSink
             };
 
             if (!string.IsNullOrEmpty(options.LoggingLifeCycleName))
