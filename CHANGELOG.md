@@ -1,3 +1,10 @@
+# [9.0.0-beta.18](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.17...9.0.0-beta.18) (2022-02-22)
+
+
+### Features
+
+* **elasticstack:** expose elastic sink failure handling options ([55115a9](https://github.com/sitkoru/Sitko.Core/commit/55115a9eb0466fa5a38359e7a2b608b98aa11095))
+
 # [9.0.0-beta.17](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.16...9.0.0-beta.17) (2022-02-17)
 
 
