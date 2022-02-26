@@ -1,3 +1,24 @@
+# [9.0.0-beta.19](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.18...9.0.0-beta.19) (2022-02-26)
+
+
+### Bug Fixes
+
+* **repository:** don't finish batch if it wasn't started inside this operation ([d0a8216](https://github.com/sitkoru/Sitko.Core/commit/d0a82162ce2261dbfc24b082ddf9a044c386e0c1))
+
+
+### Features
+
+* **app:** update Scrutor from 3.3.0 to 4.0.0 ([5cbbd6a](https://github.com/sitkoru/Sitko.Core/commit/5cbbd6ae192887db8df92bd866fc14ad1651861c))
+* **app:** update Serilog.Exceptions from 8.0.0 to 8.1.0 ([cd74978](https://github.com/sitkoru/Sitko.Core/commit/cd7497893946aaeec8a4ec09e301c67e73ff737c))
+* **efrepository:** update System.Linq.Dynamic.Core from 1.2.15 to 1.2.17 ([833a3b3](https://github.com/sitkoru/Sitko.Core/commit/833a3b3f35958516e549c167b79f42ffd76521ad))
+* **grpc:** update Grpc.Net to 2.43.0 ([4bd9b87](https://github.com/sitkoru/Sitko.Core/commit/4bd9b8726165c13328ed62e4a707732a15e74cd1))
+* **grpc:** update Grpc.Tools to 2.44.0 ([23fe847](https://github.com/sitkoru/Sitko.Core/commit/23fe847b1234e8113dc563d8e936da1a70a41c6a))
+* **mudblazor:** update MudBlazor from 6.0.6 to 6.0.7 ([f1b9b55](https://github.com/sitkoru/Sitko.Core/commit/f1b9b55220f2d4fd79337055b3ddfe7061e560d1))
+* **puppeteer:** update PuppeteerSharp from 6.1.0 to 6.2.0 ([7c7097b](https://github.com/sitkoru/Sitko.Core/commit/7c7097b0ee9231da7293c5fe39ac0683b96a2b9e))
+* **remoterepository:** update CompareNETObjects from 4.74.0 to 4.75.0 ([328ee43](https://github.com/sitkoru/Sitko.Core/commit/328ee434d7e5c5b42330a3299d8e2a756faaf3c9))
+* **s3storage:** update AWSSDK.S3 from 3.7.7.21 to 3.7.8.1 ([9d3136e](https://github.com/sitkoru/Sitko.Core/commit/9d3136eff1301519c45a6fb38006ef0106589c09))
+* **xunit:** update Microsoft.NET.Test.Sdk from 17.0.0 to 17.1.0 ([b32396e](https://github.com/sitkoru/Sitko.Core/commit/b32396ecd21f9fa4b40d3cf07be81f16f4d100c4))
+
 # [9.0.0-beta.18](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.17...9.0.0-beta.18) (2022-02-22)
 
 
