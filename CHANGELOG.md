@@ -1,3 +1,12 @@
+# [9.0.0-beta.20](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.19...9.0.0-beta.20) (2022-02-26)
+
+
+### Features
+
+* **remoterepository:** add full configuration method for http transport ([b7d2f64](https://github.com/sitkoru/Sitko.Core/commit/b7d2f644bd8f2b4efc871e1e7f229138363d14e0))
+* **remoterepository:** create named http client, pass http client factory to factory ([4d98110](https://github.com/sitkoru/Sitko.Core/commit/4d98110a925ade91db12c38d4f7758932709c9a5))
+* **remoterepository:** new WasmHttpRepositoryTransportModule with browser cookies in http requests ([df6ee18](https://github.com/sitkoru/Sitko.Core/commit/df6ee18c3751cb8806c693ba31dc8c4ce9938b2b))
+
 # [9.0.0-beta.19](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.18...9.0.0-beta.19) (2022-02-26)
 
 
