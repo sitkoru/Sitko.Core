@@ -230,6 +230,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Repository.Remot
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Repository.EntityFrameworkCore.Tests", "tests\Sitko.Core.Repository.EntityFrameworkCore.Tests\Sitko.Core.Repository.EntityFrameworkCore.Tests.csproj", "{50F2EA7C-7F66-4E66-863D-880B9CA7205F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Repository.Remote.Wasm", "src\Sitko.Core.Repository.Remote.Wasm\Sitko.Core.Repository.Remote.Wasm.csproj", "{AD92216A-8304-48BC-BBCC-30CA34BC0DCA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1395,6 +1397,18 @@ Global
 		{50F2EA7C-7F66-4E66-863D-880B9CA7205F}.Release|x64.Build.0 = Release|Any CPU
 		{50F2EA7C-7F66-4E66-863D-880B9CA7205F}.Release|x86.ActiveCfg = Release|Any CPU
 		{50F2EA7C-7F66-4E66-863D-880B9CA7205F}.Release|x86.Build.0 = Release|Any CPU
+		{AD92216A-8304-48BC-BBCC-30CA34BC0DCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD92216A-8304-48BC-BBCC-30CA34BC0DCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD92216A-8304-48BC-BBCC-30CA34BC0DCA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AD92216A-8304-48BC-BBCC-30CA34BC0DCA}.Debug|x64.Build.0 = Debug|Any CPU
+		{AD92216A-8304-48BC-BBCC-30CA34BC0DCA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AD92216A-8304-48BC-BBCC-30CA34BC0DCA}.Debug|x86.Build.0 = Debug|Any CPU
+		{AD92216A-8304-48BC-BBCC-30CA34BC0DCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD92216A-8304-48BC-BBCC-30CA34BC0DCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD92216A-8304-48BC-BBCC-30CA34BC0DCA}.Release|x64.ActiveCfg = Release|Any CPU
+		{AD92216A-8304-48BC-BBCC-30CA34BC0DCA}.Release|x64.Build.0 = Release|Any CPU
+		{AD92216A-8304-48BC-BBCC-30CA34BC0DCA}.Release|x86.ActiveCfg = Release|Any CPU
+		{AD92216A-8304-48BC-BBCC-30CA34BC0DCA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6677865F-C349-4D25-9E19-3DEC43E92DD5} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
@@ -1494,5 +1508,6 @@ Global
 		{64AC7296-0781-4737-B89F-99AFBCDDB1A4} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 		{46C1C080-7E8F-4C3C-AF9D-76A329CB951C} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 		{0468770A-0CE7-48AC-8EB3-31CDE8957E85} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
+		{AD92216A-8304-48BC-BBCC-30CA34BC0DCA} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 	EndGlobalSection
 EndGlobal
