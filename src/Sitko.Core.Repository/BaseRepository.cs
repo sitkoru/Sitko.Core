@@ -112,7 +112,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         CancellationToken cancellationToken = default)
     {
         var results = new List<AddOrUpdateOperationResult<TEntity, TEntityPk>>();
-        await BeginBatchAsync(cancellationToken);
+        var batchStarted = await BeginBatchAsync(cancellationToken);
         var hasErrors = false;
         foreach (var item in items)
         {
@@ -139,13 +139,16 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
                 Array.Empty<PropertyChange>()));
         }
 
-        if (!hasErrors)
+        if (batchStarted)
         {
-            await CommitBatchAsync(cancellationToken);
-        }
-        else
-        {
-            await RollbackBatchAsync(cancellationToken);
+            if (!hasErrors)
+            {
+                await CommitBatchAsync(cancellationToken);
+            }
+            else
+            {
+                await RollbackBatchAsync(cancellationToken);
+            }
         }
 
         return results.ToArray();
@@ -171,7 +174,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         CancellationToken cancellationToken = default)
     {
         var results = new List<AddOrUpdateOperationResult<TEntity, TEntityPk>>();
-        await BeginBatchAsync(cancellationToken);
+        var batchStarted = await BeginBatchAsync(cancellationToken);
         var hasErrors = false;
         foreach (var entityTuple in entities)
         {
@@ -203,13 +206,16 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
             hasErrors = !result.IsSuccess;
         }
 
-        if (!hasErrors)
+        if (batchStarted)
         {
-            await CommitBatchAsync(cancellationToken);
-        }
-        else
-        {
-            await RollbackBatchAsync(cancellationToken);
+            if (!hasErrors)
+            {
+                await CommitBatchAsync(cancellationToken);
+            }
+            else
+            {
+                await RollbackBatchAsync(cancellationToken);
+            }
         }
 
         return results.ToArray();
@@ -231,7 +237,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
     public virtual async Task<bool> DeleteAsync(IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
     {
-        await BeginBatchAsync(cancellationToken);
+        var batchStarted = await BeginBatchAsync(cancellationToken);
         foreach (var entity in entities)
         {
             await BeforeDeleteAsync(entity, cancellationToken);
@@ -239,7 +245,12 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
             await DoSaveAsync(cancellationToken);
         }
 
-        return await CommitBatchAsync(cancellationToken);
+        if (batchStarted)
+        {
+            return await CommitBatchAsync(cancellationToken);
+        }
+
+        return true;
     }
 
     public virtual async Task<TEntity?> GetAsync(CancellationToken cancellationToken = default)
