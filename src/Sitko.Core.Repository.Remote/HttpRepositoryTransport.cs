@@ -25,10 +25,10 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
         {
             if (Options.HttpClientFactory is not null)
             {
-                return Options.HttpClientFactory();
+                return Options.HttpClientFactory(httpClientFactory);
             }
 
-            var client = httpClientFactory.CreateClient();
+            var client = httpClientFactory.CreateClient(nameof(HttpRepositoryTransport));
             client.BaseAddress = Options.RepositoryControllerApiRoute;
             return client;
         }

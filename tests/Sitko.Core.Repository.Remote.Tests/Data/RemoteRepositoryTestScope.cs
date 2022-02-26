@@ -113,7 +113,7 @@ public class RemoteRepositoryTestScope : WebTestScope
             options.RepositoryControllerApiRoute = new Uri(Server.BaseAddress, "http://localhost");
             if (Server is not null)
             {
-                options.HttpClientFactory = () =>
+                options.HttpClientFactory = _ =>
                 {
                     var client = Server.CreateClient();
                     client.BaseAddress = new Uri(client.BaseAddress!, "/api");

@@ -11,7 +11,10 @@ public class HttpRepositoryTransportModule : BaseApplicationModule<HttpRepositor
         HttpRepositoryTransportOptions startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);
-        services.AddHttpClient();
+        RegisterHttpClient(context, services, startupOptions);
         services.AddSingleton<IRemoteRepositoryTransport, HttpRepositoryTransport>();
     }
+
+    protected virtual IHttpClientBuilder RegisterHttpClient(IApplicationContext context, IServiceCollection services,
+        HttpRepositoryTransportOptions startupOptions) => services.AddHttpClient(nameof(HttpRepositoryTransport));
 }

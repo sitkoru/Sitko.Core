@@ -7,7 +7,7 @@ namespace Sitko.Core.Repository.Remote;
 //add interface
 public class HttpRepositoryTransportOptions : BaseModuleOptions
 {
-    public Func<HttpClient>? HttpClientFactory { get; set; }
+    public Func<IHttpClientFactory, HttpClient>? HttpClientFactory { get; set; }
     [PublicAPI] public Uri RepositoryControllerApiRoute { get; set; }
 }
 
