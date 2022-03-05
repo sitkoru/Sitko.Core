@@ -1,3 +1,10 @@
+# [9.0.0-beta.21](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.20...9.0.0-beta.21) (2022-03-05)
+
+
+### Features
+
+* **app:** change services registration order - modules, app actions, startup ([865ea98](https://github.com/sitkoru/Sitko.Core/commit/865ea9875261002680ab554a0b5b97fe463cb185))
+
 # [9.0.0-beta.20](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.19...9.0.0-beta.20) (2022-02-26)
 
 
