@@ -75,7 +75,7 @@ public class
             services.AddDbContext<TDbContext>((serviceProvider, options) =>
                 ConfigureNpgsql(options, serviceProvider, context));
             services.AddDbContextFactory<TDbContext>((serviceProvider, options) =>
-                ConfigureNpgsql(options, serviceProvider, context));
+                ConfigureNpgsql(options, serviceProvider, context), startupOptions.DbContextFactoryLifetime);
         }
     }
 

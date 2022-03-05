@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Db.Postgres;
@@ -18,6 +19,7 @@ public class PostgresDatabaseModuleOptions<TDbContext> : BaseDbModuleOptions<TDb
     [JsonIgnore] public Assembly? MigrationsAssembly { get; set; }
     public bool AutoApplyMigrations { get; set; } = true;
     public int MaxMigrationsApplyTryCount { get; set; } = 1;
+    public ServiceLifetime DbContextFactoryLifetime { get; set; } = ServiceLifetime.Singleton;
 
     public Type GetValidatorType() => typeof(PostgresDatabaseModuleOptionsValidator<TDbContext>);
 }
