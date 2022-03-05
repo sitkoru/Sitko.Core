@@ -152,8 +152,13 @@ public abstract class HostedApplication : Application
                     });
             });
         configure?.Invoke(hostBuilder);
+        PostConfigureHostBuilder(hostBuilder);
         LogInternal("Create host builder done");
         return hostBuilder;
+    }
+
+    protected virtual void PostConfigureHostBuilder(IHostBuilder hostBuilder)
+    {
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)

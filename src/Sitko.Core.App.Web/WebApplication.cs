@@ -86,13 +86,18 @@ public abstract class WebApplication<TStartup> : WebApplication where TStartup :
             {
                 collection.AddSingleton(typeof(WebApplication), this);
                 collection.AddSingleton(typeof(WebApplication<TStartup>), this);
-            })
-            .ConfigureWebHostDefaults(webBuilder =>
-            {
-                webBuilder.UseSetting("ApplicationId", Id.ToString());
-                webBuilder.UseStartup<TStartup>();
-                ConfigureWebHostDefaults(webBuilder);
             });
+    }
+
+    protected override void PostConfigureHostBuilder(IHostBuilder hostBuilder)
+    {
+        base.PostConfigureHostBuilder(hostBuilder);
+        hostBuilder.ConfigureWebHostDefaults(webBuilder =>
+        {
+            webBuilder.UseSetting("ApplicationId", Id.ToString());
+            webBuilder.UseStartup<TStartup>();
+            ConfigureWebHostDefaults(webBuilder);
+        });
     }
 
     protected virtual void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)

@@ -96,15 +96,16 @@ public abstract class Application : IApplication, IAsyncDisposable
         services.AddTransient<IScheduler, Scheduler>();
         services.AddFluentValidationExtensions();
         services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
-        foreach (var servicesConfigurationAction in ServicesConfigurationActions)
-        {
-            servicesConfigurationAction(applicationContext, services);
-        }
 
         foreach (var moduleRegistration in GetEnabledModuleRegistrations(applicationContext))
         {
             moduleRegistration.ConfigureOptions(applicationContext, services);
             moduleRegistration.ConfigureServices(applicationContext, services);
+        }
+
+        foreach (var servicesConfigurationAction in ServicesConfigurationActions)
+        {
+            servicesConfigurationAction(applicationContext, services);
         }
     }
 
