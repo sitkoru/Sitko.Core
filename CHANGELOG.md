@@ -1,3 +1,10 @@
+# [9.0.0-beta.22](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.21...9.0.0-beta.22) (2022-03-05)
+
+
+### Features
+
+* **postgresdb:** add option to configure dbcontext factory lifetime ([747f8d3](https://github.com/sitkoru/Sitko.Core/commit/747f8d3cc2cc9e987be51a7ca6aebf3eacd5a84d))
+
 # [9.0.0-beta.21](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.20...9.0.0-beta.21) (2022-03-05)
 
 
