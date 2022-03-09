@@ -14,7 +14,7 @@
 
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="5.0.14" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="5.0.15" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
