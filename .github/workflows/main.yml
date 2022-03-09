@@ -141,8 +141,8 @@ jobs:
       minio:
         image: bitnami/minio
         env:
-          MINIO_ACCESS_KEY: ptTYf7VkCVbUjAzn
-          MINIO_SECRET_KEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
+          MINIO_ROOT_USER: ptTYf7VkCVbUjAzn
+          MINIO_ROOT_PASSWORD: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
       postgres:
         image: postgres:alpine
         env:
