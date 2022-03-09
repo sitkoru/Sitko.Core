@@ -4,7 +4,7 @@
     <OpenApiGenerateDocumentsOnBuild>false</OpenApiGenerateDocumentsOnBuild>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" PrivateAssets="None"/>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.0" PrivateAssets="None"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj"/>
