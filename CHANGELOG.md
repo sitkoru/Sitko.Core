@@ -1,3 +1,19 @@
+# [9.0.0-beta.23](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.22...9.0.0-beta.23) (2022-03-09)
+
+
+### Features
+
+* **antdesign:** update AntDesign from 0.10.3.1 to 0.10.4 ([79c5200](https://github.com/sitkoru/Sitko.Core/commit/79c52000d7675afc9e38b870cb3df618e2dd25f8))
+* **app:** update CompareNETObjects from 4.75.0 to 4.76.0 ([19aecf8](https://github.com/sitkoru/Sitko.Core/commit/19aecf84e547c216683629cbbf4b0adc694867d1))
+* **app:** update Scrutor from 4.0.0 to 4.1.0 ([f109903](https://github.com/sitkoru/Sitko.Core/commit/f109903a4c34e79dd853ddc395a4b386cc695771))
+* **core:** .NET 5.0.15 ([3dd4ab3](https://github.com/sitkoru/Sitko.Core/commit/3dd4ab3527e83f030bdd308e11e4e52399ce9ab8))
+* **core:** .NET 6.0.3 ([aba8ed6](https://github.com/sitkoru/Sitko.Core/commit/aba8ed6d870d94782f62204de052394b6ea32a13))
+* **core:** .NET Core 3.1.23 ([da57226](https://github.com/sitkoru/Sitko.Core/commit/da57226248e3bb16d8ddc9b1cb522437616d8175))
+* **demo:** update demo deps ([f844f54](https://github.com/sitkoru/Sitko.Core/commit/f844f545b922e8469db4425db02639f5795af200))
+* **efrepository:** update System.Linq.Dynamic.Core from 1.2.17 to 1.2.18 ([a26b6bd](https://github.com/sitkoru/Sitko.Core/commit/a26b6bd3bf3d431b9678297307ae3f2662af93db))
+* **s3storage:** update AWSSDK.S3 from 3.7.8.1 to 3.7.8.5 ([701d80c](https://github.com/sitkoru/Sitko.Core/commit/701d80c51e4430cc02fa2c092ba153120927c174))
+* **swagger:** update Swashbuckle.AspNetCore from 6.2.3 to 6.3.0 ([9e14bba](https://github.com/sitkoru/Sitko.Core/commit/9e14bba2f9038f445289cd0f331cd8cf8a578e11))
+
 # [9.0.0-beta.22](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.21...9.0.0-beta.22) (2022-03-05)
 
 
