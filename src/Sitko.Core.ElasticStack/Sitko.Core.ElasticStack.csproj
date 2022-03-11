@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Elastic.Apm.NetCoreAll" Version="1.12.1"/>
+    <PackageReference Include="Elastic.Apm.NetCoreAll" Version="1.14.1"/>
     <PackageReference Include="Elastic.Apm.SerilogEnricher" Version="1.5.3"/>
     <PackageReference Include="Elastic.CommonSchema.Serilog" Version="1.5.3"/>
     <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="8.4.1"/>
