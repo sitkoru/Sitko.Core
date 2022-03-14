@@ -1,3 +1,10 @@
+# [9.0.0-beta.24](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.23...9.0.0-beta.24) (2022-03-14)
+
+
+### Bug Fixes
+
+* added support for CancellationToken ([35faf17](https://github.com/sitkoru/Sitko.Core/commit/35faf1752311006065c703597e68bba0826b68aa))
+
 # [9.0.0-beta.23](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.22...9.0.0-beta.23) (2022-03-09)
 
 
