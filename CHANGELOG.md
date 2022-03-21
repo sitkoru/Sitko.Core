@@ -1,3 +1,10 @@
+# [9.0.0-beta.25](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.24...9.0.0-beta.25) (2022-03-21)
+
+
+### Bug Fixes
+
+* make DateParseHandling equals DateTimeOffset to avoid skipping specified timezone ([fd1840e](https://github.com/sitkoru/Sitko.Core/commit/fd1840e921a1237fb624da80bd49947a4ac648a7))
+
 # [9.0.0-beta.24](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.23...9.0.0-beta.24) (2022-03-14)
 
 
