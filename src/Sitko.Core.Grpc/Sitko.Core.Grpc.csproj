@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageReference Include="Grpc.Core.Api" Version="2.43.0"/>
     <PackageReference Include="Grpc.Tools" Version="2.43.0" PrivateAssets="none"/>
-    <PackageReference Include="Google.Protobuf" Version="3.19.2"/>
+    <PackageReference Include="Google.Protobuf" Version="3.20.0"/>
     <Protobuf Include="Proto\**\*.proto" GrpcServices="None"/>
     <None Pack="true" PackagePath="protos" Include="Proto\**\*.proto"/>
   </ItemGroup>
