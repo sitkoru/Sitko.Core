@@ -111,8 +111,6 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
             {
                 throw new InvalidOperationException($"Remote error: {error}");
             }
-
-            throw new InvalidOperationException(result.ReasonPhrase);
         }
 
         var response = await ReadResponseAsync(result, cancellationToken);
