@@ -3,7 +3,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.7.7.10" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.8.16" />
     <PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="5.0.2" />
   </ItemGroup>
   <ItemGroup>
