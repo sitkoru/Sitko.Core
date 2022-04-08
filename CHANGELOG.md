@@ -1,3 +1,16 @@
+# [9.0.0-beta.26](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.25...9.0.0-beta.26) (2022-04-08)
+
+
+### Bug Fixes
+
+* do not throw invalid operation on not success result ([a411e45](https://github.com/sitkoru/Sitko.Core/commit/a411e457c79de69d8d09f84f3b81a4c9dc0b467f))
+* throw only if not 404 ([d0773a5](https://github.com/sitkoru/Sitko.Core/commit/d0773a53784e3dcea17c2fcd8938c577bd011f87))
+
+
+### Features
+
+* add Get test for null ([df13655](https://github.com/sitkoru/Sitko.Core/commit/df136553e0f7e27f1370e4abad19bd437e1f7b68))
+
 # [9.0.0-beta.25](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.24...9.0.0-beta.25) (2022-03-21)
 
 
