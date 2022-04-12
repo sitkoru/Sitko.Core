@@ -32,6 +32,7 @@ public abstract class BaseStartup
     protected virtual bool EnableMvc { get; } = true;
     protected virtual bool AddHttpContextAccessor { get; } = true;
     protected virtual bool EnableSameSiteCookiePolicy { get; } = true;
+    protected virtual bool AllowAllForwardedHeaders { get; } = true;
     protected virtual bool EnableStaticFiles { get; } = true;
 
     public void ConfigureServices(IServiceCollection services)
@@ -69,11 +70,12 @@ public abstract class BaseStartup
             });
         }
 
-        if (Environment.IsProduction())
+        if (AllowAllForwardedHeaders)
         {
             services.Configure<ForwardedHeadersOptions>(options =>
             {
-                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto |
+                                           ForwardedHeaders.XForwardedHost;
                 options.KnownProxies.Clear();
                 options.KnownNetworks.Clear();
             });
@@ -136,7 +138,7 @@ public abstract class BaseStartup
     public void Configure(IApplicationBuilder appBuilder, WebApplication application,
         IApplicationContext applicationContext)
     {
-        if (Environment.IsProduction())
+        if (AllowAllForwardedHeaders)
         {
             appBuilder.UseForwardedHeaders();
         }
