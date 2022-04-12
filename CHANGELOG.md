@@ -1,3 +1,15 @@
+# [9.0.0-beta.27](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.26...9.0.0-beta.27) (2022-04-12)
+
+
+### Bug Fixes
+
+* **app:** reading env name should be case-insensitive ([a75f11b](https://github.com/sitkoru/Sitko.Core/commit/a75f11b4e2d29b0cc3800c156278510012803468))
+
+
+### Features
+
+* allow all forwarded headers by default ([1827082](https://github.com/sitkoru/Sitko.Core/commit/1827082ac04e9ff1fc92005e4afef4ae55f80844))
+
 # [9.0.0-beta.26](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.25...9.0.0-beta.26) (2022-04-08)
 
 
