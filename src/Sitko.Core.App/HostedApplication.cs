@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
+using Sitko.Core.App.Helpers;
 using Sitko.Core.App.Logging;
 using Thinktecture.Extensions.Configuration;
 
@@ -84,9 +85,7 @@ public abstract class HostedApplication : Application
         var startEnvironment = new HostingEnvironment
         {
             ApplicationName = GetType().Assembly.FullName,
-            EnvironmentName = Environment.GetEnvironmentVariable($"DOTNET_{HostDefaults.EnvironmentKey}") ??
-                              Environment.GetEnvironmentVariable($"ASPNETCORE_{HostDefaults.EnvironmentKey}") ??
-                              Environments.Production
+            EnvironmentName = EnvHelper.GetEnvironmentName()
         };
 
         var configBuilder = new ConfigurationBuilder()
