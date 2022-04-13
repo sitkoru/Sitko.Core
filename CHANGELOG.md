@@ -1,3 +1,10 @@
+# [9.0.0-beta.28](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.27...9.0.0-beta.28) (2022-04-13)
+
+
+### Bug Fixes
+
+* rename ASPNET_ENVIRONMENT to ASPNETCORE_ENVIRONMENT ([8b9145d](https://github.com/sitkoru/Sitko.Core/commit/8b9145d224d68f97285587ef3355ea3d03b21df9))
+
 # [9.0.0-beta.27](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.26...9.0.0-beta.27) (2022-04-12)
 
 
