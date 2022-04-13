@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Sitko.Core.App.Json;
 
 namespace Sitko.Core.Blazor.Components;
 
 public abstract class BaseStateComponent<TState> : BaseComponent where TState : BaseComponentState, new()
 {
-    [Inject] private CompressedPersistentComponentState ComponentState { get; set; } = null!;
+    [Inject] private ICompressedPersistentComponentState ComponentState { get; set; } = null!;
     protected TState State { get; set; } = new();
     private string StateKey => $"{GetType().Name}";
 
@@ -39,8 +39,16 @@ public abstract class BaseComponentState
 {
 }
 
-public class CompressedPersistentComponentState : IDisposable
+public interface ICompressedPersistentComponentState
 {
+    Task PersistAsBytesAsync<T>(string key, T data);
+    Task<(bool isSuccess, T? data)> TryTakeFromBytesAsync<T>(string key);
+    void RegisterOnPersisting(Func<Task> callback);
+}
+
+public class CompressedPersistentComponentState : ICompressedPersistentComponentState, IDisposable
+{
+    private readonly IStateCompressor stateCompressor;
     private readonly PersistentComponentState persistentComponentState;
 
     private readonly List<PersistingComponentStateSubscription>
@@ -61,7 +69,7 @@ public class CompressedPersistentComponentState : IDisposable
 
     public async Task PersistAsBytesAsync<T>(string key, T data)
     {
-        var gzippedBytes = await StateCompressor.ToGzipAsync(data);
+        var gzippedBytes = await stateCompressor.ToGzipAsync(data);
         persistentComponentState.PersistAsJson(key, gzippedBytes);
     }
 
@@ -70,7 +78,7 @@ public class CompressedPersistentComponentState : IDisposable
         var data = default(T);
         if (persistentComponentState.TryTakeFromJson<byte[]>(key, out var gzippedBytes))
         {
-            data = await StateCompressor.FromGzipAsync<T>(gzippedBytes!);
+            data = await stateCompressor.FromGzipAsync<T>(gzippedBytes!);
             return (true, data);
         }
 
@@ -85,12 +93,19 @@ public class CompressedPersistentComponentState : IDisposable
     }
 }
 
-public class StateCompressor
+public interface IStateCompressor
 {
-    public static async Task<byte[]> ToGzipAsync<T>(T value)
+    Task<byte[]> ToGzipAsync<T>(T value);
+
+    Task<T> FromGzipAsync<T>(byte[] bytes);
+}
+
+public class StateCompressor : IStateCompressor
+{
+    public async Task<byte[]> ToGzipAsync<T>(T value)
     {
         await using var input = new MemoryStream();
-        var json = JsonSerializer.Serialize(value);
+        var json = JsonHelper.SerializeWithMetadata(value);
         await using var output = new MemoryStream();
         await using var zipStream = new GZipStream(output, CompressionLevel.SmallestSize);
         await zipStream.WriteAsync(Encoding.UTF8.GetBytes(json));
@@ -99,14 +114,14 @@ public class StateCompressor
         return result;
     }
 
-    public static async Task<T> FromGzipAsync<T>(byte[] bytes)
+    public async Task<T> FromGzipAsync<T>(byte[] bytes)
     {
         await using var inputStream = new MemoryStream(bytes);
         await using var outputStream = new MemoryStream();
         await using var decompressor = new GZipStream(inputStream, CompressionMode.Decompress);
         await decompressor.CopyToAsync(outputStream);
         var json = Encoding.UTF8.GetString(outputStream.ToArray());
-        return JsonSerializer.Deserialize<T>(json)!;
+        return JsonHelper.DeserializeWithMetadata<T>(json);
     }
 }
 
