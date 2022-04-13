@@ -6,7 +6,7 @@ namespace Sitko.Core.App.Helpers;
 public class EnvHelper
 {
     public static string DotNetEnvironmentVariable = $"DOTNET_{HostDefaults.EnvironmentKey}";
-    public static string AspNetEnvironmentVariable = $"ASPNET_{HostDefaults.EnvironmentKey}";
+    public static string AspNetEnvironmentVariable = $"ASPNETCORE_{HostDefaults.EnvironmentKey}";
 
     public static string GetEnvironmentName()
     {

@@ -25,10 +25,10 @@ public class EnvHelperTests : BaseTest
     [InlineData("DOTNET_ENVIRONMENT", "DEVELOPMENT", "Development")]
     [InlineData("DOTNET_ENVIRONMENT", "Development", "Development")]
     [InlineData("DOTNET_environment", "Development", "Development")]
-    [InlineData("ASPNET_ENVIRONMENT", "PRODUCTION", "Production")]
-    [InlineData("ASPNET_ENVIRONMENT", "Production", "Production")]
-    [InlineData("ASPNET_environment", "production", "Production")]
-    [InlineData("ASPNET_environment", "stAgInG", "Staging")]
+    [InlineData("ASPNETCORE_ENVIRONMENT", "PRODUCTION", "Production")]
+    [InlineData("ASPNETCORE_ENVIRONMENT", "Production", "Production")]
+    [InlineData("ASPNETCORE_environment", "production", "Production")]
+    [InlineData("ASPNETCORE_environment", "stAgInG", "Staging")]
     public void FromEnv(string name, string value, string result)
     {
         foreach (var key in Environment.GetEnvironmentVariables().Keys)
