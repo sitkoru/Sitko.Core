@@ -103,7 +103,7 @@ public interface IStateCompressor
     Task<T> FromGzipAsync<T>(byte[] bytes);
 }
 
-public class StateCompressor : IStateCompressor
+public class JsonHelperStateCompressor : IStateCompressor
 {
     public async Task<byte[]> ToGzipAsync<T>(T value)
     {

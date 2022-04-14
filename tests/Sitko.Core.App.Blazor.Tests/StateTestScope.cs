@@ -9,6 +9,6 @@ public class StateTestScope : BaseTestScope
 {
     protected override IServiceCollection ConfigureServices(IApplicationContext applicationContext,
         IServiceCollection services, string name) => base.ConfigureServices(applicationContext, services, name)
-        .AddScoped<IStateCompressor, StateCompressor>();
+        .AddScoped<IStateCompressor, JsonHelperStateCompressor>();
 }
 #endif

@@ -19,7 +19,7 @@ public class StateTest : BaseTest<StateTestScope>
     [Fact]
     public async Task SimpleModel()
     {
-        var compressor = new StateCompressor();
+        var compressor = new JsonHelperStateCompressor();
         var data = new SimpleRecord
         {
             DateTime = DateTimeOffset.Now,
@@ -39,7 +39,7 @@ public class StateTest : BaseTest<StateTestScope>
     [Fact]
     public async Task ListSimpleModel()
     {
-        var compressor = new StateCompressor();
+        var compressor = new JsonHelperStateCompressor();
         var id1 = new Guid();
         var id2 = new Guid();
         var data = new List<SimpleRecord>
