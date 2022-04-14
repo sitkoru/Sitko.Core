@@ -9,9 +9,6 @@ using Sitko.Core.App;
 using Sitko.Core.App.Logging;
 using Sitko.Core.Blazor.Components;
 using Thinktecture.Extensions.Configuration;
-#if NET6_0_OR_GREATER
-using System.Runtime.CompilerServices;
-#endif
 
 namespace Sitko.Core.Blazor.Wasm;
 

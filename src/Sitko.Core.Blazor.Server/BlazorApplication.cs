@@ -2,7 +2,6 @@
 using Sitko.Blazor.ScriptInjector;
 using Sitko.Core.App.Web;
 #if NET6_0_OR_GREATER
-using System.Runtime.CompilerServices;
 using Sitko.Core.Blazor.Components;
 #endif
 

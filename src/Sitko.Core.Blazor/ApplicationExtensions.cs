@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.Blazor.Components;
 
-namespace System.Runtime.CompilerServices;
+namespace Sitko.Core.Blazor;
 
 public static class ApplicationExtensions
 {
