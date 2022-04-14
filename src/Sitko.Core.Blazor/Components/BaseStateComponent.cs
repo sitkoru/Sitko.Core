@@ -54,8 +54,11 @@ public class CompressedPersistentComponentState : ICompressedPersistentComponent
     private readonly List<PersistingComponentStateSubscription>
         subscriptions = new();
 
-    public CompressedPersistentComponentState(PersistentComponentState persistentComponentState) =>
+    public CompressedPersistentComponentState(PersistentComponentState persistentComponentState, IStateCompressor stateCompressor)
+    {
         this.persistentComponentState = persistentComponentState;
+        this.stateCompressor = stateCompressor;
+    }
 
     public void Dispose()
     {
