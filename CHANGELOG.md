@@ -1,3 +1,18 @@
+# [9.0.0-beta.29](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.28...9.0.0-beta.29) (2022-04-14)
+
+
+### Bug Fixes
+
+* initialize stateCompressor from constructor ([eb63b7e](https://github.com/sitkoru/Sitko.Core/commit/eb63b7e8ec785ce397379a0db9607288850cd615))
+
+
+### Features
+
+* create addPersistentState with default services ([4910dd2](https://github.com/sitkoru/Sitko.Core/commit/4910dd252f57ebe1012a94d050a0ee6556120775))
+* create PersistentStateModule ([beec222](https://github.com/sitkoru/Sitko.Core/commit/beec2225523c0c28dd007f2c116d66e48189b0cd))
+* replace PersistentState module to extension ([2df5d42](https://github.com/sitkoru/Sitko.Core/commit/2df5d428469939cfbbbd28219e60d37e20296334))
+* use interfaces in state component ([75e8070](https://github.com/sitkoru/Sitko.Core/commit/75e8070c940e9ad5f1a322849e6a230dc83141a5))
+
 # [9.0.0-beta.28](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.27...9.0.0-beta.28) (2022-04-13)
 
 
