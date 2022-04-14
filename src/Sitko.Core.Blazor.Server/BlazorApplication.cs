@@ -13,7 +13,7 @@ public abstract class BlazorApplication<TStartup> : WebApplication<TStartup> whe
     protected BlazorApplication(string[] args) : base(args)
     {
 #if NET6_0_OR_GREATER
-        this.AddPersistentState<JsonHelperStateCompressor, CompressedPersistentComponentState>();
+        this.AddPersistentState();
 #endif
         ConfigureServices(collection =>
         {

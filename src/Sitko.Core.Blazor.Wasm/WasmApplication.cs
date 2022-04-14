@@ -22,7 +22,7 @@ public abstract class WasmApplication : Application
     protected WasmApplication(string[] args) : base(args)
     {
 #if NET6_0_OR_GREATER
-        this.AddPersistentState<JsonHelperStateCompressor, CompressedPersistentComponentState>();
+        this.AddPersistentState();
 #endif
     }
 
