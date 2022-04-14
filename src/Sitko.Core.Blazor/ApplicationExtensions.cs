@@ -15,7 +15,6 @@ public static class ApplicationExtensions
             .AddScoped<ICompressedPersistentComponentState, TComponentState>());
 
     public static Application AddPersistentState(this Application application) =>
-        application.ConfigureServices(collection => collection.AddScoped<IStateCompressor, JsonHelperStateCompressor>()
-            .AddScoped<ICompressedPersistentComponentState, CompressedPersistentComponentState>());
+        AddPersistentState<JsonHelperStateCompressor, CompressedPersistentComponentState>(application);
 }
 #endif
