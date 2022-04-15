@@ -88,7 +88,7 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
     [Parameter] public Func<Task<Dictionary<string, object?>>>? AddParamsToUrl { get; set; }
     [Parameter] public Func<Task>? GetParamsFromUrl { get; set; }
 
-    [Parameter] public bool EnableAddFiltersToUrl { get; set; }
+    [Parameter] public bool EnableUrlNavigation { get; set; }
 
     protected bool IsFirstLoad = true;
     private const string SortParam = "sort";
@@ -170,7 +170,7 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
 
     private async Task<TableData<TItem>> ServerReloadAsync(TableState state)
     {
-        if (IsFirstLoad && EnableAddFiltersToUrl)
+        if (IsFirstLoad && EnableUrlNavigation)
         {
             await DoGetParamsFromUrlAsync(state);
         }
@@ -259,7 +259,7 @@ public abstract class MudRepositoryTable<TEntity, TEntityPk, TRepository, TFilte
             query.OrderByString($"-{state.SortLabel}");
         }
 
-        if (!IsFirstLoad && EnableAddFiltersToUrl)
+        if (!IsFirstLoad && EnableUrlNavigation)
         {
             await DoAddUrlParamsAsync(state);
         }
