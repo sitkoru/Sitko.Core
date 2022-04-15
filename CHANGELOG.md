@@ -1,3 +1,17 @@
+# [9.0.0-beta.30](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.29...9.0.0-beta.30) (2022-04-15)
+
+
+### Bug Fixes
+
+* **mudBlazor:** rename EnableAddFiltersToUrl to EnableUrlNavigation ([d9b2d58](https://github.com/sitkoru/Sitko.Core/commit/d9b2d5884014f17467f82aa363e6ea91b18d58e9))
+
+
+### Features
+
+* **apps:** add table filters to demo mudblazor app ([91a0cf7](https://github.com/sitkoru/Sitko.Core/commit/91a0cf7557e96e2a801823819497866901d902f8))
+* **mudBlazor:** save table pagination, sort, filters to url ([a0773de](https://github.com/sitkoru/Sitko.Core/commit/a0773de55732f70129acee401b5ab6cb6b75ed02))
+* **mudBlazor:** use TryGetQueryString for get params from url ([43a086c](https://github.com/sitkoru/Sitko.Core/commit/43a086c6773d04613cd84072995226f39eeb365e))
+
 # [9.0.0-beta.29](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.28...9.0.0-beta.29) (2022-04-14)
 
 
