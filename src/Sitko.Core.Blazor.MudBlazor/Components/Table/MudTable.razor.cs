@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using System.Web;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
@@ -83,8 +85,96 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
     [Parameter] public TItem? SelectedItem { get; set; }
     [Parameter] public EventCallback<TItem> SelectedItemChanged { get; set; }
 
+    [Parameter] public Func<Task<Dictionary<string, object?>>>? AddParamsToUrl { get; set; }
+    [Parameter] public Func<Task>? GetParamsFromUrl { get; set; }
+
+    [Parameter] public bool EnableAddFiltersToUrl { get; set; }
+
+    protected bool IsFirstLoad = true;
+    private const string SortParam = "sort";
+    private const string PageParam = "page";
+    private const string PageSizeParam = "pageSize";
+    private const string SearchParam = "query";
+
+    protected async Task DoGetParamsFromUrlAsync(TableState state)
+    {
+        if (GetParamsFromUrl is not null)
+        {
+            await GetParamsFromUrl();
+        }
+        var urlData = HttpUtility.ParseQueryString((new Uri(NavigationManager.Uri)).Query);
+        var defaultSort = urlData.Get(SortParam);
+        if (!string.IsNullOrEmpty(defaultSort))
+        {
+            if (defaultSort.StartsWith("-", StringComparison.InvariantCulture))
+            {
+                state.SortDirection = SortDirection.Descending;
+                state.SortLabel = defaultSort.Remove(0, 1);
+            }
+            else
+            {
+                state.SortDirection = SortDirection.Ascending;
+                state.SortLabel = defaultSort;
+            }
+        }
+
+        var defaultPageSize = urlData.Get(PageSizeParam);
+        if (!string.IsNullOrEmpty(defaultPageSize))
+        {
+            state.PageSize = int.Parse(defaultPageSize, NumberStyles.Integer, null);
+            RowsPerPage = state.PageSize;
+        }
+
+        var defaultPage = urlData.Get(PageParam);
+        if (!string.IsNullOrEmpty(defaultPage))
+        {
+            state.Page = int.Parse(defaultPage, NumberStyles.Integer, null) - 1;
+            Table.CurrentPage = state.Page;
+        }
+
+        var defaultQuery = urlData.Get(SearchParam);
+        if (!string.IsNullOrEmpty(defaultQuery))
+        {
+            Filter.Search = defaultQuery;
+        }
+    }
+
+    protected async Task DoAddUrlParamsAsync(TableState state)
+    {
+        if (!IsFirstLoad)
+        {
+            var urlParams = new Dictionary<string, object?>();
+            if (AddParamsToUrl is not null)
+            {
+                urlParams = await AddParamsToUrl();
+            }
+            switch (state.SortDirection)
+            {
+                case SortDirection.Ascending:
+                    urlParams.Add(SortParam, state.SortLabel);
+                    break;
+                case SortDirection.Descending:
+                    urlParams.Add(SortParam, $"-{state.SortLabel}");
+                    break;
+            }
+
+            urlParams.Add(PageParam, state.Page + 1);
+            urlParams.Add(PageSizeParam, state.PageSize);
+            urlParams.Add(SearchParam, Filter.Search);
+
+            var url = NavigationManager.GetUriWithQueryParameters(urlParams);
+
+            NavigationManager.NavigateTo(url, replace: true);
+        }
+    }
+
     private async Task<TableData<TItem>> ServerReloadAsync(TableState state)
     {
+        if (IsFirstLoad && EnableAddFiltersToUrl)
+        {
+            await DoGetParamsFromUrlAsync(state);
+        }
+
         await StartLoadingAsync();
         var result = await GetDataAsync(state, Filter);
         await StopLoadingAsync();
@@ -95,6 +185,8 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
             Logger.LogDebug("Execute OnDataLoaded");
             await OnDataLoaded();
         }
+
+        IsFirstLoad = false;
 
         return new TableData<TItem> { Items = result.items, TotalItems = result.itemsCount };
     }
@@ -144,6 +236,7 @@ public abstract class MudRepositoryTable<TEntity, TEntityPk, TRepository, TFilte
 
 
                 query.Paginate(state.Page + 1, state.PageSize);
+                RowsPerPage = state.PageSize;
             });
         });
 
@@ -164,6 +257,11 @@ public abstract class MudRepositoryTable<TEntity, TEntityPk, TRepository, TFilte
         else if (state.SortDirection == SortDirection.Descending)
         {
             query.OrderByString($"-{state.SortLabel}");
+        }
+
+        if (!IsFirstLoad && EnableAddFiltersToUrl)
+        {
+            await DoAddUrlParamsAsync(state);
         }
     }
 
