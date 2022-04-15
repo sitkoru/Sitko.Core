@@ -39,7 +39,7 @@ private Task ConfigureQueryAsync(IRepositoryQuery<BarModel> query)
 }
 ````
 4. По умолчанию, фильтры (номер страницы, кол-во на странице, сортировка) при изменении не отображаются в url. 
-Это поведение можно отключить, указав `EnableAddFiltersToUrl="true"`
+Чтобы url менялся вместе с фильтрами, необходимо указать `EnableUrlNavigation="true"`
 5. Если необходимо добавить в url доп. фильтры, необходимо указать параметры `AddParamsToUrl` и `GetParamsFromUrl`
 ````c#
 private Task<Dictionary<string, object?>> AddParamsToUrlAsync()
