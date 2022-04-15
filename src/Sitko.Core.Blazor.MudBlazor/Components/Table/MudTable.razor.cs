@@ -102,8 +102,8 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
         {
             await GetParamsFromUrl();
         }
-        var urlData = HttpUtility.ParseQueryString((new Uri(NavigationManager.Uri)).Query);
-        var defaultSort = urlData.Get(SortParam);
+
+        TryGetQueryString<string?>(SortParam, out var defaultSort);
         if (!string.IsNullOrEmpty(defaultSort))
         {
             if (defaultSort.StartsWith("-", StringComparison.InvariantCulture))
@@ -118,21 +118,21 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
             }
         }
 
-        var defaultPageSize = urlData.Get(PageSizeParam);
-        if (!string.IsNullOrEmpty(defaultPageSize))
+        TryGetQueryString<int?>(PageSizeParam, out var defaultPageSize);
+        if (defaultPageSize != null)
         {
-            state.PageSize = int.Parse(defaultPageSize, NumberStyles.Integer, null);
+            state.PageSize = defaultPageSize.Value;
             RowsPerPage = state.PageSize;
         }
 
-        var defaultPage = urlData.Get(PageParam);
-        if (!string.IsNullOrEmpty(defaultPage))
+        TryGetQueryString<int?>(PageParam, out var defaultPage);
+        if (defaultPage != null)
         {
-            state.Page = int.Parse(defaultPage, NumberStyles.Integer, null) - 1;
+            state.Page = defaultPage.Value - 1;
             Table.CurrentPage = state.Page;
         }
 
-        var defaultQuery = urlData.Get(SearchParam);
+        TryGetQueryString<string?>(SearchParam, out var defaultQuery);
         if (!string.IsNullOrEmpty(defaultQuery))
         {
             Filter.Search = defaultQuery;
