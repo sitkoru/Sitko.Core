@@ -182,6 +182,12 @@ public class IncludableRemoteRepositoryQuery<TEntity, TProperty> : RemoteReposit
         return this;
     }
 
+    public override IIncludableRepositoryQuery<TEntity, TProperty1> Include<TProperty1>(
+        Expression<Func<TEntity, TProperty1>> navigationPropertyPath) => source.Include(navigationPropertyPath);
+
+    public override IRepositoryQuery<TEntity> Include(string navigationPropertyPath) =>
+        source.Include(navigationPropertyPath);
+
     public void SetChild(IRemoteIncludableQuery query) => child = query;
 
     public string GetFullPath()
@@ -222,7 +228,6 @@ public interface IRemoteIncludableQuery
     public string GetFullPath();
     public void SetChild(IRemoteIncludableQuery query);
 }
-
 
 public static class IncludableRepositoryQueryExtensions
 {

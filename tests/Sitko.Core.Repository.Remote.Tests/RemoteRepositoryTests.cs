@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Sitko.Core.Repository.Remote.Tests.Data;
 using Sitko.Core.Repository.Tests;
 using Sitko.Core.Repository.Tests.Data;
@@ -30,7 +31,7 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
     {
         var scope = await GetScopeAsync();
         var repo = scope.GetService<TestRemoteRepository>();
-        var result = await repo.GetAsync(q=>q.Where(t=>t.FooId == 6));
+        var result = await repo.GetAsync(q => q.Where(t => t.FooId == 6));
         Assert.Null(result);
     }
 
@@ -39,7 +40,7 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
     {
         var scope = await GetScopeAsync();
         var repo = scope.GetService<TestRemoteRepository>();
-        var result = await repo.GetAsync(q=>q.Where(t=>t.FooId == 5));
+        var result = await repo.GetAsync(q => q.Where(t => t.FooId == 5));
         Assert.NotNull(result);
     }
 
@@ -60,5 +61,26 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
         var bar = item.Bars.First();
         Assert.Equal(item.Id, bar.TestId);
         Assert.NotEmpty(bar.Foos);
+    }
+
+    [Fact]
+    public void MultipleIncludes()
+    {
+        var query = new RemoteRepositoryQuery<TestModel>();
+        query.Include(model => model.Bars).Include(model => model.Bars);
+        var serialized = query.Serialize();
+        serialized.Data.Includes.Should().HaveCount(2);
+        serialized.Data.Includes.Should().AllBe(nameof(TestModel.Bars));
+    }
+
+    [Fact]
+    public void MultipleIncludesWithThen()
+    {
+        var query = new RemoteRepositoryQuery<TestModel>();
+        query.Include(model => model.Bars).Include(model => model.Bars).ThenInclude(model => model.Foos);
+        var serialized = query.Serialize();
+        serialized.Data.Includes.Should().HaveCount(2);
+        serialized.Data.Includes[0].Should().Be(nameof(TestModel.Bars));
+        serialized.Data.Includes[1].Should().Be(nameof(TestModel.Bars) + "." + nameof(BarModel.Foos));
     }
 }
