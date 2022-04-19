@@ -1,3 +1,10 @@
+# [9.0.0-beta.32](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.31...9.0.0-beta.32) (2022-04-19)
+
+
+### Bug Fixes
+
+* **repository:** use common extensions methods for ThenInclude ([3992547](https://github.com/sitkoru/Sitko.Core/commit/3992547c96c46703770200f45f77cba09221794b))
+
 # [9.0.0-beta.31](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.30...9.0.0-beta.31) (2022-04-19)
 
 
