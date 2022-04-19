@@ -201,45 +201,18 @@ public class IncludableRemoteRepositoryQuery<TEntity, TProperty> : RemoteReposit
         return path;
     }
 
+    public IIncludableRepositoryQuery<TEntity, TNextProperty> ThenIncludeFromEnumerableInternal<TNextProperty,
+        TPreviousProperty>(
+        Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath) =>
+        new IncludableRemoteRepositoryQuery<TEntity, TNextProperty>(this, GetPropertyName(navigationPropertyPath));
 
-    internal static IncludableRemoteRepositoryQuery<TEntity, TNextProperty> ThenInclude<TPreviousProperty,
-        TNextProperty>(
-        IIncludableRepositoryQuery<TEntity, IEnumerable<TPreviousProperty>> source,
-        Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath)
-    {
-        var efQuery = (RemoteRepositoryQuery<TEntity>)source;
-        var propertyName = GetPropertyName(navigationPropertyPath);
-        return new IncludableRemoteRepositoryQuery<TEntity, TNextProperty>(efQuery, propertyName);
-    }
-
-    internal static IncludableRemoteRepositoryQuery<TEntity, TNextProperty> ThenInclude<TPreviousProperty,
-        TNextProperty>(
-        IIncludableRepositoryQuery<TEntity, TPreviousProperty> source,
-        Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath)
-    {
-        var efQuery = (RemoteRepositoryQuery<TEntity>)source;
-        var propertyName = GetPropertyName(navigationPropertyPath);
-        return new IncludableRemoteRepositoryQuery<TEntity, TNextProperty>(efQuery, propertyName);
-    }
+    public IIncludableRepositoryQuery<TEntity, TNextProperty> ThenIncludeFromSingleInternal<TNextProperty, TPreviousProperty>(
+        Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath) =>
+        new IncludableRemoteRepositoryQuery<TEntity, TNextProperty>(this, GetPropertyName(navigationPropertyPath));
 }
 
 public interface IRemoteIncludableQuery
 {
     public string GetFullPath();
     public void SetChild(IRemoteIncludableQuery query);
-}
-
-public static class IncludableRepositoryQueryExtensions
-{
-    public static IIncludableRepositoryQuery<TEntity, TProperty> ThenInclude<TEntity, TPreviousProperty, TProperty>(
-        this IIncludableRepositoryQuery<TEntity, IEnumerable<TPreviousProperty>> source,
-        Expression<Func<TPreviousProperty, TProperty>> navigationPropertyPath)
-        where TEntity : class
-        => IncludableRemoteRepositoryQuery<TEntity, TProperty>.ThenInclude(source, navigationPropertyPath);
-
-    public static IIncludableRepositoryQuery<TEntity, TProperty> ThenInclude<TEntity, TPreviousProperty, TProperty>(
-        this IIncludableRepositoryQuery<TEntity, TPreviousProperty> source,
-        Expression<Func<TPreviousProperty, TProperty>> navigationPropertyPath)
-        where TEntity : class
-        => IncludableRemoteRepositoryQuery<TEntity, TProperty>.ThenInclude(source, navigationPropertyPath);
 }

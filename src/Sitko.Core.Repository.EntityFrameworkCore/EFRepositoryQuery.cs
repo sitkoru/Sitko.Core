@@ -181,40 +181,20 @@ internal class EFIncludableRepositoryQuery<TEntity, TProperty> : EFRepositoryQue
         return this;
     }
 
-    internal static EFIncludableRepositoryQuery<TEntity, TNextProperty> ThenInclude<TPreviousProperty,
-        TNextProperty>(
-        IIncludableRepositoryQuery<TEntity, IEnumerable<TPreviousProperty>> source,
+    public IIncludableRepositoryQuery<TEntity, TNextProperty> ThenIncludeFromEnumerableInternal<TNextProperty,
+        TPreviousProperty>(
         Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath)
     {
-        var efQuery = (EFRepositoryQuery<TEntity>)source;
-        var querySource = (IIncludableQueryable<TEntity, IEnumerable<TPreviousProperty>>)efQuery.QuerySource.Query;
-        efQuery.QuerySource.Query = querySource.ThenInclude(navigationPropertyPath);
-        return new EFIncludableRepositoryQuery<TEntity, TNextProperty>(efQuery);
+        var querySource = (IIncludableQueryable<TEntity, IEnumerable<TPreviousProperty>>)QuerySource.Query;
+        QuerySource.Query =  querySource.ThenInclude(navigationPropertyPath);
+        return new EFIncludableRepositoryQuery<TEntity, TNextProperty>(this);
     }
 
-    internal static EFIncludableRepositoryQuery<TEntity, TNextProperty> ThenInclude<TPreviousProperty,
-        TNextProperty>(
-        IIncludableRepositoryQuery<TEntity, TPreviousProperty> source,
+    public IIncludableRepositoryQuery<TEntity, TNextProperty> ThenIncludeFromSingleInternal<TNextProperty, TPreviousProperty>(
         Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath)
     {
-        var efQuery = (EFRepositoryQuery<TEntity>)source;
-        var querySource = (IIncludableQueryable<TEntity, TPreviousProperty>)efQuery.QuerySource.Query;
-        efQuery.QuerySource.Query = querySource.ThenInclude(navigationPropertyPath);
-        return new EFIncludableRepositoryQuery<TEntity, TNextProperty>(efQuery);
+        var querySource = (IIncludableQueryable<TEntity, TPreviousProperty>)source.QuerySource.Query;
+        QuerySource.Query = querySource.ThenInclude(navigationPropertyPath);
+        return new EFIncludableRepositoryQuery<TEntity, TNextProperty>(this);
     }
-}
-
-public static class IncludableRepositoryQueryExtensions
-{
-    public static IIncludableRepositoryQuery<TEntity, TProperty> ThenInclude<TEntity, TPreviousProperty, TProperty>(
-        this IIncludableRepositoryQuery<TEntity, IEnumerable<TPreviousProperty>> source,
-        Expression<Func<TPreviousProperty, TProperty>> navigationPropertyPath)
-        where TEntity : class
-        => EFIncludableRepositoryQuery<TEntity, TProperty>.ThenInclude(source, navigationPropertyPath);
-
-    public static IIncludableRepositoryQuery<TEntity, TProperty> ThenInclude<TEntity, TPreviousProperty, TProperty>(
-        this IIncludableRepositoryQuery<TEntity, TPreviousProperty> source,
-        Expression<Func<TPreviousProperty, TProperty>> navigationPropertyPath)
-        where TEntity : class
-        => EFIncludableRepositoryQuery<TEntity, TProperty>.ThenInclude(source, navigationPropertyPath);
 }

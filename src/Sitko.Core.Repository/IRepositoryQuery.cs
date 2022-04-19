@@ -47,4 +47,25 @@ public interface IRepositoryQuery<TEntity> where TEntity : class
 public interface IIncludableRepositoryQuery<TEntity, out TProperty> : IRepositoryQuery<TEntity>
     where TEntity : class
 {
+    IIncludableRepositoryQuery<TEntity, TNextProperty>
+        ThenIncludeFromEnumerableInternal<TNextProperty, TPreviousProperty>(
+            Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath);
+
+    IIncludableRepositoryQuery<TEntity, TNextProperty> ThenIncludeFromSingleInternal<TNextProperty, TPreviousProperty>(
+        Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath);
+}
+
+public static class IncludableRepositoryQueryExtensions
+{
+    public static IIncludableRepositoryQuery<TEntity, TProperty> ThenInclude<TEntity, TPreviousProperty, TProperty>(
+        this IIncludableRepositoryQuery<TEntity, IEnumerable<TPreviousProperty>> source,
+        Expression<Func<TPreviousProperty, TProperty>> navigationPropertyPath)
+        where TEntity : class
+        => source.ThenIncludeFromEnumerableInternal(navigationPropertyPath);
+
+    public static IIncludableRepositoryQuery<TEntity, TProperty> ThenInclude<TEntity, TPreviousProperty, TProperty>(
+        this IIncludableRepositoryQuery<TEntity, TPreviousProperty> source,
+        Expression<Func<TPreviousProperty, TProperty>> navigationPropertyPath)
+        where TEntity : class
+        => source.ThenIncludeFromSingleInternal(navigationPropertyPath);
 }
