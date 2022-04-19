@@ -1,3 +1,11 @@
+# [9.0.0-beta.33](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.32...9.0.0-beta.33) (2022-04-19)
+
+
+### Features
+
+* **mudBlazor:** check result TryGetQueryString on null in mudTable component ([ac87bcb](https://github.com/sitkoru/Sitko.Core/commit/ac87bcbae899013ebacebae523571bfa70335903))
+* parse query string with nullable types ([f7b96cd](https://github.com/sitkoru/Sitko.Core/commit/f7b96cd083016febca78ef91fb0647442887d33d))
+
 # [9.0.0-beta.32](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.31...9.0.0-beta.32) (2022-04-19)
 
 
