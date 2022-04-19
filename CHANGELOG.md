@@ -1,3 +1,10 @@
+# [9.0.0-beta.31](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.30...9.0.0-beta.31) (2022-04-19)
+
+
+### Bug Fixes
+
+* **remoterepository:** fix sequential includes ([12abda7](https://github.com/sitkoru/Sitko.Core/commit/12abda78ab7f26192a0c5d23e22dae59c9a65f5b))
+
 # [9.0.0-beta.30](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.29...9.0.0-beta.30) (2022-04-15)
 
 
