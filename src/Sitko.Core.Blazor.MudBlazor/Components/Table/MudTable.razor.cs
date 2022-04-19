@@ -98,13 +98,7 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
 
     protected async Task DoGetParamsFromUrlAsync(TableState state)
     {
-        if (GetParamsFromUrl is not null)
-        {
-            await GetParamsFromUrl();
-        }
-
-        TryGetQueryString<string?>(SortParam, out var defaultSort);
-        if (!string.IsNullOrEmpty(defaultSort))
+        if (TryGetQueryString<string?>(SortParam, out var defaultSort) && !string.IsNullOrEmpty(defaultSort))
         {
             if (defaultSort.StartsWith("-", StringComparison.InvariantCulture))
             {
@@ -118,22 +112,19 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
             }
         }
 
-        TryGetQueryString<int?>(PageSizeParam, out var defaultPageSize);
-        if (defaultPageSize != null)
+        if (TryGetQueryString<int?>(PageSizeParam, out var defaultPageSize) && defaultPageSize != null)
         {
             state.PageSize = defaultPageSize.Value;
             RowsPerPage = state.PageSize;
         }
 
-        TryGetQueryString<int?>(PageParam, out var defaultPage);
-        if (defaultPage != null)
+        if (TryGetQueryString<int?>(PageParam, out var defaultPage) && defaultPage != null)
         {
             state.Page = defaultPage.Value - 1;
             Table.CurrentPage = state.Page;
         }
 
-        TryGetQueryString<string?>(SearchParam, out var defaultQuery);
-        if (!string.IsNullOrEmpty(defaultQuery))
+        if (TryGetQueryString<string?>(SearchParam, out var defaultQuery) && !string.IsNullOrEmpty(defaultQuery))
         {
             Filter.Search = defaultQuery;
         }
