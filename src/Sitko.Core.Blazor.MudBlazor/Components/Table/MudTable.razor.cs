@@ -107,6 +107,11 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
 
     protected async Task DoGetParamsFromUrlAsync(TableState state)
     {
+        if (GetParamsFromUrl is not null)
+        {
+            await GetParamsFromUrl();
+        }
+
         if (TryGetQueryString<string?>(SortParam, out var defaultSort) && !string.IsNullOrEmpty(defaultSort))
         {
             if (defaultSort.StartsWith("-", StringComparison.InvariantCulture))
