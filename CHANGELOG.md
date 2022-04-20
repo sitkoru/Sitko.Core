@@ -1,3 +1,10 @@
+# [9.0.0-beta.35](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.34...9.0.0-beta.35) (2022-04-20)
+
+
+### Features
+
+* **mudBlazor:** bind RowsPerPage value ([9a95bc6](https://github.com/sitkoru/Sitko.Core/commit/9a95bc6fa1fc14dde9f94ec828e52ae98f818fba))
+
 # [9.0.0-beta.34](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.33...9.0.0-beta.34) (2022-04-20)
 
 
