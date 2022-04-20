@@ -1,3 +1,25 @@
+# [9.0.0-beta.34](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.33...9.0.0-beta.34) (2022-04-20)
+
+
+### Features
+
+* **.net:** 3.1.24 ([2284a54](https://github.com/sitkoru/Sitko.Core/commit/2284a5433e165952af47b3c008a5f3858353b598))
+* **.net:** 5.0.16 ([192fb4b](https://github.com/sitkoru/Sitko.Core/commit/192fb4b67a7c56594bd36f8627684d4472526664))
+* **.net:** 6.0.4 ([573a171](https://github.com/sitkoru/Sitko.Core/commit/573a1718221211b38aaa5a1687d0674badad2f8d))
+* **antdesign:** update AntDesign from 0.10.4 to 0.10.5 ([14aaa33](https://github.com/sitkoru/Sitko.Core/commit/14aaa337bc6c7627fbe81efedcb840e2e1d6e81d))
+* **app:** update FluentValidation.DependencyInjectionExtensions from 10.3.6 to 10.4.0 ([41e9024](https://github.com/sitkoru/Sitko.Core/commit/41e9024c6b14e37be20fe57609c3f1ab9586ba5b))
+* **demo:** upd deps ([38503a6](https://github.com/sitkoru/Sitko.Core/commit/38503a60ede447a8c092282810ebe9bc39135e19))
+* **elastickstack:** update Elastic.Apm.NetCoreAll from 1.14.0 to 1.14.1 ([36587d2](https://github.com/sitkoru/Sitko.Core/commit/36587d2adc78fa1a0c7c9be569af11ca6a565ba8))
+* **elasticsearch:** update NEST from 7.17.0 to 7.17.1 ([b2b8d6c](https://github.com/sitkoru/Sitko.Core/commit/b2b8d6c4c55d2f3af0a33330548081fff7cea9aa))
+* **emailmailgun:** update FluentEmail.Mailgun from 3.0.0 to 3.0.2 ([a1b94ec](https://github.com/sitkoru/Sitko.Core/commit/a1b94ec4991d1a05dfb766af055ef90b1361ec9a))
+* **emailsmtp:** update MailKit from 3.1.1 to 3.2.0 ([007a9e7](https://github.com/sitkoru/Sitko.Core/commit/007a9e7c5cb7006d1e6094a05b82291c4737b42e))
+* **email:** update FluentEmail.Core from 3.0.0 to 3.0.2 ([cdcf746](https://github.com/sitkoru/Sitko.Core/commit/cdcf746ede17d741e7b7fc4f33267250768fb10d))
+* **grpc:** grpc 2.45.0, protobuf 3.20.0 ([c9e6790](https://github.com/sitkoru/Sitko.Core/commit/c9e6790f2a99c18af1e0170b6e6aaeafc0547e4c))
+* **hangfire:** update Hangfire.PostgreSql from 1.9.6 to 1.9.7 ([0c321ca](https://github.com/sitkoru/Sitko.Core/commit/0c321ca2dbbf99176710a40e7c0f89d1d3cc2a9c))
+* **mudblazor:** update MudBlazor from 6.0.7 to 6.0.9 ([5594362](https://github.com/sitkoru/Sitko.Core/commit/5594362f8f74a0be34906a6ca4ed83eec5a0b72b))
+* **s3storage:** update AWSSDK.S3 from 3.7.8.5 to 3.7.8.22 ([4581157](https://github.com/sitkoru/Sitko.Core/commit/45811579c000d3c2beb342af89fc31fa97387737))
+* **xunit:** update FluentAssertions from 6.5.1 to 6.6.0 ([26d40d1](https://github.com/sitkoru/Sitko.Core/commit/26d40d18c0d09eef6deefe32ed7c8e75c8ab571a))
+
 # [9.0.0-beta.33](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.32...9.0.0-beta.33) (2022-04-19)
 
 
