@@ -1,3 +1,10 @@
+# [9.0.0-beta.36](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.35...9.0.0-beta.36) (2022-04-20)
+
+
+### Bug Fixes
+
+* invoke GetParamsFromUrl ([9baffc6](https://github.com/sitkoru/Sitko.Core/commit/9baffc6db620cc78c70a35f46af768be0905817f))
+
 # [9.0.0-beta.35](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.34...9.0.0-beta.35) (2022-04-20)
 
 
