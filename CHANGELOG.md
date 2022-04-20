@@ -1,3 +1,10 @@
+# [9.0.0-beta.37](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.36...9.0.0-beta.37) (2022-04-20)
+
+
+### Bug Fixes
+
+* **mudBlazor:** change RowsPerPage in init ServerReloadAsync ([a33c274](https://github.com/sitkoru/Sitko.Core/commit/a33c27455bb86449b3acfec2d29285b2abd9acf0))
+
 # [9.0.0-beta.36](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.35...9.0.0-beta.36) (2022-04-20)
 
 
