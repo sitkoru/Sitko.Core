@@ -6,7 +6,7 @@
     <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentEmail.Core" Version="3.0.0"/>
+    <PackageReference Include="FluentEmail.Core" Version="3.0.2"/>
     <PackageReference Include="Hangfire.Core" Version="1.7.28"/>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.42"/>
   </ItemGroup>
