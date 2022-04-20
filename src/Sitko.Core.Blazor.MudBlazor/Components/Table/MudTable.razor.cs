@@ -179,6 +179,10 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
         {
             await DoGetParamsFromUrlAsync(state);
         }
+        else
+        {
+            RowsPerPage = state.PageSize;
+        }
 
         await StartLoadingAsync();
         var result = await GetDataAsync(state, Filter);
@@ -241,7 +245,6 @@ public abstract class MudRepositoryTable<TEntity, TEntityPk, TRepository, TFilte
 
 
                 query.Paginate(state.Page + 1, state.PageSize);
-                RowsPerPage = state.PageSize;
             });
         });
 
