@@ -57,7 +57,16 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
 
     [Parameter] public object Tag { get; set; } = new { };
 
-    [Parameter] public int RowsPerPage { get; set; } = 50;
+    private int _perPage = 50;
+    [Parameter] public int RowsPerPage {  get => _perPage;
+        set
+        {
+            if (_perPage == value ) return;
+            _perPage = value;
+            RowsPerPageChanged.InvokeAsync(value);
+        } }
+    [Parameter]
+    public EventCallback<int> RowsPerPageChanged { get; set; }
 
     // [Parameter] public int CurrentPage { get; set; } = 1; TODO: until https://github.com/MudBlazor/MudBlazor/issues/1403
     [Parameter] public bool CustomFooter { get; set; }

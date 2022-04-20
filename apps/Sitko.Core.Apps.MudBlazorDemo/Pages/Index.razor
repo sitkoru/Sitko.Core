@@ -21,7 +21,7 @@
 </MudGrid>
 
 <MudPageLayout Title="@LocalizationProvider["Title"]">
-    <BarRepositoryList OnDataLoaded="CountSummaryAsync" @ref="barList" Class="mb-10" EnableUrlNavigation="true"
+    <BarRepositoryList @bind-RowsPerPage="RowsPerPage" OnDataLoaded="CountSummaryAsync" @ref="barList" Class="mb-10" EnableUrlNavigation="true"
                        ConfigureQuery="ConfigureQueryAsync" AddParamsToUrl="AddParamsToUrlAsync"
                        GetParamsFromUrl="GetParamsFromUrlAsync">
         <HeaderContent>

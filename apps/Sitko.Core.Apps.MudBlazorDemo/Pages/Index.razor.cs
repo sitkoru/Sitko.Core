@@ -13,6 +13,7 @@ namespace Sitko.Core.Apps.MudBlazorDemo.Pages
 {
     public partial class Index
     {
+        private int RowsPerPage = 10;
         private const string FilterParamId = "id";
         private const string FilterParamTitle = "title";
         private const string FilterParamDateRange = "dateRange";

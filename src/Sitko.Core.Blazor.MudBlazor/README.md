@@ -71,3 +71,11 @@ private Task GetParamsFromUrlAsync()
     return Task.CompletedTask;
 }
 ````
+6. Если необходимо изменить значение по умолчанию для RowsPerPage - нужно создать переменную
+```c#
+private int MyRowsPerPage { get; set; } = 10;
+```
+(вместо 10 указать нужное значение) и передавать её как
+```c#
+@bind-RowsPerPage="RowsPerPage"
+```
