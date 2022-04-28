@@ -2,6 +2,7 @@ using System.Linq;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
+using Sitko.Core.Auth.IdentityServer.Tokens;
 
 namespace Sitko.Core.Auth.IdentityServer
 {
@@ -29,11 +30,14 @@ namespace Sitko.Core.Auth.IdentityServer
                 options.Scope.Add(OidcConstants.StandardScopes.OfflineAccess);
                 if (startupOptions.OidcScopes.Any())
                 {
-                    foreach (string scope in startupOptions.OidcScopes)
+                    foreach (var scope in startupOptions.OidcScopes)
                     {
                         options.Scope.Add(scope);
                     }
                 }
+            }).AddAutomaticTokenManagement(options =>
+            {
+                options.Scheme = startupOptions.SignInScheme;
             });
     }
 }
