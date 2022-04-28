@@ -1,3 +1,10 @@
+# [9.0.0-beta.38](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.37...9.0.0-beta.38) (2022-04-28)
+
+
+### Features
+
+* **oidc:** add tokens auto-update ([7c30b93](https://github.com/sitkoru/Sitko.Core/commit/7c30b93a96362edc784bea272a65ea9c22eac5b5))
+
 # [9.0.0-beta.37](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.36...9.0.0-beta.37) (2022-04-20)
 
 
