@@ -11,7 +11,8 @@ namespace Sitko.Core.Auth.IdentityServer
         public override string OptionsKey => "Auth:IdentityServer:Oidc";
 
         protected override void ConfigureAuthentication(AuthenticationBuilder authenticationBuilder,
-            OidcIdentityServerModuleOptions startupOptions) =>
+            OidcIdentityServerModuleOptions startupOptions)
+        {
             authenticationBuilder.AddOpenIdConnect(startupOptions.ChallengeScheme, options =>
             {
                 options.SignInScheme = startupOptions.SignInScheme;
@@ -35,9 +36,14 @@ namespace Sitko.Core.Auth.IdentityServer
                         options.Scope.Add(scope);
                     }
                 }
-            }).AddAutomaticTokenManagement(options =>
-            {
-                options.Scheme = startupOptions.SignInScheme;
             });
+            if (startupOptions.AutoRefreshTokens)
+            {
+                authenticationBuilder.AddAutomaticTokenManagement(options =>
+                {
+                    startupOptions.ConfigureAutoRefreshTokens?.Invoke(options);
+                });
+            }
+        }
     }
 }
