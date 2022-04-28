@@ -1,3 +1,10 @@
+# [9.0.0-beta.39](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.38...9.0.0-beta.39) (2022-04-28)
+
+
+### Bug Fixes
+
+* **oidc:** allow configure auto token refresh ([39da17f](https://github.com/sitkoru/Sitko.Core/commit/39da17f366d78174fc177cde3f1ae7f51ccd2d9f))
+
 # [9.0.0-beta.38](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.37...9.0.0-beta.38) (2022-04-28)
 
 
