@@ -5,11 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Consul" Version="1.6.10.4" />
+    <PackageReference Include="Consul" Version="1.6.10.5"/>
   </ItemGroup>
 
 </Project>
