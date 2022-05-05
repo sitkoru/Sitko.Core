@@ -83,4 +83,14 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
         serialized.Data.Includes[0].Should().Be(nameof(TestModel.Bars));
         serialized.Data.Includes[1].Should().Be(nameof(TestModel.Bars) + "." + nameof(BarModel.Foos));
     }
+
+    [Fact]
+    public void WhereByString()
+    {
+        var query = new RemoteRepositoryQuery<TestModel>();
+        query.Include(model => model.Bars).Where("bla", new object[] { 1 });
+        var serialized = query.Serialize();
+        serialized.Data.WhereByString.Should().HaveCount(1);
+        serialized.Data.WhereByString.Should().Contain(tuple => tuple.WhereStr == "bla" && tuple.Values!.Contains(1));
+    }
 }

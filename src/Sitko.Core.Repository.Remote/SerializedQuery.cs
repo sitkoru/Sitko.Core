@@ -38,7 +38,8 @@ public record SerializedQuery<TEntity> where TEntity : class
         return this;
     }
 
-    public SerializedQuery<TEntity> AddWhereByStringExpressions(List<string> whereByStringExpressions)
+    public SerializedQuery<TEntity> AddWhereByStringExpressions(
+        List<(string whereStr, object?[]? values)> whereByStringExpressions)
     {
         foreach (var whereByStringExpression in whereByStringExpressions)
         {
@@ -48,9 +49,10 @@ public record SerializedQuery<TEntity> where TEntity : class
         return this;
     }
 
-    public SerializedQuery<TEntity> AddWhereByStringExpression(string whereByStringExpression)
+    public SerializedQuery<TEntity> AddWhereByStringExpression(
+        (string whereStr, object?[]? values) whereByStringExpression)
     {
-        Data.WhereByString.Add(whereByStringExpression);
+        Data.WhereByString.Add(new WhereByString(whereByStringExpression.whereStr, whereByStringExpression.values));
         return this;
     }
 
@@ -84,6 +86,17 @@ public record SerializedQuery<TEntity> where TEntity : class
     public SerializedQuery<TEntity> AddOrderByDescendingExpression(Expression<Func<TEntity, object>> expression)
     {
         Data.OrderByDescending.Add(serializer.SerializeText(expression));
+        return this;
+    }
+
+    public SerializedQuery<TEntity> AddOrderByStringExpressions(
+        IEnumerable<(string propertyName, bool isDescending)> orderByStringExpressions)
+    {
+        foreach (var expression in orderByStringExpressions)
+        {
+            Data.OrderByString.Add(new OrderByString(expression.propertyName, expression.isDescending));
+        }
+
         return this;
     }
 
@@ -123,9 +136,16 @@ public record SerializedQuery<TEntity> where TEntity : class
             query.Where((Expression<Func<TEntity, bool>>)ex);
         }
 
-        foreach (var whereByString in Data.WhereByString)
+        foreach (var (whereStr, values) in Data.WhereByString)
         {
-            query.WhereByString(whereByString);
+            if (values is not null)
+            {
+                query.Where(whereStr, values!);
+            }
+            else
+            {
+                query.WhereByString(whereStr);
+            }
         }
 
         foreach (var expressionNode in Data.OrderBy)
@@ -138,6 +158,11 @@ public record SerializedQuery<TEntity> where TEntity : class
         {
             var ex = serializer.DeserializeText(expressionNode);
             query.OrderByDescending((Expression<Func<TEntity, object>>)ex);
+        }
+
+        foreach (var (propertyName, isDescending) in Data.OrderByString)
+        {
+            query.OrderByString(isDescending ? $"-{propertyName}" : propertyName);
         }
 
         foreach (var include in Data.Includes)

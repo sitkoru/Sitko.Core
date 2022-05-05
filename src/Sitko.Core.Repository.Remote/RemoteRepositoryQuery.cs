@@ -14,7 +14,8 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
     private readonly List<string> includes = new();
     private readonly List<Expression<Func<TEntity, object>>> orderByDescendingExpressions = new();
     private readonly List<Expression<Func<TEntity, object>>> orderByExpressions = new();
-    private readonly List<string> whereByStringExpressions = new();
+    private readonly List<(string propertyName, bool isDescending)> orderByStringExpressions = new();
+    private readonly List<(string whereStr, object?[]? values)> whereByStringExpressions = new();
     private readonly List<Expression<Func<TEntity, bool>>> whereExpressions = new();
     private Expression? selectExpression;
 
@@ -46,17 +47,20 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
         return this;
     }
 
-    public override IRepositoryQuery<TEntity> WhereByString(string whereJson)
+    public override IRepositoryQuery<TEntity> WhereByString(string whereStr)
     {
-        whereByStringExpressions.Add(whereJson);
+        whereByStringExpressions.Add((whereStr, null));
         return this;
     }
 
     public override IRepositoryQuery<TEntity> Where(Func<IQueryable<TEntity>, IQueryable<TEntity>> where) =>
         throw new NotImplementedException();
 
-    public override IRepositoryQuery<TEntity> Where(string whereStr, object?[] values) =>
-        throw new NotImplementedException();
+    public override IRepositoryQuery<TEntity> Where(string whereStr, object?[] values)
+    {
+        whereByStringExpressions.Add((whereStr, values));
+        return this;
+    }
 
     public override IRepositoryQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> orderBy)
     {
@@ -110,7 +114,7 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
 
 
     protected override void ApplySort((string propertyName, bool isDescending) sortQuery) =>
-        throw new NotImplementedException();
+        orderByStringExpressions.Add(sortQuery);
 
     public SerializedQuery<TEntity>
         Serialize()
@@ -125,6 +129,7 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
             .AddWhereByStringExpressions(whereByStringExpressions)
             .AddOrderByExpressions(orderByExpressions)
             .AddOrderByDescendingExpressions(orderByDescendingExpressions)
+            .AddOrderByStringExpressions(orderByStringExpressions)
             .AddIncludes(includes);
         if (selectExpression is not null)
         {
@@ -206,7 +211,8 @@ public class IncludableRemoteRepositoryQuery<TEntity, TProperty> : RemoteReposit
         Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath) =>
         new IncludableRemoteRepositoryQuery<TEntity, TNextProperty>(this, GetPropertyName(navigationPropertyPath));
 
-    public IIncludableRepositoryQuery<TEntity, TNextProperty> ThenIncludeFromSingleInternal<TNextProperty, TPreviousProperty>(
+    public IIncludableRepositoryQuery<TEntity, TNextProperty> ThenIncludeFromSingleInternal<TNextProperty,
+        TPreviousProperty>(
         Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath) =>
         new IncludableRemoteRepositoryQuery<TEntity, TNextProperty>(this, GetPropertyName(navigationPropertyPath));
 }
