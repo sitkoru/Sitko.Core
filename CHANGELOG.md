@@ -1,3 +1,19 @@
+# [9.0.0-beta.40](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.39...9.0.0-beta.40) (2022-05-05)
+
+
+### Features
+
+* **blazor:** update CompareNETObjects from 4.76.0 to 4.77.0 ([a6f40e1](https://github.com/sitkoru/Sitko.Core/commit/a6f40e1030b4412f67c103e5a35a9266b16b3b9b))
+* **consul:** update Consul from 1.6.10.4 to 1.6.10.5 ([b82fefa](https://github.com/sitkoru/Sitko.Core/commit/b82fefa0b814786c8ffa7518ee5025fa0444b56a))
+* **mudblazor:** update MudBlazor from 6.0.9 to 6.0.10 ([fb728c5](https://github.com/sitkoru/Sitko.Core/commit/fb728c5d85edc1f0e4a44734327198fdc9d18455))
+* **nats:** update NATS.Client from 0.14.5 to 0.14.6 ([5ced38e](https://github.com/sitkoru/Sitko.Core/commit/5ced38e8e9adb865b8fa33cd902986039ccd8560))
+* **protobuf:** update Google.Protobuf from 3.20.0 to 3.20.1 ([f5814aa](https://github.com/sitkoru/Sitko.Core/commit/f5814aaaf4ece43efddc20ec9dcb6e7173dcaf47))
+* **remoterepository:** support more where/sort methods ([fe6bc07](https://github.com/sitkoru/Sitko.Core/commit/fe6bc072b64fe224ae2eb346b7a21e572f673bda))
+* **remoterepository:** update CompareNETObjects from 4.76.0 to 4.77.0 ([dfebca0](https://github.com/sitkoru/Sitko.Core/commit/dfebca080ad722eace04f4814e53d98524e20618))
+* **s3storage:** update AWSSDK.S3 from 3.7.8.22 to 3.7.8.27 ([3a3b691](https://github.com/sitkoru/Sitko.Core/commit/3a3b6919cf987e56001f3b6c1df6b3d0c45babc4))
+* **swagger:** update Swashbuckle.AspNetCore from 6.3.0 to 6.3.1 ([5b24751](https://github.com/sitkoru/Sitko.Core/commit/5b247516298389c6cf49ea22987488704bab2dbc))
+* **xunit:** update xunit.runner.visualstudio from 2.4.3 to 2.4.5 ([b9d3c8d](https://github.com/sitkoru/Sitko.Core/commit/b9d3c8db67ba2bf0b45bf3bb0002782aa9c3658f))
+
 # [9.0.0-beta.39](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.38...9.0.0-beta.39) (2022-04-28)
 
 
