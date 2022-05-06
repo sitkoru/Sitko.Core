@@ -79,12 +79,13 @@ public class GrpcClientProvider<TClient, TOptions> : IGrpcClientProvider<TClient
         var services = scope.ServiceProvider;
         var options = new GrpcChannelOptions();
 
+        var handler = new HttpClientHandler();
         if (Options.DisableCertificatesValidation)
         {
-            var handler = new HttpClientHandler();
             handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
-            options.HttpHandler = handler;
         }
+
+        options.HttpHandler = Options.ConfigureHttpHandler?.Invoke(handler) ?? handler;
 
         options.ServiceProvider = services;
         options.LoggerFactory = loggerFactory;

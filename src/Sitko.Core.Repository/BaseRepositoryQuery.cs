@@ -8,306 +8,313 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Sitko.Core.Repository
+namespace Sitko.Core.Repository;
+
+public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> where TEntity : class
 {
-    public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> where TEntity : class
+    public int? Limit { get; protected set; }
+    public int? Offset { get; protected set; }
+
+    public virtual IRepositoryQuery<TEntity> Take(int take)
     {
-        public int? Limit { get; protected set; }
-        public int? Offset { get; protected set; }
+        Limit = take;
+        return this;
+    }
 
-        public virtual IRepositoryQuery<TEntity> Take(int take)
+    public virtual IRepositoryQuery<TEntity> Skip(int skip)
+    {
+        Offset = skip;
+        return this;
+    }
+
+    public abstract IRepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> where);
+    public abstract IRepositoryQuery<TEntity> Where(Func<IQueryable<TEntity>, IQueryable<TEntity>> where);
+    public abstract IRepositoryQuery<TEntity> Where(string whereStr, object?[] values);
+    public abstract IRepositoryQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> orderBy);
+    public abstract IRepositoryQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> orderBy);
+
+    public abstract IRepositoryQuery<TEntity> Order(Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> order);
+    public abstract IRepositoryQuery<TEntity> Configure(Action<IRepositoryQuery<TEntity>>? configureQuery = null);
+
+    public abstract Task<IRepositoryQuery<TEntity>> ConfigureAsync(
+        Func<IRepositoryQuery<TEntity>, Task>? configureQuery = null,
+        CancellationToken cancellationToken = default);
+
+    public virtual IRepositoryQuery<TEntity> OrderByString(string orderBy)
+    {
+        var sortQueries = GetSortParameters<TEntity>(orderBy);
+        if (sortQueries.Any())
         {
-            Limit = take;
-            return this;
-        }
-
-        public virtual IRepositoryQuery<TEntity> Skip(int skip)
-        {
-            Offset = skip;
-            return this;
-        }
-
-        public abstract IRepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> where);
-        public abstract IRepositoryQuery<TEntity> Where(Func<IQueryable<TEntity>, IQueryable<TEntity>> where);
-        public abstract IRepositoryQuery<TEntity> Where(string whereStr, object?[] values);
-        public abstract IRepositoryQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> orderBy);
-        public abstract IRepositoryQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> orderBy);
-
-        public abstract IRepositoryQuery<TEntity> Order(Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> order);
-        public abstract IRepositoryQuery<TEntity> Configure(Action<IRepositoryQuery<TEntity>>? configureQuery = null);
-
-        public abstract Task<IRepositoryQuery<TEntity>> ConfigureAsync(
-            Func<IRepositoryQuery<TEntity>, Task>? configureQuery = null,
-            CancellationToken cancellationToken = default);
-
-        public virtual IRepositoryQuery<TEntity> OrderByString(string orderBy)
-        {
-            var sortQueries = GetSortParameters<TEntity>(orderBy);
-            if (sortQueries.Any())
+            foreach (var sortQuery in sortQueries)
             {
-                foreach (var sortQuery in sortQueries)
-                {
-                    ApplySort(sortQuery);
-                }
+                ApplySort(sortQuery);
             }
-
-            return this;
         }
 
-        public IRepositoryQuery<TEntity> OrderBy(string property, bool isDescending)
+        return this;
+    }
+
+    public IRepositoryQuery<TEntity> OrderBy(string property, bool isDescending)
+    {
+        ApplySort((property, isDescending));
+        return this;
+    }
+
+    public virtual IRepositoryQuery<TEntity> Where(string property, object value)
+    {
+        SetCondition(property, QueryContextOperator.Equal, value);
+        return this;
+    }
+
+    public virtual IRepositoryQuery<TEntity> Where(QueryContextCondition condition)
+    {
+        Where(new QueryContextConditionsGroup(new List<QueryContextCondition> { condition }));
+        return this;
+    }
+
+    public IRepositoryQuery<TEntity> Where(QueryContextConditionsGroup conditionsGroup)
+    {
+        Where(new[] { conditionsGroup });
+        return this;
+    }
+
+    public IRepositoryQuery<TEntity> Where(IEnumerable<QueryContextConditionsGroup> conditionsGroups) =>
+        ApplyConditions(conditionsGroups);
+
+    public IRepositoryQuery<TEntity> Where(params QueryContextConditionsGroup[] conditionsGroups) =>
+        ApplyConditions(conditionsGroups);
+
+    public virtual IRepositoryQuery<TEntity> Like(string property, object value)
+    {
+        SetCondition(property, QueryContextOperator.Contains, value);
+        return this;
+    }
+
+    public virtual IRepositoryQuery<TEntity> WhereByString(string whereJson)
+    {
+        var where = JsonConvert.DeserializeObject<List<QueryContextConditionsGroup>>(whereJson);
+
+        if (where?.Any() == true)
         {
-            ApplySort((property, isDescending));
-            return this;
-        }
-
-        public virtual IRepositoryQuery<TEntity> Where(string property, object value)
-        {
-            SetCondition(property, QueryContextOperator.Equal, value);
-            return this;
-        }
-
-        public virtual IRepositoryQuery<TEntity> Where(QueryContextCondition condition)
-        {
-            Where(new QueryContextConditionsGroup(new List<QueryContextCondition> { condition }));
-            return this;
-        }
-
-        public IRepositoryQuery<TEntity> Where(QueryContextConditionsGroup conditionsGroup)
-        {
-            Where(new[] { conditionsGroup });
-            return this;
-        }
-
-        public IRepositoryQuery<TEntity> Where(IEnumerable<QueryContextConditionsGroup> conditionsGroups) =>
-            ApplyConditions(conditionsGroups);
-
-        public IRepositoryQuery<TEntity> Where(params QueryContextConditionsGroup[] conditionsGroups) =>
-            ApplyConditions(conditionsGroups);
-
-        public virtual IRepositoryQuery<TEntity> Like(string property, object value)
-        {
-            SetCondition(property, QueryContextOperator.Contains, value);
-            return this;
-        }
-
-        public virtual IRepositoryQuery<TEntity> WhereByString(string whereJson)
-        {
-            var where = JsonConvert.DeserializeObject<List<QueryContextConditionsGroup>>(whereJson);
-
-            if (where?.Any() == true)
+            var conditionsGroups = new List<QueryContextConditionsGroup>();
+            foreach (var conditionsGroup in where)
             {
-                var conditionsGroups = new List<QueryContextConditionsGroup>();
-                foreach (var conditionsGroup in where)
+                var group = new QueryContextConditionsGroup(new List<QueryContextCondition>());
+                foreach (var parsedCondition in conditionsGroup.Conditions
+                             .Select(condition => new QueryContextCondition(condition.Property)
+                             {
+                                 Operator = condition.Operator, Value = condition.Value
+                             }))
                 {
-                    var group = new QueryContextConditionsGroup(new List<QueryContextCondition>());
-                    foreach (var parsedCondition in conditionsGroup.Conditions
-                        .Select(condition => new QueryContextCondition(condition.Property)
-                        {
-                            Operator = condition.Operator, Value = condition.Value
-                        }))
+                    if (parsedCondition != null)
                     {
-                        if (parsedCondition != null)
-                        {
-                            group.Conditions.Add(parsedCondition);
-                        }
-                    }
-
-                    if (group.Conditions.Any())
-                    {
-                        conditionsGroups.Add(group);
+                        group.Conditions.Add(parsedCondition);
                     }
                 }
 
-                if (conditionsGroups.Any())
+                if (group.Conditions.Any())
                 {
-                    Where(conditionsGroups);
+                    conditionsGroups.Add(group);
                 }
             }
 
-            return this;
-        }
-
-        public virtual IRepositoryQuery<TEntity> Paginate(int page, int itemsPerPage)
-        {
-            var offset = 0;
-            if (page > 0)
+            if (conditionsGroups.Any())
             {
-                offset = (page - 1) * itemsPerPage;
+                Where(conditionsGroups);
             }
-
-            Offset = offset;
-            Limit = itemsPerPage;
-            return this;
         }
 
-        public abstract IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(
-            Expression<Func<TEntity, TProperty>> navigationPropertyPath);
+        return this;
+    }
 
-        protected abstract void ApplySort((string propertyName, bool isDescending) sortQuery);
-
-        protected IRepositoryQuery<TEntity> ApplyConditions(IEnumerable<QueryContextConditionsGroup> conditionsGroups)
+    public virtual IRepositoryQuery<TEntity> Paginate(int page, int itemsPerPage)
+    {
+        var offset = 0;
+        if (page > 0)
         {
-            var whereQueries = new List<string>();
-            var valueIndex = 0;
-            var values = new List<object?>();
-            foreach (var conditionsGroup in conditionsGroups)
+            offset = (page - 1) * itemsPerPage;
+        }
+
+        Offset = offset;
+        Limit = itemsPerPage;
+        return this;
+    }
+
+    public abstract IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(
+        Expression<Func<TEntity, TProperty>> navigationPropertyPath);
+
+    public abstract IRepositoryQuery<TEntity> Include(string navigationPropertyPath);
+
+    public IRepositoryQuery<TEntity> Select(Expression<Func<TEntity, int>> intSelect) =>
+        throw new NotImplementedException();
+
+    public IRepositoryQuery<TEntity> Select(Expression<Func<TEntity, long>> longSelect) =>
+        throw new NotImplementedException();
+
+    protected abstract void ApplySort((string propertyName, bool isDescending) sortQuery);
+
+    protected IRepositoryQuery<TEntity> ApplyConditions(IEnumerable<QueryContextConditionsGroup> conditionsGroups)
+    {
+        var whereQueries = new List<string>();
+        var valueIndex = 0;
+        var values = new List<object?>();
+        foreach (var conditionsGroup in conditionsGroups)
+        {
+            var groupWhere = new List<string>();
+            foreach (var condition in conditionsGroup.Conditions)
             {
-                var groupWhere = new List<string>();
-                foreach (var condition in conditionsGroup.Conditions)
+                if (PrepareCondition(condition))
                 {
-                    if (PrepareCondition(condition))
+                    var expression = condition.GetExpression(valueIndex);
+                    if (!string.IsNullOrEmpty(expression))
                     {
-                        var expression = condition.GetExpression(valueIndex);
-                        if (!string.IsNullOrEmpty(expression))
-                        {
-                            groupWhere.Add(expression);
-                            values.Add(condition.Value);
-                            valueIndex++;
-                        }
+                        groupWhere.Add(expression);
+                        values.Add(condition.Value);
+                        valueIndex++;
                     }
                 }
-
-                whereQueries.Add($"({string.Join(" OR ", groupWhere)})");
             }
 
-            var whereStr = string.Join(" AND ", whereQueries);
-            Where(whereStr, values.ToArray());
-
-            return this;
+            whereQueries.Add($"({string.Join(" OR ", groupWhere)})");
         }
 
-        protected bool PrepareCondition(QueryContextCondition condition)
+        var whereStr = string.Join(" AND ", whereQueries);
+        Where(whereStr, values.ToArray());
+
+        return this;
+    }
+
+    protected bool PrepareCondition(QueryContextCondition condition)
+    {
+        var propertyInfo = FieldsResolver.GetPropertyInfo<TEntity>(condition.Property);
+        if (propertyInfo != null)
         {
-            var propertyInfo = FieldsResolver.GetPropertyInfo<TEntity>(condition.Property);
-            if (propertyInfo != null)
+            condition.ValueType = propertyInfo.Value.type;
+            if (condition.Value != null && condition.ValueType != null)
             {
-                condition.ValueType = propertyInfo.Value.type;
-                if (condition.Value != null && condition.ValueType != null)
-                {
-                    condition.Value = ParsePropertyValue(condition.ValueType, condition.Value);
-                }
-
-                return true;
+                condition.Value = ParsePropertyValue(condition.ValueType, condition.Value);
             }
 
-            return false;
+            return true;
         }
 
-        protected virtual void SetCondition(string property, QueryContextOperator @operator, object value)
+        return false;
+    }
+
+    protected virtual void SetCondition(string property, QueryContextOperator @operator, object value)
+    {
+        var condition = new QueryContextCondition(property) { Operator = @operator, Value = value };
+        Where(condition);
+    }
+
+    private static object? ParsePropertyValue(Type propertyType, object? value)
+    {
+        if (value == null)
         {
-            var condition = new QueryContextCondition(property) { Operator = @operator, Value = value };
-            Where(condition);
+            return null;
         }
 
-        private static object? ParsePropertyValue(Type propertyType, object? value)
+        if (value is JArray arr)
         {
-            if (value == null)
+            var values = Activator.CreateInstance(typeof(List<>).MakeGenericType(propertyType)) as IList;
+            if (values != null)
             {
-                return null;
-            }
-
-            if (value is JArray arr)
-            {
-                var values = Activator.CreateInstance(typeof(List<>).MakeGenericType(propertyType)) as IList;
-                if (values != null)
+                foreach (var child in arr.Children())
                 {
-                    foreach (var child in arr.Children())
-                    {
-                        values.Add(ParsePropertyValue(propertyType, child));
-                    }
-                }
-
-                return values;
-            }
-
-            if (value is not string && value is IEnumerable enumerable)
-            {
-                var values = Activator.CreateInstance(typeof(List<>).MakeGenericType(propertyType)) as IList;
-                if (values != null)
-                {
-                    foreach (var child in enumerable)
-                    {
-                        values.Add(ParsePropertyValue(propertyType, child));
-                    }
-                }
-
-                return values;
-            }
-
-            object? parsedValue = null;
-            var nullableType = Nullable.GetUnderlyingType(propertyType);
-            if (nullableType != null)
-            {
-                propertyType = nullableType;
-            }
-
-            if (propertyType.IsEnum)
-            {
-                var enumType = propertyType;
-                var parsed = int.TryParse(value.ToString(), out var intValue);
-
-                if (Enum.IsDefined(enumType, value.ToString()) || (parsed && Enum.IsDefined(enumType, intValue)))
-                {
-                    parsedValue = Enum.Parse(enumType, value.ToString());
+                    values.Add(ParsePropertyValue(propertyType, child));
                 }
             }
 
-            else if (propertyType == typeof(bool))
-            {
-                parsedValue = value.ToString() == "1" ||
-                              value.ToString() == "true" ||
-                              value.ToString() == "on" ||
-                              value.ToString() == "checked";
-            }
-            else if (propertyType == typeof(Uri))
-            {
-                parsedValue = new Uri(Convert.ToString(value));
-            }
-            else if (propertyType == typeof(DateTimeOffset) || propertyType == typeof(DateTimeOffset?))
-            {
-                if (DateTimeOffset.TryParse(value.ToString(), out var dto))
-                {
-                    parsedValue = dto;
-                }
-            }
-            else if (propertyType == typeof(Guid))
-            {
-                if (Guid.TryParse(value.ToString(), out var dto))
-                {
-                    parsedValue = dto;
-                }
-            }
-            else
-            {
-                parsedValue = Convert.ChangeType(value.ToString(), propertyType);
-            }
-
-            return parsedValue;
+            return values;
         }
 
-        protected static List<(string propertyName, bool isDescending)> GetSortParameters<T>(string orderBy)
+        if (value is not string && value is IEnumerable enumerable)
         {
-            var sortParameters = new List<(string propertyName, bool isDescending)>();
-            if (!string.IsNullOrEmpty(orderBy))
+            var values = Activator.CreateInstance(typeof(List<>).MakeGenericType(propertyType)) as IList;
+            if (values != null)
             {
-                orderBy.Split(',').ToList().ForEach(p =>
+                foreach (var child in enumerable)
                 {
-                    var isDescending = false;
-                    if (p[0] == '-')
-                    {
-                        isDescending = true;
-                        p = p.Substring(1);
-                    }
-
-                    var propertyName = FieldsResolver.GetPropertyInfo<T>(p);
-                    if (propertyName.HasValue)
-                    {
-                        sortParameters.Add((propertyName.Value.name, isDescending));
-                    }
-                });
+                    values.Add(ParsePropertyValue(propertyType, child));
+                }
             }
 
-            return sortParameters;
+            return values;
         }
+
+        object? parsedValue = null;
+        var nullableType = Nullable.GetUnderlyingType(propertyType);
+        if (nullableType != null)
+        {
+            propertyType = nullableType;
+        }
+
+        if (propertyType.IsEnum)
+        {
+            var enumType = propertyType;
+            var parsed = int.TryParse(value.ToString(), out var intValue);
+
+            if (Enum.IsDefined(enumType, value.ToString()) || (parsed && Enum.IsDefined(enumType, intValue)))
+            {
+                parsedValue = Enum.Parse(enumType, value.ToString());
+            }
+        }
+
+        else if (propertyType == typeof(bool))
+        {
+            parsedValue = value.ToString() == "1" ||
+                          value.ToString() == "true" ||
+                          value.ToString() == "on" ||
+                          value.ToString() == "checked";
+        }
+        else if (propertyType == typeof(Uri))
+        {
+            parsedValue = new Uri(Convert.ToString(value));
+        }
+        else if (propertyType == typeof(DateTimeOffset) || propertyType == typeof(DateTimeOffset?))
+        {
+            if (DateTimeOffset.TryParse(value.ToString(), out var dto))
+            {
+                parsedValue = dto;
+            }
+        }
+        else if (propertyType == typeof(Guid))
+        {
+            if (Guid.TryParse(value.ToString(), out var dto))
+            {
+                parsedValue = dto;
+            }
+        }
+        else
+        {
+            parsedValue = Convert.ChangeType(value.ToString(), propertyType);
+        }
+
+        return parsedValue;
+    }
+
+    protected static List<(string propertyName, bool isDescending)> GetSortParameters<T>(string orderBy)
+    {
+        var sortParameters = new List<(string propertyName, bool isDescending)>();
+        if (!string.IsNullOrEmpty(orderBy))
+        {
+            orderBy.Split(',').ToList().ForEach(p =>
+            {
+                var isDescending = false;
+                if (p[0] == '-')
+                {
+                    isDescending = true;
+                    p = p.Substring(1);
+                }
+
+                var propertyName = FieldsResolver.GetPropertyInfo<T>(p);
+                if (propertyName.HasValue)
+                {
+                    sortParameters.Add((propertyName.Value.name, isDescending));
+                }
+            });
+        }
+
+        return sortParameters;
     }
 }

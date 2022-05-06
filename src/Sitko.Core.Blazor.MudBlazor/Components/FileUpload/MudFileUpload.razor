@@ -1,7 +1,12 @@
 ﻿@namespace Sitko.Core.Blazor.MudBlazorComponents
-@inherits Sitko.Core.App.Blazor.Components.BaseComponent
+@inherits Sitko.Core.Blazor.Components.BaseComponent
 @typeparam TValue
-
+@if (!string.IsNullOrEmpty(Label))
+{
+    <MudText Typo="Typo.caption" Class="mb-4">
+        @Label
+    </MudText>
+}
 <MudGrid>
     @if (Files.Any())
     {
@@ -37,7 +42,7 @@
                         @if (DisplayMode == FileUploadDisplayMode.Image)
                         {
                             <MudTooltip Text="@PreviewText">
-                                <MudIconButton Size="Size.Small" @onclick="() => PreviewFile(file)" Icon="@Icons.Outlined.Preview"></MudIconButton>
+                                <MudIconButton Size="Size.Small" @onclick="() => PreviewFile(file)" Icon="@Icons.Outlined.Visibility"></MudIconButton>
                             </MudTooltip>
                         }
                         @if (DisplayMode == FileUploadDisplayMode.File)
@@ -99,6 +104,16 @@
         </MudItem>
     }
 </MudGrid>
+@if (!string.IsNullOrEmpty(HelperText) && IsValid)
+{
+    <MudText Class="mt-2 mud-input-helper-text">
+        @HelperText
+    </MudText>
+}
+@if (fieldIdentifier is not null)
+{
+    <MudValidationMessage FieldIdentifier="fieldIdentifier.Value"></MudValidationMessage>
+}
 @if (PreviewItem != null)
 {
     <MudOverlay Class="mud-file-upload-preview-overlay" Visible="true" AutoClose="true" DarkBackground="true" ZIndex="@int.MaxValue" VisibleChanged="b => PreviewItem = null">

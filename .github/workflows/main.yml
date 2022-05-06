@@ -23,8 +23,6 @@ jobs:
     container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v2
-      - name: Add Github Actions logger
-        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.App.Tests/Sitko.Core.App.Tests.csproj
 
@@ -46,8 +44,6 @@ jobs:
         run: |
           npm ci
           npm run prod
-      - name: Add Github Actions logger
-        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.App.Blazor.Tests/Sitko.Core.App.Blazor.Tests.csproj
 
@@ -56,8 +52,6 @@ jobs:
     container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v2
-      - name: Add Github Actions logger
-        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Grpc.Client.Tests/Sitko.Core.Grpc.Client.Tests.csproj
 
@@ -66,8 +60,6 @@ jobs:
     container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v2
-      - name: Add Github Actions logger
-        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.ImgProxy.Tests/Sitko.Core.ImgProxy.Tests.csproj
 
@@ -82,8 +74,6 @@ jobs:
         run: |
           apt-get update
           apt-get install -y google-chrome-stable
-      - name: Add Github Actions logger
-        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
 
@@ -98,8 +88,6 @@ jobs:
         image: nats-streaming:latest
     steps:
       - uses: actions/checkout@v2
-      - name: Add Github Actions logger
-        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests Sitko.Core.Queue
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
       - name: Run tests Sitko.Core.Queue.Nats
@@ -121,10 +109,10 @@ jobs:
           POSTGRES_HOST_AUTH_METHOD: trust
     steps:
       - uses: actions/checkout@v2
-      - name: Add Github Actions logger
-        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
-      - name: Run tests
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.Repository.Tests/Sitko.Core.Repository.Tests.csproj
+      - name: Run EF Core tests
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Repository.EntityFrameworkCore.Tests/Sitko.Core.Repository.EntityFrameworkCore.Tests.csproj
+      - name: Run Remote tests
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Repository.Remote.Tests/Sitko.Core.Repository.Remote.Tests.csproj
 
   sonyflake:
     runs-on: ubuntu-latest
@@ -136,8 +124,6 @@ jobs:
         image: titpetric/sonyflake
     steps:
       - uses: actions/checkout@v2
-      - name: Add Github Actions logger
-        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.SonyFlake.Tests/Sitko.Core.SonyFlake.Tests.csproj
 
@@ -155,20 +141,20 @@ jobs:
       minio:
         image: bitnami/minio
         env:
-          MINIO_ACCESS_KEY: ptTYf7VkCVbUjAzn
-          MINIO_SECRET_KEY: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
+          MINIO_ROOT_USER: ptTYf7VkCVbUjAzn
+          MINIO_ROOT_PASSWORD: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
       postgres:
         image: postgres:alpine
         env:
           POSTGRES_HOST_AUTH_METHOD: trust
     steps:
       - uses: actions/checkout@v2
-      - name: Add Github Actions logger
-        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Sitko.Core.Storage.FileSystem
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
       - name: Sitko.Core.Storage.S3
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
+      - name: Sitko.Core.Storage.Remote
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.Remote.Tests/Sitko.Core.Storage.Remote.Tests.csproj
       - name: Sitko.Core.Storage.Metadata.Postgres
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.Metadata.Postgres.Tests/Sitko.Core.Storage.Metadata.Postgres.Tests.csproj
 
@@ -195,17 +181,6 @@ jobs:
       - name: Start Vault
         run: |
           vault server -dev -dev-root-token-id="${VAULT__TOKEN}" &
-      - name: Seed Vault
-        run: |
-          export VAULT_ADDR=${VAULT__URI}
-          json='{"test": {"Foo": "123","Bar": 123}}'
-          echo $json > data.json
-          vault kv put ${VAULT__MOUNTPOINT}/${VAULT__SECRETS__0} @data.json
-          json='{"test2": {"Foo": "123","Bar": 123}}'
-          echo $json > data.json
-          vault kv put ${VAULT__MOUNTPOINT}/${VAULT__SECRETS__1} @data.json
-      - name: Add Github Actions logger
-        run: dotnet add src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj package GitHubActionsTestLogger
       - name: Run tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Configuration.Vault.Tests/Sitko.Core.Configuration.Vault.Tests.csproj
 

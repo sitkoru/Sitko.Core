@@ -19,7 +19,7 @@ public abstract class RepositoriesModule<TConfig, TRepositoryType> : BaseApplica
 {
     public override bool AllowMultiple => true;
 
-    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
         TConfig startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);
@@ -34,7 +34,12 @@ public abstract class RepositoriesModule<TConfig, TRepositoryType> : BaseApplica
             }
         }
 
-        var assemblies = types.Select(type => type.Assembly).Distinct();
+        var assemblies = types.Select(type => type.Assembly).ToHashSet();
+        foreach (var assembly in startupOptions.Assemblies)
+        {
+            assemblies.Add(assembly);
+        }
+
         var entityTypes = types.Distinct().Select(type =>
                 type
                     .GetInterfaces().First(implementedInterface =>

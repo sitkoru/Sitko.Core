@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
 using MudBlazor;
 using Sitko.Blazor.ScriptInjector;
-using Sitko.Core.App.Blazor.Components;
 using Sitko.Core.App.Collections;
 using Sitko.Core.App.Helpers;
+using Sitko.Core.Blazor.Components;
 using Sitko.Core.Blazor.FileUpload;
 using Sitko.Core.Storage;
 
@@ -37,9 +37,11 @@ public abstract partial class MudFileUpload<TValue> : BaseComponent where TValue
     [Inject] protected ISnackbar Snackbar { get; set; } = null!;
     [Inject] protected IScriptInjector ScriptInjector { get; set; } = null!;
 
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? HelperText { get; set; }
     [Parameter] public FileUploadDisplayMode DisplayMode { get; set; } = FileUploadDisplayMode.File;
     [Parameter] public string UploadPath { get; set; } = "";
-    [Parameter] public Func<FileUploadInfo, FileStream, Task<object>>? GenerateMetadata { get; set; }
+    [Parameter] public Func<FileUploadRequest, FileStream, Task<object>>? GenerateMetadata { get; set; }
     [Parameter] public Func<TValue?, Task>? OnChange { get; set; }
     [Parameter] public virtual string ContentTypes { get; set; } = "";
     [Parameter] public long MaxFileSize { get; set; } = long.MaxValue;
@@ -63,6 +65,8 @@ public abstract partial class MudFileUpload<TValue> : BaseComponent where TValue
 
     [Parameter] public TValue? Value { get; set; }
 
+    protected bool IsValid => fieldIdentifier is null ||
+                              EditContext?.GetValidationMessages(fieldIdentifier.Value).Any() == false;
 
     protected override void OnParametersSet()
     {
@@ -104,14 +108,14 @@ public abstract partial class MudFileUpload<TValue> : BaseComponent where TValue
         }
     }
 
-    protected Task<object> GenerateMetadataAsync(FileUploadInfo uploadInfo, FileStream stream)
+    protected async Task<object?> GenerateMetadataAsync(FileUploadRequest request, FileStream stream)
     {
         if (GenerateMetadata is not null)
         {
-            return GenerateMetadata(uploadInfo, stream);
+            return await GenerateMetadata(request, stream);
         }
 
-        return Task.FromResult((object)null!);
+        return null!;
     }
 
     protected void RemoveFile(UploadedItem file) => Files.RemoveItem(file);
@@ -189,10 +193,10 @@ public abstract partial class MudFileUpload<TValue> : BaseComponent where TValue
 
                 await using (FileStream fs = new(path, FileMode.Create))
                 {
-                    await file.OpenReadStream(MaxFileSize).CopyToAsync(fs);
-                    var uploadInfo = new FileUploadInfo(file.Name, file.ContentType, file.Size, file.LastModified);
+                    await file.OpenReadStream(MaxFileSize > 0 ? MaxFileSize : long.MaxValue).CopyToAsync(fs);
+                    var uploadInfo = new FileUploadRequest(file.Name, file.ContentType, file.Size, file.LastModified);
                     var result = await Storage.SaveAsync(fs, file.Name, UploadPath,
-                        GenerateMetadataAsync(uploadInfo, fs));
+                        await GenerateMetadataAsync(uploadInfo, fs));
                     results.Add(result);
                 }
 
@@ -283,26 +287,6 @@ public class MudFileUpload : MudFileUpload<StorageItem>
     protected override IEnumerable<UploadedItem> GetFiles(StorageItem value) => new[] { CreateUploadedItem(value) };
     protected override StorageItem? GetValue() => Files.FirstOrDefault()?.StorageItem ?? null;
 }
-
-public class MudFilesUpload<TCollection> : MudFileUpload<TCollection>
-    where TCollection : class, ICollection<StorageItem>, new()
-{
-    protected override bool IsMultiple => true;
-    protected override IEnumerable<UploadedItem> GetFiles(TCollection value) => value.Select(CreateUploadedItem);
-
-    protected override TCollection GetValue()
-    {
-        var collection = new TCollection();
-        foreach (var file in Files)
-        {
-            collection.Add(file.StorageItem);
-        }
-
-        return collection;
-    }
-}
-
-public record FileUploadInfo(string Name, string ContentType, long Size, DateTimeOffset LastModified);
 
 public enum FileUploadDisplayMode
 {

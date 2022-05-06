@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Sitko.Core.Blazor.AntDesign\Sitko.Core.Blazor.AntDesign.csproj" />
+    <ProjectReference Include="..\..\src\Sitko.Core.Blazor.AntDesign.Server\Sitko.Core.Blazor.AntDesign.Server.csproj" />
     <ProjectReference Include="..\..\src\Sitko.Core.Db.InMemory\Sitko.Core.Db.InMemory.csproj" />
     <ProjectReference Include="..\..\src\Sitko.Core.Repository.EntityFrameworkCore\Sitko.Core.Repository.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\src\Sitko.Core.Storage.FileSystem\Sitko.Core.Storage.FileSystem.csproj" />
@@ -15,8 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AntDesign.ProLayout" Version="0.1.9" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.1">
+    <PackageReference Include="AntDesign.ProLayout" Version="0.1.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

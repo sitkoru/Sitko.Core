@@ -1,7 +1,7 @@
 @typeparam TEntity
 @typeparam TEntityPk
 @typeparam TRepository
-@inherits Sitko.Core.App.Blazor.Forms.BaseRepositoryForm<TEntity, TEntityPk, TRepository>
+@inherits Sitko.Core.Blazor.Forms.BaseRepositoryForm<TEntity, TEntityPk, TRepository>
 
 <Form ValidateOnChange="ValidateOnChange" Model="Entity" Loading="IsLoading"
       OnFinish="SaveEntityAsync" @ref="AntForm" OnFinishFailed="OnFormErrorAsync"
@@ -10,7 +10,7 @@
       WrapperColSpan="@WrapperColSpan" WrapperColOffset="@WrapperColOffset">
     <Validator>
         <Sitko.Core.Blazor.FluentValidation.FluentValidator/>
-        <Sitko.Core.App.Blazor.Forms.FormEditContextCatcher Form="this"/>
+        <Sitko.Core.Blazor.Forms.FormEditContextCatcher Form="this"/>
     </Validator>
     <ChildContent>
         @ChildContentFragment

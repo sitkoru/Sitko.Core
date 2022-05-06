@@ -1,25 +1,12 @@
-using System.Collections.Generic;
 using System.Linq;
 using FluentValidation.Results;
 
-namespace Sitko.Core.Repository
+namespace Sitko.Core.Repository;
+
+public record AddOrUpdateOperationResult<T, TId>(T Entity, ValidationFailure[] Errors, PropertyChange[] Changes)
+    where T : IEntity<TId>
 {
-    public class AddOrUpdateOperationResult<T, TId> where T : IEntity<TId>
-    {
-        public AddOrUpdateOperationResult(T entity, IEnumerable<ValidationFailure> errors, PropertyChange[] changes)
-        {
-            Entity = entity;
-            Changes = changes;
-            var validationFailures = errors as ValidationFailure[] ?? errors.ToArray();
-            Errors = validationFailures.ToArray();
-            IsSuccess = !validationFailures.Any();
-        }
+    public bool IsSuccess => Errors.Length == 0;
 
-        public bool IsSuccess { get; }
-        public T Entity { get; }
-        public PropertyChange[] Changes { get; }
-        public ValidationFailure[] Errors { get; }
-
-        public string ErrorsString => string.Join(" ", Errors.Select(e => e.ErrorMessage));
-    }
+    public string ErrorsString => string.Join(" ", Errors.Select(e => e.ErrorMessage));
 }

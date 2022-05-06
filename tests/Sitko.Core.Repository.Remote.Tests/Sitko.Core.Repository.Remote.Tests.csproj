@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Sitko.Core.Repository.EntityFrameworkCore\Sitko.Core.Repository.EntityFrameworkCore.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.Repository.Remote.Server\Sitko.Core.Repository.Remote.Server.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.Repository.Remote\Sitko.Core.Repository.Remote.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.Repository\Sitko.Core.Repository.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.Xunit.Web\Sitko.Core.Xunit.Web.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.Repository.Tests\Sitko.Core.Repository.Tests.csproj"/>
+  </ItemGroup>
+</Project>

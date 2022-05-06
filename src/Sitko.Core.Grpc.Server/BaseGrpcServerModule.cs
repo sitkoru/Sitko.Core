@@ -1,69 +1,67 @@
-namespace Sitko.Core.Grpc.Server
+using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
+using Sitko.Core.App.Web;
+
+namespace Sitko.Core.Grpc.Server;
+
+public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TConfig>, IGrpcServerModule,
+    IHostBuilderModule<TConfig>,
+    IWebApplicationModule where TConfig : GrpcServerModuleOptions, new()
 {
-    using System;
-    using System.Collections.Generic;
-    using App;
-    using App.Web;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Routing;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Hosting;
+    private readonly List<Action<IEndpointRouteBuilder>> endpointRegistrations = new();
 
-    public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TConfig>, IGrpcServerModule,
-        IHostBuilderModule<TConfig>,
-        IWebApplicationModule where TConfig : GrpcServerModuleOptions, new()
+    public virtual void RegisterService<TService>() where TService : class =>
+        endpointRegistrations.Add(builder => builder.MapGrpcService<TService>());
+
+    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+        TConfig startupOptions)
     {
-        private readonly List<Action<IEndpointRouteBuilder>> endpointRegistrations = new();
-
-        public virtual void RegisterService<TService>() where TService : class =>
-            endpointRegistrations.Add(builder => builder.MapGrpcService<TService>());
-
-        public void ConfigureEndpoints(IConfiguration configuration, IHostEnvironment environment,
-            IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
+        base.ConfigureServices(context, services, startupOptions);
+        services.AddGrpc(options =>
         {
-            var config = GetOptions(appBuilder.ApplicationServices);
-            foreach (var endpointRegistration in endpointRegistrations)
-            {
-                endpointRegistration(endpoints);
-            }
-
-            endpoints.MapGrpcService<HealthService>();
-            if (config.EnableReflection)
-            {
-                endpoints.MapGrpcReflectionService();
-            }
+            options.EnableDetailedErrors = startupOptions.EnableDetailedErrors;
+            startupOptions.ConfigureGrpcService?.Invoke(options);
+        });
+        if (startupOptions.EnableReflection)
+        {
+            services.AddGrpcReflection();
         }
 
-        public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
-            TConfig startupOptions)
+        foreach (var registration in startupOptions.ServiceRegistrations)
         {
-            base.ConfigureServices(context, services, startupOptions);
-            services.AddGrpc(options =>
+            registration(this);
+        }
+    }
+
+    public void ConfigureHostBuilder(IApplicationContext context, IHostBuilder hostBuilder, TConfig startupOptions)
+    {
+        if (startupOptions.ConfigureWebHostDefaults is not null)
+        {
+            hostBuilder.ConfigureWebHostDefaults(builder =>
             {
-                options.EnableDetailedErrors = startupOptions.EnableDetailedErrors;
-                startupOptions.ConfigureGrpcService?.Invoke(options);
+                startupOptions.ConfigureWebHostDefaults(builder);
             });
-            if (startupOptions.EnableReflection)
-            {
-                services.AddGrpcReflection();
-            }
+        }
+    }
 
-            foreach (var registration in startupOptions.ServiceRegistrations)
-            {
-                registration(this);
-            }
+    public void ConfigureEndpoints(IApplicationContext applicationContext,
+        IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
+    {
+        var config = GetOptions(appBuilder.ApplicationServices);
+        foreach (var endpointRegistration in endpointRegistrations)
+        {
+            endpointRegistration(endpoints);
         }
 
-        public void ConfigureHostBuilder(ApplicationContext context, IHostBuilder hostBuilder, TConfig startupOptions)
+        endpoints.MapGrpcService<HealthService>();
+        if (config.EnableReflection)
         {
-            if (startupOptions.ConfigureWebHostDefaults is not null)
-            {
-                hostBuilder.ConfigureWebHostDefaults(builder =>
-                {
-                    startupOptions.ConfigureWebHostDefaults(builder);
-                });
-            }
+            endpoints.MapGrpcReflectionService();
         }
     }
 }

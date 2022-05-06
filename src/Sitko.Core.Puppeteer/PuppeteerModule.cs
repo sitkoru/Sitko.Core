@@ -7,7 +7,7 @@ public class PuppeteerModule : BaseApplicationModule<PuppeteerModuleOptions>
 {
     public override string OptionsKey => "Puppeteer";
 
-    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
         PuppeteerModuleOptions startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);

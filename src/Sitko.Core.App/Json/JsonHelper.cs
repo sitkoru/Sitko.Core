@@ -9,6 +9,7 @@ namespace Sitko.Core.App.Json
             new()
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                DateParseHandling = DateParseHandling.DateTimeOffset,
                 TypeNameHandling = TypeNameHandling.Auto,
                 MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead,
                 Error = (_, e) =>

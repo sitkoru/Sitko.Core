@@ -1,7 +1,5 @@
 ﻿using System;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore;
@@ -10,7 +8,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore;
 public static class ApplicationExtensions
 {
     public static Application AddEFRepositories(this Application application,
-        Action<IConfiguration, IHostEnvironment, EFRepositoriesModuleOptions> configure,
+        Action<IApplicationContext, EFRepositoriesModuleOptions> configure,
         string? optionsKey = null) =>
         application.AddModule<EFRepositoriesModule, EFRepositoriesModuleOptions>(configure, optionsKey);
 
@@ -20,13 +18,13 @@ public static class ApplicationExtensions
         application.AddModule<EFRepositoriesModule, EFRepositoriesModuleOptions>(configure, optionsKey);
 
     public static Application AddEFRepositories<TAssembly>(this Application application,
-        Action<IConfiguration, IHostEnvironment, EFRepositoriesModuleOptions> configure,
+        Action<IApplicationContext, EFRepositoriesModuleOptions> configure,
         string? optionsKey = null) =>
         application.AddModule<EFRepositoriesModule, EFRepositoriesModuleOptions>(
-            (configuration, environment, moduleOptions) =>
+            (applicationContext, moduleOptions) =>
             {
                 moduleOptions.AddRepositoriesFromAssemblyOf<TAssembly>();
-                configure(configuration, environment, moduleOptions);
+                configure(applicationContext, moduleOptions);
             },
             optionsKey);
 

@@ -8,298 +8,296 @@ using AntDesign;
 using AntDesign.TableModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
-using Sitko.Core.App.Blazor.Components;
+using Sitko.Core.Blazor.Components;
 using Sitko.Core.Repository;
 
-namespace Sitko.Core.Blazor.AntDesignComponents.Components
+namespace Sitko.Core.Blazor.AntDesignComponents.Components;
+
+public abstract partial class BaseAntListComponent<TItem> where TItem : class
 {
-    public abstract partial class BaseAntListComponent<TItem> where TItem : class
+    private bool isTableInitialized;
+
+    private QueryModel? lastQueryModel;
+    private Task<(TItem[] items, int itemsCount)>? loadTask;
+
+    private MethodInfo? sortMethod;
+    protected IEnumerable<TItem> Items { get; private set; } = Array.Empty<TItem>();
+    public int Count { get; protected set; }
+
+    protected Table<TItem>? Table { get; set; }
+
+    [Parameter] public int PageSize { get; set; } = 50;
+    [Parameter] public int PageIndex { get; set; } = 1;
+    [Parameter] public Func<Task>? OnDataLoaded { get; set; }
+    [Parameter] public RenderFragment<TItem>? ChildContent { get; set; }
+
+    [Parameter] public RenderFragment<TItem>? RowTemplate { get; set; }
+
+    [Parameter] public RenderFragment<RowData<TItem>>? ExpandTemplate { get; set; }
+
+    [Parameter] public Func<RowData<TItem>, bool> RowExpandable { get; set; } = _ => true;
+
+    [Parameter] public Func<TItem, IEnumerable<TItem>> TreeChildren { get; set; } = _ => Enumerable.Empty<TItem>();
+
+    [Parameter]
+    public Func<RowData<TItem>, Dictionary<string, object>> OnRow { get; set; } =
+        _ => new Dictionary<string, object>();
+
+    [Parameter]
+    public Func<Dictionary<string, object>> OnHeaderRow { get; set; } = () => new Dictionary<string, object>();
+
+    [Parameter] public string? Title { get; set; }
+
+    [Parameter] public RenderFragment? TitleTemplate { get; set; }
+
+    [Parameter] public string? Footer { get; set; }
+
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
+
+    [Parameter] public TableSize? Size { get; set; }
+
+    [Parameter] public TableLocale Locale { get; set; } = LocaleProvider.CurrentLocale.Table;
+
+    [Parameter] public bool Bordered { get; set; }
+
+    [Parameter] public string? ScrollX { get; set; }
+
+    [Parameter] public string? ScrollY { get; set; }
+
+    [Parameter] public int ScrollBarWidth { get; set; } = 17;
+
+    [Parameter] public int IndentSize { get; set; } = 15;
+
+    [Parameter] public int ExpandIconColumnIndex { get; set; }
+
+    [Parameter] public Func<RowData<TItem>, string> RowClassName { get; set; } = _ => "";
+
+    [Parameter] public Func<RowData<TItem>, string> ExpandedRowClassName { get; set; } = _ => "";
+
+    [Parameter] public EventCallback<RowData<TItem>> OnExpand { get; set; }
+
+    [Parameter] public SortDirection[] SortDirections { get; set; } = SortDirection.Preset.Default;
+
+    [Parameter] public string TableLayout { get; set; } = "";
+
+    [Parameter] public EventCallback<RowData<TItem>> OnRowClick { get; set; }
+
+    [Parameter] public bool HidePagination { get; set; }
+
+    [Parameter] public string PaginationPosition { get; set; } = "bottomRight";
+
+    [Parameter] public EventCallback<int> TotalChanged { get; set; }
+
+    [Parameter] public EventCallback<PaginationEventArgs> OnPageIndexChange { get; set; }
+
+    [Parameter] public EventCallback<PaginationEventArgs> OnPageSizeChange { get; set; }
+
+    [Parameter] public IEnumerable<TItem>? SelectedRows { get; set; }
+
+    [Parameter] public EventCallback<IEnumerable<TItem>> SelectedRowsChanged { get; set; }
+    public override ScopeType ScopeType { get; set; } = ScopeType.Isolated;
+
+    protected LoadRequest<TItem>? LastRequest { get; set; }
+
+    protected override void Initialize()
     {
-        private bool isTableInitialized;
-
-        private QueryModel? lastQueryModel;
-        private Task<(TItem[] items, int itemsCount)>? loadTask;
-
-        private MethodInfo? sortMethod;
-        protected IEnumerable<TItem> Items { get; private set; } = Array.Empty<TItem>();
-        public int Count { get; protected set; }
-
-        protected Table<TItem>? Table { get; set; }
-
-        [Parameter] public int PageSize { get; set; } = 50;
-        [Parameter] public int PageIndex { get; set; } = 1;
-        [Parameter] public Func<Task>? OnDataLoaded { get; set; }
-        [Parameter] public RenderFragment<TItem>? ChildContent { get; set; }
-
-        [Parameter] public RenderFragment<TItem>? RowTemplate { get; set; }
-
-        [Parameter] public RenderFragment<RowData<TItem>>? ExpandTemplate { get; set; }
-
-        [Parameter] public Func<RowData<TItem>, bool> RowExpandable { get; set; } = _ => true;
-
-        [Parameter] public Func<TItem, IEnumerable<TItem>> TreeChildren { get; set; } = _ => Enumerable.Empty<TItem>();
-
-        [Parameter]
-        public Func<RowData<TItem>, Dictionary<string, object>> OnRow { get; set; } =
-            _ => new Dictionary<string, object>();
-
-        [Parameter]
-        public Func<Dictionary<string, object>> OnHeaderRow { get; set; } = () => new Dictionary<string, object>();
-
-        [Parameter] public string? Title { get; set; }
-
-        [Parameter] public RenderFragment? TitleTemplate { get; set; }
-
-        [Parameter] public string? Footer { get; set; }
-
-        [Parameter] public RenderFragment? FooterTemplate { get; set; }
-
-        [Parameter] public TableSize? Size { get; set; }
-
-        [Parameter] public TableLocale Locale { get; set; } = LocaleProvider.CurrentLocale.Table;
-
-        [Parameter] public bool Bordered { get; set; }
-
-        [Parameter] public string? ScrollX { get; set; }
-
-        [Parameter] public string? ScrollY { get; set; }
-
-        [Parameter] public int ScrollBarWidth { get; set; } = 17;
-
-        [Parameter] public int IndentSize { get; set; } = 15;
-
-        [Parameter] public int ExpandIconColumnIndex { get; set; }
-
-        [Parameter] public Func<RowData<TItem>, string> RowClassName { get; set; } = _ => "";
-
-        [Parameter] public Func<RowData<TItem>, string> ExpandedRowClassName { get; set; } = _ => "";
-
-        [Parameter] public EventCallback<RowData<TItem>> OnExpand { get; set; }
-
-        [Parameter] public SortDirection[] SortDirections { get; set; } = SortDirection.Preset.Default;
-
-        [Parameter] public string TableLayout { get; set; } = "";
-
-        [Parameter] public EventCallback<RowData<TItem>> OnRowClick { get; set; }
-
-        [Parameter] public bool HidePagination { get; set; }
-
-        [Parameter] public string PaginationPosition { get; set; } = "bottomRight";
-
-        [Parameter] public EventCallback<int> TotalChanged { get; set; }
-
-        [Parameter] public EventCallback<PaginationEventArgs> OnPageIndexChange { get; set; }
-
-        [Parameter] public EventCallback<PaginationEventArgs> OnPageSizeChange { get; set; }
-
-        [Parameter] public IEnumerable<TItem>? SelectedRows { get; set; }
-
-        [Parameter] public EventCallback<IEnumerable<TItem>> SelectedRowsChanged { get; set; }
-        public override ScopeType ScopeType { get; set; } = ScopeType.Isolated;
-
-        protected LoadRequest<TItem>? LastRequest { get; set; }
-
-        protected override void Initialize()
+        base.Initialize();
+        var method = typeof(ITableSortModel).GetMethod("SortList", BindingFlags.NonPublic | BindingFlags.Instance);
+        if (method is null)
         {
-            base.Initialize();
-            var method = typeof(ITableSortModel).GetMethod("SortList", BindingFlags.NonPublic | BindingFlags.Instance);
-            if (method is null)
-            {
-                throw new MissingMethodException("Method SortList not found");
-            }
-
-            sortMethod = method.MakeGenericMethod(typeof(TItem));
-            Logger.LogDebug("Sort method stored");
+            throw new MissingMethodException("Method SortList not found");
         }
 
-        public Task InitializeTableAsync(QueryModel queryModel)
+        sortMethod = method.MakeGenericMethod(typeof(TItem));
+        Logger.LogDebug("Sort method stored");
+    }
+
+    public Task InitializeTableAsync(QueryModel queryModel)
+    {
+        Logger.LogDebug("Try to initialize table");
+        if (!isTableInitialized)
         {
-            Logger.LogDebug("Try to initialize table");
-            if (!isTableInitialized)
-            {
-                Logger.LogDebug("Table is not initialized. Proceed");
-                isTableInitialized = true;
-                return OnChangeAsync(queryModel);
-            }
-            else
-            {
-                Logger.LogDebug("Table already initialized, skip");
-            }
-            return Task.CompletedTask;
+            Logger.LogDebug("Table is not initialized. Proceed");
+            isTableInitialized = true;
+            return OnChangeAsync(queryModel);
         }
 
-        protected async Task OnChangeAsync(QueryModel? queryModel)
-        {
-            Logger.LogDebug("Table model changed. Need to load data");
-            if (!isTableInitialized)
-            {
-                Logger.LogDebug("Table is not initialized. Skip");
-                return;
-            }
+        Logger.LogDebug("Table already initialized, skip");
+        return Task.CompletedTask;
+    }
 
-            await StartLoadingAsync();
-            List<FilterOperation<TItem>> filters = new();
-            List<SortOperation<TItem>> sorts = new();
-            Logger.LogDebug("Parse query model");
-            if (queryModel is not null)
+    protected async Task OnChangeAsync(QueryModel? queryModel)
+    {
+        Logger.LogDebug("Table model changed. Need to load data");
+        if (!isTableInitialized)
+        {
+            Logger.LogDebug("Table is not initialized. Skip");
+            return;
+        }
+
+        await StartLoadingAsync();
+        List<FilterOperation<TItem>> filters = new();
+        List<SortOperation<TItem>> sorts = new();
+        Logger.LogDebug("Parse query model");
+        if (queryModel is not null)
+        {
+            if (sortMethod is not null)
             {
-                if (sortMethod is not null)
+                foreach (var sortEntry in queryModel.SortModel.Where(s =>
+                             s.Sort is not null))
                 {
-                    foreach (var sortEntry in queryModel.SortModel.Where(s =>
-                        s.Sort is not null))
+                    sorts.Add(new SortOperation<TItem>(items =>
                     {
-                        sorts.Add(new SortOperation<TItem>(items =>
+                        var sortResult = sortMethod.Invoke(sortEntry, new object?[] { items });
+                        if (sortResult is IOrderedQueryable<TItem> orderedQueryable)
                         {
-                            var sortResult = sortMethod.Invoke(sortEntry, new object?[] { items });
-                            if (sortResult is IOrderedQueryable<TItem> orderedQueryable)
-                            {
-                                return orderedQueryable;
-                            }
+                            return orderedQueryable;
+                        }
 
-                            throw new InvalidOperationException("Error sorting model");
-                        }, sortEntry.FieldName, sortEntry.Sort == SortDirection.Descending.ToString()));
+                        throw new InvalidOperationException("Error sorting model");
+                    }, sortEntry.FieldName, sortEntry.Sort == SortDirection.Descending.ToString()));
+                }
+            }
+
+            foreach (var filterModel in queryModel.FilterModel)
+            {
+                var values = new List<FilterOperationValue>();
+                foreach (var modelFilter in filterModel.Filters)
+                {
+                    QueryContextOperator? compareOperator = modelFilter.FilterCompareOperator switch
+                    {
+                        TableFilterCompareOperator.Equals => QueryContextOperator.Equal,
+                        TableFilterCompareOperator.Contains => QueryContextOperator.Contains,
+                        TableFilterCompareOperator.StartsWith => QueryContextOperator.StartsWith,
+                        TableFilterCompareOperator.EndsWith => QueryContextOperator.EndsWith,
+                        TableFilterCompareOperator.GreaterThan => QueryContextOperator.Greater,
+                        TableFilterCompareOperator.LessThan => QueryContextOperator.Less,
+                        TableFilterCompareOperator.GreaterThanOrEquals => QueryContextOperator.GreaterOrEqual,
+                        TableFilterCompareOperator.LessThanOrEquals => QueryContextOperator.LessOrEqual,
+                        TableFilterCompareOperator.NotEquals => QueryContextOperator.NotEqual,
+                        TableFilterCompareOperator.IsNull => QueryContextOperator.IsNull,
+                        TableFilterCompareOperator.IsNotNull => QueryContextOperator.NotNull,
+                        TableFilterCompareOperator.NotContains => QueryContextOperator.NotContains,
+                        _ => null
+                    };
+                    if (compareOperator is not null)
+                    {
+                        values.Add(new FilterOperationValue(modelFilter.Value, compareOperator.Value));
+                    }
+                    else
+                    {
+                        Logger.LogWarning("Unsupported filter operator: {Operator}",
+                            modelFilter.FilterCompareOperator);
                     }
                 }
 
-                foreach (var filterModel in queryModel.FilterModel)
-                {
-                    var values = new List<FilterOperationValue>();
-                    foreach (var modelFilter in filterModel.Filters)
-                    {
-                        QueryContextOperator? compareOperator = modelFilter.FilterCompareOperator switch
-                        {
-                            TableFilterCompareOperator.Equals => QueryContextOperator.Equal,
-                            TableFilterCompareOperator.Contains => QueryContextOperator.Contains,
-                            TableFilterCompareOperator.StartsWith => QueryContextOperator.StartsWith,
-                            TableFilterCompareOperator.EndsWith => QueryContextOperator.EndsWith,
-                            TableFilterCompareOperator.GreaterThan => QueryContextOperator.Greater,
-                            TableFilterCompareOperator.LessThan => QueryContextOperator.Less,
-                            TableFilterCompareOperator.GreaterThanOrEquals => QueryContextOperator.GreaterOrEqual,
-                            TableFilterCompareOperator.LessThanOrEquals => QueryContextOperator.LessOrEqual,
-                            TableFilterCompareOperator.NotEquals => QueryContextOperator.NotEqual,
-                            TableFilterCompareOperator.IsNull => QueryContextOperator.IsNull,
-                            TableFilterCompareOperator.IsNotNull => QueryContextOperator.NotNull,
-                            TableFilterCompareOperator.NotContains => QueryContextOperator.NotContains,
-                            _ => null
-                        };
-                        if (compareOperator is not null)
-                        {
-                            values.Add(new FilterOperationValue(modelFilter.Value, compareOperator.Value));
-                        }
-                        else
-                        {
-                            Logger.LogWarning("Unsupported filter operator: {Operator}",
-                                modelFilter.FilterCompareOperator);
-                        }
-                    }
-
-                    filters.Add(new FilterOperation<TItem>(items => filterModel.FilterList(items),
-                        filterModel.FieldName, values.ToArray()));
-                }
+                filters.Add(new FilterOperation<TItem>(items => filterModel.FilterList(items),
+                    filterModel.FieldName, values.ToArray()));
             }
+        }
 
-            var page = queryModel?.PageIndex ?? PageIndex;
-            var request = new LoadRequest<TItem>(page, filters, sorts);
-            Logger.LogDebug("LoadRequest: {@LoadRequest}", request);
-            lastQueryModel = queryModel;
-            try
+        var page = queryModel?.PageIndex ?? PageIndex;
+        var request = new LoadRequest<TItem>(page, filters, sorts);
+        Logger.LogDebug("LoadRequest: {@LoadRequest}", request);
+        lastQueryModel = queryModel;
+        try
+        {
+            Logger.LogDebug("Run load data task");
+            loadTask = GetDataAsync(request);
+            var (items, itemsCount) = await loadTask;
+            Logger.LogDebug("Data loaded. Count: {Count}", itemsCount);
+            Items = items;
+            Count = itemsCount;
+            LastRequest = request;
+            if (OnDataLoaded is not null)
             {
-                Logger.LogDebug("Run load data task");
-                loadTask = GetDataAsync(request);
-                var (items, itemsCount) = await loadTask;
-                Logger.LogDebug("Data loaded. Count: {Count}", itemsCount);
-                Items = items;
-                Count = itemsCount;
-                LastRequest = request;
-                if (OnDataLoaded is not null)
-                {
-                    Logger.LogDebug("Execute OnDataLoaded");
-                    await OnDataLoaded();
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e, "Error loading list data: {ErrorText}", e.ToString());
-            }
-            Logger.LogDebug("Data load is complete");
-            await StopLoadingAsync();
-        }
-
-        public async Task RefreshAsync(int? page = null)
-        {
-            if (page is not null)
-            {
-                PageIndex = page.Value;
-            }
-
-            await OnChangeAsync(lastQueryModel);
-        }
-
-        protected abstract Task<(TItem[] items, int itemsCount)> GetDataAsync(LoadRequest<TItem> request,
-            CancellationToken cancellationToken = default);
-
-        protected override async Task DisposeAsync(bool disposing)
-        {
-            await base.DisposeAsync(disposing);
-            if (loadTask is not null)
-            {
-                await loadTask;
+                Logger.LogDebug("Execute OnDataLoaded");
+                await OnDataLoaded();
             }
         }
-    }
-
-    public class LoadRequest<TItem> where TItem : class
-    {
-        public LoadRequest(int page, List<FilterOperation<TItem>> filters,
-            List<SortOperation<TItem>> sort)
+        catch (Exception e)
         {
-            Page = page;
-            Filters = filters;
-            Sort = sort;
+            Logger.LogError(e, "Error loading list data: {ErrorText}", e.ToString());
         }
 
-        public int Page { get; }
-        public List<FilterOperation<TItem>> Filters { get; }
-        public List<SortOperation<TItem>> Sort { get; }
+        Logger.LogDebug("Data load is complete");
+        await StopLoadingAsync();
     }
 
-    public class FilterOperation<TItem> where TItem : class
+    public async Task RefreshAsync(int? page = null)
     {
-        public Func<IQueryable<TItem>, IQueryable<TItem>> Operation { get; }
-        public string Property { get; }
-
-        public FilterOperation(Func<IQueryable<TItem>, IQueryable<TItem>> operation, string property,
-            FilterOperationValue[] values)
+        if (page is not null)
         {
-            Operation = operation;
-            Property = property;
+            PageIndex = page.Value;
+        }
+
+        await OnChangeAsync(lastQueryModel);
+    }
+
+    protected abstract Task<(TItem[] items, int itemsCount)> GetDataAsync(LoadRequest<TItem> request,
+        CancellationToken cancellationToken = default);
+
+    protected override async Task DisposeAsync(bool disposing)
+    {
+        await base.DisposeAsync(disposing);
+        if (loadTask is not null)
+        {
+            await loadTask;
         }
     }
+}
 
-    public class FilterOperationValue
+public class LoadRequest<TItem> where TItem : class
+{
+    public LoadRequest(int page, List<FilterOperation<TItem>> filters,
+        List<SortOperation<TItem>> sort)
     {
-        public object Value { get; }
-        public QueryContextOperator Operator { get; }
-
-        public FilterOperationValue(object value, QueryContextOperator @operator)
-        {
-            Value = value;
-            Operator = @operator;
-        }
+        Page = page;
+        Filters = filters;
+        Sort = sort;
     }
 
-    public class SortOperation<TItem> where TItem : class
-    {
-        public Func<IQueryable<TItem>, IOrderedQueryable<TItem>> Operation { get; }
-        public string Property { get; }
-        public bool IsDescending { get; }
+    public int Page { get; }
+    public List<FilterOperation<TItem>> Filters { get; }
+    public List<SortOperation<TItem>> Sort { get; }
+}
 
-        public SortOperation(Func<IQueryable<TItem>, IOrderedQueryable<TItem>> operation, string property,
-            bool isDescending)
-        {
-            Operation = operation;
-            Property = property;
-            IsDescending = isDescending;
-        }
+public class FilterOperation<TItem> where TItem : class
+{
+    public FilterOperation(Func<IQueryable<TItem>, IQueryable<TItem>> operation, string property,
+        FilterOperationValue[] values)
+    {
+        Operation = operation;
+        Property = property;
     }
+
+    public Func<IQueryable<TItem>, IQueryable<TItem>> Operation { get; }
+    public string Property { get; }
+}
+
+public class FilterOperationValue
+{
+    public FilterOperationValue(object value, QueryContextOperator @operator)
+    {
+        Value = value;
+        Operator = @operator;
+    }
+
+    public object Value { get; }
+    public QueryContextOperator Operator { get; }
+}
+
+public class SortOperation<TItem> where TItem : class
+{
+    public SortOperation(Func<IQueryable<TItem>, IOrderedQueryable<TItem>> operation, string property,
+        bool isDescending)
+    {
+        Operation = operation;
+        Property = property;
+        IsDescending = isDescending;
+    }
+
+    public Func<IQueryable<TItem>, IOrderedQueryable<TItem>> Operation { get; }
+    public string Property { get; }
+    public bool IsDescending { get; }
 }

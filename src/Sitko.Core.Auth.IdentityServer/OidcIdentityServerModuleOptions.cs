@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using FluentValidation;
 using IdentityModel;
+using Sitko.Core.Auth.IdentityServer.Tokens;
 
 namespace Sitko.Core.Auth.IdentityServer
 {
@@ -16,6 +18,8 @@ namespace Sitko.Core.Auth.IdentityServer
         public override bool RequiresCookie => true;
         public override string SignInScheme => "Cookies";
         public override string ChallengeScheme => "oidc";
+        public bool AutoRefreshTokens { get; set; } = true;
+        public Action<AutomaticTokenManagementOptions>? ConfigureAutoRefreshTokens { get; set; }
     }
 
     public class OidcAuthOptionsValidator : IdentityServerAuthOptionsValidator<OidcIdentityServerModuleOptions>

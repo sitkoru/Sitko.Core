@@ -193,7 +193,7 @@ public interface IRepository<TEntity, TEntityPk> : IRepository where TEntity : c
     Task<bool> CommitBatchAsync(CancellationToken cancellationToken = default);
     Task<bool> RollbackBatchAsync(CancellationToken cancellationToken = default);
 
-    Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default);
+    Task<TEntity> RefreshAsync(TEntity entity, CancellationToken cancellationToken = default);
     Task<bool> HasChangesAsync(TEntity entity);
     TEntity CreateSnapshot(TEntity entity);
 }

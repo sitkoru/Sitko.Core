@@ -1,9 +1,8 @@
-namespace Sitko.Core.Repository.EntityFrameworkCore
-{
-    using Nito.AsyncEx;
+using Nito.AsyncEx;
 
-    public class EFRepositoryLock
-    {
-        public AsyncLock Lock { get; } = new();
-    }
+namespace Sitko.Core.Repository.EntityFrameworkCore;
+
+public class EFRepositoryLock
+{
+    public AsyncLock Lock { get; } = new();
 }

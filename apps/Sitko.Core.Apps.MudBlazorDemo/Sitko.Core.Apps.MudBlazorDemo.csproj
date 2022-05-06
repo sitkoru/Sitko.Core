@@ -8,15 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Sitko.Core.Blazor.MudBlazor\Sitko.Core.Blazor.MudBlazor.csproj" />
+    <ProjectReference Include="..\..\src\Sitko.Core.Blazor.MudBlazor.Server\Sitko.Core.Blazor.MudBlazor.Server.csproj" />
     <ProjectReference Include="..\..\src\Sitko.Core.Db.InMemory\Sitko.Core.Db.InMemory.csproj" />
     <ProjectReference Include="..\..\src\Sitko.Core.Repository.EntityFrameworkCore\Sitko.Core.Repository.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\src\Sitko.Core.Storage.FileSystem\Sitko.Core.Storage.FileSystem.csproj" />
     <ProjectReference Include="..\..\src\Sitko.Core.Storage.Metadata.Postgres\Sitko.Core.Storage.Metadata.Postgres.csproj" />
+    <ProjectReference Include="..\..\src\Sitko.Core.Storage.Remote.Server\Sitko.Core.Storage.Remote.Server.csproj" />
+    <ProjectReference Include="..\..\src\Sitko.Core.Storage.Remote\Sitko.Core.Storage.Remote.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.1">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

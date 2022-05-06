@@ -10,13 +10,13 @@ public class PdfRendererModule : BaseApplicationModule
 {
     public override string OptionsKey => "PdfRenderer";
 
-    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
         BaseApplicationModuleOptions startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);
         services.AddTransient<IPdfRenderer, PdfRenderer>();
     }
 
-    public override IEnumerable<Type> GetRequiredModules(ApplicationContext context,
+    public override IEnumerable<Type> GetRequiredModules(IApplicationContext context,
         BaseApplicationModuleOptions options) => new[] { typeof(PuppeteerModule) };
 }

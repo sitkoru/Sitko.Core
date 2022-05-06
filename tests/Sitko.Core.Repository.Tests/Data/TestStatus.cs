@@ -1,7 +1,6 @@
-﻿namespace Sitko.Core.Repository.Tests.Data
+﻿namespace Sitko.Core.Repository.Tests.Data;
+
+public enum TestStatus
 {
-    public enum TestStatus
-    {
-        Enabled, Disabled, Error
-    }
+    Enabled, Disabled, Error
 }

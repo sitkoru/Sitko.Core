@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sitko.Core.App;
 
-[assembly: InternalsVisibleTo("Sitko.Core.Repository.Tests")]
+[assembly: InternalsVisibleTo("Sitko.Core.Repository.EntityFrameworkCore.Tests")]
 
 namespace Sitko.Core.Repository.EntityFrameworkCore;
 
@@ -11,7 +11,7 @@ public class EFRepositoriesModule : RepositoriesModule<EFRepositoriesModuleOptio
 {
     public override string OptionsKey => "Repositories:EF";
 
-    public override void ConfigureServices(ApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
         EFRepositoriesModuleOptions startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);

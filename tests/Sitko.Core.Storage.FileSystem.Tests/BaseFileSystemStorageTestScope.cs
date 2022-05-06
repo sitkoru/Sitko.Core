@@ -3,31 +3,29 @@ using System.IO;
 using System.Threading.Tasks;
 using Sitko.Core.Xunit;
 
-namespace Sitko.Core.Storage.FileSystem.Tests
+namespace Sitko.Core.Storage.FileSystem.Tests;
+
+public class BaseFileSystemStorageTestScope : BaseTestScope
 {
-    public class BaseFileSystemStorageTestScope : BaseTestScope
+    private readonly string folder = Path.GetTempPath() + "/" + Guid.NewGuid();
+
+    protected override TestApplication ConfigureApplication(TestApplication application, string name)
     {
-        private readonly string folder = Path.GetTempPath() + "/" + Guid.NewGuid();
+        base.ConfigureApplication(application, name);
+        application.AddFileSystemStorage<TestFileSystemStorageSettings>(
+            moduleOptions =>
+            {
+                moduleOptions.PublicUri = new Uri(folder);
+                moduleOptions.StoragePath = folder;
+            });
+        application.AddFileSystemStorageMetadata<TestFileSystemStorageSettings>();
+        return application;
+    }
 
-        protected override TestApplication ConfigureApplication(TestApplication application, string name)
-        {
-            base.ConfigureApplication(application, name);
-            application.AddFileSystemStorage<TestFileSystemStorageSettings>(
-                moduleOptions =>
-                {
-                    moduleOptions.PublicUri = new Uri(folder);
-                    moduleOptions.StoragePath = folder;
-                });
-            application.AddFileSystemStorageMetadata<TestFileSystemStorageSettings>();
-            return application;
-        }
-
-        public override async ValueTask DisposeAsync()
-        {
-            var storage = GetService<IStorage<TestFileSystemStorageSettings>>();
-            await storage.DeleteAllAsync();
-            await base.DisposeAsync();
-            GC.SuppressFinalize(this);
-        }
+    protected override async Task OnDisposeAsync()
+    {
+        await base.OnDisposeAsync();
+        var storage = GetService<IStorage<TestFileSystemStorageSettings>>();
+        await storage.DeleteAllAsync();
     }
 }

@@ -46,7 +46,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
     public abstract Task<bool> CommitTransactionAsync(CancellationToken cancellationToken = default);
     public abstract Task<bool> RollbackTransactionAsync(CancellationToken cancellationToken = default);
 
-    public abstract Task RefreshAsync(TEntity entity, CancellationToken cancellationToken = default);
+    public abstract Task<TEntity> RefreshAsync(TEntity entity, CancellationToken cancellationToken = default);
 
     public async Task<bool> HasChangesAsync(TEntity entity)
     {
@@ -112,7 +112,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         CancellationToken cancellationToken = default)
     {
         var results = new List<AddOrUpdateOperationResult<TEntity, TEntityPk>>();
-        await BeginBatchAsync(cancellationToken);
+        var batchStarted = await BeginBatchAsync(cancellationToken);
         var hasErrors = false;
         foreach (var item in items)
         {
@@ -135,17 +135,20 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
                 await SaveAsync(new RepositoryRecord<TEntity, TEntityPk>(item), cancellationToken);
             }
 
-            results.Add(new AddOrUpdateOperationResult<TEntity, TEntityPk>(item, validationResult.errors,
+            results.Add(new AddOrUpdateOperationResult<TEntity, TEntityPk>(item, validationResult.errors.ToArray(),
                 Array.Empty<PropertyChange>()));
         }
 
-        if (!hasErrors)
+        if (batchStarted)
         {
-            await CommitBatchAsync(cancellationToken);
-        }
-        else
-        {
-            await RollbackBatchAsync(cancellationToken);
+            if (!hasErrors)
+            {
+                await CommitBatchAsync(cancellationToken);
+            }
+            else
+            {
+                await RollbackBatchAsync(cancellationToken);
+            }
         }
 
         return results.ToArray();
@@ -171,7 +174,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         CancellationToken cancellationToken = default)
     {
         var results = new List<AddOrUpdateOperationResult<TEntity, TEntityPk>>();
-        await BeginBatchAsync(cancellationToken);
+        var batchStarted = await BeginBatchAsync(cancellationToken);
         var hasErrors = false;
         foreach (var entityTuple in entities)
         {
@@ -196,19 +199,23 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
             }
 
             var result =
-                new AddOrUpdateOperationResult<TEntity, TEntityPk>(entityTuple.entity, validationResult.errors,
+                new AddOrUpdateOperationResult<TEntity, TEntityPk>(entityTuple.entity,
+                    validationResult.errors.ToArray(),
                     changes);
             results.Add(result);
             hasErrors = !result.IsSuccess;
         }
 
-        if (!hasErrors)
+        if (batchStarted)
         {
-            await CommitBatchAsync(cancellationToken);
-        }
-        else
-        {
-            await RollbackBatchAsync(cancellationToken);
+            if (!hasErrors)
+            {
+                await CommitBatchAsync(cancellationToken);
+            }
+            else
+            {
+                await RollbackBatchAsync(cancellationToken);
+            }
         }
 
         return results.ToArray();
@@ -230,7 +237,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
     public virtual async Task<bool> DeleteAsync(IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
     {
-        await BeginBatchAsync(cancellationToken);
+        var batchStarted = await BeginBatchAsync(cancellationToken);
         foreach (var entity in entities)
         {
             await BeforeDeleteAsync(entity, cancellationToken);
@@ -238,7 +245,12 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
             await DoSaveAsync(cancellationToken);
         }
 
-        return await CommitBatchAsync(cancellationToken);
+        if (batchStarted)
+        {
+            return await CommitBatchAsync(cancellationToken);
+        }
+
+        return true;
     }
 
     public virtual async Task<TEntity?> GetAsync(CancellationToken cancellationToken = default)
@@ -285,14 +297,14 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
     {
         var query = await CreateRepositoryQueryAsync(cancellationToken);
 
-        var (items, needCount) = await DoGetAllAsync(query, cancellationToken);
+        var result = await DoGetAllAsync(query, cancellationToken);
 
-        var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
+        var itemsCount = result.needCount && (query.Offset > 0 || result.items.Length == query.Limit)
             ? await CountAsync(cancellationToken)
-            : items.Length;
-        await AfterLoadEntitiesAsync(items, cancellationToken);
+            : result.items.Length;
+        await AfterLoadEntitiesAsync(result.items, cancellationToken);
 
-        return (items, itemsCount);
+        return (result.items, itemsCount);
     }
 
     public virtual async Task<(TEntity[] items, int itemsCount)> GetAllAsync(
@@ -301,14 +313,14 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         var query = await CreateRepositoryQueryAsync(cancellationToken);
         query.Configure(configureQuery);
 
-        var (items, needCount) = await DoGetAllAsync(query, cancellationToken);
+        var result = await DoGetAllAsync(query, cancellationToken);
 
-        var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
+        var itemsCount = result.needCount && (query.Offset > 0 || result.items.Length == query.Limit)
             ? await CountAsync(configureQuery, cancellationToken)
-            : items.Length;
-        await AfterLoadEntitiesAsync(items, cancellationToken);
+            : result.items.Length;
+        await AfterLoadEntitiesAsync(result.items, cancellationToken);
 
-        return (items, itemsCount);
+        return (result.items, itemsCount);
     }
 
     public virtual async Task<(TEntity[] items, int itemsCount)> GetAllAsync(
@@ -316,14 +328,15 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
     {
         var query = await CreateRepositoryQueryAsync(cancellationToken);
         await query.ConfigureAsync(configureQuery, cancellationToken);
-        var (items, needCount) = await DoGetAllAsync(query, cancellationToken);
 
-        var itemsCount = needCount && (query.Offset > 0 || items.Length == query.Limit)
+        var result = await DoGetAllAsync(query, cancellationToken);
+
+        var itemsCount = result.needCount && (query.Offset > 0 || result.items.Length == query.Limit)
             ? await CountAsync(configureQuery, cancellationToken)
-            : items.Length;
-        await AfterLoadEntitiesAsync(items, cancellationToken);
+            : result.items.Length;
+        await AfterLoadEntitiesAsync(result.items, cancellationToken);
 
-        return (items, itemsCount);
+        return (result.items, itemsCount);
     }
 
     public virtual async Task<int> SumAsync(Expression<Func<TEntity, int>> selector,
@@ -617,11 +630,11 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         var query = await CreateRepositoryQueryAsync(cancellationToken);
         query.Where(i => ids.Contains(i.Id));
 
-        var (items, _) = await DoGetAllAsync(query, cancellationToken);
+        var result = await DoGetAllAsync(query, cancellationToken);
 
-        await AfterLoadEntitiesAsync(items, cancellationToken);
+        await AfterLoadEntitiesAsync(result.items, cancellationToken);
 
-        return items;
+        return result.items;
     }
 
     public virtual async Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids,
@@ -631,11 +644,11 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         query.Where(i => ids.Contains(i.Id));
         await query.ConfigureAsync(configureQuery, cancellationToken);
 
-        var (items, _) = await DoGetAllAsync(query, cancellationToken);
+        var result = await DoGetAllAsync(query, cancellationToken);
 
-        await AfterLoadEntitiesAsync(items, cancellationToken);
+        await AfterLoadEntitiesAsync(result.items, cancellationToken);
 
-        return items;
+        return result.items;
     }
 
     public virtual async Task<TEntity[]> GetByIdsAsync(TEntityPk[] ids,
@@ -644,16 +657,16 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         var query = await CreateRepositoryQueryAsync(cancellationToken);
         query.Where(i => ids.Contains(i.Id)).Configure(configureQuery);
 
-        var (items, _) = await DoGetAllAsync(query, cancellationToken);
+        var result = await DoGetAllAsync(query, cancellationToken);
 
-        await AfterLoadEntitiesAsync(items, cancellationToken);
+        await AfterLoadEntitiesAsync(result.items, cancellationToken);
 
-        return items;
+        return result.items;
     }
 
     protected abstract Task<TQuery> CreateRepositoryQueryAsync(CancellationToken cancellationToken = default);
 
-    protected abstract Task<(TEntity[] items, bool needCount)> DoGetAllAsync(TQuery query,
+    protected abstract Task<(TEntity[] items, int itemsCount, bool needCount)> DoGetAllAsync(TQuery query,
         CancellationToken cancellationToken = default);
 
     protected abstract Task<int> DoCountAsync(TQuery query, CancellationToken cancellationToken = default);

@@ -7,6 +7,6 @@
     <ProjectReference Include="..\Sitko.Core.Email\Sitko.Core.Email.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentEmail.Mailgun" Version="3.0.0"/>
+    <PackageReference Include="FluentEmail.Mailgun" Version="3.0.2"/>
   </ItemGroup>
 </Project>

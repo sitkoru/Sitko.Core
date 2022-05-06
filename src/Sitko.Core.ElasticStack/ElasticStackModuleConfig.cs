@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation;
+using Serilog.Core;
+using Serilog.Events;
 using Serilog.Sinks.Elasticsearch;
 using Sitko.Core.App;
 
@@ -38,6 +40,9 @@ namespace Sitko.Core.ElasticStack
         public int? LoggingNumberOfReplicas { get; set; }
         public string? LoggingLifeCycleName { get; set; }
         public string? LoggingLiferRolloverAlias { get; set; }
+        public EmitEventFailureHandling EmitEventFailure { get; set; } = EmitEventFailureHandling.WriteToSelfLog;
+        public ILogEventSink? FailureSink { get; set; }
+        public Action<LogEvent>? FailureCallback { get; set; }
     }
 
     public class ElasticStackModuleOptionsValidator : AbstractValidator<ElasticStackModuleOptions>

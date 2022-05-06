@@ -1,46 +1,54 @@
 version: "2.1"
 services:
-    nats:
-        image: nats-streaming:0.21.2
-        command: -cid tests
-        ports:
-            - 4222:4222
-    postgres:
-        image: postgres:alpine
-        environment:
-            - POSTGRES_USER=postgres
-            - POSTGRES_HOST_AUTH_METHOD=trust
-        ports:
-            - 5432:5432
-    sonyflake:
-        image: titpetric/sonyflake
-        ports:
-            - 8987:80
-    elastic-es:
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.6.0
-        restart: always
-        environment:
-            ES_JAVA_OPTS: "-Xms1g -Xmx1g"
-            cluster.name: "test"
-            xpack.security.enabled: "false"
-            bootstrap.memory_lock: "true"
-            discovery.type: "single-node"
-        volumes:
-            - "./hunspell:/usr/share/elasticsearch/config/hunspell:ro"
-        ports:
-            - 9200:9200
-    minio:
-        image: minio/minio
-        command: server /data
-        ports:
-            - 9000:9000
-        environment:
-            - MINIO_ACCESS_KEY=A8eENTqgEE7uYL7R
-            - MINIO_SECRET_KEY=82bmVoDRkZgwy4B3PXkLzpXiuqGVZMug
-    mc:
-        image: minio/mc
-        volumes:
-            - "mc:/root/.mc"
-
+  nats:
+    image: nats-streaming:0.21.2
+    command: -cid tests
+    ports:
+      - 4222:4222
+  postgres:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - 5432:5432
+  sonyflake:
+    image: titpetric/sonyflake
+    ports:
+      - 8987:80
+  elastic-es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.0
+    restart: always
+    environment:
+      ES_JAVA_OPTS: "-Xms1g -Xmx1g"
+      cluster.name: "test"
+      xpack.security.enabled: "false"
+      bootstrap.memory_lock: "true"
+      discovery.type: "single-node"
+    volumes:
+      - "./hunspell:/usr/share/elasticsearch/config/hunspell:ro"
+    ports:
+      - 9200:9200
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    ports:
+      - 9000:9000
+      - 9001:9001
+    environment:
+      - MINIO_ROOT_USER=A8eENTqgEE7uYL7R
+      - MINIO_ROOT_PASSWORD=82bmVoDRkZgwy4B3PXkLzpXiuqGVZMug
+  mc:
+    image: minio/mc
+    volumes:
+      - "mc:/root/.mc"
+  vault:
+    image: "vault"
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=root
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - "8200:8200"
 volumes:
-    mc:
+  mc:

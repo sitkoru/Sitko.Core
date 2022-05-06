@@ -1,5 +1,5 @@
 @typeparam TEntity
-@inherits Sitko.Core.App.Blazor.Forms.BaseForm<TEntity>
+@inherits Sitko.Core.Blazor.Forms.BaseForm<TEntity>
 
 <Form ValidateOnChange="ValidateOnChange" Model="Entity" Loading="IsLoading"
       OnFinish="SaveEntityAsync" @ref="AntFormInstance" OnFinishFailed="OnFormErrorAsync"
@@ -8,13 +8,13 @@
       WrapperColSpan="@WrapperColSpan" WrapperColOffset="@WrapperColOffset">
     <Validator>
         <Sitko.Core.Blazor.FluentValidation.FluentValidator/>
-        <Sitko.Core.App.Blazor.Forms.FormEditContextCatcher Form="this"/>
+        <Sitko.Core.Blazor.Forms.FormEditContextCatcher Form="this"/>
     </Validator>
     <ChildContent>
         @ChildContentFragment
         @if (Debug)
-                {
-                    <AntFormDebug TEntity="TEntity" Form="this"></AntFormDebug>
-                }
+        {
+            <AntFormDebug TEntity="TEntity" Form="this"></AntFormDebug>
+        }
     </ChildContent>
 </Form>
