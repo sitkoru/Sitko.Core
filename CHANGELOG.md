@@ -1,3 +1,10 @@
+# [9.0.0-beta.41](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.40...9.0.0-beta.41) (2022-05-06)
+
+
+### Features
+
+* **s3storage:** update AWSSDK.S3 from 3.7.8.27 to 3.7.8.28 ([5034ada](https://github.com/sitkoru/Sitko.Core/commit/5034adab514b65d2b9d13ce04a12ccd98180b074))
+
 # [9.0.0-beta.40](https://github.com/sitkoru/Sitko.Core/compare/9.0.0-beta.39...9.0.0-beta.40) (2022-05-05)
 
 
