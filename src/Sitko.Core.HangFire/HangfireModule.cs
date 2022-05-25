@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Hangfire;
@@ -45,13 +46,16 @@ public class HangfireModule<THangfireConfig> : BaseApplicationModule<THangfireCo
             });
         }
 
-        if (startupOptions.IsWorkersEnabled)
+        if (startupOptions.Workers.Any())
         {
-            services.AddHangfireServer(options =>
+            foreach (var (workersCount, queues) in startupOptions.Workers)
             {
-                options.WorkerCount = startupOptions.Workers;
-                options.Queues = startupOptions.Queues;
-            });
+                services.AddHangfireServer(options =>
+                {
+                    options.WorkerCount = workersCount;
+                    options.Queues = queues;
+                });
+            }
         }
     }
 }
@@ -60,9 +64,7 @@ public abstract class HangfireModuleOptions : BaseModuleOptions
 {
     [JsonIgnore] public Action<IGlobalConfiguration>? ConfigureHangfire { get; set; }
 
-    public bool IsWorkersEnabled { get; private set; }
-    public int Workers { get; private set; }
-    public string[] Queues { get; private set; } = { "default" };
+    public List<(int workersCount, string[] queues)> Workers { get; private set; } = new();
 
     [JsonIgnore] public bool IsDashboardEnabled { get; private set; }
 
@@ -71,15 +73,10 @@ public abstract class HangfireModuleOptions : BaseModuleOptions
 
     public Action<DashboardOptions>? DashboardConfigure { get; set; }
 
-    public void EnableWorker(int workersCount = 10, string[]? queues = null)
-    {
-        IsWorkersEnabled = true;
-        Workers = workersCount;
-        if (queues != null && queues.Any())
-        {
-            Queues = queues;
-        }
-    }
+    public void EnableWorker(int workersCount = 10, string[]? queues = null) =>
+        AddWorker(workersCount, queues ?? new[] { "default" });
+
+    public void AddWorker(int workersCount, string[] queues) => Workers.Add((workersCount, queues));
 
     public void EnableDashboard(Action<DashboardOptions>? configure = null)
     {
