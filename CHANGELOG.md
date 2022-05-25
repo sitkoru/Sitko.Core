@@ -1,3 +1,11 @@
+# [9.1.0](https://github.com/sitkoru/Sitko.Core/compare/9.0.0...9.1.0) (2022-05-25)
+
+
+### Features
+
+* Hangfire 1.7.29 ([f2505de](https://github.com/sitkoru/Sitko.Core/commit/f2505de35013f894b2dbcf76492a96cedcc4f66a))
+* **hangfire:** multiple hangfire servers per instance ([393318e](https://github.com/sitkoru/Sitko.Core/commit/393318e059ecdd1d65202ddee990a3a7c025639c))
+
 # [9.0.0](https://github.com/sitkoru/Sitko.Core/compare/8.36.1...9.0.0) (2022-05-06)
 
 
