@@ -1,3 +1,10 @@
+# [9.2.0](https://github.com/sitkoru/Sitko.Core/compare/9.1.0...9.2.0) (2022-05-26)
+
+
+### Features
+
+* don't cache s3client ([8ba1e04](https://github.com/sitkoru/Sitko.Core/commit/8ba1e044d69695b737b432a671e9a85e002c6706))
+
 # [9.1.0](https://github.com/sitkoru/Sitko.Core/compare/9.0.0...9.1.0) (2022-05-25)
 
 
