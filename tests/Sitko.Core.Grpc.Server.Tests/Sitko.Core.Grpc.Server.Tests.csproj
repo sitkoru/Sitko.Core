@@ -19,6 +19,6 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="6.0.4"/>
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="6.0.6"/>
   </ItemGroup>
 </Project>
