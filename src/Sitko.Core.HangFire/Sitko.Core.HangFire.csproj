@@ -6,7 +6,7 @@
   <ItemGroup>
     <PackageReference Include="Hangfire.AspNetCore" Version="1.7.30"/>
     <PackageReference Include="Hangfire.PostgreSql" Version="1.9.8"/>
-    <PackageReference Include="AspNetCore.HealthChecks.Hangfire" Version="5.0.1"/>
+    <PackageReference Include="AspNetCore.HealthChecks.Hangfire" Version="6.0.2"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj"/>
