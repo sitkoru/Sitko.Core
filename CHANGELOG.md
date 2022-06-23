@@ -1,3 +1,30 @@
+# [9.3.0](https://github.com/sitkoru/Sitko.Core/compare/9.2.0...9.3.0) (2022-06-23)
+
+
+### Features
+
+* **.NET:** .NET 5.0.17 ([ac8b61a](https://github.com/sitkoru/Sitko.Core/commit/ac8b61adb5d718968f2928e3bacac7bae53ed5ca))
+* **.NET:** .NET 6.0.6 ([c4b2558](https://github.com/sitkoru/Sitko.Core/commit/c4b2558e1900b79434d4e78991ae8ee55714773c))
+* **.NET:** .NET Core 3.1.26 ([c6835cc](https://github.com/sitkoru/Sitko.Core/commit/c6835ccf31e6ebc9d20f90c5a82804996598bdd1))
+* **antdesign:** update AntDesign from 0.10.5 to 0.11.0 ([3fa5ec3](https://github.com/sitkoru/Sitko.Core/commit/3fa5ec31c6cbdc9d288983502c1b54371f03c098))
+* **app:** update Scrutor from 4.1.0 to 4.2.0 ([d2f819e](https://github.com/sitkoru/Sitko.Core/commit/d2f819ef9d89ef8c72e4be149a8c3d2f5e3d668d))
+* **app:** update Serilog.Exceptions from 8.1.0 to 8.2.0 ([51fdf9e](https://github.com/sitkoru/Sitko.Core/commit/51fdf9e094a31a948b3cf1fec0cc17e43867a98d))
+* **consul:** update Consul from 1.6.10.5 to 1.6.10.6 ([46d6ec3](https://github.com/sitkoru/Sitko.Core/commit/46d6ec3e4813fb564109a982893b2e2cb62fb2e0))
+* **demo:** upd deps ([1add3cc](https://github.com/sitkoru/Sitko.Core/commit/1add3cc4bb986365ea189bd6ee7c8a346112367b))
+* **elasticstack:** update Elastic.Apm.NetCoreAll from 1.14.1 to 1.16.1 ([72bb40e](https://github.com/sitkoru/Sitko.Core/commit/72bb40ec0fdb4259eb1528d28f1d3e5b96a1189e))
+* **elastic:** update NEST from 7.17.1 to 7.17.2 ([69c4bbf](https://github.com/sitkoru/Sitko.Core/commit/69c4bbfbde9e3af16f74745278550d08f3fbc89b))
+* **email:** update HtmlAgilityPack from 1.11.42 to 1.11.43 ([2a2d094](https://github.com/sitkoru/Sitko.Core/commit/2a2d094db3e369811d0d7caed1853276f1566957))
+* **grpc:** update gRPC to 2.46.0, Protobuf to 3.21.1 ([643b13f](https://github.com/sitkoru/Sitko.Core/commit/643b13f89e4c3d07c4c996dbf24fd0da6e54245c))
+* **hangfire:** update Hangfire.AspNetCore from 1.7.29 to 1.7.30 ([09e5c3c](https://github.com/sitkoru/Sitko.Core/commit/09e5c3cc4c20e6d629585f4ac6897862ef7724e6))
+* **nats:** update NATS.Client from 0.14.6 to 0.14.7 ([10e67cc](https://github.com/sitkoru/Sitko.Core/commit/10e67ccd8aae1b3995dc05a446ef0f187629978c))
+* **postgres:** update Npgsql.EntityFrameworkCore.PostgreSQL from 6.0.4 to 6.0.5 ([c3f0db8](https://github.com/sitkoru/Sitko.Core/commit/c3f0db838a907295e778341cdd868d19558f2664))
+* **smtp:** update MailKit from 3.2.0 to 3.3.0 ([0bfa264](https://github.com/sitkoru/Sitko.Core/commit/0bfa2644e05c5442a7e7a8320516d09675492cfc))
+* **storages3:** update AWSSDK.S3 from 3.7.8.28 to 3.7.9.18 ([8f6a078](https://github.com/sitkoru/Sitko.Core/commit/8f6a0782f8a2c286adb8b9605df602613f4e6906))
+* **vault:** update VaultSharp.Extensions.Configuration from 0.4.2 to 0.4.3 ([3ba0c9c](https://github.com/sitkoru/Sitko.Core/commit/3ba0c9c66fc2e08cab8a9fc72646f96d6eb9ae78))
+* **web:** update Microsoft.Extensions.Caching.StackExchangeRedis from 6.0.4 to 6.0.6 ([949d2e6](https://github.com/sitkoru/Sitko.Core/commit/949d2e6accf2958a20e05739dc2b1d752455b9ac))
+* **xunit:** update FluentAssertions from 6.6.0 to 6.7.0 ([bd85cd7](https://github.com/sitkoru/Sitko.Core/commit/bd85cd7d71c837f891acc70ffbbb49f1c1846c0b))
+* **xunit:** update Microsoft.NET.Test.Sdk from 17.1.0 to 17.2.0 ([0dfe4f1](https://github.com/sitkoru/Sitko.Core/commit/0dfe4f11664ebe2308f0accf29b8c3e4681349f8))
+
 # [9.2.0](https://github.com/sitkoru/Sitko.Core/compare/9.1.0...9.2.0) (2022-05-26)
 
 
