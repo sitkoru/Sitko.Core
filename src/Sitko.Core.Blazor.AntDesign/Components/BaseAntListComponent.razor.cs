@@ -54,7 +54,7 @@ public abstract partial class BaseAntListComponent<TItem> where TItem : class
 
     [Parameter] public RenderFragment? FooterTemplate { get; set; }
 
-    [Parameter] public TableSize? Size { get; set; }
+    [Parameter] public TableSize Size { get; set; } = TableSize.Default;
 
     [Parameter] public TableLocale Locale { get; set; } = LocaleProvider.CurrentLocale.Table;
 
@@ -64,7 +64,7 @@ public abstract partial class BaseAntListComponent<TItem> where TItem : class
 
     [Parameter] public string? ScrollY { get; set; }
 
-    [Parameter] public int ScrollBarWidth { get; set; } = 17;
+    [Parameter] public string ScrollBarWidth { get; set; } = "17px";
 
     [Parameter] public int IndentSize { get; set; } = 15;
 
