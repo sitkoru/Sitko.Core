@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.6" />
+    <ProjectReference Include="..\..\src\Sitko.Core.Db.Postgres\Sitko.Core.Db.Postgres.csproj" />
+    <ProjectReference Include="..\..\src\Sitko.Core.Repository.EntityFrameworkCore\Sitko.Core.Repository.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+</Project>
