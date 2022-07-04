@@ -1,3 +1,15 @@
+# [9.4.0](https://github.com/sitkoru/Sitko.Core/compare/9.3.0...9.4.0) (2022-07-04)
+
+
+### Bug Fixes
+
+* **repository:** get items count from repository response when !needCount ([d403435](https://github.com/sitkoru/Sitko.Core/commit/d40343599f38703fab9d1768f76380103422c2c1))
+
+
+### Features
+
+* create wasm demo app ([68bd4b3](https://github.com/sitkoru/Sitko.Core/commit/68bd4b3a946ab9b6b39fb37207135787347ff54d))
+
 # [9.3.0](https://github.com/sitkoru/Sitko.Core/compare/9.2.0...9.3.0) (2022-06-23)
 
 
