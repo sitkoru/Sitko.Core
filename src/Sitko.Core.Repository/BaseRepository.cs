@@ -317,7 +317,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
 
         var itemsCount = result.needCount && (query.Offset > 0 || result.items.Length == query.Limit)
             ? await CountAsync(configureQuery, cancellationToken)
-            : result.items.Length;
+            : result.itemsCount;
         await AfterLoadEntitiesAsync(result.items, cancellationToken);
 
         return (result.items, itemsCount);
