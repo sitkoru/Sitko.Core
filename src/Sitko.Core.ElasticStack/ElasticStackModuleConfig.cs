@@ -43,6 +43,7 @@ namespace Sitko.Core.ElasticStack
         public EmitEventFailureHandling EmitEventFailure { get; set; } = EmitEventFailureHandling.WriteToSelfLog;
         public ILogEventSink? FailureSink { get; set; }
         public Action<LogEvent>? FailureCallback { get; set; }
+        public string? LogIndexTypeName { get; set; }
     }
 
     public class ElasticStackModuleOptionsValidator : AbstractValidator<ElasticStackModuleOptions>
