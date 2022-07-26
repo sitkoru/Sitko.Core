@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grpc.Net.Client.Web" Version="2.46.0"/>
+    <PackageReference Include="Grpc.Net.Client.Web" Version="2.47.0"/>
   </ItemGroup>
 
 </Project>
