@@ -107,7 +107,8 @@ public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOption
                 TemplateName = rolloverAlias,
                 EmitEventFailure = options.EmitEventFailure,
                 FailureCallback = options.FailureCallback,
-                FailureSink = options.FailureSink
+                FailureSink = options.FailureSink,
+                TypeName = options.LogIndexTypeName
             };
 
             if (!string.IsNullOrEmpty(options.LoggingLifeCycleName))
