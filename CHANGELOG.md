@@ -1,3 +1,25 @@
+# [9.5.0](https://github.com/sitkoru/Sitko.Core/compare/9.4.0...9.5.0) (2022-07-26)
+
+
+### Bug Fixes
+
+* **elasticstack:** support ElasticSearch 8 ([99ac7ee](https://github.com/sitkoru/Sitko.Core/commit/99ac7eee23a6c659573d554bfed16f8cc3715be0))
+
+
+### Features
+
+* **.net:** .NET 6.0.7 ([87451d1](https://github.com/sitkoru/Sitko.Core/commit/87451d1dc1d8fc1b374982256d298678091fab98))
+* **.net:** .NET Core 3.1.27 ([7fe4e57](https://github.com/sitkoru/Sitko.Core/commit/7fe4e57f85d5acdc047d35e8d0393cd0d07cd14e))
+* **app:** update Serilog.Exceptions from 8.2.0 to 8.3.0 ([388581b](https://github.com/sitkoru/Sitko.Core/commit/388581b7ff631dd0baad472b0647d96963204d88))
+* **demo:** upd deps ([ac986eb](https://github.com/sitkoru/Sitko.Core/commit/ac986ebfb97a9d46b6e3283c5076102b50c1fef6))
+* **efrepository:** update System.Linq.Dynamic.Core from 1.2.18 to 1.2.19 ([3669686](https://github.com/sitkoru/Sitko.Core/commit/3669686e1956d7e28aee9fce3cfabd79eb281824))
+* **elasticsearch:** update NEST from 7.17.2 to 7.17.4 ([f73d8b6](https://github.com/sitkoru/Sitko.Core/commit/f73d8b66fa097641b0f3304068cd4e9bddf19769))
+* **grpc:** update gRPC to 2.47.0, Protobuf to 3.21.3 ([faf7050](https://github.com/sitkoru/Sitko.Core/commit/faf705029276adcc1795567a081669a388bef6ec))
+* **mudblazor:** update MudBlazor from 6.0.10 to 6.0.12 ([51b09b2](https://github.com/sitkoru/Sitko.Core/commit/51b09b29cd921dfaf8a32432b3efcf55bd85e510))
+* **queuenats:** update NATS.Client from 0.14.7 to 0.14.8 ([6ba35c6](https://github.com/sitkoru/Sitko.Core/commit/6ba35c66533577884b7dabc80f40c2bfca610cb0))
+* **s3storage:** update AWSSDK.S3 from 3.7.9.18 to 3.7.9.30 ([daf2e10](https://github.com/sitkoru/Sitko.Core/commit/daf2e105158c4df98de197ec13718822e23938c9))
+* **swagger:** update AspNetCore from 6.3.1 to 6.4.0 ([0230b23](https://github.com/sitkoru/Sitko.Core/commit/0230b2304666613a3919bffafedcc382bbd7bc47))
+
 # [9.4.0](https://github.com/sitkoru/Sitko.Core/compare/9.3.0...9.4.0) (2022-07-04)
 
 
