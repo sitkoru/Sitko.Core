@@ -870,50 +870,48 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
     {
         var modifiedStates = new[] { EntityState.Added, EntityState.Deleted, EntityState.Modified };
         var changes = new List<PropertyChange>();
-        if (dbContext.ChangeTracker.HasChanges())
+        var entry = dbContext.Entry(item);
+        if (entry.State != EntityState.Detached)
         {
-            var entry = dbContext.Entry(item);
-            if (entry.State != EntityState.Detached)
+            entry.DetectChanges();
+            foreach (var property in entry.Properties.Where(p => p.IsModified))
             {
-                foreach (var property in entry.Properties.Where(p => p.IsModified))
-                {
-                    changes.Add(new PropertyChange(property.Metadata.Name, property.OriginalValue,
-                        property.CurrentValue, ChangeType.Modified));
-                }
+                changes.Add(new PropertyChange(property.Metadata.Name, property.OriginalValue,
+                    property.CurrentValue, ChangeType.Modified));
+            }
 
-                foreach (var entryReference in entry.References.Where(n =>
-                             n.IsModified || (n.TargetEntry != null &&
-                                              modifiedStates.Contains(n.TargetEntry.State))))
-                {
-                    changes.Add(new PropertyChange(entryReference.Metadata.Name, null,
-                        entryReference.CurrentValue, ChangeType.Modified));
-                }
+            foreach (var entryReference in entry.References.Where(n =>
+                         n.IsModified || (n.TargetEntry != null &&
+                                          modifiedStates.Contains(n.TargetEntry.State))))
+            {
+                changes.Add(new PropertyChange(entryReference.Metadata.Name, null,
+                    entryReference.CurrentValue, ChangeType.Modified));
+            }
 
-                foreach (var entryCollection in entry.Collections.Where(c => c.IsLoaded || c.IsModified))
+            foreach (var entryCollection in entry.Collections.Where(c => c.IsLoaded || c.IsModified))
+            {
+                var hasChanges = false;
+                if (entryCollection.IsModified && !modifiedStates.Contains(entryCollection.EntityEntry.State))
                 {
-                    var hasChanges = false;
-                    if (entryCollection.IsModified && !modifiedStates.Contains(entryCollection.EntityEntry.State))
+                    hasChanges = true;
+                }
+                else if (entryCollection.CurrentValue is not null)
+                {
+                    foreach (var collectionElement in entryCollection.CurrentValue.Cast<object>())
                     {
-                        hasChanges = true;
-                    }
-                    else if (entryCollection.CurrentValue is not null)
-                    {
-                        foreach (var collectionElement in entryCollection.CurrentValue.Cast<object>())
+                        var collectionEntry = dbContext.Entry(collectionElement);
+                        if (modifiedStates.Contains(collectionEntry.State))
                         {
-                            var collectionEntry = dbContext.Entry(collectionElement);
-                            if (modifiedStates.Contains(collectionEntry.State))
-                            {
-                                hasChanges = true;
-                                break;
-                            }
+                            hasChanges = true;
+                            break;
                         }
                     }
+                }
 
-                    if (hasChanges)
-                    {
-                        changes.Add(new PropertyChange(entryCollection.Metadata.Name, null,
-                            entryCollection.CurrentValue, ChangeType.Modified));
-                    }
+                if (hasChanges)
+                {
+                    changes.Add(new PropertyChange(entryCollection.Metadata.Name, null,
+                        entryCollection.CurrentValue, ChangeType.Modified));
                 }
             }
         }
