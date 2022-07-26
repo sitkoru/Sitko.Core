@@ -1,3 +1,10 @@
+## [9.5.1](https://github.com/sitkoru/Sitko.Core/compare/9.5.0...9.5.1) (2022-07-26)
+
+
+### Bug Fixes
+
+* **efrepository:** don't run change detection on whole graph ffs ([f996b47](https://github.com/sitkoru/Sitko.Core/commit/f996b47c33d04fa4fa6326d218bce5163dd78a20))
+
 # [9.5.0](https://github.com/sitkoru/Sitko.Core/compare/9.4.0...9.5.0) (2022-07-26)
 
 
