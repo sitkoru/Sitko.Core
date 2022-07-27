@@ -1,3 +1,10 @@
+# [9.6.0](https://github.com/sitkoru/Sitko.Core/compare/9.5.1...9.6.0) (2022-07-27)
+
+
+### Features
+
+* **postgres:** allow to configure all connection options ([e094472](https://github.com/sitkoru/Sitko.Core/commit/e09447269efafbcb4d1bec18f29e1551c52f743d))
+
 ## [9.5.1](https://github.com/sitkoru/Sitko.Core/compare/9.5.0...9.5.1) (2022-07-26)
 
 
