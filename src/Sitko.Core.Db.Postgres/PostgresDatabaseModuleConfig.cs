@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using FluentValidation;
@@ -20,6 +21,7 @@ public class PostgresDatabaseModuleOptions<TDbContext> : BaseDbModuleOptions<TDb
     public bool AutoApplyMigrations { get; set; } = true;
     public int MaxMigrationsApplyTryCount { get; set; } = 1;
     public ServiceLifetime DbContextFactoryLifetime { get; set; } = ServiceLifetime.Singleton;
+    public Dictionary<string, object> ConnectionOptions { get; set; } = new();
 
     public Type GetValidatorType() => typeof(PostgresDatabaseModuleOptionsValidator<TDbContext>);
 }

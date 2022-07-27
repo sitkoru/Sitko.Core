@@ -96,6 +96,19 @@ public class
                 IncludeErrorDetails = options.IncludeErrorDetails
 #endif
         };
+        foreach (var (key, value) in options.ConnectionOptions)
+        {
+            try
+            {
+                connBuilder[key] = value;
+            }
+            catch (ArgumentException exception)
+            {
+                throw new ArgumentException(
+                    $"Can't set connection parameter {key} with value {value} for DbContext {typeof(TDbContext)}: {exception.Message}. Check options.");
+            }
+        }
+
         return connBuilder;
     }
 
