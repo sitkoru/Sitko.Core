@@ -1,3 +1,11 @@
+# [9.7.0](https://github.com/sitkoru/Sitko.Core/compare/9.6.1...9.7.0) (2022-08-01)
+
+
+### Features
+
+* **swagger:** expose swagger gen options ([9c41326](https://github.com/sitkoru/Sitko.Core/commit/9c413268cee6b77900d8b3acf0e199c25898bf78))
+* **swagger:** support Swashbuckle.AspNetCore.Annotations ([09801b9](https://github.com/sitkoru/Sitko.Core/commit/09801b9b00a7bf619e8fcd668cfc2fe8d4f3c0c5))
+
 ## [9.6.1](https://github.com/sitkoru/Sitko.Core/compare/9.6.0...9.6.1) (2022-08-01)
 
 
