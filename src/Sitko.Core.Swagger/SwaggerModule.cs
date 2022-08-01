@@ -24,12 +24,14 @@ public class SwaggerModule : BaseApplicationModule<SwaggerModuleOptions>, IWebAp
         SwaggerModuleOptions startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);
-        services.AddSwaggerGen(c =>
+        services.AddSwaggerGen(swaggerGenOptions =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = startupOptions.Title, Version = startupOptions.Version });
+            swaggerGenOptions.SwaggerDoc("v1",
+                new OpenApiInfo { Title = startupOptions.Title, Version = startupOptions.Version });
+            swaggerGenOptions.EnableAnnotations();
             if (startupOptions.EnableTokenAuth)
             {
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                swaggerGenOptions.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = @"JWT Authorization header using the Bearer scheme. \r\n\r\n
                       Enter 'Bearer' [space] and then your token in the text input below.
@@ -39,7 +41,7 @@ public class SwaggerModule : BaseApplicationModule<SwaggerModuleOptions>, IWebAp
                     Type = SecuritySchemeType.ApiKey,
                     Scheme = "Bearer"
                 });
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                swaggerGenOptions.AddSecurityRequirement(new OpenApiSecurityRequirement()
                 {
                     {
                         new OpenApiSecurityScheme
