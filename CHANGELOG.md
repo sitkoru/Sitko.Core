@@ -1,3 +1,11 @@
+## [9.6.1](https://github.com/sitkoru/Sitko.Core/compare/9.6.0...9.6.1) (2022-08-01)
+
+
+### Bug Fixes
+
+* **s3metadata:** fix s3 storage metadata config key ([08b58ba](https://github.com/sitkoru/Sitko.Core/commit/08b58ba7fc9db4bbbfe6eab6a10f62447a0df83b))
+* **swagger:** correct bearer authentication ([3b8744b](https://github.com/sitkoru/Sitko.Core/commit/3b8744b46472b2cc2fcdf1a94576f6b36f3be6b2))
+
 # [9.6.0](https://github.com/sitkoru/Sitko.Core/compare/9.5.1...9.6.0) (2022-07-27)
 
 
