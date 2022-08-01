@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Sitko.Core.App;
 using Sitko.Core.App.Web;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Sitko.Core.Swagger;
 
@@ -55,6 +56,8 @@ public class SwaggerModule : BaseApplicationModule<SwaggerModuleOptions>, IWebAp
                     }
                 });
             }
+
+            startupOptions.ConfigureSwagger?.Invoke(swaggerGenOptions);
         });
     }
 }
@@ -66,4 +69,5 @@ public class SwaggerModuleOptions : BaseModuleOptions
     public string? Endpoint { get; set; }
 
     public bool EnableTokenAuth { get; set; } = true;
+    public Action<SwaggerGenOptions>? ConfigureSwagger { get; set; }
 }
