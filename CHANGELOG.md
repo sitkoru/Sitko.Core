@@ -1,3 +1,10 @@
+## [9.7.1](https://github.com/sitkoru/Sitko.Core/compare/9.7.0...9.7.1) (2022-08-04)
+
+
+### Bug Fixes
+
+* **identity:** don't crash on empty web host environment ([d75e8cb](https://github.com/sitkoru/Sitko.Core/commit/d75e8cbff39f5c71a744a4af51053cb4e61ec3e8))
+
 # [9.7.0](https://github.com/sitkoru/Sitko.Core/compare/9.6.1...9.7.0) (2022-08-01)
 
 
