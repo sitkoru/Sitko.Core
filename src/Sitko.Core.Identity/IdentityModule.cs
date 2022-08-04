@@ -1,9 +1,13 @@
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.App.Web;
 
@@ -40,6 +44,7 @@ public class IdentityModule<TUser, TRole, TPk, TDbContext> : BaseApplicationModu
         IdentityModuleOptions startupOptions)
     {
         base.ConfigureServices(context, services, startupOptions);
+
         var identityBuilder =
             services
                 .AddIdentity<TUser, TRole>(options =>
@@ -49,8 +54,31 @@ public class IdentityModule<TUser, TRole, TPk, TDbContext> : BaseApplicationModu
                 .AddDefaultTokenProviders();
         if (startupOptions.AddDefaultUi)
         {
-            identityBuilder.AddDefaultUI();
+            var fakeEnvAdded = false;
+            var webEnv = services.LastOrDefault(d => d.ServiceType == typeof(IWebHostEnvironment));
+
+            if (webEnv is null)
+            {
+                if (services.FirstOrDefault(d => d.ServiceType == typeof(IHostEnvironment))?.ImplementationInstance is
+                    IHostEnvironment env)
+                {
+                    services.AddSingleton<IWebHostEnvironment>(new FakeEnv
+                    {
+                        ApplicationName = env.ApplicationName,
+                        EnvironmentName = env.EnvironmentName,
+                        ContentRootPath = env.ContentRootPath
+                    });
+
+                    fakeEnvAdded = true;
+                }
+            }
+
             services.AddRazorPages();
+            identityBuilder.AddDefaultUI();
+            if (fakeEnvAdded)
+            {
+                services.Remove(services.Last(d => d.ServiceType == typeof(IWebHostEnvironment)));
+            }
         }
 
         services.ConfigureApplicationCookie(options =>
@@ -73,4 +101,14 @@ public class IdentityModuleOptions : BaseModuleOptions
     public string LoginPath { get; set; } = "/Identity/Account/Login";
 
     public string LogoutPath { get; set; } = "/Identity/Account/Logout";
+}
+
+public class FakeEnv : IWebHostEnvironment
+{
+    public string ApplicationName { get; set; }
+    public IFileProvider ContentRootFileProvider { get; set; }
+    public string ContentRootPath { get; set; }
+    public string EnvironmentName { get; set; }
+    public string WebRootPath { get; set; }
+    public IFileProvider WebRootFileProvider { get; set; }
 }
