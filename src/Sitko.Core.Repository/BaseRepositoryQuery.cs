@@ -192,7 +192,7 @@ public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> w
             return new OperationResult<QueryContextCondition>(condition with
             {
                 Value = condition.Value != null && condition.ValueType != null
-                    ? ParsePropertyValue(condition.ValueType, condition.Value)
+                    ? ParsePropertyValue(propertyInfo.Value.type, condition.Value)
                     : null,
                 ValueType = propertyInfo.Value.type
             });
