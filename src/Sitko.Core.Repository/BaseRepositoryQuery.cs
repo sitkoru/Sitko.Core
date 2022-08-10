@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Sitko.Core.App.Results;
 
 namespace Sitko.Core.Repository;
 
@@ -101,10 +102,8 @@ public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> w
             {
                 var group = new QueryContextConditionsGroup(new List<QueryContextCondition>());
                 foreach (var parsedCondition in conditionsGroup.Conditions
-                             .Select(condition => new QueryContextCondition(condition.Property)
-                             {
-                                 Operator = condition.Operator, Value = condition.Value
-                             }))
+                             .Select(condition =>
+                                 new QueryContextCondition(condition.Property, condition.Operator, condition.Value)))
                 {
                     if (parsedCondition != null)
                     {
@@ -163,13 +162,14 @@ public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> w
             var groupWhere = new List<string>();
             foreach (var condition in conditionsGroup.Conditions)
             {
-                if (PrepareCondition(condition))
+                var prepareResult = PrepareCondition(condition);
+                if (prepareResult.IsSuccess)
                 {
-                    var expression = condition.GetExpression(valueIndex);
+                    var expression = prepareResult.Result.GetExpression(valueIndex);
                     if (!string.IsNullOrEmpty(expression))
                     {
                         groupWhere.Add(expression);
-                        values.Add(condition.Value);
+                        values.Add(prepareResult.Result.Value);
                         valueIndex++;
                     }
                 }
@@ -184,26 +184,26 @@ public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> w
         return this;
     }
 
-    protected bool PrepareCondition(QueryContextCondition condition)
+    protected OperationResult<QueryContextCondition> PrepareCondition(QueryContextCondition condition)
     {
         var propertyInfo = FieldsResolver.GetPropertyInfo<TEntity>(condition.Property);
         if (propertyInfo != null)
         {
-            condition.ValueType = propertyInfo.Value.type;
-            if (condition.Value != null && condition.ValueType != null)
+            return new OperationResult<QueryContextCondition>(condition with
             {
-                condition.Value = ParsePropertyValue(condition.ValueType, condition.Value);
-            }
-
-            return true;
+                Value = condition.Value != null && condition.ValueType != null
+                    ? ParsePropertyValue(condition.ValueType, condition.Value)
+                    : null,
+                ValueType = propertyInfo.Value.type
+            });
         }
 
-        return false;
+        return new OperationResult<QueryContextCondition>("Error");
     }
 
     protected virtual void SetCondition(string property, QueryContextOperator @operator, object value)
     {
-        var condition = new QueryContextCondition(property) { Operator = @operator, Value = value };
+        var condition = new QueryContextCondition(property, @operator, value);
         Where(condition);
     }
 

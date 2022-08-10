@@ -1,19 +1,20 @@
 using System.Collections.Generic;
-using System.Linq;
 using Newtonsoft.Json;
+using Sitko.Core.App.Collections;
 
 namespace Sitko.Core.Repository;
 
-public class QueryContextConditionsGroup
+public record QueryContextConditionsGroup
 {
     [JsonConstructor]
-    public QueryContextConditionsGroup(List<QueryContextCondition> conditions) => Conditions = conditions;
+    public QueryContextConditionsGroup(List<QueryContextCondition> conditions) =>
+        Conditions = new ValueCollection<QueryContextCondition>(conditions);
 
     public QueryContextConditionsGroup(params QueryContextCondition[] conditions) =>
-        Conditions = conditions.ToList();
+        Conditions = new ValueCollection<QueryContextCondition>(conditions);
 
     public QueryContextConditionsGroup(QueryContextCondition condition) =>
-        Conditions = new List<QueryContextCondition> { condition };
+        Conditions = new ValueCollection<QueryContextCondition>(new List<QueryContextCondition> { condition });
 
-    public List<QueryContextCondition> Conditions { get; }
+    public ValueCollection<QueryContextCondition> Conditions { get; }
 }
