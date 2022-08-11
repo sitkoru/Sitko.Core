@@ -1,14 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
+    <PackageReference Include="VaultSharp.Extensions.Configuration" Version="0.4.2"/>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' != 'netcoreapp3.1' ">
     <PackageReference Include="VaultSharp.Extensions.Configuration" Version="0.5.1"/>
   </ItemGroup>
 
