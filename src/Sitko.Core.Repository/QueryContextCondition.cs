@@ -1,35 +1,23 @@
 using System;
 using System.Collections;
-using Newtonsoft.Json;
 
 namespace Sitko.Core.Repository;
 
-public class QueryContextCondition
+public record QueryContextCondition
 {
-    public QueryContextCondition(string property) => Property = property;
-
-    [JsonConstructor]
-    public QueryContextCondition(string property, QueryContextOperator @operator, object? value = null)
-    {
-        Property = property;
-        Operator = @operator;
-        Value = value;
-        ValueType = value?.GetType();
-    }
-
-    public QueryContextCondition(string property, QueryContextOperator @operator, object? value,
+    public QueryContextCondition(string property, QueryContextOperator @operator, object? value = null,
         Type? valueType = null)
     {
         Property = property;
         Operator = @operator;
         Value = value;
-        ValueType = valueType;
+        ValueType = valueType ?? value?.GetType();
     }
 
-    public string Property { get; set; }
-    public QueryContextOperator Operator { get; set; }
-    public object? Value { get; set; }
-    public Type? ValueType { get; set; }
+    public string Property { get; }
+    public QueryContextOperator Operator { get; }
+    public object? Value { get; init; }
+    public Type? ValueType { get; init; }
 
     public string GetExpression(int valueIndex)
     {
