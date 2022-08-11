@@ -1,3 +1,27 @@
+# [9.8.0](https://github.com/sitkoru/Sitko.Core/compare/9.7.1...9.8.0) (2022-08-11)
+
+
+### Bug Fixes
+
+* **repository:** pass correct type for value parsing ([c14a01f](https://github.com/sitkoru/Sitko.Core/commit/c14a01f8a1cfdcb9cf9a1f29985993cb893b8cd5))
+
+
+### Features
+
+* **consul:** upgrade Consul from 1.6.10.6 to 1.6.10.7 ([18adc44](https://github.com/sitkoru/Sitko.Core/commit/18adc44599f513b86765003b2a4e16bd754b37e2))
+* **demo:** upd deps ([f0fd37d](https://github.com/sitkoru/Sitko.Core/commit/f0fd37d0b7fad45ba16a9766a7238c80d06cc368))
+* **dotnet:** .NET 6.0.8 ([f285fd8](https://github.com/sitkoru/Sitko.Core/commit/f285fd8fc95293e5f3fb05ab027d771bbf1cd83c))
+* **dotnet:** .NET Core 3.1.28 ([abb62b2](https://github.com/sitkoru/Sitko.Core/commit/abb62b2faae2269bf6303976e92a57c78a949bfd))
+* **mudblazor:** upgrade MudBlazor from 6.0.12 to 6.0.14 ([e0b2377](https://github.com/sitkoru/Sitko.Core/commit/e0b23775e28c65a97d2a2026063f8b680d694abd))
+* **protobuf:** upgrade Google.Protobuf from 3.21.3 to 3.21.5 ([5aeb079](https://github.com/sitkoru/Sitko.Core/commit/5aeb0797feb681775339ce6d4e3c6414408a7e69))
+* **repository:** helpers for grpc filters ([be7a1c3](https://github.com/sitkoru/Sitko.Core/commit/be7a1c3e4ce73fa903c38d3ac53378b0bf9b09bc))
+* **s3storage:** upgrade AWSSDK.S3 from 3.7.9.30 to 3.7.9.37 ([1c8f54e](https://github.com/sitkoru/Sitko.Core/commit/1c8f54e3f55958fd6f3c3c322d25f07483370824))
+* **vault:** support only .NET 6 ([45dd0ef](https://github.com/sitkoru/Sitko.Core/commit/45dd0efd3ef75740440f1fe7921ead11c230fa08))
+* **vault:** upgrade VaultSharp.Extensions.Configuration from 0.4.3 to 0.5.1 ([4fa4e42](https://github.com/sitkoru/Sitko.Core/commit/4fa4e4282324a64f336ea98ae691480ef961fec4))
+* **vault:** use different vault packages for different runtimes ([e13d3ca](https://github.com/sitkoru/Sitko.Core/commit/e13d3ca7500f0c69bca0df9c786e4912ec4f32ea))
+* **xunit:** upgrade Microsoft.NET.Test.Sdk from 17.2.0 to 17.3.0 ([f35eb6e](https://github.com/sitkoru/Sitko.Core/commit/f35eb6ec0559e02612a9bdf1573920c799e5fbdf))
+* **xunit:** upgrade xunit from 2.4.1 to 2.4.2 ([a6198ac](https://github.com/sitkoru/Sitko.Core/commit/a6198ac52c7970d32011d920121001700c6d8bbd))
+
 ## [9.7.1](https://github.com/sitkoru/Sitko.Core/compare/9.7.0...9.7.1) (2022-08-04)
 
 
