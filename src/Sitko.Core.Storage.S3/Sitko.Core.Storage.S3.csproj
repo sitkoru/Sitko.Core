@@ -4,7 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AWSSDK.S3" Version="3.7.9.37" />
-    <PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="5.0.2" />
+    <PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="6.0.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Storage\Sitko.Core.Storage.csproj" />
