@@ -1,3 +1,10 @@
+## [9.8.1](https://github.com/sitkoru/Sitko.Core/compare/9.8.0...9.8.1) (2022-08-12)
+
+
+### Bug Fixes
+
+* added condition for displaying header container ([dd4f00f](https://github.com/sitkoru/Sitko.Core/commit/dd4f00feb5c4a2f10ea180a49f12b85a2486dd87))
+
 # [9.8.0](https://github.com/sitkoru/Sitko.Core/compare/9.7.1...9.8.0) (2022-08-11)
 
 
