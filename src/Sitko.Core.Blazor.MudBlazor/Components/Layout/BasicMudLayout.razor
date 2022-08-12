@@ -41,16 +41,19 @@
                 </MudToolBar>
             }
         </MudHidden>
-        <MudContainer MaxWidth="MaxWidth.False" Class="mb-10">
-            @if (!string.IsNullOrEmpty(Title))
-            {
-                <MudText Typo="Typo.h3" Class="mb-2">@Title</MudText>
-            }
-            @if (!string.IsNullOrEmpty(Description))
-            {
-                <MudText Typo="Typo.subtitle1">@Description</MudText>
-            }
-        </MudContainer>
+        @if (!string.IsNullOrEmpty(Title) || !string.IsNullOrEmpty(Description))
+        {
+            <MudContainer MaxWidth="MaxWidth.False" Class="mb-10">
+                @if (!string.IsNullOrEmpty(Title))
+                {
+                    <MudText Typo="Typo.h3" Class="mb-2">@Title</MudText>
+                }
+                @if (!string.IsNullOrEmpty(Description))
+                {
+                    <MudText Typo="Typo.subtitle1">@Description</MudText>
+                }
+            </MudContainer>
+        }
         <MudContainer MaxWidth="MaxWidth.False" Class="pb-10">
             @ChildContent
         </MudContainer>
