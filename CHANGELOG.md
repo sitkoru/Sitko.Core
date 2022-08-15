@@ -1,3 +1,10 @@
+## [9.8.2](https://github.com/sitkoru/Sitko.Core/compare/9.8.1...9.8.2) (2022-08-15)
+
+
+### Bug Fixes
+
+* **repository:** underlying collection should be list to allow adding new conditions ([1a1441c](https://github.com/sitkoru/Sitko.Core/commit/1a1441cdc6cb0b7e6bd5360652256419d3472d3e))
+
 ## [9.8.1](https://github.com/sitkoru/Sitko.Core/compare/9.8.0...9.8.1) (2022-08-12)
 
 
