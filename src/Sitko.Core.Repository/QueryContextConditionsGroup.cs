@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 using Sitko.Core.App.Collections;
 
@@ -11,7 +12,7 @@ public record QueryContextConditionsGroup
         Conditions = new ValueCollection<QueryContextCondition>(conditions);
 
     public QueryContextConditionsGroup(params QueryContextCondition[] conditions) =>
-        Conditions = new ValueCollection<QueryContextCondition>(conditions);
+        Conditions = new ValueCollection<QueryContextCondition>(conditions.ToList());
 
     public QueryContextConditionsGroup(QueryContextCondition condition) =>
         Conditions = new ValueCollection<QueryContextCondition>(new List<QueryContextCondition> { condition });
