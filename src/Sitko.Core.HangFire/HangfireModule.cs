@@ -12,7 +12,12 @@ using Sitko.Core.App.Web;
 
 namespace Sitko.Core.HangFire;
 
-public class HangfireModule<THangfireConfig> : BaseApplicationModule<THangfireConfig>, IWebApplicationModule
+public interface IHangfireModule : IApplicationModule
+{
+}
+
+public class HangfireModule<THangfireConfig> : BaseApplicationModule<THangfireConfig>, IHangfireModule,
+    IWebApplicationModule
     where THangfireConfig : HangfireModuleOptions, new()
 {
     public override string OptionsKey => "Hangfire";
