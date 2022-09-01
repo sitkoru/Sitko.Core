@@ -1,3 +1,10 @@
+# [9.9.0](https://github.com/sitkoru/Sitko.Core/compare/9.8.2...9.9.0) (2022-09-01)
+
+
+### Features
+
+* **hangfire:** now we can use IHangfireModule to describe dependency from Hangfire module ([067bb79](https://github.com/sitkoru/Sitko.Core/commit/067bb79b8b2ee3fc0c865c203a1daf0e44651b59))
+
 ## [9.8.2](https://github.com/sitkoru/Sitko.Core/compare/9.8.1...9.8.2) (2022-08-15)
 
 
