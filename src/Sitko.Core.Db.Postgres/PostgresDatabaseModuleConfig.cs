@@ -5,12 +5,18 @@ using System.Text.Json.Serialization;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Db.Postgres;
 
+public interface IPostgresDatabaseModuleOptions
+{
+    string Schema { get; }
+}
+
 public class PostgresDatabaseModuleOptions<TDbContext> : BaseDbModuleOptions<TDbContext>,
-    IModuleOptionsWithValidation where TDbContext : DbContext
+    IModuleOptionsWithValidation, IPostgresDatabaseModuleOptions where TDbContext : DbContext
 {
     public string Host { get; set; } = "localhost";
     public int Port { get; set; } = 5432;
@@ -23,7 +29,42 @@ public class PostgresDatabaseModuleOptions<TDbContext> : BaseDbModuleOptions<TDb
     public ServiceLifetime DbContextFactoryLifetime { get; set; } = ServiceLifetime.Singleton;
     public Dictionary<string, object> ConnectionOptions { get; set; } = new();
 
+    public string Schema { get; set; } = "";
+
     public Type GetValidatorType() => typeof(PostgresDatabaseModuleOptionsValidator<TDbContext>);
+
+    public NpgsqlConnectionStringBuilder CreateBuilder()
+    {
+        var connBuilder = new NpgsqlConnectionStringBuilder
+        {
+            Host = Host,
+            Port = Port,
+            Username = Username,
+            Password = Password,
+            Database = Database,
+            Pooling = EnableNpgsqlPooling,
+#if NET6_0_OR_GREATER
+            IncludeErrorDetail = IncludeErrorDetails
+#else
+                IncludeErrorDetails = IncludeErrorDetails
+#endif
+        };
+
+        foreach (var (key, value) in ConnectionOptions)
+        {
+            try
+            {
+                connBuilder[key] = value;
+            }
+            catch (ArgumentException exception)
+            {
+                throw new ArgumentException(
+                    $"Can't set connection parameter {key} with value {value} for DbContext {typeof(TDbContext)}: {exception.Message}. Check options.");
+            }
+        }
+
+        return connBuilder;
+    }
 }
 
 public class

@@ -79,51 +79,26 @@ public class
         }
     }
 
-    private static NpgsqlConnectionStringBuilder CreateBuilder(
-        PostgresDatabaseModuleOptions<TDbContext> options)
-    {
-        var connBuilder = new NpgsqlConnectionStringBuilder
-        {
-            Host = options.Host,
-            Port = options.Port,
-            Username = options.Username,
-            Password = options.Password,
-            Database = options.Database,
-            Pooling = options.EnableNpgsqlPooling,
-#if NET6_0_OR_GREATER
-            IncludeErrorDetail = options.IncludeErrorDetails
-#else
-                IncludeErrorDetails = options.IncludeErrorDetails
-#endif
-        };
-        foreach (var (key, value) in options.ConnectionOptions)
-        {
-            try
-            {
-                connBuilder[key] = value;
-            }
-            catch (ArgumentException exception)
-            {
-                throw new ArgumentException(
-                    $"Can't set connection parameter {key} with value {value} for DbContext {typeof(TDbContext)}: {exception.Message}. Check options.");
-            }
-        }
-
-        return connBuilder;
-    }
-
     private void ConfigureNpgsql(DbContextOptionsBuilder options,
         IServiceProvider serviceProvider, IApplicationContext applicationContext)
     {
         var config = GetOptions(serviceProvider);
-        options.UseNpgsql(CreateBuilder(config).ConnectionString,
-            builder => builder.MigrationsAssembly(config.MigrationsAssembly != null
-                ? config.MigrationsAssembly.FullName
-                : typeof(TDbContext).Assembly.FullName));
+        options.UseNpgsql(config.CreateBuilder().ConnectionString,
+            builder =>
+            {
+                builder.MigrationsAssembly(config.MigrationsAssembly != null
+                    ? config.MigrationsAssembly.FullName
+                    : typeof(TDbContext).Assembly.FullName);
+                if (!string.IsNullOrEmpty(config.Schema))
+                {
+                    builder.MigrationsHistoryTable("__EFMigrationsHistory", config.Schema);
+                }
+            });
         if (config.EnableSensitiveLogging)
         {
             options.EnableSensitiveDataLogging();
         }
+
 
         config.ConfigureDbContextOptions?.Invoke((DbContextOptionsBuilder<TDbContext>)options, serviceProvider,
             applicationContext);
