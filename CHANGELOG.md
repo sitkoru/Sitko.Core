@@ -1,3 +1,10 @@
+# [9.10.0](https://github.com/sitkoru/Sitko.Core/compare/9.9.0...9.10.0) (2022-09-12)
+
+
+### Features
+
+* **postgres:** support different schemas ([21b37e3](https://github.com/sitkoru/Sitko.Core/commit/21b37e329c2e55b20a733ee820f881456541d2a6))
+
 # [9.9.0](https://github.com/sitkoru/Sitko.Core/compare/9.8.2...9.9.0) (2022-09-01)
 
 
