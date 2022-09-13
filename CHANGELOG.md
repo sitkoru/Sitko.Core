@@ -1,3 +1,10 @@
+## [9.10.1](https://github.com/sitkoru/Sitko.Core/compare/9.10.0...9.10.1) (2022-09-13)
+
+
+### Bug Fixes
+
+* **postgres:** use extension to pass schema to db context ([718668e](https://github.com/sitkoru/Sitko.Core/commit/718668edae8606682e6c74509b00bb64c3b9aec0))
+
 # [9.10.0](https://github.com/sitkoru/Sitko.Core/compare/9.9.0...9.10.0) (2022-09-12)
 
 
