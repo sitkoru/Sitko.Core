@@ -10,13 +10,8 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Db.Postgres;
 
-public interface IPostgresDatabaseModuleOptions
-{
-    string Schema { get; }
-}
-
 public class PostgresDatabaseModuleOptions<TDbContext> : BaseDbModuleOptions<TDbContext>,
-    IModuleOptionsWithValidation, IPostgresDatabaseModuleOptions where TDbContext : DbContext
+    IModuleOptionsWithValidation where TDbContext : DbContext
 {
     public string Host { get; set; } = "localhost";
     public int Port { get; set; } = 5432;
@@ -46,7 +41,7 @@ public class PostgresDatabaseModuleOptions<TDbContext> : BaseDbModuleOptions<TDb
 #if NET6_0_OR_GREATER
             IncludeErrorDetail = IncludeErrorDetails
 #else
-                IncludeErrorDetails = IncludeErrorDetails
+            IncludeErrorDetails = IncludeErrorDetails
 #endif
         };
 
