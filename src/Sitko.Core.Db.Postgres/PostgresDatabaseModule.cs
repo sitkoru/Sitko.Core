@@ -99,6 +99,7 @@ public class
             options.EnableSensitiveDataLogging();
         }
 
+        options.Options.WithExtension(new SchemaDbContextOptionsExtension(config.Schema));
 
         config.ConfigureDbContextOptions?.Invoke((DbContextOptionsBuilder<TDbContext>)options, serviceProvider,
             applicationContext);
