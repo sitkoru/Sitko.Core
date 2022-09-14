@@ -1,3 +1,12 @@
+## [9.10.2](https://github.com/sitkoru/Sitko.Core/compare/9.10.1...9.10.2) (2022-09-14)
+
+
+### Bug Fixes
+
+* **postgres:** add extension to current options ([f5e2e5e](https://github.com/sitkoru/Sitko.Core/commit/f5e2e5e4f8155e557bf9d1c21401c058e5fa7de5))
+* **postgres:** change extension info hash based on schema ([d594b49](https://github.com/sitkoru/Sitko.Core/commit/d594b49c3dd5d62cdb5a9bd922ba5e5544556ce6))
+* **postgres:** pass schema name to extension info for debug ([b0ee50a](https://github.com/sitkoru/Sitko.Core/commit/b0ee50a8f8ec1c3c2d37b7344b04cc9edd6a4a19))
+
 ## [9.10.1](https://github.com/sitkoru/Sitko.Core/compare/9.10.0...9.10.1) (2022-09-13)
 
 
