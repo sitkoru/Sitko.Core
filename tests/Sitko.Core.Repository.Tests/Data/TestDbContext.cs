@@ -4,7 +4,7 @@ using Sitko.Core.Db.Postgres;
 
 namespace Sitko.Core.Repository.Tests.Data;
 
-public class TestDbContext : DbContext
+public class TestDbContext : BaseDbContext
 {
     public TestDbContext(DbContextOptions<TestDbContext> options) : base(options)
     {
