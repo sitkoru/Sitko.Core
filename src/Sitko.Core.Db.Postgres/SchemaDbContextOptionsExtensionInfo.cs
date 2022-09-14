@@ -9,9 +9,9 @@ internal class SchemaDbContextOptionsExtensionInfo : DbContextOptionsExtensionIn
     public SchemaDbContextOptionsExtensionInfo(IDbContextOptionsExtension extension, string schema) : base(extension) =>
         this.schema = schema;
 #if NET6_0_OR_GREATER
-    public override int GetServiceProviderHashCode() => 0;
+    public override int GetServiceProviderHashCode() => schema.GetHashCode();
 #else
-    public override long GetServiceProviderHashCode() => 0;
+    public override long GetServiceProviderHashCode()  => schema.GetHashCode() ;
 #endif
 
 #if NET6_0_OR_GREATER
