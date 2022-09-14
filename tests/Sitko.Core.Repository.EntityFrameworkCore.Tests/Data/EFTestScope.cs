@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Serilog.Events;
 using Sitko.Core.App;
 using Sitko.Core.Db.Postgres;
@@ -33,7 +34,12 @@ public class EFTestScope : BaseEFTestScope
         PostgresDatabaseModuleOptions<TSomeDbContext> moduleOptions, Guid applicationId, string dbName)
     {
         base.ConfigurePostgresDatabaseModule(applicationContext, moduleOptions, applicationId, dbName);
-        moduleOptions.Schema = Id.ToString();
+        moduleOptions.Schema = dbName + applicationId;
+        moduleOptions.ConfigureDbContextOptions = (builder, _, _) =>
+        {
+            builder.ConfigureWarnings(configurationBuilder =>
+                configurationBuilder.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning));
+        };
     }
 
     protected override async Task InitDbContextAsync(TestDbContext dbContext)
