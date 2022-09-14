@@ -14,5 +14,5 @@ internal class SchemaDbContextOptionsExtension : IDbContextOptionsExtension
 
     public void Validate(IDbContextOptions options) { }
 
-    public DbContextOptionsExtensionInfo Info => new SchemaDbContextOptionsExtensionInfo(this);
+    public DbContextOptionsExtensionInfo Info => new SchemaDbContextOptionsExtensionInfo(this, Schema);
 }
