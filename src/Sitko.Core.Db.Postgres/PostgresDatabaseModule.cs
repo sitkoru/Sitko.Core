@@ -83,15 +83,16 @@ public class
         IServiceProvider serviceProvider, IApplicationContext applicationContext)
     {
         var config = GetOptions(serviceProvider);
+        var schemaExtensions = new SchemaDbContextOptionsExtension(config.Schema);
         options.UseNpgsql(config.CreateBuilder().ConnectionString,
             builder =>
             {
                 builder.MigrationsAssembly(config.MigrationsAssembly != null
                     ? config.MigrationsAssembly.FullName
                     : typeof(TDbContext).Assembly.FullName);
-                if (!string.IsNullOrEmpty(config.Schema))
+                if (schemaExtensions.IsCustomSchema)
                 {
-                    builder.MigrationsHistoryTable("__EFMigrationsHistory", config.Schema);
+                    builder.MigrationsHistoryTable("__EFMigrationsHistory", schemaExtensions.Schema);
                 }
             });
         if (config.EnableSensitiveLogging)
@@ -99,7 +100,7 @@ public class
             options.EnableSensitiveDataLogging();
         }
 
-        options.Options.WithExtension(new SchemaDbContextOptionsExtension(config.Schema));
+        options.AddExtension(schemaExtensions);
 
         config.ConfigureDbContextOptions?.Invoke((DbContextOptionsBuilder<TDbContext>)options, serviceProvider,
             applicationContext);

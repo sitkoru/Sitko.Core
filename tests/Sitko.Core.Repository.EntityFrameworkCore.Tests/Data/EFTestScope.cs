@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Serilog.Events;
+using Sitko.Core.App;
+using Sitko.Core.Db.Postgres;
 using Sitko.Core.Repository.Tests.Data;
 using Sitko.Core.Xunit;
 
@@ -25,6 +28,18 @@ public class EFTestScope : BaseEFTestScope
             configuration.MinimumLevel.Override("Sitko.Core.Repository", LogEventLevel.Debug);
         });
         return base.ConfigureApplication(application, name);
+    }
+
+    protected override void ConfigurePostgresDatabaseModule<TSomeDbContext>(IApplicationContext applicationContext,
+        PostgresDatabaseModuleOptions<TSomeDbContext> moduleOptions, Guid applicationId, string dbName)
+    {
+        base.ConfigurePostgresDatabaseModule(applicationContext, moduleOptions, applicationId, dbName);
+        moduleOptions.Schema = dbName + applicationId;
+        moduleOptions.ConfigureDbContextOptions = (builder, _, _) =>
+        {
+            builder.ConfigureWarnings(configurationBuilder =>
+                configurationBuilder.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning));
+        };
     }
 
     protected override async Task InitDbContextAsync(TestDbContext dbContext)
