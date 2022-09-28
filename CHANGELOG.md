@@ -1,3 +1,16 @@
+# [9.11.0](https://github.com/sitkoru/Sitko.Core/compare/9.10.2...9.11.0) (2022-09-28)
+
+
+### Bug Fixes
+
+* **identityserver:** don't add duplicate health checks ([e3b5b68](https://github.com/sitkoru/Sitko.Core/commit/e3b5b680e834f7b66f1ae7bfc716d14596e6ad90))
+* **identityserver:** don't crash on duplicate health checks ([a301684](https://github.com/sitkoru/Sitko.Core/commit/a301684a9d8b57e1a760b5f879f2d6841c00c5b4))
+
+
+### Features
+
+* **grpc:** support call options interceptors ([b6a0a43](https://github.com/sitkoru/Sitko.Core/commit/b6a0a43149a6b62c55109cebd96b402933416044))
+
 ## [9.10.2](https://github.com/sitkoru/Sitko.Core/compare/9.10.1...9.10.2) (2022-09-14)
 
 
