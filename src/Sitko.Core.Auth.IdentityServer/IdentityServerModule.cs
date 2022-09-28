@@ -13,7 +13,17 @@ public abstract class IdentityServerModule<TAuthOptions> : AuthModule<TAuthOptio
         base.ConfigureServices(applicationContext, services, startupOptions);
         if (Uri.TryCreate(startupOptions.OidcServerUrl, UriKind.Absolute, out var oidcUri))
         {
-            services.AddHealthChecks().AddIdentityServer(oidcUri);
+            try
+            {
+                services.AddHealthChecks().AddIdentityServer(oidcUri, $"IdSrv: {oidcUri}");
+            }
+            catch (ArgumentException argumentException)
+            {
+                if (!argumentException.Message.Contains("Duplicate"))
+                {
+                    throw;
+                }
+            }
         }
     }
 }
