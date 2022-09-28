@@ -1,8 +1,14 @@
 using System;
+using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Auth.IdentityServer;
+
+internal static class IdentityServerModuleChecks
+{
+    internal static readonly ConcurrentDictionary<string, bool> Checks = new();
+}
 
 public abstract class IdentityServerModule<TAuthOptions> : AuthModule<TAuthOptions>
     where TAuthOptions : IdentityServerAuthOptions, new()
@@ -13,7 +19,10 @@ public abstract class IdentityServerModule<TAuthOptions> : AuthModule<TAuthOptio
         base.ConfigureServices(applicationContext, services, startupOptions);
         if (Uri.TryCreate(startupOptions.OidcServerUrl, UriKind.Absolute, out var oidcUri))
         {
-            services.AddHealthChecks().AddIdentityServer(oidcUri);
+            if (IdentityServerModuleChecks.Checks.TryAdd(oidcUri.ToString(), true))
+            {
+                services.AddHealthChecks().AddIdentityServer(oidcUri, $"IdSrv: {oidcUri}");
+            }
         }
     }
 }

@@ -109,6 +109,13 @@ public class GrpcClientProvider<TClient, TOptions> : IGrpcClientProvider<TClient
             callInvoker = httpClientCallInvoker.Intercept(interceptors.ToArray());
         }
 
+        if (Options.CallOptionsActions.Count != 0)
+        {
+            callInvoker =
+                new CallOptionsConfigurationInvoker(callInvoker, Options.CallOptionsActions, services);
+        }
+
+
         return callInvoker;
     }
 
