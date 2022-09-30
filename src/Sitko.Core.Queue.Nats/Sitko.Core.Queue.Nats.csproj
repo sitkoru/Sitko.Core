@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NATS.Client" Version="0.14.8"/>
+    <PackageReference Include="NATS.Client" Version="1.0.1"/>
     <PackageReference Include="STAN.Client" Version="0.3.0"/>
     <PackageReference Include="Grpc.Tools" Version="2.49.1" PrivateAssets="none"/>
     <PackageReference Include="Google.Protobuf" Version="3.21.7"/>
