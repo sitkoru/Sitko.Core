@@ -1,12 +1,6 @@
 #if NET6_0_OR_GREATER
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Sitko.Core.App.Json;
 
 namespace Sitko.Core.Blazor.Components;
 
