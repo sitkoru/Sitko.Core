@@ -9,6 +9,6 @@
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Grpc.Net.ClientFactory" Version="2.47.0"/>
+    <PackageReference Include="Grpc.Net.ClientFactory" Version="2.49.0"/>
   </ItemGroup>
 </Project>
