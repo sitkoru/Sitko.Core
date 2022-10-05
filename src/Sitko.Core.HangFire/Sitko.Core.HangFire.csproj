@@ -4,8 +4,8 @@
     <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.30"/>
-    <PackageReference Include="Hangfire.PostgreSql" Version="1.9.8"/>
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.31"/>
+    <PackageReference Include="Hangfire.PostgreSql" Version="1.9.9"/>
     <PackageReference Include="AspNetCore.HealthChecks.Hangfire" Version="5.0.1"/>
   </ItemGroup>
   <ItemGroup>

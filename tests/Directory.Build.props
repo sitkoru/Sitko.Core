@@ -8,6 +8,6 @@
     <ProjectReference Include="..\..\src\Sitko.Core.Xunit\Sitko.Core.Xunit.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="GitHubActionsTestLogger" Version="1.4.1" />
+    <PackageReference Include="GitHubActionsTestLogger" Version="2.0.1" />
   </ItemGroup>
 </Project>

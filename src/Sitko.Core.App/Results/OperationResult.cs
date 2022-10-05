@@ -1,5 +1,7 @@
 ﻿using System;
+#if NET5_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
+#endif
 using JetBrains.Annotations;
 
 namespace Sitko.Core.App.Results;
