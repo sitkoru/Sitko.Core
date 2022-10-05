@@ -1,3 +1,37 @@
+# [9.12.0](https://github.com/sitkoru/Sitko.Core/compare/9.11.0...9.12.0) (2022-10-05)
+
+
+### Features
+
+* **.net:** .NET 6.0.9 ([2863c91](https://github.com/sitkoru/Sitko.Core/commit/2863c91ee030677821b89015f5efb0226bde8ff7))
+* **.net:** .NET Core 3.1.29 ([092238d](https://github.com/sitkoru/Sitko.Core/commit/092238d69f0b7d9064d5f224ab7cb7d28aed8c7f))
+* **antdesign:** upgrade AntDesign from 0.11.0 to 0.12.4 ([c76645f](https://github.com/sitkoru/Sitko.Core/commit/c76645fce0192a3d590f9512c0bd8fedf0ad577e))
+* **apps:** upd demo apps deps ([8a07036](https://github.com/sitkoru/Sitko.Core/commit/8a07036521e881c0d25a38208a5218629122a01f))
+* **app:** upgrade FluentValidation.DependencyInjectionExtensions from 10.4.0 to 11.2.2 ([bf7d4a8](https://github.com/sitkoru/Sitko.Core/commit/bf7d4a85e71c57d7816ba4e083bbf2ce5b204fd6))
+* **app:** upgrade JetBrains.Annotations from 2021.3.0 to 2022.1.0 ([fff06f7](https://github.com/sitkoru/Sitko.Core/commit/fff06f724f4e139c793e4d0d16ff4ea660830207))
+* **automapper:** upgrade AutoMapper.Extensions.Microsoft.DependencyInjection from 11.0.0 to 12.0.0 ([c684238](https://github.com/sitkoru/Sitko.Core/commit/c6842389617f5f0b946de051f8cbdb86419a1293))
+* **blazor:** upgrade CompareNETObjects from 4.77.0 to 4.78.0 ([52da0f8](https://github.com/sitkoru/Sitko.Core/commit/52da0f86f1246de17bb4d1a92af57b23e01c613b))
+* **dbpostgres:** upgrade Npgsql.EntityFrameworkCore.PostgreSQL from 6.0.6 to 6.0.7 ([0b740c0](https://github.com/sitkoru/Sitko.Core/commit/0b740c074f0858189fe69b2047c55505069fb867))
+* **elasticstack:** upgrade Elastic.Apm.NetCoreAll from 1.16.1 to 1.17.0 ([b9c0867](https://github.com/sitkoru/Sitko.Core/commit/b9c0867a0b9f44f0dd02b406b4ce22f80cdb0045))
+* **emailsmtp:** upgrade MailKit from 3.3.0 to 3.4.1 ([5f70eca](https://github.com/sitkoru/Sitko.Core/commit/5f70ecadd0aa5e5bcb232ff8b8fe5ecf7b6be834))
+* **email:** upgrade HtmlAgilityPack from 1.11.43 to 1.11.46 ([3ccddd1](https://github.com/sitkoru/Sitko.Core/commit/3ccddd182c6f441a072865fa607dcebf93b3c212))
+* **grpc:** grpc 2.49.0 and protobuf 3.21.7 ([04b7cf0](https://github.com/sitkoru/Sitko.Core/commit/04b7cf0780711074b5dd6c70e846517cb64691c3))
+* **hangfire:** upgrade hangfire from 1.7.30 to 1.7.31 ([f63a5d2](https://github.com/sitkoru/Sitko.Core/commit/f63a5d24bb459ae67c95f66b900450bf43613ee6))
+* **identityserver:** split AspNetCore.HealthChecks.OpenIdConnectServer for targets ([981b84e](https://github.com/sitkoru/Sitko.Core/commit/981b84e16874974f557aa79dae21863df6706eea))
+* **mediatr:** upgrade MediatR.Extensions.Microsoft.DependencyInjection from 10.0.1 to 11.0.0 ([ae99b7c](https://github.com/sitkoru/Sitko.Core/commit/ae99b7c9f7ef38af0b446572058fdc8be8721a0e))
+* **mudblazor:** upgrade MudBlazor from 6.0.14 to 6.0.16 ([d383ae1](https://github.com/sitkoru/Sitko.Core/commit/d383ae115a3c5a6476ac90948f1c588d0d53b35b))
+* **nats:** upgrade NATS.Client from 0.14.8 to 1.0.1 ([dac3e7a](https://github.com/sitkoru/Sitko.Core/commit/dac3e7ab6f57eec647ea0d77327f62fa0ec3095b))
+* **puppeteer:** upgrade PuppeteerSharp from 6.2.0 to 7.1.0 ([b854e30](https://github.com/sitkoru/Sitko.Core/commit/b854e30fa5958a096289b149e24e6eb89e7cfece))
+* **repository:** upgrade CompareNETObjects from 4.77.0 to 4.78.0 ([65c2e96](https://github.com/sitkoru/Sitko.Core/commit/65c2e96255152e97383913b2dc799f50273ef0c0))
+* **repository:** upgrade System.Linq.Dynamic.Core from 1.2.19 to 1.2.20 ([d6d1623](https://github.com/sitkoru/Sitko.Core/commit/d6d16231f8b3e368fb1638baccc8287e67233727))
+* **s3storage:** upgrade AWSSDK.S3 from 3.7.9.37 to 3.7.9.62 ([8f807ec](https://github.com/sitkoru/Sitko.Core/commit/8f807ecefb9cf911c08da1c429325412725d0383))
+* **s3storage:** upgrade AWSSDK.S3 from 3.7.9.62 to 3.7.9.65 ([869107c](https://github.com/sitkoru/Sitko.Core/commit/869107ca7fb1bc42333ccf3ed9e9caaad41f5393))
+* **serilog:** serilog 8.4.0 and deps ([12d3090](https://github.com/sitkoru/Sitko.Core/commit/12d30903bee710dbff253869a551d5184388006c))
+* **telegram:** upgrade Telegram.Bot from 17.0.0 to 18.0.0 ([10f98d9](https://github.com/sitkoru/Sitko.Core/commit/10f98d94ae61730f30e70688c72a5f873911d230))
+* **tests:** upgrade GitHubActionsTestLogger from 1.4.1 to 2.0.1 ([2800d83](https://github.com/sitkoru/Sitko.Core/commit/2800d83bf6408bbad575babcef25c60d10bbcaae))
+* **vault:** upgrade VaultSharp.Extensions.Configuration from 0.5.1 to 0.5.2 ([2f4aca8](https://github.com/sitkoru/Sitko.Core/commit/2f4aca8ea877645da74f8037f89b427e09f0245d))
+* **xunit:** upgrade Microsoft.NET.Test.Sdk from 17.3.0 to 17.3.2 ([1d79d7d](https://github.com/sitkoru/Sitko.Core/commit/1d79d7dca9ffa9cc62504cabd06bf4f3f6953d91))
+
 # [9.11.0](https://github.com/sitkoru/Sitko.Core/compare/9.10.2...9.11.0) (2022-09-28)
 
 
