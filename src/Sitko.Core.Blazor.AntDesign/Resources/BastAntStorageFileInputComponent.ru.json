@@ -1,6 +1,0 @@
-{
-    "File {0} is too big — {1}. Files up to {2} are allowed.": "Размер файл {0} — {1} превышает максимально допустимые {2}",
-    "File {0} content type {1} is not in allowed list. Allowed types: {2}": "Файл {0} имеет недопустимый тип {1}. Разрешённые типы: {2}",
-    "{0} files were uploaded": "Загружено файлов: {0}",
-    "Maximum of {0} files is allowed. Selected: {1}": "Можно добавить файлов: {0}. Выбрано: {1}"
-}

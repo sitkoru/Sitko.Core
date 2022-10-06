@@ -6,8 +6,10 @@ using Microsoft.JSInterop;
 using Serilog;
 using Sitko.Blazor.ScriptInjector;
 using Sitko.Core.App;
+using Sitko.Core.App.Localization;
 using Sitko.Core.App.Logging;
 using Sitko.Core.Blazor.Components;
+using Sitko.Core.Blazor.Forms;
 using Thinktecture.Extensions.Configuration;
 
 namespace Sitko.Core.Blazor.Wasm;
@@ -72,6 +74,10 @@ public abstract class WasmApplication : Application
         RegisterApplicationServices<WasmApplicationContext>(applicationContext, hostBuilder.Services);
         hostBuilder.Services.AddScriptInjector();
         hostBuilder.Services.AddScoped<CompressedPersistentComponentState>();
+        hostBuilder.Services.Configure<JsonLocalizationModuleOptions>(options =>
+        {
+            options.AddDefaultResource(typeof(BaseForm));
+        });
         // Logging
         LogInternal("Configure logging");
         var serilogConfiguration = new SerilogConfiguration();

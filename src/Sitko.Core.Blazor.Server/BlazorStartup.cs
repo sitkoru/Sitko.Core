@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Sitko.Core.App.Localization;
 using Sitko.Core.App.Web;
 using Sitko.Core.Blazor.Forms;
 
@@ -24,6 +25,10 @@ public abstract class BlazorStartup : BaseStartup
         services.AddServerSideBlazor().AddCircuitOptions(options =>
         {
             options.DetailedErrors = Environment.IsDevelopment();
+        });
+        services.Configure<JsonLocalizationModuleOptions>(options =>
+        {
+            options.AddDefaultResource(typeof(BaseForm));
         });
         AddForms(services, GetType().Assembly);
     }
