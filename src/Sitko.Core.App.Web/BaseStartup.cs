@@ -180,6 +180,7 @@ public abstract class BaseStartup
         }
 
         ConfigureAfterRoutingMiddleware(appBuilder);
+        application.AuthMiddlewareHook(applicationContext, appBuilder);
         application.AfterRoutingHook(applicationContext, appBuilder);
         ConfigureAfterRoutingModulesHook(appBuilder);
 
