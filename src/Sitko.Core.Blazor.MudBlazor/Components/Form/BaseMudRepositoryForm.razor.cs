@@ -46,7 +46,7 @@ public abstract partial class BaseMudRepositoryForm<TEntity, TEntityPk, TReposit
 
     public override async Task ResetAsync()
     {
-        await base.ResetAsync();
         FormInstance!.Reset();
+        await base.ResetAsync();
     }
 }
