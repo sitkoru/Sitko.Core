@@ -1,3 +1,12 @@
+## [9.12.1](https://github.com/sitkoru/Sitko.Core/compare/9.12.0...9.12.1) (2022-10-07)
+
+
+### Bug Fixes
+
+* **blazor:** full form validation only on save ([f9e78ef](https://github.com/sitkoru/Sitko.Core/commit/f9e78ef8f0e751f8cf5da270efc63723bced047e))
+* **blazor:** unify forms localization ([c9e1c27](https://github.com/sitkoru/Sitko.Core/commit/c9e1c27a8a8463d1d7e609326e03a71a436c7409))
+* **mudblazor:** reset mudblazor form before model reload ([b1a4d7b](https://github.com/sitkoru/Sitko.Core/commit/b1a4d7b37e817a8c56e89cf68eeaa1d790886084))
+
 # [9.12.0](https://github.com/sitkoru/Sitko.Core/compare/9.11.0...9.12.0) (2022-10-05)
 
 
