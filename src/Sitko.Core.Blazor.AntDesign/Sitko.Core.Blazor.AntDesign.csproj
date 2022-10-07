@@ -14,8 +14,5 @@
   <ItemGroup>
     <PackageReference Include="AntDesign" Version="0.12.4" />
   </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\*.json" />
-  </ItemGroup>
+  
 </Project>

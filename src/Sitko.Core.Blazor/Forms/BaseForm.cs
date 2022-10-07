@@ -41,7 +41,7 @@ public abstract class BaseForm : BaseComponent
                 await UpdateFormStateAsync();
             });
         };
-        IsValid = EditContext.Validate();
+        IsValid = true;
     }
 
     protected async Task UpdateFormStateAsync()
@@ -127,6 +127,16 @@ public abstract class BaseForm<TEntity> : BaseForm where TEntity : class, new()
 
     public override async Task SaveEntityAsync()
     {
+        if (EditContext?.Validate() == false)
+        {
+            if (Errors.Length > 0)
+            {
+                await NotifyErrorAsync(LocalizationProvider["Invalid form data"]);
+            }
+
+            return;
+        }
+
         await StartLoadingAsync();
         await BeforeSaveAsync();
         await BeforeEntitySaveAsync(Entity);
@@ -208,7 +218,7 @@ public abstract class BaseForm<TEntity> : BaseForm where TEntity : class, new()
 
     protected virtual Task OnUpdatedAsync(TEntity entity) => Task.CompletedTask;
 
-    public override bool CanSave() => IsValid && (IsNew || HasChanges);
+    public override bool CanSave() => IsNew || HasChanges;
 
     protected sealed override async Task<FormChange[]> GetChangesAsync() => await DetectChangesAsync(Entity);
 
