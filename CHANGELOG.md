@@ -1,3 +1,10 @@
+# [9.13.0](https://github.com/sitkoru/Sitko.Core/compare/9.12.2...9.13.0) (2022-10-17)
+
+
+### Features
+
+* **.net:** .NET 6.0.10 ([0b9e85e](https://github.com/sitkoru/Sitko.Core/commit/0b9e85e7cba293bb1eaac75afbba41dee9ba9eca))
+
 ## [9.12.2](https://github.com/sitkoru/Sitko.Core/compare/9.12.1...9.12.2) (2022-10-17)
 
 
