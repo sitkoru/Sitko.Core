@@ -2,7 +2,6 @@
 using System.Web;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Sitko.Core.Grpc;
 
 namespace Sitko.Core.Repository.Grpc;
