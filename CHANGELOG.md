@@ -1,3 +1,14 @@
+# [9.14.0](https://github.com/sitkoru/Sitko.Core/compare/9.13.0...9.14.0) (2022-10-17)
+
+
+### Features
+
+* **.net:** .NET Core 3.1.30 ([f370518](https://github.com/sitkoru/Sitko.Core/commit/f370518699eedaf5cfc90fe2fb7fbb8992b8e222))
+* **antdesign:** upgrade AntDesign from 0.12.4 to 0.12.6 ([4b44899](https://github.com/sitkoru/Sitko.Core/commit/4b44899608e26e9eec548fd80fa630f6d0d1b6fc))
+* **elasticstack:** upgrade Elastic.Apm.NetCoreAll from 1.17.0 to 1.18.0 ([4be1e03](https://github.com/sitkoru/Sitko.Core/commit/4be1e03b1c8538780ea892d334718fe36da58b99))
+* **mudblazor:** upgrade MudBlazor from 6.0.16 to 6.0.17 ([9fb3854](https://github.com/sitkoru/Sitko.Core/commit/9fb38544a09b489c4a70896f235da02886306fe5))
+* **s3storage:** upgrade AWSSDK.S3 from 3.7.9.65 to 3.7.9.69 ([8724c7e](https://github.com/sitkoru/Sitko.Core/commit/8724c7e03fb64339f31796c302a8fcd39c1ec3de))
+
 # [9.13.0](https://github.com/sitkoru/Sitko.Core/compare/9.12.2...9.13.0) (2022-10-17)
 
 
