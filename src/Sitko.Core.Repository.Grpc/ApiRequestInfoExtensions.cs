@@ -12,7 +12,8 @@ public static class ApiRequestInfoExtensions
     public static ApiRequestInfo SetFilter(this ApiRequestInfo apiRequestInfo,
         IEnumerable<QueryContextConditionsGroup> groups)
     {
-        var queryConditionsGroup = JsonConvert.SerializeObject(groups);
+        var queryConditionsGroup = JsonConvert.SerializeObject(groups,
+            new JsonSerializerSettings { Converters = { new SimpleTypeConverter() } });
         var queryBytes = Encoding.UTF8.GetBytes(queryConditionsGroup);
         apiRequestInfo.Filter = Convert.ToBase64String(queryBytes);
         return apiRequestInfo;
