@@ -1,3 +1,10 @@
+## [9.12.2](https://github.com/sitkoru/Sitko.Core/compare/9.12.1...9.12.2) (2022-10-17)
+
+
+### Bug Fixes
+
+* **repositorygrpc:** strip assembly name from condition value type ([e7ab43d](https://github.com/sitkoru/Sitko.Core/commit/e7ab43d15dbeea50285ae8017d4d796582c93368))
+
 ## [9.12.1](https://github.com/sitkoru/Sitko.Core/compare/9.12.0...9.12.1) (2022-10-07)
 
 
