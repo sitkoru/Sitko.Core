@@ -147,6 +147,9 @@ public abstract class GrpcServiceBase : IGrpcService
 
         if (result.Error.Length > 0)
         {
+            Logger.LogError("Error in method {MethodName}. Request: {@Request}. Errors: {ErrorText}",
+                methodName,
+                request, string.Join(", ", result.Error));
             response.SetErrors(result.Error);
         }
     }
