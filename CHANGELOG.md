@@ -1,3 +1,10 @@
+## [9.14.1](https://github.com/sitkoru/Sitko.Core/compare/9.14.0...9.14.1) (2022-11-03)
+
+
+### Bug Fixes
+
+* **grpc:** log grpc call errors too ([871ae16](https://github.com/sitkoru/Sitko.Core/commit/871ae16ead2471f5df84d7b1e60b597d947bbb83))
+
 # [9.14.0](https://github.com/sitkoru/Sitko.Core/compare/9.13.0...9.14.0) (2022-10-17)
 
 
