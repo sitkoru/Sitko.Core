@@ -1,3 +1,10 @@
+## [9.14.2](https://github.com/sitkoru/Sitko.Core/compare/9.14.1...9.14.2) (2022-11-09)
+
+
+### Bug Fixes
+
+* **app:** ValueCollection should equals if items order is different ([696e059](https://github.com/sitkoru/Sitko.Core/commit/696e05993c7e8608b8c4b4901858bcdcad1faa67))
+
 ## [9.14.1](https://github.com/sitkoru/Sitko.Core/compare/9.14.0...9.14.1) (2022-11-03)
 
 
