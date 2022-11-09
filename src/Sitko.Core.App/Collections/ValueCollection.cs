@@ -34,18 +34,21 @@ namespace Sitko.Core.App.Collections
                 return true;
             }
 
-            using var enumerator1 = this.GetEnumerator();
-            using var enumerator2 = other.GetEnumerator();
+            if (Count != other.Count)
+            {
+                return false;
+            }
+            using var enumerator1 = GetEnumerator();
 
             while (enumerator1.MoveNext())
             {
-                if (!enumerator2.MoveNext() || !equalityComparer!.Equals(enumerator1.Current, enumerator2.Current))
+                if(!other.Any(arg => arg.Equals(enumerator1.Current)))
                 {
                     return false;
                 }
             }
 
-            return !enumerator2.MoveNext(); //both enumerations reached the end
+            return true;
         }
 
         public override bool Equals(object? obj) =>
