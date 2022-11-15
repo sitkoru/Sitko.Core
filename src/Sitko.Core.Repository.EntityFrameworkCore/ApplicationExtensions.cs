@@ -1,5 +1,4 @@
-﻿using System;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore;
@@ -38,3 +37,4 @@ public static class ApplicationExtensions
             },
             optionsKey);
 }
+

@@ -1,5 +1,3 @@
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -24,7 +22,7 @@ public abstract class BasicTests<T> : BaseTest<T>
         const string imgName = "img.jpg";
         await using var txtFile = File.Open($"Data/{txtName}", FileMode.Open);
         await using var imgFile = File.Open($"Data/{imgName}", FileMode.Open);
-        var recipients = configuration["EMAIL_TESTS_RECIPIENTS"].Split(',');
+        var recipients = configuration["EMAIL_TESTS_RECIPIENTS"]!.Split(',');
         var entry = new MailEntry("Test email", recipients)
         {
             Attachments =
@@ -38,3 +36,4 @@ public abstract class BasicTests<T> : BaseTest<T>
         Assert.True(result.IsSuccess, result.ErrorMessage);
     }
 }
+

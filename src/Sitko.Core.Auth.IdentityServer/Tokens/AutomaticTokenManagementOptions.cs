@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Sitko.Core.Auth.IdentityServer.Tokens;
+﻿namespace Sitko.Core.Auth.IdentityServer.Tokens;
 
 public class AutomaticTokenManagementOptions
 {
@@ -8,3 +6,4 @@ public class AutomaticTokenManagementOptions
     public TimeSpan RefreshBeforeExpiration { get; set; } = TimeSpan.FromMinutes(1);
     public bool RevokeRefreshTokenOnSignout { get; set; } = true;
 }
+

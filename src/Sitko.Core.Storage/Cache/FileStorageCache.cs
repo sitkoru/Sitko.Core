@@ -1,10 +1,6 @@
-using System;
-using System.IO;
-using System.Linq;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sitko.Core.Storage.Internal;
@@ -57,15 +53,16 @@ public class
     private static string CreateMD5(string input)
     {
         // Use input string to calculate MD5 hash
-        using var md5 = MD5.Create();
         var inputBytes = Encoding.ASCII.GetBytes(input);
-        var hashBytes = md5.ComputeHash(inputBytes);
+#pragma warning disable CA5351
+        var hashBytes = MD5.HashData(inputBytes);
+#pragma warning restore CA5351
 
         // Convert the byte array to hexadecimal string
         StringBuilder sb = new();
         foreach (var t in hashBytes)
         {
-            sb.Append(t.ToString("X2"));
+            sb.Append(t.ToString("X2", CultureInfo.InvariantCulture));
         }
 
         return sb.ToString();
@@ -92,7 +89,7 @@ public class
         var fileStream = File.OpenWrite(filePath);
         if (!fileStream.CanWrite)
         {
-            throw new Exception($"Can't write to file {filePath}");
+            throw new InvalidOperationException($"Can't write to file {filePath}");
         }
 
         await stream.CopyToAsync(fileStream, cancellationToken);
@@ -108,6 +105,8 @@ public class
         {
             Directory.Delete(Options.CurrentValue.CacheDirectoryPath, true);
         }
+
+        GC.SuppressFinalize(this);
     }
 }
 
@@ -142,6 +141,7 @@ public class FileStorageCacheRecord : IStorageCacheRecord
             return fileInfo.OpenRead();
         }
 
-        throw new Exception($"File {PhysicalPath} doesn't exists");
+        throw new InvalidOperationException($"File {PhysicalPath} doesn't exists");
     }
 }
+

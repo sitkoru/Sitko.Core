@@ -1,57 +1,54 @@
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sitko.Core.App.Json;
 
-namespace Sitko.Core.IdProvider.SonyFlake
+namespace Sitko.Core.IdProvider.SonyFlake;
+
+public class SonyFlakeIdProvider : IIdProvider
 {
-    public class SonyFlakeIdProvider : IIdProvider
+    private readonly IHttpClientFactory httpClientFactory;
+    private readonly ILogger<SonyFlakeIdProvider> logger;
+    private readonly IOptionsMonitor<SonyFlakeIdProviderModuleOptions> optionsMonitor;
+    private HttpClient httpClient;
+
+    public SonyFlakeIdProvider(IOptionsMonitor<SonyFlakeIdProviderModuleOptions> optionsMonitor,
+        IHttpClientFactory httpClientFactory, ILogger<SonyFlakeIdProvider> logger)
     {
-        private readonly IOptionsMonitor<SonyFlakeIdProviderModuleOptions> optionsMonitor;
-        private readonly IHttpClientFactory httpClientFactory;
-        private readonly ILogger<SonyFlakeIdProvider> logger;
-        private HttpClient httpClient;
-
-        public SonyFlakeIdProvider(IOptionsMonitor<SonyFlakeIdProviderModuleOptions> optionsMonitor,
-            IHttpClientFactory httpClientFactory, ILogger<SonyFlakeIdProvider> logger)
+        this.optionsMonitor = optionsMonitor;
+        this.httpClientFactory = httpClientFactory;
+        this.logger = logger;
+        httpClient = CreateHttpClient();
+        this.optionsMonitor.OnChange(_ =>
         {
-            this.optionsMonitor = optionsMonitor;
-            this.httpClientFactory = httpClientFactory;
-            this.logger = logger;
             httpClient = CreateHttpClient();
-            this.optionsMonitor.OnChange(_ =>
-            {
-                httpClient = CreateHttpClient();
-            });
-        }
+        });
+    }
 
-        private HttpClient CreateHttpClient()
+    public async Task<long> NextAsync()
+    {
+        try
         {
-            var client = httpClientFactory.CreateClient(nameof(SonyFlakeIdProvider));
-            client.BaseAddress = new Uri(optionsMonitor.CurrentValue.Uri);
-            return client;
+            var response = await httpClient.GetJsonAsync<SonyFlakeResponse>("/");
+            if (response is not null)
+            {
+                return response.Id;
+            }
+
+            logger.LogError("Empty response from SonyFlake");
+            throw new IdGenerationException();
         }
-
-        public async Task<long> NextAsync()
+        catch (Exception ex)
         {
-            try
-            {
-                var response = await httpClient.GetJsonAsync<SonyFlakeResponse>("/");
-                if (response is not null)
-                {
-                    return response.Id;
-                }
-
-                logger.LogError("Empty response from SonyFlake");
-                throw new IdGenerationException();
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error while requesting SonyFlake: {ErrorText}", ex.ToString());
-                throw new IdGenerationException();
-            }
+            logger.LogError(ex, "Error while requesting SonyFlake: {ErrorText}", ex.ToString());
+            throw new IdGenerationException();
         }
     }
+
+    private HttpClient CreateHttpClient()
+    {
+        var client = httpClientFactory.CreateClient(nameof(SonyFlakeIdProvider));
+        client.BaseAddress = new Uri(optionsMonitor.CurrentValue.Uri);
+        return client;
+    }
 }
+

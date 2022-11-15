@@ -84,7 +84,7 @@ public abstract class HostedApplication : Application
 
         var startEnvironment = new HostingEnvironment
         {
-            ApplicationName = GetType().Assembly.FullName, EnvironmentName = EnvHelper.GetEnvironmentName()
+            ApplicationName = GetType().Assembly.FullName!, EnvironmentName = EnvHelper.GetEnvironmentName()
         };
 
         var configBuilder = new ConfigurationBuilder()
@@ -113,7 +113,7 @@ public abstract class HostedApplication : Application
         var bootConfiguration = configBuilder.Build();
         var bootEnvironment = new HostingEnvironment
         {
-            ApplicationName = bootConfiguration[HostDefaults.ApplicationKey],
+            ApplicationName = bootConfiguration[HostDefaults.ApplicationKey] ?? "",
             EnvironmentName = bootConfiguration[HostDefaults.EnvironmentKey] ?? Environments.Production
         };
         var bootApplicationContext = GetContext(bootEnvironment, bootConfiguration);
@@ -147,7 +147,7 @@ public abstract class HostedApplication : Application
                                 formatProvider: CultureInfo.InvariantCulture);
                         }
 
-                        configuration = ConfigureLogging(bootApplicationContext, configuration);
+                        return ConfigureLogging(bootApplicationContext, configuration);
                     });
             });
         configure?.Invoke(hostBuilder);
@@ -253,3 +253,4 @@ public class HostedApplicationContext : BaseApplicationContext
     protected override void ConfigureApplicationOptions(ApplicationOptions options) =>
         options.EnableConsoleLogging ??= environment.IsDevelopment();
 }
+

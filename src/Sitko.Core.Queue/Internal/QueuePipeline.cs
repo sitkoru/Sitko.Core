@@ -1,44 +1,28 @@
-using System.Threading.Tasks;
+namespace Sitko.Core.Queue.Internal;
 
-namespace Sitko.Core.Queue.Internal
+internal sealed class QueuePipeline
 {
-    internal class QueuePipeline
+    private IQueueMiddleware? mw;
+
+    public void Use(IQueueMiddleware middleware)
     {
-        private IQueueMiddleware? mw;
-
-        public void Use(IQueueMiddleware middleware)
+        if (mw == null)
         {
-            if (mw == null)
-            {
-                mw = middleware;
-            }
-            else
-            {
-                mw.SetNext(middleware);
-            }
+            mw = middleware;
         }
-
-        public Task<QueuePublishResult> PublishAsync<T>(T message, QueueMessageContext messageContext,
-            PublishAsyncDelegate<T> callback) where T : class
+        else
         {
-            if (mw == null)
-            {
-                return callback(message, messageContext);
-            }
-
-            return mw.PublishAsync(message, messageContext, callback);
-        }
-
-        public Task<bool> ReceiveAsync<T>(T message, QueueMessageContext messageContext,
-            ReceiveAsyncDelegate<T> callback)
-            where T : class
-        {
-            if (mw == null)
-            {
-                return callback(message, messageContext);
-            }
-
-            return mw.ReceiveAsync(message, messageContext, callback);
+            mw.SetNext(middleware);
         }
     }
+
+    public Task<QueuePublishResult> PublishAsync<T>(T message, QueueMessageContext messageContext,
+        Func<T, QueueMessageContext, Task<QueuePublishResult>> callback) where T : class =>
+        mw == null ? callback(message, messageContext) : mw.PublishAsync(message, messageContext, callback);
+
+    public Task<bool> ReceiveAsync<T>(T message, QueueMessageContext messageContext,
+        Func<T, QueueMessageContext, Task<bool>> callback)
+        where T : class =>
+        mw == null ? callback(message, messageContext) : mw.ReceiveAsync(message, messageContext, callback);
 }
+

@@ -1,5 +1,4 @@
-﻿using System;
-using Sitko.Core.App;
+﻿using Sitko.Core.App;
 
 namespace Sitko.Core.NewRelic.Logging;
 
@@ -15,3 +14,4 @@ public static class ApplicationExtensions
         string? optionsKey = null) =>
         application.AddModule<NewRelicLoggingModule, NewRelicLoggingModuleOptions>(configure, optionsKey);
 }
+

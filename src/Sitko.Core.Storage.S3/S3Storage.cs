@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
@@ -145,12 +139,12 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
         }
         catch (AmazonS3Exception e)
         {
-            if (string.Equals(e.ErrorCode, "NoSuchBucket"))
+            if (string.Equals(e.ErrorCode, "NoSuchBucket", StringComparison.Ordinal))
             {
                 return false;
             }
 
-            if (string.Equals(e.ErrorCode, "NotFound"))
+            if (string.Equals(e.ErrorCode, "NotFound", StringComparison.Ordinal))
             {
                 return false;
             }
@@ -216,7 +210,7 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
         return base.PublicUri(filePath);
     }
 
-    public static IEnumerable<List<TItem>> SplitList<TItem>(List<TItem> locations, int nSize = 30)
+    private static IEnumerable<List<TItem>> SplitList<TItem>(List<TItem> locations, int nSize = 30)
     {
         for (var i = 0; i < locations.Count; i += nSize)
         {
@@ -279,3 +273,4 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
         return items;
     }
 }
+

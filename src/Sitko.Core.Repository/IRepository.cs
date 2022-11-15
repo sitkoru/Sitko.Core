@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 
 namespace Sitko.Core.Repository;
@@ -13,7 +9,8 @@ public interface IRepository
 }
 
 [PublicAPI]
-public interface IRepository<TEntity, TEntityPk> : IRepository where TEntity : class, IEntity<TEntityPk>
+public interface IRepository<TEntity, TEntityPk> : IRepository
+    where TEntity : class, IEntity<TEntityPk> where TEntityPk : notnull
 {
     Task<(TEntity[] items, int itemsCount)> GetAllAsync(CancellationToken cancellationToken = default);
 
@@ -197,3 +194,4 @@ public interface IRepository<TEntity, TEntityPk> : IRepository where TEntity : c
     Task<bool> HasChangesAsync(TEntity entity);
     TEntity CreateSnapshot(TEntity entity);
 }
+

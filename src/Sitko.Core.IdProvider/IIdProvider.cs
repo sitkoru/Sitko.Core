@@ -1,9 +1,7 @@
-using System.Threading.Tasks;
+namespace Sitko.Core.IdProvider;
 
-namespace Sitko.Core.IdProvider
+public interface IIdProvider
 {
-    public interface IIdProvider
-    {
-        Task<long> NextAsync();
-    }
+    Task<long> NextAsync();
 }
+

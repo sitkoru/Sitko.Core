@@ -1,5 +1,4 @@
-﻿using System;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Sitko.Core.App.Results;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -98,7 +97,7 @@ public class ResultTests : BaseTest
 
 public class Foo
 {
-    public int Value { get; }
-
     public Foo(int value) => Value = value;
+    public int Value { get; }
 }
+

@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 
 namespace Sitko.Core.Blazor.Layout;
 
@@ -50,3 +49,4 @@ public record LayoutData
     public string Title { get; init; } = "";
     public string Description { get; init; } = "";
 }
+

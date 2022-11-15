@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.Xunit;
@@ -117,3 +115,4 @@ public class MultipleProcessorQueueTestScope : BaseTestQueueTestScope
         TestQueueOptions options, string name) =>
         options.RegisterProcessors<ProcessorTests>();
 }
+

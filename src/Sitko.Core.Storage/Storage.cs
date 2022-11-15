@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sitko.Core.Storage.Cache;
@@ -37,7 +32,11 @@ public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsy
 
     protected TStorageOptions Options => optionsMonitor.CurrentValue;
 
-    public virtual ValueTask DisposeAsync() => new();
+    public virtual ValueTask DisposeAsync()
+    {
+        GC.SuppressFinalize(this);
+        return new ValueTask();
+    }
 
     public async Task<StorageItem> SaveAsync(Stream file, string fileName, string path, object? metadata = null,
         CancellationToken cancellationToken = default)
@@ -67,7 +66,7 @@ public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsy
     {
         if (MetadataProvider is null)
         {
-            throw new Exception("No metadata provider");
+            throw new InvalidOperationException("No metadata provider");
         }
 
         Logger.LogDebug("Update metadata for item {Path}", item.FilePath);
@@ -83,9 +82,9 @@ public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsy
         return item;
     }
 
-    public async Task<DownloadResult?> DownloadAsync(string path, CancellationToken cancellationToken = default)
+    public async Task<DownloadResult?> DownloadAsync(string filePath, CancellationToken cancellationToken = default)
     {
-        var info = await GetStorageItemInfoAsync(path, cancellationToken);
+        var info = await GetStorageItemInfoAsync(filePath, cancellationToken);
         if (info != null)
         {
             var item = info.StorageItem;
@@ -111,13 +110,13 @@ public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsy
         return result;
     }
 
-    public Task<StorageItem?> GetAsync(string path, CancellationToken cancellationToken = default) =>
-        GetStorageItemInternalAsync(path, cancellationToken);
+    public Task<StorageItem?> GetAsync(string filePath, CancellationToken cancellationToken = default) =>
+        GetStorageItemInternalAsync(filePath, cancellationToken);
 
 
-    public async Task<bool> IsExistsAsync(string path, CancellationToken cancellationToken = default)
+    public async Task<bool> IsExistsAsync(string filePath, CancellationToken cancellationToken = default)
     {
-        var result = await GetStorageItemInternalAsync(path, cancellationToken);
+        var result = await GetStorageItemInternalAsync(filePath, cancellationToken);
         return result != null;
     }
 
@@ -144,7 +143,7 @@ public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsy
             return MetadataProvider.GetDirectoryContentAsync(path, cancellationToken);
         }
 
-        throw new Exception("No metadata provider");
+        throw new InvalidOperationException("No metadata provider");
     }
 
     public async Task<IEnumerable<StorageNode>> RefreshDirectoryContentsAsync(string path,
@@ -157,7 +156,7 @@ public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsy
             return await MetadataProvider.GetDirectoryContentAsync(path, cancellationToken);
         }
 
-        throw new Exception("No metadata provider");
+        throw new InvalidOperationException("No metadata provider");
     }
 
 
@@ -214,7 +213,8 @@ public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsy
 
     protected string GetPathWithPrefix(string filePath)
     {
-        if (!string.IsNullOrEmpty(Options.Prefix) && !filePath.StartsWith(Options.Prefix))
+        if (!string.IsNullOrEmpty(Options.Prefix) &&
+            !filePath.StartsWith(Options.Prefix, StringComparison.InvariantCulture))
         {
             filePath = Helpers.PreparePath(Path.Combine(Options.Prefix, filePath))!;
         }
@@ -258,9 +258,10 @@ public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsy
     protected abstract Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
         CancellationToken cancellationToken = default);
 
-    private string GetStorageFileName(string fileName)
+    private static string GetStorageFileName(string fileName)
     {
         var extension = fileName.Substring(fileName.LastIndexOf('.'));
         return Guid.NewGuid() + extension;
     }
 }
+

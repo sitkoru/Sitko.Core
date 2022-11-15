@@ -1,13 +1,11 @@
-namespace Sitko.Core.Grpc.Client.Discovery
-{
-    using System;
-    using System.Threading.Tasks;
-    using global::Grpc.Core;
+using Grpc.Core;
 
-    public interface IGrpcServiceAddressResolver<TClient> where TClient : ClientBase<TClient>
-    {
-        public Task InitAsync();
-        public Uri? GetAddress();
-        event EventHandler? OnChange;
-    }
+namespace Sitko.Core.Grpc.Client.Discovery;
+
+public interface IGrpcServiceAddressResolver<TClient> where TClient : ClientBase<TClient>
+{
+    public Task InitAsync();
+    public Uri? GetAddress();
+    event EventHandler? OnChange;
 }
+

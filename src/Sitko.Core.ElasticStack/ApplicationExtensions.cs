@@ -1,5 +1,4 @@
-﻿using System;
-using Sitko.Core.App;
+﻿using Sitko.Core.App;
 
 namespace Sitko.Core.ElasticStack;
 
@@ -13,3 +12,4 @@ public static class ApplicationExtensions
         Action<ElasticStackModuleOptions>? configure = null, string? optionsKey = null) =>
         application.AddModule<ElasticStackModule, ElasticStackModuleOptions>(configure, optionsKey);
 }
+

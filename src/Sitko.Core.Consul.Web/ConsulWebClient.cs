@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using Consul;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -134,3 +129,4 @@ public class ConsulWebClient
         return HealthCheckResult.Unhealthy($"Error response from consul: {serviceResponse.StatusCode}");
     }
 }
+

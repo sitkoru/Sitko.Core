@@ -8,13 +8,14 @@ public class TelegramHealthReporterModule : BaseApplicationModule<TelegramHealth
 {
     public override string OptionsKey => "Health:Telegram";
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TelegramHealthReporterModuleOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.Configure<HealthCheckPublisherOptions>(_ => { });
         services.AddHealthChecks();
         services.AddHttpClient();
         services.AddSingleton<IHealthCheckPublisher, TelegramHealthCheckPublisher>();
     }
 }
+

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Amazon;
 using Amazon.Auth.AccessControlPolicy;
 using Amazon.S3;
@@ -17,10 +15,10 @@ public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3Sto
 {
     public override string OptionsKey => $"Storage:S3:{typeof(TS3StorageOptions).Name}";
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TS3StorageOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddSingleton<S3ClientProvider<TS3StorageOptions>>();
         services.AddHealthChecks().Add(new HealthCheckRegistration(GetType().Name,
             serviceProvider =>
@@ -83,3 +81,4 @@ public class S3StorageOptionsValidator : StorageOptionsValidator<S3StorageOption
         RuleFor(o => o.SecretKey).NotEmpty().WithMessage("S3 secret key is empty");
     }
 }
+

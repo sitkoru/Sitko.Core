@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
@@ -15,6 +10,7 @@ using Sitko.Core.Blazor.Components;
 using Sitko.Core.Blazor.FileUpload;
 using Sitko.Core.Storage;
 
+// ReSharper disable once CheckNamespace
 namespace Sitko.Core.Blazor.MudBlazorComponents;
 
 public abstract partial class MudFileUpload<TValue> : BaseComponent where TValue : class, new()
@@ -293,3 +289,4 @@ public enum FileUploadDisplayMode
     File = 1,
     Image = 2
 }
+

@@ -1,5 +1,4 @@
-﻿using System;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Sitko.Core.App;
 
 namespace Sitko.Core.ImgProxy;
@@ -19,3 +18,4 @@ public static class ApplicationExtensions
         .AddModule<ImgProxyModule, ImgProxyModuleOptions>(
             configure, optionsKey);
 }
+

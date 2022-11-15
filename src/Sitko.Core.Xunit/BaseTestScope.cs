@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -164,3 +161,4 @@ public class TestApplication : HostedApplication
         configurationBuilder.AddEnvironmentVariables();
     }
 }
+

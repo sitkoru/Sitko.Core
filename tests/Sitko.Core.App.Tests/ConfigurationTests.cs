@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -37,10 +35,11 @@ public class TestModuleFooBar : BaseApplicationModule<TestModuleFooBarOptions>
 
 public class TestModuleFooBarOptions : BaseModuleOptions
 {
-    public string Bar { get; set; }
+    public string Bar { get; set; } = "";
 }
 
 public class TestModuleFooOptions : BaseModuleOptions
 {
-    public string Foo { get; set; }
+    public string Foo { get; set; } = "";
 }
+

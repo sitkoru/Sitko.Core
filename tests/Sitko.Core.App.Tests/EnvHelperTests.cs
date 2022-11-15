@@ -1,5 +1,4 @@
-﻿using System;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App.Helpers;
 using Sitko.Core.Xunit;
@@ -41,3 +40,4 @@ public class EnvHelperTests : BaseTest
         env.Should().Be(result);
     }
 }
+

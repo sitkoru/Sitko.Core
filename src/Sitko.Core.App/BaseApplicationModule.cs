@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -17,15 +14,16 @@ public class BaseApplicationModuleOptions : BaseModuleOptions
 public abstract class BaseApplicationModule<TModuleOptions> : IApplicationModule<TModuleOptions>
     where TModuleOptions : BaseModuleOptions, new()
 {
-    public virtual void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public virtual void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TModuleOptions startupOptions)
     {
     }
 
-    public virtual Task InitAsync(IApplicationContext context, IServiceProvider serviceProvider) =>
+    public virtual Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider) =>
         Task.CompletedTask;
 
-    public virtual IEnumerable<Type> GetRequiredModules(IApplicationContext context, TModuleOptions options) =>
+    public virtual IEnumerable<Type>
+        GetRequiredModules(IApplicationContext applicationContext, TModuleOptions options) =>
         Type.EmptyTypes;
 
     public virtual Task ApplicationStarted(IApplicationContext applicationContext,
@@ -66,3 +64,4 @@ public abstract class BaseModuleOptions
     {
     }
 }
+

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Grpc.Core;
 using Sitko.Core.App;
 using Sitko.Core.Consul;
@@ -12,7 +10,7 @@ public class ConsulGrpcClientModule<TClient> : GrpcClientModule<TClient, ConsulG
 {
     public override string OptionsKey => "Grpc:Client:Consul";
 
-    public override IEnumerable<Type> GetRequiredModules(IApplicationContext context,
+    public override IEnumerable<Type> GetRequiredModules(IApplicationContext applicationContext,
         ConsulGrpcClientModuleOptions<TClient> options) =>
         new List<Type> { typeof(ConsulModule) };
 }
@@ -21,3 +19,4 @@ public class ConsulGrpcClientModuleOptions<TClient> : GrpcClientModuleOptions<TC
     where TClient : ClientBase<TClient>
 {
 }
+

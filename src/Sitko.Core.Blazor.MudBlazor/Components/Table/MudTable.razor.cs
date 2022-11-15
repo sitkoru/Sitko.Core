@@ -1,22 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using System.Web;
+﻿using System.Linq.Expressions;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using MudBlazor;
 using Sitko.Core.Repository;
 
+// ReSharper disable once CheckNamespace
 namespace Sitko.Core.Blazor.MudBlazorComponents;
 
 public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableFilter, new()
 {
-    protected MudTable<TItem> Table { get; set; } = null!;
+    private const string SortParam = "sort";
+    private const string PageParam = "page";
+    private const string PageSizeParam = "pageSize";
+    private const string SearchParam = "query";
 
-    [EditorRequired] [Parameter] public RenderFragment<TItem>? ChildContent { get; set; }
+    private int perPage = 50;
+    protected MudTable<TItem?> Table { get; set; } = null!;
+
+    [EditorRequired] [Parameter] public RenderFragment<TItem?>? ChildContent { get; set; }
 
     [Parameter] public Func<Task>? OnDataLoaded { get; set; }
 
@@ -57,22 +59,31 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
 
     [Parameter] public object Tag { get; set; } = new { };
 
-    private int _perPage = 50;
-    [Parameter] public int RowsPerPage {  get => _perPage;
+    [Parameter]
+#pragma warning disable BL0007
+    public int RowsPerPage
+#pragma warning restore BL0007
+    {
+        get => perPage;
         set
         {
-            if (_perPage == value ) return;
-            _perPage = value;
+            if (perPage == value)
+            {
+                return;
+            }
+
+            perPage = value;
             RowsPerPageChanged.InvokeAsync(value);
-        } }
-    [Parameter]
-    public EventCallback<int> RowsPerPageChanged { get; set; }
+        }
+    }
+
+    [Parameter] public EventCallback<int> RowsPerPageChanged { get; set; }
 
     // [Parameter] public int CurrentPage { get; set; } = 1; TODO: until https://github.com/MudBlazor/MudBlazor/issues/1403
     [Parameter] public bool CustomFooter { get; set; }
     [Parameter] public bool CustomHeader { get; set; }
     [Parameter] public string FooterClass { get; set; } = "";
-    [Parameter] public TableGroupDefinition<TItem>? GroupBy { get; set; }
+    [Parameter] public TableGroupDefinition<TItem?>? GroupBy { get; set; }
 
     [Parameter] public string HeaderClass { get; set; } = "";
     [Parameter] public string QuickColumns { get; set; } = "";
@@ -87,23 +98,19 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
     [Parameter] public string GroupHeaderClass { get; set; } = "";
     [Parameter] public string GroupFooterStyle { get; set; } = "";
     [Parameter] public string GroupHeaderStyle { get; set; } = "";
-    [Parameter] public Func<TItem, int, string>? RowStyleFunc { get; set; }
-    [Parameter] public Func<TItem, int, string>? RowClassFunc { get; set; }
-    [Parameter] public EventCallback<TableRowClickEventArgs<TItem>> OnRowClick { get; set; }
-    [Parameter] public HashSet<TItem>? SelectedItems { get; set; }
+    [Parameter] public Func<TItem?, int, string>? RowStyleFunc { get; set; }
+    [Parameter] public Func<TItem?, int, string>? RowClassFunc { get; set; }
+    [Parameter] public EventCallback<TableRowClickEventArgs<TItem?>> OnRowClick { get; set; }
+    [Parameter] public HashSet<TItem?>? SelectedItems { get; set; }
     [Parameter] public TItem? SelectedItem { get; set; }
-    [Parameter] public EventCallback<TItem> SelectedItemChanged { get; set; }
+    [Parameter] public EventCallback<TItem?> SelectedItemChanged { get; set; }
 
     [Parameter] public Func<Task<Dictionary<string, object?>>>? AddParamsToUrl { get; set; }
     [Parameter] public Func<Task>? GetParamsFromUrl { get; set; }
 
     [Parameter] public bool EnableUrlNavigation { get; set; }
 
-    protected bool IsFirstLoad = true;
-    private const string SortParam = "sort";
-    private const string PageParam = "page";
-    private const string PageSizeParam = "pageSize";
-    private const string SearchParam = "query";
+    protected bool IsFirstLoad { get; set; } = true;
 
     protected async Task DoGetParamsFromUrlAsync(TableState state)
     {
@@ -126,16 +133,18 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
             }
         }
 
-        if (TryGetQueryString<int?>(PageSizeParam, out var defaultPageSize) && defaultPageSize != null)
+        if (TryGetQueryString<int?>(PageSizeParam, out var defaultPageSize))
         {
             state.PageSize = defaultPageSize.Value;
             RowsPerPage = state.PageSize;
         }
 
-        if (TryGetQueryString<int?>(PageParam, out var defaultPage) && defaultPage != null)
+        if (TryGetQueryString<int?>(PageParam, out var defaultPage))
         {
             state.Page = defaultPage.Value - 1;
+#pragma warning disable BL0005
             Table.CurrentPage = state.Page;
+#pragma warning restore BL0005
         }
 
         if (TryGetQueryString<string?>(SearchParam, out var defaultQuery) && !string.IsNullOrEmpty(defaultQuery))
@@ -153,6 +162,7 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
             {
                 urlParams = await AddParamsToUrl();
             }
+
             switch (state.SortDirection)
             {
                 case SortDirection.Ascending:
@@ -173,7 +183,7 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
         }
     }
 
-    private async Task<TableData<TItem>> ServerReloadAsync(TableState state)
+    private async Task<TableData<TItem?>> ServerReloadAsync(TableState state)
     {
         if (IsFirstLoad && EnableUrlNavigation)
         {
@@ -197,7 +207,7 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
 
         IsFirstLoad = false;
 
-        return new TableData<TItem> { Items = result.items, TotalItems = result.itemsCount };
+        return new TableData<TItem?> { Items = result.items, TotalItems = result.itemsCount };
     }
 
 
@@ -221,6 +231,7 @@ public class
         , MudTableFilter>
     where TEntity : class, IEntity<TEntityPk>
     where TRepository : IRepository<TEntity, TEntityPk>
+    where TEntityPk : notnull
 {
 }
 
@@ -228,6 +239,7 @@ public abstract class MudRepositoryTable<TEntity, TEntityPk, TRepository, TFilte
     where TEntity : class, IEntity<TEntityPk>
     where TRepository : IRepository<TEntity, TEntityPk>
     where TFilter : MudTableFilter, new()
+    where TEntityPk : notnull
 {
     [Parameter] public Func<IRepositoryQuery<TEntity>, Task>? ConfigureQuery { get; set; }
 
@@ -391,3 +403,4 @@ public static class ListFilterExtensions
         }
     }
 }
+

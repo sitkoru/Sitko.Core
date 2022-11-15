@@ -3,8 +3,10 @@ using Newtonsoft.Json.Linq;
 
 namespace Sitko.Core.Repository.Grpc;
 
-internal class SimpleTypeConverter : JsonConverter
+internal sealed class SimpleTypeConverter : JsonConverter
 {
+    public override bool CanRead => false;
+
     public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
     {
         if (value is Type type)
@@ -22,7 +24,6 @@ internal class SimpleTypeConverter : JsonConverter
         ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer) =>
         throw new NotImplementedException("Unnecessary because CanRead is false. The type will skip the converter.");
 
-    public override bool CanRead => false;
-
     public override bool CanConvert(Type objectType) => typeof(Type).IsAssignableFrom(objectType);
 }
+

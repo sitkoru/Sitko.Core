@@ -1,4 +1,3 @@
-using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using MimeMapping;
@@ -73,3 +72,4 @@ public sealed record StorageItem
         ? null
         : JsonSerializer.Deserialize<TMetadata>(MetadataJson);
 }
+

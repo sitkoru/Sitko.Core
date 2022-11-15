@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nito.AsyncEx;
@@ -68,7 +63,7 @@ public abstract class
     {
         filePath += MetaDataExtension;
         if (!string.IsNullOrEmpty(StorageOptions.CurrentValue.Prefix) &&
-            !filePath.StartsWith(StorageOptions.CurrentValue.Prefix))
+            !filePath.StartsWith(StorageOptions.CurrentValue.Prefix, StringComparison.InvariantCulture))
         {
             filePath = Helpers.PreparePath($"{StorageOptions.CurrentValue.Prefix}/{filePath}")!;
         }
@@ -118,7 +113,7 @@ public abstract class
             var items = await Storage.GetAllItemsAsync("/", cancellationToken);
             foreach (var info in items)
             {
-                if (info.Path.EndsWith(MetaDataExtension))
+                if (info.Path.EndsWith(MetaDataExtension, StringComparison.InvariantCulture))
                 {
                     continue;
                 }
@@ -147,3 +142,4 @@ public class EmbedStorageMetadataModuleOptions<TStorageOptions> : StorageMetadat
 {
     public int StorageTreeCacheTimeoutInMinutes { get; set; } = 30;
 }
+

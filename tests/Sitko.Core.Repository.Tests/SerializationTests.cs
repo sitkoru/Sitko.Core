@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using Newtonsoft.Json;
 using Serilog;
 using Xunit;
@@ -8,7 +6,7 @@ namespace Sitko.Core.Repository.Tests;
 
 public class SerializationTests
 {
-    private static readonly JsonSerializerSettings _jsonSettings = new()
+    private static readonly JsonSerializerSettings JsonSettings = new()
     {
         ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
         TypeNameHandling = TypeNameHandling.Auto,
@@ -29,11 +27,11 @@ public class SerializationTests
         var where = JsonConvert.DeserializeObject<List<QueryContextConditionsGroup>>(json);
 
         Assert.NotNull(where);
-        Assert.NotEmpty(where!);
-        Assert.Single(where!);
-        Assert.Equal("projectId", where!.First().Conditions.First().Property);
-        Assert.Equal(QueryContextOperator.Equal, where!.First().Conditions.First().Operator);
-        Assert.Equal(1L, where!.First().Conditions.First().Value);
+        Assert.NotEmpty(where);
+        Assert.Single(where);
+        Assert.Equal("projectId", where.First().Conditions.First().Property);
+        Assert.Equal(QueryContextOperator.Equal, where.First().Conditions.First().Operator);
+        Assert.Equal(1L, where.First().Conditions.First().Value);
     }
 
     [Fact]
@@ -51,9 +49,9 @@ public class SerializationTests
         Assert.NotEmpty(modifiedDeserialized.SubModels);
     }
 
-    private static string Serialize(object obj) => JsonConvert.SerializeObject(obj, _jsonSettings);
+    private static string Serialize(object obj) => JsonConvert.SerializeObject(obj, JsonSettings);
 
-    private static T? Deserialize<T>(string json) => JsonConvert.DeserializeObject<T>(json, _jsonSettings);
+    private static T? Deserialize<T>(string json) => JsonConvert.DeserializeObject<T>(json, JsonSettings);
 }
 
 public class Model
@@ -72,3 +70,4 @@ public class SubModelA : SubModel
 public class SubModelB : SubModel
 {
 }
+

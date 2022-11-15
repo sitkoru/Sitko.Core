@@ -1,6 +1,6 @@
-﻿namespace Sitko.Core.Grpc.Server.Tests
+﻿namespace Sitko.Core.Grpc.Server.Tests;
+
+public partial class TestResponse : IGrpcResponse
 {
-    public partial class TestResponse : IGrpcResponse
-    {
-    }
 }
+

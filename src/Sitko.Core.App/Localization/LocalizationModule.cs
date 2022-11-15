@@ -10,10 +10,10 @@ public abstract class LocalizationModule<TModuleOptions, TFactory> : BaseApplica
 {
     public override string OptionsKey => "Localization";
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TModuleOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.TryAddSingleton<IStringLocalizerFactory, TFactory>();
         services.TryAddTransient(typeof(IStringLocalizer<>), typeof(StringLocalizer<>));
     }
@@ -22,3 +22,4 @@ public abstract class LocalizationModule<TModuleOptions, TFactory> : BaseApplica
 public class LocalizationModuleOptions : BaseModuleOptions
 {
 }
+

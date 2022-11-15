@@ -1,36 +1,34 @@
-using System;
+namespace Sitko.Core.Queue;
 
-namespace Sitko.Core.Queue
+public abstract class QueueResult
 {
-    public abstract class QueueResult
+    public bool IsSuccess { get; protected set; } = true;
+    public string? ErrorMessage { get; protected set; }
+    public Exception? Exception { get; protected set; }
+
+    public void SetException(Exception ex)
     {
-        public bool IsSuccess { get; protected set; } = true;
-        public string? ErrorMessage { get; protected set; }
-        public Exception? Exception { get; protected set; }
-
-        public void SetException(Exception ex)
-        {
-            IsSuccess = false;
-            ErrorMessage = ex.ToString();
-            Exception = ex;
-        }
-
-        public void SetError(string error)
-        {
-            IsSuccess = false;
-            ErrorMessage = error;
-        }
-
-        public string GetErrorText() => Exception?.ToString() ?? (ErrorMessage ?? string.Empty);
+        IsSuccess = false;
+        ErrorMessage = ex.ToString();
+        Exception = ex;
     }
 
-    public class QueueSubscribeResult : QueueResult
+    public void SetError(string error)
     {
-        public Guid SubscriptionId { get; set; }
-        public IQueueMessageOptions? Options { get; set; }
+        IsSuccess = false;
+        ErrorMessage = error;
     }
 
-    public class QueuePublishResult : QueueResult
-    {
-    }
+    public string GetErrorText() => Exception?.ToString() ?? (ErrorMessage ?? string.Empty);
 }
+
+public class QueueSubscribeResult : QueueResult
+{
+    public Guid SubscriptionId { get; set; }
+    public IQueueMessageOptions? Options { get; set; }
+}
+
+public class QueuePublishResult : QueueResult
+{
+}
+

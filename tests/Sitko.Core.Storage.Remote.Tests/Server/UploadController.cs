@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Sitko.Core.Storage.Remote.Server;
 using Sitko.Core.Storage.Tests;
 
@@ -13,3 +12,4 @@ public class UploadController : BaseRemoteStorageController<TestS3StorageSetting
     {
     }
 }
+

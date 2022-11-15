@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,10 +16,10 @@ public abstract class RepositoriesModule<TConfig, TRepositoryType> : BaseApplica
 {
     public override bool AllowMultiple => true;
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TConfig startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.TryAddScoped<RepositoryFiltersManager>();
 
         var types = new List<Type>(startupOptions.Repositories);
@@ -85,3 +82,4 @@ public class RepositoriesModuleOptions<TRepositoryType> : BaseModuleOptions wher
         return this;
     }
 }
+

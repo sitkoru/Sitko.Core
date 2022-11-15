@@ -1,5 +1,4 @@
-﻿using System;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Server;
@@ -17,3 +16,4 @@ public static class ApplicationExtensions
         string? optionsKey = null) =>
         application.AddModule<GrpcServerModule, GrpcServerModuleOptions>(configure, optionsKey);
 }
+

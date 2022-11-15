@@ -1,8 +1,6 @@
-using System;
+namespace Sitko.Core.IdProvider;
 
-namespace Sitko.Core.IdProvider
+public class IdGenerationException : Exception
 {
-    public class IdGenerationException : Exception
-    {
-    }
 }
+

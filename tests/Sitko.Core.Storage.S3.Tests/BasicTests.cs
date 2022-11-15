@@ -1,12 +1,12 @@
 using Sitko.Core.Storage.Tests;
 using Xunit.Abstractions;
 
-namespace Sitko.Core.Storage.S3.Tests
+namespace Sitko.Core.Storage.S3.Tests;
+
+public class BasicTests : BasicTests<BaseS3StorageTestScope>
 {
-    public class BasicTests : BasicTests<BaseS3StorageTestScope>
+    public BasicTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
-        public BasicTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
-        {
-        }
     }
 }
+

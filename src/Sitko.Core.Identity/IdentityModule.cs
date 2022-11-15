@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -40,10 +38,10 @@ public class IdentityModule<TUser, TRole, TPk, TDbContext> : BaseApplicationModu
         appBuilder.UseAuthorization();
     }
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         IdentityModuleOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
 
         var identityBuilder =
             services
@@ -105,10 +103,11 @@ public class IdentityModuleOptions : BaseModuleOptions
 
 public class FakeEnv : IWebHostEnvironment
 {
-    public string ApplicationName { get; set; }
-    public IFileProvider ContentRootFileProvider { get; set; }
-    public string ContentRootPath { get; set; }
-    public string EnvironmentName { get; set; }
-    public string WebRootPath { get; set; }
-    public IFileProvider WebRootFileProvider { get; set; }
+    public string ApplicationName { get; set; } = "";
+    public IFileProvider ContentRootFileProvider { get; set; } = null!;
+    public string ContentRootPath { get; set; } = "";
+    public string EnvironmentName { get; set; } = "";
+    public string WebRootPath { get; set; } = "";
+    public IFileProvider WebRootFileProvider { get; set; } = null!;
 }
+

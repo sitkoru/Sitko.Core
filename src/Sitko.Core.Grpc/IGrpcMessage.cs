@@ -1,5 +1,6 @@
-﻿namespace Sitko.Core.Grpc
+﻿namespace Sitko.Core.Grpc;
+
+public interface IGrpcMessage
 {
-    public interface IGrpcMessage
-    {}
 }
+

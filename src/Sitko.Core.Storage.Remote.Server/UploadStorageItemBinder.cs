@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 
@@ -44,10 +42,11 @@ public class UploadStorageItemBinder : IModelBinder
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, ex.Message);
+            logger.LogError(ex, "Error binding model: {ErrorText}", ex.ToString());
             bindingContext.Result = ModelBindingResult.Failed();
         }
 
         return Task.CompletedTask;
     }
 }
+

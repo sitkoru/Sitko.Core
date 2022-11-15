@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,9 +12,9 @@ public class
 {
     public override string OptionsKey => $"Db:Postgres:{typeof(TDbContext).Name}";
 
-    public override async Task InitAsync(IApplicationContext context, IServiceProvider serviceProvider)
+    public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider)
     {
-        await base.InitAsync(context, serviceProvider);
+        await base.InitAsync(applicationContext, serviceProvider);
         var options = GetOptions(serviceProvider);
         if (options.AutoApplyMigrations)
         {
@@ -58,24 +55,24 @@ public class
         }
     }
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         PostgresDatabaseModuleOptions<TDbContext> startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddMemoryCache();
         if (startupOptions.EnableContextPooling)
         {
             services.AddDbContextPool<TDbContext>((serviceProvider, options) =>
-                ConfigureNpgsql(options, serviceProvider, context));
+                ConfigureNpgsql(options, serviceProvider, applicationContext));
             services.AddPooledDbContextFactory<TDbContext>((serviceProvider, options) =>
-                ConfigureNpgsql(options, serviceProvider, context));
+                ConfigureNpgsql(options, serviceProvider, applicationContext));
         }
         else
         {
             services.AddDbContext<TDbContext>((serviceProvider, options) =>
-                ConfigureNpgsql(options, serviceProvider, context));
+                ConfigureNpgsql(options, serviceProvider, applicationContext));
             services.AddDbContextFactory<TDbContext>((serviceProvider, options) =>
-                ConfigureNpgsql(options, serviceProvider, context), startupOptions.DbContextFactoryLifetime);
+                ConfigureNpgsql(options, serviceProvider, applicationContext), startupOptions.DbContextFactoryLifetime);
         }
     }
 
@@ -106,3 +103,4 @@ public class
             applicationContext);
     }
 }
+

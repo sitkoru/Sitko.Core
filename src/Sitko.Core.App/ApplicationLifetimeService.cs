@@ -1,6 +1,3 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 
 namespace Sitko.Core.App;
@@ -36,3 +33,4 @@ public class ApplicationLifetimeService : BackgroundService
         return Task.CompletedTask;
     }
 }
+

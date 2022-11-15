@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.ImgProxy;
 
@@ -12,13 +10,14 @@ public class
 {
     public override string OptionsKey => $"Storage:ImgProxy:{typeof(TStorageOptions).Name}";
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         BaseApplicationModuleOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddSingleton<IImgProxyUrlGenerator<TStorageOptions>, ImgProxyUrlGenerator<TStorageOptions>>();
     }
 
-    public override IEnumerable<Type> GetRequiredModules(IApplicationContext context,
+    public override IEnumerable<Type> GetRequiredModules(IApplicationContext applicationContext,
         BaseApplicationModuleOptions options) => new[] { typeof(IStorageModule), typeof(ImgProxyModule) };
 }
+

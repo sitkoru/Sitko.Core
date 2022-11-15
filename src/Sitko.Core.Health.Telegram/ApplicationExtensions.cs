@@ -1,5 +1,4 @@
-﻿using System;
-using Sitko.Core.App;
+﻿using Sitko.Core.App;
 
 namespace Sitko.Core.Health.Telegram;
 
@@ -17,3 +16,4 @@ public static class ApplicationExtensions
         application.AddModule<TelegramHealthReporterModule, TelegramHealthReporterModuleOptions>(configure,
             optionsKey);
 }
+

@@ -1,9 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using Sitko.Core.Blazor.Forms;
 
+// ReSharper disable once CheckNamespace
 namespace Sitko.Core.Blazor.MudBlazorComponents;
 
 public class MudEntityForm<TEntity> : BaseMudForm<TEntity>
@@ -77,3 +76,4 @@ public abstract partial class BaseMudForm<TEntity>
         FormInstance?.Reset();
     }
 }
+

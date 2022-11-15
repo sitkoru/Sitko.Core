@@ -1,4 +1,3 @@
-using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
@@ -21,10 +20,10 @@ public class SwaggerModule : BaseApplicationModule<SwaggerModuleOptions>, IWebAp
         appBuilder.UseSwaggerUI(c => { c.SwaggerEndpoint(endPoint, $"{config.Title} ({config.Version})"); });
     }
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         SwaggerModuleOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddSwaggerGen(swaggerGenOptions =>
         {
             swaggerGenOptions.SwaggerDoc("v1",
@@ -42,7 +41,7 @@ public class SwaggerModule : BaseApplicationModule<SwaggerModuleOptions>, IWebAp
                     Type = SecuritySchemeType.ApiKey,
                     Scheme = "Bearer"
                 });
-                swaggerGenOptions.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                swaggerGenOptions.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
                         new OpenApiSecurityScheme
@@ -50,7 +49,7 @@ public class SwaggerModule : BaseApplicationModule<SwaggerModuleOptions>, IWebAp
                             Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" },
                             Scheme = "oauth2",
                             Name = "Bearer",
-                            In = ParameterLocation.Header,
+                            In = ParameterLocation.Header
                         },
                         Array.Empty<string>()
                     }
@@ -71,3 +70,4 @@ public class SwaggerModuleOptions : BaseModuleOptions
     public bool EnableTokenAuth { get; set; } = true;
     public Action<SwaggerGenOptions>? ConfigureSwagger { get; set; }
 }
+

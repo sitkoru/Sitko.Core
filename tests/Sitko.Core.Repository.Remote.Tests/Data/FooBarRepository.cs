@@ -1,5 +1,4 @@
-﻿using System;
-using Sitko.Core.Repository.Tests.Data;
+﻿using Sitko.Core.Repository.Tests.Data;
 
 namespace Sitko.Core.Repository.Remote.Tests.Data;
 
@@ -9,3 +8,4 @@ public class FooBarRepository : BaseRemoteRepository<FooBarModel, Guid>
     {
     }
 }
+

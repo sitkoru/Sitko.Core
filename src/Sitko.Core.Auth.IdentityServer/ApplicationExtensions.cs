@@ -1,5 +1,4 @@
-﻿using System;
-using Sitko.Core.App;
+﻿using Sitko.Core.App;
 
 namespace Sitko.Core.Auth.IdentityServer;
 
@@ -27,3 +26,4 @@ public static class ApplicationExtensions
         application.AddModule<OidcIdentityServerModule, OidcIdentityServerModuleOptions>(configure,
             optionsKey);
 }
+

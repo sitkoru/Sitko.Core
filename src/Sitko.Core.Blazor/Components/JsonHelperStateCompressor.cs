@@ -1,14 +1,12 @@
-using System.IO;
 using System.IO.Compression;
 using System.Text;
-using System.Threading.Tasks;
 using Sitko.Core.App.Json;
 
 namespace Sitko.Core.Blazor.Components;
 
 public class JsonHelperStateCompressor : IStateCompressor
 {
-    public async Task<byte[]> ToGzipAsync<T>(T value)
+    public async Task<byte[]> ToGzipAsync<T>(T value) where T : notnull
     {
         await using var input = new MemoryStream();
         var json = JsonHelper.SerializeWithMetadata(value);
@@ -20,13 +18,14 @@ public class JsonHelperStateCompressor : IStateCompressor
         return result;
     }
 
-    public async Task<T> FromGzipAsync<T>(byte[] bytes)
+    public async Task<T?> FromGzipAsync<T>(byte[] bytes)
     {
         await using var inputStream = new MemoryStream(bytes);
         await using var outputStream = new MemoryStream();
         await using var decompressor = new GZipStream(inputStream, CompressionMode.Decompress);
         await decompressor.CopyToAsync(outputStream);
         var json = Encoding.UTF8.GetString(outputStream.ToArray());
-        return JsonHelper.DeserializeWithMetadata<T>(json);
+        return JsonHelper.DeserializeWithMetadata<T>(json) ?? default;
     }
 }
+

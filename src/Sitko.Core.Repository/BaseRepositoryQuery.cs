@@ -1,10 +1,6 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Sitko.Core.App.Results;
@@ -61,9 +57,9 @@ public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> w
         return this;
     }
 
-    public virtual IRepositoryQuery<TEntity> Where(string property, object value)
+    public virtual IRepositoryQuery<TEntity> Where(string propertyName, object value)
     {
-        SetCondition(property, QueryContextOperator.Equal, value);
+        SetCondition(propertyName, QueryContextOperator.Equal, value);
         return this;
     }
 
@@ -85,9 +81,9 @@ public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> w
     public IRepositoryQuery<TEntity> Where(params QueryContextConditionsGroup[] conditionsGroups) =>
         ApplyConditions(conditionsGroups);
 
-    public virtual IRepositoryQuery<TEntity> Like(string property, object value)
+    public virtual IRepositoryQuery<TEntity> Contains(string propertyName, object value)
     {
-        SetCondition(property, QueryContextOperator.Contains, value);
+        SetCondition(propertyName, QueryContextOperator.Contains, value);
         return this;
     }
 
@@ -105,10 +101,7 @@ public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> w
                              .Select(condition =>
                                  new QueryContextCondition(condition.Property, condition.Operator, condition.Value)))
                 {
-                    if (parsedCondition != null)
-                    {
-                        group.Conditions.Add(parsedCondition);
-                    }
+                    group.Conditions.Add(parsedCondition);
                 }
 
                 if (group.Conditions.Any())
@@ -152,6 +145,7 @@ public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> w
 
     protected abstract void ApplySort((string propertyName, bool isDescending) sortQuery);
 
+    // ReSharper disable once MemberCanBePrivate.Global
     protected IRepositoryQuery<TEntity> ApplyConditions(IEnumerable<QueryContextConditionsGroup> conditionsGroups)
     {
         var whereQueries = new List<string>();
@@ -201,31 +195,31 @@ public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> w
         return new OperationResult<QueryContextCondition>("Error");
     }
 
-    protected virtual void SetCondition(string property, QueryContextOperator @operator, object value)
+    protected virtual void SetCondition(string propertyName, QueryContextOperator propertyOperator, object value)
     {
-        var condition = new QueryContextCondition(property, @operator, value);
+        var condition = new QueryContextCondition(propertyName, propertyOperator, value);
         Where(condition);
     }
 
     private static object? ParsePropertyValue(Type propertyType, object? value)
     {
-        if (value == null)
+        switch (value)
         {
-            return null;
-        }
-
-        if (value is JArray arr)
-        {
-            var values = Activator.CreateInstance(typeof(List<>).MakeGenericType(propertyType)) as IList;
-            if (values != null)
+            case null:
+                return null;
+            case JArray arr:
             {
-                foreach (var child in arr.Children())
+                var values = Activator.CreateInstance(typeof(List<>).MakeGenericType(propertyType)) as IList;
+                if (values != null)
                 {
-                    values.Add(ParsePropertyValue(propertyType, child));
+                    foreach (var child in arr.Children())
+                    {
+                        values.Add(ParsePropertyValue(propertyType, child));
+                    }
                 }
-            }
 
-            return values;
+                return values;
+            }
         }
 
         if (value is not string && value is IEnumerable enumerable)
@@ -254,9 +248,9 @@ public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> w
             var enumType = propertyType;
             var parsed = int.TryParse(value.ToString(), out var intValue);
 
-            if (Enum.IsDefined(enumType, value.ToString()) || (parsed && Enum.IsDefined(enumType, intValue)))
+            if (Enum.IsDefined(enumType, value.ToString()!) || (parsed && Enum.IsDefined(enumType, intValue)))
             {
-                parsedValue = Enum.Parse(enumType, value.ToString());
+                parsedValue = Enum.Parse(enumType, value.ToString()!);
             }
         }
 
@@ -269,7 +263,7 @@ public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> w
         }
         else if (propertyType == typeof(Uri))
         {
-            parsedValue = new Uri(Convert.ToString(value));
+            parsedValue = new Uri(Convert.ToString(value, CultureInfo.InvariantCulture)!);
         }
         else if (propertyType == typeof(DateTimeOffset) || propertyType == typeof(DateTimeOffset?))
         {
@@ -287,7 +281,7 @@ public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> w
         }
         else
         {
-            parsedValue = Convert.ChangeType(value.ToString(), propertyType);
+            parsedValue = Convert.ChangeType(value.ToString(), propertyType, CultureInfo.InvariantCulture);
         }
 
         return parsedValue;
@@ -318,3 +312,4 @@ public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> w
         return sortParameters;
     }
 }
+

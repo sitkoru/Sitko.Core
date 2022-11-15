@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Sitko.Core.Repository.Tests.Data;
+﻿namespace Sitko.Core.Repository.Tests.Data;
 
 public class BazModel : Entity<Guid>
 {
@@ -9,3 +6,4 @@ public class BazModel : Entity<Guid>
     public List<FooModel> Foos { get; set; } = new();
     public List<BarModel> Bars { get; set; } = new();
 }
+

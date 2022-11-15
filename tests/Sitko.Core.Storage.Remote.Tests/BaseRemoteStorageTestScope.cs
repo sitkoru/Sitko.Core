@@ -1,4 +1,3 @@
-using System;
 using Sitko.Core.Storage.Remote.Tests.Server;
 using Sitko.Core.Storage.S3;
 using Sitko.Core.Xunit;
@@ -8,7 +7,7 @@ namespace Sitko.Core.Storage.Remote.Tests;
 
 public class BaseRemoteStorageTestScope : WebTestScope
 {
-    private Guid bucketName = Guid.NewGuid();
+    private readonly Guid bucketName = Guid.NewGuid();
 
     protected override WebTestApplication ConfigureWebApplication(WebTestApplication application, string name)
     {
@@ -47,3 +46,4 @@ public class BaseRemoteStorageTestScope : WebTestScope
         return application;
     }
 }
+

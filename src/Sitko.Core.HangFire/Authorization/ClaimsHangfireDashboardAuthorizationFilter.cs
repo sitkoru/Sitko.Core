@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Hangfire.Dashboard;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
@@ -27,3 +26,4 @@ public class ClaimsHangfireDashboardAuthorizationFilter : IdentityHangfireDashbo
         return false;
     }
 }
+

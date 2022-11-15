@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using System.Globalization;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -80,17 +81,19 @@ public abstract class WasmApplication : Application
         LoggingExtensions.ConfigureSerilog(applicationContext, hostBuilder.Logging, serilogConfiguration,
             configuration =>
             {
-                configuration.WriteTo.BrowserConsole(
+                configuration = configuration.WriteTo.BrowserConsole(
                     outputTemplate: applicationContext.Options.ConsoleLogFormat,
+                    formatProvider: CultureInfo.InvariantCulture,
                     jsRuntime: tmpHost.Services.GetRequiredService<IJSRuntime>());
 
-                ConfigureLogging(applicationContext, configuration);
+                return ConfigureLogging(applicationContext, configuration);
             });
 
         // Host builder via modules
         LogInternal("Configure host builder in modules");
         foreach (var configurationModule in enabledModuleRegistrations
                      .Select(module => module.GetInstance())
+                     // ReSharper disable once SuspiciousTypeConversion.Global
                      .OfType<IWasmApplicationModule>())
         {
             configurationModule.ConfigureHostBuilder(applicationContext, hostBuilder);
@@ -147,3 +150,4 @@ public abstract class WasmApplication : Application
         serviceProvider.GetRequiredService<IWebAssemblyHostEnvironment>(),
         serviceProvider.GetRequiredService<IConfiguration>());
 }
+

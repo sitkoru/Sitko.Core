@@ -1,12 +1,12 @@
 using Sitko.Core.Storage.Tests;
 using Xunit.Abstractions;
 
-namespace Sitko.Core.Storage.FileSystem.Tests
+namespace Sitko.Core.Storage.FileSystem.Tests;
+
+public class BasicTests : BasicTests<BaseFileSystemStorageTestScope>
 {
-    public class BasicTests : BasicTests<BaseFileSystemStorageTestScope>
+    public BasicTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
-        public BasicTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
-        {
-        }
     }
 }
+

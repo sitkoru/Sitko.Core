@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Sitko.Core.App;
 
@@ -25,3 +24,4 @@ public static class ApplicationExtensions
         application.AddModule<IdentityModule<TUser, TRole, TPk, TDbContext>, IdentityModuleOptions>(
             configure, optionsKey);
 }
+

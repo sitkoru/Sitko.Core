@@ -1,5 +1,4 @@
-﻿using System;
-using Sitko.Core.App;
+﻿using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.FileSystem;
 
@@ -35,3 +34,4 @@ public static class ApplicationExtensions
                 FileSystemStorageMetadataModuleOptions<TStorageOptions>>(
                 configure, optionsKey);
 }
+

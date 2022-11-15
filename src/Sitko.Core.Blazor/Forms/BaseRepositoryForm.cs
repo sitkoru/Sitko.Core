@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using KellermanSoftware.CompareNetObjects;
+﻿using KellermanSoftware.CompareNetObjects;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.Repository;
@@ -9,7 +6,9 @@ using Sitko.Core.Repository;
 namespace Sitko.Core.Blazor.Forms;
 
 public abstract class BaseRepositoryForm<TEntity, TEntityPk, TRepository> : BaseForm<TEntity>
-    where TEntity : class, IEntity<TEntityPk>, new() where TRepository : class, IRepository<TEntity, TEntityPk>
+    where TEntity : class, IEntity<TEntityPk>, new()
+    where TRepository : class, IRepository<TEntity, TEntityPk>
+    where TEntityPk : notnull
 {
     private TEntityPk? currentEntityId;
     [Parameter] public TEntityPk? EntityId { get; set; }
@@ -39,7 +38,7 @@ public abstract class BaseRepositoryForm<TEntity, TEntityPk, TRepository> : Base
         {
             entity = await repository.GetAsync(async q =>
             {
-                q.Where(e => e.Id!.Equals(EntityId));
+                q.Where(e => e.Id.Equals(EntityId));
                 await ConfigureQueryAsync(q);
             });
             if (entity is null)
@@ -88,3 +87,4 @@ public abstract class BaseRepositoryForm<TEntity, TEntityPk, TRepository> : Base
         comparisonConfig.CollectionMatchingSpec.Add(typeof(IEntity), new[] { nameof(IEntity.EntityId) });
     }
 }
+

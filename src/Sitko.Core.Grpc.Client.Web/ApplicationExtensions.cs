@@ -1,5 +1,4 @@
-﻿using System;
-using Grpc.Core;
+﻿using Grpc.Core;
 using Grpc.Net.Client.Web;
 using JetBrains.Annotations;
 using Sitko.Core.App;
@@ -14,7 +13,8 @@ public static class ApplicationExtensions
         Action<IApplicationContext, ExternalGrpcClientModuleOptions<TClient>> configure,
         string? optionsKey = null)
         where TClient : ClientBase<TClient> =>
-        application.AddModule<ExternalGrpcClientModule<TClient>, ExternalGrpcClientModuleOptions<TClient>>((context, options) =>
+        application.AddModule<ExternalGrpcClientModule<TClient>, ExternalGrpcClientModuleOptions<TClient>>(
+            (context, options) =>
             {
                 options.ConfigureHttpHandler = handler => new GrpcWebHandler(handler);
                 configure(context, options);
@@ -32,3 +32,4 @@ public static class ApplicationExtensions
             },
             optionsKey);
 }
+

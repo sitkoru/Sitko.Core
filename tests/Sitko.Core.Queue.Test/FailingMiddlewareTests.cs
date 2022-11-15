@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Sitko.Core.App;
 using Xunit;
 using Xunit.Abstractions;
@@ -65,7 +64,7 @@ public class FailingMiddleware : BaseQueueMiddleware
     public bool FailOnReceive { get; set; } = true;
 
     public override Task<QueuePublishResult> PublishAsync<T>(T message, QueueMessageContext messageContext,
-        PublishAsyncDelegate<T>? callback = null)
+        Func<T, QueueMessageContext, Task<QueuePublishResult>>? callback = null)
     {
         if (!FailOnPublish)
         {
@@ -78,6 +77,7 @@ public class FailingMiddleware : BaseQueueMiddleware
     }
 
     public override Task<bool> ReceiveAsync<T>(T message, QueueMessageContext messageContext,
-        ReceiveAsyncDelegate<T>? callback = null) =>
+        Func<T, QueueMessageContext, Task<bool>>? callback = null) =>
         FailOnReceive ? Task.FromResult(false) : base.ReceiveAsync(message, messageContext, callback);
 }
+

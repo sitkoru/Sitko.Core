@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.Repository.EntityFrameworkCore.Tests.Data;
 using Sitko.Core.Repository.Tests.Data;
@@ -31,11 +30,11 @@ public class EFDisconnectedTests : BaseTest<EFTestScope>
         using (var scope2 = scope.CreateScope())
         {
             var repository2 = scope2.ServiceProvider.GetRequiredService<BarRepository>();
-            bar = await repository2.GetAsync(q => q.Where(b => b.Id == originalBar!.Id));
+            bar = await repository2.GetAsync(q => q.Where(b => b.Id == originalBar.Id));
             Assert.NotNull(bar);
         }
 
-        Assert.Null(bar!.Baz);
+        Assert.Null(bar.Baz);
         bar.Baz = "123";
 
         using (var scope2 = scope.CreateScope())
@@ -102,7 +101,7 @@ public class EFDisconnectedTests : BaseTest<EFTestScope>
         using (var scope2 = scope.CreateScope())
         {
             var repository2 = scope2.ServiceProvider.GetRequiredService<BarRepository>();
-            var updateResult = await repository2.DeleteAsync(originalBar!);
+            var updateResult = await repository2.DeleteAsync(originalBar);
             Assert.True(updateResult);
         }
 
@@ -110,8 +109,9 @@ public class EFDisconnectedTests : BaseTest<EFTestScope>
         {
             var repository = finalScope.ServiceProvider.GetRequiredService<BarRepository>();
             var updatedBar =
-                await repository.GetAsync(q => q.Where(b => b.Id == originalBar!.Id));
+                await repository.GetAsync(q => q.Where(b => b.Id == originalBar.Id));
             Assert.Null(updatedBar);
         }
     }
 }
+

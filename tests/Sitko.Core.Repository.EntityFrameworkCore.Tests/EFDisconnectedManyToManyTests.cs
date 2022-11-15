@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.Repository.EntityFrameworkCore.Tests.Data;
@@ -32,7 +29,7 @@ public class EFDisconnectedManyToManyTests : BaseTest<EFTestScope>
             Assert.NotNull(originalBar);
         }
 
-        Assert.Single(originalBar!.Foos);
+        Assert.Single(originalBar.Foos);
         var foo = originalBar.Foos.First();
         Assert.Empty(foo.BazModels);
 
@@ -228,3 +225,4 @@ public class EFDisconnectedManyToManyTests : BaseTest<EFTestScope>
         }
     }
 }
+

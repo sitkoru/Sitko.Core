@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using FluentAssertions;
 using FluentValidation;
 using Microsoft.Extensions.Configuration.UserSecrets;
@@ -30,7 +26,7 @@ public abstract class BasicRepositoryTests<TScope> : BaseTest<TScope> where TSco
         var item = await repository.GetAsync();
 
         Assert.NotNull(item);
-        var oldValue = item!.Status;
+        var oldValue = item.Status;
         item.Status = TestStatus.Disabled;
 
         var result = await repository.UpdateAsync(item);
@@ -60,7 +56,7 @@ public abstract class BasicRepositoryTests<TScope> : BaseTest<TScope> where TSco
         var item = await repository.GetAsync();
 
         Assert.NotNull(item);
-        item!.Status = TestStatus.Error;
+        item.Status = TestStatus.Error;
 
         var result = await repository.UpdateAsync(item);
         Assert.False(result.IsSuccess);
@@ -80,7 +76,7 @@ public abstract class BasicRepositoryTests<TScope> : BaseTest<TScope> where TSco
         var item = await repository.GetAsync();
 
         Assert.NotNull(item);
-        var oldValue = item!.Status;
+        var oldValue = item.Status;
         item.Status = TestStatus.Disabled;
 
         Assert.NotEqual(oldValue, item.Status);
@@ -117,7 +113,7 @@ public abstract class BasicRepositoryTests<TScope> : BaseTest<TScope> where TSco
 
         var item = await repository.GetAsync(query => query.Where(e => e.TestId != null).Include(e => e.Test));
         Assert.NotNull(item);
-        Assert.NotNull(item!.Test);
+        Assert.NotNull(item.Test);
         Assert.Equal(1, item.Test!.FooId);
     }
 
@@ -132,7 +128,7 @@ public abstract class BasicRepositoryTests<TScope> : BaseTest<TScope> where TSco
 
         var item = await repository.GetAsync(query => query.Where(model => model.Bars.Any()).Include(e => e.Bars));
         Assert.NotNull(item);
-        Assert.NotNull(item!.Bars);
+        Assert.NotNull(item.Bars);
         Assert.NotEmpty(item.Bars);
         Assert.Single(item.Bars);
         Assert.Equal(item.Id, item.Bars.First().TestId);
@@ -203,3 +199,4 @@ public abstract class BasicRepositoryTests<TScope> : BaseTest<TScope> where TSco
         res.IsSuccess.Should().BeTrue();
     }
 }
+

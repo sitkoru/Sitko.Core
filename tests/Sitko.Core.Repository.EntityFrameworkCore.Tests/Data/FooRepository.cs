@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Sitko.Core.Repository.Tests.Data;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore.Tests.Data;
@@ -15,3 +13,4 @@ public class FooRepository : EFRepository<FooModel, Guid, TestDbContext>
     protected override IQueryable<FooModel> AddIncludes(IQueryable<FooModel> query) =>
         base.AddIncludes(query).Include(f => f.BazModels);
 }
+

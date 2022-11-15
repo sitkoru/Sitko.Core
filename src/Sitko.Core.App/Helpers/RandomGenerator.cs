@@ -1,23 +1,23 @@
 ﻿using System.Text;
 
-namespace Sitko.Core.App.Helpers
+namespace Sitko.Core.App.Helpers;
+
+public static class RandomGenerator
 {
-    public static class RandomGenerator
+    private const string ValidSymbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    private static readonly Random Rnd = Random.Shared;
+
+    public static string GetRandomString(int length)
     {
-        private static readonly Random Rnd = Random.Shared;
-        private const string ValidSymbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        var res = new StringBuilder();
 
-        public static string GetRandomString(int length)
+        while (length-- > 0)
         {
-            var res = new StringBuilder();
-
-            while (length-- > 0)
-            {
-                var num = Rnd.Next(0, ValidSymbols.Length);
-                res.Append(ValidSymbols[(int)(num % (uint)ValidSymbols.Length)]);
-            }
-
-            return res.ToString();
+            var num = Rnd.Next(0, ValidSymbols.Length);
+            res.Append(ValidSymbols[(int)(num % (uint)ValidSymbols.Length)]);
         }
+
+        return res.ToString();
     }
 }
+

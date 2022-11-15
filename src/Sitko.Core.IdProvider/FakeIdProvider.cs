@@ -1,16 +1,13 @@
-using System.Threading;
-using System.Threading.Tasks;
+namespace Sitko.Core.IdProvider;
 
-namespace Sitko.Core.IdProvider
+public class FakeIdProvider : IIdProvider
 {
-    public class FakeIdProvider : IIdProvider
-    {
-        private long id = 100500;
+    private long id = 100500;
 
-        public Task<long> NextAsync()
-        {
-            Interlocked.Increment(ref id);
-            return Task.FromResult(id);
-        }
+    public Task<long> NextAsync()
+    {
+        Interlocked.Increment(ref id);
+        return Task.FromResult(id);
     }
 }
+

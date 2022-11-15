@@ -1,5 +1,4 @@
-﻿using System;
-using Sitko.Core.App;
+﻿using Sitko.Core.App;
 
 namespace Sitko.Core.Queue.Nats;
 
@@ -13,3 +12,4 @@ public static class ApplicationExtensions
         Action<NatsQueueModuleOptions>? configure = null, string? optionsKey = null) =>
         application.AddModule<NatsQueueModule, NatsQueueModuleOptions>(configure, optionsKey);
 }
+

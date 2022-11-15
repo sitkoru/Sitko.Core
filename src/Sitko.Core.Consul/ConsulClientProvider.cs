@@ -1,4 +1,3 @@
-using System;
 using Consul;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -10,14 +9,11 @@ public interface IConsulClientProvider
     IConsulClient Client { get; }
 }
 
-public class ConsulClientProvider : IConsulClientProvider
+public class ConsulClientProvider : IConsulClientProvider, IDisposable
 {
     private readonly ILogger<ConsulClientProvider> logger;
     private IConsulClient? consulClient;
     private string? lastKnownAddress;
-
-    public IConsulClient Client =>
-        consulClient ?? throw new InvalidOperationException("Consul client is not initialized");
 
     public ConsulClientProvider(IOptionsMonitor<ConsulModuleOptions> optionsMonitor,
         ILogger<ConsulClientProvider> logger)
@@ -25,6 +21,15 @@ public class ConsulClientProvider : IConsulClientProvider
         this.logger = logger;
         CreateClient(optionsMonitor.CurrentValue);
         optionsMonitor.OnChange(CreateClient);
+    }
+
+    public IConsulClient Client =>
+        consulClient ?? throw new InvalidOperationException("Consul client is not initialized");
+
+    public void Dispose()
+    {
+        consulClient?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private void CreateClient(ConsulModuleOptions options)
@@ -47,3 +52,4 @@ public class ConsulClientProvider : IConsulClientProvider
         lastKnownAddress = options.ConsulUri;
     }
 }
+

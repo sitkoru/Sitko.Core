@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using Sitko.Core.Blazor.Layout;
 
+// ReSharper disable once CheckNamespace
 namespace Sitko.Core.Blazor.MudBlazorComponents;
 
 public class MudPageLayout : BasePageLayout<MudLayoutData, MudLayoutOptions>
@@ -16,3 +16,4 @@ public class MudPageLayout : BasePageLayout<MudLayoutData, MudLayoutOptions>
         Title = Title, Description = Description, Breadcrumbs = Breadcrumbs, Extra = Extra
     };
 }
+

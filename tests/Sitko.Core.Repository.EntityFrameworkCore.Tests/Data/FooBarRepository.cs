@@ -1,4 +1,3 @@
-using System;
 using Sitko.Core.Repository.Tests.Data;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore.Tests.Data;
@@ -10,3 +9,4 @@ public class FooBarRepository : EFRepository<FooBarModel, Guid, SecondTestDbCont
     {
     }
 }
+

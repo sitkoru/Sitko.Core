@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -84,3 +81,4 @@ public abstract class BaseTest<T> : BaseTest where T : IBaseTestScope
 
     protected IServiceScope CreateServiceScope([CallerMemberName] string name = "") => CreateServiceScope<T>(name);
 }
+

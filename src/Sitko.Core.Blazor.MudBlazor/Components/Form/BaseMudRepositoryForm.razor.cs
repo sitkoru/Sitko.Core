@@ -1,14 +1,13 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using Sitko.Core.Repository;
 
+// ReSharper disable once CheckNamespace
 namespace Sitko.Core.Blazor.MudBlazorComponents;
 
 public class MudRepositoryForm<TEntity, TEntityPk> : BaseMudRepositoryForm<TEntity, TEntityPk,
     IRepository<TEntity, TEntityPk>>
-    where TEntity : class, IEntity<TEntityPk>, new()
+    where TEntity : class, IEntity<TEntityPk>, new() where TEntityPk : notnull
 {
     [EditorRequired]
     [Parameter]
@@ -20,6 +19,7 @@ public class MudRepositoryForm<TEntity, TEntityPk> : BaseMudRepositoryForm<TEnti
 public abstract partial class BaseMudRepositoryForm<TEntity, TEntityPk, TRepository>
     where TEntity : class, IEntity<TEntityPk>, new()
     where TRepository : class, IRepository<TEntity, TEntityPk>
+    where TEntityPk : notnull
 {
     protected MudEditForm<TEntity>? FormInstance { get; set; }
     [Parameter] public bool Debug { get; set; }
@@ -50,3 +50,4 @@ public abstract partial class BaseMudRepositoryForm<TEntity, TEntityPk, TReposit
         await base.ResetAsync();
     }
 }
+

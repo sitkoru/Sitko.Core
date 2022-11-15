@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using FluentValidation;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -64,13 +62,13 @@ public class VaultConfigurationModule : BaseApplicationModule<VaultConfiguration
         }
     }
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         VaultConfigurationModuleOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         if (startupOptions.ReloadOnChange)
         {
-            services.TryAddSingleton((IConfigurationRoot)context.Configuration);
+            services.TryAddSingleton((IConfigurationRoot)applicationContext.Configuration);
             services.AddHostedService<VaultChangeWatcher>();
         }
 
@@ -87,16 +85,16 @@ public class VaultConfigurationModuleOptions : BaseModuleOptions
     public string Uri { get; set; } = string.Empty;
     public string Token { get; set; } = string.Empty;
     public string MountPoint { get; set; } = "secret";
-    public string? VaultSecret { get; set; } = null;
-    public string? VaultRoleId { get; set; } = null;
+    public string? VaultSecret { get; [UsedImplicitly] set; }
+    public string? VaultRoleId { get; [UsedImplicitly] set; }
     public bool ReloadOnChange { get; set; } = true;
     public int ReloadCheckIntervalSeconds { get; set; } = 60;
-    public bool OmitVaultKeyName { get; set; } = false;
+    public bool OmitVaultKeyName { get; [UsedImplicitly] set; }
     public bool RenewToken { get; set; } = true;
     public int TokenRenewIntervalMinutes { get; set; } = 60;
     public bool ThrowOnEmptySecrets { get; set; } = true;
 
-    public IEnumerable<char>? AdditionalCharactersForConfigurationPath { get; set; } = null;
+    public IEnumerable<char>? AdditionalCharactersForConfigurationPath { get; [UsedImplicitly] set; }
 
     public VaultOptions GetOptions() =>
         new(Uri, Token, VaultSecret, VaultRoleId, ReloadOnChange, ReloadCheckIntervalSeconds,
@@ -121,3 +119,4 @@ public class VaultConfigurationOptionsValidator : AbstractValidator<VaultConfigu
         RuleFor(o => o.Secrets).NotEmpty().WithMessage("Vault secrets list is empty");
     }
 }
+

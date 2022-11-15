@@ -1,10 +1,9 @@
 ﻿using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.App;
 
-internal class CommandsModule : BaseApplicationModule
+internal sealed class CommandsModule : BaseApplicationModule
 {
     public override string OptionsKey => "Commands";
 
@@ -34,3 +33,4 @@ internal class CommandsModule : BaseApplicationModule
         return true;
     }
 }
+

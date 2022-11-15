@@ -1,5 +1,4 @@
-﻿using System;
-using Grpc.Core;
+﻿using Grpc.Core;
 using JetBrains.Annotations;
 using Sitko.Core.App;
 using Sitko.Core.Grpc.Client.External;
@@ -55,3 +54,4 @@ public static class ApplicationExtensions
         return application;
     }
 }
+

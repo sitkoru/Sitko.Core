@@ -1,10 +1,10 @@
-namespace Sitko.Core.Blazor.FileUpload
+namespace Sitko.Core.Blazor.FileUpload;
+
+public interface IFileUploadResult
 {
-    public interface IFileUploadResult
-    {
-        string FileName { get; }
-        string FilePath { get; }
-        long FileSize { get; }
-        string Url { get; }
-    }
+    string FileName { get; }
+    string FilePath { get; }
+    long FileSize { get; }
+    string Url { get; }
 }
+

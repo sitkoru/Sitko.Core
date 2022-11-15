@@ -1,32 +1,30 @@
-using System.IO;
+namespace Sitko.Core.Storage.Internal;
 
-namespace Sitko.Core.Storage.Internal
+public static class Helpers
 {
-    public static class Helpers
+    public static string? PreparePath(string? path)
     {
-        public static string? PreparePath(string? path)
+        if (path?.StartsWith('/') == true)
         {
-            if (path?.StartsWith('/') == true)
-            {
-                path = path.Substring(1);
-            }
-
-            return path?.Replace("\\", "/").Replace("//", "/");
+            path = path.Substring(1);
         }
 
-        public static string GetPathWithoutPrefix(string? prefix, string filePath)
-        {
-            if (!string.IsNullOrEmpty(prefix))
-            {
-                if (filePath.StartsWith("/"))
-                {
-                    prefix = "/" + prefix;
-                }
+        return path?.Replace("\\", "/").Replace("//", "/");
+    }
 
-                filePath = PreparePath(Path.GetRelativePath(prefix, filePath))!;
+    public static string GetPathWithoutPrefix(string? prefix, string filePath)
+    {
+        if (!string.IsNullOrEmpty(prefix))
+        {
+            if (filePath.StartsWith("/", StringComparison.InvariantCulture))
+            {
+                prefix = "/" + prefix;
             }
 
-            return filePath;
+            filePath = PreparePath(Path.GetRelativePath(prefix, filePath))!;
         }
+
+        return filePath;
     }
 }
+

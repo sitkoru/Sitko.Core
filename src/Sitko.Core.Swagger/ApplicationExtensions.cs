@@ -1,5 +1,4 @@
-﻿using System;
-using Sitko.Core.App;
+﻿using Sitko.Core.App;
 
 namespace Sitko.Core.Swagger;
 
@@ -13,3 +12,4 @@ public static class ApplicationExtensions
         Action<SwaggerModuleOptions>? configure = null, string? optionsKey = null) =>
         application.AddModule<SwaggerModule, SwaggerModuleOptions>(configure, optionsKey);
 }
+

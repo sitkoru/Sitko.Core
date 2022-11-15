@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sitko.Core.App.Json;
@@ -59,7 +53,7 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
 
         if (uploadRequest.Metadata?.Data is not null)
         {
-            content.Add(new StringContent(uploadRequest.Metadata?.Data), "metadata");
+            content.Add(new StringContent(uploadRequest.Metadata.Data), "metadata");
         }
 
         request.Content = content;
@@ -110,7 +104,7 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
     protected override async Task<StorageItemDownloadInfo?> DoGetFileAsync(string path,
         CancellationToken cancellationToken = default)
     {
-        var response = await HttpClient.GetJsonAsync<RemoteStorageItem?>($"?path={path}", cancellationToken: cancellationToken);
+        var response = await HttpClient.GetJsonAsync<RemoteStorageItem?>($"?path={path}", cancellationToken);
         if (response is null)
         {
             return null;
@@ -133,7 +127,8 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
 
     protected override async Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
         CancellationToken cancellationToken = default) =>
-        await HttpClient.GetJsonAsync<StorageItemInfo[]>($"List?path={path}", cancellationToken: cancellationToken) ?? Array.Empty<StorageItemInfo>();
+        await HttpClient.GetJsonAsync<StorageItemInfo[]>($"List?path={path}", cancellationToken) ??
+        Array.Empty<StorageItemInfo>();
 
     public async Task DoUpdateMetaDataAsync(StorageItem storageItem, StorageItemMetadata metadata,
         CancellationToken cancellationToken)
@@ -150,3 +145,4 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
         }
     }
 }
+

@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
@@ -17,10 +14,10 @@ public abstract class QueueModule<TQueue, TConfig> : BaseApplicationModule<TConf
     where TQueue : class, IQueue
     where TConfig : QueueModuleOptions, new()
 {
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TConfig startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddSingleton<IQueue, TQueue>();
         services.AddSingleton<QueueContext>();
 
@@ -52,15 +49,15 @@ public abstract class QueueModule<TQueue, TConfig> : BaseApplicationModule<TConf
             }
         }
 
-        foreach ((var serviceType, var implementationType) in startupOptions.TranslateMediatRTypes)
+        foreach (var (serviceType, implementationType) in startupOptions.TranslateMediatRTypes)
         {
             services.AddTransient(serviceType, implementationType);
         }
     }
 
-    public override IEnumerable<Type> GetRequiredModules(IApplicationContext context, TConfig options)
+    public override IEnumerable<Type> GetRequiredModules(IApplicationContext applicationContext, TConfig options)
     {
-        var modules = new List<Type>(base.GetRequiredModules(context, options));
+        var modules = new List<Type>(base.GetRequiredModules(applicationContext, options));
 
         if (options.TranslateMediatRTypes.Any())
         {
@@ -70,3 +67,4 @@ public abstract class QueueModule<TQueue, TConfig> : BaseApplicationModule<TConf
         return modules;
     }
 }
+

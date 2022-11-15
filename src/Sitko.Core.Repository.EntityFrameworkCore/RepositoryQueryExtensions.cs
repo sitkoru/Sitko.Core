@@ -1,5 +1,3 @@
-using System.Linq;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,3 +31,4 @@ public static class RepositoryQueryExtensions
         return (items, itemsCount);
     }
 }
+

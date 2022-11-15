@@ -1,5 +1,3 @@
-using System.IO;
-using System.Threading.Tasks;
 using Sitko.Core.Storage.Tests;
 using Xunit;
 using Xunit.Abstractions;
@@ -46,3 +44,4 @@ public class BasicTests : BasicTests<BasePostgresStorageTestScope>
         await CheckFoldersContent(storage, restored, null);
     }
 }
+

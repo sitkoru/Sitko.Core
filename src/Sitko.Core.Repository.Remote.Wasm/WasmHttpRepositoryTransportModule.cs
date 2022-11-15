@@ -6,10 +6,10 @@ namespace Sitko.Core.Repository.Remote.Wasm;
 
 public class WasmHttpRepositoryTransportModule : HttpRepositoryTransportModule
 {
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         HttpRepositoryTransportOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddTransient<CookieHandler>();
     }
 
@@ -28,3 +28,4 @@ public class CookieHandler : DelegatingHandler
         return await base.SendAsync(request, cancellationToken);
     }
 }
+

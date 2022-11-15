@@ -1,4 +1,3 @@
-using System;
 using System.Text.Json.Serialization;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -15,10 +14,10 @@ public abstract class BaseDbModule<TDbContext, TConfig> : BaseApplicationModule<
     where TDbContext : DbContext
     where TConfig : BaseDbModuleOptions<TDbContext>, new()
 {
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TConfig startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddHealthChecks().AddDbContextCheck<TDbContext>($"DB {typeof(TDbContext)} check");
     }
 }
@@ -39,3 +38,4 @@ public abstract class BaseDbModuleOptionsValidator<TOptions, TDbContext> : Abstr
     where TOptions : BaseDbModuleOptions<TDbContext> where TDbContext : DbContext
 {
 }
+
