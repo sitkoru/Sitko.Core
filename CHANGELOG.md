@@ -1,3 +1,15 @@
+# [10.0.0](https://github.com/sitkoru/Sitko.Core/compare/9.14.2...10.0.0) (2022-11-15)
+
+
+### Features
+
+* .NET 7 ([d96e410](https://github.com/sitkoru/Sitko.Core/commit/d96e410b5247a8c74cf6620f0ec2147cc35fe72f))
+
+
+### BREAKING CHANGES
+
+* drop .net 3.1, .net 5.0, .netstandard support. Only .net 6.0 and .net 7.0 supported. Switch to nuget central package management. ef core 7.
+
 ## [9.14.2](https://github.com/sitkoru/Sitko.Core/compare/9.14.1...9.14.2) (2022-11-09)
 
 
