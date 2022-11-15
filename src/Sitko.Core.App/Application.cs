@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,7 +31,7 @@ public abstract class Application : IApplication, IAsyncDisposable
 
     protected Dictionary<string, LogEventLevel> LogEventLevels { get; } = new();
 
-    protected List<Action<IApplicationContext, LoggerConfiguration>>
+    protected List<Func<IApplicationContext, LoggerConfiguration, LoggerConfiguration>>
         LoggerConfigurationActions { get; } = new();
 
     protected List<Action<IApplicationContext, IServiceCollection>>
@@ -125,23 +121,25 @@ public abstract class Application : IApplication, IAsyncDisposable
         }
     }
 
-    protected virtual void ConfigureLogging(IApplicationContext applicationContext,
+    protected virtual LoggerConfiguration ConfigureLogging(IApplicationContext applicationContext,
         LoggerConfiguration loggerConfiguration)
     {
         foreach (var (key, value) in LogEventLevels)
         {
-            loggerConfiguration.MinimumLevel.Override(key, value);
+            loggerConfiguration = loggerConfiguration.MinimumLevel.Override(key, value);
         }
 
         foreach (var moduleRegistration in GetEnabledModuleRegistrations<ILoggingModule>(applicationContext))
         {
-            moduleRegistration.ConfigureLogging(applicationContext, loggerConfiguration);
+            loggerConfiguration = moduleRegistration.ConfigureLogging(applicationContext, loggerConfiguration);
         }
 
         foreach (var loggerConfigurationAction in LoggerConfigurationActions)
         {
-            loggerConfigurationAction(applicationContext, loggerConfiguration);
+            loggerConfiguration = loggerConfigurationAction(applicationContext, loggerConfiguration);
         }
+
+        return loggerConfiguration;
     }
 
     [PublicAPI]
@@ -396,7 +394,7 @@ public abstract class Application : IApplication, IAsyncDisposable
         return this;
     }
 
-    public Application ConfigureLogging(Action<IApplicationContext, LoggerConfiguration> configure)
+    public Application ConfigureLogging(Func<IApplicationContext, LoggerConfiguration, LoggerConfiguration> configure)
     {
         LoggerConfigurationActions.Add(configure);
         return this;
@@ -452,3 +450,4 @@ public abstract class Application : IApplication, IAsyncDisposable
             configureOptions?.Invoke(moduleOptions);
         }, optionsKey);
 }
+

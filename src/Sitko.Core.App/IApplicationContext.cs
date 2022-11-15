@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Globalization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -34,6 +34,7 @@ public abstract class BaseApplicationContext : IApplicationContext
         var loggerConfiguration = new LoggerConfiguration();
         loggerConfiguration
             .WriteTo.Console(outputTemplate: ApplicationOptions.BaseConsoleLogFormat,
+                formatProvider: CultureInfo.InvariantCulture,
                 restrictedToMinimumLevel: LogEventLevel.Debug);
         Logger = new SerilogLoggerFactory(loggerConfiguration.CreateLogger()).CreateLogger<IApplicationContext>();
     }

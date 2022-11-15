@@ -1,6 +1,5 @@
-﻿using System;
+﻿using System.Globalization;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,6 +24,7 @@ public abstract class HostedApplication : Application
         var loggerConfiguration = new LoggerConfiguration();
         loggerConfiguration
             .WriteTo.Console(outputTemplate: ApplicationOptions.BaseConsoleLogFormat,
+                formatProvider: CultureInfo.InvariantCulture,
                 restrictedToMinimumLevel: LogEventLevel.Debug);
         InternalLogger = new SerilogLoggerFactory(loggerConfiguration.CreateLogger()).CreateLogger<Application>();
     }
@@ -139,14 +139,15 @@ public abstract class HostedApplication : Application
                 LoggingExtensions.ConfigureSerilog(bootApplicationContext, builder, serilogConfiguration,
                     configuration =>
                     {
-                        configuration.Enrich.WithMachineName();
+                        configuration = configuration.Enrich.WithMachineName();
                         if (bootApplicationContext.Options.EnableConsoleLogging == true)
                         {
-                            configuration.WriteTo.Console(
-                                outputTemplate: bootApplicationContext.Options.ConsoleLogFormat);
+                            configuration = configuration.WriteTo.Console(
+                                outputTemplate: bootApplicationContext.Options.ConsoleLogFormat,
+                                formatProvider: CultureInfo.InvariantCulture);
                         }
 
-                        ConfigureLogging(bootApplicationContext, configuration);
+                        configuration = ConfigureLogging(bootApplicationContext, configuration);
                     });
             });
         configure?.Invoke(hostBuilder);

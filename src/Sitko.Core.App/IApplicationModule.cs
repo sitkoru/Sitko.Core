@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -56,7 +53,7 @@ public interface ILoggingModule : IApplicationModule
 public interface ILoggingModule<in TModuleOptions> : ILoggingModule, IApplicationModule<TModuleOptions>
     where TModuleOptions : class, new()
 {
-    void ConfigureLogging(IApplicationContext context, TModuleOptions options,
+    LoggerConfiguration ConfigureLogging(IApplicationContext context, TModuleOptions options,
         LoggerConfiguration loggerConfiguration);
 }
 
@@ -71,3 +68,6 @@ public interface IConfigurationModule<in TModuleOptions> : IApplicationModule<TM
     void ConfigureAppConfiguration(IConfigurationBuilder configurationBuilder,
         TModuleOptions startupOptions);
 }
+
+
+

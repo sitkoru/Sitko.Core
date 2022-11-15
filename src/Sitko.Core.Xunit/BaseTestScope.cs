@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
@@ -56,9 +57,11 @@ public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
 
         scopeApplication.ConfigureLogging((_, loggerConfiguration) =>
         {
-            loggerConfiguration.WriteTo.TestOutput(testOutputHelper,
+            loggerConfiguration = loggerConfiguration.WriteTo.TestOutput(testOutputHelper,
                 outputTemplate:
-                "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}{NewLine}---------{NewLine}{Properties:j}{NewLine}---------");
+                "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}{NewLine}---------{NewLine}{Properties:j}{NewLine}---------",
+                formatProvider: CultureInfo.InvariantCulture);
+            return loggerConfiguration;
         });
 
         scopeApplication = ConfigureApplication(scopeApplication, name);
