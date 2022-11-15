@@ -23,7 +23,7 @@ public class BrowserProvider : IBrowserProvider
     private PuppeteerModuleOptions Options => optionsMonitor.CurrentValue;
 
 
-    public async Task<Browser> GetBrowserAsync()
+    public async Task<IBrowser> GetBrowserAsync()
     {
         if (!string.IsNullOrEmpty(Options.BrowserWsEndpoint))
         {

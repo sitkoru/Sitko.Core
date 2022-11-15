@@ -1,18 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
-  </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="3.1.30" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="5.0.17" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="6.0.10" />
+    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj"/>
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis"/>
   </ItemGroup>
 </Project>

@@ -34,11 +34,7 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposab
     protected bool IsInitialized { get; private set; }
 
     private ILogger? logger;
-#if NET6_0_OR_GREATER
     private AsyncServiceScope? scope;
-#else
-    private IServiceScope? scope;
-#endif
 
     protected BaseComponent()
     {
@@ -128,11 +124,7 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposab
             NavigationManager.LocationChanged -= HandleLocationChanged;
             if (scope is not null)
             {
-#if NET6_0_OR_GREATER
                 await scope.Value.DisposeAsync();
-#else
-                scope.Dispose();
-#endif
             }
 
             Dispose(true);
@@ -162,11 +154,7 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposab
         await base.OnInitializedAsync();
         if (ScopeType == ScopeType.Isolated)
         {
-#if NET6_0_OR_GREATER
             scope = ServiceProvider.CreateAsyncScope();
-#else
-            scope = ServiceProvider.CreateScope();
-#endif
         }
 
         try

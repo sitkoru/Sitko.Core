@@ -1,4 +1,3 @@
-#if NET6_0_OR_GREATER
 using System;
 using System.Threading.Tasks;
 
@@ -10,4 +9,3 @@ public interface ICompressedPersistentComponentState
     Task<(bool isSuccess, T? data)> TryTakeFromBytesAsync<T>(string key);
     void RegisterOnPersisting(Func<Task> callback);
 }
-#endif

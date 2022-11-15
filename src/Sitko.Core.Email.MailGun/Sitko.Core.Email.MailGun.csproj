@@ -1,12 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
-  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Email\Sitko.Core.Email.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentEmail.Mailgun" Version="3.0.2"/>
+    <PackageReference Include="FluentEmail.Mailgun"/>
   </ItemGroup>
 </Project>

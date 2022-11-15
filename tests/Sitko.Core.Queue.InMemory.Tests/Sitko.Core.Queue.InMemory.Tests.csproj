@@ -1,9 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\src\Sitko.Core.Queue.InMemory\Sitko.Core.Queue.InMemory.csproj"/>
     <ProjectReference Include="..\Sitko.Core.Queue.Test\Sitko.Core.Queue.Tests.csproj"/>

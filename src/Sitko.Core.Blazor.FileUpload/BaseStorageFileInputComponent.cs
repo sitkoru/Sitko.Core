@@ -11,9 +11,7 @@ namespace Sitko.Core.Blazor.FileUpload
     public abstract class
         BaseStorageFileInputComponent<TInput> : BaseFileInputComponent<StorageFileUploadResult, TInput>
     {
-#if NET6_0_OR_GREATER
         [EditorRequired]
-#endif
         [Parameter]
         public IStorage Storage { get; set; } = null!;
 

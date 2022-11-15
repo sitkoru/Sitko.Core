@@ -10,7 +10,7 @@ namespace Sitko.Core.App.Json
         public static async Task<T?> GetJsonAsync<T>(this HttpClient client, string url, CancellationToken cancellationToken = default)
         {
             var response = await client.GetAsync(url, cancellationToken);
-            return JsonSerializer.Deserialize<T>(await response.Content.ReadAsByteArrayAsync());
+            return JsonSerializer.Deserialize<T>(await response.Content.ReadAsByteArrayAsync(cancellationToken));
         }
     }
 }

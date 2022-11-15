@@ -8,10 +8,7 @@ public class FormEditContextCatcher : ComponentBase
 {
     [CascadingParameter] public EditContext? CurrentEditContext { get; set; }
 
-#if NET6_0_OR_GREATER
-        [EditorRequired]
-#endif
-    [Parameter] public BaseForm? Form { get; set; }
+    [EditorRequired] [Parameter] public BaseForm? Form { get; set; }
 
     protected override void OnInitialized()
     {

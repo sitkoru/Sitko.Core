@@ -5,5 +5,5 @@ namespace Sitko.Core.Puppeteer;
 
 public interface IBrowserProvider
 {
-    Task<Browser> GetBrowserAsync();
+    Task<IBrowser> GetBrowserAsync();
 }

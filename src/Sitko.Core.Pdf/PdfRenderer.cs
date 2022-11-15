@@ -97,7 +97,7 @@ internal class PdfRenderer : IPdfRenderer
         }
     }
 
-    private async Task<Page> GetPageByUrl(Browser browser, string url, TimeSpan? delay = null)
+    private async Task<IPage> GetPageByUrl(IBrowser browser, string url, TimeSpan? delay = null)
     {
         var page = await browser.NewPageAsync();
         await page.GoToAsync(url);
@@ -109,7 +109,7 @@ internal class PdfRenderer : IPdfRenderer
         return page;
     }
 
-    private async Task<Page> GetPageWithHtml(Browser browser, string html, TimeSpan? delay = null)
+    private async Task<IPage> GetPageWithHtml(IBrowser browser, string html, TimeSpan? delay = null)
     {
         var page = await browser.NewPageAsync();
         await page.SetContentAsync(html);

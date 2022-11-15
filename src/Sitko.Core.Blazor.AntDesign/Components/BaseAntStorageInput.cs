@@ -31,9 +31,7 @@ public abstract class BaseAntStorageInput<TValue> : InputBase<TValue>, IBaseComp
     [Parameter] public string PreviewText { get; set; } = "";
     [Parameter] public string DownloadText { get; set; } = "";
     [Parameter] public string RemoveText { get; set; } = "";
-#if NET6_0_OR_GREATER
     [EditorRequired]
-#endif
     [Parameter]
     public IStorage Storage { get; set; } = null!;
 

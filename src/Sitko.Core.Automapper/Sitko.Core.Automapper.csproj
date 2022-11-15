@@ -1,13 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0"/>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection"/>
   </ItemGroup>
 </Project>

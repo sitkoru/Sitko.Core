@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
     <OpenApiGenerateDocumentsOnBuild>false</OpenApiGenerateDocumentsOnBuild>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" PrivateAssets="None"/>
-    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.4.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" PrivateAssets="None"/>
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj"/>

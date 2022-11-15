@@ -1,5 +1,4 @@
-﻿#if NET6_0_OR_GREATER
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -156,4 +155,3 @@ public record TextBlock : TestBlock
     public override string ToString() => Text;
     public string Text { get; set; } = string.Empty;
 }
-#endif

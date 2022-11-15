@@ -18,12 +18,7 @@ public abstract class WasmApplication : Application
 {
     private WebAssemblyHost? appHost;
 
-    protected WasmApplication(string[] args) : base(args)
-    {
-#if NET6_0_OR_GREATER
-        this.AddPersistentState();
-#endif
-    }
+    protected WasmApplication(string[] args) : base(args) => this.AddPersistentState();
 
     protected WebAssemblyHost CreateAppHost(Action<WebAssemblyHostBuilder>? configure = null)
     {

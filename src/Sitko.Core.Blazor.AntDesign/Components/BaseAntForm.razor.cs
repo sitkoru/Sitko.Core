@@ -11,9 +11,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components;
 public class AntForm<TEntity> : BaseAntForm<TEntity>
     where TEntity : class, new()
 {
-#if NET6_0_OR_GREATER
     [EditorRequired]
-#endif
     [Parameter]
     public RenderFragment<BaseAntForm<TEntity>> ChildContent { get; set; } = null!;
 
@@ -71,21 +69,15 @@ public abstract partial class BaseAntForm<TEntity> where TEntity : class, new()
 
     [Inject] protected MessageService MessageService { get; set; } = null!;
 
-#if NET6_0_OR_GREATER
     [EditorRequired]
-#endif
     [Parameter]
     public Func<TEntity, Task<FormSaveResult>>? Add { get; set; }
 
-#if NET6_0_OR_GREATER
     [EditorRequired]
-#endif
     [Parameter]
     public Func<TEntity, Task<FormSaveResult>>? Update { get; set; }
 
-#if NET6_0_OR_GREATER
     [EditorRequired]
-#endif
     [Parameter]
     public Func<Task<(bool IsNew, TEntity Entity)>>? GetEntity { get; set; }
 
