@@ -9,16 +9,18 @@ public class NewRelicLoggingModule : BaseApplicationModule<NewRelicLoggingModule
 {
     public override string OptionsKey => "Logging:NewRelic";
 
-    public void ConfigureLogging(IApplicationContext context, NewRelicLoggingModuleOptions options,
+    public LoggerConfiguration ConfigureLogging(IApplicationContext context, NewRelicLoggingModuleOptions options,
         LoggerConfiguration loggerConfiguration)
     {
         if (options.EnableLogging)
         {
-            loggerConfiguration
+            loggerConfiguration = loggerConfiguration
                 .Enrich.WithNewRelicLogsInContext()
                 .WriteTo.NewRelicLogs(options.LogsUrl,
                     context.Name,
                     options.LicenseKey);
         }
+
+        return loggerConfiguration;
     }
 }

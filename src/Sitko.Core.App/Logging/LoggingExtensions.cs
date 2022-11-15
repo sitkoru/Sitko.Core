@@ -24,7 +24,8 @@ public class LoggingExtensions
         loggerConfiguration
             .Enrich.FromLogContext()
             .Enrich.WithProperty("App", appContext.Name)
-            .Enrich.WithProperty("AppVersion", appContext.Version);
+            .Enrich.WithProperty("AppVersion", appContext.Version)
+            .Enrich.WithProperty("AppEnvironment", appContext.Environment);
 
 
         configureLogging(loggerConfiguration);

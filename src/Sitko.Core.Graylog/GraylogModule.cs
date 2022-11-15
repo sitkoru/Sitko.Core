@@ -8,8 +8,9 @@ public class GraylogModule : BaseApplicationModule<GraylogModuleOptions>, ILoggi
 {
     public override string OptionsKey => "Logging:Graylog";
 
-    public void ConfigureLogging(IApplicationContext context, GraylogModuleOptions options,
+    public LoggerConfiguration ConfigureLogging(IApplicationContext context, GraylogModuleOptions options,
         LoggerConfiguration loggerConfiguration) =>
         loggerConfiguration.WriteTo.Async(to => to.Graylog(
             new GraylogSinkOptions { HostnameOrAddress = options.Host, Port = options.Port, Facility = context.Name }));
 }
+

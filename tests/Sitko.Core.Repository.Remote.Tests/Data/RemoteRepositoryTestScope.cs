@@ -122,9 +122,7 @@ public class RemoteRepositoryTestScope : WebTestScope
             }
         });
         application.ConfigureLogging((_, configuration) =>
-        {
-            configuration.MinimumLevel.Override("Sitko.Core.Repository", LogEventLevel.Debug);
-        });
+            configuration.MinimumLevel.Override("Sitko.Core.Repository", LogEventLevel.Debug));
 
         return application;
     }

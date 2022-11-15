@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using Elastic.Apm.NetCoreAll;
 using Elastic.Apm.SerilogEnricher;
 using Elastic.CommonSchema.Serilog;
@@ -87,7 +84,7 @@ public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOption
 
     public override string OptionsKey => "ElasticApm";
 
-    public void ConfigureLogging(IApplicationContext context, ElasticStackModuleOptions options,
+    public LoggerConfiguration ConfigureLogging(IApplicationContext context, ElasticStackModuleOptions options,
         LoggerConfiguration loggerConfiguration)
     {
         if (options.LoggingEnabled)
@@ -121,15 +118,16 @@ public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOption
                 sinkOptions.IndexAliases = new[] { rolloverAlias };
             }
 
-            loggerConfiguration.Enrich.WithElasticApmCorrelationInfo()
-                .WriteTo.Elasticsearch(sinkOptions)
-                .Enrich.WithProperty("ApplicationName", context.Name)
-                .Enrich.WithProperty("ApplicationVersion", context.Version);
+            loggerConfiguration = loggerConfiguration
+                .Enrich.WithElasticApmCorrelationInfo()
+                .WriteTo.Elasticsearch(sinkOptions);
         }
 
         if (options.ApmEnabled)
         {
-            loggerConfiguration.MinimumLevel.Override("Elastic.Apm", LogEventLevel.Error);
+            loggerConfiguration = loggerConfiguration.MinimumLevel.Override("Elastic.Apm", LogEventLevel.Error);
         }
+
+        return loggerConfiguration;
     }
 }
