@@ -1,10 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
-  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Nito.AsyncEx" Version="5.1.2"/>
+    <PackageReference Include="Nito.AsyncEx"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Consul\Sitko.Core.Consul.csproj"/>

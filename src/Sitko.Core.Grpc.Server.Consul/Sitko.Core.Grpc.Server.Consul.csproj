@@ -1,7 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
-  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Consul\Sitko.Core.Consul.csproj"/>
     <ProjectReference Include="..\Sitko.Core.Grpc.Server\Sitko.Core.Grpc.Server.csproj"/>

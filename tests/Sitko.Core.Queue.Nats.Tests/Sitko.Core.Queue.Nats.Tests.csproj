@@ -1,14 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\src\Sitko.Core.Queue.Nats\Sitko.Core.Queue.Nats.csproj"/>
     <ProjectReference Include="..\Sitko.Core.Queue.Test\Sitko.Core.Queue.Tests.csproj"/>
   </ItemGroup>
-
   <ItemGroup>
     <Protobuf Include="TestMsg.proto" GrpcServices="None"/>
   </ItemGroup>

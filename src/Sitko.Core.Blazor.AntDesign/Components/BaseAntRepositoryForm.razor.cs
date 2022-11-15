@@ -12,9 +12,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
         IRepository<TEntity, TEntityPk>>
         where TEntity : class, IEntity<TEntityPk>, new()
     {
-#if NET6_0_OR_GREATER
         [EditorRequired]
-#endif
         [Parameter]
         public RenderFragment<AntRepositoryForm<TEntity, TEntityPk>> ChildContent { get; set; } = null!;
 

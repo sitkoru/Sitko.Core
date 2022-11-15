@@ -125,11 +125,7 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
     private async Task<string> ReadResponseAsync(HttpResponseMessage responseMessage,
         CancellationToken cancellationToken)
     {
-#if NET6_0_OR_GREATER
         var responseJson = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
-#else
-        var responseJson = await responseMessage.Content.ReadAsStringAsync();
-#endif
         return responseJson;
     }
 }

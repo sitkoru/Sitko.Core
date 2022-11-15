@@ -1,15 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
-
-  <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
-  </PropertyGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Blazor\Sitko.Core.Blazor.csproj"/>
-    <ProjectReference Include="..\Sitko.Core.Storage\Sitko.Core.Storage.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.Blazor\Sitko.Core.Blazor.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Storage\Sitko.Core.Storage.csproj" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="Tewr.Blazor.FileReader" Version="3.3.1.21360"/>
+    <PackageReference Include="Tewr.Blazor.FileReader" />
   </ItemGroup>
 </Project>

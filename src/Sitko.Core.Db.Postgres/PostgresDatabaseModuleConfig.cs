@@ -38,11 +38,7 @@ public class PostgresDatabaseModuleOptions<TDbContext> : BaseDbModuleOptions<TDb
             Password = Password,
             Database = Database,
             Pooling = EnableNpgsqlPooling,
-#if NET6_0_OR_GREATER
             IncludeErrorDetail = IncludeErrorDetails
-#else
-            IncludeErrorDetails = IncludeErrorDetails
-#endif
         };
 
         foreach (var (key, value) in ConnectionOptions)

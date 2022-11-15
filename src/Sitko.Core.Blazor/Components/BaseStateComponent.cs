@@ -1,4 +1,3 @@
-#if NET6_0_OR_GREATER
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
@@ -32,4 +31,3 @@ public abstract class BaseStateComponent<TState> : BaseComponent where TState : 
 public abstract class BaseComponentState
 {
 }
-#endif

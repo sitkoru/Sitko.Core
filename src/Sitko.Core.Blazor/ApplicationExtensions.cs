@@ -1,5 +1,3 @@
-#if NET6_0_OR_GREATER
-
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.Blazor.Components;
@@ -17,4 +15,3 @@ public static class ApplicationExtensions
     public static Application AddPersistentState(this Application application) =>
         AddPersistentState<JsonHelperStateCompressor, CompressedPersistentComponentState>(application);
 }
-#endif

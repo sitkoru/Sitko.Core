@@ -1,4 +1,3 @@
-#if NET6_0_OR_GREATER
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -31,4 +30,3 @@ public class JsonHelperStateCompressor : IStateCompressor
         return JsonHelper.DeserializeWithMetadata<T>(json);
     }
 }
-#endif

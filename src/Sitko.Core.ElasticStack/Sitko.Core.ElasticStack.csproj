@@ -1,16 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Elastic.Apm.NetCoreAll" Version="1.18.0"/>
-    <PackageReference Include="Elastic.Apm.SerilogEnricher" Version="1.5.3"/>
-    <PackageReference Include="Elastic.CommonSchema.Serilog" Version="1.5.3"/>
-    <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="9.0.0-beta7"/>
+    <PackageReference Include="Elastic.Apm.NetCoreAll"/>
+    <PackageReference Include="Elastic.Apm.SerilogEnricher"/>
+    <PackageReference Include="Elastic.CommonSchema.Serilog"/>
+    <PackageReference Include="Serilog.Sinks.Elasticsearch"/>
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj"/>
   </ItemGroup>

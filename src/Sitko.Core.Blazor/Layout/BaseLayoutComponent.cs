@@ -14,9 +14,7 @@ public abstract class BaseLayoutComponent<TLayoutData, TLayoutOptions> : BaseCom
     [Inject] protected ILayoutManager<TLayoutData, TLayoutOptions> LayoutManager { get; set; } = null!;
     [Inject] protected IApplication Application { get; set; } = null!;
 
-#if NET6_0_OR_GREATER
     [EditorRequired]
-#endif
     [Parameter] public RenderFragment ChildContent { get; set; } = null!;
 
     protected override void Initialize()

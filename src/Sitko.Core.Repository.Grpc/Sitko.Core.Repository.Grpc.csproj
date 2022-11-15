@@ -1,13 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;net6.0</TargetFrameworks>
-    <ImplicitUsings>true</ImplicitUsings>
-  </PropertyGroup>
-
     <ItemGroup>
       <ProjectReference Include="..\Sitko.Core.Repository\Sitko.Core.Repository.csproj" />
       <ProjectReference Include="..\Sitko.Core.Grpc\Sitko.Core.Grpc.csproj" />
     </ItemGroup>
-
 </Project>

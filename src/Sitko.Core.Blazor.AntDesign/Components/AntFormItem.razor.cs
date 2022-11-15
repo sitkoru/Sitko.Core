@@ -6,9 +6,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components
 {
     public partial class AntFormItem
     {
-#if NET6_0_OR_GREATER
         [EditorRequired]
-#endif
         [Parameter] public RenderFragment ChildContent { get; set; } = null!;
         [Parameter] public string? Label { get; set; }
         [Parameter] public RenderFragment? LabelTemplate { get; set; }

@@ -43,7 +43,7 @@
                     }
                 </MudItem>
                 <MudItem xs="12">
-                    <MudFileUpload
+                    <Sitko.Core.Blazor.MudBlazorComponents.MudFileUpload
                         Label="Simple file input"
                         HelperText="Bla-bla-bla"
                         Storage="Storage"
@@ -52,11 +52,11 @@
                         UploadPath="bars"
                         MaxFileSize="@(2 * 1024 * 1024)"
                         GenerateMetadata="@((_, _) => GenerateMetadataAsync())">
-                    </MudFileUpload>
+                    </Sitko.Core.Blazor.MudBlazorComponents.MudFileUpload>
                 </MudItem>
                 <MudItem xs="12">
                     <MudText Typo="Typo.h6" Class="mb-4">Simple custom file input</MudText>
-                    <MudFileUpload
+                    <Sitko.Core.Blazor.MudBlazorComponents.MudFileUpload
                         Storage="Storage"
                         @bind-Value="context.Entity.StorageItem"
                         For="() => context.Entity.StorageItem"
@@ -66,7 +66,7 @@
                         <ChildContent Context="upload">
                             PRESS ME
                         </ChildContent>
-                    </MudFileUpload>
+                    </Sitko.Core.Blazor.MudBlazorComponents.MudFileUpload>
                 </MudItem>
                 <MudItem xs="12">
                     <MudPaper Class="pa-4">
@@ -84,7 +84,7 @@
                 </MudItem>
                 <MudItem xs="12">
                     <MudText Typo="Typo.h6" Class="mb-4">Single image</MudText>
-                    <MudFileUpload
+                    <Sitko.Core.Blazor.MudBlazorComponents.MudFileUpload
                         Storage="Storage"
                         DisplayMode="FileUploadDisplayMode.Image"
                         @bind-Value="context.Entity.StorageItem"
@@ -92,7 +92,7 @@
                         UploadPath="bars"
                         MaxFileSize="@(2 * 1024 * 1024)"
                         GenerateMetadata="@((_, _) => GenerateMetadataAsync())">
-                    </MudFileUpload>
+                    </Sitko.Core.Blazor.MudBlazorComponents.MudFileUpload>
                 </MudItem>
                 <MudItem xs="12">
                     <MudPaper Class="pa-4">

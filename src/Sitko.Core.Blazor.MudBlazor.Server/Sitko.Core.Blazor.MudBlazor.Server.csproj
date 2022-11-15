@@ -1,12 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
-
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Blazor.MudBlazor\Sitko.Core.Blazor.MudBlazor.csproj" />
     <ProjectReference Include="..\Sitko.Core.Blazor.Server\Sitko.Core.Blazor.Server.csproj" />
   </ItemGroup>
-
 </Project>

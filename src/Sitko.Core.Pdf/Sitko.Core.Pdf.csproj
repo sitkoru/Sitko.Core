@@ -1,12 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
-  </PropertyGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
-    <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
-    <ProjectReference Include="..\Sitko.Core.Puppeteer\Sitko.Core.Puppeteer.csproj" />
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.Puppeteer\Sitko.Core.Puppeteer.csproj"/>
+    <PackageReference Include="Nito.AsyncEx"/>
   </ItemGroup>
 </Project>

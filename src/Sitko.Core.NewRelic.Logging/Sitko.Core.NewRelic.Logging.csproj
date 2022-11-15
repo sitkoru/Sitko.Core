@@ -1,16 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="NewRelic.LogEnrichers.Serilog" Version="1.0.1"/>
-    <PackageReference Include="Serilog.Sinks.NewRelic.Logs" Version="1.2.0"/>
+    <PackageReference Include="NewRelic.LogEnrichers.Serilog" />
+    <PackageReference Include="Serilog.Sinks.NewRelic.Logs" />
   </ItemGroup>
-
 </Project>

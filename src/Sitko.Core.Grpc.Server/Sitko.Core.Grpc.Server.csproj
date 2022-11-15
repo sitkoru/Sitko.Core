@@ -1,16 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
-  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj"/>
     <ProjectReference Include="..\Sitko.Core.Grpc\Sitko.Core.Grpc.csproj"/>
     <Protobuf Include="health.proto" GrpcServices="Server"/>
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="Grpc.AspNetCore" Version="2.49.0"/>
-    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.49.0"/>
+    <PackageReference Include="Grpc.AspNetCore"/>
+    <PackageReference Include="Grpc.AspNetCore.Server.Reflection"/>
   </ItemGroup>
 </Project>

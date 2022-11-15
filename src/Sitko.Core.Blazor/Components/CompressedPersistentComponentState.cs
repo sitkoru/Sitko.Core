@@ -1,4 +1,3 @@
-#if NET6_0_OR_GREATER
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -14,7 +13,8 @@ public class CompressedPersistentComponentState : ICompressedPersistentComponent
     private readonly List<PersistingComponentStateSubscription>
         subscriptions = new();
 
-    public CompressedPersistentComponentState(PersistentComponentState persistentComponentState, IStateCompressor stateCompressor)
+    public CompressedPersistentComponentState(PersistentComponentState persistentComponentState,
+        IStateCompressor stateCompressor)
     {
         this.persistentComponentState = persistentComponentState;
         this.stateCompressor = stateCompressor;
@@ -55,4 +55,3 @@ public class CompressedPersistentComponentState : ICompressedPersistentComponent
         subscriptions.Add(subscription);
     }
 }
-#endif

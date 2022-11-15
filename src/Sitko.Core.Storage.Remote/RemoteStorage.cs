@@ -68,7 +68,7 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
 
         if (response.IsSuccessStatusCode)
         {
-            var json = await response.Content.ReadAsStringAsync();
+            var json = await response.Content.ReadAsStringAsync(cancellationToken);
             if (JsonSerializer.Deserialize<StorageItem>(json) is { } storageItem)
             {
                 return storageItem;
@@ -110,7 +110,7 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
     protected override async Task<StorageItemDownloadInfo?> DoGetFileAsync(string path,
         CancellationToken cancellationToken = default)
     {
-        var response = await HttpClient.GetJsonAsync<RemoteStorageItem?>($"?path={path}");
+        var response = await HttpClient.GetJsonAsync<RemoteStorageItem?>($"?path={path}", cancellationToken: cancellationToken);
         if (response is null)
         {
             return null;
@@ -120,7 +120,7 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
             async () =>
             {
                 var client = httpClientFactory.CreateClient();
-                var fileResponse = await client.GetStreamAsync(response.PublicUri);
+                var fileResponse = await client.GetStreamAsync(response.PublicUri, cancellationToken);
                 return fileResponse;
             });
         info.SetMetadata(new StorageItemMetadata
@@ -133,7 +133,7 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
 
     protected override async Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
         CancellationToken cancellationToken = default) =>
-        await HttpClient.GetJsonAsync<StorageItemInfo[]>($"List?path={path}") ?? Array.Empty<StorageItemInfo>();
+        await HttpClient.GetJsonAsync<StorageItemInfo[]>($"List?path={path}", cancellationToken: cancellationToken) ?? Array.Empty<StorageItemInfo>();
 
     public async Task DoUpdateMetaDataAsync(StorageItem storageItem, StorageItemMetadata metadata,
         CancellationToken cancellationToken)

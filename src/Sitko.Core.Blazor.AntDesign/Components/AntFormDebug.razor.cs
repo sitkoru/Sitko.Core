@@ -6,9 +6,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components;
 
 public partial class AntFormDebug<TEntity> where TEntity : class, new()
 {
-#if NET6_0_OR_GREATER
     [EditorRequired]
-#endif
     [Parameter]
     public BaseForm<TEntity> Form { get; set; } = null!;
 
