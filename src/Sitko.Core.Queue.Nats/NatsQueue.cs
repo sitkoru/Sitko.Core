@@ -24,7 +24,7 @@ public class NatsQueue : BaseQueue<NatsQueueModuleOptions>
 
     private readonly MethodInfo deserializeBinaryMethod =
         typeof(NatsQueue).GetMethod(nameof(DeserializeBinaryPayload),
-            BindingFlags.NonPublic | BindingFlags.Instance)!;
+            BindingFlags.NonPublic | BindingFlags.Static)!;
 
     private readonly ConcurrentDictionary<Guid, IAsyncSubscription> natsSubscriptions = new();
 
