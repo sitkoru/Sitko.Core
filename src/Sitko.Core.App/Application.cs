@@ -46,6 +46,7 @@ public abstract class Application : IApplication, IAsyncDisposable
     public static string OptionsKey => nameof(Application);
 
     public Guid Id { get; } = Guid.NewGuid();
+    public string Environment => GetApplicationOptions().Environment;
 
     public string Name => GetApplicationOptions().Name;
     public string Version => GetApplicationOptions().Version;

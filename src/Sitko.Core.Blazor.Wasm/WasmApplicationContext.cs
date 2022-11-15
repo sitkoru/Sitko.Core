@@ -13,8 +13,9 @@ public class WasmApplicationContext : BaseApplicationContext
         : base(application, configuration) =>
         this.environment = environment;
 
-    public override string EnvironmentName => environment.Environment;
+    public override string AspNetEnvironmentName => environment.Environment;
     public override bool IsDevelopment() => environment.IsDevelopment();
 
     public override bool IsProduction() => environment.IsProduction();
 }
+

@@ -93,7 +93,7 @@ public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOption
         if (options.LoggingEnabled)
         {
             var rolloverAlias = string.IsNullOrEmpty(options.LoggingLiferRolloverAlias)
-                ? $"dotnet-logs-{context.Name.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}-{context.EnvironmentName.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}"
+                ? $"dotnet-logs-{context.Name.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}-{context.Environment.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}"
                 : options.LoggingLiferRolloverAlias;
             var sinkOptions = new ElasticsearchSinkOptions(options.ElasticSearchUrls)
             {
