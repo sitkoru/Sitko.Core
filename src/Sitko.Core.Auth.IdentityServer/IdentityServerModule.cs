@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
@@ -26,3 +25,4 @@ public abstract class IdentityServerModule<TAuthOptions> : AuthModule<TAuthOptio
         }
     }
 }
+

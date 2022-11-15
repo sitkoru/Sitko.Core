@@ -7,11 +7,12 @@ public class SearchRepositoryModule : BaseApplicationModule
 {
     public override string OptionsKey => "Search:Repository";
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         BaseApplicationModuleOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddScoped<IRepositoryFilter, SearchRepositoryFilter>();
         services.AddScoped<RepositoryIndexer>();
     }
 }
+

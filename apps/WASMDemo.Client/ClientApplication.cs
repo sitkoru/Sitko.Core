@@ -7,23 +7,22 @@ using WASMDemo.Client.RemoteRepositories;
 
 namespace WASMDemo.Client;
 
-public class ClientApplication: WasmApplication
+public class ClientApplication : WasmApplication
 {
-    public ClientApplication(string[] args) : base(args)
-    {
+    public ClientApplication(string[] args) : base(args) =>
         this
             .AddRemoteRepositories(options =>
             {
                 options.AddRepository<TestEntityRemoteRepository>();
             })
             .AddWasmHttpRepositoryTransport();
-    }
 
     protected override void ConfigureHostBuilder(WebAssemblyHostBuilder builder)
     {
         builder.Services
             .AddHttpClient(nameof(HttpRepositoryTransport)).AddHttpMessageHandler<CookieHandler>();
-        builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+        builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
         builder.Services.AddMudServices();
     }
 }
+

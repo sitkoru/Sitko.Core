@@ -1,19 +1,17 @@
-﻿using System;
+﻿namespace Sitko.Core.Blazor.FluentValidation;
 
-namespace Sitko.Core.Blazor.FluentValidation
+/// <summary>
+///     Describes an unhandled exception which occurs during validation.
+/// </summary>
+internal sealed class UnhandledValidationException : Exception
 {
     /// <summary>
-    /// Describes an unhandled exception which occurs during validation.
+    ///     Constructs an instance of <see cref="UnhandledValidationException" />
     /// </summary>
-    internal class UnhandledValidationException : Exception
+    /// <param name="message"></param>
+    /// <param name="innerException"></param>
+    public UnhandledValidationException(string message, Exception innerException) : base(message, innerException)
     {
-        /// <summary>
-        /// Constructs an instance of <see cref="UnhandledValidationException"/>
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="innerException"></param>
-        public UnhandledValidationException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
     }
 }
+

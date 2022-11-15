@@ -1,17 +1,15 @@
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace Sitko.Core.Consul.Web
+namespace Sitko.Core.Consul.Web;
+
+public class ConsulWebHealthCheck : IHealthCheck
 {
-    public class ConsulWebHealthCheck : IHealthCheck
-    {
-        private readonly ConsulWebClient consulClient;
+    private readonly ConsulWebClient consulClient;
 
-        public ConsulWebHealthCheck(ConsulWebClient consulClient) => this.consulClient = consulClient;
+    public ConsulWebHealthCheck(ConsulWebClient consulClient) => this.consulClient = consulClient;
 
-        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
-            CancellationToken cancellationToken = default) =>
-            consulClient.CheckHealthAsync(cancellationToken);
-    }
+    public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
+        CancellationToken cancellationToken = default) =>
+        consulClient.CheckHealthAsync(cancellationToken);
 }
+

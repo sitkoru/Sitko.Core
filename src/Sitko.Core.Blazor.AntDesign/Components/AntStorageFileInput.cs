@@ -1,7 +1,7 @@
-namespace Sitko.Core.Blazor.AntDesignComponents.Components
+namespace Sitko.Core.Blazor.AntDesignComponents.Components;
+
+public class AntStorageFileInput : BaseAntSingleStorageInput
 {
-    public class AntStorageFileInput : BaseAntSingleStorageInput
-    {
-        public override AntStorageInputMode Mode { get; set; } = AntStorageInputMode.File;
-    }
+    public override AntStorageInputMode Mode { get; set; } = AntStorageInputMode.File;
 }
+

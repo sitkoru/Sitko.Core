@@ -1,5 +1,4 @@
-﻿using System;
-using Xunit;
+﻿using Xunit;
 
 namespace Sitko.Core.Repository.Tests;
 
@@ -26,3 +25,4 @@ public class FooEntity : Entity<Guid>
 public class BarEntity : Entity<Guid>
 {
 }
+

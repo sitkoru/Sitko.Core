@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using FluentValidation;
@@ -70,3 +68,4 @@ public class
         RuleFor(o => o.Port).GreaterThan(0).WithMessage("Postgres port is empty");
     }
 }
+

@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Sitko.Core.Repository.EntityFrameworkCore.Tests.Data;
 using Sitko.Core.Repository.Tests.Data;
@@ -158,7 +156,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.ContainsCaseInsensitive,
             "AbC"));
 #pragma warning disable CA1304
-        var dbQuery = dbContext.Set<BarModel>().Where(model => model.Baz!.ToLower().Contains("AbC".ToLower()));
+        var dbQuery = dbContext.Set<BarModel>()
+            .Where(model => model.Baz!.ToLowerInvariant().Contains("AbC".ToLowerInvariant()));
 #pragma warning restore CA1304
         CompareSql(query, dbQuery);
     }
@@ -172,7 +171,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.NotContainsCaseInsensitive,
             "AbC"));
 #pragma warning disable CA1304
-        var dbQuery = dbContext.Set<BarModel>().Where(model => !model.Baz!.ToLower().Contains("AbC".ToLower()));
+        var dbQuery = dbContext.Set<BarModel>()
+            .Where(model => !model.Baz!.ToLowerInvariant().Contains("AbC".ToLowerInvariant()));
 #pragma warning restore CA1304
         CompareSql(query, dbQuery);
     }
@@ -184,7 +184,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.StartsWith, "123"));
-        var dbQuery = dbContext.Set<BarModel>().Where(model => model.Baz!.StartsWith("123"));
+        var dbQuery = dbContext.Set<BarModel>()
+            .Where(model => model.Baz!.StartsWith("123", StringComparison.InvariantCulture));
         CompareSql(query, dbQuery);
     }
 
@@ -195,7 +196,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.NotStartsWith, "123"));
-        var dbQuery = dbContext.Set<BarModel>().Where(model => !model.Baz!.StartsWith("123"));
+        var dbQuery = dbContext.Set<BarModel>()
+            .Where(model => !model.Baz!.StartsWith("123", StringComparison.InvariantCulture));
         CompareSql(query, dbQuery);
     }
 
@@ -208,7 +210,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.StartsWithCaseInsensitive,
             "AbC"));
 #pragma warning disable CA1304
-        var dbQuery = dbContext.Set<BarModel>().Where(model => model.Baz!.ToLower().StartsWith("AbC".ToLower()));
+        var dbQuery = dbContext.Set<BarModel>().Where(model =>
+            model.Baz!.ToLowerInvariant().StartsWith("AbC".ToLowerInvariant(), StringComparison.InvariantCulture));
 #pragma warning restore CA1304
         CompareSql(query, dbQuery);
     }
@@ -222,7 +225,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         query.Where(new QueryContextCondition(nameof(BarModel.Baz),
             QueryContextOperator.NotStartsWithCaseInsensitive, "AbC"));
 #pragma warning disable CA1304
-        var dbQuery = dbContext.Set<BarModel>().Where(model => !model.Baz!.ToLower().StartsWith("AbC".ToLower()));
+        var dbQuery = dbContext.Set<BarModel>().Where(model =>
+            !model.Baz!.ToLowerInvariant().StartsWith("AbC".ToLowerInvariant(), StringComparison.InvariantCulture));
 #pragma warning restore CA1304
         CompareSql(query, dbQuery);
     }
@@ -235,7 +239,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
 
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.EndsWith, "123"));
-        var dbQuery = dbContext.Set<BarModel>().Where(model => model.Baz!.EndsWith("123"));
+        var dbQuery = dbContext.Set<BarModel>()
+            .Where(model => model.Baz!.EndsWith("123", StringComparison.InvariantCulture));
         CompareSql(query, dbQuery);
     }
 
@@ -246,7 +251,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         var dbContext = scope.GetService<TestDbContext>();
         var query = new EFRepositoryQuery<BarModel>(dbContext.Set<BarModel>());
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.NotEndsWith, "AbC"));
-        var dbQuery = dbContext.Set<BarModel>().Where(model => !model.Baz!.EndsWith("AbC"));
+        var dbQuery = dbContext.Set<BarModel>()
+            .Where(model => !model.Baz!.EndsWith("AbC", StringComparison.InvariantCulture));
         CompareSql(query, dbQuery);
     }
 
@@ -259,7 +265,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.EndsWithCaseInsensitive,
             "AbC"));
 #pragma warning disable CA1304
-        var dbQuery = dbContext.Set<BarModel>().Where(model => model.Baz!.ToLower().EndsWith("AbC".ToLower()));
+        var dbQuery = dbContext.Set<BarModel>().Where(model =>
+            model.Baz!.ToLowerInvariant().EndsWith("AbC".ToLowerInvariant(), StringComparison.InvariantCulture));
 #pragma warning restore CA1304
         CompareSql(query, dbQuery);
     }
@@ -273,7 +280,8 @@ public class EFQueryTests : BaseTest<EFTestScope>
         query.Where(new QueryContextCondition(nameof(BarModel.Baz), QueryContextOperator.NotEndsWithCaseInsensitive,
             "AbC"));
 #pragma warning disable CA1304
-        var dbQuery = dbContext.Set<BarModel>().Where(model => !model.Baz!.ToLower().EndsWith("AbC".ToLower()));
+        var dbQuery = dbContext.Set<BarModel>().Where(model =>
+            !model.Baz!.ToLowerInvariant().EndsWith("AbC".ToLowerInvariant(), StringComparison.InvariantCulture));
 #pragma warning restore CA1304
         CompareSql(query, dbQuery);
     }
@@ -316,3 +324,4 @@ public class EFQueryTests : BaseTest<EFTestScope>
         sql.Should().Be(expectedSql);
     }
 }
+

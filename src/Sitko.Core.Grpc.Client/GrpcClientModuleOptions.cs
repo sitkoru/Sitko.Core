@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
 using System.Text.Json.Serialization;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
@@ -17,7 +14,9 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
     public bool DisableCertificatesValidation { get; set; }
     [JsonIgnore] public Action<GrpcChannelOptions>? ConfigureChannelOptions { get; set; }
     [JsonIgnore] public Func<HttpClientHandler, HttpMessageHandler>? ConfigureHttpHandler { get; set; }
-    [JsonIgnore] public IList<Action<CallOptionsContext>> CallOptionsActions { get; } = new List<Action<CallOptionsContext>>();
+
+    [JsonIgnore]
+    public IList<Action<CallOptionsContext>> CallOptionsActions { get; } = new List<Action<CallOptionsContext>>();
 
     internal HashSet<Type> Interceptors { get; } = new();
 
@@ -27,3 +26,4 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
         return this;
     }
 }
+

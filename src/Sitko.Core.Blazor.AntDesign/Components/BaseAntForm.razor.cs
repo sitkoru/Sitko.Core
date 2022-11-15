@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using AntDesign;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -11,9 +9,7 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components;
 public class AntForm<TEntity> : BaseAntForm<TEntity>
     where TEntity : class, new()
 {
-    [EditorRequired]
-    [Parameter]
-    public RenderFragment<BaseAntForm<TEntity>> ChildContent { get; set; } = null!;
+    [EditorRequired] [Parameter] public RenderFragment<BaseAntForm<TEntity>> ChildContent { get; set; } = null!;
 
     protected override RenderFragment ChildContentFragment => ChildContent(this);
 }
@@ -69,17 +65,11 @@ public abstract partial class BaseAntForm<TEntity> where TEntity : class, new()
 
     [Inject] protected MessageService MessageService { get; set; } = null!;
 
-    [EditorRequired]
-    [Parameter]
-    public Func<TEntity, Task<FormSaveResult>>? Add { get; set; }
+    [EditorRequired] [Parameter] public Func<TEntity, Task<FormSaveResult>>? Add { get; set; }
 
-    [EditorRequired]
-    [Parameter]
-    public Func<TEntity, Task<FormSaveResult>>? Update { get; set; }
+    [EditorRequired] [Parameter] public Func<TEntity, Task<FormSaveResult>>? Update { get; set; }
 
-    [EditorRequired]
-    [Parameter]
-    public Func<Task<(bool IsNew, TEntity Entity)>>? GetEntity { get; set; }
+    [EditorRequired] [Parameter] public Func<Task<(bool IsNew, TEntity Entity)>>? GetEntity { get; set; }
 
     protected override Task<(bool IsNew, TEntity Entity)> GetEntityAsync() => GetEntity!();
 
@@ -135,3 +125,4 @@ public abstract partial class BaseAntForm<TEntity> where TEntity : class, new()
         AntFormInstance!.Reset();
     }
 }
+

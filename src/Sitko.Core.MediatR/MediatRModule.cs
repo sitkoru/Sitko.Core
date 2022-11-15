@@ -13,10 +13,11 @@ public class MediatRModule<TAssembly> : BaseApplicationModule<MediatRModuleOptio
 {
     public override string OptionsKey => "MediatR";
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         MediatRModuleOptions<TAssembly> startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddMediatR(startupOptions.Assemblies.ToArray());
     }
 }
+

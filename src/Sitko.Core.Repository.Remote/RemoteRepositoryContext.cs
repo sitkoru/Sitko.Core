@@ -4,7 +4,7 @@ using Sitko.FluentValidation.Graph;
 namespace Sitko.Core.Repository.Remote;
 
 public class RemoteRepositoryContext<TEntity, TEntityPk> : IRepositoryContext<TEntity, TEntityPk>
-    where TEntity : class, IEntity<TEntityPk>
+    where TEntity : class, IEntity<TEntityPk> where TEntityPk : notnull
 {
     private readonly ILoggerFactory loggerFactory;
 
@@ -34,3 +34,4 @@ public class RemoteRepositoryContext<TEntity, TEntityPk> : IRepositoryContext<TE
     public RepositoryFiltersManager FiltersManager { get; }
     public List<IAccessChecker<TEntity, TEntityPk>>? AccessCheckers { get; }
 }
+

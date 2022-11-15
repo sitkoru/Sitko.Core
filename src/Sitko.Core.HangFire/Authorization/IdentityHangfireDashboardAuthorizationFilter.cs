@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Hangfire.Dashboard;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
@@ -24,3 +23,4 @@ public class IdentityHangfireDashboardAuthorizationFilter : IDashboardAsyncAutho
     protected virtual Task<bool> DoAuthorizeAsync(DashboardContext context, HttpContext httpContext) =>
         Task.FromResult(true);
 }
+

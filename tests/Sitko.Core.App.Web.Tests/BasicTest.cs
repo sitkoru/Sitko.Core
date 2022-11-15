@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Razor.Templating.Core;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -27,3 +25,4 @@ public class TestViewModel
 {
     public Guid Id { get; } = Guid.NewGuid();
 }
+

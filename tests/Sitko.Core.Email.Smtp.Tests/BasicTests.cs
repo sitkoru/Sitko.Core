@@ -1,4 +1,3 @@
-using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App.Web;
@@ -40,3 +39,4 @@ public class TestApplication : WebApplication<TestStartup>
 {
     public TestApplication(string[] args) : base(args) => this.AddSmtpEmail();
 }
+

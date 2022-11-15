@@ -8,13 +8,14 @@ public class TeamsHealthReporterModule : BaseApplicationModule<TeamsHealthReport
 {
     public override string OptionsKey => "Health:Teams";
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TeamsHealthReporterModuleOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.Configure<HealthCheckPublisherOptions>(_ => { });
         services.AddHealthChecks();
         services.AddHttpClient();
         services.AddSingleton<IHealthCheckPublisher, TeamsHealthCheckPublisher>();
     }
 }
+

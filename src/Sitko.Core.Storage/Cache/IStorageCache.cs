@@ -1,7 +1,3 @@
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Sitko.Core.App;
 using Sitko.Core.Storage.Internal;
@@ -47,3 +43,4 @@ public abstract class StorageCacheOptions : BaseModuleOptions
     [PublicAPI] public long MaxFileSizeToStore { get; set; }
     [PublicAPI] public long? MaxCacheSize { get; set; }
 }
+

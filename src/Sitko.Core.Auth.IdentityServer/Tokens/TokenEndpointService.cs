@@ -1,6 +1,4 @@
-﻿using System.Net.Http;
-using System.Threading.Tasks;
-using IdentityModel;
+﻿using IdentityModel;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -29,34 +27,44 @@ public class TokenEndpointService
 
     public async Task<TokenResponse> RefreshTokenAsync(string refreshToken)
     {
-        var oidcOptions = await GetOidcOptionsAsync();
+        var options = await GetOidcOptionsAsync();
+        if (options.ConfigurationManager is null)
+        {
+            throw new InvalidOperationException("Configuration manager is null");
+        }
+
         var configuration =
-            await oidcOptions.ConfigurationManager.GetConfigurationAsync(default);
+            await options.ConfigurationManager.GetConfigurationAsync(default);
 
         var tokenClient = httpClientFactory.CreateClient("tokenClient");
 
         return await tokenClient.RequestRefreshTokenAsync(new RefreshTokenRequest
         {
             Address = configuration.TokenEndpoint,
-            ClientId = oidcOptions.ClientId,
-            ClientSecret = oidcOptions.ClientSecret,
+            ClientId = options.ClientId,
+            ClientSecret = options.ClientSecret,
             RefreshToken = refreshToken
         });
     }
 
     public async Task<TokenRevocationResponse> RevokeTokenAsync(string refreshToken)
     {
-        var oidcOptions = await GetOidcOptionsAsync();
+        var options = await GetOidcOptionsAsync();
+        if (options.ConfigurationManager is null)
+        {
+            throw new InvalidOperationException("Configuration manager is null");
+        }
+
         var configuration =
-            await oidcOptions.ConfigurationManager.GetConfigurationAsync(default);
+            await options.ConfigurationManager.GetConfigurationAsync(default);
 
         var tokenClient = httpClientFactory.CreateClient("tokenClient");
 
         return await tokenClient.RevokeTokenAsync(new TokenRevocationRequest
         {
             Address = configuration.AdditionalData[OidcConstants.Discovery.RevocationEndpoint].ToString(),
-            ClientId = oidcOptions.ClientId,
-            ClientSecret = oidcOptions.ClientSecret,
+            ClientId = options.ClientId,
+            ClientSecret = options.ClientSecret,
             Token = refreshToken,
             TokenTypeHint = OidcConstants.TokenTypes.RefreshToken
         });
@@ -67,9 +75,10 @@ public class TokenEndpointService
         if (string.IsNullOrEmpty(managementOptions.Scheme))
         {
             var scheme = await schemeProvider.GetDefaultChallengeSchemeAsync();
-            return oidcOptions.Get(scheme.Name);
+            return oidcOptions.Get(scheme?.Name);
         }
 
         return oidcOptions.Get(managementOptions.Scheme);
     }
 }
+

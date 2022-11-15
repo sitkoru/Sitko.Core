@@ -1,13 +1,12 @@
+using JetBrains.Annotations;
 using Sitko.Core.App;
 
-namespace Sitko.Core.Repository.Search
-{
-    using JetBrains.Annotations;
+namespace Sitko.Core.Repository.Search;
 
-    [PublicAPI]
-    public static class ApplicationExtensions
-    {
-        public static Application AddSearchRepository(this Application application) =>
-            application.AddModule<SearchRepositoryModule>();
-    }
+[PublicAPI]
+public static class ApplicationExtensions
+{
+    public static Application AddSearchRepository(this Application application) =>
+        application.AddModule<SearchRepositoryModule>();
 }
+

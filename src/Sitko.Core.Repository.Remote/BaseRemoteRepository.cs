@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using KellermanSoftware.CompareNetObjects;
+using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Json;
 
 namespace Sitko.Core.Repository.Remote;
@@ -98,44 +99,48 @@ public class
 
     protected override async Task<int> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
         Expression<Func<TEntity, int>> selector, CancellationToken cancellationToken = default) =>
-        await repositoryTransport.SumAsync<TEntity, int>(query.Select(selector), SumType.Int, cancellationToken);
+        await repositoryTransport.SumAsync<TEntity, int>(query.Select(selector), SumType.TypeInt, cancellationToken);
 
     protected override async Task<long> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
         Expression<Func<TEntity, long>> selector, CancellationToken cancellationToken = default) =>
-        await repositoryTransport.SumAsync<TEntity, long>(query.Select(selector), SumType.Long, cancellationToken);
+        await repositoryTransport.SumAsync<TEntity, long>(query.Select(selector), SumType.TypeLong, cancellationToken);
 
     protected override async Task<double> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
         Expression<Func<TEntity, double>> selector, CancellationToken cancellationToken = default) =>
-        await repositoryTransport.SumAsync<TEntity, double>(query.Select(selector), SumType.Double, cancellationToken);
+        await repositoryTransport.SumAsync<TEntity, double>(query.Select(selector), SumType.TypeDouble,
+            cancellationToken);
 
     protected override async Task<float> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
         Expression<Func<TEntity, float>> selector, CancellationToken cancellationToken = default) =>
-        await repositoryTransport.SumAsync<TEntity, float>(query.Select(selector), SumType.Float, cancellationToken);
+        await repositoryTransport.SumAsync<TEntity, float>(query.Select(selector), SumType.TypeFloat,
+            cancellationToken);
 
     protected override async Task<decimal> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
         Expression<Func<TEntity, decimal>> selector, CancellationToken cancellationToken = default) =>
-        await repositoryTransport.SumAsync<TEntity, decimal>(query.Select(selector), SumType.Decimal,
+        await repositoryTransport.SumAsync<TEntity, decimal>(query.Select(selector), SumType.TypeDecimal,
             cancellationToken);
 
     protected override async Task<int?> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
         Expression<Func<TEntity, int?>> selector, CancellationToken cancellationToken = default) =>
-        await repositoryTransport.SumAsync<TEntity, int>(query.Select(selector), SumType.Int, cancellationToken);
+        await repositoryTransport.SumAsync<TEntity, int>(query.Select(selector), SumType.TypeInt, cancellationToken);
 
     protected override async Task<long?> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
         Expression<Func<TEntity, long?>> selector, CancellationToken cancellationToken = default) =>
-        await repositoryTransport.SumAsync<TEntity, long>(query.Select(selector), SumType.Long, cancellationToken);
+        await repositoryTransport.SumAsync<TEntity, long>(query.Select(selector), SumType.TypeLong, cancellationToken);
 
     protected override async Task<double?> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
         Expression<Func<TEntity, double?>> selector, CancellationToken cancellationToken = default) =>
-        await repositoryTransport.SumAsync<TEntity, double>(query.Select(selector), SumType.Double, cancellationToken);
+        await repositoryTransport.SumAsync<TEntity, double>(query.Select(selector), SumType.TypeDouble,
+            cancellationToken);
 
     protected override async Task<float?> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
         Expression<Func<TEntity, float?>> selector, CancellationToken cancellationToken = default) =>
-        await repositoryTransport.SumAsync<TEntity, float>(query.Select(selector), SumType.Float, cancellationToken);
+        await repositoryTransport.SumAsync<TEntity, float>(query.Select(selector), SumType.TypeFloat,
+            cancellationToken);
 
     protected override async Task<decimal?> DoSumAsync(RemoteRepositoryQuery<TEntity> query,
         Expression<Func<TEntity, decimal?>> selector, CancellationToken cancellationToken = default) =>
-        await repositoryTransport.SumAsync<TEntity, decimal>(query.Select(selector), SumType.Decimal,
+        await repositoryTransport.SumAsync<TEntity, decimal>(query.Select(selector), SumType.TypeDecimal,
             cancellationToken);
 
     protected override async Task<TEntity?> DoGetAsync(RemoteRepositoryQuery<TEntity> query,
@@ -172,9 +177,9 @@ public class
     protected override Task<PropertyChange[]> GetChangesAsync(TEntity item)
     {
         var changes = new List<PropertyChange>();
-        if (snapshots.ContainsKey(item.Id))
+        if (snapshots.TryGetValue(item.Id, out var value))
         {
-            var differences = GetComparer().Compare(snapshots[item.Id], CreateEntitySnapshot(item));
+            var differences = GetComparer().Compare(value, CreateEntitySnapshot(item));
             if (!differences.AreEqual)
             {
                 foreach (var difference in differences.Differences)
@@ -198,18 +203,36 @@ public class
             transactionActions.Add(async () =>
             {
                 var result = await repositoryTransport.AddAsync<TEntity, TEntityPk>(entity, cancellationToken);
+                if (result is null)
+                {
+                    throw new InvalidOperationException("Empty response from server");
+                }
+
                 if (result.IsSuccess)
                 {
                     snapshots[entity.Id] = CreateEntitySnapshot(result.Entity);
+                }
+                else
+                {
+                    Logger.LogError("Entity update error: {ErrorText}", result.ErrorsString);
                 }
             });
         }
         else
         {
             var result = await repositoryTransport.AddAsync<TEntity, TEntityPk>(entity, cancellationToken);
+            if (result is null)
+            {
+                throw new InvalidOperationException("Empty response from server");
+            }
+
             if (result.IsSuccess)
             {
                 snapshots[entity.Id] = CreateEntitySnapshot(result.Entity);
+            }
+            else
+            {
+                Logger.LogError("Entity update error: {ErrorText}", result.ErrorsString);
             }
         }
     }
@@ -224,9 +247,18 @@ public class
             {
                 var result =
                     await repositoryTransport.UpdateAsync<TEntity, TEntityPk>(entity, oldEntity, cancellationToken);
+                if (result is null)
+                {
+                    throw new InvalidOperationException("Empty response from server");
+                }
+
                 if (result.IsSuccess)
                 {
                     snapshots.Add(entity.Id, CreateEntitySnapshot(result.Entity));
+                }
+                else
+                {
+                    Logger.LogError("Entity update error: {ErrorText}", result.ErrorsString);
                 }
             });
         }
@@ -234,9 +266,18 @@ public class
         {
             var result =
                 await repositoryTransport.UpdateAsync<TEntity, TEntityPk>(entity, oldEntity, cancellationToken);
+            if (result is null)
+            {
+                throw new InvalidOperationException("Empty response from server");
+            }
+
             if (result.IsSuccess)
             {
                 snapshots[entity.Id] = CreateEntitySnapshot(result.Entity);
+            }
+            else
+            {
+                Logger.LogError("Entity update error: {ErrorText}", result.ErrorsString);
             }
         }
 
@@ -254,9 +295,7 @@ public class
             await repositoryTransport.DeleteAsync(entity, cancellationToken);
         }
 
-        if (snapshots.ContainsKey(entity.Id))
-        {
-            snapshots.Remove(entity.Id);
-        }
+        snapshots.Remove(entity.Id);
     }
 }
+

@@ -1,5 +1,4 @@
-﻿using System;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Server.Consul;
@@ -19,3 +18,4 @@ public static class ApplicationExtensions
         application.AddModule<ConsulDiscoveryGrpcServerModule, ConsulDiscoveryGrpcServerModuleOptions>(
             configure, optionsKey);
 }
+

@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 
 namespace Sitko.Core.Repository;
@@ -19,116 +18,61 @@ public record QueryContextCondition
     public object? Value { get; init; }
     public Type? ValueType { get; init; }
 
-    public string GetExpression(int valueIndex)
-    {
-        switch (Operator)
+    public string GetExpression(int valueIndex) =>
+        Operator switch
         {
-            case QueryContextOperator.Equal:
-                return $"{Property} == @{valueIndex}";
-            case QueryContextOperator.NotEqual:
-                return $"{Property} != @{valueIndex}";
-            case QueryContextOperator.Greater:
-                return $"{Property} > @{valueIndex}";
-            case QueryContextOperator.GreaterOrEqual:
-                return $"{Property} >= @{valueIndex}";
-            case QueryContextOperator.Less:
-                return $"{Property} < @{valueIndex}";
-            case QueryContextOperator.LessOrEqual:
-                return $"{Property} <= @{valueIndex}";
-            case QueryContextOperator.In:
-                return $"@{valueIndex}.Contains({Property})";
-            case QueryContextOperator.NotIn:
-                return $"!@{valueIndex}.Contains({Property})";
-            case QueryContextOperator.IsNull:
-                return $"{Property} == null";
-            case QueryContextOperator.NotNull:
-                return $"{Property} != null";
-            case QueryContextOperator.Contains:
-                if (ValueType == typeof(string) || typeof(IEnumerable).IsAssignableFrom(ValueType))
-                {
-                    return $"{Property}.Contains(@{valueIndex})";
-                }
-
-                return $"{Property}.ToString().Contains(@{valueIndex})";
-            case QueryContextOperator.NotContains:
-                if (ValueType == typeof(string) || typeof(IEnumerable).IsAssignableFrom(ValueType))
-                {
-                    return $"!{Property}.Contains(@{valueIndex})";
-                }
-
-                return $"!{Property}.ToString().Contains(@{valueIndex})";
-            case QueryContextOperator.ContainsCaseInsensitive:
-                if (ValueType == typeof(string) || typeof(IEnumerable).IsAssignableFrom(ValueType))
-                {
-                    return $"{Property}.ToLower().Contains(@{valueIndex}.ToLower())";
-                }
-
-                return $"{Property}.ToString().ToLower().Contains(@{valueIndex})";
-            case QueryContextOperator.NotContainsCaseInsensitive:
-                if (ValueType == typeof(string) || typeof(IEnumerable).IsAssignableFrom(ValueType))
-                {
-                    return $"!{Property}.ToLower().Contains(@{valueIndex}.ToLower())";
-                }
-
-                return $"!{Property}.ToString().ToLower().Contains(@{valueIndex})";
-            case QueryContextOperator.StartsWith:
-                if (ValueType == typeof(string))
-                {
-                    return $"{Property}.StartsWith(@{valueIndex})";
-                }
-
-                return $"{Property}.ToString().StartsWith(@{valueIndex})";
-            case QueryContextOperator.NotStartsWith:
-                if (ValueType == typeof(string))
-                {
-                    return $"!{Property}.StartsWith(@{valueIndex})";
-                }
-
-                return $"!{Property}.ToString().StartsWith(@{valueIndex})";
-            case QueryContextOperator.StartsWithCaseInsensitive:
-                if (ValueType == typeof(string))
-                {
-                    return $"{Property}.ToLower().StartsWith(@{valueIndex}.ToLower())";
-                }
-
-                return $"{Property}.ToString().ToLower().StartsWith(@{valueIndex})";
-            case QueryContextOperator.NotStartsWithCaseInsensitive:
-                if (ValueType == typeof(string))
-                {
-                    return $"!{Property}.ToLower().StartsWith(@{valueIndex}.ToLower())";
-                }
-
-                return $"!{Property}.ToString().ToLower().StartsWith(@{valueIndex}.ToLower())";
-            case QueryContextOperator.EndsWith:
-                if (ValueType == typeof(string))
-                {
-                    return $"{Property}.EndsWith(@{valueIndex})";
-                }
-
-                return $"{Property}.ToString().EndsWith(@{valueIndex})";
-            case QueryContextOperator.NotEndsWith:
-                if (ValueType == typeof(string))
-                {
-                    return $"!{Property}.EndsWith(@{valueIndex})";
-                }
-
-                return $"!{Property}.ToString().EndsWith(@{valueIndex})";
-            case QueryContextOperator.EndsWithCaseInsensitive:
-                if (ValueType == typeof(string))
-                {
-                    return $"{Property}.ToLower().EndsWith(@{valueIndex}.ToLower())";
-                }
-
-                return $"{Property}.ToString().ToLower().EndsWith(@{valueIndex})";
-            case QueryContextOperator.NotEndsWithCaseInsensitive:
-                if (ValueType == typeof(string))
-                {
-                    return $"!{Property}.ToLower().EndsWith(@{valueIndex}.ToLower())";
-                }
-
-                return $"!{Property}.ToString().ToLower().EndsWith(@{valueIndex})";
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
-    }
+            QueryContextOperator.Equal => $"{Property} == @{valueIndex}",
+            QueryContextOperator.NotEqual => $"{Property} != @{valueIndex}",
+            QueryContextOperator.Greater => $"{Property} > @{valueIndex}",
+            QueryContextOperator.GreaterOrEqual => $"{Property} >= @{valueIndex}",
+            QueryContextOperator.Less => $"{Property} < @{valueIndex}",
+            QueryContextOperator.LessOrEqual => $"{Property} <= @{valueIndex}",
+            QueryContextOperator.In => $"@{valueIndex}.Contains({Property})",
+            QueryContextOperator.NotIn => $"!@{valueIndex}.Contains({Property})",
+            QueryContextOperator.IsNull => $"{Property} == null",
+            QueryContextOperator.NotNull => $"{Property} != null",
+            QueryContextOperator.Contains => ValueType == typeof(string) ||
+                                             typeof(IEnumerable).IsAssignableFrom(ValueType)
+                ? $"{Property}.Contains(@{valueIndex})"
+                : $"{Property}.ToString().Contains(@{valueIndex})",
+            QueryContextOperator.NotContains => ValueType == typeof(string) ||
+                                                typeof(IEnumerable).IsAssignableFrom(ValueType)
+                ? $"!{Property}.Contains(@{valueIndex})"
+                : $"!{Property}.ToString().Contains(@{valueIndex})",
+            QueryContextOperator.ContainsCaseInsensitive => ValueType == typeof(string) ||
+                                                            typeof(IEnumerable).IsAssignableFrom(ValueType)
+                ? $"{Property}.ToLower().Contains(@{valueIndex}.ToLower())"
+                : $"{Property}.ToString().ToLower().Contains(@{valueIndex})",
+            QueryContextOperator.NotContainsCaseInsensitive when ValueType == typeof(string) ||
+                                                                 typeof(IEnumerable).IsAssignableFrom(ValueType) =>
+                $"!{Property}.ToLower().Contains(@{valueIndex}.ToLower())",
+            QueryContextOperator.NotContainsCaseInsensitive =>
+                $"!{Property}.ToString().ToLower().Contains(@{valueIndex})",
+            QueryContextOperator.StartsWith => ValueType == typeof(string)
+                ? $"{Property}.StartsWith(@{valueIndex})"
+                : $"{Property}.ToString().StartsWith(@{valueIndex})",
+            QueryContextOperator.NotStartsWith => ValueType == typeof(string)
+                ? $"!{Property}.StartsWith(@{valueIndex})"
+                : $"!{Property}.ToString().StartsWith(@{valueIndex})",
+            QueryContextOperator.StartsWithCaseInsensitive => ValueType == typeof(string)
+                ? $"{Property}.ToLower().StartsWith(@{valueIndex}.ToLower())"
+                : $"{Property}.ToString().ToLower().StartsWith(@{valueIndex})",
+            QueryContextOperator.NotStartsWithCaseInsensitive => ValueType == typeof(string)
+                ? $"!{Property}.ToLower().StartsWith(@{valueIndex}.ToLower())"
+                : $"!{Property}.ToString().ToLower().StartsWith(@{valueIndex}.ToLower())",
+            QueryContextOperator.EndsWith => ValueType == typeof(string)
+                ? $"{Property}.EndsWith(@{valueIndex})"
+                : $"{Property}.ToString().EndsWith(@{valueIndex})",
+            QueryContextOperator.NotEndsWith => ValueType == typeof(string)
+                ? $"!{Property}.EndsWith(@{valueIndex})"
+                : $"!{Property}.ToString().EndsWith(@{valueIndex})",
+            QueryContextOperator.EndsWithCaseInsensitive => ValueType == typeof(string)
+                ? $"{Property}.ToLower().EndsWith(@{valueIndex}.ToLower())"
+                : $"{Property}.ToString().ToLower().EndsWith(@{valueIndex})",
+            QueryContextOperator.NotEndsWithCaseInsensitive => ValueType == typeof(string)
+                ? $"!{Property}.ToLower().EndsWith(@{valueIndex}.ToLower())"
+                : $"!{Property}.ToString().ToLower().EndsWith(@{valueIndex})",
+            _ => throw new InvalidOperationException($"Unknown operator {Operator}")
+        };
 }
+

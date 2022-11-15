@@ -6,7 +6,8 @@ using Sitko.Core.App.Json;
 
 namespace Sitko.Core.Repository.Remote.Server;
 
-public class BaseRemoteRepositoryController<TEntity, TEntityPK> : Controller where TEntity : class, IEntity<TEntityPK>
+public class BaseRemoteRepositoryController<TEntity, TEntityPK> : Controller
+    where TEntity : class, IEntity<TEntityPK> where TEntityPK : notnull
 {
     private readonly IRepository<TEntity, TEntityPK> repository;
 
@@ -179,11 +180,12 @@ public class BaseRemoteRepositoryController<TEntity, TEntityPK> : Controller whe
             var query = new SerializedQuery<TEntity>(queryData);
             object result = type switch
             {
-                SumType.Int => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<int>()),
-                SumType.Double => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<double>()),
-                SumType.Float => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<float>()),
-                SumType.Decimal => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<decimal>()),
-                SumType.Long => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<long>()),
+                SumType.TypeInt => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<int>()),
+                SumType.TypeDouble => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<double>()),
+                SumType.TypeFloat => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<float>()),
+                SumType.TypeDecimal =>
+                    await repository.SumAsync(q => query.Apply(q), query.SelectExpression<decimal>()),
+                SumType.TypeLong => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<long>()),
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unknown sum type")
             };
 
@@ -209,3 +211,4 @@ public class BaseRemoteRepositoryController<TEntity, TEntityPK> : Controller whe
         }
     }
 }
+

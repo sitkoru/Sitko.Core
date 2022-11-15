@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Logging;
@@ -34,7 +31,13 @@ public class AutomaticTokenManagementCookieEvents : CookieAuthenticationEvents
 
     public override async Task ValidatePrincipal(CookieValidatePrincipalContext context)
     {
-        var tokens = context.Properties.GetTokens();
+        var tokens = context.Properties.GetTokens().ToList();
+        if (context.Principal is null)
+        {
+            logger.LogDebug("Empty principal");
+            return;
+        }
+
         if (!tokens.Any())
         {
             logger.LogDebug(
@@ -107,7 +110,7 @@ public class AutomaticTokenManagementCookieEvents : CookieAuthenticationEvents
             return;
         }
 
-        var tokens = result.Properties.GetTokens();
+        var tokens = result.Properties.GetTokens().ToList();
         if (!tokens.Any())
         {
             logger.LogDebug(
@@ -131,3 +134,4 @@ public class AutomaticTokenManagementCookieEvents : CookieAuthenticationEvents
         }
     }
 }
+

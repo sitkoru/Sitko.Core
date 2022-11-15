@@ -1,5 +1,4 @@
-﻿using System;
-using Sitko.Core.App;
+﻿using Sitko.Core.App;
 
 namespace Sitko.Core.Health.Teams;
 
@@ -16,3 +15,4 @@ public static class ApplicationExtensions
         application.AddModule<TeamsHealthReporterModule, TeamsHealthReporterModuleOptions>(configure,
             optionsKey);
 }
+

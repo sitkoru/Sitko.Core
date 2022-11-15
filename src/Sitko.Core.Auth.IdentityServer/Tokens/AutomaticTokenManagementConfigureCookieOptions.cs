@@ -15,7 +15,7 @@ public class AutomaticTokenManagementConfigureCookieOptions : IConfigureNamedOpt
     {
     }
 
-    public void Configure(string name, CookieAuthenticationOptions options)
+    public void Configure(string? name, CookieAuthenticationOptions options)
     {
         if (name == scheme?.Name)
         {
@@ -23,3 +23,4 @@ public class AutomaticTokenManagementConfigureCookieOptions : IConfigureNamedOpt
         }
     }
 }
+

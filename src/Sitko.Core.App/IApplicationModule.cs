@@ -10,14 +10,15 @@ public interface IApplicationModule<in TModuleOptions> : IApplicationModule wher
     string OptionsKey { get; }
     bool AllowMultiple { get; }
 
-    void ConfigureServices(IApplicationContext context, IServiceCollection services, TModuleOptions startupOptions);
+    void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
+        TModuleOptions startupOptions);
 
-    IEnumerable<Type> GetRequiredModules(IApplicationContext context, TModuleOptions options);
+    IEnumerable<Type> GetRequiredModules(IApplicationContext applicationContext, TModuleOptions options);
 }
 
 public interface IApplicationModule
 {
-    Task InitAsync(IApplicationContext context, IServiceProvider serviceProvider);
+    Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider);
 
     Task ApplicationStarted(IApplicationContext applicationContext,
         IServiceProvider serviceProvider);
@@ -68,6 +69,7 @@ public interface IConfigurationModule<in TModuleOptions> : IApplicationModule<TM
     void ConfigureAppConfiguration(IConfigurationBuilder configurationBuilder,
         TModuleOptions startupOptions);
 }
+
 
 
 

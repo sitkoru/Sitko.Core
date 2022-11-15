@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using KellermanSoftware.CompareNetObjects;
 using Sitko.Core.Blazor.Forms;
 using Sitko.Core.Repository;
@@ -64,7 +61,7 @@ public class FormsTest : BaseTest
     }
 }
 
-internal class TestForm : BaseRepositoryForm<MainEntity, Guid, MainEntityRepository>
+internal sealed class TestForm : BaseRepositoryForm<MainEntity, Guid, MainEntityRepository>
 {
     private readonly MainEntity entity;
 
@@ -87,7 +84,7 @@ internal abstract class MainEntityRepository : BaseRepository<MainEntity, Guid, 
     }
 }
 
-internal class MainEntity : Entity<Guid>
+internal sealed class MainEntity : Entity<Guid>
 {
     public string StringProperty { get; set; } = "";
     public List<SubEntity> SubEntities { get; set; } = new();
@@ -101,12 +98,12 @@ internal abstract class SubEntity : Entity<Guid>
     public int IntProperty { get; set; }
 }
 
-internal class SubEntityA : SubEntity
+internal sealed class SubEntityA : SubEntity
 {
     public bool BoolProperty { get; set; }
 }
 
-internal class SubEntityB : SubEntity
+internal sealed class SubEntityB : SubEntity
 {
     public Guid GuidProperty { get; set; } = Guid.NewGuid();
 }
@@ -118,12 +115,13 @@ internal abstract class SubOtherClass
     public int IntProperty { get; set; }
 }
 
-internal class SubOtherClassA : SubOtherClass
+internal sealed class SubOtherClassA : SubOtherClass
 {
     public bool BoolProperty { get; set; }
 }
 
-internal class SubOtherClassB : SubOtherClass
+internal sealed class SubOtherClassB : SubOtherClass
 {
     public Guid GuidProperty { get; set; } = Guid.NewGuid();
 }
+

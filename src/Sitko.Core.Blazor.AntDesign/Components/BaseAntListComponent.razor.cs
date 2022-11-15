@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 using AntDesign;
 using AntDesign.TableModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Blazor.Components;
-using Sitko.Core.Repository;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components;
 
@@ -155,44 +149,13 @@ public abstract partial class BaseAntListComponent<TItem> where TItem : class
                         }
 
                         throw new InvalidOperationException("Error sorting model");
-                    }, sortEntry.FieldName, sortEntry.Sort == SortDirection.Descending.ToString()));
+                    }));
                 }
             }
 
             foreach (var filterModel in queryModel.FilterModel)
             {
-                var values = new List<FilterOperationValue>();
-                foreach (var modelFilter in filterModel.Filters)
-                {
-                    QueryContextOperator? compareOperator = modelFilter.FilterCompareOperator switch
-                    {
-                        TableFilterCompareOperator.Equals => QueryContextOperator.Equal,
-                        TableFilterCompareOperator.Contains => QueryContextOperator.Contains,
-                        TableFilterCompareOperator.StartsWith => QueryContextOperator.StartsWith,
-                        TableFilterCompareOperator.EndsWith => QueryContextOperator.EndsWith,
-                        TableFilterCompareOperator.GreaterThan => QueryContextOperator.Greater,
-                        TableFilterCompareOperator.LessThan => QueryContextOperator.Less,
-                        TableFilterCompareOperator.GreaterThanOrEquals => QueryContextOperator.GreaterOrEqual,
-                        TableFilterCompareOperator.LessThanOrEquals => QueryContextOperator.LessOrEqual,
-                        TableFilterCompareOperator.NotEquals => QueryContextOperator.NotEqual,
-                        TableFilterCompareOperator.IsNull => QueryContextOperator.IsNull,
-                        TableFilterCompareOperator.IsNotNull => QueryContextOperator.NotNull,
-                        TableFilterCompareOperator.NotContains => QueryContextOperator.NotContains,
-                        _ => null
-                    };
-                    if (compareOperator is not null)
-                    {
-                        values.Add(new FilterOperationValue(modelFilter.Value, compareOperator.Value));
-                    }
-                    else
-                    {
-                        Logger.LogWarning("Unsupported filter operator: {Operator}",
-                            modelFilter.FilterCompareOperator);
-                    }
-                }
-
-                filters.Add(new FilterOperation<TItem>(items => filterModel.FilterList(items),
-                    filterModel.FieldName, values.ToArray()));
+                filters.Add(new FilterOperation<TItem>(items => filterModel.FilterList(items)));
             }
         }
 
@@ -264,40 +227,15 @@ public class LoadRequest<TItem> where TItem : class
 
 public class FilterOperation<TItem> where TItem : class
 {
-    public FilterOperation(Func<IQueryable<TItem>, IQueryable<TItem>> operation, string property,
-        FilterOperationValue[] values)
-    {
-        Operation = operation;
-        Property = property;
-    }
+    public FilterOperation(Func<IQueryable<TItem>, IQueryable<TItem>> operation) => Operation = operation;
 
     public Func<IQueryable<TItem>, IQueryable<TItem>> Operation { get; }
-    public string Property { get; }
-}
-
-public class FilterOperationValue
-{
-    public FilterOperationValue(object value, QueryContextOperator @operator)
-    {
-        Value = value;
-        Operator = @operator;
-    }
-
-    public object Value { get; }
-    public QueryContextOperator Operator { get; }
 }
 
 public class SortOperation<TItem> where TItem : class
 {
-    public SortOperation(Func<IQueryable<TItem>, IOrderedQueryable<TItem>> operation, string property,
-        bool isDescending)
-    {
-        Operation = operation;
-        Property = property;
-        IsDescending = isDescending;
-    }
+    public SortOperation(Func<IQueryable<TItem>, IOrderedQueryable<TItem>> operation) => Operation = operation;
 
     public Func<IQueryable<TItem>, IOrderedQueryable<TItem>> Operation { get; }
-    public string Property { get; }
-    public bool IsDescending { get; }
 }
+

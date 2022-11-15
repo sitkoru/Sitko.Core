@@ -1,5 +1,4 @@
-﻿using System;
-using Sitko.Core.App;
+﻿using Sitko.Core.App;
 
 namespace Sitko.Core.MediatR;
 
@@ -17,3 +16,4 @@ public static class ApplicationExtensions
         application.AddModule<MediatRModule<TAssembly>, MediatRModuleOptions<TAssembly>>(configure,
             optionsKey);
 }
+

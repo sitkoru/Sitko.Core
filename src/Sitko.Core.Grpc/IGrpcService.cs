@@ -1,5 +1,6 @@
-﻿namespace Sitko.Core.Grpc
+﻿namespace Sitko.Core.Grpc;
+
+public interface IGrpcService
 {
-    public interface IGrpcService
-    {}
 }
+

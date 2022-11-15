@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using Grpc.Core;
+﻿using Grpc.Core;
 using Grpc.Core.Interceptors;
 using Grpc.Net.Client;
 using Microsoft.Extensions.DependencyInjection;
@@ -129,3 +126,4 @@ public class GrpcClientProvider<TClient, TOptions> : IGrpcClientProvider<TClient
         callInvoker = null;
     }
 }
+

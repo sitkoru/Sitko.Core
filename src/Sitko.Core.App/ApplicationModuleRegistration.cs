@@ -10,14 +10,14 @@ using Serilog;
 
 namespace Sitko.Core.App;
 
-internal class ApplicationModuleRegistration<TModule, TModuleOptions> : ApplicationModuleRegistration
+internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : ApplicationModuleRegistration
     where TModule : IApplicationModule<TModuleOptions>, new() where TModuleOptions : BaseModuleOptions, new()
 {
     private readonly Action<IApplicationContext, TModuleOptions>? configureOptions;
     private readonly TModule instance;
 
     private readonly Dictionary<Guid, TModuleOptions> optionsCache = new();
-    private readonly string? optionsKey;
+    private readonly string optionsKey;
     private readonly Type? validatorType;
 
     public ApplicationModuleRegistration(
@@ -228,4 +228,5 @@ public abstract class ApplicationModuleRegistration
 
     public abstract bool IsEnabled(IApplicationContext context);
 }
+
 

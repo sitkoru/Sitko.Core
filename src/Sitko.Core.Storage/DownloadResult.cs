@@ -1,48 +1,48 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
+﻿namespace Sitko.Core.Storage;
 
-namespace Sitko.Core.Storage
+/// <summary>
+///     Download file result with StorageItem and Stream
+/// </summary>
+public record DownloadResult : IDisposable, IAsyncDisposable
 {
-    /// <summary>
-    /// Download file result with StorageItem and Stream
-    /// </summary>
-    public record DownloadResult : IDisposable, IAsyncDisposable
+    private bool isDisposed;
+
+    public DownloadResult(StorageItem storageItem, Stream stream)
     {
-        /// <summary>
-        /// StorageItem with file info
-        /// </summary>
-        public StorageItem StorageItem { get; }
+        StorageItem = storageItem;
+        Stream = stream;
+    }
 
-        /// <summary>
-        /// Stream with file data
-        /// </summary>
-        public Stream Stream { get; }
+    /// <summary>
+    ///     StorageItem with file info
+    /// </summary>
+    public StorageItem StorageItem { get; }
 
-        private bool isDisposed;
+    /// <summary>
+    ///     Stream with file data
+    /// </summary>
+    public Stream Stream { get; }
 
-        public DownloadResult(StorageItem storageItem, Stream stream)
+    public async ValueTask DisposeAsync()
+    {
+        if (!isDisposed)
         {
-            StorageItem = storageItem;
-            Stream = stream;
+            isDisposed = true;
+            await Stream.DisposeAsync();
         }
 
-        public async ValueTask DisposeAsync()
+        GC.SuppressFinalize(this);
+    }
+
+    public void Dispose()
+    {
+        if (!isDisposed)
         {
-            if (!isDisposed)
-            {
-                isDisposed = true;
-                await Stream.DisposeAsync();
-            }
+            Stream.Dispose();
+            isDisposed = true;
         }
 
-        public void Dispose()
-        {
-            if (!isDisposed)
-            {
-                Stream.Dispose();
-                isDisposed = true;
-            }
-        }
-    };
+        GC.SuppressFinalize(this);
+    }
 }
+

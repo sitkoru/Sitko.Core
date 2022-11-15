@@ -1,5 +1,4 @@
-﻿using System;
-using Sitko.Core.App;
+﻿using Sitko.Core.App;
 
 namespace Sitko.Core.Auth.Google;
 
@@ -13,3 +12,4 @@ public static class ApplicationExtensions
         Action<GoogleAuthModuleOptions>? configure = null, string? optionsKey = null) =>
         application.AddModule<GoogleAuthModule, GoogleAuthModuleOptions>(configure, optionsKey);
 }
+

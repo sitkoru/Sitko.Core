@@ -1,7 +1,3 @@
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sitko.Core.Storage.Internal;
@@ -32,7 +28,11 @@ public class InMemoryStorageCache<TStorageOptions> : BaseStorageCache<TStorageOp
             new InMemoryStorageCacheRecord(item.Metadata, item.FileSize, item.Date, memoryStream.ToArray());
     }
 
-    public override ValueTask DisposeAsync() => new();
+    public override ValueTask DisposeAsync()
+    {
+        GC.SuppressFinalize(this);
+        return new ValueTask();
+    }
 }
 
 public class InMemoryStorageCacheOptions : StorageCacheOptions
@@ -57,3 +57,4 @@ public class InMemoryStorageCacheRecord : IStorageCacheRecord
 
     public Stream OpenRead() => new MemoryStream(Data);
 }
+

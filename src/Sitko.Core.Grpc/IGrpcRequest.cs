@@ -1,7 +1,7 @@
-﻿namespace Sitko.Core.Grpc
+﻿namespace Sitko.Core.Grpc;
+
+public interface IGrpcRequest : IGrpcMessage
 {
-    public interface IGrpcRequest : IGrpcMessage
-    {
-        ApiRequestInfo RequestInfo { get; set; }
-    }
+    ApiRequestInfo RequestInfo { get; set; }
 }
+

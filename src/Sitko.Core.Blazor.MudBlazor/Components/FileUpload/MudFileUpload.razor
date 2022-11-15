@@ -116,7 +116,7 @@
 }
 @if (PreviewItem != null)
 {
-    <MudOverlay Class="mud-file-upload-preview-overlay" Visible="true" AutoClose="true" DarkBackground="true" ZIndex="@int.MaxValue" VisibleChanged="b => PreviewItem = null">
+    <MudOverlay Class="mud-file-upload-preview-overlay" Visible="true" AutoClose="true" DarkBackground="true" ZIndex="@int.MaxValue" VisibleChanged="_ => PreviewItem = null">
         <img style="width: 100%" src="@PreviewItem!.LargePreviewUrl" alt="@PreviewItem.StorageItem.FileName"/>
     </MudOverlay>
 }

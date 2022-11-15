@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Sitko.Core.Repository;
 
 public class EntityChange
@@ -41,3 +39,4 @@ public enum ChangeType
     Modified,
     Deleted
 }
+

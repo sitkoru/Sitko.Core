@@ -1,4 +1,3 @@
-using System;
 using FluentAssertions;
 using Sitko.Core.Blazor.Components;
 using Sitko.Core.Xunit;
@@ -21,7 +20,8 @@ public class ParseTest : BaseTest
         const double defaultDoubleValue = 11.75;
         var defaultGuidValue = Guid.NewGuid();
 
-        var queryString = $"intValue={defaultIntValue}&stringValue={defaultStringValue}&doubleValue={defaultDoubleValue}&guidValue={defaultGuidValue}";
+        var queryString =
+            $"intValue={defaultIntValue}&stringValue={defaultStringValue}&doubleValue={defaultDoubleValue}&guidValue={defaultGuidValue}";
 
         ParseQueryStringHelper.TryGetQueryString<int>(queryString, "intValue", out var intValue);
         intValue.Should().Be(defaultIntValue);
@@ -50,3 +50,4 @@ public class ParseTest : BaseTest
         notFoundType.Should().Be(default);
     }
 }
+

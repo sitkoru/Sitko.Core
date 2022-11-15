@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Grpc.Core;
+﻿using Grpc.Core;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Results;
@@ -16,7 +13,7 @@ public abstract class GrpcServiceBase : IGrpcService
     protected ILogger<GrpcServiceBase> Logger { get; }
 
     [PublicAPI]
-    protected TResponse CreateResponse<TResponse>() where TResponse : class, IGrpcResponse, new() =>
+    protected static TResponse CreateResponse<TResponse>() where TResponse : class, IGrpcResponse, new() =>
         new() { ResponseInfo = new ApiResponseInfo { IsSuccess = true } };
 
     protected Task<TResponse> ProcessCall<TResponse>(IGrpcRequest request,
@@ -154,15 +151,15 @@ public abstract class GrpcServiceBase : IGrpcService
         }
     }
 
-    protected GrpcCallResult Ok() => new();
+    protected static GrpcCallResult Ok() => new();
 
-    protected GrpcCallResult Error(string error) => new(error);
+    protected static GrpcCallResult Error(string error) => new(error);
 
-    protected GrpcCallResult Error(IEnumerable<string> errors) => new(errors);
+    protected static GrpcCallResult Error(IEnumerable<string> errors) => new(errors);
 
-    protected GrpcCallResult Exception(Exception ex, string? error = null) => new(ex, error);
+    protected static GrpcCallResult Exception(Exception ex, string? error = null) => new(ex, error);
 
-    protected GrpcCallResult Result(IOperationResult result)
+    protected static GrpcCallResult Result(IOperationResult result)
     {
         if (result.IsSuccess)
         {
@@ -174,3 +171,4 @@ public abstract class GrpcServiceBase : IGrpcService
             : Error(result.ErrorMessage!);
     }
 }
+

@@ -1,4 +1,3 @@
-using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -28,3 +27,4 @@ public class FormEditContextCatcher : ComponentBase
         Form.SetEditContext(CurrentEditContext);
     }
 }
+

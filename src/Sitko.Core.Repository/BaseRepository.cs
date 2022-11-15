@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
 using FluentValidation.Results;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
@@ -12,7 +7,8 @@ using Sitko.FluentValidation.Graph;
 
 namespace Sitko.Core.Repository;
 
-public interface IRepositoryContext<TEntity, TEntityPk> where TEntity : class, IEntity<TEntityPk>
+public interface IRepositoryContext<TEntity, TEntityPk>
+    where TEntity : class, IEntity<TEntityPk> where TEntityPk : notnull
 {
     RepositoryFiltersManager FiltersManager { get; }
     FluentGraphValidator FluentGraphValidator { get; }
@@ -21,7 +17,7 @@ public interface IRepositoryContext<TEntity, TEntityPk> where TEntity : class, I
 }
 
 public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<TEntity, TEntityPk>
-    where TEntity : class, IEntity<TEntityPk> where TQuery : IRepositoryQuery<TEntity>
+    where TEntity : class, IEntity<TEntityPk> where TQuery : IRepositoryQuery<TEntity> where TEntityPk : notnull
 {
     private List<RepositoryRecord<TEntity, TEntityPk>>? batch;
 
@@ -101,20 +97,20 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         return item;
     }
 
-    public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddAsync(TEntity item,
+    public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddAsync(TEntity entity,
         CancellationToken cancellationToken = default)
     {
-        var result = await AddAsync(new[] { item }, cancellationToken);
+        var result = await AddAsync(new[] { entity }, cancellationToken);
         return result.First();
     }
 
-    public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> AddAsync(IEnumerable<TEntity> items,
+    public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> AddAsync(IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
     {
         var results = new List<AddOrUpdateOperationResult<TEntity, TEntityPk>>();
         var batchStarted = await BeginBatchAsync(cancellationToken);
         var hasErrors = false;
-        foreach (var item in items)
+        foreach (var item in entities)
         {
             (bool isValid, IList<ValidationFailure> errors) validationResult = (false, new List<ValidationFailure>());
             if (await BeforeValidateAsync(item, validationResult, true, cancellationToken))
@@ -581,7 +577,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
     public virtual async Task<TEntity?> GetByIdAsync(TEntityPk id, CancellationToken cancellationToken = default)
     {
         var query = await CreateRepositoryQueryAsync(cancellationToken);
-        query.Where(i => i.Id!.Equals(id));
+        query.Where(i => i.Id.Equals(id));
 
         var entity = await DoGetAsync(query, cancellationToken);
         if (entity is not null)
@@ -596,7 +592,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         Func<IRepositoryQuery<TEntity>, Task> configureQuery, CancellationToken cancellationToken = default)
     {
         var query = await CreateRepositoryQueryAsync(cancellationToken);
-        query.Where(i => i.Id!.Equals(id));
+        query.Where(i => i.Id.Equals(id));
         await query.ConfigureAsync(configureQuery, cancellationToken);
 
         var entity = await DoGetAsync(query, cancellationToken);
@@ -612,7 +608,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         CancellationToken cancellationToken = default)
     {
         var query = await CreateRepositoryQueryAsync(cancellationToken);
-        query.Where(i => i.Id!.Equals(id));
+        query.Where(i => i.Id.Equals(id));
         query.Configure(configureQuery);
 
         var entity = await DoGetAsync(query, cancellationToken);
@@ -787,3 +783,4 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         FiltersManager.BeforeValidateAsync<TEntity, TEntityPk>(item, validationResult, isNew,
             cancellationToken);
 }
+

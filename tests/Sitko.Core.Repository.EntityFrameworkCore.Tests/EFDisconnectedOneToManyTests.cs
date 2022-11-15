@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.Repository.EntityFrameworkCore.Tests.Data;
 using Sitko.Core.Repository.Tests.Data;
@@ -112,7 +109,7 @@ public class EFDisconnectedOneToManyTests : BaseTest<EFTestScope>
             Assert.NotNull(originalBar);
         }
 
-        Assert.Empty(originalBar!.Foos);
+        Assert.Empty(originalBar.Foos);
 
         var foo = new FooModel();
 
@@ -151,11 +148,11 @@ public class EFDisconnectedOneToManyTests : BaseTest<EFTestScope>
         using (var scope1 = scope.CreateScope())
         {
             var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
-            bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id).Include(b => b.Foos));
+            bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar.Id).Include(b => b.Foos));
             Assert.NotNull(bar);
         }
 
-        Assert.NotEmpty(bar!.Foos);
+        Assert.NotEmpty(bar.Foos);
         var foo = bar.Foos.OrderBy(_ => Guid.NewGuid()).First(); // change random
         var newText = Guid.NewGuid().ToString();
         foo.FooText = newText;
@@ -193,11 +190,11 @@ public class EFDisconnectedOneToManyTests : BaseTest<EFTestScope>
         using (var scope1 = scope.CreateScope())
         {
             var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
-            bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id));
+            bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar.Id));
             Assert.NotNull(bar);
         }
 
-        Assert.NotEmpty(bar!.Foos);
+        Assert.NotEmpty(bar.Foos);
         var count = bar.Foos.Count;
         var foo1 = new FooModel();
         var foo2 = new FooModel();
@@ -239,13 +236,13 @@ public class EFDisconnectedOneToManyTests : BaseTest<EFTestScope>
         using (var scope1 = scope.CreateScope())
         {
             var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
-            bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id).Include(b => b.Foos));
+            bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar.Id).Include(b => b.Foos));
             Assert.NotNull(bar);
         }
 
 
         Assert.NotNull(bar);
-        Assert.NotEmpty(bar!.Foos);
+        Assert.NotEmpty(bar.Foos);
         var count = bar.Foos.Count;
         Assert.Equal(3, count);
 
@@ -268,3 +265,4 @@ public class EFDisconnectedOneToManyTests : BaseTest<EFTestScope>
         }
     }
 }
+

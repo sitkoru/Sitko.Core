@@ -7,10 +7,10 @@ namespace Sitko.Core.Email;
 public abstract class FluentEmailModule<TEmailModuleOptions> : EmailModule<TEmailModuleOptions>
     where TEmailModuleOptions : FluentEmailModuleOptions, new()
 {
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TEmailModuleOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddScoped<IMailSender, FluentMailSender<TEmailModuleOptions>>();
         var address = new MailAddress(startupOptions.From);
         var builder = services.AddFluentEmail(address.Address, address.DisplayName);
@@ -20,3 +20,4 @@ public abstract class FluentEmailModule<TEmailModuleOptions> : EmailModule<TEmai
     protected abstract void ConfigureBuilder(FluentEmailServicesBuilder builder,
         TEmailModuleOptions moduleOptions);
 }
+

@@ -10,8 +10,7 @@ namespace WASMDemo.Server;
 
 public class ServerApplication : WebApplication<Startup>
 {
-    public ServerApplication(string[] args) : base(args)
-    {
+    public ServerApplication(string[] args) : base(args) =>
         this.AddPersistentState()
             .AddPostgresDatabase<WasmDbContext>(options =>
             {
@@ -19,9 +18,7 @@ public class ServerApplication : WebApplication<Startup>
                 options.DbContextFactoryLifetime = ServiceLifetime.Scoped;
             })
             .AddEFRepositories<WasmDbContext>();
-    }
 }
-
 
 public class Startup : BaseStartup
 {
@@ -29,31 +26,29 @@ public class Startup : BaseStartup
     {
     }
 
+    protected override bool EnableStaticFiles => false;
+
     protected override void ConfigureAppServices(IServiceCollection services)
     {
         base.ConfigureAppServices(services);
         services.AddValidatorsFromAssemblyContaining<Startup>();
         services.AddControllersWithViews();
         services.AddRazorPages();
-        services.AddScoped(sp =>
+        services.AddScoped(_ =>
         {
             var uri = new Uri("https://localhost:7299");
-            if (bool.TryParse(System.Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"), out var inContainer) &&
+            if (bool.TryParse(System.Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"),
+                    out var inContainer) &&
                 inContainer)
             {
                 uri = new Uri("http://localhost");
             }
 
-            return new HttpClient
-            {
-                BaseAddress = uri
-            };
+            return new HttpClient { BaseAddress = uri };
         });
         services.AddResponseCompression();
         services.AddMudServices();
     }
-
-    protected override bool EnableStaticFiles => false;
 
     protected override void ConfigureBeforeRoutingMiddleware(IApplicationBuilder app)
     {
@@ -82,3 +77,4 @@ public class Startup : BaseStartup
         endpoints.MapFallbackToPage("/_Host");
     }
 }
+

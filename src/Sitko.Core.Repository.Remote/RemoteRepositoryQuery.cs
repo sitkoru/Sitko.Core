@@ -2,12 +2,6 @@
 
 namespace Sitko.Core.Repository.Remote;
 
-internal class RemoteRepositoryQuerySource<TEntity> where TEntity : class
-{
-    public RemoteRepositoryQuerySource(IQueryable<TEntity> query) => Query = query;
-    internal IQueryable<TEntity> Query { get; set; }
-}
-
 public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where TEntity : class
 {
     private readonly List<IRemoteIncludableQuery> includableQueries = new();
@@ -47,9 +41,9 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
         return this;
     }
 
-    public override IRepositoryQuery<TEntity> WhereByString(string whereStr)
+    public override IRepositoryQuery<TEntity> WhereByString(string whereJson)
     {
-        whereByStringExpressions.Add((whereStr, null));
+        whereByStringExpressions.Add((whereJson, null));
         return this;
     }
 
@@ -149,9 +143,9 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
         return serializedQuery;
     }
 
-    public RemoteRepositoryQuery<TEntity> Select(Expression selectExpression)
+    public RemoteRepositoryQuery<TEntity> Select(Expression expression)
     {
-        this.selectExpression = selectExpression;
+        selectExpression = expression;
         return this;
     }
 }
@@ -173,7 +167,7 @@ public class IncludableRemoteRepositoryQuery<TEntity, TProperty> : RemoteReposit
         }
     }
 
-    private IRemoteIncludableQuery? child { get; set; }
+    private IRemoteIncludableQuery? Child { get; set; }
 
     public override IRepositoryQuery<TEntity> Take(int take)
     {
@@ -181,9 +175,9 @@ public class IncludableRemoteRepositoryQuery<TEntity, TProperty> : RemoteReposit
         return this;
     }
 
-    public override IRepositoryQuery<TEntity> Skip(int take)
+    public override IRepositoryQuery<TEntity> Skip(int skip)
     {
-        source.Skip(take);
+        source.Skip(skip);
         return this;
     }
 
@@ -192,19 +186,6 @@ public class IncludableRemoteRepositoryQuery<TEntity, TProperty> : RemoteReposit
 
     public override IRepositoryQuery<TEntity> Include(string navigationPropertyPath) =>
         source.Include(navigationPropertyPath);
-
-    public void SetChild(IRemoteIncludableQuery query) => child = query;
-
-    public string GetFullPath()
-    {
-        var path = propertyName;
-        if (child is not null)
-        {
-            path += $".{child.GetFullPath()}";
-        }
-
-        return path;
-    }
 
     public IIncludableRepositoryQuery<TEntity, TNextProperty> ThenIncludeFromEnumerableInternal<TNextProperty,
         TPreviousProperty>(
@@ -215,6 +196,19 @@ public class IncludableRemoteRepositoryQuery<TEntity, TProperty> : RemoteReposit
         TPreviousProperty>(
         Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath) =>
         new IncludableRemoteRepositoryQuery<TEntity, TNextProperty>(this, GetPropertyName(navigationPropertyPath));
+
+    public void SetChild(IRemoteIncludableQuery query) => Child = query;
+
+    public string GetFullPath()
+    {
+        var path = propertyName;
+        if (Child is not null)
+        {
+            path += $".{Child.GetFullPath()}";
+        }
+
+        return path;
+    }
 }
 
 public interface IRemoteIncludableQuery
@@ -222,3 +216,4 @@ public interface IRemoteIncludableQuery
     public string GetFullPath();
     public void SetChild(IRemoteIncludableQuery query);
 }
+

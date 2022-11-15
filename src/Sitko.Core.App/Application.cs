@@ -161,13 +161,13 @@ public abstract class Application : IApplication, IAsyncDisposable
                     if (i == parts.Length - 1)
                     {
                         current[parts[i]] =
-                            JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(options));
+                            JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(options))!;
                     }
                     else
                     {
-                        if (current.ContainsKey(parts[i]))
+                        if (current.TryGetValue(parts[i], out var value))
                         {
-                            current = (Dictionary<string, object>)current[parts[i]];
+                            current = (Dictionary<string, object>)value;
                         }
                         else
                         {
@@ -378,9 +378,9 @@ public abstract class Application : IApplication, IAsyncDisposable
 
     public T Get<T>(string key)
     {
-        if (store.ContainsKey(key))
+        if (store.TryGetValue(key, out var value))
         {
-            return (T)store[key];
+            return (T)value;
         }
 
 #pragma warning disable 8603

@@ -16,7 +16,10 @@
 <MudButton OnClick="@LoadMore">Загрузить ещё</MudButton>
 
 @code {
-    [Inject] public IRepository<TestEntity, Guid> repository { get; set; }
+
+    [Inject]
+    public IRepository<TestEntity, Guid> Repository { get; set; } = null!;
+
     private int TotalItemsWithoutState { get; set; }
     private int PageSize { get; set; } = 10;
     private int Offset { get; set; } = 0;
@@ -24,10 +27,7 @@
 
     private async Task GetData()
     {
-        var result = await repository.GetAllAsync(q =>
-        {
-            q.Skip(Offset).Take(PageSize);
-        });
+        var result = await Repository.GetAllAsync(q => { q.Skip(Offset).Take(PageSize); });
         TotalItemsWithoutState = result.itemsCount;
         LoadedCnt += PageSize;
     }
@@ -40,14 +40,11 @@
 
     protected override async Task<TestState> LoadStateAsync()
     {
-        var result = await repository.GetAllAsync(q =>
-        {
-            q.Skip(Offset).Take(PageSize);
-        });
+        var result = await Repository.GetAllAsync(q => { q.Skip(Offset).Take(PageSize); });
         return new TestState
         {
             TotalItems = result.itemsCount
         };
     }
-}
 
+}

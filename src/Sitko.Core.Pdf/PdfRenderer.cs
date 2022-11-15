@@ -1,12 +1,10 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using PuppeteerSharp;
 using Sitko.Core.Puppeteer;
 
 namespace Sitko.Core.Pdf;
 
-internal class PdfRenderer : IPdfRenderer
+internal sealed class PdfRenderer : IPdfRenderer
 {
     private readonly IBrowserProvider browserProvider;
     private readonly PdfOptions defaultOptions = new() { PrintBackground = true };
@@ -37,7 +35,7 @@ internal class PdfRenderer : IPdfRenderer
         catch (Exception ex)
         {
             logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
-            throw new Exception(ex.Message, ex);
+            throw new InvalidOperationException(ex.Message, ex);
         }
     }
 
@@ -55,7 +53,7 @@ internal class PdfRenderer : IPdfRenderer
         catch (Exception ex)
         {
             logger.LogError(ex, "Error while generating pdf from html: {ErrorText}", ex.ToString());
-            throw new Exception(ex.Message, ex);
+            throw new InvalidOperationException(ex.Message, ex);
         }
     }
 
@@ -74,7 +72,7 @@ internal class PdfRenderer : IPdfRenderer
         catch (Exception ex)
         {
             logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
-            throw new Exception(ex.Message, ex);
+            throw new InvalidOperationException(ex.Message, ex);
         }
     }
 
@@ -93,11 +91,11 @@ internal class PdfRenderer : IPdfRenderer
         catch (Exception ex)
         {
             logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
-            throw new Exception(ex.Message, ex);
+            throw new InvalidOperationException(ex.Message, ex);
         }
     }
 
-    private async Task<IPage> GetPageByUrl(IBrowser browser, string url, TimeSpan? delay = null)
+    private static async Task<IPage> GetPageByUrl(IBrowser browser, string url, TimeSpan? delay = null)
     {
         var page = await browser.NewPageAsync();
         await page.GoToAsync(url);
@@ -109,7 +107,7 @@ internal class PdfRenderer : IPdfRenderer
         return page;
     }
 
-    private async Task<IPage> GetPageWithHtml(IBrowser browser, string html, TimeSpan? delay = null)
+    private static async Task<IPage> GetPageWithHtml(IBrowser browser, string html, TimeSpan? delay = null)
     {
         var page = await browser.NewPageAsync();
         await page.SetContentAsync(html);
@@ -121,3 +119,4 @@ internal class PdfRenderer : IPdfRenderer
         return page;
     }
 }
+

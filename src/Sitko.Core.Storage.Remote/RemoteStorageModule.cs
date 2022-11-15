@@ -1,6 +1,4 @@
-﻿using System;
-using System.Net.Http;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.Storage.Metadata;
 
@@ -12,10 +10,10 @@ public class
 {
     public override string OptionsKey => $"Storage:Remote:{typeof(TStorageOptions).Name}";
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TStorageOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddHttpClient<RemoteStorage<TStorageOptions>>();
         services
             .AddSingleton<IStorageMetadataProvider<TStorageOptions>, RemoteStorageMetadataProvider<TStorageOptions>>();
@@ -28,3 +26,4 @@ public interface IRemoteStorageOptions
     public Uri RemoteUrl { get; }
     public Func<HttpClient>? HttpClientFactory { get; }
 }
+

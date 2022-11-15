@@ -1,4 +1,4 @@
-using WASMDemo.Server;
+namespace WASMDemo.Server;
 
 public class Program
 {
@@ -9,3 +9,4 @@ public class Program
 
     private static ServerApplication CreateApplication(string[] args) => new(args);
 }
+

@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Sitko.Core.Storage.S3;
 using Sitko.Core.Xunit;
 
@@ -29,3 +28,4 @@ public class BasePostgresStorageTestScope : BaseTestScope
         await storage.DeleteAllAsync();
     }
 }
+

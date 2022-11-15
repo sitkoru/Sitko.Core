@@ -8,10 +8,10 @@ public class ConsulModule : BaseApplicationModule<ConsulModuleOptions>
 {
     public override string OptionsKey => "Consul";
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         ConsulModuleOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddSingleton<IConsulClientProvider, ConsulClientProvider>();
         services.AddSingleton(provider => provider.GetRequiredService<IConsulClientProvider>().Client);
         services.AddHealthChecks().AddCheck<ConsulHealthCheck>("Consul connection");
@@ -28,3 +28,4 @@ public class ConsulModuleOptionsValidator : AbstractValidator<ConsulModuleOption
     public ConsulModuleOptionsValidator() =>
         RuleFor(options => options.ConsulUri).NotEmpty().WithMessage("Consul uri can't be empty");
 }
+

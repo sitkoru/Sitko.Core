@@ -1,5 +1,4 @@
-﻿using System;
-using Sitko.Core.App;
+﻿using Sitko.Core.App;
 
 namespace Sitko.Core.Automapper;
 
@@ -15,3 +14,4 @@ public static class ApplicationExtensions
         string? optionsKey = null) =>
         application.AddModule<AutoMapperModule, AutoMapperModuleOptions>(configure, optionsKey);
 }
+

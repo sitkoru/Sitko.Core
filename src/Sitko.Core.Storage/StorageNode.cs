@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Sitko.Core.App.Helpers;
 
 namespace Sitko.Core.Storage;
@@ -38,7 +34,7 @@ public sealed record StorageNode
         new()
         {
             Type = StorageNodeType.StorageItem,
-            Name = storageItem.FileName!,
+            Name = storageItem.FileName,
             FullPath = storageItem.FilePath,
             Size = storageItem.FileSize,
             LastModified = storageItem.LastModified,
@@ -123,7 +119,7 @@ public sealed record StorageNode
         }
     }
 
-    private string PreparePath(string path) => path.Replace("\\", "/").Replace("//", "/");
+    private static string PreparePath(string path) => path.Replace("\\", "/").Replace("//", "/");
 }
 
 public enum StorageNodeType
@@ -131,3 +127,4 @@ public enum StorageNodeType
     Directory,
     StorageItem
 }
+

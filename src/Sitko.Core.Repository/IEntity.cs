@@ -1,10 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Sitko.Core.Repository;
 
-public interface IEntity<TEntityPk> : IEntity
+public interface IEntity<TEntityPk> : IEntity where TEntityPk : notnull
 {
     TEntityPk Id { get; set; }
 }
@@ -14,9 +12,9 @@ public interface IEntity
     object? EntityId { get; }
 }
 
-public abstract class Entity<TEntityPk> : IEntity<TEntityPk>, IEquatable<Entity<TEntityPk>>
+public abstract class Entity<TEntityPk> : IEntity<TEntityPk>, IEquatable<Entity<TEntityPk>> where TEntityPk : notnull
 {
-    public virtual object? EntityId => Id;
+    public virtual object EntityId => Id;
 
     [Key]
 #pragma warning disable 8618
@@ -65,6 +63,7 @@ public abstract class Entity<TEntityPk> : IEntity<TEntityPk>, IEquatable<Entity<
         return Equals((Entity<TEntityPk>)obj);
     }
 
+    // ReSharper disable once NonReadonlyMemberInGetHashCode
     public override int GetHashCode() => EqualityComparer<TEntityPk>.Default.GetHashCode(Id);
 
     public static bool operator ==(Entity<TEntityPk>? lhs, Entity<TEntityPk>? rhs)
@@ -87,12 +86,13 @@ public abstract class Entity<TEntityPk> : IEntity<TEntityPk>, IEquatable<Entity<
     public static bool operator !=(Entity<TEntityPk>? lhs, Entity<TEntityPk>? rhs) => !(lhs == rhs);
 }
 
-public abstract record EntityRecord<TEntityPk> : IEntity<TEntityPk>
+public abstract record EntityRecord<TEntityPk> : IEntity<TEntityPk> where TEntityPk : notnull
 {
-    public object? EntityId => Id;
+    public object EntityId => Id;
 
     [Key]
 #pragma warning disable 8618
     public virtual TEntityPk Id { get; set; }
 #pragma warning restore 8618
 }
+

@@ -1,6 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sitko.Core.Storage.Metadata;
 
@@ -40,3 +38,4 @@ public class RemoteStorageMetadataModuleOptions<TStorageOptions> : EmbedStorageM
     where TStorageOptions : StorageOptions
 {
 }
+

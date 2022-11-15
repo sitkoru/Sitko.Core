@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PuppeteerSharp;
 
@@ -65,3 +63,4 @@ public class BrowserProvider : IBrowserProvider
             }, loggerFactory);
     }
 }
+

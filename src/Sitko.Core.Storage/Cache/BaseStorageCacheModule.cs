@@ -9,10 +9,10 @@ public abstract class
     where TCache : class, IStorageCache<TStorageOptions, TCacheOptions>
     where TStorageOptions : StorageOptions
 {
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TCacheOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddSingleton<IStorageCache<TStorageOptions>, TCache>();
     }
 }
@@ -32,3 +32,4 @@ public class
 {
     public override string OptionsKey => $"Storage:Cache:InMemory:{typeof(TStorageOptions).Name}";
 }
+

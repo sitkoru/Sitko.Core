@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Sitko.Core.Repository.Remote.Tests.Data;
 using Sitko.Core.Repository.Tests;
 using Sitko.Core.Repository.Tests.Data;
@@ -55,7 +52,7 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
         var item = await repository.GetAsync(query => query.Where(model => model.Bars.Any())
             .Include(testModel => testModel.Bars).ThenInclude(barModel => barModel.Foos));
         Assert.NotNull(item);
-        Assert.NotNull(item!.Bars);
+        Assert.NotNull(item.Bars);
         Assert.NotEmpty(item.Bars);
         Assert.Single(item.Bars);
         var bar = item.Bars.First();
@@ -94,3 +91,4 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
         serialized.Data.WhereByString.Should().Contain(tuple => tuple.WhereStr == "bla" && tuple.Values!.Contains(1));
     }
 }
+

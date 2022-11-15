@@ -8,7 +8,7 @@ namespace Sitko.Core.Repository.Remote;
 public class HttpRepositoryTransportOptions : BaseModuleOptions
 {
     public Func<IHttpClientFactory, HttpClient>? HttpClientFactory { get; set; }
-    [PublicAPI] public Uri RepositoryControllerApiRoute { get; set; }
+    [PublicAPI] public Uri RepositoryControllerApiRoute { get; set; } = null!;
 }
 
 public class RepositoryOptionsValidator : AbstractValidator<HttpRepositoryTransportOptions>
@@ -16,3 +16,4 @@ public class RepositoryOptionsValidator : AbstractValidator<HttpRepositoryTransp
     public RepositoryOptionsValidator() => RuleFor(o => o.RepositoryControllerApiRoute).NotEmpty()
         .WithMessage($"Repository {typeof(HttpRepositoryTransportOptions)} api route is empty");
 }
+

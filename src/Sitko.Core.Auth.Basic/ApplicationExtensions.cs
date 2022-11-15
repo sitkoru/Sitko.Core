@@ -1,4 +1,3 @@
-using System;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Auth.Basic;
@@ -13,3 +12,4 @@ public static class ApplicationExtensions
         Action<BasicAuthModuleOptions>? configure = null, string? optionsKey = null) =>
         application.AddModule<BasicAuthModule, BasicAuthModuleOptions>(configure, optionsKey);
 }
+

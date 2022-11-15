@@ -1,8 +1,4 @@
-using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -53,3 +49,4 @@ public class TeamsHealthCheckPublisher : BaseHealthCheckPublisher<TeamsHealthRep
             new MessageCard { Title = title, Text = summary, Sections = sections, ThemeColor = color });
     }
 }
+

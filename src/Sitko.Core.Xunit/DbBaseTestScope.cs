@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,9 +31,9 @@ public abstract class DbBaseTestScope<TApplication, TConfig> : BaseTestScope<TAp
             else
             {
                 moduleOptions.Database = dbName;
-                moduleOptions.ConfigureDbContextOptions = (builder, _, applicationContext) =>
+                moduleOptions.ConfigureDbContextOptions = (builder, _, currentApplicationContext) =>
                 {
-                    configureInMemory?.Invoke(builder, applicationContext);
+                    configureInMemory?.Invoke(builder, currentApplicationContext);
                 };
             }
         });
@@ -130,3 +127,4 @@ public abstract class DbBaseTestScope<TDbContext> : DbBaseTestScope<TestApplicat
     where TDbContext : DbContext
 {
 }
+

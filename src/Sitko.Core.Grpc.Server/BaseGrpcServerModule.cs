@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,10 +16,10 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
     public virtual void RegisterService<TService>() where TService : class =>
         endpointRegistrations.Add(builder => builder.MapGrpcService<TService>());
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TConfig startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddGrpc(options =>
         {
             options.EnableDetailedErrors = startupOptions.EnableDetailedErrors;
@@ -65,3 +63,4 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
         }
     }
 }
+

@@ -2,13 +2,13 @@
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App.Web;
 
-namespace Sitko.Core.Grpc.Server.Tests
+namespace Sitko.Core.Grpc.Server.Tests;
+
+public class TestStartup : BaseStartup
 {
-    public class TestStartup : BaseStartup
+    public TestStartup(IConfiguration configuration, IHostEnvironment environment) : base(
+        configuration, environment)
     {
-        public TestStartup(IConfiguration configuration, IHostEnvironment environment) : base(
-            configuration, environment)
-        {
-        }
     }
 }
+

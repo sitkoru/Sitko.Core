@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.Repository.EntityFrameworkCore.Tests.Data;
 using Sitko.Core.Repository.Tests.Data;
@@ -32,11 +30,11 @@ public class EFDisconnectedOneToOneTests : BaseTest<EFTestScope>
         using (var scope1 = scope.CreateScope())
         {
             var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
-            bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id));
+            bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar.Id));
             Assert.NotNull(bar);
         }
 
-        Assert.Null(bar!.Test);
+        Assert.Null(bar.Test);
         Assert.Equal(default, bar.TestId);
 
         AddOrUpdateOperationResult<TestModel, Guid> newTestResult;
@@ -84,11 +82,11 @@ public class EFDisconnectedOneToOneTests : BaseTest<EFTestScope>
         using (var scope1 = scope.CreateScope())
         {
             var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
-            bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id));
+            bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar.Id));
             Assert.NotNull(bar);
         }
 
-        Assert.Null(bar!.Test);
+        Assert.Null(bar.Test);
         Assert.Equal(default, bar.TestId);
 
         AddOrUpdateOperationResult<TestModel, Guid> newTestResult;
@@ -190,12 +188,12 @@ public class EFDisconnectedOneToOneTests : BaseTest<EFTestScope>
         using (var scope1 = scope.CreateScope())
         {
             var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
-            bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id).Include(b => b.Test));
+            bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar.Id).Include(b => b.Test));
             Assert.NotNull(bar);
         }
 
 
-        Assert.NotNull(bar!.Test);
+        Assert.NotNull(bar.Test);
         bar.Test!.FooId = 10;
 
         using (var scope3 = scope.CreateScope())
@@ -231,11 +229,11 @@ public class EFDisconnectedOneToOneTests : BaseTest<EFTestScope>
         using (var scope1 = scope.CreateScope())
         {
             var repository1 = scope1.ServiceProvider.GetRequiredService<BarRepository>();
-            bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar!.Id).Include(b => b.Test));
+            bar = await repository1.GetAsync(q => q.Where(b => b.Id == originalBar.Id).Include(b => b.Test));
             Assert.NotNull(bar);
         }
 
-        Assert.NotNull(bar!.Test);
+        Assert.NotNull(bar.Test);
         bar.Test = null;
 
         using (var scope3 = scope.CreateScope())
@@ -257,3 +255,4 @@ public class EFDisconnectedOneToOneTests : BaseTest<EFTestScope>
         }
     }
 }
+

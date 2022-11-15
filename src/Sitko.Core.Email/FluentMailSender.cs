@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using FluentEmail.Core;
 using FluentEmail.Core.Models;
 using Hangfire;
@@ -113,3 +108,4 @@ public class FluentMailSender<TOptions> : IMailSender where TOptions : EmailModu
         }
     }
 }
+

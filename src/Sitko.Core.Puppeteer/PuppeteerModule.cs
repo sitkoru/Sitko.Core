@@ -7,10 +7,11 @@ public class PuppeteerModule : BaseApplicationModule<PuppeteerModuleOptions>
 {
     public override string OptionsKey => "Puppeteer";
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         PuppeteerModuleOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddSingleton<IBrowserProvider, BrowserProvider>();
     }
 }
+

@@ -1,14 +1,12 @@
-using System;
+namespace Sitko.Core.Queue.Tests;
 
-namespace Sitko.Core.Queue.Tests
+public class TestMessage
 {
-    public class TestMessage
-    {
-        public Guid Id { get; set; } = Guid.NewGuid();
-    }
-
-    public class TestResponse
-    {
-        public Guid Id { get; set; }
-    }
+    public Guid Id { get; set; } = Guid.NewGuid();
 }
+
+public class TestResponse
+{
+    public Guid Id { get; set; }
+}
+

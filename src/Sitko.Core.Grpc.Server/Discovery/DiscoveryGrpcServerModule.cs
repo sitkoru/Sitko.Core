@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 
@@ -13,10 +10,10 @@ public abstract class DiscoveryGrpcServerModule<TRegistrar, TConfig> : BaseGrpcS
 
     private readonly List<Func<IGrpcServicesRegistrar, Task>> serviceRegistrations = new();
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TConfig startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddSingleton<IGrpcServicesRegistrar, TRegistrar>();
         var healthChecksBuilder = services.AddHealthChecks();
         foreach (var healthChecksRegistration in healthChecksRegistrations)
@@ -44,3 +41,4 @@ public abstract class DiscoveryGrpcServerModule<TRegistrar, TConfig> : BaseGrpcS
                 $"Grpc service {typeof(TService).BaseType?.DeclaringType?.Name}"));
     }
 }
+

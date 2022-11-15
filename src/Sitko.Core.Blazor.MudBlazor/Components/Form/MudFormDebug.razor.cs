@@ -2,6 +2,7 @@
 using Sitko.Core.App.Json;
 using Sitko.Core.Blazor.Forms;
 
+// ReSharper disable once CheckNamespace
 namespace Sitko.Core.Blazor.MudBlazorComponents;
 
 public partial class MudFormDebug<TEntity> where TEntity : class, new()
@@ -10,3 +11,4 @@ public partial class MudFormDebug<TEntity> where TEntity : class, new()
 
     private string EntityJson => JsonHelper.SerializeWithMetadata(Form.Entity);
 }
+

@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using MediatR;
 using Sitko.Core.App;
 using Sitko.Core.MediatR;
@@ -63,3 +61,4 @@ public class InMemoryMessageBusTestScope : InMemoryQueueTestScope
 public class TestRequest : TestMessage, INotification
 {
 }
+

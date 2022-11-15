@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Sitko.Core.Repository;
 
@@ -18,11 +15,12 @@ public static class FieldsResolver
 
         name = name.ToLowerInvariant();
 
-        if (Properties[typeName].ContainsKey(name))
+        if (Properties[typeName].TryGetValue(name, out var value))
         {
-            return Properties[typeName][name];
+            return value;
         }
 
         return null;
     }
 }
+

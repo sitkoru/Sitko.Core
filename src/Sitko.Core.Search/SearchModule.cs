@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Scrutor;
@@ -15,20 +12,20 @@ public interface ISearchModule
 public abstract class SearchModule<TConfig> : BaseApplicationModule<TConfig>, ISearchModule
     where TConfig : SearchModuleOptions, new()
 {
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TConfig startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         ConfigureSearch(services);
     }
 
     protected abstract void ConfigureSearch(IServiceCollection services);
 
-    public override async Task InitAsync(IApplicationContext context, IServiceProvider serviceProvider)
+    public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider)
     {
-        await base.InitAsync(context, serviceProvider);
-        var searchProviders = serviceProvider.GetServices<ISearchProvider>();
-        var logger = serviceProvider.GetService<ILogger<SearchModule<TConfig>>>();
+        await base.InitAsync(applicationContext, serviceProvider);
+        var searchProviders = serviceProvider.GetServices<ISearchProvider>().ToList();
+        var logger = serviceProvider.GetRequiredService<ILogger<SearchModule<TConfig>>>();
         if (searchProviders.Any())
         {
 #pragma warning disable 4014
@@ -64,3 +61,4 @@ public static class SearchModuleExtensions
 public abstract class SearchModuleOptions : BaseModuleOptions
 {
 }
+

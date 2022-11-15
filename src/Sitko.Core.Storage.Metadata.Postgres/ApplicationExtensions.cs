@@ -1,5 +1,4 @@
-﻿using System;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.Metadata.Postgres;
@@ -24,3 +23,4 @@ public static class ApplicationExtensions
                 PostgresStorageMetadataModuleOptions<TStorageOptions>>(
                 configure, optionsKey);
 }
+

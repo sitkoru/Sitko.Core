@@ -76,5 +76,6 @@ public class FilterTests
 
 public class TestRequest : IGrpcRequest
 {
-    public ApiRequestInfo RequestInfo { get; set; }
+    public ApiRequestInfo RequestInfo { get; set; } = new();
 }
+

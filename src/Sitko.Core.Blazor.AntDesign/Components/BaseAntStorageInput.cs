@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Sitko.Core.App.Collections;
@@ -31,9 +26,8 @@ public abstract class BaseAntStorageInput<TValue> : InputBase<TValue>, IBaseComp
     [Parameter] public string PreviewText { get; set; } = "";
     [Parameter] public string DownloadText { get; set; } = "";
     [Parameter] public string RemoveText { get; set; } = "";
-    [EditorRequired]
-    [Parameter]
-    public IStorage Storage { get; set; } = null!;
+
+    [EditorRequired] [Parameter] public IStorage Storage { get; set; } = null!;
 
     [Parameter] public bool EnableOrdering { get; set; } = true;
     [Parameter] public virtual AntStorageInputMode Mode { get; set; } = AntStorageInputMode.File;
@@ -260,3 +254,4 @@ public enum AntStorageInputMode
     File,
     Image
 }
+

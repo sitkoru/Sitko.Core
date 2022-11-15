@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Concurrent;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -59,3 +56,4 @@ public abstract class BaseHealthCheckPublisher<TOptions> : IHealthCheckPublisher
     protected abstract Task DoSendAsync(string checkName, HealthReportEntry entry,
         CancellationToken cancellationToken);
 }
+

@@ -1,4 +1,3 @@
-using System;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
@@ -26,10 +25,10 @@ public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOpti
         appBuilder.UseMiddleware<AuthorizationMiddleware<TAuthOptions>>();
     }
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TAuthOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         var authenticationBuilder = services.AddAuthentication(options =>
         {
             options.DefaultScheme = startupOptions.SignInScheme;
@@ -66,8 +65,8 @@ public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOpti
                     var redis = ConnectionMultiplexer
                         .Connect($"{startupOptions.RedisHost}:{startupOptions.RedisPort}");
                     return redis.GetDatabase(startupOptions.RedisDb);
-                }, $"{context.Name}-DP")
-                .SetApplicationName(context.Name)
+                }, $"{applicationContext.Name}-DP")
+                .SetApplicationName(applicationContext.Name)
                 .SetDefaultKeyLifetime(TimeSpan.FromMinutes(startupOptions.DataProtectionLifeTimeInMinutes));
         }
     }
@@ -75,3 +74,4 @@ public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOpti
     protected abstract void ConfigureAuthentication(AuthenticationBuilder authenticationBuilder,
         TAuthOptions startupOptions);
 }
+

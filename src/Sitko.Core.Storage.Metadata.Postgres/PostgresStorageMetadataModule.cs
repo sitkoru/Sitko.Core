@@ -13,10 +13,10 @@ public class
 {
     public override string OptionsKey => $"Storage:Metadata:Postgres:{typeof(TStorageOptions).Name}";
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         PostgresStorageMetadataModuleOptions<TStorageOptions> startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddDbContextFactory<StorageDbContext>((serviceProvider, builder) =>
         {
             var options = serviceProvider
@@ -28,3 +28,4 @@ public class
         });
     }
 }
+

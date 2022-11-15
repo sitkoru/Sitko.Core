@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Db.Postgres;
@@ -22,3 +21,4 @@ public static class ApplicationExtensions
             .AddModule<PostgresDatabaseModule<TDbContext>, PostgresDatabaseModuleOptions<TDbContext>>(configure,
                 optionsKey);
 }
+

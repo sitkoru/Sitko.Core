@@ -11,10 +11,11 @@ public class RemoteRepositoryModule : RepositoriesModule<RemoteRepositoryOptions
 {
     public override string OptionsKey => "Repositories:Remote";
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         RemoteRepositoryOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.TryAddScoped(typeof(RemoteRepositoryContext<,>));
     }
 }
+

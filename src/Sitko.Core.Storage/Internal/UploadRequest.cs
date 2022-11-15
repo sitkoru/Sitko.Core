@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using Sitko.Core.Storage.Metadata;
+﻿using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.Internal;
 
@@ -14,3 +12,4 @@ public record UploadRequest(Stream Stream, string Path, string FileName,
         FileSize = FileSize, LastModified = DateTimeOffset.UtcNow
     };
 }
+

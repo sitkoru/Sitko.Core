@@ -1,10 +1,9 @@
-using System;
 using Grpc.Core;
 
 namespace Sitko.Core.Grpc.Client;
 
 /// <summary>
-///     Context used to update <see cref="Grpc.Core.CallOptions" /> for a gRPC call.
+///     Context used to update <see cref="global::Grpc.Core.CallOptions" /> for a gRPC call.
 /// </summary>
 public sealed class CallOptionsContext
 {
@@ -24,3 +23,4 @@ public sealed class CallOptionsContext
     /// </summary>
     public IServiceProvider ServiceProvider { get; }
 }
+

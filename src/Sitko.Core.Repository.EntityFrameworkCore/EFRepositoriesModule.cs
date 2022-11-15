@@ -11,10 +11,10 @@ public class EFRepositoriesModule : RepositoriesModule<EFRepositoriesModuleOptio
 {
     public override string OptionsKey => "Repositories:EF";
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         EFRepositoriesModuleOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.TryAddScoped(typeof(EFRepositoryContext<,,>));
         services.TryAddScoped(typeof(EFRepositoryDbContextProvider<>));
         services.TryAddScoped<EFRepositoryLock>();
@@ -24,3 +24,4 @@ public class EFRepositoriesModule : RepositoriesModule<EFRepositoriesModuleOptio
 public class EFRepositoriesModuleOptions : RepositoriesModuleOptions<IEFRepository>
 {
 }
+
