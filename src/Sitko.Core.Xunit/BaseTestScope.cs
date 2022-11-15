@@ -45,7 +45,7 @@ public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
         scopeApplication.ConfigureAppConfiguration((applicationContext, builder) =>
         {
             builder.AddJsonFile("appsettings.json", true);
-            builder.AddJsonFile($"appsettings.{applicationContext.EnvironmentName}.json", true);
+            builder.AddJsonFile($"appsettings.{applicationContext.AspNetEnvironmentName}.json", true);
         });
 
         scopeApplication.ConfigureServices((context, services) =>

@@ -84,8 +84,7 @@ public abstract class HostedApplication : Application
 
         var startEnvironment = new HostingEnvironment
         {
-            ApplicationName = GetType().Assembly.FullName,
-            EnvironmentName = EnvHelper.GetEnvironmentName()
+            ApplicationName = GetType().Assembly.FullName, EnvironmentName = EnvHelper.GetEnvironmentName()
         };
 
         var configBuilder = new ConfigurationBuilder()
@@ -245,7 +244,7 @@ public class HostedApplicationContext : BaseApplicationContext
             configuration) =>
         this.environment = environment;
 
-    public override string EnvironmentName => environment.EnvironmentName;
+    public override string AspNetEnvironmentName => environment.EnvironmentName;
     public override bool IsDevelopment() => environment.IsDevelopment();
 
     public override bool IsProduction() => environment.IsProduction();
