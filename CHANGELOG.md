@@ -1,3 +1,10 @@
+## [9.16.1](https://github.com/sitkoru/Sitko.Core/compare/9.16.0...9.16.1) (2022-11-17)
+
+
+### Bug Fixes
+
+* **ci:** fix token env var ([0ca5b70](https://github.com/sitkoru/Sitko.Core/commit/0ca5b70bfc4c90a4c1bdac83e7d7dcbdca93f114))
+
 # [9.16.0](https://github.com/sitkoru/Sitko.Core/compare/9.15.0...9.16.0) (2022-11-17)
 
 
