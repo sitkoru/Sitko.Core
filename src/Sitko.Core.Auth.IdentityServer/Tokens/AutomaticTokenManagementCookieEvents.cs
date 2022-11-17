@@ -19,14 +19,17 @@ public class AutomaticTokenManagementCookieEvents : CookieAuthenticationEvents
     private readonly ILogger logger;
     private readonly AutomaticTokenManagementOptions options;
     private readonly TokenEndpointService service;
+    private readonly IOptions<OidcIdentityServerModuleOptions> moduleOptions;
 
     public AutomaticTokenManagementCookieEvents(
         TokenEndpointService service,
         IOptions<AutomaticTokenManagementOptions> options,
+        IOptions<OidcIdentityServerModuleOptions> moduleOptions,
         ILogger<AutomaticTokenManagementCookieEvents> logger,
         ISystemClock clock)
     {
         this.service = service;
+        this.moduleOptions = moduleOptions;
         this.options = options.Value;
         this.logger = logger;
         this.clock = clock;
@@ -72,6 +75,8 @@ public class AutomaticTokenManagementCookieEvents : CookieAuthenticationEvents
                     if (response.IsError)
                     {
                         logger.LogWarning("Error refreshing token: {Error}", response.Error);
+                        context.RejectPrincipal();
+                        await context.HttpContext.SignOutAsync(moduleOptions.Value.SignInScheme);
                         return;
                     }
 
