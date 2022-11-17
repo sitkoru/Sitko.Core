@@ -1,6 +1,7 @@
 using System.Linq;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.Auth.IdentityServer.Tokens;
 
@@ -43,6 +44,16 @@ namespace Sitko.Core.Auth.IdentityServer
                 {
                     startupOptions.ConfigureAutoRefreshTokens?.Invoke(options);
                 });
+            }
+        }
+
+        protected override void ConfigureCookieOptions(CookieAuthenticationOptions options,
+            OidcIdentityServerModuleOptions moduleOptions)
+        {
+            base.ConfigureCookieOptions(options, moduleOptions);
+            if (moduleOptions.AutoRefreshTokens)
+            {
+                options.EventsType = typeof(AutomaticTokenManagementCookieEvents);
             }
         }
     }

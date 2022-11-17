@@ -1,5 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
@@ -45,6 +46,7 @@ public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOpti
                 options.Cookie.SameSite = SameSiteMode.None;
                 options.Cookie.IsEssential = true;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                ConfigureCookieOptions(options, startupOptions);
                 startupOptions.ConfigureCookie?.Invoke(options.Cookie);
             });
         }
@@ -70,6 +72,10 @@ public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOpti
                 .SetApplicationName(context.Name)
                 .SetDefaultKeyLifetime(TimeSpan.FromMinutes(startupOptions.DataProtectionLifeTimeInMinutes));
         }
+    }
+
+    protected virtual void ConfigureCookieOptions(CookieAuthenticationOptions options, TAuthOptions moduleOptions)
+    {
     }
 
     protected abstract void ConfigureAuthentication(AuthenticationBuilder authenticationBuilder,

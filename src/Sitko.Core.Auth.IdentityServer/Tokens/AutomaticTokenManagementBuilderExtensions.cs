@@ -21,9 +21,6 @@ public static class AutomaticTokenManagementBuilderExtensions
         builder.Services.AddTransient<TokenEndpointService>();
 
         builder.Services.AddTransient<AutomaticTokenManagementCookieEvents>();
-        builder.Services
-            .AddSingleton<IConfigureOptions<CookieAuthenticationOptions>,
-                AutomaticTokenManagementConfigureCookieOptions>();
 
         return builder;
     }

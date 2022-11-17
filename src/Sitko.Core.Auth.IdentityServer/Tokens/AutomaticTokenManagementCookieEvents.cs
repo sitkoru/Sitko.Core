@@ -14,7 +14,7 @@ namespace Sitko.Core.Auth.IdentityServer.Tokens;
 public class AutomaticTokenManagementCookieEvents : CookieAuthenticationEvents
 {
     private static readonly ConcurrentDictionary<string, bool> PendingRefreshTokenRequests = new();
-
+    private const string ManualSignOutKey = "manualSignOut";
     private readonly ISystemClock clock;
     private readonly ILogger logger;
     private readonly AutomaticTokenManagementOptions options;
@@ -76,7 +76,8 @@ public class AutomaticTokenManagementCookieEvents : CookieAuthenticationEvents
                     {
                         logger.LogWarning("Error refreshing token: {Error}", response.Error);
                         context.RejectPrincipal();
-                        await context.HttpContext.SignOutAsync(moduleOptions.Value.SignInScheme);
+                        context.HttpContext.Items.Add(ManualSignOutKey, true);
+                        await context.HttpContext.SignOutAsync(moduleOptions.Value.SignInScheme, context.Properties);
                         return;
                     }
 
@@ -99,6 +100,12 @@ public class AutomaticTokenManagementCookieEvents : CookieAuthenticationEvents
 
     public override async Task SigningOut(CookieSigningOutContext context)
     {
+        if (context.HttpContext.Items.TryGetValue(ManualSignOutKey, out var isManualSignOut) &&
+            (bool)(isManualSignOut ?? false))
+        {
+            return;
+        }
+
         if (options.RevokeRefreshTokenOnSignout == false)
         {
             return;
