@@ -1,3 +1,10 @@
+## [9.16.2](https://github.com/sitkoru/Sitko.Core/compare/9.16.1...9.16.2) (2022-11-17)
+
+
+### Bug Fixes
+
+* **ci:** don't push wrong packages ([c3b8035](https://github.com/sitkoru/Sitko.Core/commit/c3b80351cd4b41d58e1913d17b1e5d217d6bacf7))
+
 ## [9.16.1](https://github.com/sitkoru/Sitko.Core/compare/9.16.0...9.16.1) (2022-11-17)
 
 
