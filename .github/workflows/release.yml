@@ -31,6 +31,10 @@ jobs:
           npm run prod
       - name: Create packages
         run: dotnet pack -c Release /p:Version=${{ steps.prep.outputs.version }} -o $(pwd)/packages
+      - name: Push to Github Packages
+        run: find packages -type f -name '*.nupkg' -print0 |  xargs -0 -n 10 -P 4 dotnet nuget push -s https://nuget.pkg.github.com/sitkoru/index.json  --skip-duplicate --no-symbols -k ${{ GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Push to Nuget
         run: find packages -type f -name '*.nupkg' -print0 |  xargs -0 -n 10 -P 4 dotnet nuget push -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
       - name: Download Sitko.Core
