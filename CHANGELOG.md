@@ -1,3 +1,10 @@
+# [9.15.0](https://github.com/sitkoru/Sitko.Core/compare/9.14.2...9.15.0) (2022-11-17)
+
+
+### Features
+
+* **auth:** sign out user if token refresh failed ([af20b0f](https://github.com/sitkoru/Sitko.Core/commit/af20b0f0f43483cc45a9a6077b00fcfb8b92dc14))
+
 ## [9.14.2](https://github.com/sitkoru/Sitko.Core/compare/9.14.1...9.14.2) (2022-11-09)
 
 
