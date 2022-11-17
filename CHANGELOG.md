@@ -1,3 +1,10 @@
+## [9.16.3](https://github.com/sitkoru/Sitko.Core/compare/9.16.2...9.16.3) (2022-11-17)
+
+
+### Bug Fixes
+
+* **auth:** fix signout on failed token refresh ([498db45](https://github.com/sitkoru/Sitko.Core/commit/498db45733b5664cc4d31f6744639c752bb84ce5))
+
 ## [9.16.2](https://github.com/sitkoru/Sitko.Core/compare/9.16.1...9.16.2) (2022-11-17)
 
 
