@@ -1,3 +1,10 @@
+# [9.16.0](https://github.com/sitkoru/Sitko.Core/compare/9.15.0...9.16.0) (2022-11-17)
+
+
+### Features
+
+* **ci:** push to github packages ([97beb51](https://github.com/sitkoru/Sitko.Core/commit/97beb5176a88333bb61c30f84aa51689ff94eea4))
+
 # [9.15.0](https://github.com/sitkoru/Sitko.Core/compare/9.14.2...9.15.0) (2022-11-17)
 
 
