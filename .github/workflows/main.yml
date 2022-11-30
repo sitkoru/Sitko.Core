@@ -196,7 +196,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Semantic Release
-        uses: sitkoru/semantic-release-action@v1
+        uses: sitkoru/semantic-release-action@v2
         env:
           GH_TOKEN: ${{ secrets.BOT_TOKEN }}
           GIT_AUTHOR_NAME: ${{ secrets.BOT_NAME }}
