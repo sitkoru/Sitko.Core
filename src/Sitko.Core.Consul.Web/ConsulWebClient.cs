@@ -11,8 +11,8 @@ namespace Sitko.Core.Consul.Web;
 
 public class ConsulWebClient
 {
-    private readonly IApplication application;
     private readonly IOptionsMonitor<ConsulWebModuleOptions> configMonitor;
+    private readonly IApplicationContext applicationContext;
     private readonly IConsulClientProvider consulClientProvider;
     private readonly string healthUrl;
     private readonly ILogger<ConsulWebClient> logger;
@@ -22,11 +22,11 @@ public class ConsulWebClient
 
     public ConsulWebClient(IServer server, IConsulClientProvider consulClientProvider,
         IOptionsMonitor<ConsulWebModuleOptions> config,
-        IApplicationContext applicationContext, IApplication application, ILogger<ConsulWebClient> logger)
+        IApplicationContext applicationContext, ILogger<ConsulWebClient> logger)
     {
         this.consulClientProvider = consulClientProvider;
         configMonitor = config;
-        this.application = application;
+        this.applicationContext = applicationContext;
         this.logger = logger;
 
         name = applicationContext.Name;
@@ -96,7 +96,14 @@ public class ConsulWebClient
                 DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(Options.DeregisterTimeoutInSeconds),
                 Interval = TimeSpan.FromSeconds(Options.ChecksIntervalInSeconds)
             },
-            Tags = new[] { "metrics", $"healthUrl:{healthUrl}", $"version:{application.Version}" }
+            Tags = new[] { "metrics" },
+            Meta = new Dictionary<string, string>
+            {
+                { "Environment", applicationContext.Environment },
+                { "Instance", applicationContext.Id.ToString() },
+                { "Version", applicationContext.Version },
+                { "HealthUrl", healthUrl },
+            }
         };
 
         logger.LogInformation("Registering in Consul as {Name} on {Host}:{Port}", name,
@@ -114,7 +121,13 @@ public class ConsulWebClient
         {
             if (serviceResponse.Response.Any())
             {
-                return HealthCheckResult.Healthy();
+                var services = serviceResponse.Response.Where(catalogService =>
+                    catalogService.ServiceMeta.TryGetValue("Environment", out var env) ||
+                    env == applicationContext.Environment).ToList();
+                if (services.Any())
+                {
+                    return HealthCheckResult.Healthy();
+                }
             }
 
             if (Options.AutoFixRegistration)
@@ -129,4 +142,3 @@ public class ConsulWebClient
         return HealthCheckResult.Unhealthy($"Error response from consul: {serviceResponse.StatusCode}");
     }
 }
-

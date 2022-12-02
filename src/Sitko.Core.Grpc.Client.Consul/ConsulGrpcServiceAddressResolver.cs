@@ -3,6 +3,7 @@ using Consul;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sitko.Core.App;
 using Sitko.Core.Consul;
 using Sitko.Core.Grpc.Client.Discovery;
 
@@ -15,6 +16,7 @@ public class ConsulGrpcServiceAddressResolver<TClient> : IGrpcServiceAddressReso
     private readonly CancellationTokenSource cts = new();
     private readonly ILogger<ConsulGrpcServiceAddressResolver<TClient>> logger;
     private readonly IOptionsMonitor<ConsulGrpcClientModuleOptions<TClient>> optionsMonitor;
+    private readonly IApplicationContext applicationContext;
 
     private readonly string serviceName =
         typeof(TClient).BaseType!.GenericTypeArguments.First().DeclaringType!.Name;
@@ -22,14 +24,16 @@ public class ConsulGrpcServiceAddressResolver<TClient> : IGrpcServiceAddressReso
     private ulong lastIndex;
 
     private Task? refreshTask;
-    private Uri? target;
+    private List<Uri> target = new();
 
     public ConsulGrpcServiceAddressResolver(IConsulClientProvider consulClientProvider,
         IOptionsMonitor<ConsulGrpcClientModuleOptions<TClient>> optionsMonitor,
+        IApplicationContext applicationContext,
         ILogger<ConsulGrpcServiceAddressResolver<TClient>> logger)
     {
         this.consulClientProvider = consulClientProvider;
         this.optionsMonitor = optionsMonitor;
+        this.applicationContext = applicationContext;
         this.logger = logger;
     }
 
@@ -52,7 +56,7 @@ public class ConsulGrpcServiceAddressResolver<TClient> : IGrpcServiceAddressReso
         refreshTask = StartRefreshTaskAsync();
     }
 
-    public Uri? GetAddress() => target;
+    public Uri? GetAddress() => target.Any() ? target.OrderBy(_ => Guid.NewGuid()).First() : null;
 
     public event EventHandler? OnChange;
 
@@ -85,27 +89,36 @@ public class ConsulGrpcServiceAddressResolver<TClient> : IGrpcServiceAddressReso
             lastIndex = serviceResponse.LastIndex;
             if (serviceResponse.Response.Any())
             {
-                var service = serviceResponse.Response.First();
-                var serviceUrl =
-                    new Uri(
-                        $"{(Options.EnableHttp2UnencryptedSupport ? "http" : "https")}://{service.ServiceAddress}:{service.ServicePort}");
+                var services = serviceResponse.Response.Where(catalogService =>
+                    catalogService.ServiceMeta.TryGetValue("Environment", out var env) ||
+                    env == applicationContext.Environment).ToList();
+                if (!services.Any())
+                {
+                    logger.LogError("No for services {ServiceName} for environment {Environment}", serviceName,
+                        applicationContext.Environment);
+                    target = new List<Uri>();
+                }
 
-                if (serviceUrl == target)
+                var serviceUrls = services.Select(service => new Uri(
+                        $"{(Options.EnableHttp2UnencryptedSupport ? "http" : "https")}://{service.ServiceAddress}:{service.ServicePort}"))
+                    .OrderBy(uri => uri).ToList();
+
+                if (serviceUrls.SequenceEqual(target))
                 {
                     return;
                 }
 
-                target = serviceUrl;
-                logger.LogInformation("Target for {Type} loaded: {Target}", typeof(TClient), target);
+                target = serviceUrls;
+                logger.LogInformation("Target for {Type} loaded: {Urls}", typeof(TClient),
+                    string.Join(", ", serviceUrls));
             }
             else
             {
                 logger.LogError("Empty response from consul for service {ServiceName}", serviceName);
-                target = null;
+                target = new List<Uri>();
             }
 
             OnChange?.Invoke(this, EventArgs.Empty);
         }
     }
 }
-

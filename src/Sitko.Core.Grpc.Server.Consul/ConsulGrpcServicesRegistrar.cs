@@ -16,12 +16,12 @@ namespace Sitko.Core.Grpc.Server.Consul;
 
 public class ConsulGrpcServicesRegistrar : IGrpcServicesRegistrar, IAsyncDisposable
 {
-    private readonly IApplication application;
     private readonly IConsulClientProvider? consulClient;
     private readonly string host = "127.0.0.1";
     private readonly bool inContainer = DockerHelper.IsRunningInDocker();
     private readonly ILogger<ConsulGrpcServicesRegistrar> logger;
     private readonly IOptionsMonitor<ConsulDiscoveryGrpcServerModuleOptions> optionsMonitor;
+    private readonly IApplicationContext applicationContext;
     private readonly int port;
 
     private readonly ConcurrentDictionary<string, string> registeredServices = new();
@@ -30,12 +30,12 @@ public class ConsulGrpcServicesRegistrar : IGrpcServicesRegistrar, IAsyncDisposa
     private IScheduledTask? updateTtlTask;
 
     public ConsulGrpcServicesRegistrar(IOptionsMonitor<ConsulDiscoveryGrpcServerModuleOptions> optionsMonitor,
-        IApplication application,
+        IApplicationContext applicationContext,
         IServer server, IScheduler scheduler, ILogger<ConsulGrpcServicesRegistrar> logger,
         IConsulClientProvider? consulClient = null)
     {
         this.optionsMonitor = optionsMonitor;
-        this.application = application;
+        this.applicationContext = applicationContext;
         this.consulClient = consulClient;
         this.logger = logger;
         if (!string.IsNullOrEmpty(Options.Host))
@@ -138,7 +138,13 @@ public class ConsulGrpcServicesRegistrar : IGrpcServicesRegistrar, IAsyncDisposa
                     DeregisterCriticalServiceAfter =
                         TimeSpan.FromSeconds(Options.DeregisterTimeoutInSeconds)
                 },
-                Tags = new[] { "grpc", $"version:{application.Version}" }
+                Tags = new[] { "grpc" },
+                Meta = new Dictionary<string, string>
+                {
+                    { "Environment", applicationContext.Environment },
+                    { "Instance", applicationContext.Id.ToString() },
+                    { "Version", applicationContext.Version }
+                }
             };
             logger.LogInformation("Register grpc service {ServiceName} on {Address}:{Port}", serviceName, host,
                 port);
@@ -228,4 +234,3 @@ public class ConsulGrpcServicesRegistrar : IGrpcServicesRegistrar, IAsyncDisposa
         }
     }
 }
-
