@@ -44,16 +44,15 @@ public class OidcIdentityServerModule : IdentityServerModule<OidcIdentityServerM
                 startupOptions.ConfigureAutoRefreshTokens?.Invoke(options);
             });
         }
+    }
 
-        protected override void ConfigureCookieOptions(CookieAuthenticationOptions options,
-            OidcIdentityServerModuleOptions moduleOptions)
+    protected override void ConfigureCookieOptions(CookieAuthenticationOptions options,
+        OidcIdentityServerModuleOptions moduleOptions)
+    {
+        base.ConfigureCookieOptions(options, moduleOptions);
+        if (moduleOptions.AutoRefreshTokens)
         {
-            base.ConfigureCookieOptions(options, moduleOptions);
-            if (moduleOptions.AutoRefreshTokens)
-            {
-                options.EventsType = typeof(AutomaticTokenManagementCookieEvents);
-            }
+            options.EventsType = typeof(AutomaticTokenManagementCookieEvents);
         }
     }
 }
-
