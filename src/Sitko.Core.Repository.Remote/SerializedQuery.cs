@@ -24,8 +24,7 @@ public record SerializedQuery<TEntity> where TEntity : class
 
     public Expression<Func<TEntity, TValue>> SelectExpression<TValue>() => Data.SelectExpressionString is null
         ? throw new InvalidOperationException("Empty select expression")
-        : Deserialize<Expression<Func<TEntity, TValue>>>(Data.SelectExpressionString)
-        !;
+        : Deserialize<Expression<Func<TEntity, TValue>>>(Data.SelectExpressionString);
 
     public SerializedQuery<TEntity> SetSelectExpression(Expression selectExpression)
     {
