@@ -1,23 +1,36 @@
 ﻿using System.Linq.Expressions;
-using Serialize.Linq.Serializers;
+using Newtonsoft.Json;
+using Remote.Linq;
+using Remote.Linq.Newtonsoft.Json;
 
 namespace Sitko.Core.Repository.Remote;
 
 public record SerializedQuery<TEntity> where TEntity : class
 {
-    private readonly ExpressionSerializer serializer = new(new JsonSerializer());
+    private readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings().ConfigureRemoteLinq();
 
     public SerializedQuery(SerializedQueryData? data = null) => Data = data ?? new SerializedQueryData();
 
     public SerializedQueryData Data { get; }
 
+    private string Serialize(Expression expression) =>
+        JsonConvert.SerializeObject(expression.ToRemoteLinqExpression(), serializerSettings);
+
+    private T Deserialize<T>(string json) where T : Expression
+    {
+        var exp = JsonConvert.DeserializeObject<global::Remote.Linq.Expressions.Expression>(json, serializerSettings)!;
+        return (T)exp.ToLinqExpression();
+    }
+
     public Expression<Func<TEntity, TValue>> SelectExpression<TValue>() => Data.SelectExpressionString is null
         ? throw new InvalidOperationException("Empty select expression")
-        : (Expression<Func<TEntity, TValue>>)serializer.DeserializeText(Data.SelectExpressionString);
+        : Deserialize<Expression<Func<TEntity, TValue>>>(Data.SelectExpressionString)
+        !;
 
     public SerializedQuery<TEntity> SetSelectExpression(Expression selectExpression)
     {
-        Data.SelectExpressionString = serializer.SerializeText(selectExpression);
+        Data.SelectExpressionString =
+            Serialize(selectExpression);
         return this;
     }
 
@@ -34,7 +47,7 @@ public record SerializedQuery<TEntity> where TEntity : class
 
     public SerializedQuery<TEntity> AddWhereExpression(Expression<Func<TEntity, bool>> expression)
     {
-        Data.Where.Add(serializer.SerializeText(expression));
+        Data.Where.Add(Serialize(expression));
         return this;
     }
 
@@ -68,7 +81,7 @@ public record SerializedQuery<TEntity> where TEntity : class
 
     public SerializedQuery<TEntity> AddOrderByExpression(Expression<Func<TEntity, object>> expression)
     {
-        Data.OrderBy.Add(serializer.SerializeText(expression));
+        Data.OrderBy.Add(Serialize(expression));
         return this;
     }
 
@@ -85,7 +98,7 @@ public record SerializedQuery<TEntity> where TEntity : class
 
     public SerializedQuery<TEntity> AddOrderByDescendingExpression(Expression<Func<TEntity, object>> expression)
     {
-        Data.OrderByDescending.Add(serializer.SerializeText(expression));
+        Data.OrderByDescending.Add(Serialize(expression));
         return this;
     }
 
@@ -132,8 +145,8 @@ public record SerializedQuery<TEntity> where TEntity : class
     {
         foreach (var expressionNode in Data.Where)
         {
-            var ex = serializer.DeserializeText(expressionNode);
-            query.Where((Expression<Func<TEntity, bool>>)ex);
+            var ex = Deserialize<Expression<Func<TEntity, bool>>>(expressionNode);
+            query.Where(ex);
         }
 
         foreach (var (whereStr, values) in Data.WhereByString)
@@ -150,14 +163,14 @@ public record SerializedQuery<TEntity> where TEntity : class
 
         foreach (var expressionNode in Data.OrderBy)
         {
-            var ex = serializer.DeserializeText(expressionNode);
-            query.OrderBy((Expression<Func<TEntity, object>>)ex);
+            var ex = Deserialize<Expression<Func<TEntity, object>>>(expressionNode);
+            query.OrderBy(ex);
         }
 
         foreach (var expressionNode in Data.OrderByDescending)
         {
-            var ex = serializer.DeserializeText(expressionNode);
-            query.OrderByDescending((Expression<Func<TEntity, object>>)ex);
+            var ex = Deserialize<Expression<Func<TEntity, object>>>(expressionNode);
+            query.OrderByDescending(ex);
         }
 
         foreach (var (propertyName, isDescending) in Data.OrderByString)
@@ -182,3 +195,4 @@ public record SerializedQuery<TEntity> where TEntity : class
         }
     }
 }
+
