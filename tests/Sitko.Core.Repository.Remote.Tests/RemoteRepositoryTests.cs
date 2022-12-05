@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -55,7 +56,7 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
         var item = await repository.GetAsync(query => query.Where(model => model.Bars.Any())
             .Include(testModel => testModel.Bars).ThenInclude(barModel => barModel.Foos));
         Assert.NotNull(item);
-        Assert.NotNull(item!.Bars);
+        Assert.NotNull(item.Bars);
         Assert.NotEmpty(item.Bars);
         Assert.Single(item.Bars);
         var bar = item.Bars.First();
@@ -92,5 +93,28 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
         var serialized = query.Serialize();
         serialized.Data.WhereByString.Should().HaveCount(1);
         serialized.Data.WhereByString.Should().Contain(tuple => tuple.WhereStr == "bla" && tuple.Values!.Contains(1));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Contains(bool useList)
+    {
+        var scope = await GetScopeAsync();
+        var repo = scope.GetService<TestRemoteRepository>();
+        var model = await repo.GetAsync();
+        model.Should().NotBeNull();
+        var ids = new List<Guid> { model!.Id, Guid.NewGuid(), Guid.NewGuid() };
+        var result = await GetOne<TestModel, Guid>(scope, ids, useList);
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(model.Id);
+    }
+
+    private static async Task<T?> GetOne<T, TPk>(RemoteRepositoryTestScope scope, IEnumerable<TPk> ids, bool useList)
+        where T : class, IEntity<TPk> where TPk : notnull
+    {
+        var repo = scope.GetService<IRepository<T, TPk>>();
+        IEnumerable<TPk> data = useList ? ids.ToList() : ids.ToArray();
+        return await repo.GetAsync(q => q.Where(model => data.Contains(model.Id)));
     }
 }
