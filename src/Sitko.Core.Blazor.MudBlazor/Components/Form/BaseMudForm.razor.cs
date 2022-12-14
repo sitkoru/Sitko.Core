@@ -18,6 +18,7 @@ public abstract partial class BaseMudForm<TEntity>
     where TEntity : class, new()
 {
     protected abstract RenderFragment ChildContentFragment { get; }
+    [Parameter] public RenderFragment? LoadingContent { get; set; }
     protected MudEditForm<TEntity>? FormInstance { get; set; }
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
     [Parameter] public bool Debug { get; set; }
@@ -73,7 +74,8 @@ public abstract partial class BaseMudForm<TEntity>
 
     public override async Task ResetAsync()
     {
+        await StartLoadingAsync();
         await base.ResetAsync();
-        FormInstance?.Reset();
+        await StopLoadingAsync();
     }
 }

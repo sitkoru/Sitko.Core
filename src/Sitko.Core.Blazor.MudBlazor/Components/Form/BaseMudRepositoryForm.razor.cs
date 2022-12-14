@@ -26,6 +26,8 @@ public abstract partial class BaseMudRepositoryForm<TEntity, TEntityPk, TReposit
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
     protected abstract RenderFragment ChildContentFragment { get; }
 
+    [Parameter] public RenderFragment? LoadingContent { get; set; }
+
     protected override Task NotifySuccessAsync()
     {
         Snackbar.Add(LocalizationProvider["Entity saved successfully"], Severity.Success);
@@ -46,7 +48,8 @@ public abstract partial class BaseMudRepositoryForm<TEntity, TEntityPk, TReposit
 
     public override async Task ResetAsync()
     {
-        FormInstance!.Reset();
+        await StartLoadingAsync();
         await base.ResetAsync();
+        await StopLoadingAsync();
     }
 }
