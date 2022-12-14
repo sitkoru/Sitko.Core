@@ -18,14 +18,14 @@ public static class ModelBuilderExtensions
             (c1, c2) => c1!.Equals(c2),
             c => c!.GetHashCode(),
             c => JsonHelper.DeserializeWithMetadata<TData>(
-                JsonHelper.SerializeWithMetadata(c!, throwOnError), throwOnError)!);
+                JsonHelper.SerializeWithMetadata(c!, throwOnError, false), throwOnError, false)!);
         modelBuilder
             .Entity<TEntity>()
             .Property(getProperty)
             .HasColumnType("jsonb")
             .HasColumnName(name)
-            .HasConversion(data => JsonHelper.SerializeWithMetadata(data!, throwOnError),
-                json => JsonHelper.DeserializeWithMetadata<TData>(json, throwOnError) ?? new TData())
+            .HasConversion(data => JsonHelper.SerializeWithMetadata(data!, throwOnError, false),
+                json => JsonHelper.DeserializeWithMetadata<TData>(json, throwOnError, false) ?? new TData())
             .Metadata.SetValueComparer(valueComparer);
     }
 
@@ -37,14 +37,14 @@ public static class ModelBuilderExtensions
             (c1, c2) => c1.SequenceEqual(c2),
             c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v!.GetHashCode())),
             c => JsonHelper.DeserializeWithMetadata<ICollection<TData>>(
-                JsonHelper.SerializeWithMetadata(c, throwOnError), throwOnError)!);
+                JsonHelper.SerializeWithMetadata(c, throwOnError, false), throwOnError, false)!);
         modelBuilder
             .Entity<TEntity>()
             .Property(getProperty)
             .HasColumnType("jsonb")
             .HasColumnName(name)
-            .HasConversion(data => JsonHelper.SerializeWithMetadata(data, throwOnError),
-                json => JsonHelper.DeserializeWithMetadata<ICollection<TData>>(json, throwOnError) ??
+            .HasConversion(data => JsonHelper.SerializeWithMetadata(data, throwOnError, false),
+                json => JsonHelper.DeserializeWithMetadata<ICollection<TData>>(json, throwOnError, false) ??
                         new List<TData>())
             .Metadata.SetValueComparer(valueComparer);
     }
@@ -57,14 +57,14 @@ public static class ModelBuilderExtensions
             (c1, c2) => c1.SequenceEqual(c2),
             c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v!.GetHashCode())),
             c => JsonHelper.DeserializeWithMetadata<TData[]>(
-                JsonHelper.SerializeWithMetadata(c, throwOnError), throwOnError)!);
+                JsonHelper.SerializeWithMetadata(c, throwOnError, false), throwOnError, false)!);
         modelBuilder
             .Entity<TEntity>()
             .Property(getProperty)
             .HasColumnType("jsonb")
             .HasColumnName(name)
-            .HasConversion(data => JsonHelper.SerializeWithMetadata(data, throwOnError),
-                json => JsonHelper.DeserializeWithMetadata<TData[]>(json, throwOnError) ?? new TData[0])
+            .HasConversion(data => JsonHelper.SerializeWithMetadata(data, throwOnError, false),
+                json => JsonHelper.DeserializeWithMetadata<TData[]>(json, throwOnError, false) ?? Array.Empty<TData>())
             .Metadata.SetValueComparer(valueComparer);
     }
 
@@ -77,14 +77,14 @@ public static class ModelBuilderExtensions
             (c1, c2) => c1.SequenceEqual(c2),
             c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v!.GetHashCode())),
             c => JsonHelper.DeserializeWithMetadata<TEnumerable>(
-                JsonHelper.SerializeWithMetadata(c, throwOnError), throwOnError)!);
+                JsonHelper.SerializeWithMetadata(c, throwOnError, false), throwOnError, false)!);
         modelBuilder
             .Entity<TEntity>()
             .Property(getProperty)
             .HasColumnType("jsonb")
             .HasColumnName(name)
-            .HasConversion(data => JsonHelper.SerializeWithMetadata(data, throwOnError),
-                json => JsonHelper.DeserializeWithMetadata<TEnumerable>(json, throwOnError) ??
+            .HasConversion(data => JsonHelper.SerializeWithMetadata(data, throwOnError,false),
+                json => JsonHelper.DeserializeWithMetadata<TEnumerable>(json, throwOnError,false) ??
                         new TEnumerable())
             .Metadata.SetValueComparer(valueComparer);
     }
