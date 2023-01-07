@@ -21,7 +21,7 @@
                     @if (DisplayMode == FileUploadDisplayMode.File)
                     {
                         <MudCardContent Class="px-4 pt-3 pb-1">
-                            <MudBadge Icon="@Icons.Filled.AttachFile" Color="Color.Dark" Class="mr-4">
+                            <MudBadge Icon="@Icons.Material.Filled.AttachFile" Color="Color.Dark" Class="mr-4">
 
                             </MudBadge>
                             <MudText Typo="Typo.caption">
@@ -36,29 +36,29 @@
                         @if (ShowOrdering)
                         {
                             <MudTooltip Text="@LeftText">
-                                <MudIconButton Size="Size.Small" Icon="@Icons.Outlined.ArrowLeft" @onclick="() => MoveBackward(file)" disabled="@(!CanMoveBackward(file))"></MudIconButton>
+                                <MudIconButton Size="Size.Small" Icon="@Icons.Material.Outlined.ArrowLeft" @onclick="() => MoveBackward(file)" disabled="@(!CanMoveBackward(file))"></MudIconButton>
                             </MudTooltip>
                         }
                         @if (DisplayMode == FileUploadDisplayMode.Image)
                         {
                             <MudTooltip Text="@PreviewText">
-                                <MudIconButton Size="Size.Small" @onclick="() => PreviewFile(file)" Icon="@Icons.Outlined.Visibility"></MudIconButton>
+                                <MudIconButton Size="Size.Small" @onclick="() => PreviewFile(file)" Icon="@Icons.Material.Outlined.Visibility"></MudIconButton>
                             </MudTooltip>
                         }
                         @if (DisplayMode == FileUploadDisplayMode.File)
                         {
                             <MudTooltip Text="@DownloadText">
-                                <MudIconButton Size="Size.Small" Link="@file.Url" Target="_blank" Icon="@Icons.Outlined.Download"></MudIconButton>
+                                <MudIconButton Size="Size.Small" Link="@file.Url" Target="_blank" Icon="@Icons.Material.Outlined.Download"></MudIconButton>
                             </MudTooltip>
                         }
 
                         <MudTooltip Text="@RemoveText">
-                            <MudIconButton Size="Size.Small" Icon="@Icons.Outlined.Delete" OnClick="@(async () => await ClearValueAsync())"></MudIconButton>
+                            <MudIconButton Size="Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="@(async () => await ClearValueAsync())"></MudIconButton>
                         </MudTooltip>
                         @if (ShowOrdering)
                         {
                             <MudTooltip Text="@RightText">
-                                <MudIconButton Size="Size.Small" Icon="@Icons.Outlined.ArrowRight" @onclick="() => MoveForward(file)" disabled="@(!CanMoveForward(file))"></MudIconButton>
+                                <MudIconButton Size="Size.Small" Icon="@Icons.Material.Outlined.ArrowRight" @onclick="() => MoveForward(file)" disabled="@(!CanMoveForward(file))"></MudIconButton>
                             </MudTooltip>
                         }
                     </MudCardActions>
@@ -83,7 +83,7 @@
                         <MudButton Size="Size.Small" Variant="Variant.Filled"
                                    Class="d-flex align-center" Style="height: 100%; width: 100%;"
                                    Color="Color.Primary"
-                                   StartIcon="@Icons.Filled.CloudUpload"
+                                   StartIcon="@Icons.Material.Filled.CloudUpload"
                                    OnClick="@(async () => { await SetValueAsync(await CustomUpload(this)); })">
                             @UploadText
                         </MudButton>
@@ -93,7 +93,7 @@
                         <InputFile id="@InputId" OnChange="UploadFilesAsync" hidden multiple="@IsMultiple"/>
                         <MudButton Size="Size.Small" HtmlTag="label"
                                    Color="Color.Primary"
-                                   StartIcon="@Icons.Filled.CloudUpload"
+                                   StartIcon="@Icons.Material.Filled.CloudUpload"
                                    Class="d-flex align-center" Style="height: 100%; width: 100%;"
                                    for="@InputId">
                             @UploadText
