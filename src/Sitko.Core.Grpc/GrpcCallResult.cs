@@ -24,5 +24,6 @@ public class GrpcCallResult
     public bool IsSuccess { get; }
     public string[] Error => errors.ToArray();
     public Exception? Exception { get; }
-}
 
+    public static GrpcCallResult Ok() => new();
+}

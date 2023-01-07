@@ -36,30 +36,6 @@ public static class ApiRequestInfoExtensions
         IEnumerable<QueryContextCondition> conditions) =>
         apiRequestInfo.SetFilter(new[] { new QueryContextConditionsGroup(conditions.ToList()) });
 
-    public static IGrpcRequest SetFilter(this IGrpcRequest grpcRequest,
-        IEnumerable<QueryContextConditionsGroup> groups)
-    {
-        // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
-        grpcRequest.RequestInfo ??= new ApiRequestInfo();
-        grpcRequest.RequestInfo.SetFilter(groups);
-        return grpcRequest;
-    }
-
-    public static IGrpcRequest SetFilter(this IGrpcRequest grpcRequest, QueryContextConditionsGroup group) =>
-        grpcRequest.SetFilter(new[] { group });
-
-    public static IGrpcRequest SetFilter(this IGrpcRequest grpcRequest, QueryContextCondition condition) =>
-        grpcRequest.SetFilter(new QueryContextConditionsGroup(condition));
-
-    public static IGrpcRequest SetFilter(this IGrpcRequest grpcRequest,
-        IEnumerable<QueryContextCondition> conditions) =>
-        grpcRequest.SetFilter(new QueryContextConditionsGroup(conditions.ToList()));
-
-    public static IGrpcRequest SetFilter(this IGrpcRequest grpcRequest,
-        string property, QueryContextOperator @operator, object? value,
-        Type? valueType = null) =>
-        grpcRequest.SetFilter(new QueryContextCondition(property, @operator, value, valueType));
-
     public static QueryContextConditionsGroup[] GetFilter(this ApiRequestInfo apiRequestInfo)
     {
         if (!string.IsNullOrEmpty(apiRequestInfo.Filter) && apiRequestInfo.Filter != "null")
@@ -81,7 +57,4 @@ public static class ApiRequestInfoExtensions
 
         return Array.Empty<QueryContextConditionsGroup>();
     }
-
-    public static QueryContextConditionsGroup[] GetFilter(this IGrpcRequest grpcRequest) =>
-        grpcRequest.RequestInfo.GetFilter();
 }

@@ -5,14 +5,14 @@ namespace Sitko.Core.Grpc.Server.Tests;
 
 public class GrpcTestService : TestService.TestServiceBase
 {
-    public GrpcTestService(ILogger<GrpcTestService> logger) : base(logger)
-    {
-    }
+    private readonly IGrpcCallProcessor<GrpcTestService> grpcCallProcessor;
+
+    public GrpcTestService(ILogger<GrpcTestService> logger, IGrpcCallProcessor<GrpcTestService> grpcCallProcessor) : base(logger) => this.grpcCallProcessor = grpcCallProcessor;
 
     public override Task<TestResponse> Request(TestRequest request, ServerCallContext context)
     {
         Logger.LogDebug("Execute request");
-        return ProcessCall<TestResponse>(request, context, _ => new GrpcCallResult());
+        return grpcCallProcessor.ProcessCall<TestResponse>(request, context, _ => new GrpcCallResult());
     }
 }
 
