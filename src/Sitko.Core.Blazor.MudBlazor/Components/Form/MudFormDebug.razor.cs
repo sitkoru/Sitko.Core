@@ -9,6 +9,6 @@ public partial class MudFormDebug<TEntity> where TEntity : class, new()
 {
     [EditorRequired] [Parameter] public BaseForm<TEntity> Form { get; set; } = null!;
 
-    private string EntityJson => JsonHelper.SerializeWithMetadata(Form.Entity);
+    private string EntityJson => JsonHelper.SerializeWithMetadata(Form.Entity, prettify: true);
 }
 

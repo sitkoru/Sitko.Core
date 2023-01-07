@@ -4,6 +4,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CompareNETObjects" />
-    <PackageReference Include="Serialize.Linq" />
+    <PackageReference Include="Remote.Linq.Newtonsoft.Json" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Serilog.Events;
-using Sitko.Core.Db.InMemory;
+using Sitko.Core.Db.Postgres;
 using Sitko.Core.Repository.EntityFrameworkCore;
 using Sitko.Core.Repository.Remote.Tests.Server;
 using Sitko.Core.Repository.Tests.Data;
@@ -14,9 +14,10 @@ public class RemoteRepositoryTestScope : WebTestScope
     protected override WebTestApplication ConfigureWebApplication(WebTestApplication application, string name)
     {
         base.ConfigureWebApplication(application, name);
-        application.AddInMemoryDatabase<TestDbContext>(options => // TODO: Switch to postgres?
+        application.AddPostgresDatabase<TestDbContext>(options =>
         {
             options.Database = name;
+            options.EnableSensitiveLogging = true;
         });
         application.AddEFRepositories(options =>
         {
@@ -31,6 +32,8 @@ public class RemoteRepositoryTestScope : WebTestScope
     {
         await base.InitWebApplicationAsync(hostServices);
         var dbContext = hostServices.CreateScope().ServiceProvider.GetRequiredService<TestDbContext>();
+        await dbContext.Database.EnsureDeletedAsync();
+        await dbContext.Database.EnsureCreatedAsync();
         //add data
         var testModels = new List<TestModel>
         {
