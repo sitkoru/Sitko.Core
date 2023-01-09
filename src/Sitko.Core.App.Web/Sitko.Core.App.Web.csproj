@@ -10,18 +10,18 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.30" />
-    <PackageReference Include="Razor.Templating.Core" Version="1.6.0" />
+    <PackageReference Include="Razor.Templating.Core" Version="1.8.0" />
   </ItemGroup>
 
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.17" />
-    <PackageReference Include="Razor.Templating.Core" Version="1.6.0" />
+    <PackageReference Include="Razor.Templating.Core" Version="1.8.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.10" />
-    <PackageReference Include="Razor.Templating.Core" Version="1.7.1" />
+    <PackageReference Include="Razor.Templating.Core" Version="1.8.0" />
   </ItemGroup>
 
   <ItemGroup>
