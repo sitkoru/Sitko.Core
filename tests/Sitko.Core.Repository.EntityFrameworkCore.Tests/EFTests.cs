@@ -52,4 +52,22 @@ public class EFTests : BasicRepositoryTests<EFTestScope>
         Assert.NotNull(foo.Bar);
         Assert.NotNull(foo.Bar!.Test);
     }
+
+    [Fact]
+    public async Task DeleteAllRaw()
+    {
+        var scope = await GetScopeAsync();
+
+        var repository = scope.GetService<IRepository<FooModel, Guid>>();
+        Assert.NotNull(repository);
+        var item = await repository.GetAsync();
+        Assert.NotNull(item);
+
+        var efRepository = repository as IEFRepository;
+        efRepository.Should().NotBeNull();
+        var deleted = await efRepository!.DeleteAllRawAsync($"\"{nameof(FooModel.Id)}\" = '{item.Id}'");
+        deleted.Should().Be(1);
+        item = await repository.GetByIdAsync(item.Id);
+        item.Should().BeNull();
+    }
 }
