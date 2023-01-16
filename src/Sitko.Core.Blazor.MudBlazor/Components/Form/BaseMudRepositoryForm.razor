@@ -8,7 +8,7 @@
     <MudEditForm TEntity="TEntity" Entity="Entity" @ref="FormInstance">
         <Sitko.Core.Blazor.FluentValidation.FluentValidator/>
         <Sitko.Core.Blazor.Forms.FormEditContextCatcher Form="this"/>
-        @ChildContentFragment
+        @ChildContent(FormContext)
         @if (Debug)
         {
             <MudFormDebug TEntity="TEntity" Form="this"></MudFormDebug>
@@ -24,7 +24,7 @@ else
         }
         else
         {
-            @ChildContentFragment
+            @ChildContent(FormContext)
             @if (Debug)
             {
                 <MudFormDebug TEntity="TEntity" Form="this"></MudFormDebug>
