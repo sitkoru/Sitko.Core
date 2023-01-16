@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 
@@ -19,6 +20,13 @@ public interface IEFRepository : IRepository
 public interface IEFRepository<TEntity> : IEFRepository where TEntity : class, IEntity
 {
     Task<int> DeleteAllAsync(Expression<Func<TEntity, bool>> where, CancellationToken cancellationToken = default);
+
+    Task<int> UpdateAllAsync(Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls,
+        CancellationToken cancellationToken = default);
+
+    Task<int> UpdateAllAsync(Expression<Func<TEntity, bool>> where,
+        Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls,
+        CancellationToken cancellationToken = default);
 }
 
 public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
@@ -49,6 +57,20 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         CancellationToken cancellationToken = default) =>
         ExecuteDbContextOperationAsync(
             context => context.Set<TEntity>().Where(where).ExecuteDeleteAsync(cancellationToken),
+            cancellationToken);
+
+    public Task<int> UpdateAllAsync(
+        Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls,
+        CancellationToken cancellationToken = default) =>
+        ExecuteDbContextOperationAsync(
+            context => context.Set<TEntity>().ExecuteUpdateAsync(setPropertyCalls, cancellationToken),
+            cancellationToken);
+
+    public Task<int> UpdateAllAsync(Expression<Func<TEntity, bool>> where,
+        Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls,
+        CancellationToken cancellationToken = default) =>
+        ExecuteDbContextOperationAsync(
+            context => context.Set<TEntity>().Where(where).ExecuteUpdateAsync(setPropertyCalls, cancellationToken),
             cancellationToken);
 
     public Task<int> DeleteAllAsync(CancellationToken cancellationToken = default) =>
