@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -13,10 +14,11 @@ namespace Sitko.Core.Apps.MudBlazorDemo.Pages
 {
     public partial class Index
     {
-        private int RowsPerPage = 10;
+        private int rowsPerPage = 10;
         private const string FilterParamId = "id";
         private const string FilterParamTitle = "title";
         private const string FilterParamDateRange = "dateRange";
+
         [Parameter]
         [SupplyParameterFromQuery(Name = FilterParamId)]
         public Guid? Id { get; set; }
@@ -75,9 +77,9 @@ namespace Sitko.Core.Apps.MudBlazorDemo.Pages
         //
 
         private FilterList FilterList { get; set; } = new();
-        private MudAutocomplete<BarModel> IdFilterAutocomplete { get; set; }
+        private MudAutocomplete<BarModel> IdFilterAutocomplete { get; set; } = null!;
 
-        [Inject] private BarRepository BarRepository { get; set; }
+        [Inject] private BarRepository BarRepository { get; set; } = null!;
         private (BarModel[] items, int itemsCount) bars;
 
         protected override async Task InitializeAsync()
@@ -112,11 +114,12 @@ namespace Sitko.Core.Apps.MudBlazorDemo.Pages
         private Task ConfigureQueryAsync(IRepositoryQuery<BarModel> query)
         {
             query
-                .Where(p => FilterList.Model == null || FilterList.Model.Id == Guid.Empty || p.Id == FilterList.Model.Id)
+                .Where(p => FilterList.Model == null || FilterList.Model.Id == Guid.Empty ||
+                            p.Id == FilterList.Model.Id)
                 .Where(p => string.IsNullOrEmpty(FilterList.Title) || p.Bar == FilterList.Title)
                 .Where(p => FilterList.DateRange == null ||
-                            p.Date >= new DateTimeOffset((DateTime)FilterList.DateRange.Start).UtcDateTime &&
-                            p.Date <= new DateTimeOffset((DateTime)FilterList.DateRange.End).UtcDateTime);
+                            (p.Date >= new DateTimeOffset((DateTime)FilterList.DateRange.Start!).UtcDateTime &&
+                             p.Date <= new DateTimeOffset((DateTime)FilterList.DateRange.End!).UtcDateTime));
 
             return Task.CompletedTask;
         }
@@ -159,7 +162,8 @@ namespace Sitko.Core.Apps.MudBlazorDemo.Pages
                 var dateData = DateRange.Split("-");
                 if (dateData.Length == 2)
                 {
-                    FilterList.DateRange = new DateRange(DateTime.Parse(dateData[0]), DateTime.Parse(dateData[1]));
+                    FilterList.DateRange = new DateRange(DateTime.Parse(dateData[0], CultureInfo.InvariantCulture),
+                        DateTime.Parse(dateData[1], CultureInfo.InvariantCulture));
                     hasChanged = true;
                 }
             }

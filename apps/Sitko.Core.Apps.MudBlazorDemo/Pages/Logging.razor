@@ -2,9 +2,9 @@
 @using Thinktecture.Extensions.Configuration
 @using Serilog.Events
 @inherits BaseComponent
-@inject ISerilogConfiguration loggingConfiguration
+@inject ISerilogConfiguration LoggingConfiguration
 <MudPageLayout Title="Logging">
-    <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => loggingConfiguration.SetLevel(LogEventLevel.Debug))">Set debug</MudButton>
-    <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="@(() => loggingConfiguration.SetLevel(LogEventLevel.Information))">Set info</MudButton>
-    <MudButton Color="Color.Secondary" Variant="Variant.Outlined" OnClick="@(() => loggingConfiguration.ResetLevel())">Reset</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => LoggingConfiguration.SetLevel(LogEventLevel.Debug))">Set debug</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="@(() => LoggingConfiguration.SetLevel(LogEventLevel.Information))">Set info</MudButton>
+    <MudButton Color="Color.Secondary" Variant="Variant.Outlined" OnClick="@(() => LoggingConfiguration.ResetLevel())">Reset</MudButton>
 </MudPageLayout>
