@@ -12,6 +12,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore;
 
 public interface IEFRepository : IRepository
 {
+    Task<int> DeleteAllRawAsync(string conditions, CancellationToken cancellationToken = default);
 }
 
 public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
@@ -843,6 +844,15 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
             var entry = currentDbContext.Remove(entity);
             return Task.FromResult(entry.State == EntityState.Deleted);
         }, cancellationToken);
+
+    public Task<int> DeleteAllRawAsync(string conditions, CancellationToken cancellationToken = default)
+    {
+        var tableName = dbContext.Model.FindEntityType(typeof(TEntity))?.GetSchemaQualifiedTableName() ??
+                        throw new InvalidOperationException($"Can't find table name for entity {typeof(TEntity)}");
+        return ExecuteDbContextOperationAsync(context => context.Database.ExecuteSqlRawAsync(
+                $"DELETE FROM \"{tableName.Replace(".", "\".\"")}\" WHERE {conditions}", cancellationToken),
+            cancellationToken);
+    }
 
     [PublicAPI]
     protected IQueryable<TEntity> GetBaseQuery() => dbContext.Set<TEntity>().AsQueryable();
