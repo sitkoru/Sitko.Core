@@ -4,6 +4,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
-    <PackageReference Include="PuppeteerSharp" Version="7.1.0" />
+    <PackageReference Include="PuppeteerSharp" Version="9.0.0" />
   </ItemGroup>
 </Project>
