@@ -67,5 +67,40 @@ public class EFTests : BasicRepositoryTests<EFTestScope>
         item = await repository.GetByIdAsync(item.Id);
         item.Should().BeNull();
     }
-}
 
+    [Fact]
+    public async Task DeleteAll()
+    {
+        var scope = await GetScopeAsync();
+
+        var repository = scope.GetService<IRepository<FooModel, Guid>>();
+        Assert.NotNull(repository);
+        var items = await repository.CountAsync();
+        items.Should().BeGreaterThan(0);
+
+        var efRepository = repository as IEFRepository;
+        efRepository.Should().NotBeNull();
+        var deleted = await efRepository!.DeleteAllAsync();
+        deleted.Should().Be(items);
+        items = await repository.CountAsync();
+        items.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task DeleteAllCondition()
+    {
+        var scope = await GetScopeAsync();
+
+        var repository = scope.GetService<IRepository<FooModel, Guid>>();
+        Assert.NotNull(repository);
+        var item = await repository.GetAsync();
+        Assert.NotNull(item);
+
+        var efRepository = repository as IEFRepository<FooModel>;
+        efRepository.Should().NotBeNull();
+        var deleted = await efRepository!.DeleteAllAsync(model => model.Id == item.Id);
+        deleted.Should().Be(1);
+        item = await repository.GetByIdAsync(item.Id);
+        item.Should().BeNull();
+    }
+}

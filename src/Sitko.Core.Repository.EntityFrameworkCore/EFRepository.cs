@@ -13,10 +13,16 @@ namespace Sitko.Core.Repository.EntityFrameworkCore;
 public interface IEFRepository : IRepository
 {
     Task<int> DeleteAllRawAsync(string conditions, CancellationToken cancellationToken = default);
+    Task<int> DeleteAllAsync(CancellationToken cancellationToken = default);
+}
+
+public interface IEFRepository<TEntity> : IEFRepository where TEntity : class, IEntity
+{
+    Task<int> DeleteAllAsync(Expression<Func<TEntity, bool>> where, CancellationToken cancellationToken = default);
 }
 
 public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
-    BaseRepository<TEntity, TEntityPk, EFRepositoryQuery<TEntity>>, IEFRepository
+    BaseRepository<TEntity, TEntityPk, EFRepositoryQuery<TEntity>>, IEFRepository<TEntity>
     where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext where TEntityPk : notnull
 {
     private readonly TDbContext dbContext;
@@ -29,6 +35,25 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         dbContext = repositoryContext.DbContext;
         repositoryLock = repositoryContext.RepositoryLock;
     }
+
+    public Task<int> DeleteAllRawAsync(string conditions, CancellationToken cancellationToken = default)
+    {
+        var tableName = dbContext.Model.FindEntityType(typeof(TEntity))?.GetSchemaQualifiedTableName() ??
+                        throw new InvalidOperationException($"Can't find table name for entity {typeof(TEntity)}");
+        return ExecuteDbContextOperationAsync(context => context.Database.ExecuteSqlRawAsync(
+                $"DELETE FROM \"{tableName.Replace(".", "\".\"")}\" WHERE {conditions}", cancellationToken),
+            cancellationToken);
+    }
+
+    public Task<int> DeleteAllAsync(Expression<Func<TEntity, bool>> where,
+        CancellationToken cancellationToken = default) =>
+        ExecuteDbContextOperationAsync(
+            context => context.Set<TEntity>().Where(where).ExecuteDeleteAsync(cancellationToken),
+            cancellationToken);
+
+    public Task<int> DeleteAllAsync(CancellationToken cancellationToken = default) =>
+        ExecuteDbContextOperationAsync(context => context.Set<TEntity>().ExecuteDeleteAsync(cancellationToken),
+            cancellationToken);
 
     private EntityChange[] Compare(TEntity firstEntity, TEntity secondEntity)
     {
@@ -845,15 +870,6 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
             return Task.FromResult(entry.State == EntityState.Deleted);
         }, cancellationToken);
 
-    public Task<int> DeleteAllRawAsync(string conditions, CancellationToken cancellationToken = default)
-    {
-        var tableName = dbContext.Model.FindEntityType(typeof(TEntity))?.GetSchemaQualifiedTableName() ??
-                        throw new InvalidOperationException($"Can't find table name for entity {typeof(TEntity)}");
-        return ExecuteDbContextOperationAsync(context => context.Database.ExecuteSqlRawAsync(
-                $"DELETE FROM \"{tableName.Replace(".", "\".\"")}\" WHERE {conditions}", cancellationToken),
-            cancellationToken);
-    }
-
     [PublicAPI]
     protected IQueryable<TEntity> GetBaseQuery() => dbContext.Set<TEntity>().AsQueryable();
 
@@ -1030,4 +1046,3 @@ public enum ChangeState
     UnChanged,
     Unknown
 }
-
