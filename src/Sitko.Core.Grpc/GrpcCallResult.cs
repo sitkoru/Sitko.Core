@@ -1,4 +1,6 @@
-﻿namespace Sitko.Core.Grpc;
+﻿using Sitko.Core.App.Results;
+
+namespace Sitko.Core.Grpc;
 
 public class GrpcCallResult
 {
@@ -24,6 +26,18 @@ public class GrpcCallResult
     public bool IsSuccess { get; }
     public string[] Error => errors.ToArray();
     public Exception? Exception { get; }
+
+    public static GrpcCallResult Result(IOperationResult operationResult)
+    {
+        if (operationResult.IsSuccess)
+        {
+            return Ok();
+        }
+
+        return operationResult.Exception is not null
+            ? new GrpcCallResult(operationResult.Exception, operationResult.ErrorMessage)
+            : new GrpcCallResult(operationResult.ErrorMessage ?? "Error");
+    }
 
     public static GrpcCallResult Ok() => new();
 }
