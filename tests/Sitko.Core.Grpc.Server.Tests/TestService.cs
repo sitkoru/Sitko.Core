@@ -4,11 +4,10 @@ namespace Sitko.Core.Grpc.Server.Tests;
 
 public static partial class TestService
 {
-    public abstract partial class TestServiceBase : GrpcServiceBase
+    public abstract partial class TestServiceBase
     {
-        protected TestServiceBase(ILogger<TestServiceBase> logger) : base(logger)
-        {
-        }
+        protected ILogger<TestServiceBase> Logger { get; }
+
+        protected TestServiceBase(ILogger<TestServiceBase> logger) => Logger = logger;
     }
 }
-

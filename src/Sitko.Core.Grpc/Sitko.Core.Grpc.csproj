@@ -3,6 +3,7 @@
     <PackageReference Include="Grpc.Core.Api"/>
     <PackageReference Include="Grpc.Tools" PrivateAssets="none"/>
     <PackageReference Include="Google.Protobuf"/>
+    <PackageReference Include="PeanutButter.DuckTyping"/>
     <Protobuf Include="Proto\**\*.proto" GrpcServices="None"/>
     <None Pack="true" PackagePath="protos" Include="Proto\**\*.proto"/>
   </ItemGroup>

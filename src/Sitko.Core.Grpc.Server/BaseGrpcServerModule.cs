@@ -20,6 +20,7 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
         TConfig startupOptions)
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
+        services.AddScoped(typeof(IGrpcCallProcessor<>), typeof(GrpcCallProcessor<>));
         services.AddGrpc(options =>
         {
             options.EnableDetailedErrors = startupOptions.EnableDetailedErrors;
@@ -63,4 +64,3 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
         }
     }
 }
-
