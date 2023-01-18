@@ -45,6 +45,15 @@ public abstract class WebApplication : HostedApplication
         }
     }
 
+    public virtual void AuthMiddlewareHook(IApplicationContext applicationContext,
+        IApplicationBuilder appBuilder)
+    {
+        foreach (var webModule in GetWebModules(applicationContext))
+        {
+            webModule.ConfigureAuthMiddleware(applicationContext, appBuilder);
+        }
+    }
+
     public virtual void EndpointsHook(IApplicationContext applicationContext,
         IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
     {

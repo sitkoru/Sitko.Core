@@ -14,16 +14,24 @@ public interface IAuthModule : IApplicationModule
 {
 }
 
+internal static class AuthMiddlewareState
+{
+    public static bool IsConfigured { get; set; }
+}
+
 public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOptions>, IWebApplicationModule,
     IAuthModule
     where TAuthOptions : AuthOptions, new()
 {
-    public virtual void ConfigureAfterUseRouting(IApplicationContext applicationContext,
+    public virtual void ConfigureAuthMiddleware(IApplicationContext applicationContext,
         IApplicationBuilder appBuilder)
     {
-        appBuilder.UseAuthentication()
-            .UseAuthorization();
-        appBuilder.UseMiddleware<AuthorizationMiddleware<TAuthOptions>>();
+        if (!AuthMiddlewareState.IsConfigured)
+        {
+            AuthMiddlewareState.IsConfigured = true;
+            appBuilder.UseAuthentication().UseAuthorization();
+            appBuilder.UseMiddleware<AuthorizationMiddleware<TAuthOptions>>();
+        }
     }
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
