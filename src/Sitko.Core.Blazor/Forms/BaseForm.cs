@@ -67,7 +67,7 @@ public abstract class BaseForm<TEntity> : BaseForm where TEntity : class, new()
     private CompareLogic? comparer;
     private TEntity? currentEntity;
     protected TEntity? EntitySnapshot { get; private set; }
-
+    protected FormContext<TEntity> FormContext { get; private set; } = null!;
     public bool IsNew { get; protected set; }
 
     public TEntity Entity
@@ -75,7 +75,6 @@ public abstract class BaseForm<TEntity> : BaseForm where TEntity : class, new()
         get => currentEntity ?? throw new InvalidOperationException("Entity is not initialized");
         private set => currentEntity = value;
     }
-
 
     [Parameter] public Func<TEntity, Task>? OnAfterSave { get; set; }
     [Parameter] public Func<TEntity, Task>? OnAfterCreate { get; set; }
@@ -113,6 +112,7 @@ public abstract class BaseForm<TEntity> : BaseForm where TEntity : class, new()
         (IsNew, Entity) = await GetEntityAsync();
         await InitializeEntityAsync(Entity);
         EntitySnapshot = CreateEntitySnapshot(Entity);
+        FormContext = new(Entity, this);
     }
 
     protected abstract Task<(bool IsNew, TEntity Entity)> GetEntityAsync();

@@ -1,20 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using Sitko.Core.Blazor.Forms;
 using Sitko.Core.Repository;
 
 // ReSharper disable once CheckNamespace
 namespace Sitko.Core.Blazor.MudBlazorComponents;
-
-public class MudRepositoryForm<TEntity, TEntityPk> : BaseMudRepositoryForm<TEntity, TEntityPk,
-    IRepository<TEntity, TEntityPk>>
-    where TEntity : class, IEntity<TEntityPk>, new() where TEntityPk : notnull
-{
-    [EditorRequired]
-    [Parameter]
-    public RenderFragment<MudRepositoryForm<TEntity, TEntityPk>> ChildContent { get; set; } = null!;
-
-    protected override RenderFragment ChildContentFragment => ChildContent(this);
-}
 
 public abstract partial class BaseMudRepositoryForm<TEntity, TEntityPk, TRepository>
     where TEntity : class, IEntity<TEntityPk>, new()
@@ -24,7 +14,8 @@ public abstract partial class BaseMudRepositoryForm<TEntity, TEntityPk, TReposit
     protected MudEditForm<TEntity>? FormInstance { get; set; }
     [Parameter] public bool Debug { get; set; }
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
-    protected abstract RenderFragment ChildContentFragment { get; }
+
+    [Parameter] [EditorRequired] public RenderFragment<FormContext<TEntity>> ChildContent { get; set; } = null!;
 
     [Parameter] public RenderFragment? LoadingContent { get; set; }
 
@@ -53,4 +44,3 @@ public abstract partial class BaseMudRepositoryForm<TEntity, TEntityPk, TReposit
         await StopLoadingAsync();
     }
 }
-

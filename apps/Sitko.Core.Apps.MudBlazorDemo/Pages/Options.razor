@@ -1,10 +1,10 @@
 ﻿@page "/Options"
 @using Sitko.Core.App
 @using System.Text.Json
-@inject Application application
+@inject Application Application
 <MudPageLayout Title="Options">
     <pre>
-    @JsonSerializer.Serialize(application.GetModulesOptions(), new JsonSerializerOptions
+    @JsonSerializer.Serialize(Application.GetModulesOptions(), new JsonSerializerOptions
     {
         WriteIndented = true
     })
