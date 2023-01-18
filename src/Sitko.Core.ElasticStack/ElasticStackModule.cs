@@ -120,7 +120,11 @@ public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOption
 
             loggerConfiguration = loggerConfiguration
                 .Enrich.WithElasticApmCorrelationInfo()
-                .WriteTo.Elasticsearch(sinkOptions);
+                .WriteTo.Elasticsearch(sinkOptions)
+                // meta for EcsTextFormatter
+                .Enrich.WithProperty("ApplicationId", context.Id)
+                .Enrich.WithProperty("ApplicationName", context.Name)
+                .Enrich.WithProperty("ApplicationVersion", context.Version);
         }
 
         if (options.ApmEnabled)
