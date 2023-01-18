@@ -25,7 +25,7 @@
     <PackageVersion Include="CompareNETObjects" Version="4.78.0"/>
     <PackageVersion Include="Serialize.Linq" Version="2.0.0"/>
     <PackageVersion Include="MimeMapping" Version="1.0.1.50"/>
-    <PackageVersion Include="AWSSDK.S3" Version="3.7.101.50"/>
+    <PackageVersion Include="AWSSDK.S3" Version="3.7.101.55"/>
     <PackageVersion Include="Remote.Linq.Newtonsoft.Json" Version="7.1.0"/>
   </ItemGroup>
   <!--Sitko libraries-->
@@ -35,12 +35,12 @@
   </ItemGroup>
   <!--ASP.NET Core libraries-->
   <ItemGroup>
-    <PackageVersion Include="idunno.Authentication.Basic" Version="2.2.3"/>
+    <PackageVersion Include="idunno.Authentication.Basic" Version="2.3.0"/>
     <PackageVersion Include="IdentityServer4.AccessTokenValidation" Version="3.0.1"/>
     <PackageVersion Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="6.0.2"/>
     <PackageVersion Include="AspNetCore.HealthChecks.Aws.S3" Version="6.0.2"/>
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
-    <PackageVersion Include="Swashbuckle.AspNetCore.Annotations" Version="6.4.0"/>
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
+    <PackageVersion Include="Swashbuckle.AspNetCore.Annotations" Version="6.5.0"/>
   </ItemGroup>
   <!--Email libraries-->
   <ItemGroup>
@@ -52,14 +52,14 @@
   </ItemGroup>
   <!--Blazor libraries-->
   <ItemGroup>
-    <PackageVersion Include="AntDesign" Version="0.13.2"/>
+    <PackageVersion Include="AntDesign" Version="0.13.3"/>
     <PackageVersion Include="Tewr.Blazor.FileReader" Version="3.3.1.21360"/>
     <PackageVersion Include="MudBlazor" Version="6.1.7"/>
   </ItemGroup>
   <!--Tests libraries-->
   <ItemGroup>
     <PackageVersion Include="AutoBogus" Version="2.13.1"/>
-    <PackageVersion Include="FluentAssertions" Version="6.8.0"/>
+    <PackageVersion Include="FluentAssertions" Version="6.9.0"/>
     <PackageVersion Include="Serilog.Sinks.XUnit" Version="3.0.3"/>
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5"/>
     <PackageVersion Include="xunit" Version="2.4.2"/>
@@ -79,16 +79,16 @@
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
     <PackageVersion Include="Microsoft.Extensions.Http" Version="7.0.0"/>
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="7.0.0"/>
-    <PackageVersion Include="Microsoft.Extensions.Localization.Abstractions" Version="7.0.1"/>
+    <PackageVersion Include="Microsoft.Extensions.Localization.Abstractions" Version="7.0.2"/>
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0"/>
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="7.0.1"/>
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="7.0.2"/>
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0"/>
   </ItemGroup>
   <!--EF Core libraries-->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.1"/>
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.1"/>
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.1"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.2"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.2"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.2"/>
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.1"/>
   </ItemGroup>
   <!--Elastic libraries-->
@@ -125,32 +125,32 @@
   </ItemGroup>
   <!--.NET 6 specific libraries-->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.12"/>
-    <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.12"/>
-    <PackageVersion Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="6.0.12"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="6.0.12"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="6.0.12"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Components" Version="6.0.12"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.12"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.12"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.12"/>
-    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="6.0.12"/>
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="6.0.12"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.12"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.13"/>
+    <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.13"/>
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="6.0.13"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="6.0.13"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="6.0.13"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Components" Version="6.0.13"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.13"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.13"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.13"/>
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="6.0.13"/>
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="6.0.13"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.13"/>
   </ItemGroup>
   <!--.NET 7 specific libraries-->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net7.0' ">
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.1"/>
-    <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="7.0.1"/>
-    <PackageVersion Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="7.0.1"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="7.0.1"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="7.0.1"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Components" Version="7.0.1"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.1"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.1"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.1"/>
-    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="7.0.1"/>
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="7.0.1"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.1"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.2"/>
+    <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="7.0.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="7.0.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="7.0.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="7.0.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Components" Version="7.0.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="7.0.2"/>
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="7.0.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.2"/>
   </ItemGroup>
 </Project>
