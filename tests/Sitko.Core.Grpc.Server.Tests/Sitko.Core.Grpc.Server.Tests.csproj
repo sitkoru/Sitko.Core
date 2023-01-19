@@ -1,24 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\src\Sitko.Core.Grpc.Server\Sitko.Core.Grpc.Server.csproj"/>
     <ProjectReference Include="..\..\src\Sitko.Core.Grpc\Sitko.Core.Grpc.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.Xunit.Web\Sitko.Core.Xunit.Web.csproj"/>
     <Protobuf Include="**/*.proto" GrpcServices="Both" AdditionalImportDirs="..\..\src\Sitko.Core.Grpc\Proto"/>
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.1.30"/>
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="5.0.17"/>
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="6.0.10" />
   </ItemGroup>
 </Project>

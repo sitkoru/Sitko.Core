@@ -1,22 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Queue\Sitko.Core.Queue.csproj"/>
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="NATS.Client" Version="1.0.1"/>
-    <PackageReference Include="STAN.Client" Version="0.3.0"/>
-    <PackageReference Include="Grpc.Tools" Version="2.49.1" PrivateAssets="none"/>
-    <PackageReference Include="Google.Protobuf" Version="3.21.7"/>
+    <PackageReference Include="NATS.Client"/>
+    <PackageReference Include="STAN.Client"/>
+    <PackageReference Include="Grpc.Tools" PrivateAssets="none"/>
+    <PackageReference Include="Google.Protobuf"/>
   </ItemGroup>
-
   <ItemGroup>
     <Protobuf Include="Proto\Sitko\Core\Queue\Nats\QueueMsg.proto" GrpcServices="None"/>
   </ItemGroup>
-
 </Project>

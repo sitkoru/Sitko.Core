@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Repository.Remote.Server;
 using Sitko.Core.Repository.Tests.Data;
@@ -14,3 +13,4 @@ public class FooController : BaseRemoteRepositoryController<FooModel, Guid>
     {
     }
 }
+

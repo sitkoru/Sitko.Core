@@ -1,16 +1,16 @@
 using System.Text.Json;
 
-namespace Sitko.Core.Storage.Metadata
+namespace Sitko.Core.Storage.Metadata;
+
+public class StorageItemMetadata
 {
-    public class StorageItemMetadata
-    {
-        public string? FileName { get; set; }
+    public string? FileName { get; set; }
 
-        public string? Data { get; set; }
+    public string? Data { get; set; }
 
-        public void SetData(object data) => Data = JsonSerializer.Serialize(data);
+    public void SetData(object data) => Data = JsonSerializer.Serialize(data);
 
-        public TData? GetData<TData>() where TData : class =>
-            string.IsNullOrEmpty(Data) ? null : JsonSerializer.Deserialize<TData>(Data);
-    }
+    public TData? GetData<TData>() where TData : class =>
+        string.IsNullOrEmpty(Data) ? null : JsonSerializer.Deserialize<TData>(Data);
 }
+

@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Web;
 
@@ -23,13 +22,15 @@ public static class ParseQueryStringHelper
                 return true;
             }
 
-            if (typeof(T).IsAssignableFrom(typeof(decimal)) && decimal.TryParse(valueFromQueryString, out var valueAsDecimal))
+            if (typeof(T).IsAssignableFrom(typeof(decimal)) &&
+                decimal.TryParse(valueFromQueryString, out var valueAsDecimal))
             {
                 value = (T)(object)valueAsDecimal;
                 return true;
             }
 
-            if (typeof(T).IsAssignableFrom(typeof(double)) && double.TryParse(valueFromQueryString, out var valueAsDouble))
+            if (typeof(T).IsAssignableFrom(typeof(double)) &&
+                double.TryParse(valueFromQueryString, out var valueAsDouble))
             {
                 value = (T)(object)valueAsDouble;
                 return true;
@@ -46,3 +47,4 @@ public static class ParseQueryStringHelper
         return false;
     }
 }
+

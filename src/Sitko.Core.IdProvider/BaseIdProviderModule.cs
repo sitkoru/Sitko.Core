@@ -7,10 +7,10 @@ public abstract class BaseIdProviderModule<TProvider, TModuleOptions> : BaseAppl
     where TProvider : class, IIdProvider
     where TModuleOptions : BaseIdProviderModuleOptions<TProvider>, new()
 {
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TModuleOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddSingleton<IIdProvider, TProvider>();
     }
 }
@@ -20,3 +20,4 @@ public abstract class BaseIdProviderModuleOptions<TProvider> : BaseModuleOptions
     where TProvider : class, IIdProvider
 {
 }
+

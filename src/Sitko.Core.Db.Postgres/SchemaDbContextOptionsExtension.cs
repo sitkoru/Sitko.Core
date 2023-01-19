@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Sitko.Core.Db.Postgres;
 
-internal class SchemaDbContextOptionsExtension : IDbContextOptionsExtension
+internal sealed class SchemaDbContextOptionsExtension : IDbContextOptionsExtension
 {
     public SchemaDbContextOptionsExtension(string schema) => Schema = schema;
     public string Schema { get; }
@@ -16,3 +16,4 @@ internal class SchemaDbContextOptionsExtension : IDbContextOptionsExtension
 
     public DbContextOptionsExtensionInfo Info => new SchemaDbContextOptionsExtensionInfo(this, Schema);
 }
+

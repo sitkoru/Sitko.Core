@@ -1,5 +1,4 @@
-﻿using System;
-using Grpc.Core;
+﻿using Grpc.Core;
 using JetBrains.Annotations;
 using Sitko.Core.App;
 
@@ -22,3 +21,4 @@ public static class ApplicationExtensions
         application.AddModule<ConsulGrpcClientModule<TClient>, ConsulGrpcClientModuleOptions<TClient>>(configure,
             optionsKey);
 }
+

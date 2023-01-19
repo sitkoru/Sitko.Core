@@ -1,12 +1,13 @@
 using Sitko.Core.Repository.EntityFrameworkCore;
 using WASMDemo.Shared.Data.Models;
 
-namespace WASMDemo.Shared.Repositories
+namespace WASMDemo.Shared.Repositories;
+
+public class EntitiesRepository : EFRepository<TestEntity, Guid, WasmDbContext>
 {
-    public class EntitiesRepository : EFRepository<TestEntity, Guid, WasmDbContext>
+    public EntitiesRepository(EFRepositoryContext<TestEntity, Guid, WasmDbContext> repositoryContext) : base(
+        repositoryContext)
     {
-        public EntitiesRepository(EFRepositoryContext<TestEntity, Guid, WasmDbContext> repositoryContext) : base(repositoryContext)
-        {
-        }
     }
 }
+

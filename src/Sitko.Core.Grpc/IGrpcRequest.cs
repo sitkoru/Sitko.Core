@@ -1,7 +1,7 @@
-﻿namespace Sitko.Core.Grpc
+﻿namespace Sitko.Core.Grpc;
+
+[Obsolete("Do not implement this interface")]
+public interface IGrpcRequest : IGrpcMessage
 {
-    public interface IGrpcRequest : IGrpcMessage
-    {
-        ApiRequestInfo RequestInfo { get; set; }
-    }
+    ApiRequestInfo RequestInfo { get; set; }
 }

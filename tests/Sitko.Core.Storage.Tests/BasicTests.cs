@@ -1,7 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -66,13 +62,13 @@ public abstract class BasicTests<T> : BaseTest<T>
         Assert.NotNull(downloaded);
         await using (downloaded)
         {
-            Assert.Equal(fileLength, downloaded?.StorageItem.FileSize);
-            if (downloaded?.Stream.CanSeek == true)
+            Assert.Equal(fileLength, downloaded.StorageItem.FileSize);
+            if (downloaded.Stream.CanSeek)
             {
-                Assert.Equal(fileLength, downloaded?.Stream.Length);
+                Assert.Equal(fileLength, downloaded.Stream.Length);
             }
 
-            Assert.Equal(fileName, downloaded?.StorageItem.FileName);
+            Assert.Equal(fileName, downloaded.StorageItem.FileName);
         }
     }
 
@@ -144,13 +140,13 @@ public abstract class BasicTests<T> : BaseTest<T>
         first.Should().NotBeNull().And.BeOfType<StorageNode>();
         first.Name.Should().Be("dir1");
 
-        var dir1DirectoryContent = await storage.GetDirectoryContentsAsync(first.FullPath);
+        var dir1DirectoryContent = (await storage.GetDirectoryContentsAsync(first.FullPath)).ToList();
         dir1DirectoryContent.Should().NotBeEmpty().And.ContainSingle();
         var second = dir1DirectoryContent.First();
         second.Should().NotBeNull().And.BeOfType<StorageNode>();
         second.Name.Should().Be("dir2");
 
-        var dir2DirectoryContent = await storage.GetDirectoryContentsAsync(second.FullPath);
+        var dir2DirectoryContent = (await storage.GetDirectoryContentsAsync(second.FullPath)).ToList();
         dir2DirectoryContent.Should().NotBeEmpty().And.ContainSingle();
         var fileNode = dir2DirectoryContent.First();
         fileNode.Should().NotBeNull();
@@ -192,9 +188,9 @@ public abstract class BasicTests<T> : BaseTest<T>
 
         Assert.NotNull(item);
 
-        var itemMetaData = item!.GetMetadata<FileMetaData>();
+        var itemMetaData = item.GetMetadata<FileMetaData>();
         Assert.NotNull(itemMetaData);
-        Assert.Equal(metaData.Id, itemMetaData!.Id);
+        Assert.Equal(metaData.Id, itemMetaData.Id);
     }
 
     [Fact]
@@ -219,10 +215,10 @@ public abstract class BasicTests<T> : BaseTest<T>
 
         var newItem = await storage.GetAsync(uploaded.FilePath);
         Assert.NotNull(newItem);
-        Assert.Equal(newFileName, newItem!.FileName);
+        Assert.Equal(newFileName, newItem.FileName);
         var itemMetaData = newItem.GetMetadata<FileMetaData>();
         Assert.NotNull(itemMetaData);
-        Assert.Equal(newMetaData.Id, itemMetaData!.Id);
+        Assert.Equal(newMetaData.Id, itemMetaData.Id);
     }
 
     [Fact]
@@ -250,3 +246,4 @@ public class FileMetaData
 {
     public Guid Id { get; set; } = Guid.NewGuid();
 }
+

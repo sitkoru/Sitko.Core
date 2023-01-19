@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sitko.Core.App;
@@ -15,10 +12,10 @@ public abstract class StorageModule<TStorage, TStorageOptions> : BaseApplication
     IStorageModule
     where TStorage : Storage<TStorageOptions> where TStorageOptions : StorageOptions, new()
 {
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TStorageOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.TryAddSingleton(provider =>
         {
             var instances = provider.GetServices<IStorageInstance>().OfType<IStorage>().ToArray();
@@ -43,3 +40,4 @@ public abstract class StorageModule<TStorage, TStorageOptions> : BaseApplication
         services.AddSingleton<TStorage>();
     }
 }
+

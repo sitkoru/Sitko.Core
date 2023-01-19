@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using Hangfire;
 using Hangfire.PostgreSql;
 using HealthChecks.Hangfire;
@@ -35,10 +32,10 @@ public class HangfireModule<THangfireConfig> : BaseApplicationModule<THangfireCo
         }
     }
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         THangfireConfig startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddHangfire(config =>
         {
             startupOptions.ConfigureHangfire?.Invoke(config);
@@ -69,7 +66,7 @@ public abstract class HangfireModuleOptions : BaseModuleOptions
 {
     [JsonIgnore] public Action<IGlobalConfiguration>? ConfigureHangfire { get; set; }
 
-    public List<(int workersCount, string[] queues)> Workers { get; private set; } = new();
+    public List<(int workersCount, string[] queues)> Workers { get; } = new();
 
     [JsonIgnore] public bool IsDashboardEnabled { get; private set; }
 
@@ -116,3 +113,4 @@ public class HangfirePostgresModuleOptions : HangfireModuleOptions
     public int InvisibilityTimeoutInMinutes { get; set; } = 300;
     public int DistributedLockTimeoutInMinutes { get; set; } = 300;
 }
+

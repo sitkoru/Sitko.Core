@@ -1,24 +1,22 @@
-using System.Collections.Generic;
+namespace Sitko.Core.Queue.Internal;
 
-namespace Sitko.Core.Queue.Internal
+public class QueueContext
 {
-    public class QueueContext
+    public QueueContext(IEnumerable<IQueueMiddleware>? middleware = default,
+        IEnumerable<IQueueMessageOptions>? messageOptions = default)
     {
-        public List<IQueueMiddleware> Middleware { get; } = new();
-        public List<IQueueMessageOptions> MessageOptions { get; } = new();
-
-        public QueueContext(IEnumerable<IQueueMiddleware>? middleware = default,
-            IEnumerable<IQueueMessageOptions>? messageOptions = default)
+        if (middleware != null)
         {
-            if (middleware != null)
-            {
-                Middleware.AddRange(middleware);
-            }
+            Middleware.AddRange(middleware);
+        }
 
-            if (messageOptions != null)
-            {
-                MessageOptions.AddRange(messageOptions);
-            }
+        if (messageOptions != null)
+        {
+            MessageOptions.AddRange(messageOptions);
         }
     }
+
+    public List<IQueueMiddleware> Middleware { get; } = new();
+    public List<IQueueMessageOptions> MessageOptions { get; } = new();
 }
+

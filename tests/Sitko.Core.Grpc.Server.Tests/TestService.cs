@@ -1,14 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace Sitko.Core.Grpc.Server.Tests
+namespace Sitko.Core.Grpc.Server.Tests;
+
+public static partial class TestService
 {
-    public static partial class TestService
+    public abstract partial class TestServiceBase
     {
-        public abstract partial class TestServiceBase : GrpcServiceBase
-        {
-            protected TestServiceBase(ILogger<TestServiceBase> logger) : base(logger)
-            {
-            }
-        }
+        protected ILogger<TestServiceBase> Logger { get; }
+
+        protected TestServiceBase(ILogger<TestServiceBase> logger) => Logger = logger;
     }
 }

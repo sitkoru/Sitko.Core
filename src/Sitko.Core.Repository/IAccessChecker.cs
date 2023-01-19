@@ -1,10 +1,6 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Sitko.Core.Repository;
 
-public interface IAccessChecker<in TEntity, TEntityPk> where TEntity : IEntity<TEntityPk>
+public interface IAccessChecker<in TEntity, TEntityPk> where TEntity : IEntity<TEntityPk> where TEntityPk : notnull
 {
     Task<bool> CheckAccessAsync(TEntity[] entities, CancellationToken cancellationToken = default);
 }
@@ -16,3 +12,4 @@ public class EntityAccessDeniedException : Exception
     {
     }
 }
+

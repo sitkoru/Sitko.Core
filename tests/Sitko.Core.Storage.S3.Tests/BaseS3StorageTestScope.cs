@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using Sitko.Core.Xunit;
 
 namespace Sitko.Core.Storage.S3.Tests;
@@ -28,3 +26,4 @@ public class BaseS3StorageTestScope : BaseTestScope
         await storage.DeleteAllAsync();
     }
 }
+

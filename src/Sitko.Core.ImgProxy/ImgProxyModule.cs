@@ -7,10 +7,11 @@ public class ImgProxyModule : BaseApplicationModule<ImgProxyModuleOptions>
 {
     public override string OptionsKey => "ImgProxy";
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         ImgProxyModuleOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddSingleton<IImgProxyUrlGenerator, ImgProxyUrlGenerator>();
     }
 }
+

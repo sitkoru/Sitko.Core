@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Sitko.Core.Blazor.FileUpload;
+﻿using Sitko.Core.Blazor.FileUpload;
 using Sitko.Core.Storage;
 
+// ReSharper disable once CheckNamespace
 namespace Sitko.Core.Blazor.MudBlazorComponents;
 
 public class MudFilesUpload<TCollection> : MudFileUpload<TCollection>
@@ -22,3 +21,4 @@ public class MudFilesUpload<TCollection> : MudFileUpload<TCollection>
         return collection;
     }
 }
+

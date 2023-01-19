@@ -1,57 +1,23 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 
-namespace Sitko.Core.App.Helpers
+namespace Sitko.Core.App.Helpers;
+
+public static class RandomGenerator
 {
-    public static class RandomGenerator
+    private const string ValidSymbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    private static readonly Random Rnd = Random.Shared;
+
+    public static string GetRandomString(int length)
     {
-#if !NET6_0
-        private static readonly UniformRandom Rnd = new();
-#else
-        private static readonly Random Rnd = Random.Shared;
-#endif
-        private const string ValidSymbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        var res = new StringBuilder();
 
-        public static string GetRandomString(int length)
+        while (length-- > 0)
         {
-            var res = new StringBuilder();
-
-            while (length-- > 0)
-            {
-                var num = Rnd.Next(0, ValidSymbols.Length);
-                res.Append(ValidSymbols[(int)(num % (uint)ValidSymbols.Length)]);
-            }
-
-            return res.ToString();
+            var num = Rnd.Next(0, ValidSymbols.Length);
+            res.Append(ValidSymbols[(int)(num % (uint)ValidSymbols.Length)]);
         }
+
+        return res.ToString();
     }
-#if !NET6_0
-    internal class UniformRandom
-    {
-        private static readonly System.Security.Cryptography.RNGCryptoServiceProvider Global = new();
-
-        private readonly Random rnd;
-
-        public UniformRandom()
-        {
-            var buffer = new byte[4];
-            Global.GetBytes(buffer);
-            rnd = new Random(BitConverter.ToInt32(buffer, 0));
-        }
-
-        public int Next() => rnd.Next();
-
-        public int Next(int maxValue) => rnd.Next(maxValue);
-
-        public int Next(int minValue, int maxValue) => rnd.Next(minValue, maxValue);
-
-        public double NextDouble() => rnd.NextDouble();
-
-        public double NextDouble(double minValue, double maxValue)
-        {
-            var r = rnd.NextDouble() * (maxValue - minValue);
-            return minValue + r;
-        }
-    }
-#endif
 }
+

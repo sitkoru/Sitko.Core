@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 
@@ -186,11 +181,12 @@ internal class EFIncludableRepositoryQuery<TEntity, TProperty> : EFRepositoryQue
         Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath)
     {
         var querySource = (IIncludableQueryable<TEntity, IEnumerable<TPreviousProperty>>)QuerySource.Query;
-        QuerySource.Query =  querySource.ThenInclude(navigationPropertyPath);
+        QuerySource.Query = querySource.ThenInclude(navigationPropertyPath);
         return new EFIncludableRepositoryQuery<TEntity, TNextProperty>(this);
     }
 
-    public IIncludableRepositoryQuery<TEntity, TNextProperty> ThenIncludeFromSingleInternal<TNextProperty, TPreviousProperty>(
+    public IIncludableRepositoryQuery<TEntity, TNextProperty> ThenIncludeFromSingleInternal<TNextProperty,
+        TPreviousProperty>(
         Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath)
     {
         var querySource = (IIncludableQueryable<TEntity, TPreviousProperty>)source.QuerySource.Query;
@@ -198,3 +194,4 @@ internal class EFIncludableRepositoryQuery<TEntity, TProperty> : EFRepositoryQue
         return new EFIncludableRepositoryQuery<TEntity, TNextProperty>(this);
     }
 }
+

@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -34,7 +31,9 @@ public static class ModelBuilderExtensions
         where TEntity : class
     {
         var valueComparer = new ValueComparer<ICollection<TData>>(
+#pragma warning disable CS8604
             (c1, c2) => c1.SequenceEqual(c2),
+#pragma warning restore CS8604
             c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v!.GetHashCode())),
             c => JsonHelper.DeserializeWithMetadata<ICollection<TData>>(
                 JsonHelper.SerializeWithMetadata(c, throwOnError, false), throwOnError, false)!);
@@ -54,7 +53,9 @@ public static class ModelBuilderExtensions
         where TEntity : class
     {
         var valueComparer = new ValueComparer<TData[]>(
+#pragma warning disable CS8604
             (c1, c2) => c1.SequenceEqual(c2),
+#pragma warning restore CS8604
             c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v!.GetHashCode())),
             c => JsonHelper.DeserializeWithMetadata<TData[]>(
                 JsonHelper.SerializeWithMetadata(c, throwOnError, false), throwOnError, false)!);
@@ -74,7 +75,9 @@ public static class ModelBuilderExtensions
         where TEnumerable : IEnumerable<TData>, new()
     {
         var valueComparer = new ValueComparer<TEnumerable>(
+#pragma warning disable CS8604
             (c1, c2) => c1.SequenceEqual(c2),
+#pragma warning restore CS8604
             c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v!.GetHashCode())),
             c => JsonHelper.DeserializeWithMetadata<TEnumerable>(
                 JsonHelper.SerializeWithMetadata(c, throwOnError, false), throwOnError, false)!);
@@ -103,3 +106,4 @@ public static class ModelBuilderExtensions
         return modelBuilder;
     }
 }
+

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Sitko.Core.Db.Postgres;
 
 namespace Sitko.Core.Repository.Tests.Data;
@@ -19,3 +18,4 @@ public class TestDbContext : BaseDbContext
             model.JsonModels, "JsonModels");
     }
 }
+

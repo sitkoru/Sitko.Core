@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Serilog.Events;
 using Sitko.Core.Db.Postgres;
 using Sitko.Core.Repository.EntityFrameworkCore;
@@ -113,7 +109,7 @@ public class RemoteRepositoryTestScope : WebTestScope
         });
         application.AddHttpRepositoryTransport(options =>
         {
-            options.RepositoryControllerApiRoute = new Uri(Server.BaseAddress, "http://localhost");
+            options.RepositoryControllerApiRoute = new Uri(Server!.BaseAddress, "http://localhost");
             if (Server is not null)
             {
                 options.HttpClientFactory = _ =>
@@ -125,10 +121,9 @@ public class RemoteRepositoryTestScope : WebTestScope
             }
         });
         application.ConfigureLogging((_, configuration) =>
-        {
-            configuration.MinimumLevel.Override("Sitko.Core.Repository", LogEventLevel.Debug);
-        });
+            configuration.MinimumLevel.Override("Sitko.Core.Repository", LogEventLevel.Debug));
 
         return application;
     }
 }
+

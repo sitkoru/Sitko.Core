@@ -1,7 +1,4 @@
-﻿using System;
-#if NET5_0_OR_GREATER
-using System.Diagnostics.CodeAnalysis;
-#endif
+﻿using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 
 namespace Sitko.Core.App.Results;
@@ -27,9 +24,7 @@ public class OperationResult : IOperationResult
     public OperationResult(Exception exception, string? errorMessage = null) :
         this(errorMessage ?? exception.Message) => Exception = exception;
 
-#if NET5_0_OR_GREATER
     [MemberNotNullWhen(false, nameof(ErrorMessage))]
-#endif
     public bool IsSuccess { get; private set; }
 
     public string? ErrorMessage { get; private set; }
@@ -68,10 +63,8 @@ public class OperationResult<T> : IOperationResult
 
     public T? Result { get; private set; }
 
-#if NET5_0_OR_GREATER
     [MemberNotNullWhen(true, nameof(Result))]
     [MemberNotNullWhen(false, nameof(ErrorMessage))]
-#endif
     public bool IsSuccess { get; private set; }
 
     public Exception? Exception { get; }

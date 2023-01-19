@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Sitko.Core.App.Collections;
+﻿using Sitko.Core.App.Collections;
 using Sitko.Core.Storage;
 
 namespace Sitko.Core.Blazor.FileUpload;
@@ -21,15 +20,8 @@ public class UploadedItem : IOrdered
 
     public int Position { get; set; }
 
-    private string GetUrl(UploadedItemUrlType type)
-    {
-        if (Urls.ContainsKey(type))
-        {
-            return Urls[type];
-        }
-
-        return Urls[UploadedItemUrlType.Full];
-    }
+    private string GetUrl(UploadedItemUrlType type) =>
+        Urls.TryGetValue(type, out var value) ? value : Urls[UploadedItemUrlType.Full];
 }
 
 public enum UploadedItemUrlType
@@ -38,3 +30,4 @@ public enum UploadedItemUrlType
     SmallPreview,
     LargePreview
 }
+

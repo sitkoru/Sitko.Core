@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using PuppeteerSharp;
 
 namespace Sitko.Core.Pdf;
@@ -11,3 +9,4 @@ public interface IPdfRenderer
     Task<byte[]> GetScreenshotByUrlAsync(string url, ScreenshotOptions? options = null, TimeSpan? delay = null);
     Task<byte[]> GetScreenshotByHtmlAsync(string html, ScreenshotOptions? options = null, TimeSpan? delay = null);
 }
+

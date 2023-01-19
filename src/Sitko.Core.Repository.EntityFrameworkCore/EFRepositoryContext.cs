@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sitko.FluentValidation.Graph;
@@ -7,7 +5,7 @@ using Sitko.FluentValidation.Graph;
 namespace Sitko.Core.Repository.EntityFrameworkCore;
 
 public class EFRepositoryContext<TEntity, TEntityPk, TDbContext> : IRepositoryContext<TEntity, TEntityPk>
-    where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext
+    where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext where TEntityPk : notnull
 {
     private readonly ILoggerFactory loggerFactory;
 
@@ -36,3 +34,4 @@ public class EFRepositoryContext<TEntity, TEntityPk, TDbContext> : IRepositoryCo
     public RepositoryFiltersManager FiltersManager { get; }
     public List<IAccessChecker<TEntity, TEntityPk>>? AccessCheckers { get; }
 }
+

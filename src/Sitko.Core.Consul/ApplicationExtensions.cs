@@ -1,5 +1,4 @@
-﻿using System;
-using Sitko.Core.App;
+﻿using Sitko.Core.App;
 
 namespace Sitko.Core.Consul;
 
@@ -13,3 +12,4 @@ public static class ApplicationExtensions
         Action<ConsulModuleOptions>? configure = null, string? optionsKey = null) =>
         application.AddModule<ConsulModule, ConsulModuleOptions>(configure, optionsKey);
 }
+

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using FluentValidation;
@@ -38,11 +36,7 @@ public class PostgresDatabaseModuleOptions<TDbContext> : BaseDbModuleOptions<TDb
             Password = Password,
             Database = Database,
             Pooling = EnableNpgsqlPooling,
-#if NET6_0_OR_GREATER
             IncludeErrorDetail = IncludeErrorDetails
-#else
-            IncludeErrorDetails = IncludeErrorDetails
-#endif
         };
 
         foreach (var (key, value) in ConnectionOptions)
@@ -74,3 +68,4 @@ public class
         RuleFor(o => o.Port).GreaterThan(0).WithMessage("Postgres port is empty");
     }
 }
+

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Diagnostics;
+﻿using Microsoft.EntityFrameworkCore.Diagnostics;
 using Serilog.Events;
 using Sitko.Core.App;
 using Sitko.Core.Db.Postgres;
@@ -24,9 +20,7 @@ public class EFTestScope : BaseEFTestScope
             options.AddRepositoriesFromAssemblyOf<TestModel>();
         });
         application.ConfigureLogging((_, configuration) =>
-        {
-            configuration.MinimumLevel.Override("Sitko.Core.Repository", LogEventLevel.Debug);
-        });
+            configuration.MinimumLevel.Override("Sitko.Core.Repository", LogEventLevel.Debug));
         return base.ConfigureApplication(application, name);
     }
 

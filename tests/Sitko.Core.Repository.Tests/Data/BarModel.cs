@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Sitko.Core.Repository.Tests.Data;
 
@@ -17,3 +15,4 @@ public class BarModel : Entity<Guid>
     public List<BaseJsonModel> JsonModels { get; set; } = new();
     public string? Baz { get; set; }
 }
+

@@ -1,4 +1,3 @@
-using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,23 +11,23 @@ public class
 {
     public override string OptionsKey => $"Db:InMemory:{typeof(TDbContext).Name}";
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         InMemoryDatabaseModuleOptions<TDbContext> startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         if (startupOptions.EnableContextPooling)
         {
             services.AddDbContextPool<TDbContext>((serviceProvider, options) =>
-                ConfigureInMemory(options, serviceProvider, context));
+                ConfigureInMemory(options, serviceProvider, applicationContext));
             services.AddPooledDbContextFactory<TDbContext>((serviceProvider, options) =>
-                ConfigureInMemory(options, serviceProvider, context));
+                ConfigureInMemory(options, serviceProvider, applicationContext));
         }
         else
         {
             services.AddDbContext<TDbContext>((serviceProvider, options) =>
-                ConfigureInMemory(options, serviceProvider, context));
+                ConfigureInMemory(options, serviceProvider, applicationContext));
             services.AddDbContextFactory<TDbContext>((serviceProvider, options) =>
-                ConfigureInMemory(options, serviceProvider, context));
+                ConfigureInMemory(options, serviceProvider, applicationContext));
         }
     }
 
@@ -49,3 +48,4 @@ public class
             applicationContext);
     }
 }
+

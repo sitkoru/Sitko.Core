@@ -1,5 +1,4 @@
-﻿using System;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.ImgProxy;
@@ -23,3 +22,4 @@ public static class ApplicationExtensions
             .AddModule<ImgProxyStorageModule<TStorageOptions>, BaseApplicationModuleOptions>(
                 configure, optionsKey);
 }
+

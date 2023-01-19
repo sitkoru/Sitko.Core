@@ -1,7 +1,7 @@
-namespace Sitko.Core.Grpc.Server
+namespace Sitko.Core.Grpc.Server;
+
+public interface IGrpcServerModule
 {
-    public interface IGrpcServerModule
-    {
-        void RegisterService<TService>() where TService : class;
-    }
+    void RegisterService<TService>() where TService : class;
 }
+

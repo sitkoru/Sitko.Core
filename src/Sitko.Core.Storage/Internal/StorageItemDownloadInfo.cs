@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.Internal;
@@ -29,3 +26,4 @@ public class StorageItemDownloadInfo
 
     public void SetMetadata(StorageItemMetadata metadata) => Metadata = metadata;
 }
+

@@ -1,12 +1,11 @@
-﻿using System;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 
 namespace Sitko.Core.App.Helpers;
 
-public class EnvHelper
+public static class EnvHelper
 {
-    public static string DotNetEnvironmentVariable = $"DOTNET_{HostDefaults.EnvironmentKey}";
-    public static string AspNetEnvironmentVariable = $"ASPNETCORE_{HostDefaults.EnvironmentKey}";
+    private static string DotNetEnvironmentVariable { get; } = $"DOTNET_{HostDefaults.EnvironmentKey}";
+    private static string AspNetEnvironmentVariable { get; } = $"ASPNETCORE_{HostDefaults.EnvironmentKey}";
 
     public static string GetEnvironmentName()
     {
@@ -35,7 +34,7 @@ public class EnvHelper
             return Environments.Production;
         }
 
-        var envName = (string)envVariables[envKey];
+        var envName = (string?)envVariables[envKey] ?? "";
         return envName.ToLowerInvariant() switch
         {
             "development" => Environments.Development,
@@ -45,3 +44,4 @@ public class EnvHelper
         };
     }
 }
+

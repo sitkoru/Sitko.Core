@@ -1,24 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
-  <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Sitko.Blazor.ScriptInjector" Version="2.0.1"/>
-    <PackageReference Include="CompareNETObjects" Version="4.78.0"/>
+    <PackageReference Include="Sitko.Blazor.ScriptInjector" />
+    <PackageReference Include="CompareNETObjects" />
+    <PackageReference Include="Microsoft.AspNetCore.Components" />
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
-    <ProjectReference Include="..\Sitko.Core.Repository\Sitko.Core.Repository.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Repository\Sitko.Core.Repository.csproj" />
   </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.Components" Version="6.0.10" />
-  </ItemGroup>
-
   <ItemGroup>
-    <EmbeddedResource Include="Resources\*.json"/>
+    <EmbeddedResource Include="Resources\*.json" />
   </ItemGroup>
-
 </Project>

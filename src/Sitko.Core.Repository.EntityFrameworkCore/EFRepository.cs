@@ -1,15 +1,11 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 
@@ -18,11 +14,24 @@ namespace Sitko.Core.Repository.EntityFrameworkCore;
 public interface IEFRepository : IRepository
 {
     Task<int> DeleteAllRawAsync(string conditions, CancellationToken cancellationToken = default);
+    Task<int> DeleteAllAsync(CancellationToken cancellationToken = default);
+}
+
+public interface IEFRepository<TEntity> : IEFRepository where TEntity : class, IEntity
+{
+    Task<int> DeleteAllAsync(Expression<Func<TEntity, bool>> where, CancellationToken cancellationToken = default);
+
+    Task<int> UpdateAllAsync(Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls,
+        CancellationToken cancellationToken = default);
+
+    Task<int> UpdateAllAsync(Expression<Func<TEntity, bool>> where,
+        Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls,
+        CancellationToken cancellationToken = default);
 }
 
 public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
-    BaseRepository<TEntity, TEntityPk, EFRepositoryQuery<TEntity>>, IEFRepository
-    where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext
+    BaseRepository<TEntity, TEntityPk, EFRepositoryQuery<TEntity>>, IEFRepository<TEntity>
+    where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext where TEntityPk : notnull
 {
     private readonly TDbContext dbContext;
     private readonly EFRepositoryLock repositoryLock;
@@ -34,6 +43,39 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         dbContext = repositoryContext.DbContext;
         repositoryLock = repositoryContext.RepositoryLock;
     }
+
+    public Task<int> DeleteAllRawAsync(string conditions, CancellationToken cancellationToken = default)
+    {
+        var tableName = dbContext.Model.FindEntityType(typeof(TEntity))?.GetSchemaQualifiedTableName() ??
+                        throw new InvalidOperationException($"Can't find table name for entity {typeof(TEntity)}");
+        return ExecuteDbContextOperationAsync(context => context.Database.ExecuteSqlRawAsync(
+                $"DELETE FROM \"{tableName.Replace(".", "\".\"")}\" WHERE {conditions}", cancellationToken),
+            cancellationToken);
+    }
+
+    public Task<int> DeleteAllAsync(Expression<Func<TEntity, bool>> where,
+        CancellationToken cancellationToken = default) =>
+        ExecuteDbContextOperationAsync(
+            context => context.Set<TEntity>().Where(where).ExecuteDeleteAsync(cancellationToken),
+            cancellationToken);
+
+    public Task<int> UpdateAllAsync(
+        Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls,
+        CancellationToken cancellationToken = default) =>
+        ExecuteDbContextOperationAsync(
+            context => context.Set<TEntity>().ExecuteUpdateAsync(setPropertyCalls, cancellationToken),
+            cancellationToken);
+
+    public Task<int> UpdateAllAsync(Expression<Func<TEntity, bool>> where,
+        Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls,
+        CancellationToken cancellationToken = default) =>
+        ExecuteDbContextOperationAsync(
+            context => context.Set<TEntity>().Where(where).ExecuteUpdateAsync(setPropertyCalls, cancellationToken),
+            cancellationToken);
+
+    public Task<int> DeleteAllAsync(CancellationToken cancellationToken = default) =>
+        ExecuteDbContextOperationAsync(context => context.Set<TEntity>().ExecuteDeleteAsync(cancellationToken),
+            cancellationToken);
 
     private EntityChange[] Compare(TEntity firstEntity, TEntity secondEntity)
     {
@@ -162,7 +204,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
                     if (hasNewRef)
                     {
                         entityChange.AddChange(entryCollection.Metadata.Name, entryCollection.CurrentValue,
-                            EFRepositoryHelper.CopyCollection(modifiedCollection.CurrentValue), ChangeType.Deleted);
+                            EFRepositoryHelper.CopyCollection(modifiedCollection.CurrentValue!), ChangeType.Deleted);
                     }
                 }
             }
@@ -195,20 +237,15 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         return ChangeState.UnChanged;
     }
 
-    private static ChangeState HasChanges(EntityChange[]? entityChanges, IEntity entity) =>
-        HasChanges(entityChanges, entity, out _);
-
-    private static ChangeState HasChanges(EntityChange[]? entityChanges, IEntity entity,
-        out PropertyChange[] changes)
+    private static ChangeState HasChanges(EntityChange[]? entityChanges, IEntity entity)
     {
         if (entityChanges is null)
         {
-            changes = Array.Empty<PropertyChange>();
             return ChangeState.Unknown;
         }
 
         var entityChange = entityChanges.FirstOrDefault(c => c.Entity.Equals(entity));
-        changes = entityChange?.Changes ?? Array.Empty<PropertyChange>();
+        var changes = entityChange?.Changes ?? Array.Empty<PropertyChange>();
         return changes.Length > 0 ? ChangeState.Changed : ChangeState.UnChanged;
     }
 
@@ -428,7 +465,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
 
     public DbSet<T> Set<T>() where T : class => dbContext.Set<T>();
 
-    private void AttachAllEntities(TDbContext context, IEntity entity, EntityChange[]? entityChanges)
+    private static void AttachAllEntities(TDbContext context, IEntity entity, EntityChange[]? entityChanges)
     {
         // First, attach entities graph to dbContext
         context.ChangeTracker.TrackGraph(entity, node =>
@@ -470,7 +507,9 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
                         if (changeState == ChangeState.Changed && change is not null)
                         {
                             EFRepositoryHelper.UpdateCollection(collection.CurrentValue,
-                                (change.Value.CurrentValue as IEnumerable).Cast<IEntity>().ToList());
+                                (change.Value.CurrentValue as IEnumerable ??
+                                 throw new InvalidOperationException("Value is not IEnumerable")).Cast<IEntity>()
+                                .ToList());
                         }
                     }
                 }
@@ -658,7 +697,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
                     else
                     {
                         // Else just mark as unchanged
-                        entryReference.TargetEntry.State = EntityState.Unchanged;
+                        entryReference.TargetEntry!.State = EntityState.Unchanged;
                     }
                 }
             }
@@ -686,7 +725,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
                     else
                     {
                         // Reference value is not IEntity, just mark as unchanged
-                        entryReference.TargetEntry.State = EntityState.Unchanged;
+                        entryReference.TargetEntry!.State = EntityState.Unchanged;
                     }
                 }
             }
@@ -773,21 +812,18 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
                     // Load original value from db so ef will knew both sides of relation
                     Logger.LogDebug("Load collection {Collection} original value", entryCollection.Metadata.Name);
                     var skipNavigationEntries = new List<EntityEntry>();
-                    if (skipNavigation is not null)
+                    if (skipNavigation?.ForeignKey is not null)
                     {
                         // This is skip navigation. EF may already contains "link" entities in change tracker
                         // After loading collection data from database new links would be mark as deleted
                         // We need revert this later, so let's collect such entities
-                        if (skipNavigation.ForeignKey is not null)
+                        var skipTypeName = skipNavigation.ForeignKey.DeclaringEntityType.Name;
+                        foreach (var entityEntry in context.ChangeTracker.Entries())
                         {
-                            var skipTypeName = skipNavigation.ForeignKey.DeclaringEntityType.Name;
-                            foreach (var entityEntry in context.ChangeTracker.Entries())
+                            if (entityEntry.Metadata.Name == skipTypeName &&
+                                entityEntry.State != EntityState.Deleted)
                             {
-                                if (entityEntry.Metadata.Name == skipTypeName &&
-                                    entityEntry.State != EntityState.Deleted)
-                                {
-                                    skipNavigationEntries.Add(entityEntry);
-                                }
+                                skipNavigationEntries.Add(entityEntry);
                             }
                         }
                     }
@@ -855,15 +891,6 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
             var entry = currentDbContext.Remove(entity);
             return Task.FromResult(entry.State == EntityState.Deleted);
         }, cancellationToken);
-
-    public Task<int> DeleteAllRawAsync(string conditions, CancellationToken cancellationToken = default)
-    {
-        var tableName = dbContext.Model.FindEntityType(typeof(TEntity))?.GetSchemaQualifiedTableName() ??
-                        throw new InvalidOperationException($"Can't find table name for entity {typeof(TEntity)}");
-        return ExecuteDbContextOperationAsync(context => context.Database.ExecuteSqlRawAsync(
-                $"DELETE FROM \"{tableName.Replace(".", "\".\"")}\" WHERE {conditions}", cancellationToken),
-            cancellationToken);
-    }
 
     [PublicAPI]
     protected IQueryable<TEntity> GetBaseQuery() => dbContext.Set<TEntity>().AsQueryable();

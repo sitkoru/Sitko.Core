@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Grpc.Core;
 
 namespace Sitko.Core.Grpc.Client;
@@ -50,3 +48,4 @@ internal sealed class CallOptionsConfigurationInvoker : CallInvoker
         CallOptions options, TRequest request) =>
         innerInvoker.BlockingUnaryCall(method, host, ResolveCallOptions(options), request);
 }
+

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 using FluentValidation;
 using IL.FluentValidation.Extensions.Options;
 using Microsoft.Extensions.Configuration;
@@ -14,14 +10,14 @@ using Serilog;
 
 namespace Sitko.Core.App;
 
-internal class ApplicationModuleRegistration<TModule, TModuleOptions> : ApplicationModuleRegistration
+internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : ApplicationModuleRegistration
     where TModule : IApplicationModule<TModuleOptions>, new() where TModuleOptions : BaseModuleOptions, new()
 {
     private readonly Action<IApplicationContext, TModuleOptions>? configureOptions;
     private readonly TModule instance;
 
     private readonly Dictionary<Guid, TModuleOptions> optionsCache = new();
-    private readonly string? optionsKey;
+    private readonly string optionsKey;
     private readonly Type? validatorType;
 
     public ApplicationModuleRegistration(
@@ -73,17 +69,16 @@ internal class ApplicationModuleRegistration<TModule, TModuleOptions> : Applicat
         return this;
     }
 
-    public override ApplicationModuleRegistration ConfigureLogging(
-        IApplicationContext context,
+    public override LoggerConfiguration ConfigureLogging(IApplicationContext context,
         LoggerConfiguration loggerConfiguration)
     {
-        if (instance is ILoggingModule<TModuleOptions> loggingModule)
+        if (instance is not ILoggingModule<TModuleOptions> loggingModule)
         {
-            var options = CreateOptions(context, true);
-            loggingModule.ConfigureLogging(context, options, loggerConfiguration);
+            return loggerConfiguration;
         }
 
-        return this;
+        var options = CreateOptions(context, true);
+        return loggingModule.ConfigureLogging(context, options, loggerConfiguration);
     }
 
     public override ApplicationModuleRegistration ConfigureHostBuilder(IApplicationContext context,
@@ -205,7 +200,7 @@ public abstract class ApplicationModuleRegistration
     public abstract ApplicationModuleRegistration ConfigureOptions(IApplicationContext context,
         IServiceCollection services);
 
-    public abstract ApplicationModuleRegistration ConfigureLogging(IApplicationContext context,
+    public abstract LoggerConfiguration ConfigureLogging(IApplicationContext context,
         LoggerConfiguration loggerConfiguration);
 
     public abstract ApplicationModuleRegistration ConfigureServices(IApplicationContext context,
@@ -233,3 +228,5 @@ public abstract class ApplicationModuleRegistration
 
     public abstract bool IsEnabled(IApplicationContext context);
 }
+
+

@@ -1,5 +1,4 @@
-﻿using System;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Sitko.Core.App.Collections;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -31,7 +30,7 @@ public class ValueCollectionTests : BaseTest
         var entity2 = new Entity(Guid.NewGuid(), 1, "456");
         var entity3 = new Entity(Guid.NewGuid(), 3, "456");
         var entity1_2 = new Entity(entity1.Id, 1, "123");
-        var entity2_2 = new Entity(entity2.Id,1, "456");
+        var entity2_2 = new Entity(entity2.Id, 1, "456");
         entity1.Should().Be(entity1_2);
         entity2.Should().Be(entity2_2);
         collection1.Add(entity1);
@@ -52,3 +51,4 @@ public class ValueCollectionTests : BaseTest
 }
 
 public record Entity(Guid Id, int Views, string Text);
+

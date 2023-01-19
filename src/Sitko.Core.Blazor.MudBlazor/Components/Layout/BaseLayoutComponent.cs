@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using Sitko.Core.Blazor.Layout;
 
+// ReSharper disable once CheckNamespace
 namespace Sitko.Core.Blazor.MudBlazorComponents;
 
 public abstract class BaseMudLayout : BaseLayoutComponent<MudLayoutData, MudLayoutOptions>
@@ -75,3 +74,4 @@ public abstract class BaseMudLayout : BaseLayoutComponent<MudLayoutData, MudLayo
         Extra = layoutData.Extra;
     }
 }
+

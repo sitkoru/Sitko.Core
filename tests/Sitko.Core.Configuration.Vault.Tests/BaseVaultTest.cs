@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.Xunit;
@@ -50,23 +47,25 @@ public class VaultTestScope : BaseTestScope
 
     public override async Task BeforeConfiguredAsync(string name)
     {
-        await base.BeforeConfiguredAsync(name);
+        await base.BeforeConfiguredAsync(name).ConfigureAwait(false);
 
         await vaultClient.V1.Secrets.KeyValue.V2.WriteSecretAsync(
             firstSecretId.ToString(),
             new { test = FirstConfig },
-            mountPoint: "/secret");
+            mountPoint: "/secret").ConfigureAwait(false);
         await vaultClient.V1.Secrets.KeyValue.V2.WriteSecretAsync(
             secondSecretId.ToString(),
             new { test2 = SecondConfig },
-            mountPoint: "/secret");
+            mountPoint: "/secret").ConfigureAwait(false);
     }
 
     protected override async Task OnDisposeAsync()
     {
-        await base.OnDisposeAsync();
-        await vaultClient.V1.Secrets.KeyValue.V2.DeleteMetadataAsync(firstSecretId.ToString(), "/secret");
-        await vaultClient.V1.Secrets.KeyValue.V2.DeleteMetadataAsync(secondSecretId.ToString(), "/secret");
+        await base.OnDisposeAsync().ConfigureAwait(false);
+        await vaultClient.V1.Secrets.KeyValue.V2.DeleteMetadataAsync(firstSecretId.ToString(), "/secret")
+            .ConfigureAwait(false);
+        await vaultClient.V1.Secrets.KeyValue.V2.DeleteMetadataAsync(secondSecretId.ToString(), "/secret")
+            .ConfigureAwait(false);
     }
 }
 
@@ -132,3 +131,4 @@ public class TestModuleWithValidationConfigValidator : AbstractValidator<TestMod
     public TestModuleWithValidationConfigValidator() =>
         RuleFor(o => o.Bar).Empty().WithMessage("Bar must be empty!");
 }
+

@@ -1,7 +1,3 @@
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -35,7 +31,7 @@ public abstract class
     {
         if (cache == null)
         {
-            throw new Exception("Cache is not initialized");
+            throw new InvalidOperationException("Cache is not initialized");
         }
 
         var key = NormalizePath(path);
@@ -82,7 +78,7 @@ public abstract class
     {
         if (cache == null)
         {
-            throw new Exception("Cache is not initialized");
+            throw new InvalidOperationException("Cache is not initialized");
         }
 
         var cacheEntry = cache.Get<TRecord?>(NormalizePath(path));
@@ -97,7 +93,7 @@ public abstract class
     {
         if (cache == null)
         {
-            throw new Exception("Cache is not initialized");
+            throw new InvalidOperationException("Cache is not initialized");
         }
 
         cache.Remove(NormalizePath(path));
@@ -135,7 +131,7 @@ public abstract class
             .RegisterPostEvictionCallback(CacheItemRemoved, this);
     }
 
-    private void CacheItemRemoved(object key, object value, EvictionReason reason, object state)
+    private void CacheItemRemoved(object key, object? value, EvictionReason reason, object? state)
     {
         if (value is TRecord deletedRecord)
         {
@@ -151,10 +147,10 @@ public abstract class
     internal abstract Task<TRecord> GetEntryAsync(StorageItemDownloadInfo item, Stream stream,
         CancellationToken cancellationToken = default);
 
-    private string NormalizePath(string path)
+    private static string NormalizePath(string path)
     {
         path = new Uri(path, UriKind.Relative).ToString();
-        if (!path.StartsWith("/"))
+        if (!path.StartsWith("/", StringComparison.InvariantCulture))
         {
             path = $"/{path}";
         }
@@ -162,3 +158,4 @@ public abstract class
         return path;
     }
 }
+

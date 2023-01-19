@@ -1,23 +1,14 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using Sitko.Core.Blazor.Forms;
 
+// ReSharper disable once CheckNamespace
 namespace Sitko.Core.Blazor.MudBlazorComponents;
-
-public class MudEntityForm<TEntity> : BaseMudForm<TEntity>
-    where TEntity : class, new()
-{
-    [EditorRequired] [Parameter] public RenderFragment<BaseMudForm<TEntity>> ChildContent { get; set; } = null!;
-
-    protected override RenderFragment ChildContentFragment => ChildContent(this);
-}
 
 public abstract partial class BaseMudForm<TEntity>
     where TEntity : class, new()
 {
-    protected abstract RenderFragment ChildContentFragment { get; }
+    [Parameter] [EditorRequired] public RenderFragment<FormContext<TEntity>> ChildContent { get; set; } = null!;
     [Parameter] public RenderFragment? LoadingContent { get; set; }
     protected MudEditForm<TEntity>? FormInstance { get; set; }
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
@@ -79,3 +70,4 @@ public abstract partial class BaseMudForm<TEntity>
         await StopLoadingAsync();
     }
 }
+

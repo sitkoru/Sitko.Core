@@ -1,5 +1,4 @@
-﻿using System;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 
 namespace Sitko.Core.App.Localization;
 
@@ -15,3 +14,4 @@ public static class ApplicationExtensions
         Action<JsonLocalizationModuleOptions>? configure = null, string? optionsKey = null) =>
         application.AddModule<JsonLocalizationModule, JsonLocalizationModuleOptions>(configure, optionsKey);
 }
+

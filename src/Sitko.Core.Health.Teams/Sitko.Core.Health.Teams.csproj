@@ -1,14 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Health\Sitko.Core.Health.csproj"/>
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="TeamsHook.NET" Version="0.1.0.18"/>
+    <PackageReference Include="TeamsHook.NET"/>
   </ItemGroup>
 </Project>

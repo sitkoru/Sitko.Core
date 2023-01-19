@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Sitko.Core.App;
 using Sitko.Core.Queue.Tests;
 using Sitko.Core.Xunit;
@@ -49,3 +45,4 @@ public class NatsQueueTestScopeWithOptions : NatsQueueTestScope
         });
     }
 }
+

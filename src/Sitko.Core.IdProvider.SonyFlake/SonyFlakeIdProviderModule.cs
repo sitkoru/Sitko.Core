@@ -7,10 +7,11 @@ public class SonyFlakeIdProviderModule : BaseIdProviderModule<SonyFlakeIdProvide
 {
     public override string OptionsKey => "IdProvider:SonyFlake";
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         SonyFlakeIdProviderModuleOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddHttpClient();
     }
 }
+

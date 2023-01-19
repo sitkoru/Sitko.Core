@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
@@ -31,14 +28,13 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposab
         BindingFlags.NonPublic | BindingFlags.Instance);
 
     private bool isDisposed;
-    protected bool IsInitialized { get; private set; }
+
+    private ILocalizationProvider? localizationProvider;
 
     private ILogger? logger;
-#if NET6_0_OR_GREATER
+
+    private NavigationManager? navigationManager;
     private AsyncServiceScope? scope;
-#else
-    private IServiceScope? scope;
-#endif
 
     protected BaseComponent()
     {
@@ -69,6 +65,8 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposab
         }));
     }
 
+    protected bool IsInitialized { get; private set; }
+
     [PublicAPI] public Guid ComponentId { get; } = Guid.NewGuid();
 
     [CascadingParameter(Name = "ParentScope")]
@@ -82,8 +80,6 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposab
         scope?.ServiceProvider ?? ParentScope?.ServiceProvider ?? GlobalServiceProvider;
 
     [PublicAPI] public bool IsLoading { get; private set; }
-
-    private NavigationManager? navigationManager;
 
     [PublicAPI]
     protected NavigationManager NavigationManager =>
@@ -103,8 +99,6 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposab
             return logger;
         }
     }
-
-    private ILocalizationProvider? localizationProvider;
 
     protected ILocalizationProvider LocalizationProvider
     {
@@ -128,11 +122,7 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposab
             NavigationManager.LocationChanged -= HandleLocationChanged;
             if (scope is not null)
             {
-#if NET6_0_OR_GREATER
                 await scope.Value.DisposeAsync();
-#else
-                scope.Dispose();
-#endif
             }
 
             Dispose(true);
@@ -162,11 +152,7 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposab
         await base.OnInitializedAsync();
         if (ScopeType == ScopeType.Isolated)
         {
-#if NET6_0_OR_GREATER
             scope = ServiceProvider.CreateAsyncScope();
-#else
-            scope = ServiceProvider.CreateScope();
-#endif
         }
 
         try
@@ -221,7 +207,7 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposab
     {
         var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
 
-        return ParseQueryStringHelper.TryGetQueryString<T>(uri.Query, key, out value);
+        return ParseQueryStringHelper.TryGetQueryString(uri.Query, key, out value);
     }
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e) =>
@@ -348,3 +334,4 @@ public enum ScopeType
 {
     Parent = 0, Isolated = 1
 }
+

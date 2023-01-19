@@ -5,6 +5,7 @@ MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{109B331E-71B9-483C-8FC1-13B10C92A7F1}"
 	ProjectSection(SolutionItems) = preProject
 		src\Directory.Build.props = src\Directory.Build.props
+		src\Directory.Packages.props = src\Directory.Packages.props
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.IdProvider.SonyFlake", "src\Sitko.Core.IdProvider.SonyFlake\Sitko.Core.IdProvider.SonyFlake.csproj", "{6677865F-C349-4D25-9E19-3DEC43E92DD5}"
@@ -175,6 +176,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Blazor.AntDesign", "src\Sitko.Core.Blazor.AntDesign\Sitko.Core.Blazor.AntDesign.csproj", "{F570ACCF-3B22-4AFF-93C8-659FF28205E2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "apps", "apps", "{F626F7B7-70BB-4D3B-A803-68ADA8BA4234}"
+	ProjectSection(SolutionItems) = preProject
+		apps\Directory.Build.props = apps\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Apps.Blazor", "apps\Sitko.Core.Apps.Blazor\Sitko.Core.Apps.Blazor.csproj", "{FD711E57-272D-436C-991C-62D317920DD0}"
 EndProject

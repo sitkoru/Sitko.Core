@@ -1,15 +1,12 @@
-using System;
+namespace Sitko.Core.Queue.Exceptions;
 
-namespace Sitko.Core.Queue.Exceptions
+public class QueueException : Exception
 {
-    public class QueueException : Exception
-    {
-    }
-
-    public class QueueRequestTimeoutException : QueueException
-    {
-        public TimeSpan Timeout { get; }
-
-        public QueueRequestTimeoutException(TimeSpan timeout) => Timeout = timeout;
-    }
 }
+
+public class QueueRequestTimeoutException : QueueException
+{
+    public QueueRequestTimeoutException(TimeSpan timeout) => Timeout = timeout;
+    public TimeSpan Timeout { get; }
+}
+

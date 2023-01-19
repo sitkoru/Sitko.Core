@@ -7,14 +7,15 @@ public class HttpRepositoryTransportModule : BaseApplicationModule<HttpRepositor
 {
     public override string OptionsKey => "Repositories:Remote:Transports:Http";
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         HttpRepositoryTransportOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
-        RegisterHttpClient(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
+        RegisterHttpClient(applicationContext, services, startupOptions);
         services.AddSingleton<IRemoteRepositoryTransport, HttpRepositoryTransport>();
     }
 
     protected virtual IHttpClientBuilder RegisterHttpClient(IApplicationContext context, IServiceCollection services,
         HttpRepositoryTransportOptions startupOptions) => services.AddHttpClient(nameof(HttpRepositoryTransport));
 }
+

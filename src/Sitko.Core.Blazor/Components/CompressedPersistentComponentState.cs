@@ -1,36 +1,23 @@
-#if NET6_0_OR_GREATER
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
 namespace Sitko.Core.Blazor.Components;
 
 public class CompressedPersistentComponentState : ICompressedPersistentComponentState, IDisposable
 {
-    private readonly IStateCompressor stateCompressor;
     private readonly PersistentComponentState persistentComponentState;
+    private readonly IStateCompressor stateCompressor;
 
     private readonly List<PersistingComponentStateSubscription>
         subscriptions = new();
 
-    public CompressedPersistentComponentState(PersistentComponentState persistentComponentState, IStateCompressor stateCompressor)
+    public CompressedPersistentComponentState(PersistentComponentState persistentComponentState,
+        IStateCompressor stateCompressor)
     {
         this.persistentComponentState = persistentComponentState;
         this.stateCompressor = stateCompressor;
     }
 
-    public void Dispose()
-    {
-        foreach (var subscription in subscriptions)
-        {
-            subscription.Dispose();
-        }
-
-        GC.SuppressFinalize(this);
-    }
-
-    public async Task PersistAsBytesAsync<T>(string key, T data)
+    public async Task PersistAsBytesAsync<T>(string key, T data) where T : notnull
     {
         var gzippedBytes = await stateCompressor.ToGzipAsync(data);
         persistentComponentState.PersistAsJson(key, gzippedBytes);
@@ -54,5 +41,15 @@ public class CompressedPersistentComponentState : ICompressedPersistentComponent
         var subscription = persistentComponentState.RegisterOnPersisting(callback);
         subscriptions.Add(subscription);
     }
+
+    public void Dispose()
+    {
+        foreach (var subscription in subscriptions)
+        {
+            subscription.Dispose();
+        }
+
+        GC.SuppressFinalize(this);
+    }
 }
-#endif
+

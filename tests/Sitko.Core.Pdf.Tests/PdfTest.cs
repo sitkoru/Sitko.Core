@@ -1,52 +1,50 @@
-using System.IO;
-using System.Threading.Tasks;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Sitko.Core.Pdf.Tests
+namespace Sitko.Core.Pdf.Tests;
+
+public class PdfTest : BasePdfTest
 {
-    public class PdfTest : BasePdfTest
+    public PdfTest(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
-        public PdfTest(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
-        {
-        }
+    }
 
-        [Fact]
-        public async Task Url()
-        {
-            var scope = await GetScopeAsync();
-            var renderer = scope.GetService<IPdfRenderer>();
+    [Fact]
+    public async Task Url()
+    {
+        var scope = await GetScopeAsync();
+        var renderer = scope.GetService<IPdfRenderer>();
 
-            var url = "https://github.com";
-            var bytes = await renderer.GetPdfByUrlAsync(url);
-            Assert.NotEmpty(bytes);
-            
-            using var pdf = new PdfDocument(new PdfReader(new MemoryStream(bytes)));
-            var text = PdfTextExtractor.GetTextFromPage(pdf.GetPage(1), new LocationTextExtractionStrategy());
-            pdf.Close();
+        var url = "https://github.com";
+        var bytes = await renderer.GetPdfByUrlAsync(url);
+        Assert.NotEmpty(bytes);
 
-            Assert.Contains("GitHub", text);
-        }
+        using var pdf = new PdfDocument(new PdfReader(new MemoryStream(bytes)));
+        var text = PdfTextExtractor.GetTextFromPage(pdf.GetPage(1), new LocationTextExtractionStrategy());
+        pdf.Close();
 
-        [Fact]
-        public async Task Pdf()
-        {
-            var scope = await GetScopeAsync();
-            var renderer = scope.GetService<IPdfRenderer>();
+        Assert.Contains("GitHub", text);
+    }
 
-            var html =
-                "<html lang=\"en\">\n<head>\n    <title>Title</title>\n</head>\n<body>\n<h1>Hello, World!</h1>\n</body>\n</html>";
-            var bytes = await renderer.GetPdfByHtmlAsync(html);
-            Assert.NotEmpty(bytes);
-            
-            using var pdf = new PdfDocument(new PdfReader(new MemoryStream(bytes)));
-            var text = PdfTextExtractor.GetTextFromPage(pdf.GetPage(1), new LocationTextExtractionStrategy());
-            pdf.Close();
+    [Fact]
+    public async Task Pdf()
+    {
+        var scope = await GetScopeAsync();
+        var renderer = scope.GetService<IPdfRenderer>();
 
-            Assert.Contains("Hello, World!", text);
-        }
+        var html =
+            "<html lang=\"en\">\n<head>\n    <title>Title</title>\n</head>\n<body>\n<h1>Hello, World!</h1>\n</body>\n</html>";
+        var bytes = await renderer.GetPdfByHtmlAsync(html);
+        Assert.NotEmpty(bytes);
+
+        using var pdf = new PdfDocument(new PdfReader(new MemoryStream(bytes)));
+        var text = PdfTextExtractor.GetTextFromPage(pdf.GetPage(1), new LocationTextExtractionStrategy());
+        pdf.Close();
+
+        Assert.Contains("Hello, World!", text);
     }
 }
+

@@ -1,6 +1,6 @@
-namespace Sitko.Core.Storage.S3.Tests
+namespace Sitko.Core.Storage.S3.Tests;
+
+public class TestS3StorageSettings : S3StorageOptions
 {
-    public class TestS3StorageSettings : S3StorageOptions
-    {
-    }
 }
+

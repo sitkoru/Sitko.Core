@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App;
@@ -11,10 +8,10 @@ public class ConsulWebModule : BaseApplicationModule<ConsulWebModuleOptions>
 {
     public override string OptionsKey => "Consul:Web";
 
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         ConsulWebModuleOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddSingleton<ConsulWebClient>();
         services.AddHealthChecks().AddCheck<ConsulWebHealthCheck>("Consul registration");
     }
@@ -36,6 +33,7 @@ public class ConsulWebModule : BaseApplicationModule<ConsulWebModuleOptions>
     }
 
     public override IEnumerable<Type>
-        GetRequiredModules(IApplicationContext context, ConsulWebModuleOptions options) =>
+        GetRequiredModules(IApplicationContext applicationContext, ConsulWebModuleOptions options) =>
         new[] { typeof(ConsulModule) };
 }
+

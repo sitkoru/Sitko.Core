@@ -1,8 +1,5 @@
-﻿using System.IO;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sitko.Core.Storage.Metadata;
@@ -44,11 +41,11 @@ public class S3StorageMetadataProvider<TStorageOptions> : EmbedStorageMetadataPr
         }
     }
 
-    protected override async Task<StorageItemMetadata?> DoGetMetadataJsonAsync(string filePath,
+    protected override async Task<StorageItemMetadata?> DoGetMetadataJsonAsync(string path,
         CancellationToken cancellationToken = default)
     {
         var metaDataResponse =
-            await Storage.DownloadFileAsync(GetMetaDataPath(filePath), cancellationToken);
+            await Storage.DownloadFileAsync(GetMetaDataPath(path), cancellationToken);
         if (metaDataResponse != null)
         {
             var json = await metaDataResponse.ResponseStream.DownloadStreamAsString(cancellationToken);
@@ -66,3 +63,4 @@ public class S3StorageMetadataModuleOptions<TStorageOptions> : EmbedStorageMetad
     where TStorageOptions : StorageOptions
 {
 }
+

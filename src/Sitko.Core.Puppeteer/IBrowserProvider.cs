@@ -1,9 +1,9 @@
-﻿using System.Threading.Tasks;
-using PuppeteerSharp;
+﻿using PuppeteerSharp;
 
 namespace Sitko.Core.Puppeteer;
 
 public interface IBrowserProvider
 {
-    Task<Browser> GetBrowserAsync();
+    Task<IBrowser> GetBrowserAsync();
 }
+

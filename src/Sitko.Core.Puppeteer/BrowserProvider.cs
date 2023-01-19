@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PuppeteerSharp;
 
@@ -23,7 +21,7 @@ public class BrowserProvider : IBrowserProvider
     private PuppeteerModuleOptions Options => optionsMonitor.CurrentValue;
 
 
-    public async Task<Browser> GetBrowserAsync()
+    public async Task<IBrowser> GetBrowserAsync()
     {
         if (!string.IsNullOrEmpty(Options.BrowserWsEndpoint))
         {
@@ -65,3 +63,4 @@ public class BrowserProvider : IBrowserProvider
             }, loggerFactory);
     }
 }
+

@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Globalization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -16,7 +16,8 @@ public interface IApplicationContext
     ApplicationOptions Options { get; }
     IConfiguration Configuration { get; }
     ILogger Logger { get; }
-    string EnvironmentName { get; }
+    string Environment { get; }
+    string AspNetEnvironmentName { get; }
     bool IsDevelopment();
     bool IsProduction();
 }
@@ -33,6 +34,7 @@ public abstract class BaseApplicationContext : IApplicationContext
         var loggerConfiguration = new LoggerConfiguration();
         loggerConfiguration
             .WriteTo.Console(outputTemplate: ApplicationOptions.BaseConsoleLogFormat,
+                formatProvider: CultureInfo.InvariantCulture,
                 restrictedToMinimumLevel: LogEventLevel.Debug);
         Logger = new SerilogLoggerFactory(loggerConfiguration.CreateLogger()).CreateLogger<IApplicationContext>();
     }
@@ -42,10 +44,11 @@ public abstract class BaseApplicationContext : IApplicationContext
     public Guid Id { get; } = Guid.NewGuid();
     public string Name => Options.Name;
     public string Version => Options.Version;
+    public string Environment => Options.Environment;
 
     public IConfiguration Configuration { get; }
     public ILogger Logger { get; }
-    public abstract string EnvironmentName { get; }
+    public abstract string AspNetEnvironmentName { get; }
     public abstract bool IsDevelopment();
 
     public abstract bool IsProduction();
@@ -69,6 +72,11 @@ public abstract class BaseApplicationContext : IApplicationContext
             applicationOptions.Version = application.GetType().Assembly.GetName().Version?.ToString() ?? "dev";
         }
 
+        if (string.IsNullOrEmpty(applicationOptions.Environment))
+        {
+            applicationOptions.Version = AspNetEnvironmentName;
+        }
+
         ConfigureApplicationOptions(applicationOptions);
         return applicationOptions;
     }
@@ -77,3 +85,4 @@ public abstract class BaseApplicationContext : IApplicationContext
     {
     }
 }
+

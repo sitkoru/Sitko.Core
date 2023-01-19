@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,7 +31,7 @@ public abstract class Application : IApplication, IAsyncDisposable
 
     protected Dictionary<string, LogEventLevel> LogEventLevels { get; } = new();
 
-    protected List<Action<IApplicationContext, LoggerConfiguration>>
+    protected List<Func<IApplicationContext, LoggerConfiguration, LoggerConfiguration>>
         LoggerConfigurationActions { get; } = new();
 
     protected List<Action<IApplicationContext, IServiceCollection>>
@@ -46,6 +42,7 @@ public abstract class Application : IApplication, IAsyncDisposable
     public static string OptionsKey => nameof(Application);
 
     public Guid Id { get; } = Guid.NewGuid();
+    public string Environment => GetApplicationOptions().Environment;
 
     public string Name => GetApplicationOptions().Name;
     public string Version => GetApplicationOptions().Version;
@@ -124,23 +121,25 @@ public abstract class Application : IApplication, IAsyncDisposable
         }
     }
 
-    protected virtual void ConfigureLogging(IApplicationContext applicationContext,
+    protected virtual LoggerConfiguration ConfigureLogging(IApplicationContext applicationContext,
         LoggerConfiguration loggerConfiguration)
     {
         foreach (var (key, value) in LogEventLevels)
         {
-            loggerConfiguration.MinimumLevel.Override(key, value);
+            loggerConfiguration = loggerConfiguration.MinimumLevel.Override(key, value);
         }
 
         foreach (var moduleRegistration in GetEnabledModuleRegistrations<ILoggingModule>(applicationContext))
         {
-            moduleRegistration.ConfigureLogging(applicationContext, loggerConfiguration);
+            loggerConfiguration = moduleRegistration.ConfigureLogging(applicationContext, loggerConfiguration);
         }
 
         foreach (var loggerConfigurationAction in LoggerConfigurationActions)
         {
-            loggerConfigurationAction(applicationContext, loggerConfiguration);
+            loggerConfiguration = loggerConfigurationAction(applicationContext, loggerConfiguration);
         }
+
+        return loggerConfiguration;
     }
 
     [PublicAPI]
@@ -162,13 +161,13 @@ public abstract class Application : IApplication, IAsyncDisposable
                     if (i == parts.Length - 1)
                     {
                         current[parts[i]] =
-                            JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(options));
+                            JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(options))!;
                     }
                     else
                     {
-                        if (current.ContainsKey(parts[i]))
+                        if (current.TryGetValue(parts[i], out var value))
                         {
-                            current = (Dictionary<string, object>)current[parts[i]];
+                            current = (Dictionary<string, object>)value;
                         }
                         else
                         {
@@ -379,9 +378,9 @@ public abstract class Application : IApplication, IAsyncDisposable
 
     public T Get<T>(string key)
     {
-        if (store.ContainsKey(key))
+        if (store.TryGetValue(key, out var value))
         {
-            return (T)store[key];
+            return (T)value;
         }
 
 #pragma warning disable 8603
@@ -395,7 +394,7 @@ public abstract class Application : IApplication, IAsyncDisposable
         return this;
     }
 
-    public Application ConfigureLogging(Action<IApplicationContext, LoggerConfiguration> configure)
+    public Application ConfigureLogging(Func<IApplicationContext, LoggerConfiguration, LoggerConfiguration> configure)
     {
         LoggerConfigurationActions.Add(configure);
         return this;
@@ -451,3 +450,4 @@ public abstract class Application : IApplication, IAsyncDisposable
             configureOptions?.Invoke(moduleOptions);
         }, optionsKey);
 }
+

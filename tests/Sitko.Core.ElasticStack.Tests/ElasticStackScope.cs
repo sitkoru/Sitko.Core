@@ -3,22 +3,22 @@ using Microsoft.Extensions.Hosting;
 using Sitko.Core.App.Web;
 using Sitko.Core.Xunit;
 
-namespace Sitko.Core.ElasticStack.Tests
+namespace Sitko.Core.ElasticStack.Tests;
+
+public class ElasticStackScope : BaseTestScope<ElasticApplication>
 {
-    public class ElasticStackScope : BaseTestScope<ElasticApplication>
-    {
-    }
+}
 
-    public class ElasticStartup : BaseStartup
+public class ElasticStartup : BaseStartup
+{
+    public ElasticStartup(IConfiguration configuration, IHostEnvironment environment) : base(configuration,
+        environment)
     {
-        public ElasticStartup(IConfiguration configuration, IHostEnvironment environment) : base(configuration,
-            environment)
-        {
-        }
-    }
-
-    public class ElasticApplication : WebApplication<ElasticStartup>
-    {
-        public ElasticApplication(string[] args) : base(args) => this.AddElasticStack();
     }
 }
+
+public class ElasticApplication : WebApplication<ElasticStartup>
+{
+    public ElasticApplication(string[] args) : base(args) => this.AddElasticStack();
+}
+

@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -15,7 +14,7 @@ public class LoggingExtensions
         configurationBuilder.AddLoggingConfiguration(serilogConfiguration, "Serilog");
 
     public static void ConfigureSerilog(IApplicationContext appContext, ILoggingBuilder builder,
-        SerilogConfiguration serilogConfiguration, Action<LoggerConfiguration> configureLogging)
+        SerilogConfiguration serilogConfiguration, Func<LoggerConfiguration, LoggerConfiguration> configureLogging)
     {
         builder.Services.AddSingleton<ISerilogConfiguration>(serilogConfiguration);
         builder.AddConfiguration(appContext.Configuration.GetSection("Logging"));
@@ -24,10 +23,11 @@ public class LoggingExtensions
         loggerConfiguration
             .Enrich.FromLogContext()
             .Enrich.WithProperty("App", appContext.Name)
-            .Enrich.WithProperty("AppVersion", appContext.Version);
+            .Enrich.WithProperty("AppVersion", appContext.Version)
+            .Enrich.WithProperty("AppEnvironment", appContext.Environment);
 
 
-        configureLogging(loggerConfiguration);
+        loggerConfiguration = configureLogging(loggerConfiguration);
 
 
         Log.Logger = loggerConfiguration.CreateLogger();
@@ -35,3 +35,4 @@ public class LoggingExtensions
         builder.AddSerilog();
     }
 }
+

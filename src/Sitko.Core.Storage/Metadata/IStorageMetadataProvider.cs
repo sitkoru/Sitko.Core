@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Runtime.CompilerServices;
 using Sitko.Core.App;
 using Sitko.Core.Storage.Internal;
 
@@ -48,3 +45,4 @@ public abstract class StorageMetadataModuleOptions<TStorageOptions> : BaseModule
     where TStorageOptions : StorageOptions
 {
 }
+

@@ -1,5 +1,3 @@
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.Xunit;
@@ -133,7 +131,7 @@ public class ChainFooMiddleware : BaseQueueMiddleware
     public ChainFooMiddleware(ChainState state) => this.state = state;
 
     public override Task<QueuePublishResult> PublishAsync<T>(T message, QueueMessageContext messageContext,
-        PublishAsyncDelegate<T>? callback = null)
+        Func<T, QueueMessageContext, Task<QueuePublishResult>>? callback = null)
     {
         state.AppendState("foo");
         return base.PublishAsync(message, messageContext, callback);
@@ -147,7 +145,7 @@ public class ChainBarMiddleware : BaseQueueMiddleware
     public ChainBarMiddleware(ChainState state) => this.state = state;
 
     public override Task<QueuePublishResult> PublishAsync<T>(T message, QueueMessageContext messageContext,
-        PublishAsyncDelegate<T>? callback = null)
+        Func<T, QueueMessageContext, Task<QueuePublishResult>>? callback = null)
     {
         state.AppendState("bar");
         return base.PublishAsync(message, messageContext, callback);
@@ -160,14 +158,14 @@ public class CountMiddleware : BaseQueueMiddleware
     public int Received { get; private set; }
 
     public override Task<QueuePublishResult> PublishAsync<T>(T message, QueueMessageContext messageContext,
-        PublishAsyncDelegate<T>? callback = null)
+        Func<T, QueueMessageContext, Task<QueuePublishResult>>? callback = null)
     {
         Published++;
         return base.PublishAsync(message, messageContext, callback);
     }
 
     public override async Task<bool> ReceiveAsync<T>(T message, QueueMessageContext messageContext,
-        ReceiveAsyncDelegate<T>? callback = null)
+        Func<T, QueueMessageContext, Task<bool>>? callback = null)
     {
         var result = await base.ReceiveAsync(message, messageContext, callback);
         if (result)
@@ -178,3 +176,4 @@ public class CountMiddleware : BaseQueueMiddleware
         return result;
     }
 }
+

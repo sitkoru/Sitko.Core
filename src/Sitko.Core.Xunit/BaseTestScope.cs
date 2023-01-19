@@ -1,6 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Globalization;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,7 +43,7 @@ public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
         scopeApplication.ConfigureAppConfiguration((applicationContext, builder) =>
         {
             builder.AddJsonFile("appsettings.json", true);
-            builder.AddJsonFile($"appsettings.{applicationContext.EnvironmentName}.json", true);
+            builder.AddJsonFile($"appsettings.{applicationContext.AspNetEnvironmentName}.json", true);
         });
 
         scopeApplication.ConfigureServices((context, services) =>
@@ -56,9 +54,11 @@ public abstract class BaseTestScope<TApplication, TConfig> : IBaseTestScope
 
         scopeApplication.ConfigureLogging((_, loggerConfiguration) =>
         {
-            loggerConfiguration.WriteTo.TestOutput(testOutputHelper,
+            loggerConfiguration = loggerConfiguration.WriteTo.TestOutput(testOutputHelper,
                 outputTemplate:
-                "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}{NewLine}---------{NewLine}{Properties:j}{NewLine}---------");
+                "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}{NewLine}---------{NewLine}{Properties:j}{NewLine}---------",
+                formatProvider: CultureInfo.InvariantCulture);
+            return loggerConfiguration;
         });
 
         scopeApplication = ConfigureApplication(scopeApplication, name);
@@ -161,3 +161,4 @@ public class TestApplication : HostedApplication
         configurationBuilder.AddEnvironmentVariables();
     }
 }
+

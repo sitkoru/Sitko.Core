@@ -1,59 +1,56 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using VaultSharp;
 using VaultSharp.V1.AuthMethods.Token;
 
-namespace Sitko.Core.Configuration.Vault
+namespace Sitko.Core.Configuration.Vault;
+
+public class VaultTokenRenewService : BackgroundService
 {
-    public class VaultTokenRenewService : BackgroundService
+    private readonly ILogger<VaultTokenRenewService> logger;
+    private readonly IOptionsMonitor<VaultConfigurationModuleOptions> optionsMonitor;
+
+    public VaultTokenRenewService(IOptionsMonitor<VaultConfigurationModuleOptions> optionsMonitor,
+        ILogger<VaultTokenRenewService> logger)
     {
-        private readonly IOptionsMonitor<VaultConfigurationModuleOptions> optionsMonitor;
-        private readonly ILogger<VaultTokenRenewService> logger;
+        this.optionsMonitor = optionsMonitor;
+        this.logger = logger;
+    }
 
-        public VaultTokenRenewService(IOptionsMonitor<VaultConfigurationModuleOptions> optionsMonitor,
-            ILogger<VaultTokenRenewService> logger)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        logger.LogInformation("Start vault token renew service");
+        while (!stoppingToken.IsCancellationRequested)
         {
-            this.optionsMonitor = optionsMonitor;
-            this.logger = logger;
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            logger.LogInformation("Start vault token renew service");
-            while (!stoppingToken.IsCancellationRequested)
+            await Task.Delay(TimeSpan.FromMinutes(optionsMonitor.CurrentValue.TokenRenewIntervalMinutes),
+                    stoppingToken)
+                .ConfigureAwait(false);
+            if (optionsMonitor.CurrentValue.RenewToken)
             {
-                await Task.Delay(TimeSpan.FromMinutes(optionsMonitor.CurrentValue.TokenRenewIntervalMinutes),
-                        stoppingToken)
-                    .ConfigureAwait(false);
-                if (optionsMonitor.CurrentValue.RenewToken)
+                logger.LogInformation("Renew vault token");
+                try
                 {
-                    logger.LogInformation("Renew vault token");
-                    try
-                    {
-                        var authMethod = new TokenAuthMethodInfo(optionsMonitor.CurrentValue.Token);
-                        var vaultClientSettings = new VaultClientSettings(optionsMonitor.CurrentValue.Uri, authMethod);
-                        var vaultClient = new VaultClient(vaultClientSettings);
+                    var authMethod = new TokenAuthMethodInfo(optionsMonitor.CurrentValue.Token);
+                    var vaultClientSettings = new VaultClientSettings(optionsMonitor.CurrentValue.Uri, authMethod);
+                    var vaultClient = new VaultClient(vaultClientSettings);
 
-                        var result = await vaultClient.V1.Auth.Token.RenewSelfAsync().ConfigureAwait(false);
-                        logger.LogInformation("Token renewed. {IsRenewable}. {LeaseDuration}", result.Renewable,
-                            result.LeaseDurationSeconds);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(ex, "Error renewing vault token: {ErrorText}", ex.ToString());
-                    }
+                    var result = await vaultClient.V1.Auth.Token.RenewSelfAsync().ConfigureAwait(false);
+                    logger.LogInformation("Token renewed. {IsRenewable}. {LeaseDuration}", result.Renewable,
+                        result.LeaseDurationSeconds);
                 }
-                else
+                catch (Exception ex)
                 {
-                    logger.LogInformation("Vault token renew disabled");
+                    logger.LogError(ex, "Error renewing vault token: {ErrorText}", ex.ToString());
                 }
             }
-
-            logger.LogInformation("Stop vault token renew service");
+            else
+            {
+                logger.LogInformation("Vault token renew disabled");
+            }
         }
+
+        logger.LogInformation("Stop vault token renew service");
     }
 }
+

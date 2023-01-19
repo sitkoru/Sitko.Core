@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -20,10 +17,10 @@ public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOpti
     where TResolver : class, IGrpcServiceAddressResolver<TClient>
     where TGrpcClientModuleOptions : GrpcClientModuleOptions<TClient>, new()
 {
-    public override void ConfigureServices(IApplicationContext context, IServiceCollection services,
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TGrpcClientModuleOptions startupOptions)
     {
-        base.ConfigureServices(context, services, startupOptions);
+        base.ConfigureServices(applicationContext, services, startupOptions);
         if (startupOptions.EnableHttp2UnencryptedSupport)
         {
             AppContext.SetSwitch(
@@ -44,9 +41,9 @@ public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOpti
             .AddCheck<GrpcClientHealthCheck<TClient>>($"GRPC Client check: {typeof(TClient)}");
     }
 
-    public override async Task InitAsync(IApplicationContext context, IServiceProvider serviceProvider)
+    public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider)
     {
-        await base.InitAsync(context, serviceProvider);
+        await base.InitAsync(applicationContext, serviceProvider);
         var resolver = serviceProvider.GetRequiredService<IGrpcServiceAddressResolver<TClient>>();
         await resolver.InitAsync();
     }
@@ -54,3 +51,4 @@ public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOpti
     protected virtual void RegisterResolver(IServiceCollection services, TGrpcClientModuleOptions config) =>
         services.AddSingleton<IGrpcServiceAddressResolver<TClient>, TResolver>();
 }
+

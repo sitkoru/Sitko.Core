@@ -34,10 +34,10 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
         }
     }
 
-    public async Task<TEntity?> GetAsync<TEntity>(RemoteRepositoryQuery<TEntity> configureQuery,
+    public async Task<TEntity?> GetAsync<TEntity>(RemoteRepositoryQuery<TEntity> query,
         CancellationToken cancellationToken = default) where TEntity : class
     {
-        var serialized = configureQuery.Serialize();
+        var serialized = query.Serialize();
         return await PostRequestAsync<SerializedQueryData, TEntity?>($"/{typeof(TEntity).Name}" + "/Get",
             serialized.Data, cancellationToken);
     }
@@ -59,22 +59,24 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
             $"/{typeof(TEntity).Name}" + "/Sum?type=" + type, serialized.Data, cancellationToken);
     }
 
-    public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddAsync<TEntity, TEntityPk>(TEntity entity,
-        CancellationToken cancellationToken = default) where TEntity : class, IEntity<TEntityPk> =>
+    public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>?> AddAsync<TEntity, TEntityPk>(TEntity entity,
+        CancellationToken cancellationToken = default)
+        where TEntity : class, IEntity<TEntityPk> where TEntityPk : notnull =>
         await PostRequestAsync<TEntity, AddOrUpdateOperationResult<TEntity, TEntityPk>>(
             $"/{typeof(TEntity).Name}" + "/Add", entity, cancellationToken);
 
-    public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> AddAsync<TEntity, TEntityPk>(
+    public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]?> AddAsync<TEntity, TEntityPk>(
         IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity<TEntityPk> =>
+        where TEntity : class, IEntity<TEntityPk> where TEntityPk : notnull =>
         await PostRequestAsync<IEnumerable<TEntity>, AddOrUpdateOperationResult<TEntity, TEntityPk>[]>(
             $"/{typeof(TEntity).Name}" + "/Add", entities, cancellationToken);
 
-    public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync<TEntity, TEntityPk>(TEntity entity,
+    public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>?> UpdateAsync<TEntity, TEntityPk>(TEntity entity,
         TEntity? oldEntity,
         CancellationToken cancellationToken = default) where TEntity : class, IEntity<TEntityPk>
+        where TEntityPk : notnull
     {
-        var jsonEntity = new UpdateModel<TEntity> { Entity = entity, OldEntity = oldEntity };
+        var jsonEntity = new UpdateModel<TEntity>(entity, oldEntity);
         return await PostRequestAsync<UpdateModel<TEntity>, AddOrUpdateOperationResult<TEntity, TEntityPk>>(
             $"/{typeof(TEntity).Name}" + "/Update", jsonEntity, cancellationToken);
     }
@@ -100,7 +102,7 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
     private async Task<TResponse?> PostRequestAsync<TRequest, TResponse>(string url, TRequest request,
         CancellationToken cancellationToken)
     {
-        var requestJson = JsonHelper.SerializeWithMetadata(request);
+        var requestJson = JsonHelper.SerializeWithMetadata(request!);
         var content = new StringContent(requestJson, Encoding.UTF8, "application/json");
         var result = await HttpClient.PostAsync(HttpClient.BaseAddress + url, content, cancellationToken);
         if (!result.IsSuccessStatusCode)
@@ -122,22 +124,15 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
         return JsonHelper.DeserializeWithMetadata<TResponse>(response);
     }
 
-    private async Task<string> ReadResponseAsync(HttpResponseMessage responseMessage,
+    private static async Task<string> ReadResponseAsync(HttpResponseMessage responseMessage,
         CancellationToken cancellationToken)
     {
-#if NET6_0_OR_GREATER
         var responseJson = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
-#else
-        var responseJson = await responseMessage.Content.ReadAsStringAsync();
-#endif
         return responseJson;
     }
 }
 
-public class UpdateModel<TEntity> where TEntity : class
-{
-    public TEntity Entity { get; set; }
-    public TEntity? OldEntity { get; set; }
-}
+public record UpdateModel<TEntity>(TEntity Entity, TEntity? OldEntity) where TEntity : class;
 
 public record ListResult<TEntity>(TEntity[] Items, int ItemsCount);
+

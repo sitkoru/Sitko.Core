@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using JetBrains.Annotations;
 
@@ -18,7 +17,7 @@ public class StorageItemRecord
         Storage = storage;
         FilePath = storageItem.FilePath;
         FileSize = storageItem.FileSize;
-        FileName = storageItem.FileName!;
+        FileName = storageItem.FileName;
         MimeType = storageItem.MimeType;
         LastModified = storageItem.LastModified;
         Path = storageItem.Path;
@@ -44,3 +43,4 @@ public class StorageItemRecord
         FileName = Metadata?.FileName ?? FileName
     };
 }
+

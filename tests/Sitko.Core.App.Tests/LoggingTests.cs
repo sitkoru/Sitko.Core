@@ -1,33 +1,32 @@
-﻿using System.Threading.Tasks;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Serilog.Context;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Sitko.Core.App.Tests
-{
-    public class LoggingTests : BaseTest<LoggingTestScope>
-    {
-        public LoggingTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
-        {
-        }
+namespace Sitko.Core.App.Tests;
 
-        [Fact]
-        public async Task Log()
-        {
-            var scope = await GetScopeAsync();
-            var logger = scope.GetLogger<LoggingTests>();
-            using (LogContext.PushProperty("Test","123"))
-            {
-                logger.LogInformation("Test");
-            }
-        }
+public class LoggingTests : BaseTest<LoggingTestScope>
+{
+    public LoggingTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+    {
     }
 
-    [UsedImplicitly]
-    public class LoggingTestScope : BaseTestScope
+    [Fact]
+    public async Task Log()
     {
+        var scope = await GetScopeAsync();
+        var logger = scope.GetLogger<LoggingTests>();
+        using (LogContext.PushProperty("Test", "123"))
+        {
+            logger.LogInformation("Test");
+        }
     }
 }
+
+[UsedImplicitly]
+public class LoggingTestScope : BaseTestScope
+{
+}
+

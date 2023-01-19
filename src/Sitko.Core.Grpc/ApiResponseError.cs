@@ -1,7 +1,7 @@
-namespace Sitko.Core.Grpc
+namespace Sitko.Core.Grpc;
+
+public partial class ApiResponseError
 {
-    public partial class ApiResponseError
-    {
-        public string ErrorsString => $"Code: {Code}. Errors: {string.Join(". ", Errors)}";
-    }
+    public string ErrorsString => $"Code: {Code}. Errors: {string.Join(". ", Errors)}";
 }
+

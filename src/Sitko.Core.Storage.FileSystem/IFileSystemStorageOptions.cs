@@ -1,7 +1,7 @@
-namespace Sitko.Core.Storage.FileSystem
+namespace Sitko.Core.Storage.FileSystem;
+
+public interface IFileSystemStorageOptions
 {
-    public interface IFileSystemStorageOptions
-    {
-        string StoragePath { get; }
-    }
+    string StoragePath { get; }
 }
+

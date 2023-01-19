@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Blazor.Components;
@@ -141,3 +136,4 @@ public abstract class BaseFileInputComponent<TUploadResult, TValue> : InputBase<
         return false;
     }
 }
+

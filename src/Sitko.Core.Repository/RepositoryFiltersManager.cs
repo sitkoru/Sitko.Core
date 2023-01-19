@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using FluentValidation.Results;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,7 +13,7 @@ public class RepositoryFiltersManager
     public async Task<bool> BeforeValidateAsync<T, TEntityPk>(T item,
         (bool isValid, IList<ValidationFailure> errors) validationResult,
         bool isNew, CancellationToken cancellationToken = default)
-        where T : class, IEntity<TEntityPk>
+        where T : class, IEntity<TEntityPk> where TEntityPk : notnull
     {
         var result = true;
         var filters = serviceProvider.GetServices<IRepositoryFilter>().ToArray();
@@ -44,7 +39,7 @@ public class RepositoryFiltersManager
         (bool isValid, IList<ValidationFailure> errors) validationResult,
         bool isNew,
         CancellationToken cancellationToken = default)
-        where T : class, IEntity<TEntityPk>
+        where T : class, IEntity<TEntityPk> where TEntityPk : notnull
     {
         var result = true;
         var filters = serviceProvider.GetServices<IRepositoryFilter>().ToArray();
@@ -67,7 +62,7 @@ public class RepositoryFiltersManager
 
     public async Task<bool> AfterSaveAsync<T, TEntityPk>(T item, bool isNew, PropertyChange[]? changes = null,
         CancellationToken cancellationToken = default)
-        where T : class, IEntity<TEntityPk>
+        where T : class, IEntity<TEntityPk> where TEntityPk : notnull
     {
         var result = true;
         var filters = serviceProvider.GetServices<IRepositoryFilter>().ToArray();
@@ -88,3 +83,4 @@ public class RepositoryFiltersManager
         return result;
     }
 }
+

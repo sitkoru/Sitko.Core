@@ -1,10 +1,6 @@
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Threading.Tasks;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -28,7 +24,7 @@ public class NatsQueue : BaseQueue<NatsQueueModuleOptions>
 
     private readonly MethodInfo deserializeBinaryMethod =
         typeof(NatsQueue).GetMethod(nameof(DeserializeBinaryPayload),
-            BindingFlags.NonPublic | BindingFlags.Instance)!;
+            BindingFlags.NonPublic | BindingFlags.Static)!;
 
     private readonly ConcurrentDictionary<Guid, IAsyncSubscription> natsSubscriptions = new();
 
@@ -58,7 +54,7 @@ public class NatsQueue : BaseQueue<NatsQueueModuleOptions>
 
     private string GetQueueName<T>(T message) where T : class
     {
-        var queueName = message.GetType().FullName;
+        var queueName = message.GetType().FullName!;
         if (message is IMessage protoMessage)
         {
             queueName = protoMessage.Descriptor.FullName;
@@ -121,14 +117,15 @@ public class NatsQueue : BaseQueue<NatsQueueModuleOptions>
     }
 
     protected override Task<QueueSubscribeResult> DoReplyAsync<TMessage, TResponse>(
-        Func<TMessage, QueueMessageContext, PublishAsyncDelegate<TResponse>, Task<bool>> callback)
+        Func<TMessage, QueueMessageContext, Func<TResponse, QueueMessageContext, Task<QueuePublishResult>>, Task<bool>>
+            callback)
     {
         var clientId = $"nats_request_{Guid.NewGuid()}";
         var conn = CreateNatsConnection(clientId);
         var deserializer = GetPayloadDeserializer<TMessage>();
         if (deserializer == null)
         {
-            throw new Exception($"Empty deserialize method for {typeof(TMessage)}");
+            throw new InvalidOperationException($"Empty deserialize method for {typeof(TMessage)}");
         }
 
         var queue = GetQueueName<TMessage>();
@@ -172,7 +169,7 @@ public class NatsQueue : BaseQueue<NatsQueueModuleOptions>
         return Task.FromResult(false);
     }
 
-    private byte[] SerializePayload<T>(T message, QueueMessageContext context) where T : class
+    private static byte[] SerializePayload<T>(T message, QueueMessageContext context) where T : class
     {
         var contextMsg = new QueueContextMsg
         {
@@ -214,7 +211,7 @@ public class NatsQueue : BaseQueue<NatsQueueModuleOptions>
     }
 
 
-    private QueueMessageContext DeserializeContext(QueueContextMsg contextMsg)
+    private static QueueMessageContext DeserializeContext(QueueContextMsg contextMsg)
     {
         var context = new QueueMessageContext
         {
@@ -303,7 +300,7 @@ public class NatsQueue : BaseQueue<NatsQueueModuleOptions>
         var deserializer = GetPayloadDeserializer<T>();
         if (deserializer == null)
         {
-            throw new Exception($"Empty deserialize method for {typeof(T)}");
+            throw new InvalidOperationException($"Empty deserialize method for {typeof(T)}");
         }
 
         IStanSubscription sub;
@@ -358,11 +355,14 @@ public class NatsQueue : BaseQueue<NatsQueueModuleOptions>
             var processMethod = deserializeBinaryMethod.MakeGenericMethod(typeof(T));
             if (processMethod == null)
             {
-                throw new Exception($"Can't create generic deserialize method for {typeof(T)}");
+                throw new InvalidOperationException($"Can't create generic deserialize method for {typeof(T)}");
             }
 
             deserializer = bytes =>
-                ((T message, QueueMessageContext messageContext))processMethod.Invoke(this, new object[] { bytes });
+            {
+                return ((T message, QueueMessageContext messageContext))(processMethod.Invoke(this,
+                    new object[] { bytes }) ?? throw new InvalidOperationException("Can't deserialize queue message"));
+            };
         }
         else
         {
@@ -372,14 +372,15 @@ public class NatsQueue : BaseQueue<NatsQueueModuleOptions>
         return deserializer;
     }
 
-    private (T message, QueueMessageContext messageContext) DeserializeJsonPayload<T>(byte[] data) where T : class
+    private static (T message, QueueMessageContext messageContext) DeserializeJsonPayload<T>(byte[] data)
+        where T : class
     {
         var jsonMsg = new QueueJsonMsg();
         jsonMsg.MergeFrom(data);
         return (JsonConvert.DeserializeObject<T>(jsonMsg.Data), DeserializeContext(jsonMsg.Context))!;
     }
 
-    private (T message, QueueMessageContext messageContext) DeserializeBinaryPayload<T>(byte[] data)
+    private static (T message, QueueMessageContext messageContext) DeserializeBinaryPayload<T>(byte[] data)
         where T : class, IMessage, new()
     {
         var binaryMsg = new QueueBinaryMsg();
@@ -513,7 +514,7 @@ public class NatsQueue : BaseQueue<NatsQueueModuleOptions>
     {
         if (natsConn.State != ConnState.CONNECTED)
         {
-            throw new Exception("nats conn is not connected");
+            throw new InvalidOperationException("nats conn is not connected");
         }
 
         try
@@ -539,7 +540,7 @@ public class NatsQueue : BaseQueue<NatsQueueModuleOptions>
                 return stanConnection;
             }
 
-            throw new Exception("nats conn is not connected");
+            throw new InvalidOperationException("nats conn is not connected");
         }
         catch (Exception ex)
         {
@@ -639,7 +640,7 @@ public class NatsQueue : BaseQueue<NatsQueueModuleOptions>
                     }
                     else
                     {
-                        throw new Exception($"Can't resolve ip for host {server.Port}");
+                        throw new InvalidOperationException($"Can't resolve ip for host {server.Port}");
                     }
                 }
             }
@@ -662,3 +663,4 @@ public class NatsQueue : BaseQueue<NatsQueueModuleOptions>
         return opts;
     }
 }
+

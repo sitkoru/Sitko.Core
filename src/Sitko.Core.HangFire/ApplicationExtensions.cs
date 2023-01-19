@@ -1,5 +1,4 @@
-﻿using System;
-using Sitko.Core.App;
+﻿using Sitko.Core.App;
 
 namespace Sitko.Core.HangFire;
 
@@ -17,3 +16,4 @@ public static class ApplicationExtensions
         application.AddModule<HangfireModule<HangfirePostgresModuleOptions>, HangfirePostgresModuleOptions>(
             configure, optionsKey);
 }
+

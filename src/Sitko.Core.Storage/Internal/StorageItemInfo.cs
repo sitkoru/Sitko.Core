@@ -1,5 +1,4 @@
-﻿using System;
-using Sitko.Core.Storage.Metadata;
+﻿using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.Internal;
 
@@ -8,3 +7,4 @@ public record StorageItemInfo(string Path, long FileSize, DateTimeOffset Date, S
     public StorageItem GetStorageItem(StorageItemMetadata? storageItemMetadata = null) =>
         new(Path, storageItemMetadata ?? Metadata) { FileSize = FileSize, LastModified = Date };
 }
+

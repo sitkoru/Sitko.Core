@@ -22,7 +22,7 @@ public class FilterTests
         var group = new QueryContextConditionsGroup(
             new QueryContextCondition("test", QueryContextOperator.Equal, "123"));
         var request = new TestRequest();
-        request.SetFilter(group);
+        request.RequestInfo.SetFilter(group);
 
         CheckFilter(request, new[] { group });
     }
@@ -36,7 +36,7 @@ public class FilterTests
             new QueryContextConditionsGroup(new QueryContextCondition("test", QueryContextOperator.NotEqual, "456"))
         };
         var request = new TestRequest();
-        request.SetFilter(groups);
+        request.RequestInfo.SetFilter(groups);
 
         CheckFilter(request, groups);
     }
@@ -46,7 +46,7 @@ public class FilterTests
     {
         var condition = new QueryContextCondition("test", QueryContextOperator.Equal, "123");
         var request = new TestRequest();
-        request.SetFilter(condition);
+        request.RequestInfo.SetFilter(condition);
 
         CheckFilter(request, new[] { new QueryContextConditionsGroup(condition) });
     }
@@ -55,7 +55,7 @@ public class FilterTests
     public void SetConditionSimple()
     {
         var request = new TestRequest();
-        request.SetFilter("test", QueryContextOperator.Equal, "123");
+        request.RequestInfo.SetFilter("test", QueryContextOperator.Equal, "123");
 
         CheckFilter(request,
             new[]
@@ -74,7 +74,7 @@ public class FilterTests
     }
 }
 
-public class TestRequest : IGrpcRequest
+public class TestRequest
 {
-    public ApiRequestInfo RequestInfo { get; set; }
+    public ApiRequestInfo RequestInfo { get; set; } = new();
 }
