@@ -101,6 +101,7 @@ jobs:
     env:
       DB__POSTGRES__TESTDBCONTEXT__HOST: postgres
       DB__POSTGRES__SECONDTESTDBCONTEXT__HOST: postgres
+      DB__POSTGRES__TPHDBCONTEXT__HOST: postgres
       TESTS__USEPOSTGRES: "true"
     services:
       postgres:
