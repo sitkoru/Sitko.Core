@@ -18,7 +18,7 @@
     <PackageVersion Include="ImgProxy" Version="2.2.0"/>
     <PackageVersion Include="Nito.AsyncEx" Version="5.1.2"/>
     <PackageVersion Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.0.0"/>
-    <PackageVersion Include="PuppeteerSharp" Version="8.0.0"/>
+    <PackageVersion Include="PuppeteerSharp" Version="9.0.1"/>
     <PackageVersion Include="NATS.Client" Version="1.0.2"/>
     <PackageVersion Include="STAN.Client" Version="0.3.0"/>
     <PackageVersion Include="System.Linq.Dynamic.Core" Version="1.2.24"/>
