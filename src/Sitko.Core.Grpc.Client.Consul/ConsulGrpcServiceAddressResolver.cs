@@ -90,7 +90,7 @@ public class ConsulGrpcServiceAddressResolver<TClient> : IGrpcServiceAddressReso
             if (serviceResponse.Response.Any())
             {
                 var services = serviceResponse.Response.Where(catalogService =>
-                    catalogService.ServiceMeta.TryGetValue("Environment", out var env) ||
+                    !catalogService.ServiceMeta.TryGetValue("Environment", out var env) ||
                     env == applicationContext.Environment).ToList();
                 if (!services.Any())
                 {
