@@ -1,3 +1,4 @@
+using Duende.AccessTokenManagement.OpenIdConnect;
 using FluentValidation;
 using IdentityModel;
 using Sitko.Core.Auth.IdentityServer.Tokens;
@@ -16,8 +17,8 @@ public class OidcIdentityServerModuleOptions : IdentityServerAuthOptions
     public override bool RequiresCookie => true;
     public override string SignInScheme => "Cookies";
     public override string ChallengeScheme => "oidc";
-    public bool AutoRefreshTokens { get; set; } = true;
-    public Action<AutomaticTokenManagementOptions>? ConfigureAutoRefreshTokens { get; set; }
+    public TokenStoreType TokenStoreType { get; set; } = TokenStoreType.None;
+    public Action<UserTokenManagementOptions>? ConfigureUserTokenManagement { get; set; }
 }
 
 public class OidcAuthOptionsValidator : IdentityServerAuthOptionsValidator<OidcIdentityServerModuleOptions>
@@ -26,10 +27,10 @@ public class OidcAuthOptionsValidator : IdentityServerAuthOptionsValidator<OidcI
     {
         RuleFor(o => o.OidcClientId).NotEmpty().WithMessage("Oidc client id can't be empty");
         RuleFor(o => o.OidcClientSecret).NotEmpty().WithMessage("Oidc client secret can't be empty");
-        RuleFor(o => o.RedisHost).NotEmpty().When(o => o.EnableRedisDataProtection)
-            .WithMessage("Redis host can't be empty when Redis Data protection enabled");
-        RuleFor(o => o.RedisPort).GreaterThan(0).When(o => o.EnableRedisDataProtection)
-            .WithMessage("Redis port can't be empty when Redis Data protection enabled");
+        RuleFor(o => o.RedisHost).NotEmpty().When(o => o.TokenStoreType == TokenStoreType.Redis)
+            .WithMessage("Redis host can't be empty when TokenStore configure to redis");
+        RuleFor(o => o.RedisPort).GreaterThan(0).When(o => o.TokenStoreType == TokenStoreType.Redis)
+            .WithMessage("Redis port can't be empty when TokenStore configure to redis");
     }
 }
 
