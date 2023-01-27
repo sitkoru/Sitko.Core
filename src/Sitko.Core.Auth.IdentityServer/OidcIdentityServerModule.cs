@@ -1,7 +1,9 @@
+using Duende.AccessTokenManagement.OpenIdConnect;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
+using Sitko.Core.App;
 using Sitko.Core.Auth.IdentityServer.Tokens;
 
 namespace Sitko.Core.Auth.IdentityServer;
@@ -11,8 +13,7 @@ public class OidcIdentityServerModule : IdentityServerModule<OidcIdentityServerM
     public override string OptionsKey => "Auth:IdentityServer:Oidc";
 
     protected override void ConfigureAuthentication(AuthenticationBuilder authenticationBuilder,
-        OidcIdentityServerModuleOptions startupOptions)
-    {
+        OidcIdentityServerModuleOptions startupOptions) =>
         authenticationBuilder.AddOpenIdConnect(startupOptions.ChallengeScheme, options =>
         {
             options.SignInScheme = startupOptions.SignInScheme;
@@ -36,23 +37,42 @@ public class OidcIdentityServerModule : IdentityServerModule<OidcIdentityServerM
                     options.Scope.Add(scope);
                 }
             }
-        });
-        if (startupOptions.AutoRefreshTokens)
-        {
-            authenticationBuilder.AddAutomaticTokenManagement(options =>
+
+            if (startupOptions.TokenStoreType != TokenStoreType.None)
             {
-                startupOptions.ConfigureAutoRefreshTokens?.Invoke(options);
-            });
-        }
-    }
+                options.EventsType = typeof(OidcEvents);
+            }
+        });
 
     protected override void ConfigureCookieOptions(CookieAuthenticationOptions options,
         OidcIdentityServerModuleOptions moduleOptions)
     {
         base.ConfigureCookieOptions(options, moduleOptions);
-        if (moduleOptions.AutoRefreshTokens)
+        if (moduleOptions.TokenStoreType != TokenStoreType.None)
         {
-            options.EventsType = typeof(AutomaticTokenManagementCookieEvents);
+            options.Events.OnSigningOut = async e => { await e.HttpContext.RevokeRefreshTokenAsync(); };
+        }
+    }
+
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
+        OidcIdentityServerModuleOptions startupOptions)
+    {
+        base.ConfigureServices(applicationContext, services, startupOptions);
+        if (startupOptions.TokenStoreType != TokenStoreType.None)
+        {
+            services.AddOpenIdConnectAccessTokenManagement(options =>
+            {
+                startupOptions.ConfigureUserTokenManagement?.Invoke(options);
+            });
+            services.AddTransient<OidcEvents>();
+            if (startupOptions.TokenStoreType == TokenStoreType.Redis)
+            {
+                services.AddSingleton<IUserTokenStore, RedisTokenStore>();
+            }
+            else if (startupOptions.TokenStoreType == TokenStoreType.InMemory)
+            {
+                services.AddSingleton<IUserTokenStore, InMemoryTokenStore>();
+            }
         }
     }
 }
