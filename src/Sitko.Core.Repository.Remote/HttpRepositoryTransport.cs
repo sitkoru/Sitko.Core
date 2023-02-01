@@ -38,15 +38,16 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
         CancellationToken cancellationToken = default) where TEntity : class
     {
         var serialized = query.Serialize();
-        return await PostRequestAsync<SerializedQueryData, TEntity?>($"/{typeof(TEntity).Name}" + "/Get",
-            serialized.Data, cancellationToken);
+        return await PostRequestAsync<SerializedQueryDataRequest, TEntity?>($"/{typeof(TEntity).Name}" + "/Get",
+            new SerializedQueryDataRequest(JsonHelper.SerializeWithMetadata(serialized.Data)), cancellationToken);
     }
 
     public async Task<int> CountAsync<TEntity>(RemoteRepositoryQuery<TEntity> configureQuery,
         CancellationToken cancellationToken = default) where TEntity : class
     {
         var serialized = configureQuery.Serialize();
-        return await PostRequestAsync<SerializedQueryData, int>($"/{typeof(TEntity).Name}" + "/Count", serialized.Data,
+        return await PostRequestAsync<SerializedQueryDataRequest, int>($"/{typeof(TEntity).Name}" + "/Count",
+            new SerializedQueryDataRequest(JsonHelper.SerializeWithMetadata(serialized.Data)),
             cancellationToken);
     }
 
@@ -55,8 +56,9 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
         CancellationToken cancellationToken = default) where TEntity : class where TReturn : struct
     {
         var serialized = configureQuery.Serialize();
-        return await PostRequestAsync<SerializedQueryData, TReturn>(
-            $"/{typeof(TEntity).Name}" + "/Sum?type=" + type, serialized.Data, cancellationToken);
+        return await PostRequestAsync<SerializedQueryDataRequest, TReturn>(
+            $"/{typeof(TEntity).Name}" + "/Sum?type=" + type,
+            new SerializedQueryDataRequest(JsonHelper.SerializeWithMetadata(serialized.Data)), cancellationToken);
     }
 
     public async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>?> AddAsync<TEntity, TEntityPk>(TEntity entity,
@@ -89,8 +91,9 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
         CancellationToken cancellationToken = default) where TEntity : class
     {
         var serialized = query.Serialize();
-        var result = await PostRequestAsync<SerializedQueryData, ListResult<TEntity>>(
-            $"/{typeof(TEntity).Name}" + "/GetAll", serialized.Data, cancellationToken);
+        var result = await PostRequestAsync<SerializedQueryDataRequest, ListResult<TEntity>>(
+            $"/{typeof(TEntity).Name}" + "/GetAll",
+            new SerializedQueryDataRequest(JsonHelper.SerializeWithMetadata(serialized.Data)), cancellationToken);
         if (result is null)
         {
             return (Array.Empty<TEntity>(), 0);
@@ -135,4 +138,3 @@ public class HttpRepositoryTransport : IRemoteRepositoryTransport
 public record UpdateModel<TEntity>(TEntity Entity, TEntity? OldEntity) where TEntity : class;
 
 public record ListResult<TEntity>(TEntity[] Items, int ItemsCount);
-

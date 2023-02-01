@@ -22,12 +22,12 @@ public class BaseRemoteRepositoryController<TEntity, TEntityPK> : Controller
 
 
     [HttpPost("GetAll")]
-    public async Task<IActionResult> GetAllAsync([FromBody] SerializedQueryData queryData)
+    public async Task<IActionResult> GetAllAsync([FromBody] SerializedQueryDataRequest queryData)
     {
         try
         {
             var result = await repository.GetAllAsync(repositoryQuery =>
-                new SerializedQuery<TEntity>(queryData).Apply(repositoryQuery));
+                new SerializedQuery<TEntity>(queryData.Data).Apply(repositoryQuery));
             return Ok(JsonHelper.SerializeWithMetadata(new ListResult<TEntity>(result.items, result.itemsCount)));
         }
         catch (Exception ex)
@@ -37,10 +37,11 @@ public class BaseRemoteRepositoryController<TEntity, TEntityPK> : Controller
     }
 
     [HttpPost("Get")]
-    public async Task<IActionResult> GetAsync([FromBody] SerializedQueryData queryData)
+    public async Task<IActionResult> GetAsync([FromBody] SerializedQueryDataRequest queryDataJson)
     {
         try
         {
+            var queryData = queryDataJson.Data;
             var result = await repository.GetAsync(repositoryQuery =>
                 new SerializedQuery<TEntity>(queryData).Apply(repositoryQuery));
             if (result is null)
@@ -173,11 +174,11 @@ public class BaseRemoteRepositoryController<TEntity, TEntityPK> : Controller
     }
 
     [HttpPost("Sum")]
-    public async Task<IActionResult> SumAsync([FromBody] SerializedQueryData queryData, SumType type)
+    public async Task<IActionResult> SumAsync([FromBody] SerializedQueryDataRequest queryData, SumType type)
     {
         try
         {
-            var query = new SerializedQuery<TEntity>(queryData);
+            var query = new SerializedQuery<TEntity>(queryData.Data);
             object result = type switch
             {
                 SumType.TypeInt => await repository.SumAsync(q => query.Apply(q), query.SelectExpression<int>()),
@@ -211,4 +212,3 @@ public class BaseRemoteRepositoryController<TEntity, TEntityPK> : Controller
         }
     }
 }
-
