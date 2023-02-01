@@ -5,31 +5,37 @@ using Remote.Linq.Newtonsoft.Json;
 
 namespace Sitko.Core.Repository.Remote;
 
-public record SerializedQuery<TEntity> where TEntity : class
+public class ExpressionSerializer
 {
     private readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings().ConfigureRemoteLinq();
+
+    public string Serialize(Expression expression) =>
+        JsonConvert.SerializeObject(expression.ToRemoteLinqExpression(), serializerSettings);
+
+    public T Deserialize<T>(string json) where T : Expression
+    {
+        var exp = JsonConvert.DeserializeObject<global::Remote.Linq.Expressions.Expression>(json, serializerSettings)!;
+        return (T)exp.ToLinqExpression();
+    }
+}
+
+public record SerializedQuery<TEntity> where TEntity : class
+{
+    private readonly ExpressionSerializer serializer = new();
 
     public SerializedQuery(SerializedQueryData? data = null) => Data = data ?? new SerializedQueryData();
 
     public SerializedQueryData Data { get; }
 
-    private string Serialize(Expression expression) =>
-        JsonConvert.SerializeObject(expression.ToRemoteLinqExpression(), serializerSettings);
-
-    private T Deserialize<T>(string json) where T : Expression
-    {
-        var exp = JsonConvert.DeserializeObject<global::Remote.Linq.Expressions.Expression>(json, serializerSettings)!;
-        return (T)exp.ToLinqExpression();
-    }
 
     public Expression<Func<TEntity, TValue>> SelectExpression<TValue>() => Data.SelectExpressionString is null
         ? throw new InvalidOperationException("Empty select expression")
-        : Deserialize<Expression<Func<TEntity, TValue>>>(Data.SelectExpressionString);
+        : serializer.Deserialize<Expression<Func<TEntity, TValue>>>(Data.SelectExpressionString);
 
     public SerializedQuery<TEntity> SetSelectExpression(Expression selectExpression)
     {
         Data.SelectExpressionString =
-            Serialize(selectExpression);
+            serializer.Serialize(selectExpression);
         return this;
     }
 
@@ -46,7 +52,7 @@ public record SerializedQuery<TEntity> where TEntity : class
 
     public SerializedQuery<TEntity> AddWhereExpression(Expression<Func<TEntity, bool>> expression)
     {
-        Data.Where.Add(Serialize(expression));
+        Data.Where.Add(serializer.Serialize(expression));
         return this;
     }
 
@@ -80,7 +86,7 @@ public record SerializedQuery<TEntity> where TEntity : class
 
     public SerializedQuery<TEntity> AddOrderByExpression(Expression<Func<TEntity, object>> expression)
     {
-        Data.OrderBy.Add(Serialize(expression));
+        Data.OrderBy.Add(serializer.Serialize(expression));
         return this;
     }
 
@@ -97,7 +103,7 @@ public record SerializedQuery<TEntity> where TEntity : class
 
     public SerializedQuery<TEntity> AddOrderByDescendingExpression(Expression<Func<TEntity, object>> expression)
     {
-        Data.OrderByDescending.Add(Serialize(expression));
+        Data.OrderByDescending.Add(serializer.Serialize(expression));
         return this;
     }
 
@@ -112,7 +118,23 @@ public record SerializedQuery<TEntity> where TEntity : class
         return this;
     }
 
-    public SerializedQuery<TEntity> AddIncludes(IEnumerable<string> includes)
+    public SerializedQuery<TEntity> AddIncludesByName(IEnumerable<string> includes)
+    {
+        foreach (var include in includes)
+        {
+            AddIncludeByName(include);
+        }
+
+        return this;
+    }
+
+    public SerializedQuery<TEntity> AddIncludeByName(string include)
+    {
+        Data.IncludesByName.Add(include);
+        return this;
+    }
+
+    public SerializedQuery<TEntity> AddIncludes(IEnumerable<IRemoteIncludableQuery> includes)
     {
         foreach (var include in includes)
         {
@@ -122,9 +144,9 @@ public record SerializedQuery<TEntity> where TEntity : class
         return this;
     }
 
-    public SerializedQuery<TEntity> AddInclude(string include)
+    public SerializedQuery<TEntity> AddInclude(IRemoteIncludableQuery include)
     {
-        Data.Includes.Add(include);
+        Data.Includes.Add(include.GetInclude(serializer));
         return this;
     }
 
@@ -144,7 +166,7 @@ public record SerializedQuery<TEntity> where TEntity : class
     {
         foreach (var expressionNode in Data.Where)
         {
-            var ex = Deserialize<Expression<Func<TEntity, bool>>>(expressionNode);
+            var ex = serializer.Deserialize<Expression<Func<TEntity, bool>>>(expressionNode);
             query.Where(ex);
         }
 
@@ -162,13 +184,13 @@ public record SerializedQuery<TEntity> where TEntity : class
 
         foreach (var expressionNode in Data.OrderBy)
         {
-            var ex = Deserialize<Expression<Func<TEntity, object>>>(expressionNode);
+            var ex = serializer.Deserialize<Expression<Func<TEntity, object>>>(expressionNode);
             query.OrderBy(ex);
         }
 
         foreach (var expressionNode in Data.OrderByDescending)
         {
-            var ex = Deserialize<Expression<Func<TEntity, object>>>(expressionNode);
+            var ex = serializer.Deserialize<Expression<Func<TEntity, object>>>(expressionNode);
             query.OrderByDescending(ex);
         }
 
@@ -177,9 +199,14 @@ public record SerializedQuery<TEntity> where TEntity : class
             query.OrderByString(isDescending ? $"-{propertyName}" : propertyName);
         }
 
-        foreach (var include in Data.Includes)
+        foreach (var include in Data.IncludesByName)
         {
             query.Include(include);
+        }
+
+        foreach (var include in Data.Includes)
+        {
+            query = include.Apply(query, serializer);
         }
 
 
@@ -194,4 +221,3 @@ public record SerializedQuery<TEntity> where TEntity : class
         }
     }
 }
-

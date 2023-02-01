@@ -2,16 +2,10 @@
 
 namespace Sitko.Core.Repository.Remote;
 
-internal class RemoteRepositoryQuerySource<TEntity> where TEntity : class
-{
-    public RemoteRepositoryQuerySource(IQueryable<TEntity> query) => Query = query;
-    internal IQueryable<TEntity> Query { get; set; }
-}
-
 public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where TEntity : class
 {
     private readonly List<IRemoteIncludableQuery> includableQueries = new();
-    private readonly List<string> includes = new();
+    private readonly List<string> includesByName = new();
     private readonly List<Expression<Func<TEntity, object>>> orderByDescendingExpressions = new();
     private readonly List<Expression<Func<TEntity, object>>> orderByExpressions = new();
     private readonly List<(string propertyName, bool isDescending)> orderByStringExpressions = new();
@@ -29,7 +23,7 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
         whereByStringExpressions = source.whereByStringExpressions;
         orderByExpressions = source.orderByExpressions;
         orderByDescendingExpressions = source.orderByExpressions;
-        includes = source.includes;
+        includesByName = source.includesByName;
         includableQueries = source.includableQueries;
         selectExpression = source.selectExpression;
     }
@@ -37,7 +31,7 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
 
     public override IRepositoryQuery<TEntity> Include(string navigationPropertyPath)
     {
-        includes.Add(navigationPropertyPath);
+        includesByName.Add(navigationPropertyPath);
         return this;
     }
 
@@ -47,9 +41,9 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
         return this;
     }
 
-    public override IRepositoryQuery<TEntity> WhereByString(string whereStr)
+    public override IRepositoryQuery<TEntity> WhereByString(string whereJson)
     {
-        whereByStringExpressions.Add((whereStr, null));
+        whereByStringExpressions.Add((whereJson, null));
         return this;
     }
 
@@ -99,19 +93,11 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
     public override IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(
         Expression<Func<TEntity, TProperty>> navigationPropertyPath)
     {
-        var propertyName = GetPropertyName(navigationPropertyPath);
-        var includableQuery = new IncludableRemoteRepositoryQuery<TEntity, TProperty>(this, propertyName);
+        var includableQuery =
+            new IncludableRemoteRepositoryQuery<TEntity, TProperty>(this, navigationPropertyPath);
         includableQueries.Add(includableQuery);
         return includableQuery;
     }
-
-    protected static string GetPropertyName<TExpressionEntity, TProperty>(
-        Expression<Func<TExpressionEntity, TProperty>> navigationPropertyPath)
-    {
-        var expression = (MemberExpression)navigationPropertyPath.Body;
-        return expression.Member.Name;
-    }
-
 
     protected override void ApplySort((string propertyName, bool isDescending) sortQuery) =>
         orderByStringExpressions.Add(sortQuery);
@@ -119,18 +105,14 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
     public SerializedQuery<TEntity>
         Serialize()
     {
-        foreach (var includableQuery in includableQueries)
-        {
-            includes.Add(includableQuery.GetFullPath());
-        }
-
         var serializedQuery = new SerializedQuery<TEntity>()
             .AddWhereExpressions(whereExpressions)
             .AddWhereByStringExpressions(whereByStringExpressions)
             .AddOrderByExpressions(orderByExpressions)
             .AddOrderByDescendingExpressions(orderByDescendingExpressions)
             .AddOrderByStringExpressions(orderByStringExpressions)
-            .AddIncludes(includes);
+            .AddIncludesByName(includesByName)
+            .AddIncludes(includableQueries);
         if (selectExpression is not null)
         {
             serializedQuery.SetSelectExpression(selectExpression);
@@ -149,9 +131,9 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
         return serializedQuery;
     }
 
-    public RemoteRepositoryQuery<TEntity> Select(Expression selectExpression)
+    public RemoteRepositoryQuery<TEntity> Select(Expression expression)
     {
-        this.selectExpression = selectExpression;
+        selectExpression = expression;
         return this;
     }
 }
@@ -159,21 +141,17 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
 public class IncludableRemoteRepositoryQuery<TEntity, TProperty> : RemoteRepositoryQuery<TEntity>,
     IIncludableRepositoryQuery<TEntity, TProperty>, IRemoteIncludableQuery where TEntity : class
 {
-    private readonly string propertyName;
-
+    private readonly Expression expression;
     private readonly RemoteRepositoryQuery<TEntity> source;
 
-    internal IncludableRemoteRepositoryQuery(RemoteRepositoryQuery<TEntity> source, string propertyName) : base(source)
+    internal IncludableRemoteRepositoryQuery(RemoteRepositoryQuery<TEntity> source, Expression expression) :
+        base(source)
     {
         this.source = source;
-        this.propertyName = propertyName;
-        if (source is IRemoteIncludableQuery includableSource)
-        {
-            includableSource.SetChild(this);
-        }
+        this.expression = expression;
     }
 
-    private IRemoteIncludableQuery? child { get; set; }
+    private IChildRemoteIncludableQuery? Child { get; set; }
 
     public override IRepositoryQuery<TEntity> Take(int take)
     {
@@ -181,9 +159,9 @@ public class IncludableRemoteRepositoryQuery<TEntity, TProperty> : RemoteReposit
         return this;
     }
 
-    public override IRepositoryQuery<TEntity> Skip(int take)
+    public override IRepositoryQuery<TEntity> Skip(int skip)
     {
-        source.Skip(take);
+        source.Skip(skip);
         return this;
     }
 
@@ -193,32 +171,70 @@ public class IncludableRemoteRepositoryQuery<TEntity, TProperty> : RemoteReposit
     public override IRepositoryQuery<TEntity> Include(string navigationPropertyPath) =>
         source.Include(navigationPropertyPath);
 
-    public void SetChild(IRemoteIncludableQuery query) => child = query;
-
-    public string GetFullPath()
-    {
-        var path = propertyName;
-        if (child is not null)
-        {
-            path += $".{child.GetFullPath()}";
-        }
-
-        return path;
-    }
-
     public IIncludableRepositoryQuery<TEntity, TNextProperty> ThenIncludeFromEnumerableInternal<TNextProperty,
         TPreviousProperty>(
         Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath) =>
-        new IncludableRemoteRepositoryQuery<TEntity, TNextProperty>(this, GetPropertyName(navigationPropertyPath));
+        IncludableRemoteRepositoryQuery<TEntity, TNextProperty>.CreateChild<TPreviousProperty>(this,
+            navigationPropertyPath);
 
     public IIncludableRepositoryQuery<TEntity, TNextProperty> ThenIncludeFromSingleInternal<TNextProperty,
         TPreviousProperty>(
         Expression<Func<TPreviousProperty, TNextProperty>> navigationPropertyPath) =>
-        new IncludableRemoteRepositoryQuery<TEntity, TNextProperty>(this, GetPropertyName(navigationPropertyPath));
+        IncludableRemoteRepositoryQuery<TEntity, TNextProperty>.CreateChild<TPreviousProperty>(this,
+            navigationPropertyPath);
+
+    public void SetChild<TPreviousProperty>(IRemoteIncludableQuery query) =>
+        Child = new ChildRemoteIncludableQuery<TPreviousProperty>(query);
+
+    public IInclude GetInclude(ExpressionSerializer serializer)
+    {
+        var include = new Include<TProperty>(serializer.Serialize(expression));
+        if (Child is not null)
+        {
+            return Child.GetChildInclude(include, serializer);
+        }
+
+        return include;
+    }
+
+    public IInclude GetChildInclude<TPreviousProperty>(IInclude parentInclude, ExpressionSerializer serializer)
+    {
+        var include = new Include<TProperty, TPreviousProperty>(serializer.Serialize(expression), parentInclude);
+        if (Child is not null)
+        {
+            return Child.GetChildInclude(include, serializer);
+        }
+
+        return include;
+    }
+
+    internal static IncludableRemoteRepositoryQuery<TEntity, TProperty> CreateChild<TPreviousProperty>(
+        RemoteRepositoryQuery<TEntity> source, Expression expression)
+    {
+        var child = new IncludableRemoteRepositoryQuery<TEntity, TProperty>(source, expression);
+        if (source is IRemoteIncludableQuery includableSource)
+        {
+            includableSource.SetChild<TPreviousProperty>(child);
+        }
+
+        return child;
+    }
 }
 
 public interface IRemoteIncludableQuery
 {
-    public string GetFullPath();
-    public void SetChild(IRemoteIncludableQuery query);
+    public void SetChild<TPreviousProperty>(IRemoteIncludableQuery query);
+    IInclude GetInclude(ExpressionSerializer serializer);
+    IInclude GetChildInclude<TPreviousProperty>(IInclude parentInclude, ExpressionSerializer serializer);
+}
+
+public interface IChildRemoteIncludableQuery
+{
+    IInclude GetChildInclude(IInclude parentInclude, ExpressionSerializer serializer);
+}
+
+public record ChildRemoteIncludableQuery<TPreviousProperty>(IRemoteIncludableQuery Query) : IChildRemoteIncludableQuery
+{
+    public IInclude GetChildInclude(IInclude parentInclude, ExpressionSerializer serializer) =>
+        Query.GetChildInclude<TPreviousProperty>(parentInclude, serializer);
 }
