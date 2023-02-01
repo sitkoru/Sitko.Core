@@ -61,13 +61,48 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
     }
 
     [Fact]
+    public async Task ThenIncludeByName()
+    {
+        var scope = await GetScopeAsync();
+
+        var repository = scope.GetService<IRepository<TestModel, Guid>>();
+        Assert.NotNull(repository);
+
+        var item = await repository.GetAsync(query => query.Where(model => model.Bars.Any())
+            .Include($"{nameof(TestModel.Bars)}.{nameof(BarModel.Foos)}"));
+        Assert.NotNull(item);
+        Assert.NotNull(item.Bars);
+        Assert.NotEmpty(item.Bars);
+        Assert.Single(item.Bars);
+        var bar = item.Bars.First();
+        Assert.Equal(item.Id, bar.TestId);
+        Assert.NotEmpty(bar.Foos);
+    }
+
+    [Fact]
+    public async Task IncludeWithCondition()
+    {
+        var scope = await GetScopeAsync();
+
+        var repository = scope.GetService<IRepository<TestModel, Guid>>();
+        Assert.NotNull(repository);
+
+        var item = await repository.GetAsync(query => query.Where(model => model.Bars.Any())
+            .Include(testModel => testModel.Bars.Where(model => model.TestId != null)));
+        Assert.NotNull(item);
+        Assert.NotNull(item.Bars);
+        Assert.NotEmpty(item.Bars);
+        Assert.Single(item.Bars);
+    }
+
+    [Fact]
     public void MultipleIncludes()
     {
         var query = new RemoteRepositoryQuery<TestModel>();
         query.Include(model => model.Bars).Include(model => model.Bars);
         var serialized = query.Serialize();
         serialized.Data.Includes.Should().HaveCount(2);
-        serialized.Data.Includes.Should().AllBe(nameof(TestModel.Bars));
+        serialized.Data.Includes.Should().AllBeAssignableTo<IInclude>();
     }
 
     [Fact]
@@ -77,8 +112,10 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
         query.Include(model => model.Bars).Include(model => model.Bars).ThenInclude(model => model.Foos);
         var serialized = query.Serialize();
         serialized.Data.Includes.Should().HaveCount(2);
-        serialized.Data.Includes[0].Should().Be(nameof(TestModel.Bars));
-        serialized.Data.Includes[1].Should().Be(nameof(TestModel.Bars) + "." + nameof(BarModel.Foos));
+        serialized.Data.Includes[0].Should().BeOfType<Include<List<BarModel>>>();
+        serialized.Data.Includes[1].Should().BeOfType<Include<List<FooModel>, BarModel>>();
+        serialized.Data.Includes[1].As<Include<List<FooModel>, BarModel>>().Previous.Should()
+            .BeOfType<Include<List<BarModel>>>();
     }
 
     [Fact]
