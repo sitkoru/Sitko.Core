@@ -3,32 +3,12 @@
 @typeparam TEntityPk
 @typeparam TRepository
 @inherits Sitko.Core.Blazor.Forms.BaseRepositoryForm<TEntity, TEntityPk, TRepository>
-@if (!IsLoading)
-{
-    <MudEditForm TEntity="TEntity" Entity="Entity" @ref="FormInstance">
-        <Sitko.Core.Blazor.FluentValidation.FluentValidator/>
-        <Sitko.Core.Blazor.Forms.FormEditContextCatcher Form="this"/>
-        @ChildContent(FormContext)
-        @if (Debug)
-        {
-            <MudFormDebug TEntity="TEntity" Form="this"></MudFormDebug>
-        }
-    </MudEditForm>
-}
-else
-{
-    <div class="form-loading">
-        @if (LoadingContent is not null)
-        {
-            @LoadingContent
-        }
-        else
-        {
-            @ChildContent(FormContext)
-            @if (Debug)
-            {
-                <MudFormDebug TEntity="TEntity" Form="this"></MudFormDebug>
-            }
-        }
-    </div>
-}
+<MudEditForm TEntity="TEntity" Entity="Entity" @ref="FormInstance" IsLoading="IsLoading" LoadingContent="@LoadingContent" LoadingOverlayClass="@LoadingOverlayClass" LoadingOverlayStyle="@LoadingOverlayStyle">
+    <Sitko.Core.Blazor.FluentValidation.FluentValidator/>
+    <Sitko.Core.Blazor.Forms.FormEditContextCatcher Form="this"/>
+    @ChildContent(FormContext)
+    @if (Debug)
+    {
+        <MudFormDebug TEntity="TEntity" Form="this"></MudFormDebug>
+    }
+</MudEditForm>

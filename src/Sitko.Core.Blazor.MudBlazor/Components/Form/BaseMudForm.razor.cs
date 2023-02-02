@@ -10,6 +10,8 @@ public abstract partial class BaseMudForm<TEntity>
 {
     [Parameter] [EditorRequired] public RenderFragment<FormContext<TEntity>> ChildContent { get; set; } = null!;
     [Parameter] public RenderFragment? LoadingContent { get; set; }
+    [Parameter] public string? LoadingOverlayClass { get; set; }
+    [Parameter] public string? LoadingOverlayStyle { get; set; }
     protected MudEditForm<TEntity>? FormInstance { get; set; }
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
     [Parameter] public bool Debug { get; set; }
@@ -70,4 +72,3 @@ public abstract partial class BaseMudForm<TEntity>
         await StopLoadingAsync();
     }
 }
-
