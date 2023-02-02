@@ -2,8 +2,8 @@
 @typeparam TEntity
 @inherits MudForm
 <EditForm Model="Entity" @attributes="UserAttributes" class="@Classname" style="@Style">
-    <div style=" position: relative;">
-        <MudOverlay Visible="IsLoading" DarkBackground="true" Absolute="true">
+    <div style="position: relative;">
+        <MudOverlay Visible="IsLoading" DarkBackground="true" Absolute="true" Style="@LoadingOverlayClass" Class="@LoadingOverlayStyle">
             @if (LoadingContent is not null)
             {
                 @LoadingContent
@@ -36,5 +36,11 @@
 
     [Parameter]
     public RenderFragment? LoadingContent { get; set; }
+
+    [Parameter]
+    public string? LoadingOverlayClass { get; set; }
+
+    [Parameter]
+    public string? LoadingOverlayStyle { get; set; }
 
 }

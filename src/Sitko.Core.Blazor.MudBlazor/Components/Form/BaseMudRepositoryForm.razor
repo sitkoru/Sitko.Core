@@ -3,7 +3,7 @@
 @typeparam TEntityPk
 @typeparam TRepository
 @inherits Sitko.Core.Blazor.Forms.BaseRepositoryForm<TEntity, TEntityPk, TRepository>
-<MudEditForm TEntity="TEntity" Entity="Entity" @ref="FormInstance" IsLoading="IsLoading" LoadingContent="@LoadingContent">
+<MudEditForm TEntity="TEntity" Entity="Entity" @ref="FormInstance" IsLoading="IsLoading" LoadingContent="@LoadingContent" LoadingOverlayClass="@LoadingOverlayClass" LoadingOverlayStyle="@LoadingOverlayStyle">
     <Sitko.Core.Blazor.FluentValidation.FluentValidator/>
     <Sitko.Core.Blazor.Forms.FormEditContextCatcher Form="this"/>
     @ChildContent(FormContext)

@@ -2,7 +2,7 @@
 @typeparam TEntity
 @inherits Sitko.Core.Blazor.Forms.BaseForm<TEntity>
 
-<MudEditForm TEntity="TEntity" Entity="Entity" @ref="FormInstance" IsLoading="IsLoading" LoadingContent="@LoadingContent">
+<MudEditForm TEntity="TEntity" Entity="Entity" @ref="FormInstance" IsLoading="IsLoading" LoadingContent="@LoadingContent" LoadingOverlayClass="@LoadingOverlayClass" LoadingOverlayStyle="@LoadingOverlayStyle">
     <Sitko.Core.Blazor.FluentValidation.FluentValidator/>
     <Sitko.Core.Blazor.Forms.FormEditContextCatcher Form="this"/>
     @ChildContent(FormContext)

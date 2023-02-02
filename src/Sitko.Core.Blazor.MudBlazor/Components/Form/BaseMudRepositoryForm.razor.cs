@@ -18,6 +18,8 @@ public abstract partial class BaseMudRepositoryForm<TEntity, TEntityPk, TReposit
     [Parameter] [EditorRequired] public RenderFragment<FormContext<TEntity>> ChildContent { get; set; } = null!;
 
     [Parameter] public RenderFragment? LoadingContent { get; set; }
+    [Parameter] public string? LoadingOverlayClass { get; set; }
+    [Parameter] public string? LoadingOverlayStyle { get; set; }
 
     protected override Task NotifySuccessAsync()
     {
