@@ -15,7 +15,7 @@ public abstract class AuthOptions : BaseModuleOptions
     public bool EnableRedisDataProtection { get; set; }
     public string? RedisHost { get; set; }
     public int RedisPort { get; set; } = 6379;
-    public int RedisDb { get; set; } = -1;
+    public int RedisDb { get; set; }
     public int DataProtectionLifeTimeInMinutes { get; set; } = 90 * 24 * 60;
     public abstract bool RequiresCookie { get; }
     public abstract string SignInScheme { get; }
@@ -33,6 +33,8 @@ public abstract class AuthOptionsValidator<TOptions> : AbstractValidator<TOption
             .WithMessage("Redis host can't be empty when Redis Data protection enabled");
         RuleFor(o => o.RedisPort).GreaterThan(0).When(o => o.EnableRedisDataProtection)
             .WithMessage("Redis port can't be empty when Redis Data protection enabled");
+        RuleFor(o => o.RedisDb).GreaterThanOrEqualTo(0).When(o => o.EnableRedisDataProtection)
+            .WithMessage("Can't use -1 database for data protection");
     }
 }
 
