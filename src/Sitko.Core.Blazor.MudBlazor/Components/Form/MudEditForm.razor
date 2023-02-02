@@ -2,15 +2,27 @@
 @typeparam TEntity
 @inherits MudForm
 <EditForm Model="Entity" @attributes="UserAttributes" class="@Classname" style="@Style">
-    @if (SuppressImplicitSubmission)
-    {
-        <!-- Prevent implicit submission of the form -->
-        <!-- Note: adding another submit button to the form will automatically enable it again even with SuppressImplicitSubmission set to false -->
-        <button type="submit" disabled style="display: none" aria-hidden="true"></button>
-    }
-    <CascadingValue Value="this" IsFixed="true">
-        @ChildContent
-    </CascadingValue>
+    <div style=" position: relative;">
+        <MudOverlay Visible="IsLoading" DarkBackground="true" Absolute="true">
+            @if (LoadingContent is not null)
+            {
+                @LoadingContent
+            }
+            else
+            {
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true"/>
+            }
+        </MudOverlay>
+        @if (SuppressImplicitSubmission)
+        {
+            <!-- Prevent implicit submission of the form -->
+            <!-- Note: adding another submit button to the form will automatically enable it again even with SuppressImplicitSubmission set to false -->
+            <button type="submit" disabled style="display: none" aria-hidden="true"></button>
+        }
+        <CascadingValue Value="this" IsFixed="true">
+            @ChildContent
+        </CascadingValue>
+    </div>
 </EditForm>
 
 @code{
@@ -18,5 +30,11 @@
     [EditorRequired]
     [Parameter]
     public TEntity Entity { get; set; } = default!;
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public RenderFragment? LoadingContent { get; set; }
 
 }
