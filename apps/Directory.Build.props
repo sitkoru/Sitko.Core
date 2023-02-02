@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
     <WarningsAsErrors>CS4014;CA2016</WarningsAsErrors>
-    <NoWarn>CA1848;CA1716;BL0007;CA1711</NoWarn>
+    <NoWarn>CA1848;CA1716;BL0007;CA1711;NU1507</NoWarn>
   </PropertyGroup>
 </Project>
