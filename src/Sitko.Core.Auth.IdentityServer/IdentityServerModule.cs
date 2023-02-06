@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sitko.Core.App;
+using Sitko.Core.Auth.IdentityServer.Tokens;
 
 namespace Sitko.Core.Auth.IdentityServer;
 
@@ -16,6 +18,7 @@ public abstract class IdentityServerModule<TAuthOptions> : AuthModule<TAuthOptio
         TAuthOptions startupOptions)
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
+        services.TryAddScoped<IUserTokenProvider, UserTokenProvider>();
         if (Uri.TryCreate(startupOptions.OidcServerUrl, UriKind.Absolute, out var oidcUri))
         {
             if (IdentityServerModuleChecks.Checks.TryAdd(oidcUri.ToString(), true))
