@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,8 +14,18 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
 {
     private readonly List<Action<IEndpointRouteBuilder>> endpointRegistrations = new();
 
-    public virtual void RegisterService<TService>() where TService : class =>
-        endpointRegistrations.Add(builder => builder.MapGrpcService<TService>());
+    public virtual void RegisterService<TService>(string? requiredAuthorizarionSchemeName) where TService : class =>
+        endpointRegistrations.Add(builder =>
+        {
+            var grpcBuidler = builder.MapGrpcService<TService>();
+            if (!string.IsNullOrEmpty(requiredAuthorizarionSchemeName))
+            {
+                grpcBuidler.RequireAuthorization(new AuthorizeAttribute
+                {
+                    AuthenticationSchemes = requiredAuthorizarionSchemeName
+                });
+            }
+        });
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TConfig startupOptions)

@@ -32,9 +32,9 @@ public abstract class DiscoveryGrpcServerModule<TRegistrar, TConfig> : BaseGrpcS
         }
     }
 
-    public override void RegisterService<TService>()
+    public override void RegisterService<TService>(string? requiredAuthorizarionSchemeName)
     {
-        base.RegisterService<TService>();
+        base.RegisterService<TService>(requiredAuthorizarionSchemeName);
         serviceRegistrations.Add(registrar => registrar.RegisterAsync<TService>());
         healthChecksRegistrations.Add(healthCheckBuilder =>
             healthCheckBuilder.AddCheck<GrpcServiceHealthCheck<TService>>(

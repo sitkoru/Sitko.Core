@@ -10,6 +10,7 @@ namespace Sitko.Core.Grpc.Server;
 public class GrpcServerModuleOptions : BaseModuleOptions
 {
     private readonly List<Action<IGrpcServerModule>> serviceRegistrations = new();
+    internal string? RequiredAuthorizarionSchemeName { get; private set; }
     public string? Host { get; set; }
     public int? Port { get; set; }
     [JsonIgnore] public Action<IWebHostBuilder>? ConfigureWebHostDefaults { get; set; }
@@ -28,8 +29,13 @@ public class GrpcServerModuleOptions : BaseModuleOptions
 
     public GrpcServerModuleOptions RegisterService<TService>() where TService : class
     {
-        serviceRegistrations.Add(module => module.RegisterService<TService>());
+        serviceRegistrations.Add(module => module.RegisterService<TService>(RequiredAuthorizarionSchemeName));
+        return this;
+    }
+
+    public GrpcServerModuleOptions RequireSchemeAuthorization(string schemeName)
+    {
+        RequiredAuthorizarionSchemeName = schemeName;
         return this;
     }
 }
-
