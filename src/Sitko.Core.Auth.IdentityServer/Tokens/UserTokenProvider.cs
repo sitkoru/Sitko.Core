@@ -23,28 +23,33 @@ class UserTokenProvider : IUserTokenProvider
     public async Task<string?> GetUserTokenAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
     {
         string? accessToken = null;
-        foreach (var schema in await authenticationSchemeProvider.GetAllSchemesAsync())
+        var schemas = await authenticationSchemeProvider.GetAllSchemesAsync();
+
+        if (userTokenManagementService is not null)
         {
-            if (userTokenManagementService != null && schema.Name == oidcOptions.Value.ChallengeScheme)
+            var oidcSchema = schemas.FirstOrDefault(scheme => scheme.Name == oidcOptions.Value.ChallengeScheme);
+            if (oidcSchema is not null)
             {
+                // we have token management service and available oidc schema, so try to get token this way first
                 var schemaToken = await userTokenManagementService.GetAccessTokenAsync(
                     httpContext.User,
-                    new UserTokenRequestParameters { ChallengeScheme = schema.Name }, cancellationToken);
+                    new UserTokenRequestParameters { ChallengeScheme = oidcSchema.Name }, cancellationToken);
                 if (!string.IsNullOrEmpty(schemaToken.AccessToken) && !schemaToken.IsError)
                 {
-                    accessToken = schemaToken.AccessToken;
-                    break;
+                    // we have token, no need to check other schemas
+                    return schemaToken.AccessToken;
                 }
             }
+        }
 
-            if (string.IsNullOrEmpty(accessToken))
+        // no oidc token, so check other schemas
+        foreach (var schema in await authenticationSchemeProvider.GetAllSchemesAsync())
+        {
+            var schemaToken = await httpContext.GetTokenAsync(schema.Name, "access_token");
+            if (!string.IsNullOrEmpty(schemaToken))
             {
-                var schemaToken = await httpContext.GetTokenAsync(schema.Name, "access_token");
-                if (!string.IsNullOrEmpty(schemaToken))
-                {
-                    accessToken = schemaToken;
-                    break;
-                }
+                accessToken = schemaToken;
+                break;
             }
         }
 
