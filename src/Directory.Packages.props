@@ -107,7 +107,7 @@
     <PackageVersion Include="Serilog.Sinks.Console" Version="4.1.0"/>
     <PackageVersion Include="Serilog.Enrichers.Environment" Version="2.2.0"/>
     <PackageVersion Include="Serilog.Sinks.BrowserConsole" Version="1.0.0"/>
-    <PackageVersion Include="Serilog.Sinks.Elasticsearch" Version="9.0.0-beta9"/>
+    <PackageVersion Include="Serilog.Sinks.Elasticsearch" Version="9.0.0"/>
     <PackageVersion Include="Serilog.Sinks.Graylog" Version="2.3.0"/>
     <PackageVersion Include="Serilog.Sinks.Async" Version="1.5.0"/>
     <PackageVersion Include="Thinktecture.Extensions.Serilog.Configuration" Version="2.0.0"/>
