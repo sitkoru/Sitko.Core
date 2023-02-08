@@ -24,6 +24,26 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
     }
 
     [Fact]
+    public async Task Count()
+    {
+        var scope = await GetScopeAsync();
+        var repo = scope.GetService<TestRemoteRepository>();
+        var result = await repo.CountAsync();
+
+        Assert.Equal(result, 6);
+    }
+
+    [Fact]
+    public async Task CountWithCondition()
+    {
+        var scope = await GetScopeAsync();
+        var repo = scope.GetService<TestRemoteRepository>();
+        var result = await repo.CountAsync(q => q.Where(t => t.FooId == 5));
+
+        Assert.Equal(result, 2);
+    }
+
+    [Fact]
     public async Task GetNullable()
     {
         var scope = await GetScopeAsync();

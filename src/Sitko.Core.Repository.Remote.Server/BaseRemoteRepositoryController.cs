@@ -160,11 +160,11 @@ public class BaseRemoteRepositoryController<TEntity, TEntityPK> : Controller
     }
 
     [HttpPost("Count")]
-    public async Task<IActionResult> CountAsync([FromBody] SerializedQueryData queryData)
+    public async Task<IActionResult> CountAsync([FromBody] SerializedQueryDataRequest queryData)
     {
         try
         {
-            var result = await repository.CountAsync(q => new SerializedQuery<TEntity>(queryData).Apply(q));
+            var result = await repository.CountAsync(q => new SerializedQuery<TEntity>(queryData.Data).Apply(q));
             return Ok(JsonHelper.SerializeWithMetadata(result));
         }
         catch (Exception ex)
