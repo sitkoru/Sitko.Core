@@ -11,9 +11,9 @@ class UserTokenProvider : IUserTokenProvider
     private readonly IAuthenticationSchemeProvider authenticationSchemeProvider;
     private readonly IOptions<OidcIdentityServerModuleOptions> oidcOptions;
 
-    public UserTokenProvider(IUserTokenManagementService? userTokenManagementService,
-        IAuthenticationSchemeProvider authenticationSchemeProvider,
-        IOptions<OidcIdentityServerModuleOptions> oidcOptions)
+    public UserTokenProvider(IAuthenticationSchemeProvider authenticationSchemeProvider,
+        IOptions<OidcIdentityServerModuleOptions> oidcOptions,
+        IUserTokenManagementService? userTokenManagementService = null)
     {
         this.userTokenManagementService = userTokenManagementService;
         this.authenticationSchemeProvider = authenticationSchemeProvider;
