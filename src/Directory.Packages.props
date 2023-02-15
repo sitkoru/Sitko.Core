@@ -3,13 +3,13 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.4.0"/>
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.5.0"/>
     <PackageVersion Include="IL.FluentValidation.Extensions.Options" Version="10.0.1"/>
     <PackageVersion Include="JetBrains.Annotations" Version="2022.3.1"/>
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.2"/>
-    <PackageVersion Include="PeanutButter.DuckTyping" Version="3.0.97"/>
+    <PackageVersion Include="PeanutButter.DuckTyping" Version="3.0.99"/>
     <PackageVersion Include="Tempus" Version="1.0.0"/>
-    <PackageVersion Include="Scrutor" Version="4.2.0"/>
+    <PackageVersion Include="Scrutor" Version="4.2.1"/>
     <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0"/>
     <PackageVersion Include="VaultSharp.Extensions.Configuration" Version="0.5.2"/>
     <PackageVersion Include="Consul" Version="1.6.10.8"/>
@@ -17,15 +17,15 @@
     <PackageVersion Include="Telegram.Bot" Version="18.0.0"/>
     <PackageVersion Include="ImgProxy" Version="2.2.0"/>
     <PackageVersion Include="Nito.AsyncEx" Version="5.1.2"/>
-    <PackageVersion Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.0.0"/>
+    <PackageVersion Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0"/>
     <PackageVersion Include="PuppeteerSharp" Version="9.0.2"/>
     <PackageVersion Include="NATS.Client" Version="1.0.3"/>
     <PackageVersion Include="STAN.Client" Version="0.3.0"/>
-    <PackageVersion Include="System.Linq.Dynamic.Core" Version="1.2.24"/>
+    <PackageVersion Include="System.Linq.Dynamic.Core" Version="1.2.25"/>
     <PackageVersion Include="CompareNETObjects" Version="4.79.0"/>
     <PackageVersion Include="Serialize.Linq" Version="2.0.0"/>
     <PackageVersion Include="MimeMapping" Version="1.0.1.50"/>
-    <PackageVersion Include="AWSSDK.S3" Version="3.7.102"/>
+    <PackageVersion Include="AWSSDK.S3" Version="3.7.103.9"/>
     <PackageVersion Include="Remote.Linq.Newtonsoft.Json" Version="7.1.0"/>
   </ItemGroup>
   <!--Sitko libraries-->
@@ -53,15 +53,15 @@
   </ItemGroup>
   <!--Blazor libraries-->
   <ItemGroup>
-    <PackageVersion Include="AntDesign" Version="0.14.0"/>
+    <PackageVersion Include="AntDesign" Version="0.14.2"/>
     <PackageVersion Include="Tewr.Blazor.FileReader" Version="3.3.1.21360"/>
     <PackageVersion Include="MudBlazor" Version="6.1.8"/>
   </ItemGroup>
   <!--Tests libraries-->
   <ItemGroup>
     <PackageVersion Include="AutoBogus" Version="2.13.1"/>
-    <PackageVersion Include="FluentAssertions" Version="6.9.0"/>
-    <PackageVersion Include="Serilog.Sinks.XUnit" Version="3.0.3"/>
+    <PackageVersion Include="FluentAssertions" Version="6.10.0"/>
+    <PackageVersion Include="Serilog.Sinks.XUnit" Version="3.0.5"/>
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5"/>
     <PackageVersion Include="xunit" Version="2.4.2"/>
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.4.1"/>
@@ -69,8 +69,8 @@
   <!--Hangfire libraries-->
   <ItemGroup>
     <PackageVersion Include="Hangfire.Core" Version="1.7.33"/>
-    <PackageVersion Include="Hangfire.AspNetCore" Version="1.7.32"/>
-    <PackageVersion Include="Hangfire.PostgreSql" Version="1.9.9"/>
+    <PackageVersion Include="Hangfire.AspNetCore" Version="1.7.33"/>
+    <PackageVersion Include="Hangfire.PostgreSql" Version="1.9.10"/>
     <PackageVersion Include="AspNetCore.HealthChecks.Hangfire" Version="6.0.2"/>
   </ItemGroup>
   <!--MS libraries-->
