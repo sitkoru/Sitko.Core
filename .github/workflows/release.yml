@@ -32,7 +32,7 @@ jobs:
       - name: Build
         run: dotnet build -c Release /p:Version=${{ steps.prep.outputs.version }}
       - name: Create packages
-        run: find ./src -type f -name '*.csproj' | xargs dotnet pack  --no-build -c Release /p:Version=${{ steps.prep.outputs.version }} -o $(pwd)/packages
+        run: find ./src -type f -name '*.csproj' -exec dotnet pack --no-build -c Release /p:Version=${{ steps.prep.outputs.version }} -o $(pwd)/packages {} \;
       - name: Push to Github Packages
         run: find packages -type f -name 'Sitko.Core.*.nupkg' -print0 |  xargs -0 -n 10 -P 4 dotnet nuget push -s https://nuget.pkg.github.com/sitkoru/index.json  --skip-duplicate --no-symbols -k ${GITHUB_TOKEN}
         env:
