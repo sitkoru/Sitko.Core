@@ -79,10 +79,10 @@
     <PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0"/>
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
     <PackageVersion Include="Microsoft.Extensions.Http" Version="7.0.0"/>
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="7.0.0"/>
-    <PackageVersion Include="Microsoft.Extensions.Localization.Abstractions" Version="7.0.2"/>
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="7.0.1"/>
+    <PackageVersion Include="Microsoft.Extensions.Localization.Abstractions" Version="7.0.3"/>
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0"/>
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="7.0.2"/>
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="7.0.3"/>
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0"/>
   </ItemGroup>
   <!--EF Core libraries-->
@@ -141,17 +141,17 @@
   </ItemGroup>
   <!--.NET 7 specific libraries-->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net7.0' ">
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.2"/>
-    <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="7.0.2"/>
-    <PackageVersion Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="7.0.2"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="7.0.2"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="7.0.2"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Components" Version="7.0.2"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.2"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.2"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.2"/>
-    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="7.0.2"/>
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="7.0.2"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.3"/>
+    <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="7.0.3"/>
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="7.0.3"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="7.0.3"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="7.0.3"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Components" Version="7.0.3"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.3"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.3"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.3"/>
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="7.0.3"/>
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="7.0.3"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.3"/>
   </ItemGroup>
 </Project>
