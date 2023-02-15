@@ -17,7 +17,7 @@ jobs:
       - name: Build
         run: dotnet build -c Release
       - name: Create packages
-        run: find ./src -type f -name '*.csproj' -print0 | xargs dotnet pack --no-build -c Release -o $(pwd)/packages
+        run: find ./src -type f -name '*.csproj' | xargs dotnet pack --no-build -c Release -o $(pwd)/packages
   apps:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
