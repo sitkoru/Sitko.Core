@@ -82,7 +82,6 @@ public class
     {
         var config = GetOptions(serviceProvider);
         var schemaExtensions = new SchemaDbContextOptionsExtension(config.Schema);
-        options.ReplaceService<IModelValidator, FixedRelationalModelValidator>(); // TODO: UNTIL 7.0.3 - https://github.com/dotnet/efcore/issues/29859
         options.UseNpgsql(config.CreateBuilder().ConnectionString,
             builder =>
             {
