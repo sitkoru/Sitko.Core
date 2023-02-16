@@ -137,7 +137,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.14"/>
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="6.0.14"/>
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="6.0.14"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.14"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.3"/>
   </ItemGroup>
   <!--.NET 7 specific libraries-->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net7.0' ">
