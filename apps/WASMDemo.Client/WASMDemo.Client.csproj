@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MessagePack" Version="2.4.35" />
+    <PackageReference Include="MessagePack" Version="2.4.59" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.11" PrivateAssets="all" />
     <PackageReference Include="MudBlazor" Version="6.1.2" />
     <ProjectReference Include="..\..\src\Sitko.Core.Blazor.Wasm\Sitko.Core.Blazor.Wasm.csproj" />
