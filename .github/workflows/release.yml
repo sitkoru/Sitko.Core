@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container:v2
     steps:
       - uses: actions/checkout@v3
       - name: Prepare

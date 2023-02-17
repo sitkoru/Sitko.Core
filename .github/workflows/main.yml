@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container:v2
     steps:
       - uses: actions/checkout@v3
         with:
@@ -20,7 +20,7 @@ jobs:
         run: dotnet pack -c Release -o $(pwd)/packages
   apps:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container:v2
     steps:
       - uses: actions/checkout@v3
       - name: Run tests
@@ -28,7 +28,7 @@ jobs:
 
   blazor:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container:v2
     steps:
       - uses: actions/checkout@v3
       - name: Install node.js
@@ -49,7 +49,7 @@ jobs:
 
   grpc:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container:v2
     steps:
       - uses: actions/checkout@v3
       - name: Run tests
@@ -57,7 +57,7 @@ jobs:
 
   imgproxy:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container:v2
     steps:
       - uses: actions/checkout@v3
       - name: Run tests
@@ -65,7 +65,7 @@ jobs:
 
   pdf:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container:v2
     env:
       PUPPETEER_EXECUTABLE_PATH: "/usr/bin/google-chrome-stable"
     steps:
@@ -79,7 +79,7 @@ jobs:
 
   queue:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container:v2
     env:
       QUEUE__NATS__SERVERS__0: nats://nats:4222
       QUEUE__NATS__CLUSTERNAME: test-cluster
@@ -97,7 +97,7 @@ jobs:
 
   repository:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container:v2
     env:
       DB__POSTGRES__TESTDBCONTEXT__HOST: postgres
       DB__POSTGRES__SECONDTESTDBCONTEXT__HOST: postgres
@@ -116,7 +116,7 @@ jobs:
 
   sonyflake:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container:v2
     env:
       IDPROVIDER__SONYFLAKE__URI: http://sonyflake
     services:
@@ -129,7 +129,7 @@ jobs:
 
   storage:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container:v2
     env:
       STORAGE__S3__TESTS3STORAGESETTINGS__SERVER: http://minio:9000
       STORAGE__S3__TESTS3STORAGESETTINGS__ACCESSKEY: ptTYf7VkCVbUjAzn
@@ -160,7 +160,7 @@ jobs:
 
   vault:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container:v2
     env:
       VAULT__URI: http://127.0.0.1:8200
       VAULT__TOKEN: twit3itPSAD0yok
