@@ -22,7 +22,7 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
         whereExpressions = source.whereExpressions;
         whereByStringExpressions = source.whereByStringExpressions;
         orderByExpressions = source.orderByExpressions;
-        orderByDescendingExpressions = source.orderByExpressions;
+        orderByDescendingExpressions = source.orderByDescendingExpressions;
         includesByName = source.includesByName;
         includableQueries = source.includableQueries;
         selectExpression = source.selectExpression;
