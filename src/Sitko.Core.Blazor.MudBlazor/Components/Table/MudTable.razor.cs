@@ -20,7 +20,7 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
 
     [EditorRequired] [Parameter] public RenderFragment<TItem?>? ChildContent { get; set; }
 
-    [Parameter] public Func<Task>? OnDataLoaded { get; set; }
+    [Parameter] public Func<TableState, TFilter, Task>? OnDataLoaded { get; set; }
 
     [Parameter] public string? Title { get; set; }
     [Parameter] public bool EnableSearch { get; set; } = true;
@@ -202,7 +202,7 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
         if (OnDataLoaded is not null)
         {
             Logger.LogDebug("Execute OnDataLoaded");
-            await OnDataLoaded();
+            await OnDataLoaded(LastState, LastFilter);
         }
 
         IsFirstLoad = false;
@@ -403,4 +403,3 @@ public static class ListFilterExtensions
         }
     }
 }
-
