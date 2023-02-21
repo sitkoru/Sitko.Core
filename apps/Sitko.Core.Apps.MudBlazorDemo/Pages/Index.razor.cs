@@ -8,6 +8,7 @@ using MudBlazor;
 using Sitko.Core.Apps.MudBlazorDemo.Components;
 using Sitko.Core.Apps.MudBlazorDemo.Data.Entities;
 using Sitko.Core.Apps.MudBlazorDemo.Data.Repositories;
+using Sitko.Core.Blazor.MudBlazorComponents;
 using Sitko.Core.Repository;
 
 namespace Sitko.Core.Apps.MudBlazorDemo.Pages
@@ -34,7 +35,8 @@ namespace Sitko.Core.Apps.MudBlazorDemo.Pages
         private BarRepositoryList barList = null!;
         private decimal Summary { get; set; }
 
-        private async Task CountSummaryAsync() => Summary = await barList.SumAsync(model => model.Sum);
+        private async Task CountSummaryAsync(TableState state, MudTableFilter filter) =>
+            Summary = await barList.SumAsync(model => model.Sum);
         //
         // private TableFilter<string>[] barFilter = Array.Empty<TableFilter<string>>();
         // private BarForm frm = null!;
