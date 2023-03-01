@@ -55,7 +55,7 @@ public static class SearchModuleExtensions
         this IServiceCollection serviceCollection)
         where TSearchProvider : class, ISearchProvider<TEntity, TEntityPk>
         where TEntity : class =>
-        serviceCollection.Scan(a => a.AddType<TSearchProvider>().AsSelfWithInterfaces());
+        serviceCollection.Scan(a => a.FromType<TSearchProvider>().AsSelfWithInterfaces());
 }
 
 public abstract class SearchModuleOptions : BaseModuleOptions

@@ -8,13 +8,9 @@ namespace WASMDemo.Server.Pages;
 [IgnoreAntiforgeryToken]
 public class ErrorModel : PageModel
 {
-    private readonly ILogger<ErrorModel> logger;
-
-    public ErrorModel(ILogger<ErrorModel> logger) => this.logger = logger;
     public string? RequestId { get; set; }
 
     public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 
     public void OnGet() => RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
 }
-

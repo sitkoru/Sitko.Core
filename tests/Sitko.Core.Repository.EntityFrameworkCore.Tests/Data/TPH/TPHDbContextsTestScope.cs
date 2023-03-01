@@ -1,5 +1,4 @@
-﻿using Sitko.Core.Repository.Tests.Data;
-using Sitko.Core.Xunit;
+﻿using Sitko.Core.Xunit;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore.Tests.Data.TPH;
 

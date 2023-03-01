@@ -45,7 +45,7 @@ public abstract class RepositoriesModule<TConfig, TRepositoryType> : BaseApplica
             .Select(implementedInterface => (implementedInterface.GenericTypeArguments[0],
                 implementedInterface.GenericTypeArguments[1])).ToList();
         services.Scan(s =>
-            s.AddTypes(types.Distinct()).UsingRegistrationStrategy(RegistrationStrategy.Skip).AsSelfWithInterfaces()
+            s.FromTypes(types.Distinct()).UsingRegistrationStrategy(RegistrationStrategy.Skip).AsSelfWithInterfaces()
                 .WithScopedLifetime());
         foreach (var (entityType, entityPkType) in entityTypes)
         {

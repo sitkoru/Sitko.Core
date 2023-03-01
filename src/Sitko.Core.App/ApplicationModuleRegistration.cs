@@ -128,9 +128,9 @@ internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : A
     private TModuleOptions CreateOptions(IApplicationContext applicationContext, bool validateOptions = false)
     {
         TModuleOptions options;
-        if (optionsCache.ContainsKey(applicationContext.Id))
+        if (optionsCache.TryGetValue(applicationContext.Id, out var value))
         {
-            options = optionsCache[applicationContext.Id];
+            options = value;
         }
         else
         {

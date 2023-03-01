@@ -2,5 +2,5 @@
 
 public class FirstTPHClass : BaseTPHClass<FirstTPHClassConfig>
 {
-    public string Bar { get; set; }
+    public string Bar { get; set; } = "";
 }

@@ -122,10 +122,7 @@ public class JsonStringLocalizerFactory : IStringLocalizerFactory, IDisposable
     {
         foreach (var (key, value) in resourceData)
         {
-            if (!data.ContainsKey(key))
-            {
-                data[key] = value;
-            }
+            data.TryAdd(key, value);
         }
     }
 

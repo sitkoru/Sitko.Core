@@ -29,7 +29,7 @@ public abstract class QueueModule<TQueue, TConfig> : BaseApplicationModule<TConf
         if (startupOptions.Middlewares.Any())
         {
             services.Scan(selector =>
-                selector.AddTypes(startupOptions.Middlewares).AsSelfWithInterfaces().WithSingletonLifetime());
+                selector.FromTypes(startupOptions.Middlewares).AsSelfWithInterfaces().WithSingletonLifetime());
         }
 
         foreach (var options in startupOptions.Options)
@@ -40,7 +40,7 @@ public abstract class QueueModule<TQueue, TConfig> : BaseApplicationModule<TConf
         if (startupOptions.ProcessorEntries.Any())
         {
             var types = startupOptions.ProcessorEntries.Select(e => e.Type).Distinct().ToArray();
-            services.Scan(selector => selector.AddTypes(types).AsSelfWithInterfaces().WithScopedLifetime());
+            services.Scan(selector => selector.FromTypes(types).AsSelfWithInterfaces().WithScopedLifetime());
             var messageTypes = startupOptions.ProcessorEntries.SelectMany(e => e.MessageTypes).Distinct().ToArray();
             foreach (var messageType in messageTypes)
             {

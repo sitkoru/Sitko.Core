@@ -7,7 +7,7 @@ namespace Sitko.Core.ImgProxy.Tests;
 
 public class ImgProxyTests : BaseTest<ImgProxyTestsScope>
 {
-    private static readonly string testUrl = "https://img.test.com/img/foo.png";
+    private const string TestUrl = "https://img.test.com/img/foo.png";
 
     public ImgProxyTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
@@ -19,7 +19,7 @@ public class ImgProxyTests : BaseTest<ImgProxyTestsScope>
         var scope = await GetScopeAsync();
         var generator = scope.GetService<IImgProxyUrlGenerator>();
 
-        var generated = generator.Url(testUrl);
+        var generated = generator.Url(TestUrl);
         generated.Should()
             .Be(
                 "https://imgproxy.test.com/SxQp7ZiYppbWLN0lA6-qCKCtEAafQidbWvGhObksdOg//aHR0cHM6Ly9pbWcudGVzdC5jb20vaW1nL2Zvby5wbmc");
@@ -31,7 +31,7 @@ public class ImgProxyTests : BaseTest<ImgProxyTestsScope>
         var scope = await GetScopeAsync();
         var generator = scope.GetService<IImgProxyUrlGenerator>();
 
-        var generated = generator.Format(testUrl, "jpg");
+        var generated = generator.Format(TestUrl, "jpg");
         generated.Should()
             .Be(
                 "https://imgproxy.test.com/UrUQdqnjooZ8VB5f2p88GAAYsxAfMRad3JDDJpIoQEI//aHR0cHM6Ly9pbWcudGVzdC5jb20vaW1nL2Zvby5wbmc.jpg");
@@ -56,7 +56,7 @@ public class ImgProxyTests : BaseTest<ImgProxyTestsScope>
         var scope = await GetScopeAsync();
         var generator = scope.GetService<IImgProxyUrlGenerator>();
 
-        var generated = generator.Build(testUrl, builder => builder.WithFormat("jpg"));
+        var generated = generator.Build(TestUrl, builder => builder.WithFormat("jpg"));
         generated.Should()
             .Be(
                 "https://imgproxy.test.com/UrUQdqnjooZ8VB5f2p88GAAYsxAfMRad3JDDJpIoQEI//aHR0cHM6Ly9pbWcudGVzdC5jb20vaW1nL2Zvby5wbmc.jpg");
@@ -68,7 +68,7 @@ public class ImgProxyTests : BaseTest<ImgProxyTestsScope>
         var scope = await GetScopeAsync();
         var generator = scope.GetService<IImgProxyUrlGenerator>();
 
-        var generated = generator.Resize(testUrl, 100, 100);
+        var generated = generator.Resize(TestUrl, 100, 100);
         generated.Should()
             .Be(
                 "https://imgproxy.test.com/jUHPR01P3EetzCxdi8MX9cKbYJ7potdoEMO1NxZAIr4/resize:auto:100:100:0:0/aHR0cHM6Ly9pbWcudGVzdC5jb20vaW1nL2Zvby5wbmc");

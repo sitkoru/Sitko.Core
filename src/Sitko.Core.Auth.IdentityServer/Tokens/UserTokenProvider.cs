@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace Sitko.Core.Auth.IdentityServer.Tokens;
 
-class UserTokenProvider : IUserTokenProvider
+internal class UserTokenProvider : IUserTokenProvider
 {
     private readonly IUserTokenManagementService? userTokenManagementService;
     private readonly IAuthenticationSchemeProvider authenticationSchemeProvider;

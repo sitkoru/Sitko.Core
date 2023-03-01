@@ -30,7 +30,7 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
         var repo = scope.GetService<TestRemoteRepository>();
         var result = await repo.CountAsync();
 
-        Assert.Equal(result, 6);
+        result.Should().Be(6);
     }
 
     [Fact]
@@ -39,8 +39,7 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
         var scope = await GetScopeAsync();
         var repo = scope.GetService<TestRemoteRepository>();
         var result = await repo.CountAsync(q => q.Where(t => t.FooId == 5));
-
-        Assert.Equal(result, 2);
+        result.Should().Be(2);
     }
 
     [Fact]
