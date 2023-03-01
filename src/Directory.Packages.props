@@ -3,15 +3,15 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.5.0"/>
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.5.1"/>
     <PackageVersion Include="IL.FluentValidation.Extensions.Options" Version="10.0.1"/>
     <PackageVersion Include="JetBrains.Annotations" Version="2022.3.1"/>
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.2"/>
-    <PackageVersion Include="PeanutButter.DuckTyping" Version="3.0.99"/>
+    <PackageVersion Include="PeanutButter.DuckTyping" Version="3.0.100"/>
     <PackageVersion Include="Tempus" Version="1.0.0"/>
     <PackageVersion Include="Scrutor" Version="4.2.1"/>
     <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0"/>
-    <PackageVersion Include="VaultSharp.Extensions.Configuration" Version="0.5.2"/>
+    <PackageVersion Include="VaultSharp.Extensions.Configuration" Version="0.5.3"/>
     <PackageVersion Include="Consul" Version="1.6.10.8"/>
     <PackageVersion Include="TeamsHook.NET" Version="0.1.0.18"/>
     <PackageVersion Include="Telegram.Bot" Version="18.0.0"/>
@@ -25,7 +25,7 @@
     <PackageVersion Include="CompareNETObjects" Version="4.79.0"/>
     <PackageVersion Include="Serialize.Linq" Version="2.0.0"/>
     <PackageVersion Include="MimeMapping" Version="1.0.1.50"/>
-    <PackageVersion Include="AWSSDK.S3" Version="3.7.103.9"/>
+    <PackageVersion Include="AWSSDK.S3" Version="3.7.103.17"/>
     <PackageVersion Include="Remote.Linq.Newtonsoft.Json" Version="7.1.0"/>
   </ItemGroup>
   <!--Sitko libraries-->
@@ -41,7 +41,7 @@
     <PackageVersion Include="AspNetCore.HealthChecks.Aws.S3" Version="6.0.2"/>
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
     <PackageVersion Include="Swashbuckle.AspNetCore.Annotations" Version="6.5.0"/>
-    <PackageVersion Include="Duende.AccessTokenManagement.OpenIdConnect" Version="1.0.0"/>
+    <PackageVersion Include="Duende.AccessTokenManagement.OpenIdConnect" Version="1.1.0"/>
   </ItemGroup>
   <!--Email libraries-->
   <ItemGroup>
@@ -53,9 +53,9 @@
   </ItemGroup>
   <!--Blazor libraries-->
   <ItemGroup>
-    <PackageVersion Include="AntDesign" Version="0.14.2"/>
+    <PackageVersion Include="AntDesign" Version="0.14.4"/>
     <PackageVersion Include="Tewr.Blazor.FileReader" Version="3.3.1.21360"/>
-    <PackageVersion Include="MudBlazor" Version="6.1.8"/>
+    <PackageVersion Include="MudBlazor" Version="6.1.9"/>
   </ItemGroup>
   <!--Tests libraries-->
   <ItemGroup>
@@ -64,7 +64,7 @@
     <PackageVersion Include="Serilog.Sinks.XUnit" Version="3.0.5"/>
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5"/>
     <PackageVersion Include="xunit" Version="2.4.2"/>
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.4.1"/>
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.5.0"/>
   </ItemGroup>
   <!--Hangfire libraries-->
   <ItemGroup>
@@ -94,7 +94,7 @@
   </ItemGroup>
   <!--Elastic libraries-->
   <ItemGroup>
-    <PackageVersion Include="Elastic.Apm.NetCoreAll" Version="1.19.0"/>
+    <PackageVersion Include="Elastic.Apm.NetCoreAll" Version="1.20.0"/>
     <PackageVersion Include="Elastic.Apm.SerilogEnricher" Version="1.5.3"/>
     <PackageVersion Include="Elastic.CommonSchema.Serilog" Version="1.5.3"/>
     <PackageVersion Include="NEST" Version="7.17.5"/>
@@ -117,8 +117,8 @@
   <!--Grpc and protobuf libraries-->
   <ItemGroup>
     <PackageVersion Include="Grpc.Core.Api" Version="2.51.0"/>
-    <PackageVersion Include="Grpc.Tools" Version="2.51.0"/>
-    <PackageVersion Include="Google.Protobuf" Version="3.21.12"/>
+    <PackageVersion Include="Grpc.Tools" Version="2.52.0"/>
+    <PackageVersion Include="Google.Protobuf" Version="3.22.0"/>
     <PackageVersion Include="Grpc.Net.ClientFactory" Version="2.51.0"/>
     <PackageVersion Include="Grpc.Net.Client.Web" Version="2.51.0"/>
     <PackageVersion Include="Grpc.AspNetCore" Version="2.51.0"/>
