@@ -89,9 +89,6 @@ public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOption
     {
         if (options.LoggingEnabled)
         {
-            var rolloverAlias = string.IsNullOrEmpty(options.LoggingLiferRolloverAlias)
-                ? $"dotnet-logs-{context.Name.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}-{context.Environment.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}"
-                : options.LoggingLiferRolloverAlias;
             var sinkOptions = new ElasticsearchSinkOptions(options.ElasticSearchUrls)
             {
                 CustomFormatter = new EcsTextFormatter(),
@@ -101,21 +98,24 @@ public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOption
                 IndexFormat =
                     options.LoggingIndexFormat ??
                     $"dotnet-logs-{context.Name.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}-{context.Name.ToLower(CultureInfo.InvariantCulture).Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
-                TemplateName = rolloverAlias,
                 EmitEventFailure = options.EmitEventFailure,
                 FailureCallback = options.FailureCallback,
                 FailureSink = options.FailureSink,
                 TypeName = options.LogIndexTypeName
             };
-
             if (!string.IsNullOrEmpty(options.LoggingLifeCycleName))
             {
                 sinkOptions.TemplateCustomSettings = new Dictionary<string, string>
                 {
-                    { "lifecycle.name", options.LoggingLifeCycleName },
-                    { "lifecycle.rollover_alias", rolloverAlias }
+                    { "lifecycle.name", options.LoggingLifeCycleName }
                 };
-                sinkOptions.IndexAliases = new[] { rolloverAlias };
+            }
+
+            if (!string.IsNullOrEmpty(options.LoggingRolloverAlias))
+            {
+                sinkOptions.TemplateName = options.LoggingRolloverAlias;
+                sinkOptions.IndexAliases = new[] { options.LoggingRolloverAlias };
+                sinkOptions.TemplateCustomSettings["lifecycle.rollover_alias"] = options.LoggingRolloverAlias;
             }
 
             loggerConfiguration = loggerConfiguration

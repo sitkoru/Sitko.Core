@@ -36,7 +36,7 @@ public class ElasticStackModuleOptions : BaseModuleOptions
     public AutoRegisterTemplateVersion? LoggingTemplateVersion { get; set; }
     public int? LoggingNumberOfReplicas { get; set; }
     public string? LoggingLifeCycleName { get; set; }
-    public string? LoggingLiferRolloverAlias { get; set; }
+    public string? LoggingRolloverAlias { get; set; }
     public EmitEventFailureHandling EmitEventFailure { get; set; } = EmitEventFailureHandling.WriteToSelfLog;
     public ILogEventSink? FailureSink { get; set; }
     public Action<LogEvent>? FailureCallback { get; set; }
