@@ -30,7 +30,7 @@
   </ItemGroup>
   <!--Sitko libraries-->
   <ItemGroup>
-    <PackageVersion Include="Sitko.FluentValidation" Version="1.8.2"/>
+    <PackageVersion Include="Sitko.FluentValidation" Version="1.9.1"/>
     <PackageVersion Include="Sitko.Blazor.ScriptInjector" Version="2.0.1"/>
   </ItemGroup>
   <!--ASP.NET Core libraries-->
