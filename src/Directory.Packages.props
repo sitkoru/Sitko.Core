@@ -7,7 +7,7 @@
     <PackageVersion Include="IL.FluentValidation.Extensions.Options" Version="10.0.1"/>
     <PackageVersion Include="JetBrains.Annotations" Version="2022.3.1"/>
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.2"/>
-    <PackageVersion Include="PeanutButter.DuckTyping" Version="3.0.100"/>
+    <PackageVersion Include="PeanutButter.DuckTyping" Version="3.0.106"/>
     <PackageVersion Include="Tempus" Version="1.0.0"/>
     <PackageVersion Include="Scrutor" Version="4.2.1"/>
     <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0"/>
