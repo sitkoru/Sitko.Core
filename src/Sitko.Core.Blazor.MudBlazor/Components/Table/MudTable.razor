@@ -66,7 +66,14 @@
             <MudText>Loading...</MudText>
         </LoadingContent>
         <PagerContent>
-            <MudTablePager/>
+            @if (PagerContent != null)
+            {
+                @PagerContent
+            }
+            else
+            {
+                <MudTablePager/>
+            }
         </PagerContent>
     </MudTable>
 }
