@@ -119,7 +119,7 @@
     <PackageVersion Include="Grpc.Core.Api" Version="2.51.0"/>
     <PackageVersion Include="Grpc.Tools" Version="2.52.0"/>
     <PackageVersion Include="Google.Protobuf" Version="3.22.0"/>
-    <PackageVersion Include="Grpc.Net.ClientFactory" Version="2.51.0"/>
+    <PackageVersion Include="Grpc.Net.ClientFactory" Version="2.52.0"/>
     <PackageVersion Include="Grpc.Net.Client.Web" Version="2.51.0"/>
     <PackageVersion Include="Grpc.AspNetCore" Version="2.51.0"/>
     <PackageVersion Include="Grpc.AspNetCore.Server.Reflection" Version="2.51.0"/>
