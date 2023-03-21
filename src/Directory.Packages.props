@@ -70,7 +70,7 @@
   <ItemGroup>
     <PackageVersion Include="Hangfire.Core" Version="1.7.33"/>
     <PackageVersion Include="Hangfire.AspNetCore" Version="1.7.33"/>
-    <PackageVersion Include="Hangfire.PostgreSql" Version="1.9.10"/>
+    <PackageVersion Include="Hangfire.PostgreSql" Version="1.19.12"/>
     <PackageVersion Include="AspNetCore.HealthChecks.Hangfire" Version="6.0.2"/>
   </ItemGroup>
   <!--MS libraries-->
