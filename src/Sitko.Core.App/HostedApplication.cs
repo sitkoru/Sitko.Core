@@ -10,7 +10,6 @@ using Serilog.Events;
 using Serilog.Extensions.Logging;
 using Sitko.Core.App.Helpers;
 using Sitko.Core.App.Logging;
-using Thinktecture.Extensions.Configuration;
 
 namespace Sitko.Core.App;
 
@@ -101,7 +100,6 @@ public abstract class HostedApplication : Application
         InitApplication();
 
         LogInternal("Create main host builder");
-        var serilogConfiguration = new SerilogConfiguration();
         var hostBuilder = CreateHostBuilder(Args)
             .UseDefaultServiceProvider(options =>
             {
@@ -127,27 +125,27 @@ public abstract class HostedApplication : Application
         hostBuilder.ConfigureAppConfiguration((_, builder) =>
             {
                 ConfigureConfiguration(bootApplicationContext, builder);
-                LoggingExtensions.ConfigureSerilogConfiguration(builder, serilogConfiguration);
             })
             .ConfigureServices((_, services) =>
             {
                 RegisterApplicationServices<HostedApplicationContext>(bootApplicationContext, services);
                 services.AddHostedService<ApplicationLifetimeService>();
-            }).ConfigureLogging((_, builder) =>
+            }).ConfigureLogging((builderContext, builder) =>
             {
                 LogInternal("Configure logging");
-                LoggingExtensions.ConfigureSerilog(bootApplicationContext, builder, serilogConfiguration,
+                var runtimeContext = GetContext(builderContext.HostingEnvironment, builderContext.Configuration);
+                LoggingExtensions.ConfigureSerilog(runtimeContext, builder,
                     configuration =>
                     {
                         configuration = configuration.Enrich.WithMachineName();
-                        if (bootApplicationContext.Options.EnableConsoleLogging == true)
+                        if (runtimeContext.Options.EnableConsoleLogging == true)
                         {
                             configuration = configuration.WriteTo.Console(
-                                outputTemplate: bootApplicationContext.Options.ConsoleLogFormat,
+                                outputTemplate: runtimeContext.Options.ConsoleLogFormat,
                                 formatProvider: CultureInfo.InvariantCulture);
                         }
 
-                        return ConfigureLogging(bootApplicationContext, configuration);
+                        return ConfigureLogging(runtimeContext, configuration);
                     });
             });
         configure?.Invoke(hostBuilder);
@@ -253,4 +251,3 @@ public class HostedApplicationContext : BaseApplicationContext
     protected override void ConfigureApplicationOptions(ApplicationOptions options) =>
         options.EnableConsoleLogging ??= environment.IsDevelopment();
 }
-

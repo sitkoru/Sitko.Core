@@ -12,7 +12,6 @@
     <PackageReference Include="Sitko.FluentValidation" />
     <PackageReference Include="Tempus" />
     <PackageReference Include="Scrutor" />
-    <PackageReference Include="Thinktecture.Extensions.Serilog.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Extensions.Localization.Abstractions" />
