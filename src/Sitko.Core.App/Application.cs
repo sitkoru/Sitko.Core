@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 using Sitko.Core.App.Localization;
+using Sitko.Core.App.Logging;
 using Sitko.FluentValidation;
 using Tempus;
 
@@ -119,6 +120,8 @@ public abstract class Application : IApplication, IAsyncDisposable
         {
             moduleRegistration.ConfigureAppConfiguration(appContext, builder);
         }
+
+        builder.Add(new SerilogDynamicConfigurationSource());
     }
 
     protected virtual LoggerConfiguration ConfigureLogging(IApplicationContext applicationContext,
@@ -450,4 +453,3 @@ public abstract class Application : IApplication, IAsyncDisposable
             configureOptions?.Invoke(moduleOptions);
         }, optionsKey);
 }
-

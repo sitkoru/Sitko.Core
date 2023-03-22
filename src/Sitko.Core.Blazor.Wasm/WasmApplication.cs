@@ -11,7 +11,6 @@ using Sitko.Core.App.Localization;
 using Sitko.Core.App.Logging;
 using Sitko.Core.Blazor.Components;
 using Sitko.Core.Blazor.Forms;
-using Thinktecture.Extensions.Configuration;
 
 namespace Sitko.Core.Blazor.Wasm;
 
@@ -76,9 +75,7 @@ public abstract class WasmApplication : Application
         });
         // Logging
         LogInternal("Configure logging");
-        var serilogConfiguration = new SerilogConfiguration();
-        LoggingExtensions.ConfigureSerilogConfiguration(hostBuilder.Configuration, serilogConfiguration);
-        LoggingExtensions.ConfigureSerilog(applicationContext, hostBuilder.Logging, serilogConfiguration,
+        LoggingExtensions.ConfigureSerilog(applicationContext, hostBuilder.Logging,
             configuration =>
             {
                 configuration = configuration.WriteTo.BrowserConsole(
@@ -150,4 +147,3 @@ public abstract class WasmApplication : Application
         serviceProvider.GetRequiredService<IWebAssemblyHostEnvironment>(),
         serviceProvider.GetRequiredService<IConfiguration>());
 }
-
