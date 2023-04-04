@@ -96,18 +96,19 @@ public abstract class WebApplication<TStartup> : WebApplication where TStartup :
             });
     }
 
-    protected override void PostConfigureHostBuilder(IHostBuilder hostBuilder)
+    protected override void PostConfigureHostBuilder(IApplicationContext applicationContext, IHostBuilder hostBuilder)
     {
-        base.PostConfigureHostBuilder(hostBuilder);
+        base.PostConfigureHostBuilder(applicationContext, hostBuilder);
         hostBuilder.ConfigureWebHostDefaults(webBuilder =>
         {
             webBuilder.UseSetting("ApplicationId", Id.ToString());
             webBuilder.UseStartup<TStartup>();
-            ConfigureWebHostDefaults(webBuilder);
+            ConfigureWebHostDefaults(applicationContext, webBuilder);
         });
     }
 
-    protected virtual void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)
+    protected virtual void ConfigureWebHostDefaults(IApplicationContext applicationContext,
+        IWebHostBuilder webHostBuilder)
     {
     }
 
@@ -143,4 +144,3 @@ public static class WebApplicationExtensions
         return application;
     }
 }
-

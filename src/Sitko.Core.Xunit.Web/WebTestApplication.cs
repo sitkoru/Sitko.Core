@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Sitko.Core.App;
 using Sitko.Core.App.Web;
 
 namespace Sitko.Core.Xunit.Web;
@@ -10,9 +11,10 @@ public abstract class WebTestApplication<TStartup> : WebApplication<TStartup> wh
     {
     }
 
-    protected override void ConfigureWebHostDefaults(IWebHostBuilder webHostBuilder)
+    protected override void ConfigureWebHostDefaults(IApplicationContext applicationContext,
+        IWebHostBuilder webHostBuilder)
     {
-        base.ConfigureWebHostDefaults(webHostBuilder);
+        base.ConfigureWebHostDefaults(applicationContext, webHostBuilder);
         webHostBuilder.UseTestServer();
     }
 }
