@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Sitko.Core.Storage.S3\Sitko.Core.Storage.S3.csproj"/>
-    <ProjectReference Include="..\..\src\Sitko.Core.Storage.Metadata.Postgres\Sitko.Core.Storage.Metadata.Postgres.csproj"/>
-    <ProjectReference Include="..\Sitko.Core.Storage.Tests\Sitko.Core.Storage.Tests.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.Storage.S3\Sitko.Core.Storage.S3.csproj" />
+    <ProjectReference Include="..\..\src\Sitko.Core.Storage.Metadata.Postgres\Sitko.Core.Storage.Metadata.Postgres.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Storage.Tests\Sitko.Core.Storage.Tests.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\Sitko.Core.Storage.Tests\Data\file.txt">
@@ -15,7 +15,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.4" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>
 
 </Project>
