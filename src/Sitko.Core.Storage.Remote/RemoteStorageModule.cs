@@ -9,6 +9,7 @@ public class
     where TStorageOptions : StorageOptions, IRemoteStorageOptions, new()
 {
     public override string OptionsKey => $"Storage:Remote:{typeof(TStorageOptions).Name}";
+    public override string[] OptionKeys => new[] { "Storage:Remote:Default", OptionsKey };
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TStorageOptions startupOptions)

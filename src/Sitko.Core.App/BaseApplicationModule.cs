@@ -45,6 +45,7 @@ public abstract class BaseApplicationModule<TModuleOptions> : IApplicationModule
         string[] args) => Task.FromResult(true);
 
     public abstract string OptionsKey { get; }
+    public virtual string[] OptionKeys => new[] { OptionsKey };
     public virtual bool AllowMultiple => false;
 
     public TModuleOptions GetOptions(IServiceProvider serviceProvider) =>
@@ -64,4 +65,3 @@ public abstract class BaseModuleOptions
     {
     }
 }
-

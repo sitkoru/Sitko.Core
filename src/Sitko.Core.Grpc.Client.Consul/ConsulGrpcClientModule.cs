@@ -8,7 +8,9 @@ public class ConsulGrpcClientModule<TClient> : GrpcClientModule<TClient, ConsulG
     ConsulGrpcClientModuleOptions<TClient>>
     where TClient : ClientBase<TClient>
 {
-    public override string OptionsKey => "Grpc:Client:Consul";
+    public override string OptionsKey => $"Grpc:Client:Consul:{typeof(TClient).Name}";
+
+    public override string[] OptionKeys => new[] { "Grpc:Client:Consul:Default", OptionsKey };
 
     public override IEnumerable<Type> GetRequiredModules(IApplicationContext applicationContext,
         ConsulGrpcClientModuleOptions<TClient> options) =>
@@ -19,4 +21,3 @@ public class ConsulGrpcClientModuleOptions<TClient> : GrpcClientModuleOptions<TC
     where TClient : ClientBase<TClient>
 {
 }
-

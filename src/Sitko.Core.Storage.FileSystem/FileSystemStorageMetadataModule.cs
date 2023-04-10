@@ -7,5 +7,6 @@ public class FileSystemStorageMetadataModule<TStorageOptions> : BaseStorageMetad
     where TStorageOptions : StorageOptions, IFileSystemStorageOptions
 {
     public override string OptionsKey => $"Storage:Metadata:FileSystem:{typeof(TStorageOptions).Name}";
+    public override string[] OptionKeys => new[] { "Storage:Metadata:FileSystem:Default", OptionsKey };
 }
 

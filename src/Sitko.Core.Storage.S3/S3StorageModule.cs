@@ -14,6 +14,7 @@ public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3Sto
     where TS3StorageOptions : S3StorageOptions, new()
 {
     public override string OptionsKey => $"Storage:S3:{typeof(TS3StorageOptions).Name}";
+    public override string[] OptionKeys => new[] { "Storage:S3:Default", OptionsKey };
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TS3StorageOptions startupOptions)

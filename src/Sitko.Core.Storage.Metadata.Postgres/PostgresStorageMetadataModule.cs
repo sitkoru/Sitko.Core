@@ -12,6 +12,7 @@ public class
     where TStorageOptions : StorageOptions
 {
     public override string OptionsKey => $"Storage:Metadata:Postgres:{typeof(TStorageOptions).Name}";
+    public override string[] OptionKeys => new[] { "Storage:Metadata:Postgres:Default", OptionsKey };
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         PostgresStorageMetadataModuleOptions<TStorageOptions> startupOptions)

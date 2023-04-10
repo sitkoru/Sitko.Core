@@ -17,7 +17,7 @@ internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : A
     private readonly TModule instance;
 
     private readonly Dictionary<Guid, TModuleOptions> optionsCache = new();
-    private readonly string optionsKey;
+    private readonly string[] optionKeys;
     private readonly Type? validatorType;
 
     public ApplicationModuleRegistration(
@@ -27,7 +27,7 @@ internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : A
     {
         this.instance = instance;
         this.configureOptions = configureOptions;
-        this.optionsKey = optionsKey ?? instance.OptionsKey;
+        this.optionKeys = !string.IsNullOrEmpty(optionsKey) ? new[] { optionsKey } : instance.OptionKeys;
         var optionsInstance = Activator.CreateInstance<TModuleOptions>();
         if (optionsInstance is IModuleOptionsWithValidation moduleOptionsWithValidation)
         {
@@ -45,19 +45,23 @@ internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : A
     public override IApplicationModule GetInstance() => instance;
 
     public override (string? optionsKey, object options) GetOptions(IApplicationContext applicationContext) =>
-        (optionsKey, CreateOptions(applicationContext));
+        (optionKeys.Last(), CreateOptions(applicationContext));
 
     public override ApplicationModuleRegistration ConfigureOptions(IApplicationContext context,
         IServiceCollection services)
     {
-        var builder = services.AddOptions<TModuleOptions>()
-            .Bind(context.Configuration.GetSection(optionsKey))
-            .PostConfigure(
-                options =>
-                {
-                    options.Configure(context);
-                    configureOptions?.Invoke(context, options);
-                });
+        var builder = services.AddOptions<TModuleOptions>();
+        foreach (var optionsKey in optionKeys)
+        {
+            builder = builder.Bind(context.Configuration.GetSection(optionsKey));
+        }
+
+        builder = builder.PostConfigure(
+            options =>
+            {
+                options.Configure(context);
+                configureOptions?.Invoke(context, options);
+            });
 
         if (validatorType is not null)
         {
@@ -135,7 +139,11 @@ internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : A
         else
         {
             options = Activator.CreateInstance<TModuleOptions>();
-            applicationContext.Configuration.Bind(optionsKey, options);
+            foreach (var optionsKey in optionKeys)
+            {
+                applicationContext.Configuration.Bind(optionsKey, options);
+            }
+
             options.Configure(applicationContext);
             configureOptions?.Invoke(applicationContext, options);
             optionsCache[applicationContext.Id] = options;
@@ -228,5 +236,3 @@ public abstract class ApplicationModuleRegistration
 
     public abstract bool IsEnabled(IApplicationContext context);
 }
-
-

@@ -11,6 +11,8 @@ public class ExternalGrpcClientModule<TClient> : GrpcClientModule<TClient,
 {
     public override string OptionsKey => $"Grpc:Client:External:{typeof(TClient).Name}";
 
+    public override string[] OptionKeys => new[] { "Grpc:Client:External:Default", OptionsKey };
+
     protected override void RegisterResolver(IServiceCollection services,
         ExternalGrpcClientModuleOptions<TClient> config) =>
         services.AddSingleton<IGrpcServiceAddressResolver<TClient>>(

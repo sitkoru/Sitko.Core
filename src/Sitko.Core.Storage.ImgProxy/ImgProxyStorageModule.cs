@@ -9,6 +9,7 @@ public class
     where TStorageOptions : StorageOptions
 {
     public override string OptionsKey => $"Storage:ImgProxy:{typeof(TStorageOptions).Name}";
+    public override string[] OptionKeys => new[] { "Storage:ImgProxy:Default", OptionsKey };
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         BaseApplicationModuleOptions startupOptions)

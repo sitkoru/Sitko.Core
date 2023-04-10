@@ -10,6 +10,7 @@ public class
     where TDbContext : DbContext
 {
     public override string OptionsKey => $"Db:InMemory:{typeof(TDbContext).Name}";
+    public override string[] OptionKeys => new[] { "Db:InMemory:Default", OptionsKey };
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         InMemoryDatabaseModuleOptions<TDbContext> startupOptions)
@@ -48,4 +49,3 @@ public class
             applicationContext);
     }
 }
-
