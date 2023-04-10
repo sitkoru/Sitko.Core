@@ -12,6 +12,8 @@ public class
 {
     public override string OptionsKey => $"Db:Postgres:{typeof(TDbContext).Name}";
 
+    public override string[] OptionKeys => new[] { "Db:Postgres", OptionsKey };
+
     public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider)
     {
         await base.InitAsync(applicationContext, serviceProvider);
@@ -103,4 +105,3 @@ public class
             applicationContext);
     }
 }
-
