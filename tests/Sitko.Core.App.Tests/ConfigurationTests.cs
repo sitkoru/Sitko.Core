@@ -24,11 +24,30 @@ public class ConfigurationTests : BaseTest
         options.Should().HaveCount(3);
     }
 
+
+    public static IEnumerable<object[]> BaseOptionsData =>
+        new List<object[]>
+        {
+            new object[]
+            {
+                "Baz__Foo", Guid.NewGuid().ToString(), "Baz__Bar", Guid.NewGuid().ToString()
+            }, // all from base options
+            new object[]
+            {
+                "Baz__Inner__Foo", Guid.NewGuid().ToString(), "Baz__Bar", Guid.NewGuid().ToString()
+            }, // first from module, second from base
+            new object[]
+            {
+                "Baz__Foo", Guid.NewGuid().ToString(), "Baz__Inner__Bar", Guid.NewGuid().ToString()
+            }, // first from base, second from module
+            new object[]
+            {
+                "Baz__Inner__Foo", Guid.NewGuid().ToString(), "Baz__Inner__Bar", Guid.NewGuid().ToString()
+            }, // all from module options
+        };
+
     [Theory]
-    [InlineData("Baz__Foo", "123", "Baz__Bar", "456")] // all from base options
-    [InlineData("Baz__Inner__Foo", "123", "Baz__Bar", "456")] // first from module, second from base
-    [InlineData("Baz__Foo", "123", "Baz__Inner__Bar", "456")] // first from base, second from module
-    [InlineData("Baz__Inner__Foo", "123", "Baz__Inner__Bar", "456")] // all from module options
+    [MemberData(nameof(BaseOptionsData))]
     public async Task BaseOptions(string fooKey, string fooValue, string barKey, string barValue)
     {
         Environment.SetEnvironmentVariable(fooKey, fooValue);
@@ -39,6 +58,8 @@ public class ConfigurationTests : BaseTest
         var options = sp.GetRequiredService<IOptions<TestModuleBazOptions>>();
         options.Value.Foo.Should().Be(fooValue);
         options.Value.Bar.Should().Be(barValue);
+        Environment.SetEnvironmentVariable(fooKey,"");
+        Environment.SetEnvironmentVariable(barKey, "");
     }
 }
 
