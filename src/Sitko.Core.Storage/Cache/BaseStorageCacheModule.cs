@@ -23,6 +23,7 @@ public class
         FileStorageCacheOptions> where TStorageOptions : StorageOptions
 {
     public override string OptionsKey => $"Storage:Cache:FileSystem:{typeof(TStorageOptions).Name}";
+    public override string[] OptionKeys => new[] { "Storage:Cache:FileSystem:Default", OptionsKey };
 }
 
 public class
@@ -31,5 +32,6 @@ public class
         InMemoryStorageCacheOptions> where TStorageOptions : StorageOptions
 {
     public override string OptionsKey => $"Storage:Cache:InMemory:{typeof(TStorageOptions).Name}";
+    public override string[] OptionKeys => new[] { "Storage:Cache:InMemory:Default", OptionsKey };
 }
 

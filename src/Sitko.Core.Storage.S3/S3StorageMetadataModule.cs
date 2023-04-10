@@ -7,5 +7,6 @@ public class S3StorageMetadataModule<TStorageOptions> : BaseStorageMetadataModul
     where TStorageOptions : S3StorageOptions, new()
 {
     public override string OptionsKey => $"Storage:Metadata:S3:{typeof(TStorageOptions).Name}";
+    public override string[] OptionKeys => new[] { "Storage:Metadata:S3:Default", OptionsKey };
 }
 

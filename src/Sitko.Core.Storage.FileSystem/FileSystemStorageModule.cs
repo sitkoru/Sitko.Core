@@ -5,4 +5,5 @@ public class
     where TStorageOptions : StorageOptions, IFileSystemStorageOptions, new()
 {
     public override string OptionsKey => $"Storage:FileSystem:{typeof(TStorageOptions).Name}";
+    public override string[] OptionKeys => new[] { "Storage:FileSystem:Default", OptionsKey };
 }
