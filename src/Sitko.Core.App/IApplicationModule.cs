@@ -7,7 +7,7 @@ namespace Sitko.Core.App;
 
 public interface IApplicationModule<in TModuleOptions> : IApplicationModule where TModuleOptions : class, new()
 {
-    string OptionsKey { get; }
+    public string[] OptionKeys { get; }
     bool AllowMultiple { get; }
 
     void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
