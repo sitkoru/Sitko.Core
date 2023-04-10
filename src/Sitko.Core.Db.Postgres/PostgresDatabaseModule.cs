@@ -12,7 +12,7 @@ public class
 {
     public override string OptionsKey => $"Db:Postgres:{typeof(TDbContext).Name}";
 
-        public override string[] OptionKeys => new[] { "Db:Postgres:Default", OptionsKey };
+    public override string[] OptionKeys => new[] { "Db:Postgres:Default", OptionsKey };
 
     public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider)
     {
