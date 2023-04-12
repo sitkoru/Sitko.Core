@@ -82,7 +82,7 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="7.0.1"/>
     <PackageVersion Include="Microsoft.Extensions.Localization.Abstractions" Version="7.0.4"/>
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0"/>
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="7.0.4"/>
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="7.0.5"/>
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0"/>
   </ItemGroup>
   <!--EF Core libraries-->
