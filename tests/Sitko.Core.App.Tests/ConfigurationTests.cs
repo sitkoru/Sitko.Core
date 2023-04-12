@@ -52,6 +52,7 @@ public class ConfigurationTests : BaseTest
     {
         Environment.SetEnvironmentVariable(fooKey, fooValue);
         Environment.SetEnvironmentVariable(barKey, barValue);
+        await Task.Delay(TimeSpan.FromSeconds(1));
         var app = new TestApplication(Array.Empty<string>());
         app.AddModule<TestModuleBaz, TestModuleBazOptions>();
         var sp = await app.GetServiceProviderAsync();
