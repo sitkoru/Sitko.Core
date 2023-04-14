@@ -55,7 +55,7 @@
   <ItemGroup>
     <PackageVersion Include="AntDesign" Version="0.14.4"/>
     <PackageVersion Include="Tewr.Blazor.FileReader" Version="3.3.1.21360"/>
-    <PackageVersion Include="MudBlazor" Version="6.1.9"/>
+    <PackageVersion Include="MudBlazor" Version="6.2.2"/>
   </ItemGroup>
   <!--Tests libraries-->
   <ItemGroup>
