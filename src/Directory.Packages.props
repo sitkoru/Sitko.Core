@@ -42,6 +42,7 @@
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
     <PackageVersion Include="Swashbuckle.AspNetCore.Annotations" Version="6.5.0"/>
     <PackageVersion Include="Duende.AccessTokenManagement.OpenIdConnect" Version="1.1.0"/>
+    <PackageVersion Include="Sentry.AspNetCore" Version="3.30.0"/>
   </ItemGroup>
   <!--Email libraries-->
   <ItemGroup>
