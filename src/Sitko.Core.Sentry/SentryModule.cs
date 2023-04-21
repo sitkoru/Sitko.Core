@@ -21,6 +21,7 @@ public class SentryModule : BaseApplicationModule<SentryModuleOptions>,
                     o.Dsn = startupOptions.Dsn;
                     o.Debug = startupOptions.EnableDebug;
                     o.TracesSampleRate = startupOptions.TracesSampleRate;
+                    startupOptions.ConfigureSentryOptions?.Invoke(context, o, startupOptions);
                 });
             });
         });

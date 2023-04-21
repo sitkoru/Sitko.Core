@@ -10,6 +10,7 @@ public class SentryModuleOptions : BaseModuleOptions
     public bool EnableDebug { get; set; }
     public double TracesSampleRate { get; set; } = 1.0;
     public Action<IApplicationContext, ISentryBuilder, SentryModuleOptions>? ConfigureSentry { get; set; }
+    public Action<IApplicationContext, SentryAspNetCoreOptions, SentryModuleOptions>? ConfigureSentryOptions { get; set; }
 }
 
 public class SentryModuleOptionsValidator : AbstractValidator<SentryModuleOptions>
