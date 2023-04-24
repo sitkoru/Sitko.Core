@@ -10,7 +10,7 @@ public class SentryModule : BaseApplicationModule<SentryModuleOptions>,
 {
     public override string OptionsKey => "Sentry";
 
-    public void ConfigureHostBuilder(IApplicationContext context, IHostBuilder hostBuilder, SentryModuleOptions startupOptions) =>
+    public void PostConfigureHostBuilder(IApplicationContext context, IHostBuilder hostBuilder, SentryModuleOptions startupOptions) =>
         hostBuilder.ConfigureWebHostDefaults(webHostBuilder =>
         {
             webHostBuilder.UseSentry(builder =>
