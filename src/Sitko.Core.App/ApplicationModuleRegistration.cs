@@ -97,6 +97,18 @@ internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : A
         return this;
     }
 
+    public override ApplicationModuleRegistration PostConfigureHostBuilder(IApplicationContext context,
+        IHostBuilder hostBuilder)
+    {
+        if (instance is IHostBuilderModule<TModuleOptions> hostBuilderModule)
+        {
+            var options = CreateOptions(context);
+            hostBuilderModule.PostConfigureHostBuilder(context, hostBuilder, options);
+        }
+
+        return this;
+    }
+
     public override ApplicationModuleRegistration ConfigureAppConfiguration(IApplicationContext context,
         IConfigurationBuilder configurationBuilder)
     {
@@ -225,6 +237,9 @@ public abstract class ApplicationModuleRegistration
     public abstract Task InitAsync(IApplicationContext context, IServiceProvider serviceProvider);
 
     public abstract ApplicationModuleRegistration ConfigureHostBuilder(IApplicationContext context,
+        IHostBuilder hostBuilder);
+
+    public abstract ApplicationModuleRegistration PostConfigureHostBuilder(IApplicationContext context,
         IHostBuilder hostBuilder);
 
     public abstract ApplicationModuleRegistration ConfigureAppConfiguration(IApplicationContext context,

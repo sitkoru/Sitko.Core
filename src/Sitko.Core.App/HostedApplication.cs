@@ -150,6 +150,10 @@ public abstract class HostedApplication : Application
             });
         configure?.Invoke(hostBuilder);
         PostConfigureHostBuilder(bootApplicationContext, hostBuilder);
+        foreach (var moduleRegistration in GetEnabledModuleRegistrations<IHostBuilderModule>(bootApplicationContext))
+        {
+            moduleRegistration.PostConfigureHostBuilder(bootApplicationContext, hostBuilder);
+        }
         LogInternal("Create host builder done");
         return hostBuilder;
     }
