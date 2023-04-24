@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sitko.Core.Xunit;
@@ -28,40 +29,27 @@ public class ConfigurationTests : BaseTest
     public static IEnumerable<object[]> BaseOptionsData =>
         new List<object[]>
         {
-            new object[]
-            {
-                "Baz__Foo", Guid.NewGuid().ToString(), "Baz__Bar", Guid.NewGuid().ToString()
-            }, // all from base options
-            new object[]
-            {
-                "Baz__Inner__Foo", Guid.NewGuid().ToString(), "Baz__Bar", Guid.NewGuid().ToString()
-            }, // first from module, second from base
-            new object[]
-            {
-                "Baz__Foo", Guid.NewGuid().ToString(), "Baz__Inner__Bar", Guid.NewGuid().ToString()
-            }, // first from base, second from module
-            new object[]
-            {
-                "Baz__Inner__Foo", Guid.NewGuid().ToString(), "Baz__Inner__Bar", Guid.NewGuid().ToString()
-            }, // all from module options
+            new object[] { "Baz:Foo", Guid.NewGuid().ToString(), "Baz:Bar", Guid.NewGuid().ToString() }, // all from base options
+            new object[] { "Baz:Inner:Foo", Guid.NewGuid().ToString(), "Baz:Bar", Guid.NewGuid().ToString() }, // first from module, second from base
+            new object[] { "Baz:Foo", Guid.NewGuid().ToString(), "Baz:Inner:Bar", Guid.NewGuid().ToString() }, // first from base, second from module
+            new object[] { "Baz:Inner:Foo", Guid.NewGuid().ToString(), "Baz:Inner:Bar", Guid.NewGuid().ToString() }, // all from module options
         };
 
     [Theory]
     [MemberData(nameof(BaseOptionsData))]
     public async Task BaseOptions(string fooKey, string fooValue, string barKey, string barValue)
     {
-        Environment.SetEnvironmentVariable(fooKey, fooValue);
-        Environment.SetEnvironmentVariable(barKey, barValue);
-        Environment.GetEnvironmentVariable(fooKey).Should().Be(fooValue);
-        Environment.GetEnvironmentVariable(barKey).Should().Be(barValue);
+        var dict = new Dictionary<string, string?> { { fooKey, fooValue }, { barKey, barValue } };
         var app = new TestApplication(Array.Empty<string>());
+        app.ConfigureAppConfiguration((_, builder) =>
+        {
+            builder.AddInMemoryCollection(dict);
+        });
         app.AddModule<TestModuleBaz, TestModuleBazOptions>();
         var sp = await app.GetServiceProviderAsync();
         var options = sp.GetRequiredService<IOptions<TestModuleBazOptions>>();
         options.Value.Foo.Should().Be(fooValue);
         options.Value.Bar.Should().Be(barValue);
-        Environment.SetEnvironmentVariable(fooKey,"");
-        Environment.SetEnvironmentVariable(barKey, "");
     }
 }
 
