@@ -44,7 +44,14 @@ public interface IHostBuilderModule<in TModuleOptions> : IHostBuilderModule, IAp
     where TModuleOptions : class, new()
 {
     public void ConfigureHostBuilder(IApplicationContext context, IHostBuilder hostBuilder,
-        TModuleOptions startupOptions);
+        TModuleOptions startupOptions)
+    {
+    }
+
+    public void PostConfigureHostBuilder(IApplicationContext context, IHostBuilder hostBuilder,
+        TModuleOptions startupOptions)
+    {
+    }
 }
 
 public interface ILoggingModule : IApplicationModule
@@ -69,7 +76,3 @@ public interface IConfigurationModule<in TModuleOptions> : IApplicationModule<TM
     void ConfigureAppConfiguration(IConfigurationBuilder configurationBuilder,
         TModuleOptions startupOptions);
 }
-
-
-
-
