@@ -91,7 +91,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.5"/>
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.5"/>
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.5"/>
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.3"/>
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4"/>
   </ItemGroup>
   <!--Elastic libraries-->
   <ItemGroup>
