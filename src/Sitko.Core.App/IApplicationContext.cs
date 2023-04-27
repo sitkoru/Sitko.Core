@@ -74,7 +74,7 @@ public abstract class BaseApplicationContext : IApplicationContext
 
         if (string.IsNullOrEmpty(applicationOptions.Environment))
         {
-            applicationOptions.Version = AspNetEnvironmentName;
+            applicationOptions.Environment = AspNetEnvironmentName;
         }
 
         ConfigureApplicationOptions(applicationOptions);
