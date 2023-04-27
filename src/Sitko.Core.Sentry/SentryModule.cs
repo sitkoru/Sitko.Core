@@ -21,6 +21,10 @@ public class SentryModule : BaseApplicationModule<SentryModuleOptions>,
                     o.Dsn = startupOptions.Dsn;
                     o.Debug = startupOptions.EnableDebug;
                     o.TracesSampleRate = startupOptions.TracesSampleRate;
+                    o.DefaultTags.Add("ServiceId", context.Id.ToString());
+                    o.DefaultTags.Add("Service", context.Name);
+                    o.DefaultTags.Add("Environment", context.Environment);
+                    o.DefaultTags.Add("Version", context.Version);
                     startupOptions.ConfigureSentryOptions?.Invoke(context, o, startupOptions);
                 });
             });
