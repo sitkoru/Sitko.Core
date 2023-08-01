@@ -19,6 +19,7 @@ public abstract class BaseDbModule<TDbContext, TConfig> : BaseApplicationModule<
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddHealthChecks().AddDbContextCheck<TDbContext>($"DB {typeof(TDbContext)} check");
+        services.AddScoped<IDbContextProvider<TDbContext>, DbContextProvider<TDbContext>>();
     }
 }
 

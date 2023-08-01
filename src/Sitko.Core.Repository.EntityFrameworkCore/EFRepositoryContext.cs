@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Sitko.Core.Db;
 using Sitko.FluentValidation.Graph;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore;
@@ -9,7 +10,7 @@ public class EFRepositoryContext<TEntity, TEntityPk, TDbContext> : IRepositoryCo
 {
     private readonly ILoggerFactory loggerFactory;
 
-    public EFRepositoryContext(EFRepositoryDbContextProvider<TDbContext> dbContextProvider,
+    public EFRepositoryContext(IDbContextProvider<TDbContext> dbContextProvider,
         RepositoryFiltersManager filtersManager,
         ILoggerFactory loggerFactory,
         EFRepositoryLock repositoryLock,

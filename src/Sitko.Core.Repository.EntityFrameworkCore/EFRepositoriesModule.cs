@@ -16,7 +16,6 @@ public class EFRepositoriesModule : RepositoriesModule<EFRepositoriesModuleOptio
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
         services.TryAddScoped(typeof(EFRepositoryContext<,,>));
-        services.TryAddScoped(typeof(EFRepositoryDbContextProvider<>));
         services.TryAddScoped<EFRepositoryLock>();
     }
 }
