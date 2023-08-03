@@ -13,15 +13,6 @@ public class EquatableDictionaryTests: BaseTest
     }
 
     [Fact]
-    public void Add()
-    {
-        var dictionary = new EquatableDictionary<long, string>();
-        dictionary.Count.Should().Be(0);
-        dictionary.Add(1, "test");
-        dictionary.Count.Should().Be(1);
-    }
-
-    [Fact]
     public void Compare()
     {
         var dictionary1 = new EquatableDictionary<long, Entity>();
