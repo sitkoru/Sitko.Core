@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="AntDesign.ProLayout" Version="0.14.4.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.5">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.10">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
