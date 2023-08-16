@@ -3,6 +3,6 @@
     <ProjectReference Include="..\..\src\Sitko.Core.Pdf\Sitko.Core.Pdf.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="itext7" Version="7.2.5"/>
+    <PackageReference Include="itext7" Version="8.0.1"/>
   </ItemGroup>
 </Project>
