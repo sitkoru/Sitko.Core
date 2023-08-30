@@ -113,5 +113,46 @@ public class EFDisconnectedTests : BaseTest<EFTestScope>
             Assert.Null(updatedBar);
         }
     }
-}
 
+    [Fact]
+    public async Task UpdateWithExistingInDbContext()
+    {
+        var scope = await GetScopeAsync();
+        var repository = scope.GetService<BarRepository>();
+        var attached = await repository.GetAsync(q => q.Where(b => b.TestId != null));
+        attached.Should().NotBeNull();
+
+        var detached = await repository.GetAsync(q => q.Where(b => b.TestId != null).AsNoTracking());
+        detached.Should().NotBeNull();
+        attached.Should().Be(detached);
+
+        detached!.TestId = Guid.NewGuid();
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await repository.UpdateAsync(detached));
+        ex.Message.Should()
+            .Contain(
+                $"The instance of entity type '{nameof(BarModel)}' cannot be tracked because another instance with the key value '{{Id: {attached!.Id}}}' is already being tracked");
+    }
+
+    [Fact]
+    public async Task UpdateWithExistingInDbContextAndOverride()
+    {
+        var scope = await GetScopeAsync();
+        var repository = scope.GetService<FooRepository>();
+        var attached = await repository.GetAsync();
+        attached.Should().NotBeNull();
+        var text = Guid.NewGuid().ToString();
+        using (repository.DisableTracking())
+        {
+            var detached = await repository.GetByIdAsync(attached!.Id, q => q.AsNoTracking());
+            detached.Should().NotBeNull();
+            attached.Id.Should().Be(detached!.Id);
+
+            detached.FooText = text;
+            await repository.UpdateAsync(detached);
+        }
+
+        await repository.RefreshAsync(attached);
+        attached!.FooText.Should().Be(text);
+    }
+}

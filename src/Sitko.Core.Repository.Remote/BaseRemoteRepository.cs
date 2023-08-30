@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using KellermanSoftware.CompareNetObjects;
 using Microsoft.Extensions.Logging;
+using Sitko.Core.App.Abstractions;
 using Sitko.Core.App.Json;
 
 namespace Sitko.Core.Repository.Remote;
@@ -74,6 +75,8 @@ public class
 
     public override Task<TEntity> RefreshAsync(TEntity entity, CancellationToken cancellationToken = default) =>
         GetByIdAsync(entity.Id, cancellationToken)!;
+
+    public override IDisposable DisableTracking() => EmptyDisposable.Instance;
 
     protected override Task<RemoteRepositoryQuery<TEntity>> CreateRepositoryQueryAsync(
         CancellationToken cancellationToken = default) =>

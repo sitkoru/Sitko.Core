@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
+using Sitko.Core.App.Abstractions;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore;
 
@@ -954,6 +955,17 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         }
 
         return Task.FromResult(changes.ToArray());
+    }
+
+    public override IDisposable DisableTracking()
+    {
+        dbContext.ChangeTracker.Clear();
+        dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+        return new CallbackDisposable(() =>
+        {
+            dbContext.ChangeTracker.Clear();
+            dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.TrackAll;
+        });
     }
 }
 
