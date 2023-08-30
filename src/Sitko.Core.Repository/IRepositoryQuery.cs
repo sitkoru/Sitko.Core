@@ -36,7 +36,7 @@ public interface IRepositoryQuery<TEntity> where TEntity : class
         Expression<Func<TEntity, TProperty>> navigationPropertyPath);
 
     IRepositoryQuery<TEntity> Include(string navigationPropertyPath);
-    IRepositoryQuery<TEntity> WithoutTracking();
+    IRepositoryQuery<TEntity> AsNoTracking();
 }
 
 // ReSharper disable once UnusedTypeParameter

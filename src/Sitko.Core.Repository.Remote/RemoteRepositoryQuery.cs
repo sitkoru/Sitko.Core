@@ -35,7 +35,7 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
         return this;
     }
 
-    public override IRepositoryQuery<TEntity> WithoutTracking() => this; // remote repository has no change tracking
+    public override IRepositoryQuery<TEntity> AsNoTracking() => this; // remote repository has no change tracking
 
     public override IRepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> where)
     {

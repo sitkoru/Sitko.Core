@@ -25,7 +25,7 @@ public class EFRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where TEn
         OrderExpressions = orderExpressions;
         Limit = limit;
         Offset = offset;
-        AsNoTracking = asNoTracking;
+        UseAsNoTracking = asNoTracking;
     }
 
     internal string QueryString => BuildQuery().ToQueryString();
@@ -35,7 +35,7 @@ public class EFRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where TEn
     internal List<Func<IQueryable<TEntity>, IQueryable<TEntity>>> WhereExpressions { get; } = new();
 
     internal List<Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>> OrderExpressions { get; } = new();
-    internal bool AsNoTracking { get; set; }
+    internal bool UseAsNoTracking { get; set; }
 
     internal List<string> IncludeProperties { get; } = new();
 
@@ -59,7 +59,7 @@ public class EFRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where TEn
             }
         }
 
-        if (AsNoTracking)
+        if (UseAsNoTracking)
         {
             QuerySource.Query = QuerySource.Query.AsNoTracking();
         }
@@ -74,9 +74,9 @@ public class EFRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where TEn
         return this;
     }
 
-    public override IRepositoryQuery<TEntity> WithoutTracking()
+    public override IRepositoryQuery<TEntity> AsNoTracking()
     {
-        AsNoTracking = true;
+        UseAsNoTracking = true;
         return this;
     }
 
@@ -176,7 +176,7 @@ internal class EFIncludableRepositoryQuery<TEntity, TProperty> : EFRepositoryQue
 
     internal EFIncludableRepositoryQuery(EFRepositoryQuery<TEntity> source) : base(source.QuerySource,
         source.WhereExpressions,
-        source.OrderExpressions, source.Limit, source.Offset, source.AsNoTracking) =>
+        source.OrderExpressions, source.Limit, source.Offset, source.UseAsNoTracking) =>
         this.source = source;
 
     public override IRepositoryQuery<TEntity> Take(int take)
