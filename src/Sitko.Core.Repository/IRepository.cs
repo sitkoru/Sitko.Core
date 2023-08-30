@@ -171,11 +171,27 @@ public interface IRepository<TEntity, TEntityPk> : IRepository
     Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> UpdateAsync(IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default);
 
+    Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity entity,
+        EntityUpdateOptions<TEntity, TEntityPk> options,
+        CancellationToken cancellationToken = default);
+
+    Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> UpdateAsync(IEnumerable<TEntity> entities,
+        EntityUpdateOptions<TEntity, TEntityPk> options,
+        CancellationToken cancellationToken = default);
+
     Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> UpdateAsync(
         IEnumerable<(TEntity entity, TEntity? oldEntity)> entities,
         CancellationToken cancellationToken = default);
 
     Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity entity, TEntity? oldEntity,
+        CancellationToken cancellationToken = default);
+
+    Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> UpdateAsync(
+        IEnumerable<(TEntity entity, TEntity? oldEntity)> entities, EntityUpdateOptions<TEntity, TEntityPk> options,
+        CancellationToken cancellationToken = default);
+
+    Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity entity, TEntity? oldEntity,
+        EntityUpdateOptions<TEntity, TEntityPk> options,
         CancellationToken cancellationToken = default);
 
     Task<bool> DeleteAsync(TEntityPk id, CancellationToken cancellationToken = default);
@@ -195,3 +211,7 @@ public interface IRepository<TEntity, TEntityPk> : IRepository
     TEntity CreateSnapshot(TEntity entity);
 }
 
+public class EntityUpdateOptions<TEntity, TEntityPk> where TEntity : class, IEntity<TEntityPk> where TEntityPk : notnull
+{
+    public bool OverrideExistingEntity { get; set; }
+}

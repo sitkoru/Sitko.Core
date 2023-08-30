@@ -518,19 +518,58 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
     }
 
     protected override async Task<PropertyChange[]> DoUpdateAsync(TEntity entity, TEntity? oldEntity,
+        EntityUpdateOptions<TEntity, TEntityPk> options,
         CancellationToken cancellationToken = default) =>
         await ExecuteDbContextOperationAsync(async context =>
         {
             var entry = context.Entry(entity);
             if (entry.State == EntityState.Detached)
             {
-                // This is external entity, so we need to attach it to db context
+                // This is external entity, so we need to attach it to db context. But maybe other instance already loaded to DbContext?
+                var existing = context.ChangeTracker.Entries<TEntity>()
+                    .FirstOrDefault(entry1 => entry1.Entity.Id.Equals(entity.Id));
+                var toReattach = new List<EntityEntry>();
+                if (existing is not null)
+                {
+                    // It is. Usualy attaching second entity would cause exception
+                    if (options.OverrideExistingEntity)
+                    {
+                        // But sometimes we really want to save our version, so we need to detach existing instance with all it's dependencies
+                        toReattach.AddRange(context.ChangeTracker.Entries());
+                        context.ChangeTracker.Clear();
+                    }
+                    else
+                    {
+                        // If we don't want to override - just throw as soon as possible
+                        throw new InvalidOperationException(
+                            $"Entity {typeof(TEntity)} with Pk {entity.Id} was already loaded into DbContext. Set OverrideExistingEntity option to true if you want to override it.");
+                    }
+                }
+
+
                 // 1. If we have old entity - detect changes
                 var changes = oldEntity is null ? null : Compare(oldEntity, entity);
                 // 2. If we have entity Foo in graph and some other entity Bar has relation with Foo
                 // and we process Bar first and load Foo from DB, when we will process Foo from graph Foo from db would be already in DbContext.
                 // To prevent such duplicates we need to attach all graph entities to DbContext first.
                 AttachAllEntities(context, entity, changes);
+                // if we detached entries before - need to reattach all outside current graph
+                if (toReattach.Any())
+                {
+                    var entries = context.ChangeTracker.Entries().ToList();
+                    foreach (var entryToArrach in toReattach)
+                    {
+                        if (entryToArrach.Entity is IEntity entryEntity)
+                        {
+                            var exEntry = entries.FirstOrDefault(e => ((IEntity)e.Entity).EntityId?.Equals(entryEntity.EntityId) == true);
+                            if (exEntry is null)
+                            {
+                                context.Attach(entryEntity);
+                            }
+                        }
+                    }
+                }
+
                 // 3. Start walking entities graph
                 var entityEntry = context.Entry(entity as IEntity);
                 var processed = new List<IEntity>();
