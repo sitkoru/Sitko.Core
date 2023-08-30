@@ -18,13 +18,14 @@ public class EFRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where TEn
 
     internal EFRepositoryQuery(EFRepositoryQuerySource<TEntity> source,
         List<Func<IQueryable<TEntity>, IQueryable<TEntity>>> whereExpressions,
-        List<Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>> orderExpressions, int? limit, int? offset)
+        List<Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>> orderExpressions, int? limit, int? offset, bool asNoTracking)
     {
         QuerySource = source;
         WhereExpressions = whereExpressions;
         OrderExpressions = orderExpressions;
         Limit = limit;
         Offset = offset;
+        AsNoTracking = asNoTracking;
     }
 
     internal string QueryString => BuildQuery().ToQueryString();
@@ -34,6 +35,7 @@ public class EFRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where TEn
     internal List<Func<IQueryable<TEntity>, IQueryable<TEntity>>> WhereExpressions { get; } = new();
 
     internal List<Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>> OrderExpressions { get; } = new();
+    internal bool AsNoTracking { get; set; }
 
     internal List<string> IncludeProperties { get; } = new();
 
@@ -57,6 +59,11 @@ public class EFRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where TEn
             }
         }
 
+        if (AsNoTracking)
+        {
+            QuerySource.Query = QuerySource.Query.AsNoTracking();
+        }
+
         return QuerySource.Query;
     }
 
@@ -66,6 +73,14 @@ public class EFRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where TEn
         IncludeProperties.Add(navigationPropertyPath);
         return this;
     }
+
+    public override IRepositoryQuery<TEntity> WithoutTracking()
+    {
+        AsNoTracking = true;
+        return this;
+    }
+
+
 
     public override IRepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> where)
     {
@@ -161,7 +176,7 @@ internal class EFIncludableRepositoryQuery<TEntity, TProperty> : EFRepositoryQue
 
     internal EFIncludableRepositoryQuery(EFRepositoryQuery<TEntity> source) : base(source.QuerySource,
         source.WhereExpressions,
-        source.OrderExpressions, source.Limit, source.Offset) =>
+        source.OrderExpressions, source.Limit, source.Offset, source.AsNoTracking) =>
         this.source = source;
 
     public override IRepositoryQuery<TEntity> Take(int take)

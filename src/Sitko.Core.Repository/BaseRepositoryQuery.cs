@@ -136,6 +136,7 @@ public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> w
         Expression<Func<TEntity, TProperty>> navigationPropertyPath);
 
     public abstract IRepositoryQuery<TEntity> Include(string navigationPropertyPath);
+    public abstract IRepositoryQuery<TEntity> WithoutTracking();
 
     public IRepositoryQuery<TEntity> Select(Expression<Func<TEntity, int>> intSelect) =>
         throw new NotImplementedException();
