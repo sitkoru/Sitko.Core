@@ -5,12 +5,20 @@ namespace Sitko.Core.Db;
 public interface IDbContextProvider<TDbContext> where TDbContext : DbContext
 {
     TDbContext DbContext { get; }
+    TDbContext CreateDbContext();
 }
 
 internal class DbContextProvider<TDbContext> : IDbContextProvider<TDbContext> where TDbContext : DbContext
 {
-    public DbContextProvider(IDbContextFactory<TDbContext> dbContextFactory) =>
-        DbContext = dbContextFactory.CreateDbContext();
+    private readonly IDbContextFactory<TDbContext> dbContextFactory;
+
+    public DbContextProvider(IDbContextFactory<TDbContext> dbContextFactory)
+    {
+        this.dbContextFactory = dbContextFactory;
+        DbContext = CreateDbContext();
+    }
+
+    public TDbContext CreateDbContext() => dbContextFactory.CreateDbContext();
 
     public TDbContext DbContext { get; }
 }

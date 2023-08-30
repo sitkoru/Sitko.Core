@@ -34,16 +34,23 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
     BaseRepository<TEntity, TEntityPk, EFRepositoryQuery<TEntity>>, IEFRepository<TEntity>
     where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext where TEntityPk : notnull
 {
-    private readonly TDbContext dbContext;
+    private readonly EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext;
+
+    //private readonly TDbContext dbContext;
     private readonly EFRepositoryLock repositoryLock;
 
 
     protected EFRepository(EFRepositoryContext<TEntity, TEntityPk, TDbContext> repositoryContext) : base(
         repositoryContext)
     {
-        dbContext = repositoryContext.DbContext;
+        this.repositoryContext = repositoryContext;
         repositoryLock = repositoryContext.RepositoryLock;
     }
+
+    private bool isTrackingDisabled = false;
+
+    private TDbContext dbContext =>
+        isTrackingDisabled ? repositoryContext.NoTrackingDbContext : repositoryContext.DbContext;
 
     public Task<int> DeleteAllRawAsync(string conditions, CancellationToken cancellationToken = default)
     {
@@ -959,12 +966,10 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
 
     public override IDisposable DisableTracking()
     {
-        dbContext.ChangeTracker.Clear();
-        dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+        isTrackingDisabled = true;
         return new CallbackDisposable(() =>
         {
-            dbContext.ChangeTracker.Clear();
-            dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.TrackAll;
+            isTrackingDisabled = false;
         });
     }
 }

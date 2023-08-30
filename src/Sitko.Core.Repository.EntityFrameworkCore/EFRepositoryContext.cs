@@ -8,6 +8,7 @@ namespace Sitko.Core.Repository.EntityFrameworkCore;
 public class EFRepositoryContext<TEntity, TEntityPk, TDbContext> : IRepositoryContext<TEntity, TEntityPk>
     where TEntity : class, IEntity<TEntityPk> where TDbContext : DbContext where TEntityPk : notnull
 {
+    private readonly IDbContextProvider<TDbContext> dbContextProvider;
     private readonly ILoggerFactory loggerFactory;
 
     public EFRepositoryContext(IDbContextProvider<TDbContext> dbContextProvider,
@@ -17,6 +18,7 @@ public class EFRepositoryContext<TEntity, TEntityPk, TDbContext> : IRepositoryCo
         FluentGraphValidator fluentGraphValidator,
         IEnumerable<IAccessChecker<TEntity, TEntityPk>>? accessCheckers = null)
     {
+        this.dbContextProvider = dbContextProvider;
         this.loggerFactory = loggerFactory;
         DbContext = dbContextProvider.DbContext;
         FiltersManager = filtersManager;
@@ -34,5 +36,8 @@ public class EFRepositoryContext<TEntity, TEntityPk, TDbContext> : IRepositoryCo
 
     public RepositoryFiltersManager FiltersManager { get; }
     public List<IAccessChecker<TEntity, TEntityPk>>? AccessCheckers { get; }
-}
 
+    private TDbContext? noTrackingDbContext;
+
+    internal TDbContext NoTrackingDbContext => noTrackingDbContext ??= dbContextProvider.CreateDbContext();
+}

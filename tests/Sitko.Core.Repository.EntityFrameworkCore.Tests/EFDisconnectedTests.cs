@@ -135,7 +135,7 @@ public class EFDisconnectedTests : BaseTest<EFTestScope>
     }
 
     [Fact]
-    public async Task UpdateWithExistingInDbContextAndOverride()
+    public async Task UpdateWithExistingInDbContextWithDisabledTracking()
     {
         var scope = await GetScopeAsync();
         var repository = scope.GetService<FooRepository>();
@@ -153,6 +153,63 @@ public class EFDisconnectedTests : BaseTest<EFTestScope>
         }
 
         await repository.RefreshAsync(attached);
-        attached!.FooText.Should().Be(text);
+        attached.FooText.Should().Be(text);
+    }
+
+    [Fact]
+    public async Task UpdateAfterDisablingTracking()
+    {
+        var scope = await GetScopeAsync();
+        var repository = scope.GetService<FooRepository>();
+        var attached = await repository.GetAsync();
+        attached.Should().NotBeNull();
+        var oldText = attached!.FooText;
+        var realText = Guid.NewGuid().ToString();
+        attached.FooText = realText;
+        var tmpText = Guid.NewGuid().ToString();
+        using (repository.DisableTracking())
+        {
+            var detached = await repository.GetByIdAsync(attached.Id, q => q.AsNoTracking());
+            detached.Should().NotBeNull();
+            attached.Id.Should().Be(detached!.Id);
+
+            detached.FooText = tmpText;
+            await repository.UpdateAsync(detached);
+        }
+
+        var result = await repository.UpdateAsync(attached);
+        result.IsSuccess.Should().BeTrue();
+        result.Changes.Length.Should().Be(1);
+        result.Changes.First().Name.Should().Be(nameof(FooModel.FooText));
+        result.Changes.First().OriginalValue.Should().Be(oldText, "We compare it with value in main dbContext change tracker");
+        result.Changes.First().CurrentValue.Should().Be(realText);
+        await repository.RefreshAsync(attached);
+        attached.FooText.Should().Be(realText);
+    }
+
+    [Fact]
+    public async Task UpdateAfterDisablingTrackingInBatch()
+    {
+        var scope = await GetScopeAsync();
+        var repository = scope.GetService<FooRepository>();
+        await repository.BeginBatchAsync();
+        var attached = await repository.GetAsync();
+        attached.Should().NotBeNull();
+        var realText = Guid.NewGuid().ToString();
+        attached!.FooText = realText;
+        var tmpText = Guid.NewGuid().ToString();
+        using (repository.DisableTracking())
+        {
+            var detached = await repository.GetByIdAsync(attached.Id, q => q.AsNoTracking());
+            detached.Should().NotBeNull();
+            attached.Id.Should().Be(detached!.Id);
+
+            detached.FooText = tmpText;
+            await repository.UpdateAsync(detached);
+        }
+
+        await repository.CommitBatchAsync();
+        await repository.RefreshAsync(attached);
+        attached.FooText.Should().Be(realText);
     }
 }
