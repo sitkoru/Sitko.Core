@@ -76,7 +76,7 @@ public class
     public override Task<TEntity> RefreshAsync(TEntity entity, CancellationToken cancellationToken = default) =>
         GetByIdAsync(entity.Id, cancellationToken)!;
 
-    public override IDisposable DisableTracking() => EmptyDisposable.Instance;
+    public override Task<IAsyncDisposable> DisableTrackingAsync(CancellationToken cancellationToken = default) => Task.FromResult(AsyncCallbackDisposable.Instance);
 
     protected override Task<RemoteRepositoryQuery<TEntity>> CreateRepositoryQueryAsync(
         CancellationToken cancellationToken = default) =>

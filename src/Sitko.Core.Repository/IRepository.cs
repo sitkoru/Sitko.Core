@@ -194,6 +194,6 @@ public interface IRepository<TEntity, TEntityPk> : IRepository
     Task<bool> HasChangesAsync(TEntity entity);
     TEntity CreateSnapshot(TEntity entity);
 
-    IDisposable DisableTracking();
+    Task<IAsyncDisposable> DisableTrackingAsync(CancellationToken cancellationToken = default);
 }
 

@@ -291,6 +291,11 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
             try
             {
                 await transaction.CommitAsync(cancellationToken);
+                if (repositoryContext.NoTrackingDbContext.Database.CurrentTransaction is not null)
+                {
+                    await repositoryContext.NoTrackingDbContext.Database.CommitTransactionAsync(cancellationToken);
+                }
+
                 return true;
             }
             catch (Exception ex)
@@ -973,13 +978,18 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         return Task.FromResult(changes.ToArray());
     }
 
-    public override IDisposable DisableTracking()
+    public override async Task<IAsyncDisposable> DisableTrackingAsync(CancellationToken cancellationToken = default)
     {
         isTrackingDisabled = true;
-        return new CallbackDisposable(() =>
+        if (repositoryContext.DbContext.Database.CurrentTransaction is not null)
+        {
+            await repositoryContext.NoTrackingDbContext.Database.BeginTransactionAsync(cancellationToken);
+        }
+        return new AsyncCallbackDisposable(() =>
         {
             hasNoTrackingChanges = true;
             isTrackingDisabled = false;
+            return Task.CompletedTask;
         });
     }
 }

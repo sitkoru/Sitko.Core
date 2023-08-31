@@ -2,6 +2,8 @@ namespace Sitko.Core.App.Abstractions;
 
 public class AsyncCallbackDisposable : IAsyncDisposable
 {
+    public static readonly IAsyncDisposable Instance = new AsyncCallbackDisposable(() => Task.CompletedTask);
+
     private readonly Func<Task> callback;
 
     public AsyncCallbackDisposable(Func<Task> callback) => this.callback = callback;

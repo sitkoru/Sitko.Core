@@ -51,7 +51,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
     }
 
     public virtual TEntity CreateSnapshot(TEntity entity) => JsonHelper.Clone(entity)!;
-    public abstract IDisposable DisableTracking();
+    public abstract Task<IAsyncDisposable> DisableTrackingAsync(CancellationToken cancellationToken = default);
     public virtual Task<bool> BeginBatchAsync(CancellationToken cancellationToken = default)
     {
         if (batch != null)
