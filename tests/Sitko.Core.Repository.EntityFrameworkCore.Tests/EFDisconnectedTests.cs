@@ -212,4 +212,28 @@ public class EFDisconnectedTests : BaseTest<EFTestScope>
         await repository.RefreshAsync(attached);
         attached.FooText.Should().Be(realText);
     }
+
+    [Fact]
+    public async Task UpdateAfterDisablingTrackingInBatchCheckSave()
+    {
+        var scope = await GetScopeAsync();
+        var repository = scope.GetService<FooRepository>();
+        await repository.BeginBatchAsync();
+        var attached = await repository.GetAsync();
+        attached.Should().NotBeNull();
+        var tmpText = Guid.NewGuid().ToString();
+        using (repository.DisableTracking())
+        {
+            var detached = await repository.GetByIdAsync(attached!.Id, q => q.AsNoTracking());
+            detached.Should().NotBeNull();
+            attached.Id.Should().Be(detached!.Id);
+
+            detached.FooText = tmpText;
+            await repository.UpdateAsync(detached);
+        }
+
+        await repository.CommitBatchAsync();
+        await repository.RefreshAsync(attached);
+        attached.FooText.Should().Be(tmpText);
+    }
 }

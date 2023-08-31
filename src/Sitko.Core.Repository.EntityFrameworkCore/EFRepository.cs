@@ -47,14 +47,15 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         repositoryLock = repositoryContext.RepositoryLock;
     }
 
-    private bool isTrackingDisabled = false;
+    private bool isTrackingDisabled;
+    private bool hasNoTrackingChanges;
 
-    private TDbContext dbContext =>
+    private TDbContext DbContext =>
         isTrackingDisabled ? repositoryContext.NoTrackingDbContext : repositoryContext.DbContext;
 
     public Task<int> DeleteAllRawAsync(string conditions, CancellationToken cancellationToken = default)
     {
-        var tableName = dbContext.Model.FindEntityType(typeof(TEntity))?.GetSchemaQualifiedTableName() ??
+        var tableName = DbContext.Model.FindEntityType(typeof(TEntity))?.GetSchemaQualifiedTableName() ??
                         throw new InvalidOperationException($"Can't find table name for entity {typeof(TEntity)}");
         return ExecuteDbContextOperationAsync(context => context.Database.ExecuteSqlRawAsync(
                 $"DELETE FROM \"{tableName.Replace(".", "\".\"")}\" WHERE {conditions}", cancellationToken),
@@ -89,8 +90,8 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
     {
         var changes = new List<EntityChange>();
         var processed = new List<IEntity>();
-        var originalEntry = dbContext.Entry(firstEntity as IEntity);
-        var modifiedEntry = dbContext.Entry(secondEntity as IEntity);
+        var originalEntry = DbContext.Entry(firstEntity as IEntity);
+        var modifiedEntry = DbContext.Entry(secondEntity as IEntity);
         ProcessEntryChanges(originalEntry, modifiedEntry, changes, processed);
         return changes.ToArray();
     }
@@ -135,7 +136,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
                     continue;
                 }
 
-                ProcessEntryChanges(dbContext.Entry(referencedEntity), dbContext.Entry(modifiedEntity), changes,
+                ProcessEntryChanges(DbContext.Entry(referencedEntity), DbContext.Entry(modifiedEntity), changes,
                     processed);
                 if (!referencedEntity.Equals(entryReference.CurrentValue))
                 {
@@ -186,7 +187,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
                                 originalValues.FirstOrDefault(v => v.EntityId!.Equals(modifiedEntity.EntityId));
                             if (originalValue is not null)
                             {
-                                ProcessEntryChanges(dbContext.Entry(originalValue), dbContext.Entry(modifiedEntity),
+                                ProcessEntryChanges(DbContext.Entry(originalValue), DbContext.Entry(modifiedEntity),
                                     changes, processed);
                             }
                         }
@@ -328,7 +329,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
 
     public override async Task<TEntity> RefreshAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        await dbContext.Entry(entity).ReloadAsync(cancellationToken);
+        await DbContext.Entry(entity).ReloadAsync(cancellationToken);
         return entity;
     }
 
@@ -338,7 +339,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
     {
         using (await repositoryLock.Lock.LockAsync(cancellationToken))
         {
-            return await operation(dbContext);
+            return await operation(DbContext);
         }
     }
 
@@ -448,8 +449,16 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
             cancellationToken);
 
     protected override async Task DoSaveAsync(CancellationToken cancellationToken = default) =>
-        await ExecuteDbContextOperationAsync(
-            currentDbContext => currentDbContext.SaveChangesAsync(cancellationToken),
+        await ExecuteDbContextOperationAsync(async currentDbContext =>
+            {
+                if (hasNoTrackingChanges)
+                {
+                    await repositoryContext.NoTrackingDbContext.SaveChangesAsync(cancellationToken);
+                    hasNoTrackingChanges = false;
+                }
+
+                return await currentDbContext.SaveChangesAsync(cancellationToken);
+            },
             cancellationToken);
 
     protected override async Task DoAddAsync(TEntity entity, CancellationToken cancellationToken = default) =>
@@ -471,7 +480,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
             },
             cancellationToken);
 
-    public DbSet<T> Set<T>() where T : class => dbContext.Set<T>();
+    public DbSet<T> Set<T>() where T : class => DbContext.Set<T>();
 
     private static void AttachAllEntities(TDbContext context, IEntity entity, EntityChange[]? entityChanges)
     {
@@ -901,7 +910,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         }, cancellationToken);
 
     [PublicAPI]
-    protected IQueryable<TEntity> GetBaseQuery() => dbContext.Set<TEntity>().AsQueryable();
+    protected IQueryable<TEntity> GetBaseQuery() => DbContext.Set<TEntity>().AsQueryable();
 
     protected virtual IQueryable<TEntity> AddIncludes(IQueryable<TEntity> query) => query;
 
@@ -909,13 +918,13 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         CancellationToken cancellationToken = default) =>
         Task.FromResult(new EFRepositoryQuery<TEntity>(GetBaseQuery()));
 
-    private IDbContextTransaction? GetCurrentTransaction() => dbContext.Database.CurrentTransaction;
+    private IDbContextTransaction? GetCurrentTransaction() => DbContext.Database.CurrentTransaction;
 
     protected override Task<PropertyChange[]> GetChangesAsync(TEntity item)
     {
         var modifiedStates = new[] { EntityState.Added, EntityState.Deleted, EntityState.Modified };
         var changes = new List<PropertyChange>();
-        var entry = dbContext.Entry(item);
+        var entry = DbContext.Entry(item);
         if (entry.State != EntityState.Detached)
         {
             entry.DetectChanges();
@@ -944,7 +953,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
                 {
                     foreach (var collectionElement in entryCollection.CurrentValue.Cast<object>())
                     {
-                        var collectionEntry = dbContext.Entry(collectionElement);
+                        var collectionEntry = DbContext.Entry(collectionElement);
                         if (modifiedStates.Contains(collectionEntry.State))
                         {
                             hasChanges = true;
@@ -969,6 +978,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         isTrackingDisabled = true;
         return new CallbackDisposable(() =>
         {
+            hasNoTrackingChanges = true;
             isTrackingDisabled = false;
         });
     }
