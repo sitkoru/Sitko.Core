@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Sitko.Core.Tasks.Kafka\Sitko.Core.Tasks.Kafka.csproj" />
+  </ItemGroup>
+</Project>

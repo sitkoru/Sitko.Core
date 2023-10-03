@@ -90,6 +90,15 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.10"/>
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4"/>
   </ItemGroup>
+  <!--Kafka libraries-->
+  <ItemGroup>
+    <PackageVersion Include="KafkaFlow" Version="2.4.1"/>
+    <PackageVersion Include="KafkaFlow.LogHandler.Microsoft" Version="2.4.1"/>
+    <PackageVersion Include="KafkaFlow.Microsoft.DependencyInjection" Version="2.4.1"/>
+    <PackageVersion Include="KafkaFlow.Serializer" Version="2.4.1"/>
+    <PackageVersion Include="KafkaFlow.Serializer.JsonCore" Version="2.4.1"/>
+    <PackageVersion Include="KafkaFlow.TypedHandler" Version="2.4.1"/>
+  </ItemGroup>
   <!--Elastic libraries-->
   <ItemGroup>
     <PackageVersion Include="Elastic.Apm.NetCoreAll" Version="1.23.0"/>
