@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Sitko.Core.Tasks.Data;
 
 namespace Sitko.Core.Tasks.Kafka.Tests.Data;
 

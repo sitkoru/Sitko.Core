@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Sitko.Core.Repository;
 
-namespace Sitko.Core.Tasks;
+namespace Sitko.Core.Tasks.Data.Entities;
 
 public interface IBaseTask : IEntity<Guid>
 {
@@ -12,6 +12,7 @@ public interface IBaseTask : IEntity<Guid>
     Guid? ParentId { get; set; }
     string? UserId { get; set; }
     DateTimeOffset? LastActivityDate { get; set; }
+    string GetKey();
 }
 
 public interface IBaseTask<TConfig> : IBaseTask where TConfig : BaseTaskConfig, new()

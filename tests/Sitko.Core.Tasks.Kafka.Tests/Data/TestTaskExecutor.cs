@@ -9,7 +9,7 @@ namespace Sitko.Core.Tasks.Kafka.Tests.Data;
 public class TestTaskExecutor : BaseTaskExecutor<TestTask, TestTaskConfig, TestTaskResult>
 {
     public TestTaskExecutor(ILogger<TestTaskExecutor> logger, ITracer? tracer, IServiceScopeFactory serviceScopeFactory,
-        IRepository<TestTask, Guid> repository) : base(logger, tracer, serviceScopeFactory, repository)
+        IRepository<TestTask, Guid> repository) : base(logger, serviceScopeFactory, repository, tracer)
     {
     }
 

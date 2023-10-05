@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <PackageReference Include="KafkaFlow" />
+    <PackageReference Include="KafkaFlow.Extensions.Hosting" />
     <PackageReference Include="KafkaFlow.LogHandler.Microsoft" />
     <PackageReference Include="KafkaFlow.Microsoft.DependencyInjection" />
     <PackageReference Include="KafkaFlow.Serializer" />

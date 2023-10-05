@@ -1,3 +1,5 @@
+using Sitko.Core.Tasks.Data.Entities;
+
 namespace Sitko.Core.Tasks.Kafka.Tests.Data;
 
 public abstract record BaseTestTask : BaseTask

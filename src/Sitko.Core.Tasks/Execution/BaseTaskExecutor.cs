@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog.Context;
 using Sitko.Core.Repository;
+using Sitko.Core.Tasks.Data.Entities;
+using TaskStatus = Sitko.Core.Tasks.Data.Entities.TaskStatus;
 
 namespace Sitko.Core.Tasks.Execution;
 
@@ -17,8 +19,8 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
     private readonly IRepository<TTask, Guid> repository;
     private readonly IServiceScopeFactory serviceScopeFactory;
 
-    protected BaseTaskExecutor(ILogger<BaseTaskExecutor<TTask, TConfig, TResult>> logger, ITracer? tracer,
-        IServiceScopeFactory serviceScopeFactory, IRepository<TTask, Guid> repository)
+    protected BaseTaskExecutor(ILogger<BaseTaskExecutor<TTask, TConfig, TResult>> logger,
+        IServiceScopeFactory serviceScopeFactory, IRepository<TTask, Guid> repository, ITracer? tracer = null)
     {
         this.logger = logger;
         this.tracer = tracer;

@@ -6,7 +6,12 @@ using KafkaFlow.Serializer;
 using KafkaFlow.TypedHandler;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
+using Sitko.Core.Tasks.Data;
+using Sitko.Core.Tasks.Data.Entities;
 using Sitko.Core.Tasks.Execution;
+using Sitko.Core.Tasks.Kafka.Execution;
+using Sitko.Core.Tasks.Kafka.Scheduling;
+using Sitko.Core.Tasks.Scheduling;
 using AutoOffsetReset = Confluent.Kafka.AutoOffsetReset;
 
 namespace Sitko.Core.Tasks.Kafka;
@@ -28,7 +33,7 @@ public class
                 : startupOptions.TopicPrefix)
             : "";
         var kafkaTopic = $"{kafkaTopicPrefix}_{startupOptions.TasksTopic}";
-        services.AddKafka(builder =>
+        services.AddKafkaFlowHostedService(builder =>
         {
             builder
                 .UseMicrosoftLog()
@@ -45,6 +50,7 @@ public class
                                     configurationBuilder.AddSerializer<JsonCoreSerializer>());
                         });
                     // регистрируем консьюмеры на каждую группу экзекьюторов
+                    var executorType = typeof(KafkaExecutor<,>);
                     foreach (var groupConsumers in executors.GroupBy(r => r.GroupId))
                     {
                         var commonRegistration = groupConsumers.First();
@@ -79,7 +85,7 @@ public class
                                         middlewares
                                             .AddSerializer<JsonCoreSerializer>();
                                         middlewares.AddTypedHandlers(handlers =>
-                                            handlers.AddHandlers(groupConsumers.Select(r => r.ExecutorType)));
+                                            handlers.AddHandlers(groupConsumers.Select(r => executorType.MakeGenericType(r.EventType, r.ExecutorType))).WithHandlerLifetime(InstanceLifetime.Scoped));
                                     }
                                 );
                             }
@@ -87,18 +93,8 @@ public class
                     }
                 });
         });
+        services.AddSingleton(typeof(ITaskScheduler<>), typeof(KafkaTaskScheduler<>));
     }
-}
-
-public class KafkaTasksModuleOptions<TBaseTask, TDbContext> : TasksModuleOptions<TBaseTask, TDbContext>
-    where TBaseTask : BaseTask
-    where TDbContext : TasksDbContext<TBaseTask>
-{
-    public override Type GetValidatorType() => typeof(KafkaModuleOptionsValidator<TBaseTask, TDbContext>);
-    public string[] Brokers { get; set; } = Array.Empty<string>();
-    public string TasksTopic { get; set; } = "";
-    public bool AddTopicPrefix { get; set; } = true;
-    public string TopicPrefix { get; set; } = "";
 }
 
 public class

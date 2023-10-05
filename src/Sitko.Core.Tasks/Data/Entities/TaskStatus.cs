@@ -1,4 +1,4 @@
-namespace Sitko.Core.Tasks;
+namespace Sitko.Core.Tasks.Data.Entities;
 
 public enum TaskStatus
 {
