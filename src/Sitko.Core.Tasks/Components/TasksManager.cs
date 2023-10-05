@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App.Results;
 using Sitko.Core.Repository;
 using Sitko.Core.Tasks.Data.Entities;
@@ -10,12 +9,12 @@ namespace Sitko.Core.Tasks.Components;
 public class TasksManager
 {
     private readonly IEnumerable<IRepository> repositories;
-    private readonly IServiceProvider serviceProvider;
+    private readonly ITaskScheduler taskScheduler;
 
-    public TasksManager(IEnumerable<IRepository> repositories, IServiceProvider serviceProvider)
+    public TasksManager(IEnumerable<IRepository> repositories, ITaskScheduler taskScheduler)
     {
         this.repositories = repositories;
-        this.serviceProvider = serviceProvider;
+        this.taskScheduler = taskScheduler;
     }
 
     private ITaskRepository<TTask> GetRepository<TTask>() where TTask : class, IBaseTask
@@ -68,7 +67,6 @@ public class TasksManager
             return new OperationResult<TTask>(addResponse.ErrorsString);
         }
 
-        var taskScheduler = serviceProvider.GetRequiredService<ITaskScheduler<TTask>>();
         await taskScheduler.ScheduleAsync(newTask);
 
         return new OperationResult<TTask>(addResponse.Entity);

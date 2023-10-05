@@ -5,13 +5,15 @@ using Sitko.Core.Tasks.Components;
 using Sitko.Core.Tasks.Data;
 using Sitko.Core.Tasks.Data.Entities;
 using Sitko.Core.Tasks.Execution;
+using Sitko.Core.Tasks.Scheduling;
 
 namespace Sitko.Core.Tasks;
 
 public abstract class
-    TasksModule<TBaseTask, TDbContext, TOptions> : BaseApplicationModule<TOptions>
+    TasksModule<TBaseTask, TDbContext, TTaskScheduler, TOptions> : BaseApplicationModule<TOptions>
     where TOptions : TasksModuleOptions<TBaseTask, TDbContext>, new()
     where TDbContext : TasksDbContext<TBaseTask>
+    where TTaskScheduler : class, ITaskScheduler
     where TBaseTask : BaseTask
 {
     public override string OptionsKey => $"Tasks:{typeof(TBaseTask).Name}";
@@ -50,6 +52,7 @@ public abstract class
 
         services.Scan(selector => selector.FromTypes(executors.Select(e => e.ExecutorType)).AsSelfWithInterfaces()
             .WithScopedLifetime());
+        services.AddScoped<TTaskScheduler>();
 
         services.AddScoped<TasksManager>();
 

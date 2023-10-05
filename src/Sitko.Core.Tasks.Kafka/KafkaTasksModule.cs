@@ -17,7 +17,7 @@ using AutoOffsetReset = Confluent.Kafka.AutoOffsetReset;
 namespace Sitko.Core.Tasks.Kafka;
 
 public class
-    KafkaTasksModule<TBaseTask, TDbContext> : TasksModule<TBaseTask, TDbContext,
+    KafkaTasksModule<TBaseTask, TDbContext> : TasksModule<TBaseTask, TDbContext, KafkaTaskScheduler,
         KafkaTasksModuleOptions<TBaseTask, TDbContext>> where TBaseTask : BaseTask
     where TDbContext : TasksDbContext<TBaseTask>
 {
@@ -85,7 +85,9 @@ public class
                                         middlewares
                                             .AddSerializer<JsonCoreSerializer>();
                                         middlewares.AddTypedHandlers(handlers =>
-                                            handlers.AddHandlers(groupConsumers.Select(r => executorType.MakeGenericType(r.EventType, r.ExecutorType))).WithHandlerLifetime(InstanceLifetime.Scoped));
+                                            handlers.AddHandlers(groupConsumers.Select(r =>
+                                                    executorType.MakeGenericType(r.EventType, r.ExecutorType)))
+                                                .WithHandlerLifetime(InstanceLifetime.Scoped));
                                     }
                                 );
                             }
@@ -93,7 +95,6 @@ public class
                     }
                 });
         });
-        services.AddSingleton(typeof(ITaskScheduler<>), typeof(KafkaTaskScheduler<>));
     }
 }
 

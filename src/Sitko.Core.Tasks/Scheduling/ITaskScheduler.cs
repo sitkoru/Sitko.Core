@@ -2,7 +2,7 @@ using Sitko.Core.Tasks.Data.Entities;
 
 namespace Sitko.Core.Tasks.Scheduling;
 
-public interface ITaskScheduler<TTask> where TTask : IBaseTask
+public interface ITaskScheduler
 {
-    Task ScheduleAsync(TTask task);
+    Task ScheduleAsync(IBaseTask task);
 }
