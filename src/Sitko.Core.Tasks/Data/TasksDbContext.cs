@@ -18,7 +18,5 @@ public abstract class TasksDbContext<TBaseTask> : BaseDbContext where TBaseTask 
 
         var tasksExtension = options.FindExtension<TasksDbContextOptionsExtension<TBaseTask>>();
         tasksExtension?.Configure(modelBuilder, discriminatorBuilder);
-
-        modelBuilder.Entity<TBaseTask>().Property(task => task.Queue).HasDefaultValue("default");
     }
 }

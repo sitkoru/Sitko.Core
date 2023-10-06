@@ -4,7 +4,6 @@ namespace Sitko.Core.Tasks.Data.Entities;
 
 public record BaseTask : EntityRecord<Guid>, IBaseTask
 {
-    public string Queue { get; set; } = "";
     public DateTimeOffset DateAdded { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset DateUpdated { get; set; } = DateTimeOffset.UtcNow;
     public TaskStatus TaskStatus { get; set; } = TaskStatus.Wait;
