@@ -11,7 +11,6 @@ using Sitko.Core.Tasks.Data.Entities;
 using Sitko.Core.Tasks.Execution;
 using Sitko.Core.Tasks.Kafka.Execution;
 using Sitko.Core.Tasks.Kafka.Scheduling;
-using Sitko.Core.Tasks.Scheduling;
 using AutoOffsetReset = Confluent.Kafka.AutoOffsetReset;
 
 namespace Sitko.Core.Tasks.Kafka;

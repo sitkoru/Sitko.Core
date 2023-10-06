@@ -6,6 +6,7 @@
     <ProjectReference Include="..\Sitko.Core.Repository.EntityFrameworkCore\Sitko.Core.Repository.EntityFrameworkCore.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Cronos" />
     <PackageReference Include="Nito.AsyncEx" />
   </ItemGroup>
 </Project>

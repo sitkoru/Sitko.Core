@@ -1,3 +1,4 @@
+using Cronos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -60,7 +61,15 @@ public class TaskSchedulingService<TTask> : BackgroundService where TTask : clas
                     }
                 }
 
-                await Task.Delay(taskOptions.Value.Interval, stoppingToken);
+                if (!string.IsNullOrEmpty(taskOptions.Value.Interval))
+                {
+                    var now = DateTime.UtcNow;
+                    var nextDate = CronExpression.Parse(taskOptions.Value.Interval).GetNextOccurrence(now);
+                    if (nextDate != null)
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds((nextDate - now).Value.TotalSeconds), stoppingToken);
+                    }
+                }
             }
             catch (TaskCanceledException)
             {

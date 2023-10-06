@@ -3,6 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="Cronos" Version="0.7.1"/>
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.7.1"/>
     <PackageVersion Include="IL.FluentValidation.Extensions.Options" Version="11.0.2"/>
     <PackageVersion Include="JetBrains.Annotations" Version="2023.2.0"/>
@@ -98,7 +99,7 @@
     <PackageVersion Include="KafkaFlow.Serializer" Version="2.4.1"/>
     <PackageVersion Include="KafkaFlow.Serializer.JsonCore" Version="2.4.1"/>
     <PackageVersion Include="KafkaFlow.TypedHandler" Version="2.4.1"/>
-    <PackageVersion Include="KafkaFlow.Extensions.Hosting" Version="2.4.1" />
+    <PackageVersion Include="KafkaFlow.Extensions.Hosting" Version="2.4.1"/>
   </ItemGroup>
   <!--Elastic libraries-->
   <ItemGroup>

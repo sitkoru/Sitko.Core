@@ -56,7 +56,7 @@ public abstract class TasksModuleOptions<TBaseTask, TDbContext> : BaseModuleOpti
 
     internal bool HasJobs => jobServiceConfigurations.Any();
 
-    public TasksModuleOptions<TBaseTask, TDbContext> AddTask<TTask, TConfig, TResult>(TimeSpan interval)
+    public TasksModuleOptions<TBaseTask, TDbContext> AddTask<TTask, TConfig, TResult>(string interval)
         where TTask : class, IBaseTask<TConfig, TResult>
         where TConfig : BaseTaskConfig, new()
         where TResult : BaseTaskResult, new()

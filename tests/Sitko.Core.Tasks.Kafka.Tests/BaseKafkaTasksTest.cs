@@ -20,7 +20,7 @@ public class BaseKafkaTasksTestScope : BaseTestScope
             .AddKafkaTasks<BaseTestTask, TestDbContext>(options =>
             {
                 options
-                    .AddTask<TestTask, TestTaskConfig, TestTaskResult>(TimeSpan.FromMinutes(1))
+                    .AddTask<TestTask, TestTaskConfig, TestTaskResult>("* * * * *")
                     .AddExecutorsFromAssemblyOf<TestTask>();
             });
         return application;
