@@ -76,8 +76,13 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
 
         if (task.TaskStatus != TaskStatus.Wait)
         {
-            logger.LogInformation("Skip retry task {JobId}", id);
-            return task;
+            var groupInfo = TaskExecutorHelper.GetGroupInfo(GetType());
+            if (groupInfo is not { allowRetry: true })
+            {
+                logger.LogInformation("Skip retry task {JobId}", id);
+                return task;
+            }
+            logger.LogInformation("Retry task {JobId}", id);
         }
 
         logger.LogInformation("Set job {JobId} status to in progress", id);
