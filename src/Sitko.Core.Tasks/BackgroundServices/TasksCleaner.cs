@@ -1,4 +1,3 @@
-using System.Globalization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -48,16 +47,11 @@ public class TasksCleaner<TBaseTask, TOptions> : BaseService
     {
         var date = DateTimeOffset.UtcNow.AddDays(retentionDays * -1);
         logger.LogInformation("Deleting tasks from {Date}. Types: {Types}, include: {Include}", date, types, include);
-        if (tasksRepository is IEFRepository efRepository)
+        if (tasksRepository is IEFRepository<TBaseTask> efRepository)
         {
-            var condition = $"\"{nameof(BaseTask.DateAdded)}\" < '{date.ToString("O", CultureInfo.InvariantCulture)}'";
-            if (types.Length > 0)
-            {
-                condition +=
-                    $" AND \"{nameof(BaseTask.Type)}\" {(include ? "IN" : "NOT IN")} ({string.Join(",", types.Select(type => $"'{type}'"))})";
-            }
-
-            var deletedCount = await efRepository.DeleteAllRawAsync(condition, stoppingToken);
+            var deletedCount = await efRepository.DeleteAllAsync(task => task.DateAdded < date && (types.Length == 0 ||   (include
+                ? types.Contains(task.Type)
+                : !types.Contains(task.Type))), stoppingToken);
             logger.LogInformation("Deleted {Count} tasks", deletedCount);
         }
         else
