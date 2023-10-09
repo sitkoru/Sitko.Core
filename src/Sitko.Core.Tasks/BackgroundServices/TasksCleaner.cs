@@ -7,17 +7,17 @@ using Sitko.Core.Repository.EntityFrameworkCore;
 using Sitko.Core.Tasks.Data.Entities;
 using Sitko.Core.Tasks.Data.Repository;
 
-namespace Sitko.Core.Tasks.Tasks;
+namespace Sitko.Core.Tasks.BackgroundServices;
 
-public class CleanerTask<TBaseTask> : BackgroundService
+public class TasksCleaner<TBaseTask> : BackgroundService
     where TBaseTask : BaseTask
 {
     private readonly IServiceScopeFactory serviceScopeFactory;
     private readonly IOptions<TasksModuleOptions> options;
-    private readonly ILogger<CleanerTask<TBaseTask>> logger;
+    private readonly ILogger<TasksCleaner<TBaseTask>> logger;
     private ITaskRepository<TBaseTask> tasksRepository;
 
-    public CleanerTask(IOptions<TasksModuleOptions> options, ILogger<CleanerTask<TBaseTask>> logger,
+    public TasksCleaner(IOptions<TasksModuleOptions> options, ILogger<TasksCleaner<TBaseTask>> logger,
         IServiceScopeFactory serviceScopeFactory)
     {
         this.options = options;
@@ -62,8 +62,8 @@ public class CleanerTask<TBaseTask> : BackgroundService
                     $" AND \"{nameof(BaseTask.Type)}\" {(include ? "IN" : "NOT IN")} ({string.Join(",", types.Select(type => $"'{type}'"))})";
             }
 
-            var cnt = await efRepository.DeleteAllRawAsync(condition);
-            logger.LogInformation("Deleted {Count} tasks", cnt);
+            var deletedCount = await efRepository.DeleteAllRawAsync(condition);
+            logger.LogInformation("Deleted {Count} tasks", deletedCount);
         }
         else
         {

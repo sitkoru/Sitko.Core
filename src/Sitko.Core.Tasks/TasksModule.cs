@@ -2,13 +2,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.Repository;
+using Sitko.Core.Tasks.BackgroundServices;
 using Sitko.Core.Tasks.Components;
 using Sitko.Core.Tasks.Data;
 using Sitko.Core.Tasks.Data.Entities;
 using Sitko.Core.Tasks.Data.Repository;
 using Sitko.Core.Tasks.Execution;
 using Sitko.Core.Tasks.Scheduling;
-using Sitko.Core.Tasks.Tasks;
 
 namespace Sitko.Core.Tasks;
 
@@ -62,8 +62,8 @@ public abstract class
         services.Configure<TasksModuleOptions>(applicationContext.Configuration.GetSection(OptionsKey));
         services.AddTransient<IRepository<TBaseTask, Guid>, TasksRepository<TBaseTask, TDbContext>>();
         services.AddTransient<ITaskRepository<TBaseTask>, TasksRepository<TBaseTask, TDbContext>>();
-        services.AddHostedService<CleanerTask<TBaseTask>>();
-        services.AddHostedService<MaintenanceTask<TBaseTask, TDbContext>>();
+        services.AddHostedService<TasksCleaner<TBaseTask>>();
+        services.AddHostedService<TasksMaintenance<TBaseTask>>();
 
         ConfigureServicesInternal(applicationContext, services, startupOptions, executors);
         startupOptions.ConfigureServices(services);

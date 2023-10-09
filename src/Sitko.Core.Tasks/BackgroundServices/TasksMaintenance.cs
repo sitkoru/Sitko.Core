@@ -1,21 +1,20 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Sitko.Core.Tasks.Data;
 using Sitko.Core.Tasks.Data.Entities;
 using Sitko.Core.Tasks.Data.Repository;
 using Sitko.Core.Tasks.Execution;
 using TaskStatus = Sitko.Core.Tasks.Data.Entities.TaskStatus;
 
-namespace Sitko.Core.Tasks.Tasks;
+namespace Sitko.Core.Tasks.BackgroundServices;
 
-public class MaintenanceTask<TBaseTask, TDbContext> : BackgroundService
-    where TBaseTask : BaseTask where TDbContext : TasksDbContext<TBaseTask>
+public class TasksMaintenance<TBaseTask> : BackgroundService
+    where TBaseTask : BaseTask
 {
     private readonly IOptions<TasksModuleOptions> options;
     private readonly IServiceScopeFactory serviceScopeFactory;
 
-    public MaintenanceTask(IOptions<TasksModuleOptions> options,
+    public TasksMaintenance(IOptions<TasksModuleOptions> options,
         IServiceScopeFactory serviceScopeFactory)
     {
         this.options = options;
