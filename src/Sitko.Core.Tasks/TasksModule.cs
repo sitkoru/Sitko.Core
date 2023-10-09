@@ -59,11 +59,10 @@ public abstract class
         services.AddScoped<ITaskScheduler, TTaskScheduler>();
 
         services.AddScoped<TasksManager>();
-        services.Configure<TasksModuleOptions>(applicationContext.Configuration.GetSection(OptionsKey));
         services.AddTransient<IRepository<TBaseTask, Guid>, TasksRepository<TBaseTask, TDbContext>>();
         services.AddTransient<ITaskRepository<TBaseTask>, TasksRepository<TBaseTask, TDbContext>>();
-        services.AddHostedService<TasksCleaner<TBaseTask>>();
-        services.AddHostedService<TasksMaintenance<TBaseTask>>();
+        services.AddHostedService<TasksCleaner<TBaseTask, TOptions>>();
+        services.AddHostedService<TasksMaintenance<TBaseTask, TOptions>>();
 
         ConfigureServicesInternal(applicationContext, services, startupOptions, executors);
         startupOptions.ConfigureServices(services);

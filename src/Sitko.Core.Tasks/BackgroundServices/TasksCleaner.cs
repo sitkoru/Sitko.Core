@@ -8,17 +8,18 @@ using Sitko.Core.Tasks.Data.Repository;
 
 namespace Sitko.Core.Tasks.BackgroundServices;
 
-public class TasksCleaner<TBaseTask> : BaseService
+public class TasksCleaner<TBaseTask, TOptions> : BaseService
     where TBaseTask : BaseTask
+    where TOptions : TasksModuleOptions
 {
-    private readonly IOptions<TasksModuleOptions> options;
-    private readonly ILogger<TasksCleaner<TBaseTask>> logger;
+    private readonly IOptions<TOptions> options;
+    private readonly ILogger<TasksCleaner<TBaseTask, TOptions>> logger;
     private ITaskRepository<TBaseTask> tasksRepository;
     protected override TimeSpan InitDelay => TimeSpan.FromMinutes(2);
     protected override TimeSpan RunDelay => TimeSpan.FromDays(1);
 
     public TasksCleaner(IServiceScopeFactory serviceScopeFactory, ILogger<BaseService> logger,
-        IOptions<TasksModuleOptions> options, ILogger<TasksCleaner<TBaseTask>> logger1) : base(serviceScopeFactory,
+        IOptions<TOptions> options, ILogger<TasksCleaner<TBaseTask, TOptions>> logger1) : base(serviceScopeFactory,
         logger)
     {
         this.options = options;

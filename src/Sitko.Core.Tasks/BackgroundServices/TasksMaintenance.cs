@@ -8,13 +8,14 @@ using TaskStatus = Sitko.Core.Tasks.Data.Entities.TaskStatus;
 
 namespace Sitko.Core.Tasks.BackgroundServices;
 
-public class TasksMaintenance<TBaseTask> : BaseService
+public class TasksMaintenance<TBaseTask, TOptions> : BaseService
     where TBaseTask : BaseTask
+    where TOptions : TasksModuleOptions
 {
-    private readonly IOptions<TasksModuleOptions> options;
+    private readonly IOptions<TOptions> options;
 
     public TasksMaintenance(IServiceScopeFactory serviceScopeFactory, ILogger<BaseService> logger,
-        IOptions<TasksModuleOptions> options) : base(serviceScopeFactory, logger) => this.options = options;
+        IOptions<TOptions> options) : base(serviceScopeFactory, logger) => this.options = options;
 
 
     protected override TimeSpan InitDelay => TimeSpan.FromMinutes(5);

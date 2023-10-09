@@ -8,16 +8,16 @@ using Sitko.Core.Tasks.Data.Entities;
 
 namespace Sitko.Core.Tasks.Scheduling;
 
-public class TaskSchedulingService<TTask> : BackgroundService where TTask : class, IBaseTask
+public class TaskSchedulingService<TTask, TOptions> : BackgroundService where TTask : class, IBaseTask  where TOptions : TasksModuleOptions
 {
     private readonly IServiceScopeFactory serviceScopeFactory;
     private readonly IOptions<TaskSchedulingOptions<TTask>> taskOptions;
-    private readonly IOptionsMonitor<TasksModuleOptions> optionsMonitor;
-    private readonly ILogger<TaskSchedulingService<TTask>> logger;
+    private readonly IOptionsMonitor<TOptions> optionsMonitor;
+    private readonly ILogger<TaskSchedulingService<TTask, TOptions>> logger;
 
     public TaskSchedulingService(IServiceScopeFactory serviceScopeFactory,
-        IOptions<TaskSchedulingOptions<TTask>> taskOptions, IOptionsMonitor<TasksModuleOptions> optionsMonitor,
-        ILogger<TaskSchedulingService<TTask>> logger)
+        IOptions<TaskSchedulingOptions<TTask>> taskOptions, IOptionsMonitor<TOptions> optionsMonitor,
+        ILogger<TaskSchedulingService<TTask, TOptions>> logger)
     {
         this.serviceScopeFactory = serviceScopeFactory;
         this.taskOptions = taskOptions;

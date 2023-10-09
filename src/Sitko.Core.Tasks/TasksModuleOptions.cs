@@ -1,6 +1,7 @@
 using System.Reflection;
 using Cronos;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.Repository;
 using Sitko.Core.Tasks.Data;
@@ -10,7 +11,7 @@ using Sitko.Core.Tasks.Scheduling;
 
 namespace Sitko.Core.Tasks;
 
-public class TasksModuleOptions
+public abstract class TasksModuleOptions : BaseModuleOptions, IModuleOptionsWithValidation
 {
     public bool IsAllTasksDisabled { get; set; }
     public string[] DisabledTasks { get; set; } = Array.Empty<string>();
@@ -19,10 +20,12 @@ public class TasksModuleOptions
     public TimeSpan TasksInactivityTimeout { get; set; } = TimeSpan.FromMinutes(30);
     public TimeSpan TasksWaitTimeout { get; set; } = TimeSpan.FromMinutes(60);
     public StuckTasksProcessMode StuckTasksProcessMode { get; set; } = StuckTasksProcessMode.Fail;
+
+    public abstract Type GetValidatorType();
 }
 
 
-public abstract class TasksModuleOptions<TBaseTask, TDbContext> : BaseModuleOptions, IModuleOptionsWithValidation
+public abstract class TasksModuleOptions<TBaseTask, TDbContext> : TasksModuleOptions
     where TDbContext : TasksDbContext<TBaseTask> where TBaseTask : BaseTask
 {
     public List<Assembly> Assemblies { get; } = new();
@@ -77,15 +80,13 @@ public abstract class TasksModuleOptions<TBaseTask, TDbContext> : BaseModuleOpti
                 selector.FromAssemblyOf<TTask>()
                     .AddClasses(filter => filter.AssignableToAny(schedulerType))
                     .As<IBaseTaskFactory<TTask>>().WithScopedLifetime());
-            services.AddHostedService<TaskSchedulingService<TTask>>();
+            services.AddSingleton(typeof(IHostedService), typeof(TaskSchedulingService<,>).MakeGenericType(typeof(TTask), GetType()));
             services.Scan(selector => selector.FromTypes(typeof(BaseTaskRepository<TTask, TBaseTask, TDbContext>))
                 .AsSelf().As<IRepository>().As<IRepository<TTask, Guid>>().As<ITaskRepository<TTask>>()
                 .WithTransientLifetime());
         });
         return this;
     }
-
-    public abstract Type GetValidatorType();
 }
 
 public enum StuckTasksProcessMode
