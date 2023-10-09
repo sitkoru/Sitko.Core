@@ -77,7 +77,7 @@ public class TaskSchedulingService<TTask> : BackgroundService where TTask : clas
             }
             catch (Exception ex)
             {
-                logger.LogError("Error schedule task {Type}: {Error}", typeof(TTask), ex);
+                logger.LogError("Error schedule tasks {Type}: {Error}", typeof(TTask), ex);
             }
         }
     }
