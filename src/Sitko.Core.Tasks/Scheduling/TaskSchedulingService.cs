@@ -1,4 +1,3 @@
-using Cronos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -16,7 +15,9 @@ public class TaskSchedulingService<TTask> : BackgroundService where TTask : clas
     private readonly IOptionsMonitor<TasksModuleOptions> optionsMonitor;
     private readonly ILogger<TaskSchedulingService<TTask>> logger;
 
-    public TaskSchedulingService(IServiceScopeFactory serviceScopeFactory, IOptions<TaskSchedulingOptions<TTask>> taskOptions, IOptionsMonitor<TasksModuleOptions> optionsMonitor, ILogger<TaskSchedulingService<TTask>> logger)
+    public TaskSchedulingService(IServiceScopeFactory serviceScopeFactory,
+        IOptions<TaskSchedulingOptions<TTask>> taskOptions, IOptionsMonitor<TasksModuleOptions> optionsMonitor,
+        ILogger<TaskSchedulingService<TTask>> logger)
     {
         this.serviceScopeFactory = serviceScopeFactory;
         this.taskOptions = taskOptions;
@@ -61,14 +62,11 @@ public class TaskSchedulingService<TTask> : BackgroundService where TTask : clas
                     }
                 }
 
-                if (!string.IsNullOrEmpty(taskOptions.Value.Interval))
+                var now = DateTime.UtcNow;
+                var nextDate = taskOptions.Value.CronExpression.GetNextOccurrence(now);
+                if (nextDate != null)
                 {
-                    var now = DateTime.UtcNow;
-                    var nextDate = CronExpression.Parse(taskOptions.Value.Interval).GetNextOccurrence(now);
-                    if (nextDate != null)
-                    {
-                        await Task.Delay(TimeSpan.FromSeconds((nextDate - now).Value.TotalSeconds), stoppingToken);
-                    }
+                    await Task.Delay(TimeSpan.FromSeconds((nextDate - now).Value.TotalSeconds), stoppingToken);
                 }
             }
             catch (TaskCanceledException)

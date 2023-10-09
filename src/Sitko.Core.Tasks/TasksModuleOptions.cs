@@ -1,4 +1,5 @@
 using System.Reflection;
+using Cronos;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.Repository;
@@ -59,7 +60,7 @@ public abstract class TasksModuleOptions<TBaseTask, TDbContext> : BaseModuleOpti
 
     internal bool HasJobs => jobServiceConfigurations.Any();
 
-    public TasksModuleOptions<TBaseTask, TDbContext> AddTask<TTask, TConfig, TResult>(string interval)
+    public TasksModuleOptions<TBaseTask, TDbContext> AddTask<TTask, TConfig, TResult>(CronExpression cronExpression)
         where TTask : class, IBaseTask<TConfig, TResult>
         where TConfig : BaseTaskConfig, new()
         where TResult : BaseTaskResult, new()
@@ -70,7 +71,7 @@ public abstract class TasksModuleOptions<TBaseTask, TDbContext> : BaseModuleOpti
         });
         jobServiceConfigurations.Add(services =>
         {
-            services.Configure<TaskSchedulingOptions<TTask>>(options => options.Interval = interval);
+            services.Configure<TaskSchedulingOptions<TTask>>(options => options.CronExpression = cronExpression);
             var schedulerType = typeof(IBaseTaskFactory<TTask>);
             services.Scan(selector =>
                 selector.FromAssemblyOf<TTask>()

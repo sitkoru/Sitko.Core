@@ -1,4 +1,5 @@
-﻿using Sitko.Core.Tasks.Kafka.Tests.Data;
+﻿using Cronos;
+using Sitko.Core.Tasks.Kafka.Tests.Data;
 using Sitko.Core.Xunit;
 using Xunit.Abstractions;
 
@@ -20,7 +21,7 @@ public class BaseKafkaTasksTestScope : BaseTestScope
             .AddKafkaTasks<BaseTestTask, TestDbContext>(options =>
             {
                 options
-                    .AddTask<TestTask, TestTaskConfig, TestTaskResult>("* * * * *")
+                    .AddTask<TestTask, TestTaskConfig, TestTaskResult>(CronExpression.Parse("* * * * *"))
                     .AddExecutorsFromAssemblyOf<TestTask>();
             });
         return application;
