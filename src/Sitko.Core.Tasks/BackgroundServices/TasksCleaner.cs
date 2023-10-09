@@ -1,6 +1,5 @@
 using System.Globalization;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sitko.Core.Repository.EntityFrameworkCore;
@@ -9,47 +8,42 @@ using Sitko.Core.Tasks.Data.Repository;
 
 namespace Sitko.Core.Tasks.BackgroundServices;
 
-public class TasksCleaner<TBaseTask> : BackgroundService
+public class TasksCleaner<TBaseTask> : BaseService
     where TBaseTask : BaseTask
 {
-    private readonly IServiceScopeFactory serviceScopeFactory;
     private readonly IOptions<TasksModuleOptions> options;
     private readonly ILogger<TasksCleaner<TBaseTask>> logger;
     private ITaskRepository<TBaseTask> tasksRepository;
+    protected override TimeSpan InitDelay => TimeSpan.FromMinutes(2);
+    protected override TimeSpan RunDelay => TimeSpan.FromDays(1);
 
-    public TasksCleaner(IOptions<TasksModuleOptions> options, ILogger<TasksCleaner<TBaseTask>> logger,
-        IServiceScopeFactory serviceScopeFactory)
+    public TasksCleaner(IServiceScopeFactory serviceScopeFactory, ILogger<BaseService> logger,
+        IOptions<TasksModuleOptions> options, ILogger<TasksCleaner<TBaseTask>> logger1) : base(serviceScopeFactory,
+        logger)
     {
         this.options = options;
-        this.logger = logger;
-        this.serviceScopeFactory = serviceScopeFactory;
+        this.logger = logger1;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(AsyncServiceScope scope, CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        tasksRepository = scope.ServiceProvider.GetRequiredService<ITaskRepository<TBaseTask>>();
+        if (options.Value.AllTasksRetentionDays is > 0)
         {
-            await using var scope = serviceScopeFactory.CreateAsyncScope();
-            tasksRepository = scope.ServiceProvider.GetRequiredService<ITaskRepository<TBaseTask>>();
-            if (options.Value.AllTasksRetentionDays is > 0)
-            {
-                var taskTypes = options.Value.RetentionDays.Select(r => r.Key).ToArray();
-                await RemoveTasks(options.Value.AllTasksRetentionDays.Value, false, taskTypes);
-            }
+            var taskTypes = options.Value.RetentionDays.Select(r => r.Key).ToArray();
+            await RemoveTasksAsync(options.Value.AllTasksRetentionDays.Value, false, taskTypes, stoppingToken);
+        }
 
-            foreach (var (taskType, retentionDays) in options.Value.RetentionDays)
+        foreach (var (taskType, retentionDays) in options.Value.RetentionDays)
+        {
+            if (retentionDays > 0)
             {
-                if (retentionDays > 0)
-                {
-                    await RemoveTasks(retentionDays, true, new[] { taskType });
-                }
+                await RemoveTasksAsync(retentionDays, true, new[] { taskType }, stoppingToken);
             }
-
-            await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
         }
     }
 
-    private async Task RemoveTasks(int retentionDays, bool include, string[] types)
+    private async Task RemoveTasksAsync(int retentionDays, bool include, string[] types, CancellationToken stoppingToken)
     {
         var date = DateTimeOffset.UtcNow.AddDays(retentionDays * -1);
         logger.LogInformation("Deleting tasks from {Date}. Types: {Types}, include: {Include}", date, types, include);
@@ -62,7 +56,7 @@ public class TasksCleaner<TBaseTask> : BackgroundService
                     $" AND \"{nameof(BaseTask.Type)}\" {(include ? "IN" : "NOT IN")} ({string.Join(",", types.Select(type => $"'{type}'"))})";
             }
 
-            var deletedCount = await efRepository.DeleteAllRawAsync(condition);
+            var deletedCount = await efRepository.DeleteAllRawAsync(condition, stoppingToken);
             logger.LogInformation("Deleted {Count} tasks", deletedCount);
         }
         else
@@ -72,12 +66,12 @@ public class TasksCleaner<TBaseTask> : BackgroundService
                                                                                (types.Length == 0 ||
                                                                                    (include
                                                                                        ? types.Contains(task.Type)
-                                                                                       : !types.Contains(task.Type)))));
+                                                                                       : !types.Contains(task.Type)))), stoppingToken);
             if (tasksCount > 0)
             {
                 foreach (var task in tasks)
                 {
-                    await tasksRepository.DeleteAsync(task);
+                    await tasksRepository.DeleteAsync(task, stoppingToken);
                 }
 
                 logger.LogInformation("Deleted {Count} tasks", tasksCount);
