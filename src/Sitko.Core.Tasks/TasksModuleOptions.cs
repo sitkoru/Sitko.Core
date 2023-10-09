@@ -13,9 +13,11 @@ public class TasksModuleOptions
 {
     public bool IsAllTasksDisabled { get; set; }
     public string[] DisabledTasks { get; set; } = Array.Empty<string>();
-
     public int? AllTasksRetentionDays { get; set; }
     public Dictionary<string, int> RetentionDays { get; set; } = new();
+    public TimeSpan TasksInactivityTimeout { get; set; } = TimeSpan.FromMinutes(30);
+    public TimeSpan TasksWaitTimeout { get; set; } = TimeSpan.FromMinutes(60);
+    public StuckTasksProcessMode StuckTasksProcessMode { get; set; } = StuckTasksProcessMode.Fail;
 }
 
 
@@ -24,6 +26,7 @@ public abstract class TasksModuleOptions<TBaseTask, TDbContext> : BaseModuleOpti
 {
     public List<Assembly> Assemblies { get; } = new();
     private readonly List<Action<IServiceCollection>> jobServiceConfigurations = new();
+
     public string TableName { get; set; } = "Tasks";
 
     private readonly List<Action<TasksDbContextOptionsExtension<TBaseTask>>>
@@ -82,4 +85,10 @@ public abstract class TasksModuleOptions<TBaseTask, TDbContext> : BaseModuleOpti
     }
 
     public abstract Type GetValidatorType();
+}
+
+public enum StuckTasksProcessMode
+{
+    Fail = 1,
+    Restart = 2
 }
