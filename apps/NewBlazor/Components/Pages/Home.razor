@@ -1,0 +1,52 @@
+﻿@page "/"
+@attribute [RenderModeInteractiveServer]
+@using Sitko.Core.Pdf
+@using Sitko.Core.Grpc.Client
+@using Sitko.Core.Grpc.Server.Tests
+@inject IPdfRenderer Renderer
+@inject IGrpcClientProvider<TestService.TestServiceClient> GrpcClientProvider
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<button class="btn btn-primary" @onclick="RenderAsync">Click me</button>
+@if (!string.IsNullOrEmpty(Result))
+{
+    <pre>
+@Result.Length
+</pre>
+}
+
+<button class="btn btn-primary" @onclick="GrpcAsync">Grpc</button>
+@if (!string.IsNullOrEmpty(GrpcResult))
+{
+    <pre>
+@GrpcResult
+</pre>
+}
+
+@code {
+
+
+    public async Task RenderAsync()
+    {
+        var url = "https://ya.ru";
+        var bytes = await Renderer.GetPdfByUrlAsync(url);
+        Result = Convert.ToBase64String(bytes);
+    }
+
+    public async Task GrpcAsync()
+    {
+        var response = await GrpcClientProvider.Instance.RequestAsync(new TestRequest());
+        if (response.ResponseInfo.IsSuccess)
+        {
+            GrpcResult = response.ResponseInfo.TotalItems.ToString();
+        }
+    }
+
+    public string? Result { get; set; }
+    public string? GrpcResult { get; set; }
+
+}

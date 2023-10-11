@@ -30,3 +30,12 @@ public interface IWebApplicationModule : IApplicationModule
     {
     }
 }
+
+public interface IWebApplicationModule<TModuleOptions> : IWebApplicationModule, IApplicationModule<TModuleOptions>
+    where TModuleOptions : class, new()
+{
+    void ConfigureWebHost(IApplicationContext applicationContext, ConfigureWebHostBuilder webHostBuilder,
+        TModuleOptions valueTuple)
+    {
+    }
+}

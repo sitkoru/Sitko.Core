@@ -140,8 +140,8 @@ public abstract class BaseStartup
             appBuilder.UseForwardedHeaders();
         }
 
-        ConfigureHook(appBuilder);
-        application.AppBuilderHook(applicationContext, appBuilder);
+        //ConfigureHook(appBuilder);
+        //application.AppBuilderHook(applicationContext, appBuilder);
 
         if (Environment.IsDevelopment())
         {
@@ -162,10 +162,10 @@ public abstract class BaseStartup
             UseStaticFiles(appBuilder);
         }
 
-        ConfigureBeforeRoutingModulesHook(appBuilder);
-        application.BeforeRoutingHook(applicationContext, appBuilder);
-        ConfigureBeforeRoutingMiddleware(appBuilder);
-        appBuilder.UseRouting();
+        //ConfigureBeforeRoutingModulesHook(appBuilder);
+        //application.BeforeRoutingHook(applicationContext, appBuilder);
+        //ConfigureBeforeRoutingMiddleware(appBuilder);
+        //appBuilder.UseRouting();
         if (corsPolicies.Any())
         {
             var defaultPolicy = corsPolicies.Where(item => item.Value.isDefault).Select(item => item.Key)
@@ -176,14 +176,14 @@ public abstract class BaseStartup
             }
         }
 
-        ConfigureAfterRoutingMiddleware(appBuilder);
-        application.AuthMiddlewareHook(applicationContext, appBuilder);
-        application.AfterRoutingHook(applicationContext, appBuilder);
-        ConfigureAfterRoutingModulesHook(appBuilder);
+        //ConfigureAfterRoutingMiddleware(appBuilder);
+        // application.AuthMiddlewareHook(applicationContext, appBuilder);
+        // application.AfterRoutingHook(applicationContext, appBuilder);
+        //ConfigureAfterRoutingModulesHook(appBuilder);
 
         appBuilder.UseEndpoints(endpoints =>
         {
-            application.EndpointsHook(applicationContext, appBuilder, endpoints);
+            //application.EndpointsHook(applicationContext, appBuilder, endpoints);
             ConfigureEndpoints(appBuilder, endpoints);
         });
     }
