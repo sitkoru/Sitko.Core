@@ -8,7 +8,7 @@
     <PackageVersion Include="IL.FluentValidation.Extensions.Options" Version="11.0.2"/>
     <PackageVersion Include="JetBrains.Annotations" Version="2023.2.0"/>
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3"/>
-    <PackageVersion Include="PeanutButter.DuckTyping" Version="3.0.167"/>
+    <PackageVersion Include="PeanutButter.DuckTyping" Version="3.0.192"/>
     <PackageVersion Include="Tempus" Version="1.0.0"/>
     <PackageVersion Include="Scrutor" Version="4.2.2"/>
     <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1"/>
@@ -19,14 +19,14 @@
     <PackageVersion Include="ImgProxy" Version="2.2.0"/>
     <PackageVersion Include="Nito.AsyncEx" Version="5.1.2"/>
     <PackageVersion Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0"/>
-    <PackageVersion Include="PuppeteerSharp" Version="10.1.2"/>
-    <PackageVersion Include="NATS.Client" Version="1.0.7"/>
+    <PackageVersion Include="PuppeteerSharp" Version="10.1.4"/>
+    <PackageVersion Include="NATS.Client" Version="1.1.0"/>
     <PackageVersion Include="STAN.Client" Version="0.3.0"/>
-    <PackageVersion Include="System.Linq.Dynamic.Core" Version="1.3.4"/>
-    <PackageVersion Include="CompareNETObjects" Version="4.79.0"/>
+    <PackageVersion Include="System.Linq.Dynamic.Core" Version="1.3.5"/>
+    <PackageVersion Include="CompareNETObjects" Version="4.82.0"/>
     <PackageVersion Include="Serialize.Linq" Version="2.0.0"/>
     <PackageVersion Include="MimeMapping" Version="2.0.0"/>
-    <PackageVersion Include="AWSSDK.S3" Version="3.7.201.14"/>
+    <PackageVersion Include="AWSSDK.S3" Version="3.7.205.9"/>
     <PackageVersion Include="Remote.Linq.Newtonsoft.Json" Version="7.1.0"/>
   </ItemGroup>
   <!--Sitko libraries-->
@@ -41,56 +41,49 @@
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
     <PackageVersion Include="Swashbuckle.AspNetCore.Annotations" Version="6.5.0"/>
     <PackageVersion Include="Duende.AccessTokenManagement.OpenIdConnect" Version="2.0.3"/>
-    <PackageVersion Include="Sentry.AspNetCore" Version="3.35.0"/>
+    <PackageVersion Include="Sentry.AspNetCore" Version="3.40.0"/>
   </ItemGroup>
   <!--Email libraries-->
   <ItemGroup>
     <PackageVersion Include="FluentEmail.Core" Version="3.0.2"/>
     <PackageVersion Include="FluentEmail.Mailgun" Version="3.0.2"/>
-    <PackageVersion Include="MailKit" Version="4.1.0"/>
-    <PackageVersion Include="HtmlAgilityPack" Version="1.11.51"/>
-    <PackageVersion Include="Razor.Templating.Core" Version="1.8.0"/>
+    <PackageVersion Include="MailKit" Version="4.2.0"/>
+    <PackageVersion Include="HtmlAgilityPack" Version="1.11.54"/>
+    <PackageVersion Include="Razor.Templating.Core" Version="1.9.0"/>
   </ItemGroup>
   <!--Blazor libraries-->
   <ItemGroup>
-    <PackageVersion Include="AntDesign" Version="0.15.4"/>
+    <PackageVersion Include="AntDesign" Version="0.15.5"/>
     <PackageVersion Include="Tewr.Blazor.FileReader" Version="3.3.2.23201"/>
-    <PackageVersion Include="MudBlazor" Version="6.8.0"/>
+    <PackageVersion Include="MudBlazor" Version="6.11.0"/>
   </ItemGroup>
   <!--Tests libraries-->
   <ItemGroup>
     <PackageVersion Include="AutoBogus" Version="2.13.1"/>
-    <PackageVersion Include="FluentAssertions" Version="6.11.0"/>
+    <PackageVersion Include="FluentAssertions" Version="6.12.0"/>
     <PackageVersion Include="Serilog.Sinks.XUnit" Version="3.0.5"/>
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.0"/>
-    <PackageVersion Include="xunit" Version="2.5.0"/>
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.7.0"/>
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.1"/>
+    <PackageVersion Include="xunit" Version="2.5.1"/>
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.7.2"/>
   </ItemGroup>
   <!--Hangfire libraries-->
   <ItemGroup>
     <PackageVersion Include="Hangfire.Core" Version="1.8.5"/>
     <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.5"/>
-    <PackageVersion Include="Hangfire.PostgreSql" Version="1.20.0"/>
+    <PackageVersion Include="Hangfire.PostgreSql" Version="1.20.3"/>
   </ItemGroup>
   <!--MS libraries-->
   <ItemGroup>
-    <PackageVersion Include="System.Threading.Channels" Version="7.0.0"/>
-    <PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0"/>
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="7.0.0"/>
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="7.0.1"/>
-    <PackageVersion Include="Microsoft.Extensions.Localization.Abstractions" Version="7.0.10"/>
-    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0"/>
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="7.0.10"/>
-    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0"/>
+    <PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0"/>
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.8.14"/>
   </ItemGroup>
   <!--EF Core libraries-->
-  <ItemGroup>
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.10"/>
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.10"/>
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.10"/>
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4"/>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.0-rc.2.23480.1"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0-rc.2.23480.1"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0-rc.2.23480.1"/>
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0-rc.2"/>
   </ItemGroup>
   <!--Kafka libraries-->
   <ItemGroup>
@@ -104,7 +97,7 @@
   </ItemGroup>
   <!--Elastic libraries-->
   <ItemGroup>
-    <PackageVersion Include="Elastic.Apm.NetCoreAll" Version="1.23.0"/>
+    <PackageVersion Include="Elastic.Apm.NetCoreAll" Version="1.24.0"/>
     <PackageVersion Include="Elastic.Apm.SerilogEnricher" Version="8.6.1"/>
     <PackageVersion Include="Elastic.CommonSchema.Serilog" Version="8.6.1"/>
     <PackageVersion Include="NEST" Version="7.17.5"/>
@@ -113,58 +106,48 @@
   <ItemGroup>
     <PackageVersion Include="Serilog.Exceptions" Version="8.4.0"/>
     <PackageVersion Include="Serilog.Extensions.Logging" Version="7.0.0"/>
-    <PackageVersion Include="Serilog.Settings.Configuration" Version="7.0.0"/>
+    <PackageVersion Include="Serilog.Settings.Configuration" Version="7.0.1"/>
     <PackageVersion Include="Serilog.Sinks.Console" Version="4.1.0"/>
-    <PackageVersion Include="Serilog.Enrichers.Environment" Version="2.2.0"/>
+    <PackageVersion Include="Serilog.Enrichers.Environment" Version="2.3.0"/>
     <PackageVersion Include="Serilog.Sinks.BrowserConsole" Version="1.0.0"/>
     <PackageVersion Include="Serilog.Sinks.Elasticsearch" Version="9.0.3"/>
-    <PackageVersion Include="Serilog.Sinks.Graylog" Version="3.0.2"/>
+    <PackageVersion Include="Serilog.Sinks.Graylog" Version="3.1.0"/>
     <PackageVersion Include="Serilog.Sinks.Async" Version="1.5.0"/>
     <PackageVersion Include="NewRelic.LogEnrichers.Serilog" Version="1.2.0"/>
     <PackageVersion Include="Serilog.Sinks.NewRelic.Logs" Version="1.2.0"/>
   </ItemGroup>
   <!--Grpc and protobuf libraries-->
   <ItemGroup>
-    <PackageVersion Include="Grpc.Core.Api" Version="2.55.0"/>
-    <PackageVersion Include="Grpc.Tools" Version="2.57.0"/>
-    <PackageVersion Include="Google.Protobuf" Version="3.24.0"/>
-    <PackageVersion Include="Grpc.Net.ClientFactory" Version="2.55.0"/>
-    <PackageVersion Include="Grpc.Net.Client.Web" Version="2.55.0"/>
-    <PackageVersion Include="Grpc.AspNetCore" Version="2.55.0"/>
-    <PackageVersion Include="Grpc.AspNetCore.Server.Reflection" Version="2.55.0"/>
+    <PackageVersion Include="Grpc.Core.Api" Version="2.57.0"/>
+    <PackageVersion Include="Grpc.Tools" Version="2.58.0"/>
+    <PackageVersion Include="Google.Protobuf" Version="3.24.4"/>
+    <PackageVersion Include="Grpc.Net.ClientFactory" Version="2.57.0"/>
+    <PackageVersion Include="Grpc.Net.Client.Web" Version="2.57.0"/>
+    <PackageVersion Include="Grpc.AspNetCore" Version="2.57.0"/>
+    <PackageVersion Include="Grpc.AspNetCore.Server.Reflection" Version="2.57.0"/>
   </ItemGroup>
-  <!--.NET 6 specific libraries-->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.21"/>
-    <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.21"/>
-    <PackageVersion Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="6.0.21"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="6.0.21"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="6.0.21"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Components" Version="6.0.21"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.21"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.21"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.21"/>
-    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="6.0.21"/>
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="6.0.21"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.21"/>
-    <PackageVersion Include="AspNetCore.HealthChecks.Aws.S3" Version="6.0.2"/>
-    <PackageVersion Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="6.0.2"/>
-    <PackageVersion Include="AspNetCore.HealthChecks.Hangfire" Version="6.0.2"/>
-  </ItemGroup>
-  <!--.NET 7 specific libraries-->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net7.0' ">
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.10"/>
-    <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="7.0.10"/>
-    <PackageVersion Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="7.0.10"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="7.0.10"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="7.0.10"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Components" Version="7.0.10"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.10"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.10"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.10"/>
-    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="7.0.10"/>
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="7.0.10"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.10"/>
+  <!--.NET 8 specific libraries-->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <PackageVersion Include="System.Threading.Channels" Version="8.0.0-rc.2.23479.6"/>
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0-rc.2.23479.6"/>
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0-rc.1.23419.4"/>
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.0-rc.2.23479.6"/>
+    <PackageVersion Include="Microsoft.Extensions.Localization.Abstractions" Version="8.0.0-rc.2.23480.2"/>
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0-rc.2.23479.6"/>
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.0-rc.2.23480.2"/>
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0-rc.2.23479.6"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0-rc.2.23480.2"/>
+    <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.0-rc.2.23480.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="8.0.0-rc.2.23480.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.0-rc.2.23480.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.0-rc.2.23480.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Components" Version="8.0.0-rc.2.23480.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-rc.2.23480.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.0-rc.2.23480.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0-rc.2.23480.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="8.0.0-rc.2.23480.2"/>
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.0-rc.2.23480.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0-rc.2.23480.2"/>
     <PackageVersion Include="AspNetCore.HealthChecks.Aws.S3" Version="7.0.0"/>
     <PackageVersion Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="7.0.0"/>
     <PackageVersion Include="AspNetCore.HealthChecks.Hangfire" Version="7.0.0"/>

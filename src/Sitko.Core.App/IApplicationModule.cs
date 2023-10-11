@@ -32,11 +32,9 @@ public interface IApplicationModule
     Task ApplicationStopped(IApplicationContext applicationContext,
         IServiceProvider serviceProvider);
 
-    Task<bool> OnBeforeRunAsync(Application application, IApplicationContext applicationContext,
-        string[] args);
+    Task<bool> OnBeforeRunAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider);
 
-    Task<bool> OnAfterRunAsync(Application application, IApplicationContext applicationContext,
-        string[] args);
+    Task<bool> OnAfterRunAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider);
 }
 
 public interface IHostBuilderModule : IApplicationModule
@@ -46,12 +44,12 @@ public interface IHostBuilderModule : IApplicationModule
 public interface IHostBuilderModule<in TModuleOptions> : IHostBuilderModule, IApplicationModule<TModuleOptions>
     where TModuleOptions : class, new()
 {
-    public void ConfigureHostBuilder(IApplicationContext context, IHostBuilder hostBuilder,
+    public void ConfigureHostBuilder(IApplicationContext context, IHostApplicationBuilder hostBuilder,
         TModuleOptions startupOptions)
     {
     }
 
-    public void PostConfigureHostBuilder(IApplicationContext context, IHostBuilder hostBuilder,
+    public void PostConfigureHostBuilder(IApplicationContext context, IHostApplicationBuilder hostBuilder,
         TModuleOptions startupOptions)
     {
     }
