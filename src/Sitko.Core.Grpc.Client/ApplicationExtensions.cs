@@ -53,5 +53,20 @@ public static class ApplicationExtensions
         });
         return application;
     }
-}
 
+    public static SitkoCoreApplicationBuilder AddExternalGrpcClient<TClient>(
+        this SitkoCoreApplicationBuilder applicationBuilder,
+        Action<IApplicationContext, ExternalGrpcClientModuleOptions<TClient>> configure,
+        string? optionsKey = null)
+        where TClient : ClientBase<TClient> =>
+        applicationBuilder.AddModule<ExternalGrpcClientModule<TClient>, ExternalGrpcClientModuleOptions<TClient>>(configure,
+            optionsKey);
+
+    public static SitkoCoreApplicationBuilder AddExternalGrpcClient<TClient>(
+        this SitkoCoreApplicationBuilder applicationBuilder,
+        Action<ExternalGrpcClientModuleOptions<TClient>>? configure = null,
+        string? optionsKey = null)
+        where TClient : ClientBase<TClient> =>
+        applicationBuilder.AddModule<ExternalGrpcClientModule<TClient>, ExternalGrpcClientModuleOptions<TClient>>(configure,
+            optionsKey);
+}
