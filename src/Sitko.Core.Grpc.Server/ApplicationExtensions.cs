@@ -15,5 +15,15 @@ public static class ApplicationExtensions
         Action<GrpcServerModuleOptions>? configure = null,
         string? optionsKey = null) =>
         application.AddModule<GrpcServerModule, GrpcServerModuleOptions>(configure, optionsKey);
+
+    public static SitkoCoreApplicationBuilder AddGrpcServer(this SitkoCoreApplicationBuilder applicationBuilder,
+        Action<IApplicationContext, GrpcServerModuleOptions> configure,
+        string? optionsKey = null) =>
+        applicationBuilder.AddModule<GrpcServerModule, GrpcServerModuleOptions>(configure, optionsKey);
+
+    public static SitkoCoreApplicationBuilder AddGrpcServer(this SitkoCoreApplicationBuilder applicationBuilder,
+        Action<GrpcServerModuleOptions>? configure = null,
+        string? optionsKey = null) =>
+        applicationBuilder.AddModule<GrpcServerModule, GrpcServerModuleOptions>(configure, optionsKey);
 }
 

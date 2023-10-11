@@ -20,6 +20,7 @@ public interface IApplicationContext
     string AspNetEnvironmentName { get; }
     bool IsDevelopment();
     bool IsProduction();
+    public string[] Args { get; }
 }
 
 public abstract class BaseApplicationContext : IApplicationContext
@@ -52,6 +53,7 @@ public abstract class BaseApplicationContext : IApplicationContext
     public abstract bool IsDevelopment();
 
     public abstract bool IsProduction();
+    public string[] Args { get; }
 
     private ApplicationOptions GetApplicationOptions()
     {
