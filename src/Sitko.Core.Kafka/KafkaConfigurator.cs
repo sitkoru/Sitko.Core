@@ -19,9 +19,9 @@ public class KafkaConfigurator
     private readonly Dictionary<string, Action<IProducerConfigurationBuilder>> producerActions = new();
     private readonly Dictionary<string, (int Partitions, short ReplicationFactor)> topics = new();
 
-    public KafkaConfigurator AddProducer(string name, Action<IProducerConfigurationBuilder> configure)
+    public KafkaConfigurator AddProducer(string producerName, Action<IProducerConfigurationBuilder> configure)
     {
-        producerActions[name] = configure;
+        producerActions[producerName] = configure;
         return this;
     }
 
