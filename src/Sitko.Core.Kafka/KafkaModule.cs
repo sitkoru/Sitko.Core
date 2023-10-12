@@ -18,9 +18,12 @@ public class KafkaModule : BaseApplicationModule
         BaseApplicationModuleOptions startupOptions)
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
-        foreach (var configurator in Configurators)
+        services.AddKafkaFlowHostedService(builder =>
         {
-            configurator.Value.Build(services);
-        }
+            foreach (var (_, configurator) in Configurators)
+            {
+                configurator.Build(builder);
+            }
+        });
     }
 }

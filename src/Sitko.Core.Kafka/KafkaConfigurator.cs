@@ -30,33 +30,25 @@ public class KafkaConfigurator
         return this;
     }
 
-    public IServiceCollection Build(IServiceCollection serviceCollection)
-    {
-        serviceCollection.AddKafkaFlowHostedService(builder =>
-        {
-            builder
-                .UseMicrosoftLog()
-                .AddCluster(clusterBuilder =>
+    public void Build(IKafkaConfigurationBuilder builder) =>
+        builder
+            .UseMicrosoftLog()
+            .AddCluster(clusterBuilder =>
+            {
+                clusterBuilder
+                    .WithName(name)
+                    .WithBrokers(brokers);
+                foreach (var (producerName, configure) in producerActions)
                 {
-                    clusterBuilder
-                        .WithName(name)
-                        .WithBrokers(brokers);
-                    foreach (var (producerName, configure) in producerActions)
+                    clusterBuilder.AddProducer(producerName, configurationBuilder =>
                     {
-                        clusterBuilder.AddProducer(producerName, configurationBuilder =>
-                        {
-                            configure(configurationBuilder);
-                        });
-                    }
+                        configure(configurationBuilder);
+                    });
+                }
 
-                    foreach (var consumerAction in consumerActions)
-                    {
-                        clusterBuilder.AddConsumer(consumerAction);
-                    }
-                });
-        });
-        return serviceCollection;
-    }
-
-
+                foreach (var consumerAction in consumerActions)
+                {
+                    clusterBuilder.AddConsumer(consumerAction);
+                }
+            });
 }
