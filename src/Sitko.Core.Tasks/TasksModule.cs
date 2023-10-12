@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sitko.Core.App;
 using Sitko.Core.Repository;
 using Sitko.Core.Tasks.BackgroundServices;
@@ -31,7 +32,13 @@ public abstract class
         {
             foreach (var assembly in startupOptions.Assemblies)
             {
-                types.AddRange(assembly.ExportedTypes.Where(type => typeof(ITaskExecutor).IsAssignableFrom(type)));
+                types.AddRange(assembly.ExportedTypes.Where(type => typeof(ITaskExecutor).IsAssignableFrom(type) &&
+                                                                    !type.IsAbstract &&
+                                                                    typeof(TBaseTask).IsAssignableFrom(type
+                                                                        .GetInterfaces()
+                                                                        .First(i => i.IsGenericType &&
+                                                                            typeof(ITaskExecutor).IsAssignableFrom(i))
+                                                                        .GenericTypeArguments.First())));
             }
         }
 
@@ -56,9 +63,9 @@ public abstract class
         services.Scan(selector => selector.FromTypes(executors.Select(e => e.ExecutorType)).AsSelfWithInterfaces()
             .WithScopedLifetime());
 
-        services.AddScoped<ITaskScheduler, TTaskScheduler>();
+        services.TryAddScoped<ITaskScheduler, TTaskScheduler>();
 
-        services.AddScoped<TasksManager>();
+        services.TryAddScoped<TasksManager>();
         services.AddTransient<IRepository<TBaseTask, Guid>, TasksRepository<TBaseTask, TDbContext>>();
         services.AddTransient<ITaskRepository<TBaseTask>, TasksRepository<TBaseTask, TDbContext>>();
         services.AddHostedService<TasksCleaner<TBaseTask, TOptions>>();
