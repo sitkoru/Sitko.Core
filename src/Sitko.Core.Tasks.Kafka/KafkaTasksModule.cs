@@ -65,10 +65,10 @@ public class
             var bufferSize = groupConsumers.Max(r => r.BufferSize);
             kafkaConfigurator.AddConsumer(consumerBuilder =>
             {
-                var groupName = $"{kafkaGroupPrefix}_{commonRegistration.GroupId}".Replace(".", "_");
+                var groupId = $"{kafkaGroupPrefix}_{commonRegistration.GroupId}".Replace(".", "_");
                 consumerBuilder.Topic(kafkaTopic);
                 consumerBuilder.WithName(name);
-                consumerBuilder.WithGroupId(commonRegistration.GroupId);
+                consumerBuilder.WithGroupId(groupId);
                 consumerBuilder.WithWorkersCount(parallelThreadCount);
                 consumerBuilder.WithBufferSize(bufferSize);
                 // для гарантии порядка событий

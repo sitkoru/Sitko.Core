@@ -1,8 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
 using Confluent.Kafka;
-using KafkaFlow;
 using KafkaFlow.Consumers;
+using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.Kafka;
 
@@ -18,14 +18,14 @@ internal class KafkaConsumerOffsetsEnsurer
             )> Consumers = new();
 
     private readonly IConsumerAccessor consumerAccessor;
-    private readonly ILogHandler logHandler;
     private readonly ConcurrentDictionary<string, Task> tasks = new();
     private IAdminClient? adminClient;
+    private ILogger<KafkaConsumerOffsetsEnsurer> logger;
 
-    public KafkaConsumerOffsetsEnsurer(IConsumerAccessor consumerAccessor, ILogHandler logHandler)
+    public KafkaConsumerOffsetsEnsurer(IConsumerAccessor consumerAccessor, ILogger<KafkaConsumerOffsetsEnsurer> logger)
     {
         this.consumerAccessor = consumerAccessor;
-        this.logHandler = logHandler;
+        this.logger = logger;
     }
 
     private IAdminClient GetAdminClient(string[] brokers)
@@ -37,8 +37,8 @@ internal class KafkaConsumerOffsetsEnsurer
                 BootstrapServers = string.Join(",", brokers), ClientId = "AdminClient"
             };
             adminClient = new AdminClientBuilder(adminClientConfig)
-                .SetLogHandler((_, m) => logHandler.Info(m.Message, m))
-                .SetErrorHandler((_, error) => logHandler.Error("Kafka Consumer Error", null, new { Error = error }))
+                .SetLogHandler((_, m) => logger.LogInformation("{Message}", m.Message))
+                .SetErrorHandler((_, error) => logger.LogError("Kafka Consumer Error: {Error}", error))
                 .Build();
         }
 
@@ -80,9 +80,9 @@ internal class KafkaConsumerOffsetsEnsurer
             });
             if (!commited.Any())
             {
-                logHandler.Warning(
-                    $"Не получилось найти оффсеты для назначенных партиций консьюмера {messageConsumer.ConsumerName}",
-                    null);
+                logger.LogWarning(
+                    "Не получилось найти оффсеты для назначенных партиций консьюмера {Consumer}",
+                    messageConsumer.ConsumerName);
                 return;
             }
 
@@ -95,11 +95,16 @@ internal class KafkaConsumerOffsetsEnsurer
             {
                 var partitionOffset = confluentConsumer.QueryWatermarkOffsets(partition, TimeSpan.FromSeconds(30));
                 var newOffset = new TopicPartitionOffset(partition, partitionOffset.High);
-                logHandler.Warning(
-                    $"Сохраняем отсутствующий оффсет для партиции {partition} консьюмера {name}: {newOffset.Offset}",
-                    null);
+                logger.LogWarning(
+                    "Сохраняем отсутствующий оффсет для партиции {Partition} консьюмера {Consumer}: {Offset}",
+                    partition, name, newOffset.Offset);
                 kafkaFlowConsumer.Commit(new[] { newOffset });
             }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error process partition {Partition}: {Error}", partition, ex);
+            throw;
         }
         finally
         {
