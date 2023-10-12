@@ -17,6 +17,7 @@ public class KafkaConfigurator
 
     private readonly List<Action<IConsumerConfigurationBuilder>> consumerActions = new();
     private readonly Dictionary<string, Action<IProducerConfigurationBuilder>> producerActions = new();
+    private readonly Dictionary<string, (int Partitions, short ReplicationFactor)> topics = new();
 
     public KafkaConfigurator AddProducer(string name, Action<IProducerConfigurationBuilder> configure)
     {
@@ -30,6 +31,12 @@ public class KafkaConfigurator
         return this;
     }
 
+    public KafkaConfigurator AutoCreateTopic(string topic, int partitions, short replicationFactor)
+    {
+        topics[topic] = (partitions, replicationFactor);
+        return this;
+    }
+
     public void Build(IKafkaConfigurationBuilder builder) =>
         builder
             .UseMicrosoftLog()
@@ -38,6 +45,10 @@ public class KafkaConfigurator
                 clusterBuilder
                     .WithName(name)
                     .WithBrokers(brokers);
+                foreach (var (topic, config) in topics)
+                {
+                    clusterBuilder.CreateTopicIfNotExists(topic, config.Partitions, config.ReplicationFactor);
+                }
                 foreach (var (producerName, configure) in producerActions)
                 {
                     clusterBuilder.AddProducer(producerName, configurationBuilder =>
