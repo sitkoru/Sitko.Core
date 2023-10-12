@@ -32,7 +32,7 @@ public class
                 ? $"{applicationContext.Name}_{applicationContext.Environment}"
                 : startupOptions.TopicPrefix)
             : "";
-        var kafkaTopic = $"{kafkaTopicPrefix}_{startupOptions.TasksTopic}";
+        var kafkaTopic = $"{kafkaTopicPrefix}_{startupOptions.TasksTopic}".Replace(".", "_");
 
         var kafkaConfigurator = KafkaModule.CreateConfigurator($"Kafka_Tasks_Cluster", startupOptions.Brokers);
         kafkaConfigurator
@@ -47,7 +47,7 @@ public class
         foreach (var groupConsumers in executors.GroupBy(r => r.GroupId))
         {
             var commonRegistration = groupConsumers.First();
-            var name = $"{applicationContext.Name}/{applicationContext.Id}/{commonRegistration.GroupId}";
+            var name = $"{applicationContext.Name}/{applicationContext.Id}/{nameof(TBaseTask)}/{commonRegistration.GroupId}";
             var parallelThreadCount = groupConsumers.Max(r => r.ParallelThreadCount);
             var bufferSize = groupConsumers.Max(r => r.BufferSize);
             kafkaConfigurator.AddConsumer(consumerBuilder =>
