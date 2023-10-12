@@ -42,6 +42,7 @@ public class
         var kafkaConfigurator = KafkaModule.CreateConfigurator($"Kafka_Tasks_Cluster", startupOptions.Brokers);
         kafkaConfigurator
             .AutoCreateTopic(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
+            .EnsureOffsets()
             .AddProducer(producerName, builder =>
             {
                 builder.DefaultTopic(kafkaTopic);

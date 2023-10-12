@@ -1,5 +1,6 @@
 ﻿using KafkaFlow;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Kafka;
@@ -18,6 +19,7 @@ public class KafkaModule : BaseApplicationModule
         BaseApplicationModuleOptions startupOptions)
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
+        services.TryAddSingleton<KafkaConsumerOffsetsEnsurer>();
         services.AddKafkaFlowHostedService(builder =>
         {
             foreach (var (_, configurator) in Configurators)

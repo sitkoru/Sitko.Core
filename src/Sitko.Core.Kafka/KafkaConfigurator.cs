@@ -17,6 +17,7 @@ public class KafkaConfigurator
     private readonly List<Action<IConsumerConfigurationBuilder>> consumerActions = new();
     private readonly Dictionary<string, Action<IProducerConfigurationBuilder>> producerActions = new();
     private readonly Dictionary<string, (int Partitions, short ReplicationFactor)> topics = new();
+    private bool ensureOffsets;
 
     public KafkaConfigurator AddProducer(string producerName, Action<IProducerConfigurationBuilder> configure)
     {
@@ -33,6 +34,12 @@ public class KafkaConfigurator
     public KafkaConfigurator AutoCreateTopic(string topic, int partitions, short replicationFactor)
     {
         topics[topic] = (partitions, replicationFactor);
+        return this;
+    }
+
+    public KafkaConfigurator EnsureOffsets(bool enable = true)
+    {
+        ensureOffsets = enable;
         return this;
     }
 
@@ -58,7 +65,16 @@ public class KafkaConfigurator
 
                 foreach (var consumerAction in consumerActions)
                 {
-                    clusterBuilder.AddConsumer(consumerAction);
+                    clusterBuilder.AddConsumer(consumerBuilder =>
+                    {
+                        consumerAction(consumerBuilder);
+                        if (ensureOffsets)
+                        {
+                            consumerBuilder.WithPartitionsAssignedHandler((resolver, list) =>
+                                resolver.Resolve<KafkaConsumerOffsetsEnsurer>()
+                                    .EnsureOffsets(brokers, name, list));
+                        }
+                    });
                 }
             });
 }
