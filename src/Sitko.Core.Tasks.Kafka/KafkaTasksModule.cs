@@ -33,12 +33,18 @@ public class
                 : startupOptions.TopicPrefix)
             : "";
         var kafkaTopic = $"{kafkaTopicPrefix}_{startupOptions.TasksTopic}".Replace(".", "_");
+        var kafkaGroupPrefix = startupOptions.AddConsumerGroupPrefix
+            ? (string.IsNullOrEmpty(startupOptions.ConsumerGroupPrefix)
+                ? $"{applicationContext.Name}_{applicationContext.Environment}"
+                : startupOptions.ConsumerGroupPrefix)
+            : "";
 
         var producerName = $"Tasks_{typeof(TBaseTask).Name}";
         foreach (var executor in executors)
         {
             EventsRegistry.Register(executor.EventType, kafkaTopic, producerName);
         }
+
         var kafkaConfigurator = KafkaModule.CreateConfigurator($"Kafka_Tasks_Cluster", startupOptions.Brokers);
         kafkaConfigurator
             .AutoCreateTopic(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
@@ -53,11 +59,13 @@ public class
         foreach (var groupConsumers in executors.GroupBy(r => r.GroupId))
         {
             var commonRegistration = groupConsumers.First();
-            var name = $"{applicationContext.Name}/{applicationContext.Id}/{typeof(TBaseTask).Name}/{commonRegistration.GroupId}";
+            var name =
+                $"{applicationContext.Name}/{applicationContext.Id}/{typeof(TBaseTask).Name}/{commonRegistration.GroupId}";
             var parallelThreadCount = groupConsumers.Max(r => r.ParallelThreadCount);
             var bufferSize = groupConsumers.Max(r => r.BufferSize);
             kafkaConfigurator.AddConsumer(consumerBuilder =>
             {
+                var groupName = $"{kafkaGroupPrefix}_{commonRegistration.GroupId}".Replace(".", "_");
                 consumerBuilder.Topic(kafkaTopic);
                 consumerBuilder.WithName(name);
                 consumerBuilder.WithGroupId(commonRegistration.GroupId);
