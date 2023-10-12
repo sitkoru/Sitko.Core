@@ -48,7 +48,9 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
     {
         var tableName = dbContext.Model.FindEntityType(typeof(TEntity))?.GetSchemaQualifiedTableName() ??
                         throw new InvalidOperationException($"Can't find table name for entity {typeof(TEntity)}");
+#pragma warning disable EF1002
         return ExecuteDbContextOperationAsync(context => context.Database.ExecuteSqlRawAsync(
+#pragma warning restore EF1002
                 $"DELETE FROM \"{tableName.Replace(".", "\".\"")}\" WHERE {conditions}", cancellationToken),
             cancellationToken);
     }

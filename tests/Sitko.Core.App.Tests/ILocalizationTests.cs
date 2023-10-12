@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.App.Localization;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -162,20 +163,13 @@ public class Default
 {
 }
 
-public class LocalizationTestApplication : TestApplication
+public class LocalizationTestScope : BaseTestScope
 {
-    public LocalizationTestApplication(string[] args) : base(args) =>
-        this.AddJsonLocalization(moduleOptions =>
-        {
-            moduleOptions.AddDefaultResource<Default>();
-        });
-}
-
-public class LocalizationTestScope : BaseTestScope<LocalizationTestApplication>
-{
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name) =>
+        base.ConfigureApplication(hostBuilder, name)
+            .AddJsonLocalization(options => options.AddDefaultResource<Default>());
 }
 
 public class NoLocalizationTestScope : BaseTestScope
 {
 }
-

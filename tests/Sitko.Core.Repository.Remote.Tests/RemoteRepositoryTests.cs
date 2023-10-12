@@ -20,7 +20,7 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
         var repo = scope.GetService<TestRemoteRepository>();
         var result = await repo.GetAllAsync();
 
-        Assert.NotNull(result.items);
+        result.items.Should().NotBeEmpty();
     }
 
     [Fact]

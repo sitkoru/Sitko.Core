@@ -1,7 +1,7 @@
 using MediatR;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.MediatR;
-using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -41,12 +41,8 @@ public class MessageBusTests : BaseTestQueueTest<MessageBusTestScope>
 
 public class MessageBusTestScope : BaseTestQueueTestScope
 {
-    protected override TestApplication ConfigureApplication(TestApplication application, string name)
-    {
-        base.ConfigureApplication(application, name);
-        application.AddMediatR<MessageBusTests>();
-        return application;
-    }
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name) =>
+        base.ConfigureApplication(hostBuilder, name).AddMediatR<MessageBusTests>();
 
     protected override void Configure(IApplicationContext applicationContext,
         TestQueueOptions options, string name) =>
@@ -56,4 +52,3 @@ public class MessageBusTestScope : BaseTestQueueTestScope
 public class TestRequest : TestMessage, INotification
 {
 }
-

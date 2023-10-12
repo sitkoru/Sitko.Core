@@ -11,6 +11,7 @@
       <ProjectReference Include="..\..\src\Sitko.Core.Grpc.Server\Sitko.Core.Grpc.Server.csproj" />
       <ProjectReference Include="..\..\src\Sitko.Core.Grpc\Sitko.Core.Grpc.csproj" />
       <ProjectReference Include="..\..\src\Sitko.Core.Pdf\Sitko.Core.Pdf.csproj" />
+      <ProjectReference Include="..\..\src\Sitko.Core.Sentry\Sitko.Core.Sentry.csproj" />
       <Protobuf Include="**/*.proto" GrpcServices="Both" AdditionalImportDirs="..\..\src\Sitko.Core.Grpc\Proto"/>
     </ItemGroup>
 

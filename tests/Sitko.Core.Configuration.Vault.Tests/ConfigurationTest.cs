@@ -15,7 +15,7 @@ public class ConfigurationTest : BaseVaultTest
     [Fact]
     public async Task Get()
     {
-        var scope = await GetScopeAsync().ConfigureAwait(false);
+        var scope = await GetScopeAsync();
         var config = scope.GetService<IOptionsMonitor<TestConfig>>();
         config.CurrentValue.Foo.Should().Be(scope.FirstConfig.Foo);
         config.CurrentValue.Bar.Should().Be(scope.FirstConfig.Bar);
@@ -24,7 +24,7 @@ public class ConfigurationTest : BaseVaultTest
     [Fact]
     public async Task GetSecond()
     {
-        var scope = await GetScopeAsync().ConfigureAwait(false);
+        var scope = await GetScopeAsync();
         var config = scope.GetService<IOptionsMonitor<TestConfig2>>();
         config.CurrentValue.Foo.Should().Be(scope.SecondConfig.Foo);
         config.CurrentValue.Bar.Should().Be(scope.SecondConfig.Bar);
@@ -33,7 +33,7 @@ public class ConfigurationTest : BaseVaultTest
     [Fact]
     public async Task Module()
     {
-        var scope = await GetScopeAsync().ConfigureAwait(false);
+        var scope = await GetScopeAsync();
         var config = scope.GetService<IOptionsMonitor<TestModuleConfig>>();
         config.CurrentValue.Foo.Should().Be(scope.FirstConfig.Foo);
         config.CurrentValue.Bar.Should().Be(scope.FirstConfig.Bar);
@@ -44,8 +44,8 @@ public class ConfigurationTest : BaseVaultTest
     {
         var result = await Assert.ThrowsAsync<OptionsValidationException>(async () =>
         {
-            await GetScopeAsync<VaultTestScopeWithValidationFailure>().ConfigureAwait(false);
-        }).ConfigureAwait(false);
+            await GetScopeAsync<VaultTestScopeWithValidationFailure>();
+        });
         result.Message.Should().Contain("Bar must be empty!");
     }
 
@@ -54,8 +54,8 @@ public class ConfigurationTest : BaseVaultTest
     {
         var result = await Assert.ThrowsAsync<OptionsValidationException>(async () =>
         {
-            await GetScopeAsync<FailingVaultTestScope>().ConfigureAwait(false);
-        }).ConfigureAwait(false);
+            await GetScopeAsync<FailingVaultTestScope>();
+        });
         result.Message.Should().Contain("No data loaded from Vault secrets NonExistingSecret");
     }
 }

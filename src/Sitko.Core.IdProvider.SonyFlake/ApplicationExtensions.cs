@@ -1,19 +1,39 @@
-﻿using Sitko.Core.App;
+﻿using JetBrains.Annotations;
+using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
 
 namespace Sitko.Core.IdProvider.SonyFlake;
 
+[PublicAPI]
 public static class ApplicationExtensions
 {
-    public static Application AddSonyFlakeIdProvider(this Application application,
+    public static IHostApplicationBuilder AddSonyFlakeIdProvider(this IHostApplicationBuilder hostApplicationBuilder,
+        Action<IApplicationContext, SonyFlakeIdProviderModuleOptions> configure,
+        string? optionsKey = null)
+    {
+        hostApplicationBuilder.AddSitkoCore().AddSonyFlakeIdProvider(configure, optionsKey);
+        return hostApplicationBuilder;
+    }
+
+    public static IHostApplicationBuilder AddSonyFlakeIdProvider(this IHostApplicationBuilder hostApplicationBuilder,
+        Action<SonyFlakeIdProviderModuleOptions>? configure = null,
+        string? optionsKey = null)
+    {
+        hostApplicationBuilder.AddSitkoCore().AddSonyFlakeIdProvider(configure, optionsKey);
+        return hostApplicationBuilder;
+    }
+
+    public static SitkoCoreApplicationBuilder AddSonyFlakeIdProvider(
+        this SitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, SonyFlakeIdProviderModuleOptions> configure,
         string? optionsKey = null) =>
-        application.AddModule<SonyFlakeIdProviderModule, SonyFlakeIdProviderModuleOptions>(configure,
+        applicationBuilder.AddModule<SonyFlakeIdProviderModule, SonyFlakeIdProviderModuleOptions>(configure,
             optionsKey);
 
-    public static Application AddSonyFlakeIdProvider(this Application application,
+    public static SitkoCoreApplicationBuilder AddSonyFlakeIdProvider(
+        this SitkoCoreApplicationBuilder applicationBuilder,
         Action<SonyFlakeIdProviderModuleOptions>? configure = null,
         string? optionsKey = null) =>
-        application.AddModule<SonyFlakeIdProviderModule, SonyFlakeIdProviderModuleOptions>(configure,
+        applicationBuilder.AddModule<SonyFlakeIdProviderModule, SonyFlakeIdProviderModuleOptions>(configure,
             optionsKey);
 }
-

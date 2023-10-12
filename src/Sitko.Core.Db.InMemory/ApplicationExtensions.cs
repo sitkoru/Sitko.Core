@@ -1,24 +1,48 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Db.InMemory;
 
+[PublicAPI]
 public static class ApplicationExtensions
 {
-    public static Application AddInMemoryDatabase<TDbContext>(this Application application,
+    public static IHostApplicationBuilder AddInMemoryDatabase<TDbContext>(
+        this IHostApplicationBuilder hostApplicationBuilder,
+        Action<IApplicationContext, InMemoryDatabaseModuleOptions<TDbContext>> configure,
+        string? optionsKey = null)
+        where TDbContext : DbContext
+    {
+        hostApplicationBuilder.AddSitkoCore().AddInMemoryDatabase(configure, optionsKey);
+        return hostApplicationBuilder;
+    }
+
+    public static IHostApplicationBuilder AddInMemoryDatabase<TDbContext>(
+        this IHostApplicationBuilder hostApplicationBuilder,
+        Action<InMemoryDatabaseModuleOptions<TDbContext>>? configure = null,
+        string? optionsKey = null)
+        where TDbContext : DbContext
+    {
+        hostApplicationBuilder.AddSitkoCore().AddInMemoryDatabase(configure, optionsKey);
+        return hostApplicationBuilder;
+    }
+
+    public static SitkoCoreApplicationBuilder AddInMemoryDatabase<TDbContext>(
+        this SitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, InMemoryDatabaseModuleOptions<TDbContext>> configure,
         string? optionsKey = null)
         where TDbContext : DbContext =>
-        application
+        applicationBuilder
             .AddModule<InMemoryDatabaseModule<TDbContext>, InMemoryDatabaseModuleOptions<TDbContext>>(configure,
                 optionsKey);
 
-    public static Application AddInMemoryDatabase<TDbContext>(this Application application,
+    public static SitkoCoreApplicationBuilder AddInMemoryDatabase<TDbContext>(
+        this SitkoCoreApplicationBuilder applicationBuilder,
         Action<InMemoryDatabaseModuleOptions<TDbContext>>? configure = null,
         string? optionsKey = null)
         where TDbContext : DbContext =>
-        application
+        applicationBuilder
             .AddModule<InMemoryDatabaseModule<TDbContext>, InMemoryDatabaseModuleOptions<TDbContext>>(configure,
                 optionsKey);
 }
-

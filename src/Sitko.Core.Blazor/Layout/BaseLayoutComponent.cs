@@ -12,7 +12,7 @@ public abstract class BaseLayoutComponent<TLayoutData, TLayoutOptions> : BaseCom
     protected string Description { get; set; } = "";
     protected virtual string PageTitleSeparator => "/";
     [Inject] protected ILayoutManager<TLayoutData, TLayoutOptions> LayoutManager { get; set; } = null!;
-    [Inject] protected IApplication Application { get; set; } = null!;
+    [Inject] protected IApplicationContext ApplicationContext { get; set; } = null!;
 
     [EditorRequired]
     [Parameter] public RenderFragment ChildContent { get; set; } = null!;
@@ -27,7 +27,7 @@ public abstract class BaseLayoutComponent<TLayoutData, TLayoutOptions> : BaseCom
     {
         Title = layoutData.Title;
         Description = layoutData.Description;
-        var prefix = $" {PageTitleSeparator} {Application.Name}";
+        var prefix = $" {PageTitleSeparator} {ApplicationContext.Name}";
         if (!string.IsNullOrEmpty(LayoutManager.LayoutOptions.PageTitlePostfix))
         {
             prefix = LayoutManager.LayoutOptions.PageTitlePostfix;
