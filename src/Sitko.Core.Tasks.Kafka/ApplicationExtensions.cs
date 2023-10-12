@@ -1,5 +1,6 @@
 ﻿using Sitko.Core.App;
 using Sitko.Core.Db.Postgres;
+using Sitko.Core.Kafka;
 using Sitko.Core.Tasks.Data;
 using Sitko.Core.Tasks.Data.Entities;
 
@@ -15,7 +16,10 @@ public static class ApplicationExtensions
         application.AddTasks<TBaseTask, TDbContext>(configurePostgres, configurePostgresAction);
         application.AddModule<KafkaTasksModule<TBaseTask, TDbContext>, KafkaTasksModuleOptions<TBaseTask, TDbContext>>(
             configure);
-
+        if (!application.HasModule<KafkaModule>())
+        {
+            application.AddModule<KafkaModule>();
+        }
         return application;
     }
 }

@@ -34,7 +34,7 @@ public class
             : "";
         var kafkaTopic = $"{kafkaTopicPrefix}_{startupOptions.TasksTopic}";
 
-        var kafkaConfigurator = KafkaConfigurator.Create(startupOptions.Brokers);
+        var kafkaConfigurator = KafkaModule.CreateConfigurator($"Kafka_Tasks_Cluster", startupOptions.Brokers);
         kafkaConfigurator
             .AddProducer("default", builder =>
             {
@@ -61,7 +61,10 @@ public class
                     .WithWorkDistributionStrategy<BytesSumDistributionStrategy>();
                 var consumerConfig = new ConsumerConfig
                 {
-                    AutoOffsetReset = AutoOffsetReset.Latest, ClientId = name, GroupInstanceId = name, PartitionAssignmentStrategy = PartitionAssignmentStrategy.CooperativeSticky
+                    AutoOffsetReset = AutoOffsetReset.Latest,
+                    ClientId = name,
+                    GroupInstanceId = name,
+                    PartitionAssignmentStrategy = PartitionAssignmentStrategy.CooperativeSticky
                 };
                 consumerBuilder.WithConsumerConfig(consumerConfig);
                 consumerBuilder.AddMiddlewares(
@@ -77,8 +80,6 @@ public class
                 );
             });
         }
-
-        kafkaConfigurator.Build($"Kafka_Tasks_Cluster", services);
     }
 }
 

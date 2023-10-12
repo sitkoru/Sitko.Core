@@ -6,10 +6,14 @@ namespace Sitko.Core.Kafka;
 
 public class KafkaConfigurator
 {
-    private static readonly Dictionary<string, KafkaConfigurator> Configurators = new();
+    private readonly string name;
     private readonly string[] brokers;
 
-    private KafkaConfigurator(string[] brokers) => this.brokers = brokers;
+    internal KafkaConfigurator(string name, string[] brokers)
+    {
+        this.name = name;
+        this.brokers = brokers;
+    }
 
     private readonly List<Action<IConsumerConfigurationBuilder>> consumerActions = new();
     private readonly Dictionary<string, Action<IProducerConfigurationBuilder>> producerActions = new();
@@ -26,7 +30,7 @@ public class KafkaConfigurator
         return this;
     }
 
-    public IServiceCollection Build(string name, IServiceCollection serviceCollection)
+    public IServiceCollection Build(IServiceCollection serviceCollection)
     {
         serviceCollection.AddKafkaFlowHostedService(builder =>
         {
@@ -54,6 +58,5 @@ public class KafkaConfigurator
         return serviceCollection;
     }
 
-    public static KafkaConfigurator Create(string[] brokers) =>
-        Configurators.SafeGetOrAdd(string.Join("|", brokers.OrderBy(s => s, StringComparer.OrdinalIgnoreCase)), _ => new KafkaConfigurator(brokers));
+
 }
