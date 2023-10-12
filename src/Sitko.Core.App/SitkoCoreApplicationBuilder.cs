@@ -15,17 +15,16 @@ namespace Sitko.Core.App;
 
 public class SitkoCoreApplicationBuilder
 {
+    public static string OptionsKey => "Application";
     protected IApplicationContext BootApplicationContext { get; }
-    protected IHostApplicationBuilder builder { get; }
+    protected IHostApplicationBuilder Builder { get; }
 
     private readonly List<ApplicationModuleRegistration> moduleRegistrations =
         new();
 
-    private bool isBuilt;
-
     public SitkoCoreApplicationBuilder(IHostApplicationBuilder builder, string[] args)
     {
-        this.builder = builder;
+        this.Builder = builder;
         var bootConfig = builder.Configuration.Build();
         var argsProvider = new ApplicationArgsProvider(args);
         BootApplicationContext = new BuilderApplicationContext(bootConfig, builder.Environment, argsProvider);
@@ -37,7 +36,6 @@ public class SitkoCoreApplicationBuilder
         builder.Services.AddTransient<IScheduler, Scheduler>();
         builder.Services.AddFluentValidationExtensions();
         builder.Services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
-        builder.Services.AddHostedService<ApplicationLifetimeService>(); // только Hosted? Проверить для Wasm
         builder.Services.AddHostedService<HostedLifecycleService>(); // только Hosted? Проверить для Wasm
 
         Console.OutputEncoding = Encoding.UTF8;
@@ -46,21 +44,23 @@ public class SitkoCoreApplicationBuilder
             .WriteTo.Console(outputTemplate: ApplicationOptions.BaseConsoleLogFormat,
                 formatProvider: CultureInfo.InvariantCulture,
                 restrictedToMinimumLevel: LogEventLevel.Debug);
-        InternalLogger = new SerilogLoggerFactory(loggerConfiguration.CreateLogger()).CreateLogger<Application>();
+        InternalLogger = new SerilogLoggerFactory(loggerConfiguration.CreateLogger())
+            .CreateLogger<SitkoCoreApplicationBuilder>();
         AddModule<CommandsModule>();
     }
 
-    protected ILogger<Application> InternalLogger { get; }
+    protected ILogger<SitkoCoreApplicationBuilder> InternalLogger { get; }
 
     protected Dictionary<string, LogEventLevel> LogEventLevels { get; } = new();
 
     protected List<Func<IApplicationContext, LoggerConfiguration, LoggerConfiguration>>
         LoggerConfigurationActions { get; } = new();
 
+    // TODO: WHEN?
     private void ConfigureLogging()
     {
         LogInternal("Configure logging");
-        LoggingExtensions.ConfigureSerilog(BootApplicationContext, builder.Logging,
+        LoggingExtensions.ConfigureSerilog(BootApplicationContext, Builder.Logging,
             configuration =>
             {
                 configuration = configuration.Enrich.WithMachineName();
@@ -129,7 +129,7 @@ public class SitkoCoreApplicationBuilder
     public bool HasModule<TModule>() where TModule : IApplicationModule =>
         moduleRegistrations.Any(r => r.Type == typeof(TModule));
 
-    private bool CanAddModule() => !isBuilt;
+    private bool CanAddModule() => moduleRegistrations.Count < 100500; // TODO: still needed?
 
     private void RegisterModule<TModule, TModuleOptions>(
         Action<IApplicationContext, TModuleOptions>? configureOptions = null,
@@ -155,22 +155,22 @@ public class SitkoCoreApplicationBuilder
             ConfigureHostBuilder<TModule, TModuleOptions>(registration);
         }
 
-        registration.ConfigureAppConfiguration(BootApplicationContext, builder.Configuration);
-        registration.ConfigureOptions(BootApplicationContext, builder.Services);
-        registration.ConfigureServices(BootApplicationContext, builder.Services);
+        registration.ConfigureAppConfiguration(BootApplicationContext, Builder.Configuration);
+        registration.ConfigureOptions(BootApplicationContext, Builder.Services);
+        registration.ConfigureServices(BootApplicationContext, Builder.Services);
 
         if (typeof(TModule).IsAssignableTo(typeof(IHostBuilderModule)))
         {
-            registration.PostConfigureHostBuilder(BootApplicationContext, builder);
+            registration.PostConfigureHostBuilder(BootApplicationContext, Builder);
         }
 
         moduleRegistrations.Add(registration);
-        builder.Services.AddSingleton<ApplicationModuleRegistration>(registration);
+        Builder.Services.AddSingleton<ApplicationModuleRegistration>(registration);
     }
 
     protected virtual void ConfigureHostBuilder<TModule, TModuleOptions>(ApplicationModuleRegistration registration)
         where TModule : IApplicationModule<TModuleOptions>, new() where TModuleOptions : BaseModuleOptions, new() =>
-        registration.ConfigureHostBuilder(BootApplicationContext, builder);
+        registration.ConfigureHostBuilder(BootApplicationContext, Builder);
 
     public SitkoCoreApplicationBuilder ConfigureLogLevel(string source, LogEventLevel level)
     {
@@ -182,6 +182,12 @@ public class SitkoCoreApplicationBuilder
         Func<IApplicationContext, LoggerConfiguration, LoggerConfiguration> configure)
     {
         LoggerConfigurationActions.Add(configure);
+        return this;
+    }
+
+    public SitkoCoreApplicationBuilder ConfigureServices(Action<IServiceCollection> configure)
+    {
+        configure(Builder.Services);
         return this;
     }
 }

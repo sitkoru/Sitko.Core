@@ -14,10 +14,10 @@
             <MudIconButton Icon="@Icons.Material.Outlined.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(_ => DrawerToggle())"/>
         </MudHidden>
         <MudHidden Breakpoint="Breakpoint.Xs">
-            <MudText Typo="Typo.h6" Class="ml-4">@Application.Name</MudText>
+            <MudText Typo="Typo.h6" Class="ml-4">@ApplicationContext.Name</MudText>
         </MudHidden>
         <MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
-            <MudText Typo="Typo.subtitle2">@Application.Name</MudText>
+            <MudText Typo="Typo.subtitle2">@ApplicationContext.Name</MudText>
         </MudHidden>
         <MudSpacer/>
     </MudAppBar>

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.Xunit;
 
 namespace Sitko.Core.Storage.S3.Tests;
@@ -6,18 +7,14 @@ public class BaseS3StorageTestScope : BaseTestScope
 {
     private readonly Guid bucketName = Guid.NewGuid();
 
-    protected override TestApplication ConfigureApplication(TestApplication application, string name)
-    {
-        base.ConfigureApplication(application, name);
-        application.AddS3Storage<TestS3StorageSettings>(moduleOptions =>
-        {
-            moduleOptions.Bucket = bucketName.ToString().ToLowerInvariant();
-            moduleOptions.Prefix = "test";
-        });
-        application.AddS3StorageMetadata<TestS3StorageSettings>();
-
-        return application;
-    }
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name) =>
+        base.ConfigureApplication(hostBuilder, name)
+            .AddS3Storage<TestS3StorageSettings>(moduleOptions =>
+            {
+                moduleOptions.Bucket = bucketName.ToString().ToLowerInvariant();
+                moduleOptions.Prefix = "test";
+            })
+            .AddS3StorageMetadata<TestS3StorageSettings>();
 
     protected override async Task OnDisposeAsync()
     {
@@ -26,4 +23,3 @@ public class BaseS3StorageTestScope : BaseTestScope
         await storage.DeleteAllAsync();
     }
 }
-

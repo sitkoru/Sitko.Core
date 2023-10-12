@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.Xunit;
 using Xunit.Abstractions;
@@ -20,13 +21,12 @@ public abstract class BaseQueueTestScope<TQueueModule, TQueue, TQueueModuleOptio
     where TQueue : class, IQueue
     where TQueueModuleOptions : QueueModuleOptions, new()
 {
-    protected override TestApplication ConfigureApplication(TestApplication application, string name)
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {
-        base.ConfigureApplication(application, name);
-        application.AddModule<TQueueModule, TQueueModuleOptions>((
+        base.ConfigureApplication(hostBuilder, name);
+        hostBuilder.AddSitkoCore().AddModule<TQueueModule, TQueueModuleOptions>((
             applicationContext, moduleOptions) => Configure(applicationContext, moduleOptions, name));
-
-        return application;
+        return hostBuilder;
     }
 
     protected abstract void Configure(IApplicationContext applicationContext, TQueueModuleOptions options,

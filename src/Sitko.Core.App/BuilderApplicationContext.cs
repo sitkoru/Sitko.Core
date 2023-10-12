@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -41,6 +40,12 @@ public class BuilderApplicationContext : IApplicationContext
     public IConfiguration Configuration { get; }
     public ILogger Logger { get; }
 
+    public string AspNetEnvironmentName => environment.EnvironmentName;
+    public bool IsDevelopment() => environment.IsDevelopment();
+
+    public bool IsProduction() => environment.IsProduction();
+    public string[] Args { get; }
+
     private ApplicationOptions GetApplicationOptions()
     {
         if (applicationOptions is not null)
@@ -49,7 +54,7 @@ public class BuilderApplicationContext : IApplicationContext
         }
 
         applicationOptions = new ApplicationOptions();
-        Configuration.Bind(Application.OptionsKey, applicationOptions);
+        Configuration.Bind(SitkoCoreApplicationBuilder.OptionsKey, applicationOptions);
         if (string.IsNullOrEmpty(applicationOptions.Name))
         {
             applicationOptions.Name = Assembly.GetEntryAssembly()?.GetName().Name ?? "App";
@@ -68,12 +73,6 @@ public class BuilderApplicationContext : IApplicationContext
         ConfigureApplicationOptions(applicationOptions);
         return applicationOptions;
     }
-
-    public string AspNetEnvironmentName => environment.EnvironmentName;
-    public bool IsDevelopment() => environment.IsDevelopment();
-
-    public bool IsProduction() => environment.IsProduction();
-    public string[] Args { get; }
 
     protected void ConfigureApplicationOptions(ApplicationOptions options) =>
         options.EnableConsoleLogging ??= environment.IsDevelopment();

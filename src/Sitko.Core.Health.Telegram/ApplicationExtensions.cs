@@ -1,19 +1,39 @@
-﻿using Sitko.Core.App;
+﻿using JetBrains.Annotations;
+using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
 
 namespace Sitko.Core.Health.Telegram;
 
+[PublicAPI]
 public static class ApplicationExtensions
 {
-    public static Application AddTelegramHealthReporter(this Application application,
+    public static IHostApplicationBuilder AddTelegramHealthReporter(this IHostApplicationBuilder hostApplicationBuilder,
+        Action<IApplicationContext, TelegramHealthReporterModuleOptions> configure,
+        string? optionsKey = null)
+    {
+        hostApplicationBuilder.AddSitkoCore().AddTelegramHealthReporter(configure, optionsKey);
+        return hostApplicationBuilder;
+    }
+
+    public static IHostApplicationBuilder AddTelegramHealthReporter(this IHostApplicationBuilder hostApplicationBuilder,
+        Action<TelegramHealthReporterModuleOptions>? configure = null,
+        string? optionsKey = null)
+    {
+        hostApplicationBuilder.AddSitkoCore().AddTelegramHealthReporter(configure, optionsKey);
+        return hostApplicationBuilder;
+    }
+
+    public static SitkoCoreApplicationBuilder AddTelegramHealthReporter(
+        this SitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, TelegramHealthReporterModuleOptions> configure,
         string? optionsKey = null) =>
-        application.AddModule<TelegramHealthReporterModule, TelegramHealthReporterModuleOptions>(configure,
+        applicationBuilder.AddModule<TelegramHealthReporterModule, TelegramHealthReporterModuleOptions>(configure,
             optionsKey);
 
-    public static Application AddTelegramHealthReporter(this Application application,
+    public static SitkoCoreApplicationBuilder AddTelegramHealthReporter(
+        this SitkoCoreApplicationBuilder applicationBuilder,
         Action<TelegramHealthReporterModuleOptions>? configure = null,
         string? optionsKey = null) =>
-        application.AddModule<TelegramHealthReporterModule, TelegramHealthReporterModuleOptions>(configure,
+        applicationBuilder.AddModule<TelegramHealthReporterModule, TelegramHealthReporterModuleOptions>(configure,
             optionsKey);
 }
-

@@ -1,15 +1,31 @@
-﻿using Sitko.Core.App;
+﻿using JetBrains.Annotations;
+using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
 
 namespace Sitko.Core.Graylog;
 
+[PublicAPI]
 public static class ApplicationExtensions
 {
-    public static Application AddGraylog(this Application application,
+    public static IHostApplicationBuilder AddGraylog(this IHostApplicationBuilder hostApplicationBuilder,
+        Action<IApplicationContext, GraylogModuleOptions> configure, string? optionsKey = null)
+    {
+        hostApplicationBuilder.AddSitkoCore().AddGraylog(configure, optionsKey);
+        return hostApplicationBuilder;
+    }
+
+    public static IHostApplicationBuilder AddGraylog(this IHostApplicationBuilder hostApplicationBuilder,
+        Action<GraylogModuleOptions>? configure = null, string? optionsKey = null)
+    {
+        hostApplicationBuilder.AddSitkoCore().AddGraylog(configure, optionsKey);
+        return hostApplicationBuilder;
+    }
+
+    public static SitkoCoreApplicationBuilder AddGraylog(this SitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, GraylogModuleOptions> configure, string? optionsKey = null) =>
-        application.AddModule<GraylogModule, GraylogModuleOptions>(configure, optionsKey);
+        applicationBuilder.AddModule<GraylogModule, GraylogModuleOptions>(configure, optionsKey);
 
-    public static Application AddGraylog(this Application application,
+    public static SitkoCoreApplicationBuilder AddGraylog(this SitkoCoreApplicationBuilder applicationBuilder,
         Action<GraylogModuleOptions>? configure = null, string? optionsKey = null) =>
-        application.AddModule<GraylogModule, GraylogModuleOptions>(configure, optionsKey);
+        applicationBuilder.AddModule<GraylogModule, GraylogModuleOptions>(configure, optionsKey);
 }
-

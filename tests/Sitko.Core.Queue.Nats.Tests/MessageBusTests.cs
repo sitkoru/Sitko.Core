@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.MediatR;
 using Sitko.Core.Queue.Tests;
@@ -48,15 +49,10 @@ public class NatsMessageBusTestScope : NatsQueueTestScope
         options.TranslateMediatRNotification<TestRequest>();
     }
 
-    protected override TestApplication ConfigureApplication(TestApplication application, string name)
-    {
-        base.ConfigureApplication(application, name);
-        application.AddMediatR<MessageBusTests>();
-        return application;
-    }
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name) =>
+        base.ConfigureApplication(hostBuilder, name).AddMediatR<MessageBusTests>();
 }
 
 public class TestRequest : TestMessage, INotification
 {
 }
-

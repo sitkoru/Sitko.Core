@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.IdProvider;
 using Sitko.Core.IdProvider.SonyFlake;
 using Sitko.Core.Xunit;
@@ -27,10 +28,6 @@ public class SonyFlakeTest : BaseTest<SonyFlakeTestScope>
 
 public class SonyFlakeTestScope : BaseTestScope
 {
-    protected override TestApplication ConfigureApplication(TestApplication application, string name)
-    {
-        application.AddSonyFlakeIdProvider();
-        return base.ConfigureApplication(application, name);
-    }
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name) =>
+        base.ConfigureApplication(hostBuilder, name).AddSonyFlakeIdProvider();
 }
-
