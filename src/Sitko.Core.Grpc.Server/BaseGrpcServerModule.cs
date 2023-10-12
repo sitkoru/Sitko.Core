@@ -47,7 +47,7 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
         }
     }
 
-    public void ConfigureWebHost(IApplicationContext context, ConfigureWebHostBuilder webHostBuilder,
+    public void ConfigureWebHost(IApplicationContext applicationContext, ConfigureWebHostBuilder webHostBuilder,
         TConfig options) =>
         options.ConfigureWebHostDefaults?.Invoke(webHostBuilder);
 

@@ -1,22 +1,66 @@
-﻿using Sitko.Core.App;
+﻿using JetBrains.Annotations;
+using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
 
 namespace Sitko.Core.Storage.FileSystem;
 
+[PublicAPI]
 public static class ApplicationExtensions
 {
-    public static Application AddFileSystemStorage<TStorageOptions>(this Application application,
+    public static IHostApplicationBuilder AddFileSystemStorage<TStorageOptions>(
+        this IHostApplicationBuilder hostApplicationBuilder,
+        Action<IApplicationContext, TStorageOptions> configure, string? optionsKey = null)
+        where TStorageOptions : StorageOptions, IFileSystemStorageOptions, new()
+    {
+        hostApplicationBuilder.AddSitkoCore().AddFileSystemStorage(configure, optionsKey);
+        return hostApplicationBuilder;
+    }
+
+    public static IHostApplicationBuilder AddFileSystemStorage<TStorageOptions>(
+        this IHostApplicationBuilder hostApplicationBuilder,
+        Action<TStorageOptions>? configure = null, string? optionsKey = null)
+        where TStorageOptions : StorageOptions, IFileSystemStorageOptions, new()
+    {
+        hostApplicationBuilder.AddSitkoCore().AddFileSystemStorage(configure, optionsKey);
+        return hostApplicationBuilder;
+    }
+
+    public static IHostApplicationBuilder AddFileSystemStorageMetadata<TStorageOptions>(
+        this IHostApplicationBuilder hostApplicationBuilder,
+        Action<IApplicationContext, FileSystemStorageMetadataModuleOptions<TStorageOptions>>
+            configure, string? optionsKey = null)
+        where TStorageOptions : StorageOptions, IFileSystemStorageOptions, new()
+    {
+        hostApplicationBuilder.AddSitkoCore().AddFileSystemStorageMetadata(configure, optionsKey);
+        return hostApplicationBuilder;
+    }
+
+    public static IHostApplicationBuilder AddFileSystemStorageMetadata<TStorageOptions>(
+        this IHostApplicationBuilder hostApplicationBuilder,
+        Action<FileSystemStorageMetadataModuleOptions<TStorageOptions>>?
+            configure = null, string? optionsKey = null)
+        where TStorageOptions : StorageOptions, IFileSystemStorageOptions, new()
+    {
+        hostApplicationBuilder.AddSitkoCore().AddFileSystemStorageMetadata(configure, optionsKey);
+        return hostApplicationBuilder;
+    }
+
+    public static SitkoCoreApplicationBuilder AddFileSystemStorage<TStorageOptions>(
+        this SitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, TStorageOptions> configure, string? optionsKey = null)
         where TStorageOptions : StorageOptions, IFileSystemStorageOptions, new() =>
-        application.AddModule<FileSystemStorageModule<TStorageOptions>, TStorageOptions>(configure,
+        applicationBuilder.AddModule<FileSystemStorageModule<TStorageOptions>, TStorageOptions>(configure,
             optionsKey);
 
-    public static Application AddFileSystemStorage<TStorageOptions>(this Application application,
+    public static SitkoCoreApplicationBuilder AddFileSystemStorage<TStorageOptions>(
+        this SitkoCoreApplicationBuilder applicationBuilder,
         Action<TStorageOptions>? configure = null, string? optionsKey = null)
         where TStorageOptions : StorageOptions, IFileSystemStorageOptions, new() =>
-        application.AddModule<FileSystemStorageModule<TStorageOptions>, TStorageOptions>(configure,
+        applicationBuilder.AddModule<FileSystemStorageModule<TStorageOptions>, TStorageOptions>(configure,
             optionsKey);
 
-    public static Application AddFileSystemStorageMetadata<TStorageOptions>(this Application application,
+    public static SitkoCoreApplicationBuilder AddFileSystemStorageMetadata<TStorageOptions>(
+        this SitkoCoreApplicationBuilder application,
         Action<IApplicationContext, FileSystemStorageMetadataModuleOptions<TStorageOptions>>
             configure, string? optionsKey = null)
         where TStorageOptions : StorageOptions, IFileSystemStorageOptions, new() =>
@@ -25,7 +69,8 @@ public static class ApplicationExtensions
                 FileSystemStorageMetadataModuleOptions<TStorageOptions>>(
                 configure, optionsKey);
 
-    public static Application AddFileSystemStorageMetadata<TStorageOptions>(this Application application,
+    public static SitkoCoreApplicationBuilder AddFileSystemStorageMetadata<TStorageOptions>(
+        this SitkoCoreApplicationBuilder application,
         Action<FileSystemStorageMetadataModuleOptions<TStorageOptions>>?
             configure = null, string? optionsKey = null)
         where TStorageOptions : StorageOptions, IFileSystemStorageOptions, new() =>
@@ -34,4 +79,3 @@ public static class ApplicationExtensions
                 FileSystemStorageMetadataModuleOptions<TStorageOptions>>(
                 configure, optionsKey);
 }
-

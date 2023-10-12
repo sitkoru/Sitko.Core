@@ -2,7 +2,9 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Localization;
+using Sitko.Core.App.Localization;
 using Sitko.Core.App.Tests;
 
 namespace Sitko.Core.App.Perf;
@@ -23,8 +25,9 @@ public class LocalizationTest
     [GlobalSetup]
     public void GlobalSetup()
     {
-        var application = new LocalizationTestApplication(Array.Empty<string>());
-        var host = application.GetHostBuilder().Build();
+        var builder = Host.CreateApplicationBuilder();
+        builder.AddJsonLocalization(options => options.AddDefaultResource<Default>());
+        var host = builder.Build();
         factory = host.Services.GetService<IStringLocalizerFactory>();
         type = typeof(LocalizationTests);
     }
@@ -53,4 +56,3 @@ public class LocalizationTest
     [Benchmark]
     public string DefaultInvariantFallback() => Localizer["DefaultBaz"];
 }
-

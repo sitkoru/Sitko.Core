@@ -1,16 +1,27 @@
-﻿using Sitko.Blazor.ScriptInjector;
+﻿using JetBrains.Annotations;
+using Microsoft.AspNetCore.Builder;
+using Sitko.Blazor.ScriptInjector;
+using Sitko.Core.App;
 using Sitko.Core.App.Web;
 
 namespace Sitko.Core.Blazor.Server;
 
-public abstract class BlazorApplication<TStartup> : WebApplication<TStartup> where TStartup : BlazorStartup
+[PublicAPI]
+public static class ApplicationExtensions
 {
-    protected BlazorApplication(string[] args) : base(args)
+    public static WebApplicationBuilder AddBlazorServer(this WebApplicationBuilder webApplicationBuilder)
     {
-        this.AddPersistentState();
-        ConfigureServices(collection =>
+        webApplicationBuilder.AddSitkoCore().AddBlazorServer();
+        return webApplicationBuilder;
+    }
+
+    public static SitkoCoreApplicationBuilder AddBlazorServer(this SitkoCoreApplicationBuilder webApplicationBuilder)
+    {
+        webApplicationBuilder.AddPersistentState();
+        webApplicationBuilder.ConfigureServices(collection =>
         {
             collection.AddScriptInjector();
         });
+        return webApplicationBuilder;
     }
 }

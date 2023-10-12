@@ -1,9 +1,19 @@
-﻿using Sitko.Core.App;
+﻿using JetBrains.Annotations;
+using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
 
 namespace Sitko.Core.Pdf;
 
+[PublicAPI]
 public static class ApplicationExtensions
 {
-    public static Application AddPdfRenderer(this Application application) =>
-        application.AddModule<PdfRendererModule>();
+    public static IHostApplicationBuilder AddPdfRenderer(this IHostApplicationBuilder hostApplicationBuilder
+    )
+    {
+        hostApplicationBuilder.AddSitkoCore().AddPdfRenderer();
+        return hostApplicationBuilder;
+    }
+
+    public static SitkoCoreApplicationBuilder AddPdfRenderer(this SitkoCoreApplicationBuilder applicationBuilder) =>
+        applicationBuilder.AddModule<PdfRendererModule>();
 }

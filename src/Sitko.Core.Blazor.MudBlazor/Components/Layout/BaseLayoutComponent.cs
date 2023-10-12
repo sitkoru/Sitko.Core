@@ -24,7 +24,7 @@ public abstract class BaseMudLayout : BaseLayoutComponent<MudLayoutData, MudLayo
                 case AppTheme.Dark:
                     return new MudTheme
                     {
-                        Palette = new Palette
+                        Palette = new PaletteDark
                         {
                             Primary = "#527cfa",
                             Secondary = "#b20942",

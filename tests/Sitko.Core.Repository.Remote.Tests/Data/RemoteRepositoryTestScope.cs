@@ -1,31 +1,33 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Serilog.Events;
+using Sitko.Core.App;
 using Sitko.Core.Db.Postgres;
 using Sitko.Core.Repository.EntityFrameworkCore;
 using Sitko.Core.Repository.Remote.Tests.Server;
 using Sitko.Core.Repository.Tests.Data;
-using Sitko.Core.Xunit;
 using Sitko.Core.Xunit.Web;
 
 namespace Sitko.Core.Repository.Remote.Tests.Data;
 
 public class RemoteRepositoryTestScope : WebTestScope
 {
-    protected override WebTestApplication ConfigureWebApplication(WebTestApplication application, string name)
+    protected override WebApplicationBuilder ConfigureWebApplication(WebApplicationBuilder webApplicationBuilder,
+        string name)
     {
-        base.ConfigureWebApplication(application, name);
-        application.AddPostgresDatabase<TestDbContext>(options =>
-        {
-            options.Database = name;
-            options.EnableSensitiveLogging = true;
-        });
-        application.AddEFRepositories(options =>
-        {
-            options.AddRepository<BarEFRepository>();
-            options.AddRepository<TestEFRepository>();
-            options.AddRepository<FooEFRepository>();
-        });
-        return application;
+        base.ConfigureWebApplication(webApplicationBuilder, name).AddPostgresDatabase<TestDbContext>(options =>
+            {
+                options.Database = name;
+                options.EnableSensitiveLogging = true;
+            })
+            .AddEFRepositories(options =>
+            {
+                options.AddRepository<BarEFRepository>();
+                options.AddRepository<TestEFRepository>();
+                options.AddRepository<FooEFRepository>();
+            });
+        return webApplicationBuilder;
     }
 
     protected override async Task InitWebApplicationAsync(IServiceProvider hostServices)
@@ -97,33 +99,31 @@ public class RemoteRepositoryTestScope : WebTestScope
         await dbContext.SaveChangesAsync();
     }
 
-    protected override TestApplication ConfigureApplication(TestApplication application, string name)
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {
-        base.ConfigureApplication(application, name);
-        application.AddRemoteRepositories(options =>
-        {
-            options.AddRepository<BarRemoteRepository>();
-            options.AddRepository<FooRemoteRepository>();
-            options.AddRepository<TestRemoteRepository>();
-            options.AddRepositoriesFromAssemblyOf<TestModel>();
-        });
-        application.AddHttpRepositoryTransport(options =>
-        {
-            options.RepositoryControllerApiRoute = new Uri(Server!.BaseAddress, "http://localhost");
-            if (Server is not null)
+        base.ConfigureApplication(hostBuilder, name);
+        hostBuilder.AddSitkoCore().ConfigureLogging((_, configuration) =>
+                configuration.MinimumLevel.Override("Sitko.Core.Repository", LogEventLevel.Debug))
+            .AddRemoteRepositories(options =>
             {
-                options.HttpClientFactory = _ =>
+                options.AddRepository<BarRemoteRepository>();
+                options.AddRepository<FooRemoteRepository>();
+                options.AddRepository<TestRemoteRepository>();
+                options.AddRepositoriesFromAssemblyOf<TestModel>();
+            })
+            .AddHttpRepositoryTransport(options =>
+            {
+                options.RepositoryControllerApiRoute = new Uri(Server!.BaseAddress, "http://localhost");
+                if (Server is not null)
                 {
-                    var client = Server.CreateClient();
-                    client.BaseAddress = new Uri(client.BaseAddress!, "/api");
-                    return client;
-                };
-            }
-        });
-        application.ConfigureLogging((_, configuration) =>
-            configuration.MinimumLevel.Override("Sitko.Core.Repository", LogEventLevel.Debug));
-
-        return application;
+                    options.HttpClientFactory = _ =>
+                    {
+                        var client = Server.CreateClient();
+                        client.BaseAddress = new Uri(client.BaseAddress!, "/api");
+                        return client;
+                    };
+                }
+            });
+        return hostBuilder;
     }
 }
-

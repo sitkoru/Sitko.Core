@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.Storage.S3;
 using Sitko.Core.Xunit;
 
@@ -5,21 +6,17 @@ namespace Sitko.Core.Storage.Metadata.Postgres.Tests;
 
 public class BasePostgresStorageTestScope : BaseTestScope
 {
-    protected override TestApplication ConfigureApplication(TestApplication application, string name)
-    {
-        base.ConfigureApplication(application, name);
-        application.AddS3Storage<TestS3StorageSettings>(moduleOptions =>
-        {
-            moduleOptions.Bucket = name.ToLowerInvariant();
-            moduleOptions.Prefix = "test";
-        });
-        application.AddPostgresStorageMetadata<TestS3StorageSettings>(
-            moduleOptions =>
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name) =>
+        base.ConfigureApplication(hostBuilder, name)
+            .AddS3Storage<TestS3StorageSettings>(moduleOptions =>
+            {
+                moduleOptions.Bucket = name.ToLowerInvariant();
+                moduleOptions.Prefix = "test";
+            })
+            .AddPostgresStorageMetadata<TestS3StorageSettings>(moduleOptions =>
             {
                 moduleOptions.Database = name;
             });
-        return application;
-    }
 
     protected override async Task OnDisposeAsync()
     {
@@ -28,4 +25,3 @@ public class BasePostgresStorageTestScope : BaseTestScope
         await storage.DeleteAllAsync();
     }
 }
-

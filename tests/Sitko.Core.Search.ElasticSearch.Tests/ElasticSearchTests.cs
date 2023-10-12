@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -50,21 +51,18 @@ public class ElasticSearchTests : BaseTest<ElasticSearchTestScope>
 
 public class ElasticSearchTestScope : BaseTestScope
 {
-    protected override TestApplication ConfigureApplication(TestApplication application, string name)
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {
-        base.ConfigureApplication(application, name);
-        application.AddElasticSearch(moduleOptions =>
+        base.ConfigureApplication(hostBuilder, name);
+        hostBuilder.AddElasticSearch(moduleOptions =>
         {
             moduleOptions.Prefix = name.ToLower(CultureInfo.InvariantCulture);
             moduleOptions.EnableClientLogging = true;
         });
 
-        application.ConfigureServices(services =>
-        {
-            services.AddSingleton<TestModelProvider>();
-            services.RegisterSearchProvider<TestSearchProvider, TestModel, Guid>();
-        });
-        return application;
+        hostBuilder.Services.AddSingleton<TestModelProvider>();
+        hostBuilder.Services.RegisterSearchProvider<TestSearchProvider, TestModel, Guid>();
+        return hostBuilder;
     }
 }
 
@@ -117,4 +115,3 @@ public class TestModelProvider
         return this;
     }
 }
-
