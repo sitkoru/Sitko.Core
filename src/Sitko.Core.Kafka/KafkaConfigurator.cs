@@ -1,6 +1,5 @@
 ﻿using KafkaFlow;
 using KafkaFlow.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Sitko.Core.Kafka;
 
