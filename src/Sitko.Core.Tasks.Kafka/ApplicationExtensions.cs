@@ -20,6 +20,7 @@ public static class ApplicationExtensions
         {
             application.AddModule<KafkaModule>();
         }
+
         return application;
     }
 }

@@ -45,7 +45,7 @@ public class
             EventsRegistry.Register(executor.EventType, kafkaTopic, producerName);
         }
 
-        var kafkaConfigurator = KafkaModule.CreateConfigurator($"Kafka_Tasks_Cluster", startupOptions.Brokers);
+        var kafkaConfigurator = KafkaModule.CreateConfigurator("Kafka_Tasks_Cluster", startupOptions.Brokers);
         kafkaConfigurator
             .AutoCreateTopic(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
             .EnsureOffsets()
@@ -63,37 +63,41 @@ public class
                 $"{applicationContext.Name}/{applicationContext.Id}/{typeof(TBaseTask).Name}/{commonRegistration.GroupId}";
             var parallelThreadCount = groupConsumers.Max(r => r.ParallelThreadCount);
             var bufferSize = groupConsumers.Max(r => r.BufferSize);
-            kafkaConfigurator.AddConsumer(consumerBuilder =>
-            {
-                var groupId = $"{kafkaGroupPrefix}_{commonRegistration.GroupId}".Replace(".", "_");
-                consumerBuilder.Topic(kafkaTopic);
-                consumerBuilder.WithName(name);
-                consumerBuilder.WithGroupId(groupId);
-                consumerBuilder.WithWorkersCount(parallelThreadCount);
-                consumerBuilder.WithBufferSize(bufferSize);
-                // для гарантии порядка событий
-                consumerBuilder
-                    .WithWorkDistributionStrategy<BytesSumDistributionStrategy>();
-                var consumerConfig = new ConsumerConfig
+            var groupId = $"{kafkaGroupPrefix}_{commonRegistration.GroupId}".Replace(".", "_");
+            kafkaConfigurator.AddConsumer(name, groupId,
+                new[]
                 {
-                    AutoOffsetReset = AutoOffsetReset.Latest,
-                    ClientId = name,
-                    GroupInstanceId = name,
-                    PartitionAssignmentStrategy = PartitionAssignmentStrategy.CooperativeSticky
-                };
-                consumerBuilder.WithConsumerConfig(consumerConfig);
-                consumerBuilder.AddMiddlewares(
-                    middlewares =>
+                    new TopicInfo(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
+                }, consumerBuilder =>
+                {
+                    consumerBuilder.Topic(kafkaTopic);
+                    consumerBuilder.WithName(name);
+                    consumerBuilder.WithGroupId(groupId);
+                    consumerBuilder.WithWorkersCount(parallelThreadCount);
+                    consumerBuilder.WithBufferSize(bufferSize);
+                    // для гарантии порядка событий
+                    consumerBuilder
+                        .WithWorkDistributionStrategy<BytesSumDistributionStrategy>();
+                    var consumerConfig = new ConsumerConfig
                     {
-                        middlewares
-                            .AddSerializer<JsonCoreSerializer>();
-                        middlewares.AddTypedHandlers(handlers =>
-                            handlers.AddHandlers(groupConsumers.Select(r =>
-                                    executorType.MakeGenericType(r.EventType, r.ExecutorType)))
-                                .WithHandlerLifetime(InstanceLifetime.Scoped));
-                    }
-                );
-            });
+                        AutoOffsetReset = AutoOffsetReset.Latest,
+                        ClientId = name,
+                        GroupInstanceId = name,
+                        PartitionAssignmentStrategy = PartitionAssignmentStrategy.CooperativeSticky
+                    };
+                    consumerBuilder.WithConsumerConfig(consumerConfig);
+                    consumerBuilder.AddMiddlewares(
+                        middlewares =>
+                        {
+                            middlewares
+                                .AddSerializer<JsonCoreSerializer>();
+                            middlewares.AddTypedHandlers(handlers =>
+                                handlers.AddHandlers(groupConsumers.Select(r =>
+                                        executorType.MakeGenericType(r.EventType, r.ExecutorType)))
+                                    .WithHandlerLifetime(InstanceLifetime.Scoped));
+                        }
+                    );
+                });
         }
     }
 }

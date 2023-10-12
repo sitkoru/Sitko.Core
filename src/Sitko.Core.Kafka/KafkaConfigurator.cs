@@ -5,8 +5,14 @@ namespace Sitko.Core.Kafka;
 
 public class KafkaConfigurator
 {
-    private readonly string name;
     private readonly string[] brokers;
+
+    private readonly List<Action<IConsumerConfigurationBuilder>> consumerActions = new();
+    private readonly HashSet<ConsumerRegistration> consumers = new();
+    private readonly string name;
+    private readonly Dictionary<string, Action<IProducerConfigurationBuilder>> producerActions = new();
+    private readonly Dictionary<string, (int Partitions, short ReplicationFactor)> topics = new();
+    private bool ensureOffsets;
 
     internal KafkaConfigurator(string name, string[] brokers)
     {
@@ -14,10 +20,9 @@ public class KafkaConfigurator
         this.brokers = brokers;
     }
 
-    private readonly List<Action<IConsumerConfigurationBuilder>> consumerActions = new();
-    private readonly Dictionary<string, Action<IProducerConfigurationBuilder>> producerActions = new();
-    private readonly Dictionary<string, (int Partitions, short ReplicationFactor)> topics = new();
-    private bool ensureOffsets;
+    internal string[] Brokers => brokers;
+    internal HashSet<ConsumerRegistration> Consumers => consumers;
+    internal bool NeedToEnsureOffsets => ensureOffsets;
 
     public KafkaConfigurator AddProducer(string producerName, Action<IProducerConfigurationBuilder> configure)
     {
@@ -25,8 +30,10 @@ public class KafkaConfigurator
         return this;
     }
 
-    public KafkaConfigurator AddConsumer(Action<IConsumerConfigurationBuilder> configure)
+    public KafkaConfigurator AddConsumer(string consumerName, string groupId, TopicInfo[] topics,
+        Action<IConsumerConfigurationBuilder> configure)
     {
+        consumers.Add(new ConsumerRegistration(consumerName, groupId, topics));
         consumerActions.Add(configure);
         return this;
     }
@@ -51,10 +58,14 @@ public class KafkaConfigurator
                 clusterBuilder
                     .WithName(name)
                     .WithBrokers(brokers);
-                foreach (var (topic, config) in topics)
+                if (!ensureOffsets)
                 {
-                    clusterBuilder.CreateTopicIfNotExists(topic, config.Partitions, config.ReplicationFactor);
+                    foreach (var (topic, config) in topics)
+                    {
+                        clusterBuilder.CreateTopicIfNotExists(topic, config.Partitions, config.ReplicationFactor);
+                    }
                 }
+
                 foreach (var (producerName, configure) in producerActions)
                 {
                     clusterBuilder.AddProducer(producerName, configurationBuilder =>
@@ -68,13 +79,11 @@ public class KafkaConfigurator
                     clusterBuilder.AddConsumer(consumerBuilder =>
                     {
                         consumerAction(consumerBuilder);
-                        if (ensureOffsets)
-                        {
-                            consumerBuilder.WithPartitionsAssignedHandler((resolver, list) =>
-                                resolver.Resolve<KafkaConsumerOffsetsEnsurer>()
-                                    .EnsureOffsets(brokers, name, list));
-                        }
                     });
                 }
             });
 }
+
+internal record ConsumerRegistration(string Name, string GroupId, TopicInfo[] Topics);
+
+public record TopicInfo(string Name, int PartitionsCount, short ReplicationFactor);

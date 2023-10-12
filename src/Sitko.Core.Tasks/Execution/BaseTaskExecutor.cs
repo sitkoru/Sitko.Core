@@ -13,20 +13,21 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
     where TConfig : BaseTaskConfig, new()
     where TResult : BaseTaskResult, new()
 {
-    private readonly ITracer? tracer;
-    private readonly ILogger<BaseTaskExecutor<TTask, TConfig, TResult>> logger;
     private readonly CancellationTokenSource activityTaskCts = new();
     private readonly IRepository<TTask, Guid> repository;
     private readonly IServiceScopeFactory serviceScopeFactory;
+    private readonly ITracer? tracer;
 
     protected BaseTaskExecutor(ILogger<BaseTaskExecutor<TTask, TConfig, TResult>> logger,
         IServiceScopeFactory serviceScopeFactory, IRepository<TTask, Guid> repository, ITracer? tracer = null)
     {
-        this.logger = logger;
+        Logger = logger;
         this.tracer = tracer;
         this.serviceScopeFactory = serviceScopeFactory;
         this.repository = repository;
     }
+
+    protected ILogger<BaseTaskExecutor<TTask, TConfig, TResult>> Logger { get; }
 
     public async Task ExecuteAsync(Guid id, CancellationToken cancellationToken)
     {
@@ -55,11 +56,11 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
             }
             catch (JobFailedException)
             {
-                logger.LogDebug("Mark transaction as failed");
+                Logger.LogDebug("Mark transaction as failed");
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Task {JobId} ( {JobType} ) failed: {ErrorText}", id, typeof(TTask).Name,
+                Logger.LogError(ex, "Task {JobId} ( {JobType} ) failed: {ErrorText}", id, typeof(TTask).Name,
                     ex.ToString());
             }
         }
@@ -67,7 +68,7 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
 
     private async Task<TTask> ExecuteTaskAsync(Guid id, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Start job {JobId}", id);
+        Logger.LogInformation("Start job {JobId}", id);
         var task = await repository.GetByIdAsync(id, cancellationToken);
         if (task is null)
         {
@@ -79,13 +80,14 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
             var groupInfo = TaskExecutorHelper.GetGroupInfo(GetType());
             if (groupInfo is not { allowRetry: true })
             {
-                logger.LogInformation("Skip retry task {JobId}", id);
+                Logger.LogInformation("Skip retry task {JobId}", id);
                 return task;
             }
-            logger.LogInformation("Retry task {JobId}", id);
+
+            Logger.LogInformation("Retry task {JobId}", id);
         }
 
-        logger.LogInformation("Set job {JobId} status to in progress", id);
+        Logger.LogInformation("Set job {JobId} status to in progress", id);
         task.ExecuteDateStart = DateTimeOffset.UtcNow;
         task.TaskStatus = TaskStatus.InProgress;
         task.LastActivityDate = DateTimeOffset.UtcNow;
@@ -111,24 +113,24 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
         }, activityTaskCts.Token);
         try
         {
-            logger.LogInformation("Try to execute job {JobId}", id);
+            Logger.LogInformation("Try to execute job {JobId}", id);
             result = await ExecuteAsync(task, cancellationToken);
             if (result.IsSuccess)
             {
-                logger.LogInformation("Job {JobId} executed successfully", id);
+                Logger.LogInformation("Job {JobId} executed successfully", id);
                 status = result.HasWarnings
                     ? TaskStatus.SuccessWithWarnings
                     : TaskStatus.Success;
             }
             else
             {
-                logger.LogInformation("Job {JobId} execution failed", id);
+                Logger.LogInformation("Job {JobId} execution failed", id);
                 status = TaskStatus.Fails;
             }
         }
         catch (Exception ex)
         {
-            logger.LogInformation(ex, "Job {JobId} execution failed with error: {ErrorText}", id, ex.ToString());
+            Logger.LogInformation(ex, "Job {JobId} execution failed with error: {ErrorText}", id, ex.ToString());
             status = TaskStatus.Fails;
             result = new TResult { IsSuccess = false, ErrorMessage = ex.Message };
         }
@@ -144,22 +146,26 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
         }
         catch (Exception ex)
         {
-            logger.LogInformation(ex, "Activity task error: {ErrorText}", ex.ToString());
+            Logger.LogInformation(ex, "Activity task error: {ErrorText}", ex.ToString());
         }
 
-        logger.LogInformation("Set job {JobId} result and save", id);
+        Logger.LogInformation("Set job {JobId} result and save", id);
         task = await repository.RefreshAsync(task, cancellationToken);
         task.Result = result;
         task.TaskStatus = status;
         task.ExecuteDateEnd = DateTimeOffset.UtcNow;
 
         await repository.UpdateAsync(task, cancellationToken);
-        logger.LogInformation("Job {JobId} finished", id);
+        Logger.LogInformation("Job {JobId} finished", id);
         return task;
     }
 
     protected abstract Task<TResult> ExecuteAsync(TTask task, CancellationToken cancellationToken);
 }
 
-public record ExecutorRegistration(Type ExecutorType, Type EventType, string GroupId, int ParallelThreadCount,
+public record ExecutorRegistration(
+    Type ExecutorType,
+    Type EventType,
+    string GroupId,
+    int ParallelThreadCount,
     int BufferSize);

@@ -1,167 +1,127 @@
-﻿using System.Collections.Concurrent;
-using System.Reflection;
-using Confluent.Kafka;
-using KafkaFlow.Consumers;
+﻿using Confluent.Kafka;
+using Confluent.Kafka.Admin;
 using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.Kafka;
 
 internal class KafkaConsumerOffsetsEnsurer
 {
-    private static FieldInfo? consumerManagerField;
-    private static FieldInfo? directConsumerField;
-    private static PropertyInfo? consumerProperty;
-    private static readonly HashSet<string> ProcessedPartitions = new();
+    private readonly ILogger<KafkaConsumerOffsetsEnsurer> logger;
 
-    private static readonly
-        ConcurrentDictionary<IMessageConsumer, (IConsumer kafkaFlowConsumer, IConsumer<byte[], byte[]> confluentConsumer
-            )> Consumers = new();
+    public KafkaConsumerOffsetsEnsurer(ILogger<KafkaConsumerOffsetsEnsurer> logger) => this.logger = logger;
 
-    private readonly IConsumerAccessor consumerAccessor;
-    private readonly ConcurrentDictionary<string, Task> tasks = new();
-    private IAdminClient? adminClient;
-    private ILogger<KafkaConsumerOffsetsEnsurer> logger;
-
-    public KafkaConsumerOffsetsEnsurer(IConsumerAccessor consumerAccessor, ILogger<KafkaConsumerOffsetsEnsurer> logger)
+    public async Task EnsureOffsetsAsync(KafkaConfigurator configurator)
     {
-        this.consumerAccessor = consumerAccessor;
-        this.logger = logger;
+        var adminClient = GetAdminClient(configurator.Brokers);
+        foreach (var consumer in configurator.Consumers)
+        {
+            foreach (var topic in consumer.Topics)
+            {
+                await EnsureTopicOffsetsAsync(consumer, adminClient, topic, configurator.Brokers);
+            }
+        }
+    }
+
+    private async Task EnsureTopicOffsetsAsync(ConsumerRegistration consumer, IAdminClient adminClient, TopicInfo topic,
+        string[] brokers)
+    {
+        logger.LogDebug("Try to create topic {Topic}", topic);
+        try
+        {
+            await adminClient.CreateTopicsAsync(new[]
+            {
+                new TopicSpecification
+                {
+                    Name = topic.Name,
+                    NumPartitions = topic.PartitionsCount,
+                    ReplicationFactor = topic.ReplicationFactor
+                }
+            });
+            logger.LogInformation("Topic {Topic} created", topic);
+        }
+        catch (Exception ex)
+        {
+            if (ex is CreateTopicsException createTopicsException &&
+                createTopicsException.Results.First().Error.Reason.Contains("already exists"))
+            {
+                logger.LogDebug("Topic {Topic} already exists", topic);
+            }
+            else
+            {
+                logger.LogError(ex, "Error creating topic {Topic}: {ErrorText}", topic.Name, ex.Message);
+                return;
+            }
+        }
+
+        var topicInfo = adminClient.GetMetadata(topic.Name, TimeSpan.FromSeconds(30)).Topics.First();
+        if (topicInfo is null || !topicInfo.Partitions.Any())
+        {
+            logger.LogError("Still no metadata for topic {Topic}", topic.Name);
+            return;
+        }
+
+        var partitions = topicInfo.Partitions.Select(metadata =>
+            new TopicPartition(topic.Name, new Partition(metadata.PartitionId))).ToList();
+        var commited = await adminClient.ListConsumerGroupOffsetsAsync(new[]
+        {
+            new ConsumerGroupTopicPartitions(consumer.GroupId, partitions)
+        });
+        if (!commited.Any())
+        {
+            logger.LogWarning(
+                "Can't find offsets for group {ConsumerGroup} and topic {Topic}",
+                consumer.GroupId, topic);
+            return;
+        }
+
+        var badPartitions = commited.First().Partitions.Where(
+            partitionOffset =>
+                partitionOffset.Offset == Offset.Unset
+        ).Select(error => error.Partition).ToList();
+        if (badPartitions.Any())
+        {
+            var consumerConfig = new ConsumerConfig
+            {
+                BootstrapServers = string.Join(",", brokers), GroupId = consumer.GroupId
+            };
+            var confluentConsumer = new ConsumerBuilder<byte[], byte[]>(consumerConfig).Build();
+            var toCommit = new List<TopicPartitionOffset>();
+            foreach (var partition in badPartitions)
+            {
+                var topicPartition = new TopicPartition(topic.Name, partition);
+                var partitionOffset =
+                    confluentConsumer.QueryWatermarkOffsets(topicPartition, TimeSpan.FromSeconds(30));
+                var newOffset = new TopicPartitionOffset(topicPartition, partitionOffset.High);
+                logger.LogWarning(
+                    "Ensure {Partition} offset for consumer {ConsumerGroup}: {Offset}",
+                    partition, consumer.GroupId, newOffset.Offset);
+                toCommit.Add(newOffset);
+            }
+
+            confluentConsumer.Commit(toCommit);
+            logger.LogInformation("Offsets for consumer group {ConsumerGroupName} in topic {Topic} ensured",
+                consumer.GroupId, topic);
+        }
+        else
+        {
+            logger.LogDebug(
+                "No partitions without stored offsets in topic {Topic} for consumer group {ConsumerGroupName}", topic,
+                consumer.GroupId);
+        }
     }
 
     private IAdminClient GetAdminClient(string[] brokers)
     {
-        if (adminClient is null)
+        var adminClientConfig = new AdminClientConfig
         {
-            var adminClientConfig = new AdminClientConfig
-            {
-                BootstrapServers = string.Join(",", brokers), ClientId = "AdminClient"
-            };
-            adminClient = new AdminClientBuilder(adminClientConfig)
-                .SetLogHandler((_, m) => logger.LogInformation("{Message}", m.Message))
-                .SetErrorHandler((_, error) => logger.LogError("Kafka Consumer Error: {Error}", error))
-                .Build();
-        }
+            BootstrapServers = string.Join(",", brokers), ClientId = "AdminClient"
+        };
+        var adminClient = new AdminClientBuilder(adminClientConfig)
+            .SetLogHandler((_, m) => logger.LogInformation("{Message}", m.Message))
+            .SetErrorHandler((_, error) => logger.LogError("Kafka Consumer Error: {Error}", error))
+            .Build();
+
 
         return adminClient;
     }
-
-    public void EnsureOffsets(
-        string[] brokers,
-        string name,
-        List<TopicPartition> list
-    )
-    {
-        foreach (var partition in list)
-        {
-            var key = $"{name}/{partition.Partition.Value}";
-            if (ProcessedPartitions.Contains(key))
-            {
-                continue;
-            }
-
-            tasks.GetOrAdd(
-                key, _ => { return Task.Run(async () => await ProcessPartition(brokers, name, partition)); }
-            );
-            ProcessedPartitions.Add(key);
-        }
-    }
-
-    private async Task ProcessPartition(string[] brokers, string name, TopicPartition partition)
-    {
-        var messageConsumer = consumerAccessor.GetConsumer(name);
-        messageConsumer.Pause(new[] { partition });
-        try
-        {
-            var (kafkaFlowConsumer, confluentConsumer) = GetConsumers(messageConsumer);
-
-            var commited = await GetAdminClient(brokers).ListConsumerGroupOffsetsAsync(new[]
-            {
-                new ConsumerGroupTopicPartitions(messageConsumer.GroupId, new List<TopicPartition> { partition })
-            });
-            if (!commited.Any())
-            {
-                logger.LogWarning(
-                    "Не получилось найти оффсеты для назначенных партиций консьюмера {Consumer}",
-                    messageConsumer.ConsumerName);
-                return;
-            }
-
-            var currentOffset = commited.First().Partitions.FirstOrDefault(
-                partitionOffset =>
-                    partitionOffset.TopicPartition == partition
-            );
-
-            if (currentOffset is null || currentOffset.Offset == Offset.Unset)
-            {
-                var partitionOffset = confluentConsumer.QueryWatermarkOffsets(partition, TimeSpan.FromSeconds(30));
-                var newOffset = new TopicPartitionOffset(partition, partitionOffset.High);
-                logger.LogWarning(
-                    "Сохраняем отсутствующий оффсет для партиции {Partition} консьюмера {Consumer}: {Offset}",
-                    partition, name, newOffset.Offset);
-                kafkaFlowConsumer.Commit(new[] { newOffset });
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error process partition {Partition}: {Error}", partition, ex);
-            throw;
-        }
-        finally
-        {
-            messageConsumer.Resume(new[] { partition });
-        }
-    }
-
-    private static (IConsumer kafkaFlowConsumer, IConsumer<byte[], byte[]> confluentConsumer) GetConsumers(
-        IMessageConsumer consumer) =>
-        Consumers.GetOrAdd(
-            consumer, messageConsumer =>
-            {
-                consumerManagerField ??= messageConsumer.GetType().GetField(
-                                             "consumerManager",
-                                             BindingFlags.Instance |
-                                             BindingFlags.NonPublic
-                                         ) ??
-                                         throw new InvalidOperationException(
-                                             "Can't find field consumerManager"
-                                         );
-                var consumerManager =
-                    consumerManagerField.GetValue(messageConsumer) ??
-                    throw new InvalidOperationException(
-                        "Can't get consumerManager"
-                    );
-                consumerProperty ??= consumerManager.GetType()
-                                         .GetProperty(
-                                             "Consumer",
-                                             BindingFlags.Instance |
-                                             BindingFlags.Public
-                                         ) ??
-                                     throw new InvalidOperationException(
-                                         "Can't find field consumer"
-                                     );
-                var flowConsumer =
-                    consumerProperty.GetValue(consumerManager) as IConsumer ??
-                    throw new InvalidOperationException(
-                        "Can't get flowConsumer"
-                    );
-
-                directConsumerField ??= flowConsumer.GetType()
-                                            .GetField(
-                                                "consumer",
-                                                BindingFlags.Instance |
-                                                BindingFlags.NonPublic
-                                            ) ??
-                                        throw new InvalidOperationException(
-                                            "Can't find field directConsumer"
-                                        );
-                var confluentConsumer =
-                    directConsumerField.GetValue(flowConsumer) as
-                        IConsumer<byte[], byte[]> ??
-                    throw new InvalidOperationException(
-                        "Can't getdirectConsumer"
-                    );
-
-                return (flowConsumer, confluentConsumer);
-            }
-        );
 }
