@@ -14,7 +14,7 @@ public class KafkaModule : BaseApplicationModule
 
     public override string OptionsKey => "Kafka";
 
-    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
+    public override void PostConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         BaseApplicationModuleOptions startupOptions)
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
