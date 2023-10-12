@@ -29,9 +29,16 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService where TT
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await using var scope = serviceScopeFactory.CreateAsyncScope();
             try
             {
+                var now = DateTime.UtcNow;
+                var nextDate = taskOptions.Value.CronExpression.GetNextOccurrence(now);
+                if (nextDate != null)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds((nextDate - now).Value.TotalSeconds), stoppingToken);
+                }
+
+                await using var scope = serviceScopeFactory.CreateAsyncScope();
                 var scheduler = scope.ServiceProvider.GetRequiredService<IBaseTaskFactory<TTask>>();
                 if (optionsMonitor.CurrentValue.IsAllTasksDisabled ||
                     optionsMonitor.CurrentValue.DisabledTasks.Contains(typeof(TTask).Name))
@@ -60,13 +67,6 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService where TT
                             logger.LogError("Error running task {Type}: {Ex}", typeof(TTask), ex);
                         }
                     }
-                }
-
-                var now = DateTime.UtcNow;
-                var nextDate = taskOptions.Value.CronExpression.GetNextOccurrence(now);
-                if (nextDate != null)
-                {
-                    await Task.Delay(TimeSpan.FromSeconds((nextDate - now).Value.TotalSeconds), stoppingToken);
                 }
             }
             catch (TaskCanceledException)
