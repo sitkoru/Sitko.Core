@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Sitko.Core.App.Web;
 
@@ -22,7 +23,7 @@ public class SitkoCoreWebApplicationBuilder : SitkoCoreApplicationBuilder
             if (module is TModule and IWebApplicationModule<TModuleOptions> webModule &&
                 options is TModuleOptions webModuleOptions)
             {
-                webModule?.ConfigureWebHost(BootApplicationContext, webApplicationBuilder.WebHost, webModuleOptions);
+                webModule.ConfigureWebHost(BootApplicationContext, webApplicationBuilder.WebHost, webModuleOptions);
             }
         }
     }
@@ -30,13 +31,12 @@ public class SitkoCoreWebApplicationBuilder : SitkoCoreApplicationBuilder
 
 public static class WebApplicationExtensions
 {
+    public static SitkoCoreApplicationBuilder AddSitkoCore(this WebApplicationBuilder builder) =>
+        builder.AddSitkoCore(Array.Empty<string>());
+
     public static SitkoCoreApplicationBuilder AddSitkoCore(this WebApplicationBuilder builder, string[] args)
     {
-        builder.Services.AddTransient<IStartupFilter, SitkoCoreWebStartupFilter>();
-        // if (builder.Builder is WebApplicationBuilder webApplicationBuilder)
-        // {
-        //     webApplicationBuilder.WebHost.
-        // }
+        builder.Services.TryAddTransient<IStartupFilter, SitkoCoreWebStartupFilter>();
         return new SitkoCoreWebApplicationBuilder(builder, args);
     }
 

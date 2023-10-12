@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -94,10 +95,12 @@ public class TestQueueProcessorCounter
 
 public class ProcessorQueueTestScope : BaseTestQueueTestScope
 {
-    protected override IServiceCollection ConfigureServices(IApplicationContext applicationContext,
-        IServiceCollection services, string name) =>
-        base.ConfigureServices(applicationContext, services, name)
-            .AddSingleton<TestQueueProcessorCounter>();
+    protected override IHostApplicationBuilder ConfigureServices(IHostApplicationBuilder builder, string name)
+    {
+        base.ConfigureServices(builder, name);
+        builder.Services.AddSingleton<TestQueueProcessorCounter>();
+        return builder;
+    }
 
     protected override void Configure(IApplicationContext applicationContext,
         TestQueueOptions options, string name) =>
@@ -106,13 +109,14 @@ public class ProcessorQueueTestScope : BaseTestQueueTestScope
 
 public class MultipleProcessorQueueTestScope : BaseTestQueueTestScope
 {
-    protected override IServiceCollection ConfigureServices(IApplicationContext applicationContext,
-        IServiceCollection services, string name) =>
-        base.ConfigureServices(applicationContext, services, name)
-            .AddSingleton<TestQueueProcessorCounter>();
+    protected override IHostApplicationBuilder ConfigureServices(IHostApplicationBuilder builder, string name)
+    {
+        base.ConfigureServices(builder, name);
+        builder.Services.AddSingleton<TestQueueProcessorCounter>();
+        return builder;
+    }
 
     protected override void Configure(IApplicationContext applicationContext,
         TestQueueOptions options, string name) =>
         options.RegisterProcessors<ProcessorTests>();
 }
-

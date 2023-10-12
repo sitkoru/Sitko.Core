@@ -41,15 +41,12 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
         CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "");
-        using var content = new MultipartFormDataContent
-        {
-            // file
-            { new StreamContent(uploadRequest.Stream), "file", Path.GetFileName(uploadRequest.FileName) },
-
-            // payload
-            { new StringContent(string.IsNullOrEmpty(uploadRequest.Path) ? "" : uploadRequest.Path), "path" },
-            { new StringContent(uploadRequest.FileName), "fileName" }
-        };
+        using var content = new MultipartFormDataContent();
+        // file
+        content.Add(new StreamContent(uploadRequest.Stream), "file", Path.GetFileName(uploadRequest.FileName));
+        // payload
+        content.Add(new StringContent(string.IsNullOrEmpty(uploadRequest.Path) ? "" : uploadRequest.Path), "path");
+        content.Add(new StringContent(uploadRequest.FileName), "fileName");
 
         if (uploadRequest.Metadata?.Data is not null)
         {

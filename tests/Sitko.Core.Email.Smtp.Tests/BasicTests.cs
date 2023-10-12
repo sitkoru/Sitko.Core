@@ -1,6 +1,4 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Sitko.Core.App.Web;
 using Sitko.Core.Email.Tests;
 using Sitko.Core.Xunit;
 using Xunit.Abstractions;
@@ -14,29 +12,8 @@ public class BasicTests : BasicTests<SmtpTestsScope>
     }
 }
 
-public class SmtpTestsScope : BaseTestScope<TestApplication>
+public class SmtpTestsScope : BaseTestScope
 {
-    protected override TestApplication CreateApplication()
-    {
-        var app = new TestApplication(Array.Empty<string>());
-        app.ConfigureAppConfiguration((_, builder) =>
-        {
-            builder.AddJsonFile("appsettings.json");
-        });
-        return app;
-    }
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name) =>
+        base.ConfigureApplication(hostBuilder, name).AddSmtpEmail();
 }
-
-public class TestStartup : BaseStartup
-{
-    public TestStartup(IConfiguration configuration, IHostEnvironment environment) : base(
-        configuration, environment)
-    {
-    }
-}
-
-public class TestApplication : WebApplication<TestStartup>
-{
-    public TestApplication(string[] args) : base(args) => this.AddSmtpEmail();
-}
-

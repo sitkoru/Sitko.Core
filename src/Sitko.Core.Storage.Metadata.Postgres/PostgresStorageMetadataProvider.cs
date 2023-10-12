@@ -44,20 +44,20 @@ public class
     protected override async Task DoDeleteAllMetadataAsync(CancellationToken cancellationToken = default)
     {
         await using var dbContext = GetDbContext();
-        await dbContext.Database.ExecuteSqlRawAsync(
-            $"DELETE FROM \"{StorageDbContext.Schema}\".\"{StorageDbContext.Table}\" WHERE \"{nameof(StorageItemRecord.Storage)}\" = '{StorageOptions.CurrentValue.Name}'",
-            cancellationToken);
+        await dbContext.Set<StorageItemRecord>().Where(record => record.Storage == StorageOptions.CurrentValue.Name)
+            .ExecuteDeleteAsync(cancellationToken);
     }
 
     protected override async Task<IEnumerable<StorageNode>> DoGetDirectoryContentsAsync(string path,
         CancellationToken cancellationToken = default)
     {
         await using var dbContext = GetDbContext();
-        if (path.StartsWith("/", StringComparison.Ordinal))
+        if (path.StartsWith('/'))
         {
             path = path.Substring(1);
         }
 
+        // ReSharper disable once EntityFramework.NPlusOne.IncompleteDataQuery
         var records = await dbContext.Records
             .Where(r => r.Storage == StorageOptions.CurrentValue.Name && r.Path.StartsWith(path))
             .ToListAsync(cancellationToken);
@@ -65,6 +65,7 @@ public class
         var root = StorageNode.CreateDirectory("/", "/");
         foreach (var itemRecord in records)
         {
+            // ReSharper disable once EntityFramework.NPlusOne.IncompleteDataUsage
             root.AddItem(itemRecord.StorageItem);
         }
 

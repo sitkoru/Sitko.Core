@@ -1,6 +1,5 @@
 using Sitko.Core.Storage.Remote.Tests.Server;
 using Sitko.Core.Storage.S3;
-using Sitko.Core.Xunit;
 using Sitko.Core.Xunit.Web;
 
 namespace Sitko.Core.Storage.Remote.Tests;
@@ -9,26 +8,25 @@ public class BaseRemoteStorageTestScope : WebTestScope
 {
     private readonly Guid bucketName = Guid.NewGuid();
 
-    protected override WebTestApplication ConfigureWebApplication(WebTestApplication application, string name)
+    protected override WebApplicationBuilder ConfigureWebApplication(WebApplicationBuilder webApplicationBuilder,
+        string name)
     {
-        base.ConfigureWebApplication(application, name);
-        application.AddS3Storage<TestS3StorageSettings>(moduleOptions =>
-            {
-                moduleOptions.Bucket = bucketName.ToString().ToLowerInvariant();
-                moduleOptions.Prefix = "test";
-                var baseUrl = moduleOptions.Server!;
-                var path = moduleOptions.Bucket;
-                moduleOptions.PublicUri = new Uri(baseUrl, path + "/");
-                moduleOptions.BucketPolicy = moduleOptions.AnonymousReadPolicy;
-            })
+        base.ConfigureWebApplication(webApplicationBuilder, name).AddS3Storage<TestS3StorageSettings>(
+                moduleOptions =>
+                {
+                    moduleOptions.Bucket = bucketName.ToString().ToLowerInvariant();
+                    moduleOptions.Prefix = "test";
+                    var baseUrl = moduleOptions.Server!;
+                    var path = moduleOptions.Bucket;
+                    moduleOptions.PublicUri = new Uri(baseUrl, path + "/");
+                    moduleOptions.BucketPolicy = moduleOptions.AnonymousReadPolicy;
+                })
             .AddS3StorageMetadata<TestS3StorageSettings>();
-        return application;
+        return webApplicationBuilder;
     }
 
-    protected override TestApplication ConfigureApplication(TestApplication application, string name)
-    {
-        base.ConfigureApplication(application, name);
-        application.AddRemoteStorage<TestRemoteStorageSettings>(moduleOptions =>
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name) =>
+        base.ConfigureApplication(hostBuilder, name).AddRemoteStorage<TestRemoteStorageSettings>(moduleOptions =>
         {
             moduleOptions.PublicUri = new Uri("https://localhost");
             if (Server is not null)
@@ -42,8 +40,4 @@ public class BaseRemoteStorageTestScope : WebTestScope
                 };
             }
         });
-
-        return application;
-    }
 }
-

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -94,9 +95,12 @@ public class MiddlewareQueueTestScope : BaseTestQueueTestScope
 
 public class MultipleMiddlewareQueueTestScope : BaseTestQueueTestScope
 {
-    protected override IServiceCollection ConfigureServices(IApplicationContext applicationContext,
-        IServiceCollection services, string name) =>
-        base.ConfigureServices(applicationContext, services, name).AddSingleton<ChainState>();
+    protected override IHostApplicationBuilder ConfigureServices(IHostApplicationBuilder builder, string name)
+    {
+        base.ConfigureServices(builder, name);
+        builder.Services.AddSingleton<ChainState>();
+        return builder;
+    }
 
     protected override void Configure(IApplicationContext applicationContext,
         TestQueueOptions options, string name) =>
@@ -105,9 +109,12 @@ public class MultipleMiddlewareQueueTestScope : BaseTestQueueTestScope
 
 public class ChainMiddlewareQueueTestScope : BaseTestQueueTestScope
 {
-    protected override IServiceCollection ConfigureServices(IApplicationContext applicationContext,
-        IServiceCollection services, string name) =>
-        base.ConfigureServices(applicationContext, services, name).AddSingleton<ChainState>();
+    protected override IHostApplicationBuilder ConfigureServices(IHostApplicationBuilder builder, string name)
+    {
+        base.ConfigureServices(builder, name);
+        builder.Services.AddSingleton<ChainState>();
+        return builder;
+    }
 
     protected override void Configure(IApplicationContext applicationContext,
         TestQueueOptions options, string name)
@@ -176,4 +183,3 @@ public class CountMiddleware : BaseQueueMiddleware
         return result;
     }
 }
-
