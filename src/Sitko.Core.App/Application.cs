@@ -105,6 +105,11 @@ public abstract class Application : IApplication, IAsyncDisposable
         {
             servicesConfigurationAction(applicationContext, services);
         }
+
+        foreach (var moduleRegistration in GetEnabledModuleRegistrations(applicationContext))
+        {
+            moduleRegistration.PostConfigureServices(applicationContext, services);
+        }
     }
 
     protected void ConfigureConfiguration(IApplicationContext appContext, IConfigurationBuilder builder)

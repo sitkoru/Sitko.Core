@@ -19,6 +19,11 @@ public abstract class BaseApplicationModule<TModuleOptions> : IApplicationModule
     {
     }
 
+    public virtual void PostConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
+        TModuleOptions startupOptions)
+    {
+    }
+
     public virtual Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider) =>
         Task.CompletedTask;
 

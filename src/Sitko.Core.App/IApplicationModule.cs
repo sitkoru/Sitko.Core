@@ -13,6 +13,9 @@ public interface IApplicationModule<in TModuleOptions> : IApplicationModule wher
     void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TModuleOptions startupOptions);
 
+    void PostConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
+        TModuleOptions startupOptions);
+
     IEnumerable<Type> GetRequiredModules(IApplicationContext applicationContext, TModuleOptions options);
 }
 
