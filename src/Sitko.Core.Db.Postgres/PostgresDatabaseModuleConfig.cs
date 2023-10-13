@@ -24,6 +24,8 @@ public class PostgresDatabaseModuleOptions<TDbContext> : BaseDbModuleOptions<TDb
 
     public string Schema { get; set; } = "";
 
+    public bool EnableJsonConversion { get; set; } = true;
+
     public Type GetValidatorType() => typeof(PostgresDatabaseModuleOptionsValidator<TDbContext>);
 
     public NpgsqlConnectionStringBuilder CreateBuilder()
