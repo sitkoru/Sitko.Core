@@ -1,0 +1,27 @@
+﻿@page "/TestPage"
+@attribute [RenderModeInteractiveServer]
+@inherits BaseComponent
+<h3>TestPage</h3>
+<p>@text</p>
+<MudButton OnClick="ChangeText">Change</MudButton>
+@code {
+
+    protected override async Task InitializeAsync()
+    {
+        await base.InitializeAsync();
+    }
+
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     await base.OnInitializedAsync();
+    //     // do nothing
+    // }
+
+    private string text = "";
+
+    private void ChangeText()
+    {
+        text = Guid.NewGuid().ToString();
+    }
+
+}
