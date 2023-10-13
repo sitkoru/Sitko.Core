@@ -47,6 +47,7 @@ public abstract class DbBaseTestScope<TApplicationBuilder, TConfig> : BaseTestSc
                     moduleOptions.Database = $"{Id}_{dbName}";
                     moduleOptions.EnableSensitiveLogging = true;
                     moduleOptions.IncludeErrorDetails = true;
+                    moduleOptions.EnableNpgsqlPooling = false;
                     configurePostgres?.Invoke(applicationContext, moduleOptions, Id, dbName);
                 }
                 else
