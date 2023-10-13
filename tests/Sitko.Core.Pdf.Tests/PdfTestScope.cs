@@ -9,5 +9,5 @@ public class PdfTestScope : BaseTestScope
     protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name) =>
         base.ConfigureApplication(hostBuilder, name)
             .AddPuppeteer()
-            .AddPuppeteer();
+            .AddPdfRenderer();
 }
