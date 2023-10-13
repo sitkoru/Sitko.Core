@@ -15,7 +15,7 @@ public interface IBaseComponent
     Task NotifyStateChangeAsync();
 }
 
-public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposable
+public abstract class BaseComponent : ComponentBase, IAsyncDisposable
 {
     private static readonly FieldInfo? RenderFragment = typeof(ComponentBase).GetField("_renderFragment",
         BindingFlags.NonPublic | BindingFlags.Instance);
@@ -120,27 +120,16 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable, IDisposab
         if (!isDisposed)
         {
             NavigationManager.LocationChanged -= HandleLocationChanged;
+            Dispose(true);
+            await DisposeAsync(true);
             if (scope is not null)
             {
                 await scope.Value.DisposeAsync();
             }
 
-            Dispose(true);
-            await DisposeAsync(true);
             isDisposed = true;
             GC.SuppressFinalize(this);
         }
-    }
-
-    public void Dispose()
-    {
-        if (!isDisposed)
-        {
-            throw new InvalidOperationException(
-                "This class must not be disposed synchronously. This method only here to avoid exception on sync scope dispose in .NET 5");
-        }
-
-        GC.SuppressFinalize(this);
     }
 
     public override string ToString() => $"{GetType().Name} {ComponentId}";
@@ -334,4 +323,3 @@ public enum ScopeType
 {
     Parent = 0, Isolated = 1
 }
-
