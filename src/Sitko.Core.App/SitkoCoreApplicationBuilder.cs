@@ -149,19 +149,21 @@ public class SitkoCoreApplicationBuilder
 
         var registration =
             new ApplicationModuleRegistration<TModule, TModuleOptions>(instance, configureOptions, optionsKey);
-
-        if (typeof(TModule).IsAssignableTo(typeof(IHostBuilderModule)))
+        if (registration.IsEnabled(BootApplicationContext))
         {
-            ConfigureHostBuilder<TModule, TModuleOptions>(registration);
-        }
+            if (typeof(TModule).IsAssignableTo(typeof(IHostBuilderModule)))
+            {
+                ConfigureHostBuilder<TModule, TModuleOptions>(registration);
+            }
 
-        registration.ConfigureAppConfiguration(BootApplicationContext, Builder.Configuration);
-        registration.ConfigureOptions(BootApplicationContext, Builder.Services);
-        registration.ConfigureServices(BootApplicationContext, Builder.Services);
+            registration.ConfigureAppConfiguration(BootApplicationContext, Builder.Configuration);
+            registration.ConfigureOptions(BootApplicationContext, Builder.Services);
+            registration.ConfigureServices(BootApplicationContext, Builder.Services);
 
-        if (typeof(TModule).IsAssignableTo(typeof(IHostBuilderModule)))
-        {
-            registration.PostConfigureHostBuilder(BootApplicationContext, Builder);
+            if (typeof(TModule).IsAssignableTo(typeof(IHostBuilderModule)))
+            {
+                registration.PostConfigureHostBuilder(BootApplicationContext, Builder);
+            }
         }
 
         moduleRegistrations.Add(registration);
