@@ -117,18 +117,11 @@ public class SitkoCoreApplicationBuilder
     public bool HasModule<TModule>() where TModule : IApplicationModule =>
         moduleRegistrations.Any(r => r.Type == typeof(TModule));
 
-    private bool CanAddModule() => moduleRegistrations.Count < 100500; // TODO: still needed?
-
     private void RegisterModule<TModule, TModuleOptions>(
         Action<IApplicationContext, TModuleOptions>? configureOptions = null,
         string? optionsKey = null)
         where TModule : IApplicationModule<TModuleOptions>, new() where TModuleOptions : BaseModuleOptions, new()
     {
-        if (!CanAddModule())
-        {
-            throw new InvalidOperationException("App host is already built. Can't add modules after it");
-        }
-
         var instance = new TModule();
         if (!instance.AllowMultiple && HasModule<TModule>())
         {
