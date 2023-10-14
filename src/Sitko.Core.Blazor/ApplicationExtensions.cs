@@ -6,6 +6,10 @@ using Sitko.Core.Blazor.Components;
 
 namespace Sitko.Core.Blazor;
 
+public interface ISitkoCoreBlazorApplicationBuilder : ISitkoCoreApplicationBuilder
+{
+}
+
 [PublicAPI]
 public static class ApplicationExtensions
 {
@@ -21,13 +25,14 @@ public static class ApplicationExtensions
     public static IHostApplicationBuilder AddPersistentState(this IHostApplicationBuilder hostApplicationBuilder) =>
         AddPersistentState<JsonHelperStateCompressor, CompressedPersistentComponentState>(hostApplicationBuilder);
 
-    public static SitkoCoreApplicationBuilder AddPersistentState<TCompressor, TComponentState>(
-        this SitkoCoreApplicationBuilder applicationBuilder)
+    public static ISitkoCoreApplicationBuilder AddPersistentState<TCompressor, TComponentState>(
+        this ISitkoCoreApplicationBuilder applicationBuilder)
         where TCompressor : class, IStateCompressor
         where TComponentState : class, ICompressedPersistentComponentState =>
         applicationBuilder.ConfigureServices(collection => collection.AddScoped<IStateCompressor, TCompressor>()
             .AddScoped<ICompressedPersistentComponentState, TComponentState>());
 
-    public static SitkoCoreApplicationBuilder AddPersistentState(this SitkoCoreApplicationBuilder applicationBuilder) =>
+    public static ISitkoCoreApplicationBuilder
+        AddPersistentState(this ISitkoCoreApplicationBuilder applicationBuilder) =>
         AddPersistentState<JsonHelperStateCompressor, CompressedPersistentComponentState>(applicationBuilder);
 }

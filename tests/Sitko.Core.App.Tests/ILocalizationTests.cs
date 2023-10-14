@@ -165,9 +165,13 @@ public class Default
 
 public class LocalizationTestScope : BaseTestScope
 {
-    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name) =>
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
+    {
         base.ConfigureApplication(hostBuilder, name)
+            .AddSitkoCore()
             .AddJsonLocalization(options => options.AddDefaultResource<Default>());
+        return hostBuilder;
+    }
 }
 
 public class NoLocalizationTestScope : BaseTestScope

@@ -28,8 +28,8 @@ public static class ApplicationExtensions
         return applicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddPostgresDatabase<TDbContext>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddPostgresDatabase<TDbContext>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, PostgresDatabaseModuleOptions<TDbContext>> configure,
         string? optionsKey = null)
         where TDbContext : DbContext =>
@@ -37,8 +37,8 @@ public static class ApplicationExtensions
             .AddModule<PostgresDatabaseModule<TDbContext>, PostgresDatabaseModuleOptions<TDbContext>>(configure,
                 optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddPostgresDatabase<TDbContext>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddPostgresDatabase<TDbContext>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<PostgresDatabaseModuleOptions<TDbContext>>? configure = null,
         string? optionsKey = null)
         where TDbContext : DbContext =>

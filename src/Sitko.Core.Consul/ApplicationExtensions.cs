@@ -21,11 +21,11 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddConsul(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddConsul(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, ConsulModuleOptions> configure, string? optionsKey = null) =>
         applicationBuilder.AddModule<ConsulModule, ConsulModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddConsul(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddConsul(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<ConsulModuleOptions>? configure = null, string? optionsKey = null) =>
         applicationBuilder.AddModule<ConsulModule, ConsulModuleOptions>(configure, optionsKey);
 }

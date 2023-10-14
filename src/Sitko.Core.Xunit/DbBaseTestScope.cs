@@ -134,5 +134,10 @@ public abstract class
     where TDbContext : DbContext
 {
     protected override IHost BuildApplication(HostApplicationBuilder builder) => builder.Build();
-    protected override HostApplicationBuilder CreateHostBuilder() => Host.CreateApplicationBuilder();
+    protected override HostApplicationBuilder CreateHostBuilder()
+    {
+        var builder = Host.CreateApplicationBuilder();
+        builder.AddSitkoCore();
+        return builder;
+    }
 }

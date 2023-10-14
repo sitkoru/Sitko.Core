@@ -26,8 +26,8 @@ public static class ApplicationExtensions
         return applicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddPostgresStorageMetadata<TStorageOptions>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddPostgresStorageMetadata<TStorageOptions>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, PostgresStorageMetadataModuleOptions<TStorageOptions>> configure,
         string? optionsKey = null)
         where TStorageOptions : StorageOptions =>
@@ -36,8 +36,8 @@ public static class ApplicationExtensions
                 PostgresStorageMetadataModuleOptions<TStorageOptions>>(
                 configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddPostgresStorageMetadata<TStorageOptions>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddPostgresStorageMetadata<TStorageOptions>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<PostgresStorageMetadataModuleOptions<TStorageOptions>>? configure = null, string? optionsKey = null)
         where TStorageOptions : StorageOptions =>
         applicationBuilder

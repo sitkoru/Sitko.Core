@@ -25,15 +25,15 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddRemoteStorage<TStorageOptions>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddRemoteStorage<TStorageOptions>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, TStorageOptions> configure, string? optionsKey = null)
         where TStorageOptions : StorageOptions, IRemoteStorageOptions, new() =>
         applicationBuilder.AddModule<RemoteStorageModule<TStorageOptions>, TStorageOptions>(configure,
             optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddRemoteStorage<TStorageOptions>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddRemoteStorage<TStorageOptions>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<TStorageOptions>? configure = null, string? optionsKey = null)
         where TStorageOptions : StorageOptions, IRemoteStorageOptions, new() =>
         applicationBuilder.AddModule<RemoteStorageModule<TStorageOptions>, TStorageOptions>(configure,

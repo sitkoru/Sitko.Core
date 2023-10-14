@@ -41,18 +41,18 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddEFRepositories(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddEFRepositories(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, EFRepositoriesModuleOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<EFRepositoriesModule, EFRepositoriesModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddEFRepositories(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddEFRepositories(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<EFRepositoriesModuleOptions>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<EFRepositoriesModule, EFRepositoriesModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddEFRepositories<TAssembly>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddEFRepositories<TAssembly>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, EFRepositoriesModuleOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<EFRepositoriesModule, EFRepositoriesModuleOptions>(
@@ -63,8 +63,8 @@ public static class ApplicationExtensions
             },
             optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddEFRepositories<TAssembly>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddEFRepositories<TAssembly>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<EFRepositoriesModuleOptions>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<EFRepositoriesModule, EFRepositoriesModuleOptions>(moduleOptions =>

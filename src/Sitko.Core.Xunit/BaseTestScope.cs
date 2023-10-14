@@ -48,7 +48,7 @@ public abstract class BaseTestScope<THostApplicationBuilder, TConfig> : IBaseTes
         hostApplicationBuilder.Services.Configure<TConfig>(hostApplicationBuilder.Configuration.GetSection("Tests"));
         ConfigureServices(hostApplicationBuilder, name);
 
-        hostApplicationBuilder.AddSitkoCore(Array.Empty<string>())
+        hostApplicationBuilder.AddSitkoCore()
             .ConfigureLogging((_, loggerConfiguration) =>
             {
                 loggerConfiguration = loggerConfiguration.WriteTo.TestOutput(testOutputHelper,
@@ -136,7 +136,13 @@ public abstract class BaseTestScope<THostApplicationBuilder, TConfig> : IBaseTes
 public abstract class BaseTestScope<TConfig> : BaseTestScope<HostApplicationBuilder, TConfig>
     where TConfig : BaseTestConfig, new()
 {
-    protected override HostApplicationBuilder CreateHostBuilder() => Host.CreateApplicationBuilder();
+    protected override HostApplicationBuilder CreateHostBuilder()
+    {
+        var builder = Host.CreateApplicationBuilder();
+        builder.AddSitkoCore();
+        return builder;
+    }
+
     protected override IHost BuildApplication(HostApplicationBuilder builder) => builder.Build();
 }
 

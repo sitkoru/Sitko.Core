@@ -45,20 +45,20 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddS3Storage<TStorageOptions>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddS3Storage<TStorageOptions>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, TStorageOptions> configure, string? optionsKey = null)
         where TStorageOptions : S3StorageOptions, new() =>
         applicationBuilder.AddModule<S3StorageModule<TStorageOptions>, TStorageOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddS3Storage<TStorageOptions>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddS3Storage<TStorageOptions>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<TStorageOptions>? configure = null, string? optionsKey = null)
         where TStorageOptions : S3StorageOptions, new() =>
         applicationBuilder.AddModule<S3StorageModule<TStorageOptions>, TStorageOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddS3StorageMetadata<TStorageOptions>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddS3StorageMetadata<TStorageOptions>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, S3StorageMetadataModuleOptions<TStorageOptions>> configure,
         string? optionsKey = null)
         where TStorageOptions : S3StorageOptions, new() =>
@@ -66,8 +66,8 @@ public static class ApplicationExtensions
             .AddModule<S3StorageMetadataModule<TStorageOptions>, S3StorageMetadataModuleOptions<TStorageOptions>>(
                 configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddS3StorageMetadata<TStorageOptions>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddS3StorageMetadata<TStorageOptions>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<S3StorageMetadataModuleOptions<TStorageOptions>>? configure = null,
         string? optionsKey = null)
         where TStorageOptions : S3StorageOptions, new() =>

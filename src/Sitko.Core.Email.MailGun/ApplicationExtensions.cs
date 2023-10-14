@@ -23,12 +23,12 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddMailGunEmail(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddMailGunEmail(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, MailGunEmailModuleOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<MailGunEmailModule, MailGunEmailModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddMailGunEmail(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddMailGunEmail(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<MailGunEmailModuleOptions>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<MailGunEmailModule, MailGunEmailModuleOptions>(configure, optionsKey);

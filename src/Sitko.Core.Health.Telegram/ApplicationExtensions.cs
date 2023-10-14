@@ -23,15 +23,15 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddTelegramHealthReporter(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddTelegramHealthReporter(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, TelegramHealthReporterModuleOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<TelegramHealthReporterModule, TelegramHealthReporterModuleOptions>(configure,
             optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddTelegramHealthReporter(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddTelegramHealthReporter(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<TelegramHealthReporterModuleOptions>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<TelegramHealthReporterModule, TelegramHealthReporterModuleOptions>(configure,

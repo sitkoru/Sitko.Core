@@ -65,15 +65,9 @@
 //         var applicationContext = GetContext(hostBuilder.HostEnvironment, hostBuilder.Configuration);
 //         var enabledModuleRegistrations = GetEnabledModuleRegistrations(applicationContext);
 //         // App configuration
-//         ConfigureConfiguration(applicationContext, hostBuilder.Configuration);
-//         // App services
-//         RegisterApplicationServices<WasmApplicationContext>(applicationContext, hostBuilder.Services);
-//         hostBuilder.Services.AddScriptInjector();
-//         hostBuilder.Services.AddScoped<CompressedPersistentComponentState>();
-//         hostBuilder.Services.Configure<JsonLocalizationModuleOptions>(options =>
-//         {
-//             options.AddDefaultResource(typeof(BaseForm));
-//         });
+
+
+
 //         // Logging
 //         LogInternal("Configure logging");
 //         LoggingExtensions.ConfigureSerilog(applicationContext, hostBuilder.Logging,
