@@ -22,76 +22,64 @@ public class SitkoCoreApplicationBuilder
     private readonly List<ApplicationModuleRegistration> moduleRegistrations =
         new();
 
+    private readonly SerilogConfigurator serilogConfigurator = new();
+
     public SitkoCoreApplicationBuilder(IHostApplicationBuilder builder, string[] args)
     {
-        this.Builder = builder;
+        Builder = builder;
         var bootConfig = builder.Configuration.Build();
         var argsProvider = new ApplicationArgsProvider(args);
         BootApplicationContext = new BuilderApplicationContext(bootConfig, builder.Environment, argsProvider);
 
+        // configure logging
         builder.Configuration.Add(new SerilogDynamicConfigurationSource());
+        var tmpLoggerConfiguration = new LoggerConfiguration();
+        tmpLoggerConfiguration = ConfigureDefautLogger(tmpLoggerConfiguration);
+        if (BootApplicationContext.Options.EnableConsoleLogging != true)
+        {
+            tmpLoggerConfiguration = tmpLoggerConfiguration.WriteTo.Console(
+                outputTemplate: ApplicationOptions.BaseConsoleLogFormat,
+                formatProvider: CultureInfo.InvariantCulture,
+                restrictedToMinimumLevel: LogEventLevel.Debug);
+        }
+
+        var tmpLogger = tmpLoggerConfiguration.CreateLogger();
+        Log.Logger = tmpLogger; // set default logger until host is started
+        Console.OutputEncoding = Encoding.UTF8;
+        InternalLogger = new SerilogLoggerFactory(tmpLogger)
+            .CreateLogger<SitkoCoreApplicationBuilder>();
+        AddModule<CommandsModule>();
+        builder.Logging.ClearProviders();
+        builder.Logging.AddSerilog();
+
+        serilogConfigurator.Configure(configuration => ConfigureDefautLogger(configuration));
+
 
         builder.Services.AddSingleton<IApplicationArgsProvider>(argsProvider);
+        builder.Services.AddSingleton(serilogConfigurator);
         builder.Services.AddSingleton<IApplicationContext, BuilderApplicationContext>();
         builder.Services.AddTransient<IScheduler, Scheduler>();
         builder.Services.AddFluentValidationExtensions();
         builder.Services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
         builder.Services.AddHostedService<HostedLifecycleService>(); // только Hosted? Проверить для Wasm
-
-        Console.OutputEncoding = Encoding.UTF8;
-        var loggerConfiguration = new LoggerConfiguration();
-        loggerConfiguration
-            .WriteTo.Console(outputTemplate: ApplicationOptions.BaseConsoleLogFormat,
-                formatProvider: CultureInfo.InvariantCulture,
-                restrictedToMinimumLevel: LogEventLevel.Debug);
-        InternalLogger = new SerilogLoggerFactory(loggerConfiguration.CreateLogger())
-            .CreateLogger<SitkoCoreApplicationBuilder>();
-        AddModule<CommandsModule>();
     }
 
     protected ILogger<SitkoCoreApplicationBuilder> InternalLogger { get; }
 
-    protected Dictionary<string, LogEventLevel> LogEventLevels { get; } = new();
-
-    protected List<Func<IApplicationContext, LoggerConfiguration, LoggerConfiguration>>
-        LoggerConfigurationActions { get; } = new();
-
-    // TODO: WHEN?
-    private void ConfigureLogging()
+    protected LoggerConfiguration ConfigureDefautLogger(LoggerConfiguration loggerConfiguration)
     {
-        LogInternal("Configure logging");
-        LoggingExtensions.ConfigureSerilog(BootApplicationContext, Builder.Logging,
-            configuration =>
-            {
-                configuration = configuration.Enrich.WithMachineName();
-                if (BootApplicationContext.Options.EnableConsoleLogging == true)
-                {
-                    configuration = configuration.WriteTo.Console(
-                        outputTemplate: BootApplicationContext.Options.ConsoleLogFormat,
-                        formatProvider: CultureInfo.InvariantCulture);
-                }
-
-                return ConfigureLogging(BootApplicationContext, configuration);
-            });
-    }
-
-    protected virtual LoggerConfiguration ConfigureLogging(IApplicationContext applicationContext,
-        LoggerConfiguration loggerConfiguration)
-    {
-        foreach (var (key, value) in LogEventLevels)
+        loggerConfiguration = loggerConfiguration.ReadFrom.Configuration(BootApplicationContext.Configuration);
+        loggerConfiguration = loggerConfiguration
+            .Enrich.FromLogContext()
+            .Enrich.WithProperty("App", BootApplicationContext.Name)
+            .Enrich.WithProperty("AppVersion", BootApplicationContext.Version)
+            .Enrich.WithProperty("AppEnvironment", BootApplicationContext.Environment)
+            .Enrich.WithMachineName();
+        if (BootApplicationContext.Options.EnableConsoleLogging == true)
         {
-            loggerConfiguration = loggerConfiguration.MinimumLevel.Override(key, value);
-        }
-
-        foreach (var moduleRegistration in ModulesHelper.GetEnabledModuleRegistrations<ILoggingModule>(
-                     applicationContext, moduleRegistrations))
-        {
-            loggerConfiguration = moduleRegistration.ConfigureLogging(applicationContext, loggerConfiguration);
-        }
-
-        foreach (var loggerConfigurationAction in LoggerConfigurationActions)
-        {
-            loggerConfiguration = loggerConfigurationAction(applicationContext, loggerConfiguration);
+            loggerConfiguration = loggerConfiguration.WriteTo.Console(
+                outputTemplate: BootApplicationContext.Options.ConsoleLogFormat,
+                formatProvider: CultureInfo.InvariantCulture);
         }
 
         return loggerConfiguration;
@@ -176,14 +164,14 @@ public class SitkoCoreApplicationBuilder
 
     public SitkoCoreApplicationBuilder ConfigureLogLevel(string source, LogEventLevel level)
     {
-        LogEventLevels.Add(source, level);
+        serilogConfigurator.ConfigureLogLevel(source, level);
         return this;
     }
 
     public SitkoCoreApplicationBuilder ConfigureLogging(
         Func<IApplicationContext, LoggerConfiguration, LoggerConfiguration> configure)
     {
-        LoggerConfigurationActions.Add(configure);
+        serilogConfigurator.ConfigureLogging(configure);
         return this;
     }
 

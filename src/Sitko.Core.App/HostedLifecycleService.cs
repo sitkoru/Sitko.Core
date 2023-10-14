@@ -2,23 +2,27 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Sitko.Core.App.Logging;
 
 namespace Sitko.Core.App;
 
-public class HostedLifecycleService : IHostedLifecycleService
+internal class HostedLifecycleService : IHostedLifecycleService
 {
     private readonly ILogger<HostedLifecycleService> logger;
     private readonly IApplicationContext applicationContext;
     private readonly IServiceProvider serviceProvider;
+    private readonly SerilogConfigurator serilogConfigurator;
 
     private readonly IReadOnlyList<ApplicationModuleRegistration> enabledModules;
 
     public HostedLifecycleService(ILogger<HostedLifecycleService> logger, IApplicationContext applicationContext,
-        IServiceProvider serviceProvider, IEnumerable<ApplicationModuleRegistration> applicationModuleRegistrations)
+        IServiceProvider serviceProvider, IEnumerable<ApplicationModuleRegistration> applicationModuleRegistrations,
+        SerilogConfigurator serilogConfigurator)
     {
         this.logger = logger;
         this.applicationContext = applicationContext;
         this.serviceProvider = serviceProvider;
+        this.serilogConfigurator = serilogConfigurator;
         enabledModules =
             ModulesHelper.GetEnabledModuleRegistrations(applicationContext, applicationModuleRegistrations);
     }
@@ -30,6 +34,7 @@ public class HostedLifecycleService : IHostedLifecycleService
     public async Task StartingAsync(CancellationToken cancellationToken)
     {
         await using var scope = serviceProvider.CreateAsyncScope();
+        serilogConfigurator.ApplyLogging(applicationContext, enabledModules);
         foreach (var enabledModule in enabledModules)
         {
             var shouldContinue = await enabledModule.GetInstance()
