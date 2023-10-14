@@ -24,7 +24,7 @@ public abstract class BaseQueueTestScope<TQueueModule, TQueue, TQueueModuleOptio
     protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {
         base.ConfigureApplication(hostBuilder, name);
-        hostBuilder.AddSitkoCore().AddModule<TQueueModule, TQueueModuleOptions>((
+        hostBuilder.GetSitkoCore().AddModule<TQueueModule, TQueueModuleOptions>((
             applicationContext, moduleOptions) => Configure(applicationContext, moduleOptions, name));
         return hostBuilder;
     }

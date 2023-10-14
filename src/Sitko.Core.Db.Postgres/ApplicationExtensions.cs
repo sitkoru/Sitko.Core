@@ -14,7 +14,7 @@ public static class ApplicationExtensions
         string? optionsKey = null)
         where TDbContext : DbContext
     {
-        applicationBuilder.AddSitkoCore().AddPostgresDatabase(configure, optionsKey);
+        applicationBuilder.GetSitkoCore().AddPostgresDatabase(configure, optionsKey);
         return applicationBuilder;
     }
 
@@ -24,7 +24,7 @@ public static class ApplicationExtensions
         string? optionsKey = null)
         where TDbContext : DbContext
     {
-        applicationBuilder.AddSitkoCore().AddPostgresDatabase(configure, optionsKey);
+        applicationBuilder.GetSitkoCore().AddPostgresDatabase(configure, optionsKey);
         return applicationBuilder;
     }
 

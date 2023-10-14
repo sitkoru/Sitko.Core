@@ -11,7 +11,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, HangfirePostgresModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddHangfirePostgres(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddHangfirePostgres(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -19,7 +19,7 @@ public static class ApplicationExtensions
         Action<HangfirePostgresModuleOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddHangfirePostgres(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddHangfirePostgres(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

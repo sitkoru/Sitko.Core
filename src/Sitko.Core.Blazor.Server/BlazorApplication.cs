@@ -23,11 +23,11 @@ public class SitkoCoreBlazorServerApplicationBuilder : SitkoCoreWebApplicationBu
 [PublicAPI]
 public static class ApplicationExtensions
 {
-    public static ISitkoCoreBlazorServerApplicationBuilder AddBlazorServer(
+    public static ISitkoCoreBlazorServerApplicationBuilder AddSitkoCoreBlazorServer(
         this WebApplicationBuilder webApplicationBuilder) =>
-        webApplicationBuilder.AddBlazorServer(Array.Empty<string>());
+        webApplicationBuilder.AddSitkoCoreBlazorServer(Array.Empty<string>());
 
-    public static ISitkoCoreBlazorServerApplicationBuilder AddBlazorServer(
+    public static ISitkoCoreBlazorServerApplicationBuilder AddSitkoCoreBlazorServer(
         this WebApplicationBuilder webApplicationBuilder, string[] args) =>
         ApplicationBuilderFactory.GetOrCreateApplicationBuilder(webApplicationBuilder,
             applicationBuilder => new SitkoCoreBlazorServerApplicationBuilder(applicationBuilder, args));

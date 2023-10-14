@@ -11,7 +11,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, NewRelicLoggingModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddNewRelicLogging(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddNewRelicLogging(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -19,7 +19,7 @@ public static class ApplicationExtensions
         Action<NewRelicLoggingModuleOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddNewRelicLogging(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddNewRelicLogging(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

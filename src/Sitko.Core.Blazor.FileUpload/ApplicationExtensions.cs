@@ -9,7 +9,7 @@ public static class ApplicationExtensions
 {
     public static IHostApplicationBuilder AddBlazorFileUpload(this IHostApplicationBuilder hostApplicationBuilder)
     {
-        hostApplicationBuilder.AddSitkoCore<ISitkoCoreBlazorApplicationBuilder>().AddBlazorFileUpload();
+        hostApplicationBuilder.GetSitkoCore<ISitkoCoreBlazorApplicationBuilder>().AddBlazorFileUpload();
         return hostApplicationBuilder;
     }
 

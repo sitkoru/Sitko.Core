@@ -10,14 +10,14 @@ public static class ApplicationExtensions
     public static IHostApplicationBuilder AddNatsQueue(this IHostApplicationBuilder hostApplicationBuilder,
         Action<IApplicationContext, NatsQueueModuleOptions> configure, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddNatsQueue(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddNatsQueue(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
     public static IHostApplicationBuilder AddNatsQueue(this IHostApplicationBuilder hostApplicationBuilder,
         Action<NatsQueueModuleOptions>? configure = null, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddNatsQueue(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddNatsQueue(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

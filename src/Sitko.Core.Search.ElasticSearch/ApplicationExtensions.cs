@@ -11,7 +11,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, ElasticSearchModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddElasticSearch(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddElasticSearch(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -19,7 +19,7 @@ public static class ApplicationExtensions
         Action<ElasticSearchModuleOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddElasticSearch(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddElasticSearch(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

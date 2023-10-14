@@ -11,7 +11,7 @@ public static class ApplicationExtensions
 {
     public static WebApplicationBuilder AddAntBlazorServer(this WebApplicationBuilder webApplicationBuilder)
     {
-        webApplicationBuilder.AddSitkoCore<ISitkoCoreBlazorServerApplicationBuilder>().AddAntBlazorServer();
+        webApplicationBuilder.GetSitkoCore<ISitkoCoreBlazorServerApplicationBuilder>().AddAntBlazorServer();
         return webApplicationBuilder;
     }
 

@@ -38,7 +38,7 @@ public class VaultTestScope : BaseTestScope
             });
         hostBuilder.Services.Configure<TestConfig>(hostBuilder.Configuration.GetSection("test"));
         hostBuilder.Services.Configure<TestConfig2>(hostBuilder.Configuration.GetSection("test2"));
-        hostBuilder.AddSitkoCore().AddModule<TestModule, TestModuleConfig>();
+        hostBuilder.GetSitkoCore().AddModule<TestModule, TestModuleConfig>();
         return hostBuilder;
     }
 
@@ -87,7 +87,7 @@ public class VaultTestScopeWithValidationFailure : VaultTestScope
     protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {
         base.ConfigureApplication(hostBuilder, name);
-        hostBuilder.AddSitkoCore().AddModule<TestModuleWithValidation, TestModuleWithValidationConfig>();
+        hostBuilder.GetSitkoCore().AddModule<TestModuleWithValidation, TestModuleWithValidationConfig>();
         return hostBuilder;
     }
 }

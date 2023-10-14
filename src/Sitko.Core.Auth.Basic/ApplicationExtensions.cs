@@ -10,14 +10,14 @@ public static class ApplicationExtensions
     public static IHostApplicationBuilder AddBasicAuth(this IHostApplicationBuilder hostApplicationBuilder,
         Action<IApplicationContext, BasicAuthModuleOptions> configure, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddBasicAuth(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddBasicAuth(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
     public static IHostApplicationBuilder AddBasicAuth(this IHostApplicationBuilder hostApplicationBuilder,
         Action<BasicAuthModuleOptions>? configure = null, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddBasicAuth(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddBasicAuth(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

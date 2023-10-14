@@ -11,7 +11,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, ImgProxyModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddImgProxy(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddImgProxy(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -19,7 +19,7 @@ public static class ApplicationExtensions
         Action<ImgProxyModuleOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddImgProxy(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddImgProxy(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

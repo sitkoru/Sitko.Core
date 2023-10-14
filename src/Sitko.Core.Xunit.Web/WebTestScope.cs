@@ -32,7 +32,7 @@ public abstract class WebTestScope<TApplicationBuilder, TConfig> : BaseTestScope
     public override async Task BeforeConfiguredAsync(string name)
     {
         var builder = WebApplication.CreateBuilder();
-        builder.AddSitkoCore();
+        builder.AddSitkoCoreWeb();
         ConfigureWebApplication(builder, name);
         builder.Services.AddMvc(options => options.EnableEndpointRouting = false).AddApplicationPart(GetType().Assembly)
             .AddControllersAsServices();

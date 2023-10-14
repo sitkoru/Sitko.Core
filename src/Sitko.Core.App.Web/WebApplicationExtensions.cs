@@ -35,10 +35,10 @@ public class SitkoCoreWebApplicationBuilder : SitkoCoreServerApplicationBuilder,
 
 public static class WebApplicationExtensions
 {
-    public static ISitkoCoreWebApplicationBuilder AddSitkoCore(this WebApplicationBuilder builder) =>
-        builder.AddSitkoCore(Array.Empty<string>());
+    public static ISitkoCoreWebApplicationBuilder AddSitkoCoreWeb(this WebApplicationBuilder builder) =>
+        builder.AddSitkoCoreWeb(Array.Empty<string>());
 
-    public static ISitkoCoreWebApplicationBuilder AddSitkoCore(this WebApplicationBuilder builder, string[] args)
+    public static ISitkoCoreWebApplicationBuilder AddSitkoCoreWeb(this WebApplicationBuilder builder, string[] args)
     {
         builder.Services.TryAddTransient<IStartupFilter, SitkoCoreWebStartupFilter>();
         return ApplicationBuilderFactory.GetOrCreateApplicationBuilder(builder,

@@ -13,7 +13,7 @@ public static class ApplicationExtensions
         string? optionsKey = null)
         where TClient : ClientBase<TClient>
     {
-        applicationBuilder.AddSitkoCore().AddConsulGrpcClient(configure, optionsKey);
+        applicationBuilder.GetSitkoCore().AddConsulGrpcClient(configure, optionsKey);
         return applicationBuilder;
     }
 
@@ -22,7 +22,7 @@ public static class ApplicationExtensions
         string? optionsKey = null)
         where TClient : ClientBase<TClient>
     {
-        applicationBuilder.AddSitkoCore().AddConsulGrpcClient(configure, optionsKey);
+        applicationBuilder.GetSitkoCore().AddConsulGrpcClient(configure, optionsKey);
         return applicationBuilder;
     }
 

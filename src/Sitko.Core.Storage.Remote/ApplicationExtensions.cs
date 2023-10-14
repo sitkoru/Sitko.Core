@@ -12,7 +12,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, TStorageOptions> configure, string? optionsKey = null)
         where TStorageOptions : StorageOptions, IRemoteStorageOptions, new()
     {
-        hostApplicationBuilder.AddSitkoCore().AddRemoteStorage(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddRemoteStorage(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -21,7 +21,7 @@ public static class ApplicationExtensions
         Action<TStorageOptions>? configure = null, string? optionsKey = null)
         where TStorageOptions : StorageOptions, IRemoteStorageOptions, new()
     {
-        hostApplicationBuilder.AddSitkoCore().AddRemoteStorage(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddRemoteStorage(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

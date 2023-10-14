@@ -14,7 +14,7 @@ public static class ApplicationExtensions
         string? optionsKey = null)
         where TDbContext : DbContext
     {
-        hostApplicationBuilder.AddSitkoCore().AddInMemoryDatabase(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddInMemoryDatabase(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -24,7 +24,7 @@ public static class ApplicationExtensions
         string? optionsKey = null)
         where TDbContext : DbContext
     {
-        hostApplicationBuilder.AddSitkoCore().AddInMemoryDatabase(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddInMemoryDatabase(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

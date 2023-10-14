@@ -11,14 +11,14 @@ public static class ApplicationExtensions
         Action<IApplicationContext, TeamsHealthReporterModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddTeamsHealthReporter(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddTeamsHealthReporter(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
     public static IHostApplicationBuilder AddTeamsHealthReporter(this IHostApplicationBuilder hostApplicationBuilder,
         Action<TeamsHealthReporterModuleOptions>? configure = null, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddTeamsHealthReporter(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddTeamsHealthReporter(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

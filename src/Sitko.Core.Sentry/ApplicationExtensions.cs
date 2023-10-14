@@ -10,14 +10,14 @@ public static class ApplicationExtensions
     public static IHostApplicationBuilder AddSentry(this IHostApplicationBuilder hostApplicationBuilder,
         Action<IApplicationContext, SentryModuleOptions> configure, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddSentry(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddSentry(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
     public static IHostApplicationBuilder AddSentry(this IHostApplicationBuilder hostApplicationBuilder,
         Action<SentryModuleOptions>? configure = null, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddSentry(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddSentry(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

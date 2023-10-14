@@ -12,7 +12,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, TStorageOptions> configure, string? optionsKey = null)
         where TStorageOptions : S3StorageOptions, new()
     {
-        hostApplicationBuilder.AddSitkoCore().AddS3Storage(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddS3Storage(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -21,7 +21,7 @@ public static class ApplicationExtensions
         Action<TStorageOptions>? configure = null, string? optionsKey = null)
         where TStorageOptions : S3StorageOptions, new()
     {
-        hostApplicationBuilder.AddSitkoCore().AddS3Storage(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddS3Storage(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -31,7 +31,7 @@ public static class ApplicationExtensions
         string? optionsKey = null)
         where TStorageOptions : S3StorageOptions, new()
     {
-        hostApplicationBuilder.AddSitkoCore().AddS3StorageMetadata(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddS3StorageMetadata(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -41,7 +41,7 @@ public static class ApplicationExtensions
         string? optionsKey = null)
         where TStorageOptions : S3StorageOptions, new()
     {
-        hostApplicationBuilder.AddSitkoCore().AddS3StorageMetadata(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddS3StorageMetadata(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

@@ -9,7 +9,7 @@ public static class ApplicationExtensions
 {
     public static IHostApplicationBuilder AddSearchRepository(this IHostApplicationBuilder hostApplicationBuilder)
     {
-        hostApplicationBuilder.AddSitkoCore().AddSearchRepository();
+        hostApplicationBuilder.GetSitkoCore().AddSearchRepository();
         return hostApplicationBuilder;
     }
 

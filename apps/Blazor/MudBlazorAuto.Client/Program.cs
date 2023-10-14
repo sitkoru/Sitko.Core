@@ -11,7 +11,7 @@ using Index = MudBlazorAuto.Client.Pages.Index;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder
-    .AddSitkoCore()
+    .AddSitkoCoreBlazorWasm()
     .AddMudBlazor()
     .AddJsonLocalization(options => options.AddDefaultResource<Index>())
     .AddRemoteRepositories(options => options.AddRepositoriesFromAssemblyOf<Program>())

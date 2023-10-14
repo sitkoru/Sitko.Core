@@ -168,7 +168,7 @@ public class LocalizationTestScope : BaseTestScope
     protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {
         base.ConfigureApplication(hostBuilder, name)
-            .AddSitkoCore()
+            .GetSitkoCore()
             .AddJsonLocalization(options => options.AddDefaultResource<Default>());
         return hostBuilder;
     }

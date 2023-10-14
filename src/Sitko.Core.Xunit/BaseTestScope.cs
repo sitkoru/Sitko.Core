@@ -48,7 +48,7 @@ public abstract class BaseTestScope<THostApplicationBuilder, TConfig> : IBaseTes
         hostApplicationBuilder.Services.Configure<TConfig>(hostApplicationBuilder.Configuration.GetSection("Tests"));
         ConfigureServices(hostApplicationBuilder, name);
 
-        hostApplicationBuilder.AddSitkoCore()
+        hostApplicationBuilder.GetSitkoCore()
             .ConfigureLogging((_, loggerConfiguration) =>
             {
                 loggerConfiguration = loggerConfiguration.WriteTo.TestOutput(testOutputHelper,

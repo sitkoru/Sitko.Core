@@ -13,7 +13,7 @@ public static class ApplicationExtensions
         string? optionsKey = null)
         where TStorageOptions : StorageOptions
     {
-        hostApplicationBuilder.AddSitkoCore().AddImgProxyStorage<TStorageOptions>(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddImgProxyStorage<TStorageOptions>(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -23,7 +23,7 @@ public static class ApplicationExtensions
         string? optionsKey = null)
         where TStorageOptions : StorageOptions
     {
-        hostApplicationBuilder.AddSitkoCore().AddImgProxyStorage<TStorageOptions>(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddImgProxyStorage<TStorageOptions>(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

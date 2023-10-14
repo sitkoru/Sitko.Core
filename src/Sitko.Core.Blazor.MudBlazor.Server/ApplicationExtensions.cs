@@ -1,6 +1,5 @@
 ﻿using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
-using Sitko.Core.App;
 using Sitko.Core.Blazor.MudBlazorComponents;
 using Sitko.Core.Blazor.Server;
 
@@ -11,7 +10,7 @@ public static class ApplicationExtensions
 {
     public static WebApplicationBuilder AddMudBlazorServer(this WebApplicationBuilder webApplicationBuilder)
     {
-        webApplicationBuilder.AddSitkoCore<ISitkoCoreBlazorServerApplicationBuilder>().AddMudBlazorServer();
+        webApplicationBuilder.AddSitkoCoreBlazorServer().AddMudBlazorServer();
         return webApplicationBuilder;
     }
 

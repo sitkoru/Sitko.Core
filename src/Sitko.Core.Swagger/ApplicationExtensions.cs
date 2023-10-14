@@ -10,14 +10,14 @@ public static class ApplicationExtensions
     public static IHostApplicationBuilder AddSwagger(this IHostApplicationBuilder hostApplicationBuilder,
         Action<IApplicationContext, SwaggerModuleOptions> configure, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddSwagger(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddSwagger(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
     public static IHostApplicationBuilder AddSwagger(this IHostApplicationBuilder hostApplicationBuilder,
         Action<SwaggerModuleOptions>? configure = null, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddSwagger(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddSwagger(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
