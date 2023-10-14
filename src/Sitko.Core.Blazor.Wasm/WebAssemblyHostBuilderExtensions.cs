@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.JSInterop;
 using Serilog;
 using Sitko.Blazor.ScriptInjector;
 using Sitko.Core.App;
@@ -54,10 +53,10 @@ public class SitkoCoreBlazorWasmApplicationBuilder : SitkoCoreBaseApplicationBui
 
 public static class WebAssemblyHostBuilderExtensions
 {
-    public static ISitkoCoreBlazorApplicationBuilder AddSitkoCore(this WebAssemblyHostBuilder builder) =>
-        builder.AddSitkoCore(Array.Empty<string>());
+    public static ISitkoCoreBlazorApplicationBuilder AddSitkoCoreBlazorWasm(this WebAssemblyHostBuilder builder) =>
+        builder.AddSitkoCoreBlazorWasm(Array.Empty<string>());
 
-    public static ISitkoCoreBlazorApplicationBuilder AddSitkoCore(this WebAssemblyHostBuilder builder, string[] args) =>
+    public static ISitkoCoreBlazorApplicationBuilder AddSitkoCoreBlazorWasm(this WebAssemblyHostBuilder builder, string[] args) =>
         ApplicationBuilderFactory.GetOrCreateApplicationBuilder(builder,
             applicationBuilder => new SitkoCoreBlazorWasmApplicationBuilder(applicationBuilder, args));
 }

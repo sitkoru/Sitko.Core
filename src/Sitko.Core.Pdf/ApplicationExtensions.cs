@@ -10,7 +10,7 @@ public static class ApplicationExtensions
     public static IHostApplicationBuilder AddPdfRenderer(this IHostApplicationBuilder hostApplicationBuilder
     )
     {
-        hostApplicationBuilder.AddSitkoCore().AddPdfRenderer();
+        hostApplicationBuilder.GetSitkoCore().AddPdfRenderer();
         return hostApplicationBuilder;
     }
 

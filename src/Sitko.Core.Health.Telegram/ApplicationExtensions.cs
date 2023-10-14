@@ -11,7 +11,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, TelegramHealthReporterModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddTelegramHealthReporter(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddTelegramHealthReporter(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -19,7 +19,7 @@ public static class ApplicationExtensions
         Action<TelegramHealthReporterModuleOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddTelegramHealthReporter(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddTelegramHealthReporter(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

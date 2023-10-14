@@ -10,14 +10,14 @@ public static class ApplicationExtensions
     public static IHostApplicationBuilder AddGraylog(this IHostApplicationBuilder hostApplicationBuilder,
         Action<IApplicationContext, GraylogModuleOptions> configure, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddGraylog(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddGraylog(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
     public static IHostApplicationBuilder AddGraylog(this IHostApplicationBuilder hostApplicationBuilder,
         Action<GraylogModuleOptions>? configure = null, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddGraylog(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddGraylog(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

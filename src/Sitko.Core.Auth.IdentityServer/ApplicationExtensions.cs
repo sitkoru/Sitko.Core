@@ -11,14 +11,14 @@ public static class ApplicationExtensions
         Action<IApplicationContext, JwtIdentityServerModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddJwtIdentityServer(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddJwtIdentityServer(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
     public static IHostApplicationBuilder AddJwtIdentityServer(this IHostApplicationBuilder hostApplicationBuilder,
         Action<JwtIdentityServerModuleOptions>? configure = null, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddJwtIdentityServer(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddJwtIdentityServer(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -26,14 +26,14 @@ public static class ApplicationExtensions
         Action<IApplicationContext, OidcIdentityServerModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddOidcIdentityServer(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddOidcIdentityServer(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
     public static IHostApplicationBuilder AddOidcIdentityServer(this IHostApplicationBuilder hostApplicationBuilder,
         Action<OidcIdentityServerModuleOptions>? configure = null, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddOidcIdentityServer(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddOidcIdentityServer(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

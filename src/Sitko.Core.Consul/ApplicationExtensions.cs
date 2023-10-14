@@ -10,14 +10,14 @@ public static class ApplicationExtensions
     public static IHostApplicationBuilder AddConsul(this IHostApplicationBuilder hostApplicationBuilder,
         Action<IApplicationContext, ConsulModuleOptions> configure, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddConsul(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddConsul(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
     public static IHostApplicationBuilder AddConsul(this IHostApplicationBuilder hostApplicationBuilder,
         Action<ConsulModuleOptions>? configure = null, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddConsul(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddConsul(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

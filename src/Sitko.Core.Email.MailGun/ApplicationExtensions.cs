@@ -11,7 +11,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, MailGunEmailModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddMailGunEmail(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddMailGunEmail(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -19,7 +19,7 @@ public static class ApplicationExtensions
         Action<MailGunEmailModuleOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddMailGunEmail(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddMailGunEmail(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

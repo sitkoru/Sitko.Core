@@ -103,7 +103,7 @@ public class RemoteRepositoryTestScope : WebTestScope
     protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {
         base.ConfigureApplication(hostBuilder, name);
-        hostBuilder.AddSitkoCore().ConfigureLogging((_, configuration) =>
+        hostBuilder.GetSitkoCore().ConfigureLogging((_, configuration) =>
                 configuration.MinimumLevel.Override("Sitko.Core.Repository", LogEventLevel.Debug))
             .AddRemoteRepositories(options =>
             {

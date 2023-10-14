@@ -11,7 +11,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, ConsulDiscoveryGrpcServerModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddConsulGrpcServer(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddConsulGrpcServer(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -19,7 +19,7 @@ public static class ApplicationExtensions
         Action<ConsulDiscoveryGrpcServerModuleOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddConsulGrpcServer(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddConsulGrpcServer(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

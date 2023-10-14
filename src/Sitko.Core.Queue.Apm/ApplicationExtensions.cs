@@ -9,7 +9,7 @@ public static class ApplicationExtensions
 {
     public static IHostApplicationBuilder AddQueueElasticApm(this IHostApplicationBuilder hostApplicationBuilder)
     {
-        hostApplicationBuilder.AddSitkoCore().AddQueueElasticApm();
+        hostApplicationBuilder.GetSitkoCore().AddQueueElasticApm();
         return hostApplicationBuilder;
     }
 

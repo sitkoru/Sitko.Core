@@ -12,7 +12,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, TStorageOptions> configure, string? optionsKey = null)
         where TStorageOptions : StorageOptions, IFileSystemStorageOptions, new()
     {
-        hostApplicationBuilder.AddSitkoCore<ISitkoCoreServerApplicationBuilder>().AddFileSystemStorage(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore<ISitkoCoreServerApplicationBuilder>().AddFileSystemStorage(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -21,7 +21,7 @@ public static class ApplicationExtensions
         Action<TStorageOptions>? configure = null, string? optionsKey = null)
         where TStorageOptions : StorageOptions, IFileSystemStorageOptions, new()
     {
-        hostApplicationBuilder.AddSitkoCore<ISitkoCoreServerApplicationBuilder>().AddFileSystemStorage(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore<ISitkoCoreServerApplicationBuilder>().AddFileSystemStorage(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -31,7 +31,7 @@ public static class ApplicationExtensions
             configure, string? optionsKey = null)
         where TStorageOptions : StorageOptions, IFileSystemStorageOptions, new()
     {
-        hostApplicationBuilder.AddSitkoCore<ISitkoCoreServerApplicationBuilder>().AddFileSystemStorageMetadata(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore<ISitkoCoreServerApplicationBuilder>().AddFileSystemStorageMetadata(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -41,7 +41,7 @@ public static class ApplicationExtensions
             configure = null, string? optionsKey = null)
         where TStorageOptions : StorageOptions, IFileSystemStorageOptions, new()
     {
-        hostApplicationBuilder.AddSitkoCore<ISitkoCoreServerApplicationBuilder>().AddFileSystemStorageMetadata(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore<ISitkoCoreServerApplicationBuilder>().AddFileSystemStorageMetadata(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

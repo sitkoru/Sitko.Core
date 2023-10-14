@@ -11,7 +11,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, SmtpEmailModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddSmtpEmail(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddSmtpEmail(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -19,7 +19,7 @@ public static class ApplicationExtensions
         Action<SmtpEmailModuleOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddSmtpEmail(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddSmtpEmail(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

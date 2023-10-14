@@ -11,14 +11,14 @@ public static class ApplicationExtensions
         Action<IApplicationContext, VaultConfigurationModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddVaultConfiguration(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddVaultConfiguration(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
     public static IHostApplicationBuilder AddVaultConfiguration(this IHostApplicationBuilder hostApplicationBuilder,
         Action<VaultConfigurationModuleOptions>? configure = null, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddVaultConfiguration(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddVaultConfiguration(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
