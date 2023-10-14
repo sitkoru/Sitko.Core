@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Sitko.Core.Blazor.MudBlazor.Server\Sitko.Core.Blazor.MudBlazor.Server.csproj" />
+    <ProjectReference Include="..\..\..\src\Sitko.Core.Db.InMemory\Sitko.Core.Db.InMemory.csproj" />
+    <ProjectReference Include="..\..\..\src\Sitko.Core.Repository.EntityFrameworkCore\Sitko.Core.Repository.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\src\Sitko.Core.Repository.Remote.Server\Sitko.Core.Repository.Remote.Server.csproj" />
+    <ProjectReference Include="..\..\..\src\Sitko.Core.Storage.FileSystem\Sitko.Core.Storage.FileSystem.csproj" />
+    <ProjectReference Include="..\..\..\src\Sitko.Core.Storage.Metadata.Postgres\Sitko.Core.Storage.Metadata.Postgres.csproj" />
+    <ProjectReference Include="..\..\..\src\Sitko.Core.Storage.Remote.Server\Sitko.Core.Storage.Remote.Server.csproj" />
+    <ProjectReference Include="..\MudBlazorAuto.Client\MudBlazorAuto.Client.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0-rc.2.23480.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0-rc.2.23480.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <EmbeddedResource Include="Resources\*.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Components\Lists\" />
+  </ItemGroup>
+
+</Project>
