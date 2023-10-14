@@ -2,14 +2,19 @@
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
 using Sitko.Core.App.Web;
 
 namespace Sitko.Core.Xunit.Web;
 
 public class WebTestScope : WebTestScope<HostApplicationBuilder, BaseTestConfig>
 {
-    protected override HostApplicationBuilder CreateHostBuilder() =>
-        Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder();
+    protected override HostApplicationBuilder CreateHostBuilder()
+    {
+        var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder();
+        builder.AddSitkoCore();
+        return builder;
+    }
 
     protected override IHost BuildApplication(HostApplicationBuilder builder) => builder.Build();
 }
@@ -27,7 +32,7 @@ public abstract class WebTestScope<TApplicationBuilder, TConfig> : BaseTestScope
     public override async Task BeforeConfiguredAsync(string name)
     {
         var builder = WebApplication.CreateBuilder();
-
+        builder.AddSitkoCore();
         ConfigureWebApplication(builder, name);
         builder.Services.AddMvc(options => options.EnableEndpointRouting = false).AddApplicationPart(GetType().Assembly)
             .AddControllersAsServices();

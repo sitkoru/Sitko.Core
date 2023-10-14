@@ -23,12 +23,12 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddAutoMapper(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddAutoMapper(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, AutoMapperModuleOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<AutoMapperModule, AutoMapperModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddAutoMapper(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddAutoMapper(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<AutoMapperModuleOptions>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<AutoMapperModule, AutoMapperModuleOptions>(configure, optionsKey);

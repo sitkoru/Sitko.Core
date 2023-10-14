@@ -23,13 +23,13 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddMediatR<TAssembly>(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddMediatR<TAssembly>(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, MediatRModuleOptions<TAssembly>> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<MediatRModule<TAssembly>, MediatRModuleOptions<TAssembly>>(configure,
             optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddMediatR<TAssembly>(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddMediatR<TAssembly>(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<MediatRModuleOptions<TAssembly>>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<MediatRModule<TAssembly>, MediatRModuleOptions<TAssembly>>(configure,

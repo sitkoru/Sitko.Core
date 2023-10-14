@@ -22,15 +22,15 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddTeamsHealthReporter(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddTeamsHealthReporter(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, TeamsHealthReporterModuleOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<TeamsHealthReporterModule, TeamsHealthReporterModuleOptions>(configure,
             optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddTeamsHealthReporter(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddTeamsHealthReporter(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<TeamsHealthReporterModuleOptions>? configure = null, string? optionsKey = null) =>
         applicationBuilder.AddModule<TeamsHealthReporterModule, TeamsHealthReporterModuleOptions>(configure,
             optionsKey);

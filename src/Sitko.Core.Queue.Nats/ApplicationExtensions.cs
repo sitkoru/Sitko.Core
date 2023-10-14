@@ -21,11 +21,11 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddNatsQueue(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddNatsQueue(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, NatsQueueModuleOptions> configure, string? optionsKey = null) =>
         applicationBuilder.AddModule<NatsQueueModule, NatsQueueModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddNatsQueue(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddNatsQueue(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<NatsQueueModuleOptions>? configure = null, string? optionsKey = null) =>
         applicationBuilder.AddModule<NatsQueueModule, NatsQueueModuleOptions>(configure, optionsKey);
 }

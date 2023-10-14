@@ -23,12 +23,12 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddPuppeteer(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddPuppeteer(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, PuppeteerModuleOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<PuppeteerModule, PuppeteerModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddPuppeteer(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddPuppeteer(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<PuppeteerModuleOptions>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<PuppeteerModule, PuppeteerModuleOptions>(configure, optionsKey);
