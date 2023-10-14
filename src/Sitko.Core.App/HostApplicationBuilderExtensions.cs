@@ -5,10 +5,10 @@ namespace Sitko.Core.App;
 public static class HostApplicationBuilderExtensions
 {
     public static ISitkoCoreApplicationBuilder
-        AddSitkoCore(this IHostApplicationBuilder builder) => AddSitkoCore<ISitkoCoreApplicationBuilder>(builder);
+        GetSitkoCore(this IHostApplicationBuilder builder) => GetSitkoCore<ISitkoCoreApplicationBuilder>(builder);
 
     public static TSitkoCoreApplicationBuilder
-        AddSitkoCore<TSitkoCoreApplicationBuilder>(this IHostApplicationBuilder builder)
+        GetSitkoCore<TSitkoCoreApplicationBuilder>(this IHostApplicationBuilder builder)
         where TSitkoCoreApplicationBuilder : ISitkoCoreApplicationBuilder =>
         ApplicationBuilderFactory.GetApplicationBuilder<IHostApplicationBuilder, TSitkoCoreApplicationBuilder>(builder);
 

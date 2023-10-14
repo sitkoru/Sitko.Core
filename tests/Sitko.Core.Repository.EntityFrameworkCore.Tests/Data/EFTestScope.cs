@@ -11,7 +11,7 @@ public class EFTestScope : BaseEFTestScope
 {
     protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {
-        hostBuilder.AddSitkoCore().ConfigureLogging((_, configuration) =>
+        hostBuilder.GetSitkoCore().ConfigureLogging((_, configuration) =>
             configuration.MinimumLevel.Override("Sitko.Core.Repository", LogEventLevel.Debug));
         return base.ConfigureApplication(hostBuilder, name).AddEFRepositories(options =>
         {

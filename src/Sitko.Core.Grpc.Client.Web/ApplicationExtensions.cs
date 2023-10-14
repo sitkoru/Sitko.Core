@@ -15,7 +15,7 @@ public static class ApplicationExtensions
         string? optionsKey = null)
         where TClient : ClientBase<TClient>
     {
-        hostApplicationBuilder.AddSitkoCore().AddGrpcWebClient(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddGrpcWebClient(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -24,7 +24,7 @@ public static class ApplicationExtensions
         string? optionsKey = null)
         where TClient : ClientBase<TClient>
     {
-        hostApplicationBuilder.AddSitkoCore().AddGrpcWebClient(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddGrpcWebClient(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

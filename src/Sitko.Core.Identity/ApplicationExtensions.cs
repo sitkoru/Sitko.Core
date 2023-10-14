@@ -17,7 +17,7 @@ public static class ApplicationExtensions
         where TPk : IEquatable<TPk>
         where TDbContext : IdentityDbContext<TUser, TRole, TPk>
     {
-        hostApplicationBuilder.AddSitkoCore().AddIdentity<TUser, TRole, TPk, TDbContext>(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddIdentity<TUser, TRole, TPk, TDbContext>(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -29,7 +29,7 @@ public static class ApplicationExtensions
         where TPk : IEquatable<TPk>
         where TDbContext : IdentityDbContext<TUser, TRole, TPk>
     {
-        hostApplicationBuilder.AddSitkoCore().AddIdentity<TUser, TRole, TPk, TDbContext>(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddIdentity<TUser, TRole, TPk, TDbContext>(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

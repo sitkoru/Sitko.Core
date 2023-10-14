@@ -18,7 +18,7 @@ public static class ApplicationExtensions
         where TCompressor : class, IStateCompressor
         where TComponentState : class, ICompressedPersistentComponentState
     {
-        hostApplicationBuilder.AddSitkoCore().AddPersistentState<TCompressor, TComponentState>();
+        hostApplicationBuilder.GetSitkoCore().AddPersistentState<TCompressor, TComponentState>();
         return hostApplicationBuilder;
     }
 

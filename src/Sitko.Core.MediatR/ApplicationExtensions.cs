@@ -11,7 +11,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, MediatRModuleOptions<TAssembly>> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddMediatR(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddMediatR(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -19,7 +19,7 @@ public static class ApplicationExtensions
         Action<MediatRModuleOptions<TAssembly>>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddMediatR(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddMediatR(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

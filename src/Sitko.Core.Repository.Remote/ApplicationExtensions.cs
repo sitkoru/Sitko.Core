@@ -11,7 +11,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, RemoteRepositoryOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddRemoteRepositories(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddRemoteRepositories(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -19,7 +19,7 @@ public static class ApplicationExtensions
         Action<RemoteRepositoryOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddRemoteRepositories(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddRemoteRepositories(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -28,7 +28,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, RemoteRepositoryOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddRemoteRepositories<TAssembly>(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddRemoteRepositories<TAssembly>(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -37,7 +37,7 @@ public static class ApplicationExtensions
         Action<RemoteRepositoryOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddRemoteRepositories<TAssembly>(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddRemoteRepositories<TAssembly>(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -46,7 +46,7 @@ public static class ApplicationExtensions
         Action<HttpRepositoryTransportOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddHttpRepositoryTransport(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddHttpRepositoryTransport(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -55,7 +55,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, HttpRepositoryTransportOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddHttpRepositoryTransport(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddHttpRepositoryTransport(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

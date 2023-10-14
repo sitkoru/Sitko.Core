@@ -10,14 +10,14 @@ public static class ApplicationExtensions
     public static IHostApplicationBuilder AddElasticStack(this IHostApplicationBuilder hostApplicationBuilder,
         Action<IApplicationContext, ElasticStackModuleOptions> configure, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddElasticStack(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddElasticStack(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
     public static IHostApplicationBuilder AddElasticStack(this IHostApplicationBuilder hostApplicationBuilder,
         Action<ElasticStackModuleOptions>? configure = null, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddElasticStack(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddElasticStack(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

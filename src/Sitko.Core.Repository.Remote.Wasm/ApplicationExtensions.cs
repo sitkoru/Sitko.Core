@@ -12,7 +12,7 @@ public static class ApplicationExtensions
         Action<HttpRepositoryTransportOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddWasmHttpRepositoryTransport(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddWasmHttpRepositoryTransport(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -21,7 +21,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, HttpRepositoryTransportOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddWasmHttpRepositoryTransport(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddWasmHttpRepositoryTransport(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

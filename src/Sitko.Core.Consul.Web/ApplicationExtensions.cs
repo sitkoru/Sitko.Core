@@ -11,7 +11,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, ConsulWebModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddConsulWeb(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddConsulWeb(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -19,7 +19,7 @@ public static class ApplicationExtensions
         Action<ConsulWebModuleOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddConsulWeb(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddConsulWeb(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

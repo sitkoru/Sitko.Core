@@ -11,7 +11,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, SonyFlakeIdProviderModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddSonyFlakeIdProvider(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddSonyFlakeIdProvider(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -19,7 +19,7 @@ public static class ApplicationExtensions
         Action<SonyFlakeIdProviderModuleOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddSonyFlakeIdProvider(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddSonyFlakeIdProvider(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

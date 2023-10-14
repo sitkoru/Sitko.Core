@@ -23,7 +23,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder
-    .AddBlazorServer()
+    .AddSitkoCoreBlazorServer()
     .AddMudBlazorServer()
     .AddPostgresDatabase<BarContext>(options =>
     {
