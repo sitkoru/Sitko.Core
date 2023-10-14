@@ -20,6 +20,7 @@ public class RemoteRepositoryTestScope : WebTestScope
             {
                 options.Database = name;
                 options.EnableSensitiveLogging = true;
+                options.EnableNpgsqlPooling = false;
             })
             .AddEFRepositories(options =>
             {
