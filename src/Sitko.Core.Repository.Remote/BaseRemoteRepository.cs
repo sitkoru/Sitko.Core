@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Collections.Concurrent;
+using System.Linq.Expressions;
 using KellermanSoftware.CompareNetObjects;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Json;
@@ -14,7 +15,7 @@ public class
         IRemoteRepository where TEntity : class, IEntity<TEntityPk> where TEntityPk : notnull
 {
     private readonly IRemoteRepositoryTransport repositoryTransport;
-    private readonly Dictionary<TEntityPk, TEntity> snapshots = new();
+    private readonly ConcurrentDictionary<TEntityPk, TEntity> snapshots = new();
 
     private readonly List<Func<Task>> transactionActions = new();
 
@@ -254,7 +255,7 @@ public class
 
                 if (result.IsSuccess)
                 {
-                    snapshots.Add(entity.Id, CreateEntitySnapshot(result.Entity));
+                    snapshots.TryAdd(entity.Id, CreateEntitySnapshot(result.Entity));
                 }
                 else
                 {
@@ -295,7 +296,7 @@ public class
             await repositoryTransport.DeleteAsync(entity, cancellationToken);
         }
 
-        snapshots.Remove(entity.Id);
+        snapshots.TryRemove(entity.Id, out _);
     }
 }
 
