@@ -11,7 +11,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, GrpcServerModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddGrpcServer(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddGrpcServer(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -19,7 +19,7 @@ public static class ApplicationExtensions
         Action<GrpcServerModuleOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddGrpcServer(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddGrpcServer(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

@@ -11,7 +11,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, PuppeteerModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddPuppeteer(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddPuppeteer(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -19,7 +19,7 @@ public static class ApplicationExtensions
         Action<PuppeteerModuleOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddPuppeteer(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddPuppeteer(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

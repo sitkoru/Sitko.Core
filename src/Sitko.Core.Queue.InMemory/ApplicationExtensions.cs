@@ -11,7 +11,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, InMemoryQueueModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddInMemoryQueue(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddInMemoryQueue(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -19,7 +19,7 @@ public static class ApplicationExtensions
         Action<InMemoryQueueModuleOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddInMemoryQueue(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddInMemoryQueue(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

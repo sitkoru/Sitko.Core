@@ -11,7 +11,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, AutoMapperModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddAutoMapper(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddAutoMapper(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -19,7 +19,7 @@ public static class ApplicationExtensions
         Action<AutoMapperModuleOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddAutoMapper(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddAutoMapper(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

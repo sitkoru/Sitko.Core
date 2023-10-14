@@ -13,7 +13,7 @@ public static class ApplicationExtensions
         string? optionsKey = null)
         where TStorageOptions : StorageOptions
     {
-        applicationBuilder.AddSitkoCore().AddPostgresStorageMetadata(configure, optionsKey);
+        applicationBuilder.GetSitkoCore().AddPostgresStorageMetadata(configure, optionsKey);
         return applicationBuilder;
     }
 
@@ -22,7 +22,7 @@ public static class ApplicationExtensions
         Action<PostgresStorageMetadataModuleOptions<TStorageOptions>>? configure = null, string? optionsKey = null)
         where TStorageOptions : StorageOptions
     {
-        applicationBuilder.AddSitkoCore().AddPostgresStorageMetadata(configure, optionsKey);
+        applicationBuilder.GetSitkoCore().AddPostgresStorageMetadata(configure, optionsKey);
         return applicationBuilder;
     }
 

@@ -13,7 +13,7 @@ public static class ApplicationExtensions
 {
     public static IHostApplicationBuilder AddMudBlazor(this IHostApplicationBuilder hostApplicationBuilder)
     {
-        hostApplicationBuilder.AddSitkoCore<ISitkoCoreBlazorApplicationBuilder>().AddMudBlazor();
+        hostApplicationBuilder.GetSitkoCore<ISitkoCoreBlazorApplicationBuilder>().AddMudBlazor();
         return hostApplicationBuilder;
     }
 

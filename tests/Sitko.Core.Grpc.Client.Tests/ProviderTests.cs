@@ -46,7 +46,7 @@ public class GrpcClientScope : BaseTestScope
     protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {
         base.ConfigureApplication(hostBuilder, name);
-        hostBuilder.AddSitkoCore()
+        hostBuilder.GetSitkoCore()
             .AddModule<TestGrpcClientModule<TestService.TestServiceClient>,
                 TestGrpcClientModuleOptions<TestService.TestServiceClient>>(
                 moduleOptions =>

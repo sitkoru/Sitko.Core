@@ -10,14 +10,14 @@ public static class ApplicationExtensions
         Action<IApplicationContext, JsonLocalizationModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddJsonLocalization(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddJsonLocalization(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
     public static IHostApplicationBuilder AddJsonLocalization(this IHostApplicationBuilder hostApplicationBuilder,
         Action<JsonLocalizationModuleOptions>? configure = null, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddJsonLocalization(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddJsonLocalization(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

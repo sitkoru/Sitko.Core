@@ -10,14 +10,14 @@ public static class ApplicationExtensions
     public static IHostApplicationBuilder AddGoogleAuth(this IHostApplicationBuilder hostApplicationBuilder,
         Action<IApplicationContext, GoogleAuthModuleOptions> configure, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddGoogleAuth(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddGoogleAuth(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
     public static IHostApplicationBuilder AddGoogleAuth(this IHostApplicationBuilder hostApplicationBuilder,
         Action<GoogleAuthModuleOptions>? configure = null, string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddGoogleAuth(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddGoogleAuth(configure, optionsKey);
         return hostApplicationBuilder;
     }
 

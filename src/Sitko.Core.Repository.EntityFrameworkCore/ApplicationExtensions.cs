@@ -11,7 +11,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, EFRepositoriesModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddEFRepositories(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddEFRepositories(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -19,7 +19,7 @@ public static class ApplicationExtensions
         Action<EFRepositoriesModuleOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddEFRepositories(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddEFRepositories(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -28,7 +28,7 @@ public static class ApplicationExtensions
         Action<IApplicationContext, EFRepositoriesModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddEFRepositories<TAssembly>(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddEFRepositories<TAssembly>(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -37,7 +37,7 @@ public static class ApplicationExtensions
         Action<EFRepositoriesModuleOptions>? configure = null,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.AddSitkoCore().AddEFRepositories<TAssembly>(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddEFRepositories<TAssembly>(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
