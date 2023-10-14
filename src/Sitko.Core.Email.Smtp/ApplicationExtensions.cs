@@ -23,12 +23,12 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddSmtpEmail(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddSmtpEmail(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, SmtpEmailModuleOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<SmtpEmailModule, SmtpEmailModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddSmtpEmail(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddSmtpEmail(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<SmtpEmailModuleOptions>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<SmtpEmailModule, SmtpEmailModuleOptions>(configure, optionsKey);

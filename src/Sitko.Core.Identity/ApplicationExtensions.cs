@@ -33,8 +33,8 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddIdentity<TUser, TRole, TPk, TDbContext>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddIdentity<TUser, TRole, TPk, TDbContext>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, IdentityModuleOptions> configure, string? optionsKey = null)
         where TUser : IdentityUser<TPk>
         where TRole : IdentityRole<TPk>
@@ -43,8 +43,8 @@ public static class ApplicationExtensions
         applicationBuilder.AddModule<IdentityModule<TUser, TRole, TPk, TDbContext>, IdentityModuleOptions>(
             configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddIdentity<TUser, TRole, TPk, TDbContext>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddIdentity<TUser, TRole, TPk, TDbContext>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IdentityModuleOptions>? configure = null, string? optionsKey = null)
         where TUser : IdentityUser<TPk>
         where TRole : IdentityRole<TPk>

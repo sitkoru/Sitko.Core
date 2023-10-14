@@ -23,12 +23,12 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddInMemoryQueue(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddInMemoryQueue(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, InMemoryQueueModuleOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<InMemoryQueueModule, InMemoryQueueModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddInMemoryQueue(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddInMemoryQueue(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<InMemoryQueueModuleOptions>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<InMemoryQueueModule, InMemoryQueueModuleOptions>(configure, optionsKey);

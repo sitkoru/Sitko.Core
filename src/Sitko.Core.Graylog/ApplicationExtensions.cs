@@ -21,11 +21,11 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddGraylog(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddGraylog(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, GraylogModuleOptions> configure, string? optionsKey = null) =>
         applicationBuilder.AddModule<GraylogModule, GraylogModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddGraylog(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddGraylog(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<GraylogModuleOptions>? configure = null, string? optionsKey = null) =>
         applicationBuilder.AddModule<GraylogModule, GraylogModuleOptions>(configure, optionsKey);
 }

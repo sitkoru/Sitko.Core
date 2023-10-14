@@ -13,7 +13,7 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder
-        AddSearchRepository(this SitkoCoreApplicationBuilder applicationBuilder) =>
+    public static ISitkoCoreApplicationBuilder
+        AddSearchRepository(this ISitkoCoreApplicationBuilder applicationBuilder) =>
         applicationBuilder.AddModule<SearchRepositoryModule>();
 }

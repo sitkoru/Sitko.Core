@@ -29,8 +29,8 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddExternalGrpcClient<TClient>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddExternalGrpcClient<TClient>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, ExternalGrpcClientModuleOptions<TClient>> configure,
         string? optionsKey = null)
         where TClient : ClientBase<TClient> =>
@@ -38,8 +38,8 @@ public static class ApplicationExtensions
             configure,
             optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddExternalGrpcClient<TClient>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddExternalGrpcClient<TClient>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<ExternalGrpcClientModuleOptions<TClient>>? configure = null,
         string? optionsKey = null)
         where TClient : ClientBase<TClient> =>

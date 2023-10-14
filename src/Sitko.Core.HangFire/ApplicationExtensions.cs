@@ -23,13 +23,13 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddHangfirePostgres(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddHangfirePostgres(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, HangfirePostgresModuleOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<HangfireModule<HangfirePostgresModuleOptions>, HangfirePostgresModuleOptions>(
             configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddHangfirePostgres(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddHangfirePostgres(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<HangfirePostgresModuleOptions>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<HangfireModule<HangfirePostgresModuleOptions>, HangfirePostgresModuleOptions>(

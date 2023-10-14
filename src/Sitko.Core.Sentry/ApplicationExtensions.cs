@@ -21,11 +21,11 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddSentry(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddSentry(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, SentryModuleOptions> configure, string? optionsKey = null) =>
         applicationBuilder.AddModule<SentryModule, SentryModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddSentry(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddSentry(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<SentryModuleOptions>? configure = null, string? optionsKey = null) =>
         applicationBuilder.AddModule<SentryModule, SentryModuleOptions>(configure, optionsKey);
 }

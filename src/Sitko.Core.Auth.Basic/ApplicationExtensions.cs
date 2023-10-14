@@ -21,11 +21,11 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddBasicAuth(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddBasicAuth(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, BasicAuthModuleOptions> configure, string? optionsKey = null) =>
         applicationBuilder.AddModule<BasicAuthModule, BasicAuthModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddBasicAuth(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddBasicAuth(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<BasicAuthModuleOptions>? configure = null, string? optionsKey = null) =>
         applicationBuilder.AddModule<BasicAuthModule, BasicAuthModuleOptions>(configure, optionsKey);
 }

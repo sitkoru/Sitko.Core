@@ -21,11 +21,11 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddElasticStack(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddElasticStack(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, ElasticStackModuleOptions> configure, string? optionsKey = null) =>
         applicationBuilder.AddModule<ElasticStackModule, ElasticStackModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddElasticStack(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddElasticStack(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<ElasticStackModuleOptions>? configure = null, string? optionsKey = null) =>
         applicationBuilder.AddModule<ElasticStackModule, ElasticStackModuleOptions>(configure, optionsKey);
 }

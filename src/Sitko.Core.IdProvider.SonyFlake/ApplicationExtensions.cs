@@ -23,15 +23,15 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddSonyFlakeIdProvider(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddSonyFlakeIdProvider(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, SonyFlakeIdProviderModuleOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<SonyFlakeIdProviderModule, SonyFlakeIdProviderModuleOptions>(configure,
             optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddSonyFlakeIdProvider(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddSonyFlakeIdProvider(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<SonyFlakeIdProviderModuleOptions>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<SonyFlakeIdProviderModule, SonyFlakeIdProviderModuleOptions>(configure,

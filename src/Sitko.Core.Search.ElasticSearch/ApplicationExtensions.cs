@@ -23,12 +23,12 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddElasticSearch(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddElasticSearch(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, ElasticSearchModuleOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<ElasticSearchModule, ElasticSearchModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddElasticSearch(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddElasticSearch(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<ElasticSearchModuleOptions>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<ElasticSearchModule, ElasticSearchModuleOptions>(configure, optionsKey);

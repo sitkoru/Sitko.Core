@@ -23,13 +23,13 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddImgProxy(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddImgProxy(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, ImgProxyModuleOptions> configure,
         string? optionsKey = null) => applicationBuilder
         .AddModule<ImgProxyModule, ImgProxyModuleOptions>(
             configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddImgProxy(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddImgProxy(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<ImgProxyModuleOptions>? configure = null,
         string? optionsKey = null) => applicationBuilder
         .AddModule<ImgProxyModule, ImgProxyModuleOptions>(

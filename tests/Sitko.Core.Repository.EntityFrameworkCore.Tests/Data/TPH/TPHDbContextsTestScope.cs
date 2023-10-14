@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
 using Sitko.Core.Xunit;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore.Tests.Data.TPH;
@@ -15,7 +16,12 @@ public class TPHDbContextsTestScope : DbBaseTestScope<HostApplicationBuilder,TPH
         await dbContext.SaveChangesAsync();
     }
 
-    protected override HostApplicationBuilder CreateHostBuilder() => Host.CreateApplicationBuilder();
+    protected override HostApplicationBuilder CreateHostBuilder()
+    {
+        var builder = Host.CreateApplicationBuilder();
+        builder.AddSitkoCore();
+        return builder;
+    }
 
     protected override IHost BuildApplication(HostApplicationBuilder builder) => builder.Build();
 }

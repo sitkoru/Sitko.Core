@@ -13,6 +13,6 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddQueueElasticApm(this SitkoCoreApplicationBuilder applicationBuilder) =>
+    public static ISitkoCoreApplicationBuilder AddQueueElasticApm(this ISitkoCoreApplicationBuilder applicationBuilder) =>
         applicationBuilder.AddModule<QueueElasticApmModule>();
 }

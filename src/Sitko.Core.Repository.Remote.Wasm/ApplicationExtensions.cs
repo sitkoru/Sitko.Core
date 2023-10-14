@@ -25,15 +25,15 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddWasmHttpRepositoryTransport(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddWasmHttpRepositoryTransport(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<HttpRepositoryTransportOptions>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<WasmHttpRepositoryTransportModule, HttpRepositoryTransportOptions>(configure,
             optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddWasmHttpRepositoryTransport(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddWasmHttpRepositoryTransport(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, HttpRepositoryTransportOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<WasmHttpRepositoryTransportModule, HttpRepositoryTransportOptions>(configure,

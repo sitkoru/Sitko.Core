@@ -11,11 +11,11 @@ public static class ApplicationExtensions
 {
     public static WebApplicationBuilder AddMudBlazorServer(this WebApplicationBuilder webApplicationBuilder)
     {
-        webApplicationBuilder.AddSitkoCore().AddMudBlazorServer();
+        webApplicationBuilder.AddSitkoCore<ISitkoCoreBlazorServerApplicationBuilder>().AddMudBlazorServer();
         return webApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder
-        AddMudBlazorServer(this SitkoCoreApplicationBuilder webApplicationBuilder) =>
-        webApplicationBuilder.AddBlazorServer().AddMudBlazor();
+    public static ISitkoCoreBlazorApplicationBuilder
+        AddMudBlazorServer(this ISitkoCoreBlazorServerApplicationBuilder webApplicationBuilder) =>
+        webApplicationBuilder.AddMudBlazor();
 }
