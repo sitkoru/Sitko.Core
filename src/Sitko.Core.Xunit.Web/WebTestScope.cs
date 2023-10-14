@@ -34,11 +34,11 @@ public abstract class WebTestScope<TApplicationBuilder, TConfig> : BaseTestScope
         var builder = WebApplication.CreateBuilder();
         builder.AddSitkoCoreWeb();
         ConfigureWebApplication(builder, name);
-        builder.Services.AddMvc(options => options.EnableEndpointRouting = false).AddApplicationPart(GetType().Assembly)
+        builder.Services.AddMvc().AddApplicationPart(GetType().Assembly)
             .AddControllersAsServices();
         builder.WebHost.UseTestServer();
         var host = builder.Build();
-        host.UseMvc();
+        host.MapControllers();
         host.MapSitkoCore();
         await host.StartAsync();
         Server = host.GetTestServer();
