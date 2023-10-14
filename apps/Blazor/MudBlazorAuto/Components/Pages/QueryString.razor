@@ -1,0 +1,31 @@
+﻿@page "/QueryString"
+@inherits BaseComponent
+<MudPageLayout Title="QueryString">
+<p>
+    Guid: @Test
+</p>
+<MudLink Href="@($"/QueryString?test={Guid.NewGuid()}")">Change</MudLink>
+</MudPageLayout>
+
+
+@code
+{
+    private Guid Test { get; set; } = Guid.Empty;
+
+    protected override async Task OnLocationChangeAsync(string location, bool isNavigationIntercepted)
+    {
+        await base.OnLocationChangeAsync(location, isNavigationIntercepted);
+        SetParams();
+    }
+
+    protected override void Initialize()
+    {
+        base.Initialize();
+        SetParams();
+    }
+
+    private void SetParams()
+    {
+        Test = GetQueryString<Guid>("test");
+    }
+}
