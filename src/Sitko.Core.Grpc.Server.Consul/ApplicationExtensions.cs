@@ -23,13 +23,13 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddConsulGrpcServer(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddConsulGrpcServer(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, ConsulDiscoveryGrpcServerModuleOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<ConsulDiscoveryGrpcServerModule, ConsulDiscoveryGrpcServerModuleOptions>(
             configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddConsulGrpcServer(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddConsulGrpcServer(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<ConsulDiscoveryGrpcServerModuleOptions>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<ConsulDiscoveryGrpcServerModule, ConsulDiscoveryGrpcServerModuleOptions>(

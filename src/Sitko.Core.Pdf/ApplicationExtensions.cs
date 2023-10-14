@@ -14,6 +14,6 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddPdfRenderer(this SitkoCoreApplicationBuilder applicationBuilder) =>
+    public static ISitkoCoreApplicationBuilder AddPdfRenderer(this ISitkoCoreApplicationBuilder applicationBuilder) =>
         applicationBuilder.AddModule<PdfRendererModule>();
 }

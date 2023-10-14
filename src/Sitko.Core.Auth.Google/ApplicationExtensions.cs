@@ -21,11 +21,11 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddGoogleAuth(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddGoogleAuth(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, GoogleAuthModuleOptions> configure, string? optionsKey = null) =>
         applicationBuilder.AddModule<GoogleAuthModule, GoogleAuthModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddGoogleAuth(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddGoogleAuth(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<GoogleAuthModuleOptions>? configure = null, string? optionsKey = null) =>
         applicationBuilder.AddModule<GoogleAuthModule, GoogleAuthModuleOptions>(configure, optionsKey);
 }

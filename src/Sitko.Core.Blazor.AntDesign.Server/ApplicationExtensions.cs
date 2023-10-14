@@ -11,11 +11,14 @@ public static class ApplicationExtensions
 {
     public static WebApplicationBuilder AddAntBlazorServer(this WebApplicationBuilder webApplicationBuilder)
     {
-        webApplicationBuilder.AddSitkoCore().AddAntBlazorServer();
+        webApplicationBuilder.AddSitkoCore<ISitkoCoreBlazorServerApplicationBuilder>().AddAntBlazorServer();
         return webApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder
-        AddAntBlazorServer(this SitkoCoreApplicationBuilder webApplicationBuilder) =>
-        webApplicationBuilder.AddBlazorServer().AddBlazorFileUpload();
+    public static ISitkoCoreBlazorServerApplicationBuilder
+        AddAntBlazorServer(this ISitkoCoreBlazorServerApplicationBuilder webApplicationBuilder)
+    {
+        webApplicationBuilder.AddBlazorFileUpload();
+        return webApplicationBuilder;
+    }
 }

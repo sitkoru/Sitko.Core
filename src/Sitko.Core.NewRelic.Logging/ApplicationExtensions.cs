@@ -23,12 +23,12 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddNewRelicLogging(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddNewRelicLogging(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, NewRelicLoggingModuleOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<NewRelicLoggingModule, NewRelicLoggingModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddNewRelicLogging(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddNewRelicLogging(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<NewRelicLoggingModuleOptions>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<NewRelicLoggingModule, NewRelicLoggingModuleOptions>(configure, optionsKey);

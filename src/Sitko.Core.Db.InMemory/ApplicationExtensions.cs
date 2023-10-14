@@ -28,8 +28,8 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddInMemoryDatabase<TDbContext>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddInMemoryDatabase<TDbContext>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, InMemoryDatabaseModuleOptions<TDbContext>> configure,
         string? optionsKey = null)
         where TDbContext : DbContext =>
@@ -37,8 +37,8 @@ public static class ApplicationExtensions
             .AddModule<InMemoryDatabaseModule<TDbContext>, InMemoryDatabaseModuleOptions<TDbContext>>(configure,
                 optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddInMemoryDatabase<TDbContext>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddInMemoryDatabase<TDbContext>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<InMemoryDatabaseModuleOptions<TDbContext>>? configure = null,
         string? optionsKey = null)
         where TDbContext : DbContext =>

@@ -13,11 +13,12 @@ public static class ApplicationExtensions
 {
     public static IHostApplicationBuilder AddMudBlazor(this IHostApplicationBuilder hostApplicationBuilder)
     {
-        hostApplicationBuilder.AddSitkoCore().AddMudBlazor();
+        hostApplicationBuilder.AddSitkoCore<ISitkoCoreBlazorApplicationBuilder>().AddMudBlazor();
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddMudBlazor(this SitkoCoreApplicationBuilder applicationBuilder) =>
+    public static ISitkoCoreBlazorApplicationBuilder AddMudBlazor(this ISitkoCoreBlazorApplicationBuilder applicationBuilder)
+    {
         applicationBuilder.ConfigureServices(services =>
         {
             services.AddMudServices();
@@ -27,4 +28,7 @@ public static class ApplicationExtensions
                 options.AddDefaultResource(typeof(ApplicationExtensions));
             });
         });
+
+        return applicationBuilder;
+    }
 }

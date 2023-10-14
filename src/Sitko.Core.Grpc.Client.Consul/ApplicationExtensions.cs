@@ -26,16 +26,16 @@ public static class ApplicationExtensions
         return applicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddConsulGrpcClient<TClient>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddConsulGrpcClient<TClient>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, ConsulGrpcClientModuleOptions<TClient>> configure,
         string? optionsKey = null)
         where TClient : ClientBase<TClient> =>
         applicationBuilder.AddModule<ConsulGrpcClientModule<TClient>, ConsulGrpcClientModuleOptions<TClient>>(configure,
             optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddConsulGrpcClient<TClient>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddConsulGrpcClient<TClient>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<ConsulGrpcClientModuleOptions<TClient>>? configure = null,
         string? optionsKey = null)
         where TClient : ClientBase<TClient> =>

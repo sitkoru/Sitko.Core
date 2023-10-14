@@ -22,13 +22,13 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddVaultConfiguration(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddVaultConfiguration(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, VaultConfigurationModuleOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<VaultConfigurationModule, VaultConfigurationModuleOptions>(configure,
             optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddVaultConfiguration(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddVaultConfiguration(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<VaultConfigurationModuleOptions>? configure = null, string? optionsKey = null) =>
         applicationBuilder.AddModule<VaultConfigurationModule, VaultConfigurationModuleOptions>(configure,
             optionsKey);

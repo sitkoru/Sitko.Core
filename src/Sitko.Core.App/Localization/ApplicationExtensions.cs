@@ -21,12 +21,12 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddJsonLocalization(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddJsonLocalization(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, JsonLocalizationModuleOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<JsonLocalizationModule, JsonLocalizationModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddJsonLocalization(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddJsonLocalization(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<JsonLocalizationModuleOptions>? configure = null, string? optionsKey = null) =>
         applicationBuilder.AddModule<JsonLocalizationModule, JsonLocalizationModuleOptions>(configure, optionsKey);
 }

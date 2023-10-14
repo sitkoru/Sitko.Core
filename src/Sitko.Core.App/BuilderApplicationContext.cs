@@ -10,13 +10,34 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Sitko.Core.App;
 
+public interface IApplicationEnvironment
+{
+    string EnvironmentName { get; }
+    bool IsDevelopment();
+    bool IsProduction();
+}
+
+public class ServerApplicationEnvironment : IApplicationEnvironment
+{
+    private readonly IHostEnvironment hostEnvironment;
+
+    public ServerApplicationEnvironment(IHostEnvironment hostEnvironment) => this.hostEnvironment = hostEnvironment;
+
+    public string EnvironmentName => hostEnvironment.EnvironmentName;
+    public bool IsDevelopment() => hostEnvironment.IsDevelopment();
+
+    public bool IsProduction() => hostEnvironment.IsProduction();
+}
+
 public class BuilderApplicationContext : IApplicationContext
 {
-    private readonly IHostEnvironment environment;
+    public static string OptionsKey => "Application";
+
+    private readonly IApplicationEnvironment environment;
 
     private ApplicationOptions? applicationOptions;
 
-    public BuilderApplicationContext(IConfiguration configuration, IHostEnvironment environment,
+    public BuilderApplicationContext(IConfiguration configuration, IApplicationEnvironment environment,
         IApplicationArgsProvider applicationArgsProvider)
     {
         this.environment = environment;
@@ -54,7 +75,7 @@ public class BuilderApplicationContext : IApplicationContext
         }
 
         applicationOptions = new ApplicationOptions();
-        Configuration.Bind(SitkoCoreApplicationBuilder.OptionsKey, applicationOptions);
+        Configuration.Bind(OptionsKey, applicationOptions);
         if (string.IsNullOrEmpty(applicationOptions.Name))
         {
             applicationOptions.Name = Assembly.GetEntryAssembly()?.GetName().Name ?? "App";

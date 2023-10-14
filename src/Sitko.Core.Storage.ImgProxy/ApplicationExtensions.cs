@@ -27,8 +27,8 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddImgProxyStorage<TStorageOptions>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddImgProxyStorage<TStorageOptions>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, BaseApplicationModuleOptions> configure,
         string? optionsKey = null)
         where TStorageOptions : StorageOptions =>
@@ -36,8 +36,8 @@ public static class ApplicationExtensions
             .AddModule<ImgProxyStorageModule<TStorageOptions>, BaseApplicationModuleOptions>(
                 configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddImgProxyStorage<TStorageOptions>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddImgProxyStorage<TStorageOptions>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<BaseApplicationModuleOptions>? configure = null,
         string? optionsKey = null)
         where TStorageOptions : StorageOptions =>

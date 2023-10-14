@@ -59,18 +59,18 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddRemoteRepositories(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddRemoteRepositories(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, RemoteRepositoryOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<RemoteRepositoryModule, RemoteRepositoryOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddRemoteRepositories(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddRemoteRepositories(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<RemoteRepositoryOptions>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<RemoteRepositoryModule, RemoteRepositoryOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddRemoteRepositories<TAssembly>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddRemoteRepositories<TAssembly>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, RemoteRepositoryOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<RemoteRepositoryModule, RemoteRepositoryOptions>(
@@ -81,8 +81,8 @@ public static class ApplicationExtensions
             },
             optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddRemoteRepositories<TAssembly>(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddRemoteRepositories<TAssembly>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<RemoteRepositoryOptions>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<RemoteRepositoryModule, RemoteRepositoryOptions>(moduleOptions =>
@@ -92,15 +92,15 @@ public static class ApplicationExtensions
             },
             optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddHttpRepositoryTransport(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddHttpRepositoryTransport(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<HttpRepositoryTransportOptions>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<HttpRepositoryTransportModule, HttpRepositoryTransportOptions>(configure,
             optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddHttpRepositoryTransport(
-        this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddHttpRepositoryTransport(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, HttpRepositoryTransportOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<HttpRepositoryTransportModule, HttpRepositoryTransportOptions>(configure,

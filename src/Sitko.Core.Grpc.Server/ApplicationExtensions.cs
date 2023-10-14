@@ -23,12 +23,12 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddGrpcServer(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddGrpcServer(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, GrpcServerModuleOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<GrpcServerModule, GrpcServerModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddGrpcServer(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddGrpcServer(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<GrpcServerModuleOptions>? configure = null,
         string? optionsKey = null) =>
         applicationBuilder.AddModule<GrpcServerModule, GrpcServerModuleOptions>(configure, optionsKey);

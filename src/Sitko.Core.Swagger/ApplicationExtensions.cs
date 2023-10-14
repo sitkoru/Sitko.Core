@@ -21,11 +21,11 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddSwagger(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddSwagger(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, SwaggerModuleOptions> configure, string? optionsKey = null) =>
         applicationBuilder.AddModule<SwaggerModule, SwaggerModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddSwagger(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddSwagger(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<SwaggerModuleOptions>? configure = null, string? optionsKey = null) =>
         applicationBuilder.AddModule<SwaggerModule, SwaggerModuleOptions>(configure, optionsKey);
 }

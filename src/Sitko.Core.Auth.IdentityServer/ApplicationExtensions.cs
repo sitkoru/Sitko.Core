@@ -37,25 +37,25 @@ public static class ApplicationExtensions
         return hostApplicationBuilder;
     }
 
-    public static SitkoCoreApplicationBuilder AddJwtIdentityServer(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddJwtIdentityServer(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, JwtIdentityServerModuleOptions> configure,
         string? optionsKey = null) =>
         applicationBuilder
             .AddModule<JwtIdentityServerModule, JwtIdentityServerModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddJwtIdentityServer(this SitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreApplicationBuilder AddJwtIdentityServer(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<JwtIdentityServerModuleOptions>? configure = null, string? optionsKey = null) =>
         applicationBuilder
             .AddModule<JwtIdentityServerModule, JwtIdentityServerModuleOptions>(configure, optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddOidcIdentityServer(this SitkoCoreApplicationBuilder application,
+    public static ISitkoCoreApplicationBuilder AddOidcIdentityServer(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, OidcIdentityServerModuleOptions> configure,
         string? optionsKey = null) =>
-        application.AddModule<OidcIdentityServerModule, OidcIdentityServerModuleOptions>(configure,
+        applicationBuilder.AddModule<OidcIdentityServerModule, OidcIdentityServerModuleOptions>(configure,
             optionsKey);
 
-    public static SitkoCoreApplicationBuilder AddOidcIdentityServer(this SitkoCoreApplicationBuilder application,
+    public static ISitkoCoreApplicationBuilder AddOidcIdentityServer(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<OidcIdentityServerModuleOptions>? configure = null, string? optionsKey = null) =>
-        application.AddModule<OidcIdentityServerModule, OidcIdentityServerModuleOptions>(configure,
+        applicationBuilder.AddModule<OidcIdentityServerModule, OidcIdentityServerModuleOptions>(configure,
             optionsKey);
 }

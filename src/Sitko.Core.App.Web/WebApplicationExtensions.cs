@@ -5,7 +5,11 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Sitko.Core.App.Web;
 
-public class SitkoCoreWebApplicationBuilder : SitkoCoreApplicationBuilder
+public interface ISitkoCoreWebApplicationBuilder : ISitkoCoreApplicationBuilder
+{
+}
+
+public class SitkoCoreWebApplicationBuilder : SitkoCoreServerApplicationBuilder, ISitkoCoreWebApplicationBuilder
 {
     private readonly WebApplicationBuilder webApplicationBuilder;
 
@@ -31,13 +35,14 @@ public class SitkoCoreWebApplicationBuilder : SitkoCoreApplicationBuilder
 
 public static class WebApplicationExtensions
 {
-    public static SitkoCoreApplicationBuilder AddSitkoCore(this WebApplicationBuilder builder) =>
+    public static ISitkoCoreWebApplicationBuilder AddSitkoCore(this WebApplicationBuilder builder) =>
         builder.AddSitkoCore(Array.Empty<string>());
 
-    public static SitkoCoreApplicationBuilder AddSitkoCore(this WebApplicationBuilder builder, string[] args)
+    public static ISitkoCoreWebApplicationBuilder AddSitkoCore(this WebApplicationBuilder builder, string[] args)
     {
         builder.Services.TryAddTransient<IStartupFilter, SitkoCoreWebStartupFilter>();
-        return new SitkoCoreWebApplicationBuilder(builder, args);
+        return ApplicationBuilderFactory.GetOrCreateApplicationBuilder(builder,
+            applicationBuilder => new SitkoCoreWebApplicationBuilder(applicationBuilder, args));
     }
 
     public static WebApplication MapSitkoCore(this WebApplication webApplication)
