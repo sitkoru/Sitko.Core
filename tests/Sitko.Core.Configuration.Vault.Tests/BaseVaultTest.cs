@@ -38,6 +38,7 @@ public class VaultTestScope : BaseTestScope
             });
         hostBuilder.Services.Configure<TestConfig>(hostBuilder.Configuration.GetSection("test"));
         hostBuilder.Services.Configure<TestConfig2>(hostBuilder.Configuration.GetSection("test2"));
+        hostBuilder.AddSitkoCore().AddModule<TestModule, TestModuleConfig>();
         return hostBuilder;
     }
 
