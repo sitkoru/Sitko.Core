@@ -18,6 +18,12 @@ public class BasePostgresStorageTestScope : BaseTestScope
                 moduleOptions.Database = name;
             });
 
+    public override async Task OnCreatedAsync()
+    {
+        await base.OnCreatedAsync();
+        await StartApplicationAsync();
+    }
+
     protected override async Task OnDisposeAsync()
     {
         await base.OnDisposeAsync();

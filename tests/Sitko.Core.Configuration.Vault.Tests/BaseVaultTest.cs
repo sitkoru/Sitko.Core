@@ -74,6 +74,12 @@ public class FailingVaultTestScope : BaseTestScope
             {
                 options.Secrets = new List<string> { "NonExistingSecret" };
             });
+
+    public override async Task OnCreatedAsync()
+    {
+        await base.OnCreatedAsync();
+        await StartApplicationAsync();
+    }
 }
 
 public class VaultTestScopeWithValidationFailure : VaultTestScope
