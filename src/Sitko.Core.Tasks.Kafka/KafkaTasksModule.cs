@@ -70,6 +70,11 @@ public class
                     new TopicInfo(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
                 }, consumerBuilder =>
                 {
+                    if (startupOptions.MaxPollIntervalMs > 0)
+                    {
+                        consumerBuilder.WithMaxPollIntervalMs(startupOptions.MaxPollIntervalMs);
+                    }
+
                     consumerBuilder.Topic(kafkaTopic);
                     consumerBuilder.WithName(name);
                     consumerBuilder.WithGroupId(groupId);
@@ -83,8 +88,12 @@ public class
                         AutoOffsetReset = AutoOffsetReset.Latest,
                         ClientId = name,
                         GroupInstanceId = name,
-                        PartitionAssignmentStrategy = PartitionAssignmentStrategy.CooperativeSticky
+                        PartitionAssignmentStrategy = PartitionAssignmentStrategy.CooperativeSticky,
                     };
+                    if (startupOptions.SessionTimeoutMs > 0)
+                    {
+                        consumerConfig.SessionTimeoutMs = startupOptions.SessionTimeoutMs;
+                    }
                     consumerBuilder.WithConsumerConfig(consumerConfig);
                     consumerBuilder.AddMiddlewares(
                         middlewares =>

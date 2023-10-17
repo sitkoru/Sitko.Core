@@ -16,4 +16,8 @@ public class KafkaTasksModuleOptions<TBaseTask, TDbContext> : TasksModuleOptions
     public short TopicReplicationFactor { get; set; } = 1;
     public bool AddConsumerGroupPrefix { get; set; } = true;
     public string ConsumerGroupPrefix { get; set; } = "";
+
+    public int SessionTimeoutMs { get; set; }
+
+    public int MaxPollIntervalMs { get; set; }
 }
