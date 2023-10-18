@@ -7,6 +7,7 @@ namespace Sitko.Core.Kafka;
 internal class KafkaConsumerOffsetsEnsurer
 {
     private readonly ILogger<KafkaConsumerOffsetsEnsurer> logger;
+    private readonly TimeSpan lockTimeout = TimeSpan.FromSeconds(30);
 
     public KafkaConsumerOffsetsEnsurer(ILogger<KafkaConsumerOffsetsEnsurer> logger) => this.logger = logger;
 
@@ -62,11 +63,11 @@ internal class KafkaConsumerOffsetsEnsurer
 
         var partitions = topicInfo.Partitions.Select(metadata =>
             new TopicPartition(topic.Name, new Partition(metadata.PartitionId))).ToList();
-        var commited = await adminClient.ListConsumerGroupOffsetsAsync(new[]
+        var committed = await adminClient.ListConsumerGroupOffsetsAsync(new[]
         {
             new ConsumerGroupTopicPartitions(consumer.GroupId, partitions)
         });
-        if (!commited.Any())
+        if (!committed.Any())
         {
             logger.LogWarning(
                 "Can't find offsets for group {ConsumerGroup} and topic {Topic}",
@@ -74,31 +75,55 @@ internal class KafkaConsumerOffsetsEnsurer
             return;
         }
 
-        var badPartitions = commited.First().Partitions.Where(
+        var badPartitions = committed.First().Partitions.Where(
             partitionOffset =>
                 partitionOffset.Offset == Offset.Unset
         ).Select(error => error.Partition).ToList();
+
         if (badPartitions.Any())
         {
             var consumerConfig = new ConsumerConfig
             {
-                BootstrapServers = string.Join(",", brokers), GroupId = consumer.GroupId
+                BootstrapServers = string.Join(",", brokers), GroupId = consumer.GroupId, EnableAutoCommit = false
             };
-            var confluentConsumer = new ConsumerBuilder<byte[], byte[]>(consumerConfig).Build();
-            var toCommit = new List<TopicPartitionOffset>();
-            foreach (var partition in badPartitions)
+            var cts = new CancellationTokenSource();
+            using var confluentConsumer = new ConsumerBuilder<byte[], byte[]>(consumerConfig)
+                .SetPartitionsAssignedHandler((_, _) => { cts.Cancel(); })
+                .Build();
+            var watermarkOffsetsTasks = badPartitions.Select(
+                partition => Task.Run(
+                    () =>
+                    {
+                        var topicPartition = new TopicPartition(topic.Name, partition);
+                        var partitionOffset =
+                            // ReSharper disable once AccessToDisposedClosure
+                            confluentConsumer.QueryWatermarkOffsets(topicPartition, lockTimeout);
+                        var newOffset = new TopicPartitionOffset(topicPartition, partitionOffset.High);
+                        logger.LogWarning("Ensure {Partition} offset for consumer {GroupId}: {Offset}", partition, consumer.GroupId, newOffset.Offset);
+                        return newOffset;
+                    }, CancellationToken.None
+                )
+            ).ToList();
+            await Task.WhenAll(watermarkOffsetsTasks);
+            var toCommit = watermarkOffsetsTasks.Select(task => task.Result);
+
+            // Add consumer to group
+            confluentConsumer.Subscribe(topic.Name);
+            // Wait for rebalance
+            try
             {
-                var topicPartition = new TopicPartition(topic.Name, partition);
-                var partitionOffset =
-                    confluentConsumer.QueryWatermarkOffsets(topicPartition, TimeSpan.FromSeconds(30));
-                var newOffset = new TopicPartitionOffset(topicPartition, partitionOffset.High);
-                logger.LogWarning(
-                    "Ensure {Partition} offset for consumer {ConsumerGroup}: {Offset}",
-                    partition, consumer.GroupId, newOffset.Offset);
-                toCommit.Add(newOffset);
+                confluentConsumer.Consume(cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Rebalance complete
             }
 
+            // Commit offsets
             confluentConsumer.Commit(toCommit);
+            // Remove consumer from group and trigger rebalance
+            confluentConsumer.Close();
+
             logger.LogInformation("Offsets for consumer group {ConsumerGroupName} in topic {Topic} ensured",
                 consumer.GroupId, topic);
         }

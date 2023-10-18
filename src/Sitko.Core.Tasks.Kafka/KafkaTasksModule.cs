@@ -1,7 +1,5 @@
-﻿using Confluent.Kafka;
-using FluentValidation;
+﻿using FluentValidation;
 using KafkaFlow;
-using KafkaFlow.Consumers.DistributionStrategies;
 using KafkaFlow.Serializer;
 using KafkaFlow.TypedHandler;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +10,6 @@ using Sitko.Core.Tasks.Data.Entities;
 using Sitko.Core.Tasks.Execution;
 using Sitko.Core.Tasks.Kafka.Execution;
 using Sitko.Core.Tasks.Kafka.Scheduling;
-using AutoOffsetReset = Confluent.Kafka.AutoOffsetReset;
 
 namespace Sitko.Core.Tasks.Kafka;
 
