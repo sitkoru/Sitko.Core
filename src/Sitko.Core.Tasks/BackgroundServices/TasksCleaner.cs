@@ -13,7 +13,6 @@ public class TasksCleaner<TBaseTask, TOptions> : BaseService
 {
     private readonly IOptions<TOptions> options;
     private readonly ILogger<TasksCleaner<TBaseTask, TOptions>> logger;
-    private ITaskRepository<TBaseTask> tasksRepository;
     protected override TimeSpan InitDelay => TimeSpan.FromMinutes(2);
     protected override TimeSpan RunDelay => TimeSpan.FromDays(1);
 
@@ -27,31 +26,34 @@ public class TasksCleaner<TBaseTask, TOptions> : BaseService
 
     protected override async Task ExecuteAsync(AsyncServiceScope scope, CancellationToken stoppingToken)
     {
-        tasksRepository = scope.ServiceProvider.GetRequiredService<ITaskRepository<TBaseTask>>();
+        var tasksRepository = scope.ServiceProvider.GetRequiredService<ITaskRepository<TBaseTask>>();
         if (options.Value.AllTasksRetentionDays is > 0)
         {
             var taskTypes = options.Value.RetentionDays.Select(r => r.Key).ToArray();
-            await RemoveTasksAsync(options.Value.AllTasksRetentionDays.Value, false, taskTypes, stoppingToken);
+            await RemoveTasksAsync(tasksRepository, options.Value.AllTasksRetentionDays.Value, false, taskTypes,
+                stoppingToken);
         }
 
         foreach (var (taskType, retentionDays) in options.Value.RetentionDays)
         {
             if (retentionDays > 0)
             {
-                await RemoveTasksAsync(retentionDays, true, new[] { taskType }, stoppingToken);
+                await RemoveTasksAsync(tasksRepository, retentionDays, true, new[] { taskType }, stoppingToken);
             }
         }
     }
 
-    private async Task RemoveTasksAsync(int retentionDays, bool include, string[] types, CancellationToken stoppingToken)
+    private async Task RemoveTasksAsync(ITaskRepository<TBaseTask> tasksRepository, int retentionDays, bool include,
+        string[] types, CancellationToken stoppingToken)
     {
         var date = DateTimeOffset.UtcNow.AddDays(retentionDays * -1);
         logger.LogInformation("Deleting tasks from {Date}. Types: {Types}, include: {Include}", date, types, include);
         if (tasksRepository is IEFRepository<TBaseTask> efRepository)
         {
-            var deletedCount = await efRepository.DeleteAllAsync(task => task.DateAdded < date && (types.Length == 0 ||   (include
-                ? types.Contains(task.Type)
-                : !types.Contains(task.Type))), stoppingToken);
+            var deletedCount = await efRepository.DeleteAllAsync(task => task.DateAdded < date && (types.Length == 0 ||
+                (include
+                    ? types.Contains(task.Type)
+                    : !types.Contains(task.Type))), stoppingToken);
             logger.LogInformation("Deleted {Count} tasks", deletedCount);
         }
         else
@@ -61,7 +63,8 @@ public class TasksCleaner<TBaseTask, TOptions> : BaseService
                                                                                (types.Length == 0 ||
                                                                                    (include
                                                                                        ? types.Contains(task.Type)
-                                                                                       : !types.Contains(task.Type)))), stoppingToken);
+                                                                                       : !types.Contains(task.Type)))),
+                    stoppingToken);
             if (tasksCount > 0)
             {
                 foreach (var task in tasks)

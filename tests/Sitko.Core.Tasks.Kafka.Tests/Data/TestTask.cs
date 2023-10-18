@@ -2,9 +2,7 @@
 
 namespace Sitko.Core.Tasks.Kafka.Tests.Data;
 
-public record TestTask : BaseTestTask<TestTaskConfig, TestTaskResult>
-{
-}
+public record TestTask : BaseTestTask<TestTaskConfig, TestTaskResult>;
 
 public record TestTaskResult : BaseTaskResult
 {
@@ -12,6 +10,4 @@ public record TestTaskResult : BaseTaskResult
     public Guid Id { get; init; }
 }
 
-public record TestTaskConfig : BaseTaskConfig
-{
-}
+public record TestTaskConfig : BaseTaskConfig;
