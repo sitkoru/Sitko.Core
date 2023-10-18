@@ -31,29 +31,15 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
 
         // configure logging
         Configuration.Add(new SerilogDynamicConfigurationSource());
-        var tmpLoggerConfiguration = new LoggerConfiguration();
-        tmpLoggerConfiguration = ConfigureDefautLogger(tmpLoggerConfiguration);
-        if (BootApplicationContext.Options.EnableConsoleLogging != true)
-        {
-            tmpLoggerConfiguration = tmpLoggerConfiguration.WriteTo.Console(
-                outputTemplate: ApplicationOptions.BaseConsoleLogFormat,
-                formatProvider: CultureInfo.InvariantCulture,
-                restrictedToMinimumLevel: LogEventLevel.Debug);
-        }
-
-        var tmpLogger = tmpLoggerConfiguration.CreateLogger();
-        Log.Logger = tmpLogger; // set default logger until host is started
-        Console.OutputEncoding = Encoding.UTF8;
-        InternalLogger = new SerilogLoggerFactory(tmpLogger)
-            .CreateLogger<ISitkoCoreApplicationBuilder>();
-        AddModule<CommandsModule>();
+        InternalLogger = CreateInternalLogger();
         Logging.ClearProviders();
         Logging.AddSerilog();
         serilogConfigurator.Configure(ConfigureDefautLogger);
 
+        AddModule<CommandsModule>();
+
         Services.AddSingleton<IApplicationArgsProvider>(argsProvider);
         Services.AddSingleton(environment);
-        Services.AddSingleton(serilogConfigurator);
         Services.AddSingleton<IApplicationContext, BuilderApplicationContext>();
         Services.AddTransient<IScheduler, Scheduler>();
         Services.AddFluentValidationExtensions();
@@ -117,6 +103,25 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
     public bool HasModule<TModule>() where TModule : IApplicationModule =>
         moduleRegistrations.Any(r => r.Type == typeof(TModule));
 
+    private ILogger<ISitkoCoreApplicationBuilder> CreateInternalLogger()
+    {
+        var tmpLoggerConfiguration = new LoggerConfiguration();
+        tmpLoggerConfiguration = ConfigureDefautLogger(tmpLoggerConfiguration);
+        if (BootApplicationContext.Options.EnableConsoleLogging != true)
+        {
+            tmpLoggerConfiguration = tmpLoggerConfiguration.WriteTo.Console(
+                outputTemplate: ApplicationOptions.BaseConsoleLogFormat,
+                formatProvider: CultureInfo.InvariantCulture,
+                restrictedToMinimumLevel: LogEventLevel.Debug);
+        }
+
+        var tmpLogger = tmpLoggerConfiguration.CreateLogger();
+        Log.Logger = tmpLogger; // set default logger until host is started
+        Console.OutputEncoding = Encoding.UTF8;
+        return new SerilogLoggerFactory(tmpLogger)
+            .CreateLogger<ISitkoCoreApplicationBuilder>();
+    }
+
     private void RegisterModule<TModule, TModuleOptions>(
         Action<IApplicationContext, TModuleOptions>? configureOptions = null,
         string? optionsKey = null)
@@ -174,6 +179,16 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
         }
 
         return loggerConfiguration;
+    }
+
+    protected virtual void BeforeContainerBuild()
+    {
+        var enabledModules = ModulesHelper.GetEnabledModuleRegistrations(BootApplicationContext, moduleRegistrations);
+        serilogConfigurator.ApplyLogging(BootApplicationContext, enabledModules);
+        foreach (var moduleRegistration in enabledModules)
+        {
+            moduleRegistration.PostConfigureServices(BootApplicationContext, Services);
+        }
     }
 
     protected void LogInternal(string message) => InternalLogger.LogInformation("Check log: {Message}", message);
