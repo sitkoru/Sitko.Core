@@ -9,6 +9,7 @@ public abstract class TasksDbContext<TBaseTask> : BaseDbContext where TBaseTask 
     private readonly DbContextOptions options;
     protected TasksDbContext(DbContextOptions options) : base(options) => this.options = options;
 
+    // ReSharper disable once UnusedMember.Local
     private DbSet<TBaseTask> Tasks => Set<TBaseTask>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
