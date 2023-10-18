@@ -1,6 +1,7 @@
 ﻿using JetBrains.Annotations;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
+using Sitko.Core.App.Web;
 
 namespace Sitko.Core.Auth.IdentityServer;
 
@@ -11,14 +12,14 @@ public static class ApplicationExtensions
         Action<IApplicationContext, JwtIdentityServerModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.GetSitkoCore().AddJwtIdentityServer(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore<ISitkoCoreWebApplicationBuilder>().AddJwtIdentityServer(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
     public static IHostApplicationBuilder AddJwtIdentityServer(this IHostApplicationBuilder hostApplicationBuilder,
         Action<JwtIdentityServerModuleOptions>? configure = null, string? optionsKey = null)
     {
-        hostApplicationBuilder.GetSitkoCore().AddJwtIdentityServer(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore<ISitkoCoreWebApplicationBuilder>().AddJwtIdentityServer(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
@@ -26,36 +27,48 @@ public static class ApplicationExtensions
         Action<IApplicationContext, OidcIdentityServerModuleOptions> configure,
         string? optionsKey = null)
     {
-        hostApplicationBuilder.GetSitkoCore().AddOidcIdentityServer(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore<ISitkoCoreWebApplicationBuilder>().AddOidcIdentityServer(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
     public static IHostApplicationBuilder AddOidcIdentityServer(this IHostApplicationBuilder hostApplicationBuilder,
         Action<OidcIdentityServerModuleOptions>? configure = null, string? optionsKey = null)
     {
-        hostApplicationBuilder.GetSitkoCore().AddOidcIdentityServer(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore<ISitkoCoreWebApplicationBuilder>().AddOidcIdentityServer(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
-    public static ISitkoCoreApplicationBuilder AddJwtIdentityServer(this ISitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreWebApplicationBuilder AddJwtIdentityServer(this ISitkoCoreWebApplicationBuilder applicationBuilder,
         Action<IApplicationContext, JwtIdentityServerModuleOptions> configure,
-        string? optionsKey = null) =>
+        string? optionsKey = null)
+    {
         applicationBuilder
             .AddModule<JwtIdentityServerModule, JwtIdentityServerModuleOptions>(configure, optionsKey);
+        return applicationBuilder;
+    }
 
-    public static ISitkoCoreApplicationBuilder AddJwtIdentityServer(this ISitkoCoreApplicationBuilder applicationBuilder,
-        Action<JwtIdentityServerModuleOptions>? configure = null, string? optionsKey = null) =>
+    public static ISitkoCoreWebApplicationBuilder AddJwtIdentityServer(this ISitkoCoreWebApplicationBuilder applicationBuilder,
+        Action<JwtIdentityServerModuleOptions>? configure = null, string? optionsKey = null)
+    {
         applicationBuilder
             .AddModule<JwtIdentityServerModule, JwtIdentityServerModuleOptions>(configure, optionsKey);
+        return applicationBuilder;
+    }
 
-    public static ISitkoCoreApplicationBuilder AddOidcIdentityServer(this ISitkoCoreApplicationBuilder applicationBuilder,
+    public static ISitkoCoreWebApplicationBuilder AddOidcIdentityServer(this ISitkoCoreWebApplicationBuilder applicationBuilder,
         Action<IApplicationContext, OidcIdentityServerModuleOptions> configure,
-        string? optionsKey = null) =>
+        string? optionsKey = null)
+    {
         applicationBuilder.AddModule<OidcIdentityServerModule, OidcIdentityServerModuleOptions>(configure,
             optionsKey);
+        return applicationBuilder;
+    }
 
-    public static ISitkoCoreApplicationBuilder AddOidcIdentityServer(this ISitkoCoreApplicationBuilder applicationBuilder,
-        Action<OidcIdentityServerModuleOptions>? configure = null, string? optionsKey = null) =>
+    public static ISitkoCoreWebApplicationBuilder AddOidcIdentityServer(this ISitkoCoreWebApplicationBuilder applicationBuilder,
+        Action<OidcIdentityServerModuleOptions>? configure = null, string? optionsKey = null)
+    {
         applicationBuilder.AddModule<OidcIdentityServerModule, OidcIdentityServerModuleOptions>(configure,
             optionsKey);
+        return applicationBuilder;
+    }
 }
