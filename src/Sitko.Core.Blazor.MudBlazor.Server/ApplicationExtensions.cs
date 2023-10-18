@@ -8,13 +8,12 @@ namespace Sitko.Core.Blazor.MudBlazor.Server;
 [PublicAPI]
 public static class ApplicationExtensions
 {
-    public static WebApplicationBuilder AddMudBlazorServer(this WebApplicationBuilder webApplicationBuilder)
+    public static ISitkoCoreBlazorServerApplicationBuilder AddMudBlazorServer(this WebApplicationBuilder webApplicationBuilder) => webApplicationBuilder.AddSitkoCoreBlazorServer().AddMudBlazorServer();
+
+    public static ISitkoCoreBlazorServerApplicationBuilder
+        AddMudBlazorServer(this ISitkoCoreBlazorServerApplicationBuilder webApplicationBuilder)
     {
-        webApplicationBuilder.AddSitkoCoreBlazorServer().AddMudBlazorServer();
+        webApplicationBuilder.AddMudBlazor();
         return webApplicationBuilder;
     }
-
-    public static ISitkoCoreBlazorApplicationBuilder
-        AddMudBlazorServer(this ISitkoCoreBlazorServerApplicationBuilder webApplicationBuilder) =>
-        webApplicationBuilder.AddMudBlazor();
 }
