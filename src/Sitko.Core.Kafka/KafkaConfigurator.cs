@@ -1,40 +1,39 @@
-﻿using KafkaFlow;
+﻿using Confluent.Kafka;
+using KafkaFlow;
 using KafkaFlow.Configuration;
+using KafkaFlow.Consumers.DistributionStrategies;
 
 namespace Sitko.Core.Kafka;
 
 public class KafkaConfigurator
 {
-    private readonly string[] brokers;
+    private readonly Dictionary<ConsumerRegistration, Action<IConsumerConfigurationBuilder, ConsumerConfig>>
+        consumerActions = new();
 
-    private readonly List<Action<IConsumerConfigurationBuilder>> consumerActions = new();
     private readonly HashSet<ConsumerRegistration> consumers = new();
-    private readonly string name;
-    private readonly Dictionary<string, Action<IProducerConfigurationBuilder>> producerActions = new();
+    private readonly string clusterName;
+    private readonly Dictionary<string, Action<IProducerConfigurationBuilder, ProducerConfig>> producerActions = new();
     private readonly Dictionary<string, (int Partitions, short ReplicationFactor)> topics = new();
     private bool ensureOffsets;
 
-    internal KafkaConfigurator(string name, string[] brokers)
-    {
-        this.name = name;
-        this.brokers = brokers;
-    }
+    internal KafkaConfigurator(string clusterName) => this.clusterName = clusterName;
 
-    internal string[] Brokers => brokers;
     internal HashSet<ConsumerRegistration> Consumers => consumers;
     internal bool NeedToEnsureOffsets => ensureOffsets;
 
-    public KafkaConfigurator AddProducer(string producerName, Action<IProducerConfigurationBuilder> configure)
+    public KafkaConfigurator AddProducer(string producerName,
+        Action<IProducerConfigurationBuilder, ProducerConfig> configure)
     {
         producerActions[producerName] = configure;
         return this;
     }
 
-    public KafkaConfigurator AddConsumer(string consumerName, string groupId, TopicInfo[] topics,
-        Action<IConsumerConfigurationBuilder> configure)
+    public KafkaConfigurator AddConsumer(string consumerName, string groupId, TopicInfo[] consumerTopics,
+        Action<IConsumerConfigurationBuilder, ConsumerConfig> configure)
     {
-        consumers.Add(new ConsumerRegistration(consumerName, groupId, topics));
-        consumerActions.Add(configure);
+        var registration = new ConsumerRegistration(consumerName, groupId, consumerTopics);
+        consumers.Add(registration);
+        consumerActions[registration] = configure;
         return this;
     }
 
@@ -50,14 +49,14 @@ public class KafkaConfigurator
         return this;
     }
 
-    public void Build(IKafkaConfigurationBuilder builder) =>
+    public void Build(IKafkaConfigurationBuilder builder, KafkaModuleOptions options) =>
         builder
             .UseMicrosoftLog()
             .AddCluster(clusterBuilder =>
             {
                 clusterBuilder
-                    .WithName(name)
-                    .WithBrokers(brokers);
+                    .WithName(clusterName)
+                    .WithBrokers(options.Brokers);
                 if (!ensureOffsets)
                 {
                     foreach (var (topic, config) in topics)
@@ -68,17 +67,45 @@ public class KafkaConfigurator
 
                 foreach (var (producerName, configure) in producerActions)
                 {
-                    clusterBuilder.AddProducer(producerName, configurationBuilder =>
+                    clusterBuilder.AddProducer(producerName, producerBuilder =>
                     {
-                        configure(configurationBuilder);
+                        var producerConfig = new ProducerConfig
+                        {
+                            ClientId = producerName,
+                            MessageTimeoutMs = (int)options.MessageTimeout.TotalMilliseconds,
+                            MessageMaxBytes = options.MessageMaxBytes,
+                            EnableIdempotence = options.EnableIdempotence,
+                            SocketNagleDisable = options.SocketNagleDisable,
+                            Acks = options.Acks
+                        };
+                        producerBuilder.WithProducerConfig(producerConfig);
+                        producerBuilder.WithLingerMs(options.MaxProducingTimeout.TotalMilliseconds);
+                        configure(producerBuilder, producerConfig);
                     });
                 }
 
-                foreach (var consumerAction in consumerActions)
+                foreach (var (registration, configureAction) in consumerActions)
                 {
                     clusterBuilder.AddConsumer(consumerBuilder =>
                     {
-                        consumerAction(consumerBuilder);
+                        consumerBuilder.WithName(registration.Name);
+                        consumerBuilder.Topics(registration.Topics.Select(info => info.Name));
+                        consumerBuilder.WithGroupId(registration.GroupId);
+                        consumerBuilder
+                            .WithWorkDistributionStrategy<BytesSumDistributionStrategy>(); // guarantee events order
+                        consumerBuilder.WithMaxPollIntervalMs((int)options.MaxPollInterval.TotalMilliseconds);
+                        var consumerConfig = new ConsumerConfig
+                        {
+                            MaxPartitionFetchBytes = options.MaxPartitionFetchBytes,
+                            AutoOffsetReset = options.AutoOffsetReset,
+                            ClientId = registration.Name,
+                            GroupInstanceId = registration.Name,
+                            BootstrapServers = string.Join(",", options.Brokers),
+                            SessionTimeoutMs = (int)options.SessionTimeout.TotalMilliseconds,
+                            PartitionAssignmentStrategy = options.PartitionAssignmentStrategy
+                        };
+                        consumerBuilder.WithConsumerConfig(consumerConfig);
+                        configureAction(consumerBuilder, consumerConfig);
                     });
                 }
             });

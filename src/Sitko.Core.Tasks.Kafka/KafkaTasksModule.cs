@@ -45,11 +45,11 @@ public class
             EventsRegistry.Register(executor.EventType, kafkaTopic, producerName);
         }
 
-        var kafkaConfigurator = KafkaModule.CreateConfigurator("Kafka_Tasks_Cluster", startupOptions.Brokers);
+        var kafkaConfigurator = KafkaModule.CreateConfigurator("Kafka_Tasks_Cluster");
         kafkaConfigurator
             .AutoCreateTopic(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
             .EnsureOffsets()
-            .AddProducer(producerName, builder =>
+            .AddProducer(producerName, (builder, _) =>
             {
                 builder.DefaultTopic(kafkaTopic);
                 builder.AddMiddlewares(middlewareBuilder =>
@@ -68,33 +68,10 @@ public class
                 new[]
                 {
                     new TopicInfo(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
-                }, consumerBuilder =>
+                }, (consumerBuilder, _) =>
                 {
-                    if (startupOptions.MaxPollIntervalMs > 0)
-                    {
-                        consumerBuilder.WithMaxPollIntervalMs(startupOptions.MaxPollIntervalMs);
-                    }
-
-                    consumerBuilder.Topic(kafkaTopic);
-                    consumerBuilder.WithName(name);
-                    consumerBuilder.WithGroupId(groupId);
                     consumerBuilder.WithWorkersCount(parallelThreadCount);
                     consumerBuilder.WithBufferSize(bufferSize);
-                    // для гарантии порядка событий
-                    consumerBuilder
-                        .WithWorkDistributionStrategy<BytesSumDistributionStrategy>();
-                    var consumerConfig = new ConsumerConfig
-                    {
-                        AutoOffsetReset = AutoOffsetReset.Latest,
-                        ClientId = name,
-                        GroupInstanceId = name,
-                        PartitionAssignmentStrategy = PartitionAssignmentStrategy.CooperativeSticky,
-                    };
-                    if (startupOptions.SessionTimeoutMs > 0)
-                    {
-                        consumerConfig.SessionTimeoutMs = startupOptions.SessionTimeoutMs;
-                    }
-                    consumerBuilder.WithConsumerConfig(consumerConfig);
                     consumerBuilder.AddMiddlewares(
                         middlewares =>
                         {
@@ -116,9 +93,6 @@ public class
         KafkaTasksModuleOptions<TBaseTask, TDbContext>> where TBaseTask : BaseTask
     where TDbContext : TasksDbContext<TBaseTask>
 {
-    public KafkaModuleOptionsValidator()
-    {
-        RuleFor(options => options.Brokers).NotEmpty().WithMessage("Specify Kafka brokers");
+    public KafkaModuleOptionsValidator() =>
         RuleFor(options => options.TasksTopic).NotEmpty().WithMessage("Specify Kafka topic");
-    }
 }

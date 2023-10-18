@@ -8,7 +8,6 @@ public class KafkaTasksModuleOptions<TBaseTask, TDbContext> : TasksModuleOptions
     where TDbContext : TasksDbContext<TBaseTask>
 {
     public override Type GetValidatorType() => typeof(KafkaModuleOptionsValidator<TBaseTask, TDbContext>);
-    public string[] Brokers { get; set; } = Array.Empty<string>();
     public string TasksTopic { get; set; } = "";
     public bool AddTopicPrefix { get; set; } = true;
     public string TopicPrefix { get; set; } = "";
@@ -16,8 +15,4 @@ public class KafkaTasksModuleOptions<TBaseTask, TDbContext> : TasksModuleOptions
     public short TopicReplicationFactor { get; set; } = 1;
     public bool AddConsumerGroupPrefix { get; set; } = true;
     public string ConsumerGroupPrefix { get; set; } = "";
-
-    public int SessionTimeoutMs { get; set; }
-
-    public int MaxPollIntervalMs { get; set; }
 }

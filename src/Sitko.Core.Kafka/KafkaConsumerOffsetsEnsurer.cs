@@ -10,14 +10,14 @@ internal class KafkaConsumerOffsetsEnsurer
 
     public KafkaConsumerOffsetsEnsurer(ILogger<KafkaConsumerOffsetsEnsurer> logger) => this.logger = logger;
 
-    public async Task EnsureOffsetsAsync(KafkaConfigurator configurator)
+    public async Task EnsureOffsetsAsync(KafkaConfigurator configurator, KafkaModuleOptions options)
     {
-        var adminClient = GetAdminClient(configurator.Brokers);
+        var adminClient = GetAdminClient(options.Brokers);
         foreach (var consumer in configurator.Consumers)
         {
             foreach (var topic in consumer.Topics)
             {
-                await EnsureTopicOffsetsAsync(consumer, adminClient, topic, configurator.Brokers);
+                await EnsureTopicOffsetsAsync(consumer, adminClient, topic, options.Brokers);
             }
         }
     }
