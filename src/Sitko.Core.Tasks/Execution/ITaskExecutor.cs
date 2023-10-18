@@ -7,6 +7,7 @@ public interface ITaskExecutor
     Task ExecuteAsync(Guid id, CancellationToken cancellationToken);
 }
 
+// ReSharper disable once UnusedTypeParameter
 public interface ITaskExecutor<TTask>: ITaskExecutor where TTask : class, IBaseTask
 {
 }
