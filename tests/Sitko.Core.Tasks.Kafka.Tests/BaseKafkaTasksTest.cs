@@ -1,4 +1,5 @@
 ﻿using Cronos;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.Tasks.Kafka.Tests.Data;
 using Sitko.Core.Xunit;
 using Xunit.Abstractions;
@@ -14,16 +15,15 @@ public abstract class BaseKafkaTasksTest : BaseTest<BaseKafkaTasksTestScope>
 
 public class BaseKafkaTasksTestScope : BaseTestScope
 {
-    protected override TestApplication ConfigureApplication(TestApplication application, string name)
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {
-        base
-            .ConfigureApplication(application, name)
-            .AddKafkaTasks<BaseTestTask, TestDbContext>(options =>
-            {
-                options
-                    .AddTask<TestTask, TestTaskConfig, TestTaskResult>(CronExpression.Parse("* * * * *"))
-                    .AddExecutorsFromAssemblyOf<TestTask>();
-            });
-        return application;
+        base.ConfigureApplication(hostBuilder, name);
+        hostBuilder.AddKafkaTasks<BaseTestTask, TestDbContext>(options =>
+        {
+            options
+                .AddTask<TestTask, TestTaskConfig, TestTaskResult>(CronExpression.Parse("* * * * *"))
+                .AddExecutorsFromAssemblyOf<TestTask>();
+        });
+        return hostBuilder;
     }
 }
