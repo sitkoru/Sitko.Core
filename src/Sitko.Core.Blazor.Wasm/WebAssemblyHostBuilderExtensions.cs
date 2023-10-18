@@ -40,6 +40,7 @@ public class SitkoCoreBlazorWasmApplicationBuilder : SitkoCoreBaseApplicationBui
         {
             options.AddDefaultResource(typeof(BaseForm));
         });
+        builder.ConfigureContainer(new SitkoCoreServiceProviderBuilderFactory(), _ => BeforeContainerBuild());
     }
 
     protected override LoggerConfiguration ConfigureDefautLogger(LoggerConfiguration loggerConfiguration)
@@ -56,7 +57,8 @@ public static class WebAssemblyHostBuilderExtensions
     public static ISitkoCoreBlazorApplicationBuilder AddSitkoCoreBlazorWasm(this WebAssemblyHostBuilder builder) =>
         builder.AddSitkoCoreBlazorWasm(Array.Empty<string>());
 
-    public static ISitkoCoreBlazorApplicationBuilder AddSitkoCoreBlazorWasm(this WebAssemblyHostBuilder builder, string[] args) =>
+    public static ISitkoCoreBlazorApplicationBuilder AddSitkoCoreBlazorWasm(this WebAssemblyHostBuilder builder,
+        string[] args) =>
         ApplicationBuilderFactory.GetOrCreateApplicationBuilder(builder,
             applicationBuilder => new SitkoCoreBlazorWasmApplicationBuilder(applicationBuilder, args));
 }
