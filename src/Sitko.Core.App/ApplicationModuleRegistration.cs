@@ -194,6 +194,14 @@ internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : A
         return this;
     }
 
+    public override ApplicationModuleRegistration PostConfigureServices(IApplicationContext context,
+        IServiceCollection services)
+    {
+        var options = CreateOptions(context, true);
+        instance.PostConfigureServices(context, services, options);
+        return this;
+    }
+
     public override Task ApplicationStopped(IApplicationContext applicationContext,
         IServiceProvider serviceProvider) =>
         instance.ApplicationStopped(applicationContext, serviceProvider);
@@ -224,6 +232,9 @@ public abstract class ApplicationModuleRegistration
         LoggerConfiguration loggerConfiguration);
 
     public abstract ApplicationModuleRegistration ConfigureServices(IApplicationContext context,
+        IServiceCollection services);
+
+    public abstract ApplicationModuleRegistration PostConfigureServices(IApplicationContext context,
         IServiceCollection services);
 
     public abstract Task ApplicationStopped(IApplicationContext applicationContext,

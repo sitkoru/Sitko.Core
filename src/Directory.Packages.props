@@ -3,6 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="Cronos" Version="0.7.1"/>
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.7.1"/>
     <PackageVersion Include="IL.FluentValidation.Extensions.Options" Version="11.0.2"/>
     <PackageVersion Include="JetBrains.Annotations" Version="2023.2.0"/>
@@ -89,6 +90,16 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.10"/>
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.10"/>
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4"/>
+  </ItemGroup>
+  <!--Kafka libraries-->
+  <ItemGroup>
+    <PackageVersion Include="KafkaFlow" Version="2.4.1"/>
+    <PackageVersion Include="KafkaFlow.LogHandler.Microsoft" Version="2.4.1"/>
+    <PackageVersion Include="KafkaFlow.Microsoft.DependencyInjection" Version="2.4.1"/>
+    <PackageVersion Include="KafkaFlow.Serializer" Version="2.4.1"/>
+    <PackageVersion Include="KafkaFlow.Serializer.JsonCore" Version="2.4.1"/>
+    <PackageVersion Include="KafkaFlow.TypedHandler" Version="2.4.1"/>
+    <PackageVersion Include="KafkaFlow.Extensions.Hosting" Version="2.4.1"/>
   </ItemGroup>
   <!--Elastic libraries-->
   <ItemGroup>
