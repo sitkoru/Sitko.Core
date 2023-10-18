@@ -23,6 +23,25 @@ public abstract class AuthOptions : BaseModuleOptions
     public int CookieExpireInMinutes { get; set; } = 30 * 24 * 60;
     public string UserIdClaimName { get; set; } = ClaimTypes.NameIdentifier;
     [JsonIgnore] public Action<CookieBuilder>? ConfigureCookie { get; set; }
+
+    public AuthOptions AddPolicy(string name, Func<AuthorizationPolicyBuilder, AuthorizationPolicyBuilder> policyBuilder,
+        bool forcePolicy = false)
+    {
+        var builder = new AuthorizationPolicyBuilder();
+        var policy = policyBuilder(builder).Build();
+        return AddPolicy(name, policy, forcePolicy);
+    }
+
+    public AuthOptions AddPolicy(string name, AuthorizationPolicy policy, bool forcePolicy = false)
+    {
+        Policies.Add(name, policy);
+        if (forcePolicy)
+        {
+            ForcePolicy = name;
+        }
+
+        return this;
+    }
 }
 
 public abstract class AuthOptionsValidator<TOptions> : AbstractValidator<TOptions> where TOptions : AuthOptions
@@ -37,4 +56,3 @@ public abstract class AuthOptionsValidator<TOptions> : AbstractValidator<TOption
             .WithMessage("Can't use -1 database for data protection");
     }
 }
-
