@@ -1,6 +1,8 @@
 using FluentValidation;
 using MudBlazorUnited.Components;
 using MudBlazorUnited.Data;
+using MudBlazorUnited.Tasks;
+using MudBlazorUnited.Tasks.Demo;
 using Sitko.Core.App.Localization;
 using Sitko.Core.App.Web;
 using Sitko.Core.Blazor.MudBlazor.Server;
@@ -11,6 +13,7 @@ using Sitko.Core.Storage;
 using Sitko.Core.Storage.FileSystem;
 using Sitko.Core.Storage.Metadata.Postgres;
 using Sitko.Core.Storage.Remote;
+using Sitko.Core.Tasks.Kafka;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +27,14 @@ builder
     .AddFileSystemStorage<TestBlazorStorageOptions>()
     .AddRemoteStorage<TestRemoteStorageOptions>()
     .AddPostgresStorageMetadata<TestBlazorStorageOptions>()
-    .AddJsonLocalization();
+    .AddJsonLocalization()
+    .AddKafkaTasks<MudBlazorBaseTask, MudBlazorTasksDbContext>(options =>
+        {
+            options
+                .AddTask<LoggingTask, LoggingTaskConfig, LoggingTaskResult>("* * * * *")
+                .AddExecutorsFromAssemblyOf<MudBlazorBaseTask>();
+        }, true,
+        options => options.AutoApplyMigrations = true);
 
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.Configure<MudLayoutOptions>(builder.Configuration.GetSection("MudLayout"));

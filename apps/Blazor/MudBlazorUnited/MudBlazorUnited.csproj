@@ -14,6 +14,7 @@
     <ProjectReference Include="..\..\..\src\Sitko.Core.Storage.Metadata.Postgres\Sitko.Core.Storage.Metadata.Postgres.csproj" />
     <ProjectReference Include="..\..\..\src\Sitko.Core.Storage.Remote.Server\Sitko.Core.Storage.Remote.Server.csproj" />
     <ProjectReference Include="..\..\..\src\Sitko.Core.Storage.Remote\Sitko.Core.Storage.Remote.csproj" />
+    <ProjectReference Include="..\..\..\src\Sitko.Core.Tasks.Kafka\Sitko.Core.Tasks.Kafka.csproj" />
   </ItemGroup>
 
   <ItemGroup>
