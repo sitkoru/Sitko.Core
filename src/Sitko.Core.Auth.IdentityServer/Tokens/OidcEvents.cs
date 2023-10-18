@@ -12,8 +12,12 @@ public class OidcEvents : OpenIdConnectEvents
 
     public override async Task TokenValidated(TokenValidatedContext context)
     {
-        var exp = DateTimeOffset.UtcNow.AddSeconds(double.Parse(context.TokenEndpointResponse!.ExpiresIn,
-            CultureInfo.InvariantCulture));
+        // TODO: WHY EMPTY?
+        var expiration = !string.IsNullOrEmpty(context.TokenEndpointResponse!.ExpiresIn)
+            ? TimeSpan.FromSeconds(double.Parse(context.TokenEndpointResponse!.ExpiresIn,
+                CultureInfo.InvariantCulture))
+            : TimeSpan.FromMinutes(30);
+        var exp = DateTimeOffset.UtcNow.Add(expiration);
 
         await store.StoreTokenAsync(context.Principal!,
             new UserToken
