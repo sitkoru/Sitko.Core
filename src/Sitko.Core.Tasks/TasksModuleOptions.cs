@@ -24,7 +24,6 @@ public abstract class TasksModuleOptions : BaseModuleOptions, IModuleOptionsWith
     public abstract Type GetValidatorType();
 }
 
-
 public abstract class TasksModuleOptions<TBaseTask, TDbContext> : TasksModuleOptions
     where TDbContext : TasksDbContext<TBaseTask> where TBaseTask : BaseTask
 {
@@ -63,6 +62,11 @@ public abstract class TasksModuleOptions<TBaseTask, TDbContext> : TasksModuleOpt
 
     internal bool HasJobs => jobServiceConfigurations.Any();
 
+    public TasksModuleOptions<TBaseTask, TDbContext> AddTask<TTask, TConfig, TResult>(string cronExpression)
+        where TTask : class, IBaseTask<TConfig, TResult>
+        where TConfig : BaseTaskConfig, new()
+        where TResult : BaseTaskResult, new() => AddTask<TTask, TConfig, TResult>(CronExpression.Parse(cronExpression));
+
     public TasksModuleOptions<TBaseTask, TDbContext> AddTask<TTask, TConfig, TResult>(CronExpression cronExpression)
         where TTask : class, IBaseTask<TConfig, TResult>
         where TConfig : BaseTaskConfig, new()
@@ -80,7 +84,8 @@ public abstract class TasksModuleOptions<TBaseTask, TDbContext> : TasksModuleOpt
                 selector.FromAssemblyOf<TTask>()
                     .AddClasses(filter => filter.AssignableToAny(schedulerType))
                     .As<IBaseTaskFactory<TTask>>().WithScopedLifetime());
-            services.AddSingleton(typeof(IHostedService), typeof(TaskSchedulingService<,>).MakeGenericType(typeof(TTask), GetType()));
+            services.AddSingleton(typeof(IHostedService),
+                typeof(TaskSchedulingService<,>).MakeGenericType(typeof(TTask), GetType()));
             services.Scan(selector => selector.FromTypes(typeof(BaseTaskRepository<TTask, TBaseTask, TDbContext>))
                 .AsSelf().As<IRepository>().As<IRepository<TTask, Guid>>().As<ITaskRepository<TTask>>()
                 .WithTransientLifetime());
