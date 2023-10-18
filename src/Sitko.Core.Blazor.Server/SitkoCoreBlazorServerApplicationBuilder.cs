@@ -43,14 +43,4 @@ public class SitkoCoreBlazorServerApplicationBuilder : SitkoCoreWebApplicationBu
                 .WithTransientLifetime());
          return this;
     }
-
-    [PublicAPI]
-    public ISitkoCoreBlazorServerApplicationBuilder ForceAuthorization()
-    {
-        Services.AddRazorPages(options =>
-        {
-            options.Conventions.AuthorizeFolder("/");
-        });
-        return this;
-    }
 }
