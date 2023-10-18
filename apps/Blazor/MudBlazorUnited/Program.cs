@@ -5,6 +5,7 @@ using MudBlazorUnited.Tasks;
 using MudBlazorUnited.Tasks.Demo;
 using Sitko.Core.App.Localization;
 using Sitko.Core.App.Web;
+using Sitko.Core.Auth.IdentityServer;
 using Sitko.Core.Blazor.MudBlazor.Server;
 using Sitko.Core.Blazor.MudBlazorComponents;
 using Sitko.Core.Db.Postgres;
@@ -19,45 +20,45 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder
     .AddMudBlazorServer()
+    .ConfigureWeb(options =>
+    {
+        options.EnableMvc = true;
+        options.EnableStaticFiles = true;
+    })
+    .AddOidcIdentityServer(options =>
+    {
+        options.AddPolicy("AuthenticatedUser", policyBuilder => policyBuilder.RequireAuthenticatedUser(), true);
+    })
+    .AddEFRepositories<BarContext>()
+    .AddRemoteStorage<TestRemoteStorageOptions>()
+    .AddPostgresStorageMetadata<TestBlazorStorageOptions>()
+    .AddJsonLocalization();
+
+builder.AddFileSystemStorage<TestBlazorStorageOptions>()
     .AddPostgresDatabase<BarContext>(options =>
     {
         options.EnableSensitiveLogging = true;
-    })
-    .AddEFRepositories<BarContext>()
-    .AddFileSystemStorage<TestBlazorStorageOptions>()
-    .AddRemoteStorage<TestRemoteStorageOptions>()
-    .AddPostgresStorageMetadata<TestBlazorStorageOptions>()
-    .AddJsonLocalization()
-    .AddKafkaTasks<MudBlazorBaseTask, MudBlazorTasksDbContext>(options =>
-        {
-            options
-                .AddTask<LoggingTask, LoggingTaskConfig, LoggingTaskResult>("* * * * *")
-                .AddExecutorsFromAssemblyOf<MudBlazorBaseTask>();
-        }, true,
-        options => options.AutoApplyMigrations = true);
+    });
+
+builder.AddKafkaTasks<MudBlazorBaseTask, MudBlazorTasksDbContext>(options =>
+    {
+        options
+            .AddTask<LoggingTask, LoggingTaskConfig, LoggingTaskResult>("* * * * *")
+            .AddExecutorsFromAssemblyOf<MudBlazorBaseTask>();
+    }, true,
+    options => options.AutoApplyMigrations = true);
 
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.Configure<MudLayoutOptions>(builder.Configuration.GetSection("MudLayout"));
 builder.Services.AddControllers();
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    app.UseHsts();
-}
+app.ConfigureLocalization("ru-RU");
 
-app.UseHttpsRedirection();
-
-app.UseStaticFiles();
-app.UseAntiforgery();
+app.MapSitkoCore();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-
-app.ConfigureLocalization("ru-RU");
-
-app.MapControllers();
 
 app.Run();
 

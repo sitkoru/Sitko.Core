@@ -7,6 +7,7 @@
     </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Sitko.Core.Auth.IdentityServer\Sitko.Core.Auth.IdentityServer.csproj" />
     <ProjectReference Include="..\..\..\src\Sitko.Core.Blazor.MudBlazor.Server\Sitko.Core.Blazor.MudBlazor.Server.csproj" />
     <ProjectReference Include="..\..\..\src\Sitko.Core.Db.InMemory\Sitko.Core.Db.InMemory.csproj" />
     <ProjectReference Include="..\..\..\src\Sitko.Core.Repository.EntityFrameworkCore\Sitko.Core.Repository.EntityFrameworkCore.csproj" />
