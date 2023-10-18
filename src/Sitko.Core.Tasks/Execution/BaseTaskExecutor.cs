@@ -18,13 +18,13 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
     private readonly IServiceScopeFactory serviceScopeFactory;
     private readonly ITracer? tracer;
 
-    protected BaseTaskExecutor(ILogger<BaseTaskExecutor<TTask, TConfig, TResult>> logger,
-        IServiceScopeFactory serviceScopeFactory, IRepository<TTask, Guid> repository, ITracer? tracer = null)
+    protected BaseTaskExecutor(ITaskExecutorContext<TTask> executorContext,
+        ILogger<BaseTaskExecutor<TTask, TConfig, TResult>> logger)
     {
         Logger = logger;
-        this.tracer = tracer;
-        this.serviceScopeFactory = serviceScopeFactory;
-        this.repository = repository;
+        tracer = executorContext.Tracer;
+        serviceScopeFactory = executorContext.ServiceScopeFactory;
+        repository = executorContext.Repository;
     }
 
     protected ILogger<BaseTaskExecutor<TTask, TConfig, TResult>> Logger { get; }

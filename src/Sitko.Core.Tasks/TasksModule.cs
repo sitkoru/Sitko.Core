@@ -66,6 +66,7 @@ public abstract class
         services.TryAddScoped<ITaskScheduler, TTaskScheduler>();
 
         services.TryAddScoped<TasksManager>();
+        services.TryAddScoped(typeof(ITaskExecutorContext<>), typeof(TaskExecutorContext<>));
         services.AddTransient<IRepository<TBaseTask, Guid>, TasksRepository<TBaseTask, TDbContext>>();
         services.AddTransient<ITaskRepository<TBaseTask>, TasksRepository<TBaseTask, TDbContext>>();
         services.AddHostedService<TasksCleaner<TBaseTask, TOptions>>();

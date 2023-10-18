@@ -1,15 +1,12 @@
-﻿using Elastic.Apm.Api;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Sitko.Core.Repository;
+﻿using Microsoft.Extensions.Logging;
 using Sitko.Core.Tasks.Execution;
 
 namespace Sitko.Core.Tasks.Kafka.Tests.Data;
 
 public class TestTaskExecutor : BaseTaskExecutor<TestTask, TestTaskConfig, TestTaskResult>
 {
-    public TestTaskExecutor(ILogger<TestTaskExecutor> logger, ITracer? tracer, IServiceScopeFactory serviceScopeFactory,
-        IRepository<TestTask, Guid> repository) : base(logger, serviceScopeFactory, repository, tracer)
+    public TestTaskExecutor(ITaskExecutorContext<TestTask> executorContext, ILogger<TestTaskExecutor> logger) : base(
+        executorContext, logger)
     {
     }
 
