@@ -1,5 +1,7 @@
 using System.Globalization;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 using MudBlazorUnited.Components.Lists;
 using MudBlazorUnited.Data.Entities;
@@ -78,11 +80,32 @@ namespace MudBlazorUnited.Components.Pages
         private MudAutocomplete<BarModel> IdFilterAutocomplete { get; set; } = null!;
 
         [Inject] private BarRepository BarRepository { get; set; } = null!;
+        [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
         private (BarModel[] items, int itemsCount) bars;
+        private User? identity;
 
         protected override async Task InitializeAsync()
         {
             await base.InitializeAsync();
+            var authState = await AuthenticationStateProvider
+                .GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity is not null && user.Identity.IsAuthenticated)
+            {
+                var claimId = user.FindFirst(ClaimTypes.NameIdentifier);
+                if (claimId != null)
+                {
+                    var flags = user.FindAll("userFlag").Select(claim => claim.Value).ToArray();
+                    identity = new User(int.Parse(claimId.Value, CultureInfo.InvariantCulture),
+                        user.FindFirst("userName")?.Value ?? "Anonymous",
+                        flags.Contains(UserFlags.IsAdmin), flags,
+                        user.FindFirst("userPic")?.Value ?? "",
+                        user.FindFirst("name")?.Value ?? "",
+                        user.FindFirst(ClaimTypes.Email)?.Value ?? "");
+                }
+            }
+
             bars = await BarRepository.GetAllAsync();
         }
 
@@ -186,4 +209,14 @@ namespace MudBlazorUnited.Components.Pages
         public string? Title { get; set; }
         public DateRange? DateRange { get; set; }
     }
+}
+
+public record UserIdentity(User User, string? AccessToken);
+public record User(int Id, string Name, bool IsAdmin, string[] UserFlags, string? Avatar = "", string? Login = "",
+    string? Email = "");
+
+public static class UserFlags
+{
+    public const string IsAdmin = "isAdmin";
+    public const string IsSpecialist = "isSpecialist";
 }
