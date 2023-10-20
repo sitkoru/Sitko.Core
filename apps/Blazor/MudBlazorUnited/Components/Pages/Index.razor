@@ -1,27 +1,31 @@
 @page "/"
 @using MudBlazorUnited.Data.Entities
+@using System.Text.Json
 @attribute [RenderModeInteractiveServer]
 @inherits BaseComponent
 
-<MudGrid>
-    <MudItem xs="6" sm="4">
-        <MudAutocomplete @ref="IdFilterAutocomplete" T="BarModel" Label="ID" SearchFunc="@SearchIdsAsync" ResetValueOnEmptyText="true"
-                         Value="FilterList.Model"
-                         ToStringFunc="@(e => e == null ? null : $"{e.Bar}")"
-                         ValueChanged="@(s => ChangeIdAsync(s == null ? null : s.Id))"/>
-    </MudItem>
-
-    <MudItem xs="6" sm="4">
-         <MudTextField T="string" Value="FilterList.Title" Label="Title" ValueChanged="SearchTitleAsync" Class="mt-0" Clearable="true">
-                                                                            </MudTextField>
-    </MudItem>
-
-    <MudItem xs="12" sm="4">
-        <MudDateRangePicker DateRange="FilterList.DateRange" Label="Дата" PickerVariant="PickerVariant.Dialog" DateRangeChanged="@(dateRange => ChangeDateAsync(dateRange))"/>
-    </MudItem>
-</MudGrid>
-
 <MudPageLayout Title="@LocalizationProvider["Title"]">
+@if (identity is not null)
+{
+    <MudText>@JsonSerializer.Serialize(identity)</MudText>
+}
+    <MudGrid>
+        <MudItem xs="6" sm="4">
+            <MudAutocomplete @ref="IdFilterAutocomplete" T="BarModel" Label="ID" SearchFunc="@SearchIdsAsync" ResetValueOnEmptyText="true"
+                             Value="FilterList.Model"
+                             ToStringFunc="@(e => e == null ? null : $"{e.Bar}")"
+                             ValueChanged="@(s => ChangeIdAsync(s == null ? null : s.Id))"/>
+        </MudItem>
+
+        <MudItem xs="6" sm="4">
+            <MudTextField T="string" Value="FilterList.Title" Label="Title" ValueChanged="SearchTitleAsync" Class="mt-0" Clearable="true">
+            </MudTextField>
+        </MudItem>
+
+        <MudItem xs="12" sm="4">
+            <MudDateRangePicker DateRange="FilterList.DateRange" Label="Дата" PickerVariant="PickerVariant.Dialog" DateRangeChanged="@(dateRange => ChangeDateAsync(dateRange))"/>
+        </MudItem>
+    </MudGrid>
     <BarRepositoryList @bind-RowsPerPage="rowsPerPage" OnDataLoaded="CountSummaryAsync" @ref="barList" Class="mb-10" EnableUrlNavigation="true"
                        ConfigureQuery="ConfigureQueryAsync" AddParamsToUrl="AddParamsToUrlAsync"
                        GetParamsFromUrl="GetParamsFromUrlAsync">
