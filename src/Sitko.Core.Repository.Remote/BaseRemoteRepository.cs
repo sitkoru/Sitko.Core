@@ -196,6 +196,9 @@ public class
 
     protected virtual TEntity CreateEntitySnapshot(TEntity entity) => JsonHelper.Clone(entity)!;
 
+    protected override async Task DoAddExternalAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+        await DoAddAsync(entity, cancellationToken);
+
     protected override async Task DoAddAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         if (isTransactionStarted)

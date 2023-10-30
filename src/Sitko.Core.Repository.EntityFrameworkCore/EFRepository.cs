@@ -444,7 +444,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
             currentDbContext => currentDbContext.SaveChangesAsync(cancellationToken),
             cancellationToken);
 
-    protected override async Task DoAddAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+    protected override async Task DoAddExternalAsync(TEntity entity, CancellationToken cancellationToken = default) =>
         await ExecuteDbContextOperationAsync(
             currentDbContext =>
             {
@@ -458,6 +458,18 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
                     }
 
                     node.Entry.State = EntityState.Unchanged;
+                });
+                return currentDbContext.AddAsync(entity, cancellationToken).AsTask();
+            },
+            cancellationToken);
+
+    protected override async Task DoAddAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+        await ExecuteDbContextOperationAsync(
+            currentDbContext =>
+            {
+                currentDbContext.ChangeTracker.TrackGraph(entity, node =>
+                {
+                    node.Entry.State = EntityState.Added;
                 });
                 return currentDbContext.AddAsync(entity, cancellationToken).AsTask();
             },
