@@ -160,7 +160,13 @@ public interface IRepository<TEntity, TEntityPk> : IRepository
     Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddAsync(TEntity entity,
         CancellationToken cancellationToken = default);
 
+    Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddExternalAsync(TEntity entity,
+        CancellationToken cancellationToken = default);
+
     Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> AddAsync(IEnumerable<TEntity> entities,
+        CancellationToken cancellationToken = default);
+
+    Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> AddExternalAsync(IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default);
 
     Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity entity,
