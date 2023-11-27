@@ -467,14 +467,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
 
     protected override async Task DoAddAsync(TEntity entity, CancellationToken cancellationToken = default) =>
         await ExecuteDbContextOperationAsync(
-            currentDbContext =>
-            {
-                currentDbContext.ChangeTracker.TrackGraph(entity, node =>
-                {
-                    node.Entry.State = EntityState.Added;
-                });
-                return currentDbContext.AddAsync(entity, cancellationToken).AsTask();
-            },
+            currentDbContext => currentDbContext.AddAsync(entity, cancellationToken).AsTask(),
             cancellationToken);
 
     public DbSet<T> Set<T>() where T : class => dbContext.Set<T>();
