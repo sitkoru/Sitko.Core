@@ -12,7 +12,7 @@
     <PackageVersion Include="Tempus" Version="1.0.0"/>
     <PackageVersion Include="Scrutor" Version="4.2.2"/>
     <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1"/>
-    <PackageVersion Include="VaultSharp.Extensions.Configuration" Version="0.6.2"/>
+    <PackageVersion Include="VaultSharp" Version="1.13.0.1"/>
     <PackageVersion Include="Consul" Version="1.6.10.9"/>
     <PackageVersion Include="TeamsHook.NET" Version="0.1.0.18"/>
     <PackageVersion Include="Telegram.Bot" Version="19.0.0"/>
@@ -83,6 +83,7 @@
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0"/>
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="7.0.10"/>
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0"/>
+    <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.8.14"/>
   </ItemGroup>
   <!--EF Core libraries-->
   <ItemGroup>
