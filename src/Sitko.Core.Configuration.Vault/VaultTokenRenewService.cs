@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using VaultSharp;
+using VaultSharp.V1.AuthMethods.AppRole;
 using VaultSharp.V1.AuthMethods.Token;
 
 namespace Sitko.Core.Configuration.Vault;
@@ -31,8 +32,9 @@ public class VaultTokenRenewService : BackgroundService
                 logger.LogInformation("Renew vault token");
                 try
                 {
-                    var authMethod = new TokenAuthMethodInfo(optionsMonitor.CurrentValue.Token);
-                    var vaultClientSettings = new VaultClientSettings(optionsMonitor.CurrentValue.Uri, authMethod);
+                    var vaultClientSettings = new VaultClientSettings(optionsMonitor.CurrentValue.Uri, optionsMonitor.CurrentValue.AuthType == VaultAuthType.Token
+                        ? new TokenAuthMethodInfo(optionsMonitor.CurrentValue.Token)
+                        : new AppRoleAuthMethodInfo(optionsMonitor.CurrentValue.VaultRoleId, optionsMonitor.CurrentValue.VaultSecret));
                     var vaultClient = new VaultClient(vaultClientSettings);
 
                     var result = await vaultClient.V1.Auth.Token.RenewSelfAsync().ConfigureAwait(false);
@@ -53,4 +55,3 @@ public class VaultTokenRenewService : BackgroundService
         logger.LogInformation("Stop vault token renew service");
     }
 }
-

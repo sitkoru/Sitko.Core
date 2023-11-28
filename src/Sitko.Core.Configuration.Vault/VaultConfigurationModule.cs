@@ -93,6 +93,7 @@ public class VaultConfigurationModuleOptions : BaseModuleOptions
     public bool RenewToken { get; set; } = true;
     public int TokenRenewIntervalMinutes { get; set; } = 60;
     public bool ThrowOnEmptySecrets { get; set; } = true;
+    public VaultAuthType AuthType { get; set; } = VaultAuthType.Token;
 
     public IEnumerable<char>? AdditionalCharactersForConfigurationPath { get; [UsedImplicitly] set; }
 
@@ -109,12 +110,20 @@ public class VaultConfigurationModuleOptions : BaseModuleOptions
     }
 }
 
+public enum VaultAuthType
+{
+    Token,
+    RoleApp
+}
+
 public class VaultConfigurationOptionsValidator : AbstractValidator<VaultConfigurationModuleOptions>
 {
     public VaultConfigurationOptionsValidator()
     {
         RuleFor(o => o.Uri).NotEmpty().WithMessage("Vault url is empty");
-        RuleFor(o => o.Token).NotEmpty().WithMessage("Vault token is empty");
+        RuleFor(o => o.Token).NotEmpty().When(o => o.AuthType == VaultAuthType.Token).WithMessage("Vault token is empty");
+        RuleFor(o => o.VaultRoleId).NotEmpty().When(o => o.AuthType == VaultAuthType.RoleApp).WithMessage("Vault role id is empty");
+        RuleFor(o => o.VaultSecret).NotEmpty().When(o => o.AuthType == VaultAuthType.RoleApp).WithMessage("Vault secret is empty");
         RuleFor(o => o.MountPoint).NotEmpty().WithMessage("Vault mount point is empty");
         RuleFor(o => o.Secrets).NotEmpty().WithMessage("Vault secrets list is empty");
     }
