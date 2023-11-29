@@ -3,6 +3,8 @@ using Grpc.Core;
 using Grpc.Core.Interceptors;
 using Grpc.Net.Client;
 using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Client;
@@ -10,20 +12,56 @@ namespace Sitko.Core.Grpc.Client;
 [PublicAPI]
 public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient : ClientBase<TClient>
 {
+    private readonly Dictionary<Type, Action<IServiceCollection, IHttpClientBuilder>> interceptorActions = new();
+    private Action<IServiceCollection, IHttpClientBuilder>? configureAuthAction;
     public bool EnableHttp2UnencryptedSupport { get; set; }
     public bool DisableCertificatesValidation { get; set; }
     [JsonIgnore] public Action<GrpcChannelOptions>? ConfigureChannelOptions { get; set; }
     [JsonIgnore] public Func<HttpClientHandler, HttpMessageHandler>? ConfigureHttpHandler { get; set; }
 
-    [JsonIgnore]
-    public IList<Action<CallOptionsContext>> CallOptionsActions { get; } = new List<Action<CallOptionsContext>>();
+    internal void ConfigureClient(IServiceCollection services, IHttpClientBuilder builder)
+    {
+        foreach (var (_, configure) in interceptorActions)
+        {
+            configure(services, builder);
+        }
 
-    internal HashSet<Type> Interceptors { get; } = new();
+        configureAuthAction?.Invoke(services, builder);
+    }
+
+    public GrpcClientModuleOptions<TClient> AddTokenAuth<TTokenProvider>()
+        where TTokenProvider : class, IGrpcTokenProvider
+    {
+        const string AuthorizationHeader = "Authorization";
+        configureAuthAction = (services, builder) =>
+        {
+            services.TryAddTransient<IGrpcTokenProvider, TTokenProvider>();
+            builder.AddCallCredentials(async (_, metadata, serviceProvider) =>
+            {
+                var provider = serviceProvider.GetRequiredService<IGrpcTokenProvider>();
+                var token = await provider.GetTokenAsync();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    var oldAuthHeaders = metadata.GetAll(AuthorizationHeader);
+                    foreach (var entry in oldAuthHeaders)
+                    {
+                        metadata.Remove(entry);
+                    }
+
+                    metadata.Add(AuthorizationHeader, token);
+                }
+            });
+        };
+        return this;
+    }
 
     public GrpcClientModuleOptions<TClient> AddInterceptor<TInterceptor>() where TInterceptor : Interceptor
     {
-        Interceptors.Add(typeof(TInterceptor));
+        interceptorActions[typeof(TInterceptor)] = (services, builder) =>
+        {
+            services.TryAddSingleton<TInterceptor>();
+            builder.AddInterceptor<TInterceptor>();
+        };
         return this;
     }
 }
-
