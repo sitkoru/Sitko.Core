@@ -23,6 +23,7 @@ internal class GrpcCallInvokerFactory
     private readonly ConcurrentDictionary<EntryKey, IGrpcServiceAddressResolver> resolvers = new();
 
     private readonly IServiceScopeFactory scopeFactory;
+    private readonly ILogger<GrpcCallInvokerFactory> logger;
 
     public GrpcCallInvokerFactory(
         IServiceScopeFactory scopeFactory,
@@ -32,6 +33,7 @@ internal class GrpcCallInvokerFactory
         IHttpMessageHandlerFactory messageHandlerFactory)
     {
         this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+        this.logger = loggerFactory.CreateLogger<GrpcCallInvokerFactory>();
         this.grpcClientFactoryOptionsMonitor = grpcClientFactoryOptionsMonitor;
         this.httpClientFactoryOptionsMonitor = httpClientFactoryOptionsMonitor;
         this.messageHandlerFactory = messageHandlerFactory;
@@ -100,8 +102,8 @@ internal class GrpcCallInvokerFactory
             var address = resolver.GetAddress();
             if (address == null)
             {
-                throw new InvalidOperationException(
-                    $@"Could not resolve the address for gRPC client '{name}'. Set an address when registering the client: services.AddGrpcClient<{type.Name}>(o => o.Address = new Uri(""https://localhost:5001""))");
+                logger.LogError("Could not resolve the address for gRPC client '{Name}'", name);
+                address = new Uri("https://localhost"); // fake address
             }
 
             var channel = GrpcChannel.ForAddress(address, channelOptions);
