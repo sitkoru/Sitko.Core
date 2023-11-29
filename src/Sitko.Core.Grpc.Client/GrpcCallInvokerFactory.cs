@@ -21,6 +21,7 @@ internal class GrpcCallInvokerFactory
     private readonly ILoggerFactory loggerFactory;
     private readonly IHttpMessageHandlerFactory messageHandlerFactory;
     private readonly ConcurrentDictionary<EntryKey, IGrpcServiceAddressResolver> resolvers = new();
+    private readonly ConcurrentDictionary<Type, Uri> addresses = new();
 
     private readonly IServiceScopeFactory scopeFactory;
     private readonly ILogger<GrpcCallInvokerFactory> logger;
@@ -60,6 +61,9 @@ internal class GrpcCallInvokerFactory
             };
             return resolver;
         });
+
+    internal Uri? GetClientAddress<TClient>() where TClient : ClientBase<TClient> =>
+        addresses.TryGetValue(typeof(TClient), out var address) ? address : null;
 
     private CallInvoker CreateInvoker(EntryKey key)
     {
@@ -107,6 +111,8 @@ internal class GrpcCallInvokerFactory
                 logger.LogError("Could not resolve the address for gRPC client '{Name}'", name);
                 address = new Uri("https://localhost"); // fake address
             }
+
+            addresses[key.Type] = address;
 
             var channel = GrpcChannel.ForAddress(address, channelOptions);
 
