@@ -33,7 +33,7 @@ internal class GrpcCallInvokerFactory
         IHttpMessageHandlerFactory messageHandlerFactory)
     {
         this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
-        this.logger = loggerFactory.CreateLogger<GrpcCallInvokerFactory>();
+        logger = loggerFactory.CreateLogger<GrpcCallInvokerFactory>();
         this.grpcClientFactoryOptionsMonitor = grpcClientFactoryOptionsMonitor;
         this.httpClientFactoryOptionsMonitor = httpClientFactoryOptionsMonitor;
         this.messageHandlerFactory = messageHandlerFactory;
@@ -54,16 +54,16 @@ internal class GrpcCallInvokerFactory
                 throw new InvalidOperationException($"Can't get address resolver for {entryKey.Type}");
             }
 
-            resolver.OnChange += (sender, args) =>
+            resolver.OnChange += (_, _) =>
             {
-                activeChannels.TryRemove(entryKey, out var oldChannel);
+                activeChannels.TryRemove(entryKey, out _);
             };
             return resolver;
         });
 
     private CallInvoker CreateInvoker(EntryKey key)
     {
-        var (name, type) = (key.Name, key.Type);
+        var (name, _) = (key.Name, key.Type);
         var scope = scopeFactory.CreateScope();
         var services = scope.ServiceProvider;
 
@@ -82,7 +82,9 @@ internal class GrpcCallInvokerFactory
 
             if (httpHandler == null)
             {
+#pragma warning disable CA2208
                 throw new ArgumentNullException(nameof(httpHandler));
+#pragma warning restore CA2208
             }
 
             var channelOptions = new GrpcChannelOptions
@@ -121,7 +123,7 @@ internal class GrpcCallInvokerFactory
         catch
         {
             // If something fails while creating the handler, dispose the services.
-            scope?.Dispose();
+            scope.Dispose();
             throw;
         }
     }
