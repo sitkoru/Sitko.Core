@@ -64,9 +64,4 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
         };
         return this;
     }
-
-    public interface IGrpcTokenProvider
-    {
-        Task<string> GetTokenAsync();
-    }
 }
