@@ -91,7 +91,8 @@ public abstract class HostedApplication : Application
             .AddEnvironmentVariables("DOTNET_")
             .AddEnvironmentVariables("ASPNETCORE_")
             .AddJsonFile("appsettings.json", true, false)
-            .AddJsonFile($"appsettings.{startEnvironment.EnvironmentName}.json", true, false);
+            .AddJsonFile($"appsettings.{startEnvironment.EnvironmentName}.json", true, false)
+            .AddJsonFile("appsettings.local.json", true, false);
         var startApplicationContext = GetContext(startEnvironment, configBuilder.Build());
         ConfigureConfiguration(startApplicationContext, configBuilder);
 
@@ -124,6 +125,7 @@ public abstract class HostedApplication : Application
         LogInternal("Configure host builder");
         hostBuilder.ConfigureAppConfiguration((_, builder) =>
             {
+                builder.AddJsonFile("appsettings.local.json", true, true);
                 ConfigureConfiguration(bootApplicationContext, builder);
             })
             .ConfigureServices((_, services) =>
