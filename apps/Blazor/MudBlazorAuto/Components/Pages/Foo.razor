@@ -1,7 +1,7 @@
 ﻿@page "/Foos/Add"
 @page "/Foos/{Id:guid}/Edit"
 @using MudBlazorAuto.Data.Entities
-@attribute [RenderModeInteractiveServer]
+@rendermode InteractiveServer
 @inherits BaseComponent
 <MudPageLayout Title="Edit" Description="Page description">
     <FooForm @ref="Form" EntityId="Id" Debug="true" OnAfterSave="AfterSaveAsync">

@@ -1,6 +1,6 @@
 ﻿@page "/Bars/Add"
 @page "/Bars/{Id:guid}/Edit"
-@attribute [RenderModeInteractiveServer]
+@rendermode InteractiveServer
 @inherits BaseComponent
 <MudPageLayout Title="Edit" Breadcrumbs="Breadcrumbs" Description="Page description">
     <BarForm @ref="Form" EntityId="Id" Debug="true">
