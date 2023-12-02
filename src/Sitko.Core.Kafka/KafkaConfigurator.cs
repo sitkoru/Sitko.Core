@@ -92,7 +92,7 @@ public class KafkaConfigurator
                         consumerBuilder.Topics(registration.Topics.Select(info => info.Name));
                         consumerBuilder.WithGroupId(registration.GroupId);
                         consumerBuilder
-                            .WithWorkDistributionStrategy<BytesSumDistributionStrategy>(); // guarantee events order
+                            .WithWorkerDistributionStrategy<BytesSumDistributionStrategy>(); // guarantee events order
                         consumerBuilder.WithMaxPollIntervalMs((int)options.MaxPollInterval.TotalMilliseconds);
                         var consumerConfig = new ConsumerConfig
                         {

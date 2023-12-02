@@ -87,13 +87,11 @@
   </ItemGroup>
   <!--Kafka libraries-->
   <ItemGroup>
-    <PackageVersion Include="KafkaFlow" Version="2.4.1" />
-    <PackageVersion Include="KafkaFlow.LogHandler.Microsoft" Version="2.4.1" />
-    <PackageVersion Include="KafkaFlow.Microsoft.DependencyInjection" Version="2.4.1" />
-    <PackageVersion Include="KafkaFlow.Serializer" Version="2.4.1" />
-    <PackageVersion Include="KafkaFlow.Serializer.JsonCore" Version="2.4.1" />
-    <PackageVersion Include="KafkaFlow.TypedHandler" Version="2.4.1" />
-    <PackageVersion Include="KafkaFlow.Extensions.Hosting" Version="2.4.1" />
+    <PackageVersion Include="KafkaFlow" Version="3.0.0" />
+    <PackageVersion Include="KafkaFlow.LogHandler.Microsoft" Version="3.0.0" />
+    <PackageVersion Include="KafkaFlow.Microsoft.DependencyInjection" Version="3.0.0" />
+    <PackageVersion Include="KafkaFlow.Serializer.JsonCore" Version="3.0.0" />
+    <PackageVersion Include="KafkaFlow.Extensions.Hosting" Version="3.0.0" />
   </ItemGroup>
   <!--Elastic libraries-->
   <ItemGroup>

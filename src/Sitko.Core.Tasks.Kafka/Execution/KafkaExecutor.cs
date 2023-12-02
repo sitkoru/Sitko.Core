@@ -1,5 +1,4 @@
 using KafkaFlow;
-using KafkaFlow.TypedHandler;
 using Sitko.Core.Tasks.Data.Entities;
 using Sitko.Core.Tasks.Execution;
 
