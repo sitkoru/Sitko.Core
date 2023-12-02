@@ -49,6 +49,4 @@ public class MessageBusTestScope : BaseTestQueueTestScope
         options.TranslateMediatRNotification<TestRequest>();
 }
 
-public class TestRequest : TestMessage, INotification
-{
-}
+public class TestRequest : TestMessage, INotification;

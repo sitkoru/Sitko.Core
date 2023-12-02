@@ -6,9 +6,7 @@ using Sitko.Core.App.Json;
 
 namespace Sitko.Core.Repository.Remote;
 
-public interface IRemoteRepository : IRepository
-{
-}
+public interface IRemoteRepository : IRepository;
 
 public class
     BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, TEntityPk, RemoteRepositoryQuery<TEntity>>,

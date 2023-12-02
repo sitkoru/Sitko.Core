@@ -146,22 +146,14 @@ public class LocalizationTests : BaseTest<LocalizationTestScope>
     }
 }
 
-public class LocalizationTests<T>
-{
-}
+public class LocalizationTests<T>;
 
-public class LocalizationTests<T, T2>
-{
-}
+public class LocalizationTests<T, T2>;
 
 // ReSharper disable once InconsistentNaming
-public interface ILocalizationTests<T, T2, T3>
-{
-}
+public interface ILocalizationTests<T, T2, T3>;
 
-public class Default
-{
-}
+public class Default;
 
 public class LocalizationTestScope : BaseTestScope
 {
@@ -174,6 +166,4 @@ public class LocalizationTestScope : BaseTestScope
     }
 }
 
-public class NoLocalizationTestScope : BaseTestScope
-{
-}
+public class NoLocalizationTestScope : BaseTestScope;

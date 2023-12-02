@@ -18,6 +18,4 @@ public class ConsulGrpcClientModule<TClient> : GrpcClientModule<TClient, ConsulG
 }
 
 public class ConsulGrpcClientModuleOptions<TClient> : GrpcClientModuleOptions<TClient>
-    where TClient : ClientBase<TClient>
-{
-}
+    where TClient : ClientBase<TClient>;

@@ -233,9 +233,7 @@ public class
         , MudTableFilter>
     where TEntity : class, IEntity<TEntityPk>
     where TRepository : IRepository<TEntity, TEntityPk>
-    where TEntityPk : notnull
-{
-}
+    where TEntityPk : notnull;
 
 public abstract class MudRepositoryTable<TEntity, TEntityPk, TRepository, TFilter> : MudTable<TEntity, TFilter>
     where TEntity : class, IEntity<TEntityPk>

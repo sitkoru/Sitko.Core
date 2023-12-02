@@ -53,6 +53,4 @@ public class NatsMessageBusTestScope : NatsQueueTestScope
         base.ConfigureApplication(hostBuilder, name).AddMediatR<MessageBusTests>();
 }
 
-public class TestRequest : TestMessage, INotification
-{
-}
+public class TestRequest : TestMessage, INotification;

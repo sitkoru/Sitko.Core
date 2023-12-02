@@ -2,7 +2,5 @@
 
 namespace Sitko.Core.Blazor.MudBlazorComponents;
 
-public partial class BasicMudLayout
-{
-}
+public partial class BasicMudLayout;
 

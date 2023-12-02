@@ -59,15 +59,9 @@ public class Model
     public List<SubModel> SubModels { get; set; } = new();
 }
 
-public abstract class SubModel
-{
-}
+public abstract class SubModel;
 
-public class SubModelA : SubModel
-{
-}
+public class SubModelA : SubModel;
 
-public class SubModelB : SubModel
-{
-}
+public class SubModelB : SubModel;
 

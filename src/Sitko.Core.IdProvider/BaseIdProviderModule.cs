@@ -17,7 +17,5 @@ public abstract class BaseIdProviderModule<TProvider, TModuleOptions> : BaseAppl
 
 // ReSharper disable once UnusedTypeParameter
 public abstract class BaseIdProviderModuleOptions<TProvider> : BaseModuleOptions
-    where TProvider : class, IIdProvider
-{
-}
+    where TProvider : class, IIdProvider;
 

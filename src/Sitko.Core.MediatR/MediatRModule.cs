@@ -4,9 +4,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.MediatR;
 
-public interface IMediatRModule
-{
-}
+public interface IMediatRModule;
 
 public class MediatRModule<TAssembly> : BaseApplicationModule<MediatRModuleOptions<TAssembly>>,
     IMediatRModule

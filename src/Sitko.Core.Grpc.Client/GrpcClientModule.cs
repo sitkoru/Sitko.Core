@@ -6,9 +6,7 @@ using Sitko.Core.Grpc.Client.Discovery;
 
 namespace Sitko.Core.Grpc.Client;
 
-public interface IGrpcClientModule<TClient> where TClient : ClientBase<TClient>
-{
-}
+public interface IGrpcClientModule<TClient> where TClient : ClientBase<TClient>;
 
 public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOptions> :
     BaseApplicationModule<TGrpcClientModuleOptions>,
