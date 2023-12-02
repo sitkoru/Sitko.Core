@@ -4,9 +4,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Storage;
 
-public interface IStorageModule : IApplicationModule
-{
-}
+public interface IStorageModule : IApplicationModule;
 
 public abstract class StorageModule<TStorage, TStorageOptions> : BaseApplicationModule<TStorageOptions>,
     IStorageModule

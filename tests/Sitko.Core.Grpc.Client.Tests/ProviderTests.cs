@@ -37,9 +37,7 @@ public class ProviderTests : BaseTest<GrpcClientScope>
     }
 }
 
-public class TestInterceptor : Interceptor
-{
-}
+public class TestInterceptor : Interceptor;
 
 public class GrpcClientScope : BaseTestScope
 {
@@ -68,9 +66,7 @@ public class
 }
 
 public class TestGrpcClientModuleOptions<TClient> : GrpcClientModuleOptions<TClient>
-    where TClient : ClientBase<TClient>
-{
-}
+    where TClient : ClientBase<TClient>;
 
 public class TestGrpcClientResolver<TClient> : IGrpcServiceAddressResolver<TClient>
     where TClient : ClientBase<TClient>

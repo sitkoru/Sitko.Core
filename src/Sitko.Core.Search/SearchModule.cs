@@ -5,9 +5,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Search;
 
-public interface ISearchModule
-{
-}
+public interface ISearchModule;
 
 public abstract class SearchModule<TConfig> : BaseApplicationModule<TConfig>, ISearchModule
     where TConfig : SearchModuleOptions, new()
@@ -58,7 +56,5 @@ public static class SearchModuleExtensions
         serviceCollection.Scan(a => a.FromType<TSearchProvider>().AsSelfWithInterfaces());
 }
 
-public abstract class SearchModuleOptions : BaseModuleOptions
-{
-}
+public abstract class SearchModuleOptions : BaseModuleOptions;
 

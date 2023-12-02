@@ -10,9 +10,7 @@ using Sitko.Core.App.Web;
 
 namespace Sitko.Core.HangFire;
 
-public interface IHangfireModule : IApplicationModule
-{
-}
+public interface IHangfireModule : IApplicationModule;
 
 public class HangfireModule<THangfireConfig> : BaseApplicationModule<THangfireConfig>, IHangfireModule,
     IWebApplicationModule

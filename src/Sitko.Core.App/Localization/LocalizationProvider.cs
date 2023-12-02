@@ -13,9 +13,7 @@ public interface ILocalizationProvider
 }
 
 // ReSharper disable once UnusedTypeParameter
-public interface ILocalizationProvider<T> : ILocalizationProvider
-{
-}
+public interface ILocalizationProvider<T> : ILocalizationProvider;
 
 public class LocalizationProvider<T> : ILocalizationProvider<T>
 {

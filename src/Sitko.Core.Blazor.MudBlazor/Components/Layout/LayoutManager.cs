@@ -13,9 +13,7 @@ public class MudLayoutManager : BaseLayoutManager<MudLayoutData, MudLayoutOption
     }
 }
 
-public class MudLayoutOptions : LayoutOptions
-{
-}
+public class MudLayoutOptions : LayoutOptions;
 
 public record MudLayoutData : LayoutData
 {

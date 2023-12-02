@@ -23,9 +23,7 @@ public interface IStorageCache<TStorageOptions> : IAsyncDisposable where TStorag
 // Generic interface is required for dependency injection
 // ReSharper disable once UnusedTypeParameter
 public interface IStorageCache<TStorageOptions, TCacheOptions> : IStorageCache<TStorageOptions>
-    where TCacheOptions : StorageCacheOptions where TStorageOptions : StorageOptions
-{
-}
+    where TCacheOptions : StorageCacheOptions where TStorageOptions : StorageOptions;
 
 public interface IStorageCacheRecord
 {

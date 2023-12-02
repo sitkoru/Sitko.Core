@@ -5,7 +5,5 @@ public class InMemoryQueueModule : QueueModule<InMemoryQueue, InMemoryQueueModul
     public override string OptionsKey => "Queue:InMemory";
 }
 
-public class InMemoryQueueModuleOptions : QueueModuleOptions
-{
-}
+public class InMemoryQueueModuleOptions : QueueModuleOptions;
 

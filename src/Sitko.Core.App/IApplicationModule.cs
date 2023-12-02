@@ -37,9 +37,7 @@ public interface IApplicationModule
     Task<bool> OnAfterRunAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider);
 }
 
-public interface IHostBuilderModule : IApplicationModule
-{
-}
+public interface IHostBuilderModule : IApplicationModule;
 
 public interface IHostBuilderModule<in TModuleOptions> : IHostBuilderModule, IApplicationModule<TModuleOptions>
     where TModuleOptions : class, new()
@@ -55,9 +53,7 @@ public interface IHostBuilderModule<in TModuleOptions> : IHostBuilderModule, IAp
     }
 }
 
-public interface ILoggingModule : IApplicationModule
-{
-}
+public interface ILoggingModule : IApplicationModule;
 
 public interface ILoggingModule<in TModuleOptions> : ILoggingModule, IApplicationModule<TModuleOptions>
     where TModuleOptions : class, new()

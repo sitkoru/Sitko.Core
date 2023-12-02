@@ -16,9 +16,7 @@ public class DevEmailModule : FluentEmailModule<DevEmailModuleOptions>
         builder.Services.TryAdd(ServiceDescriptor.Scoped<ISender, DevEmailSender>());
 }
 
-public class DevEmailModuleOptions : FluentEmailModuleOptions
-{
-}
+public class DevEmailModuleOptions : FluentEmailModuleOptions;
 
 public class DevEmailSender : ISender
 {

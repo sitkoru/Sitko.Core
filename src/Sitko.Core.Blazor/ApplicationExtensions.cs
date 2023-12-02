@@ -6,9 +6,7 @@ using Sitko.Core.Blazor.Components;
 
 namespace Sitko.Core.Blazor;
 
-public interface ISitkoCoreBlazorApplicationBuilder : ISitkoCoreApplicationBuilder
-{
-}
+public interface ISitkoCoreBlazorApplicationBuilder : ISitkoCoreApplicationBuilder;
 
 [PublicAPI]
 public static class ApplicationExtensions

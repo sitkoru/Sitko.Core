@@ -9,6 +9,4 @@ public interface IGrpcServiceAddressResolver
     event EventHandler? OnChange;
 }
 
-public interface IGrpcServiceAddressResolver<TClient> : IGrpcServiceAddressResolver where TClient : ClientBase<TClient>
-{
-}
+public interface IGrpcServiceAddressResolver<TClient> : IGrpcServiceAddressResolver where TClient : ClientBase<TClient>;
