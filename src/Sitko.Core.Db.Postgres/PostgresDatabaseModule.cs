@@ -86,7 +86,7 @@ public class
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(config.CreateBuilder().ConnectionString);
         if (config.EnableJsonConversion)
         {
-            dataSourceBuilder.EnableDynamicJsonMappings();
+            dataSourceBuilder.EnableDynamicJson();
         }
 
         var dataSource = dataSourceBuilder.Build();
