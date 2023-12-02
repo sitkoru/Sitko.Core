@@ -47,7 +47,5 @@ public class TestQueueModule : QueueModule<TestQueue, TestQueueOptions>
     public override string OptionsKey => "Queue:Test";
 }
 
-public class TestQueueOptions : QueueModuleOptions
-{
-}
+public class TestQueueOptions : QueueModuleOptions;
 

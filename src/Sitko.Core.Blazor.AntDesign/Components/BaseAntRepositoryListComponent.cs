@@ -7,18 +7,14 @@ namespace Sitko.Core.Blazor.AntDesignComponents.Components;
 
 public class
     AntRepositoryList<TItem, TEntityPk> : BaseAntRepositoryList<TItem, TEntityPk, IRepository<TItem, TEntityPk>>
-    where TItem : class, IEntity<TEntityPk>, new() where TEntityPk : notnull
-{
-}
+    where TItem : class, IEntity<TEntityPk>, new() where TEntityPk : notnull;
 
 public class
     BaseAntRepositoryList<TEntity, TEntityPk, TRepository> : BaseAntRepositoryListComponent<TEntity, TEntityPk,
         TRepository>
     where TEntity : class, IEntity<TEntityPk>, new()
     where TRepository : IRepository<TEntity, TEntityPk>
-    where TEntityPk : notnull
-{
-}
+    where TEntityPk : notnull;
 
 public abstract class
     BaseAntRepositoryListComponent<TEntity, TEntityPk, TRepository> : BaseAntListComponent<TEntity>

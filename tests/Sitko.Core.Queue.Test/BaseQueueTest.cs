@@ -42,6 +42,4 @@ public abstract class
     }
 }
 
-public abstract class BaseTestQueueTestScope : BaseQueueTestScope<TestQueueModule, TestQueue, TestQueueOptions>
-{
-}
+public abstract class BaseTestQueueTestScope : BaseQueueTestScope<TestQueueModule, TestQueue, TestQueueOptions>;

@@ -2,9 +2,7 @@ using Sitko.Core.Storage.Internal;
 
 namespace Sitko.Core.Storage;
 
-public interface IStorageInstance
-{
-}
+public interface IStorageInstance;
 
 public interface IStorage : IStorageInstance
 {
@@ -102,7 +100,5 @@ public interface IStorage : IStorageInstance
 
 // Generic interface is required for dependency injection
 // ReSharper disable once UnusedTypeParameter
-public interface IStorage<TStorageOptions> : IStorage where TStorageOptions : StorageOptions
-{
-}
+public interface IStorage<TStorageOptions> : IStorage where TStorageOptions : StorageOptions;
 

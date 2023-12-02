@@ -3,6 +3,4 @@ using Sitko.Core.Xunit;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore.Tests.Data;
 
-public abstract class BaseEFTestScope : DbBaseTestScope<TestDbContext>
-{
-}
+public abstract class BaseEFTestScope : DbBaseTestScope<TestDbContext>;

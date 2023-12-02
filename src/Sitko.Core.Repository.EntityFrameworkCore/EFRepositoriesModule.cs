@@ -20,7 +20,5 @@ public class EFRepositoriesModule : RepositoriesModule<EFRepositoriesModuleOptio
     }
 }
 
-public class EFRepositoriesModuleOptions : RepositoriesModuleOptions<IEFRepository>
-{
-}
+public class EFRepositoriesModuleOptions : RepositoriesModuleOptions<IEFRepository>;
 

@@ -35,7 +35,5 @@ public class RemoteStorageMetadataProvider<TStorageOptions> : EmbedStorageMetada
 }
 
 public class RemoteStorageMetadataModuleOptions<TStorageOptions> : EmbedStorageMetadataModuleOptions<TStorageOptions>
-    where TStorageOptions : StorageOptions
-{
-}
+    where TStorageOptions : StorageOptions;
 

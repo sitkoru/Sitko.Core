@@ -28,7 +28,5 @@ public class QueueSubscribeResult : QueueResult
     public IQueueMessageOptions? Options { get; set; }
 }
 
-public class QueuePublishResult : QueueResult
-{
-}
+public class QueuePublishResult : QueueResult;
 
