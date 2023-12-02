@@ -47,7 +47,7 @@
   <ItemGroup>
     <PackageVersion Include="FluentEmail.Core" Version="3.0.2" />
     <PackageVersion Include="FluentEmail.Mailgun" Version="3.0.2" />
-    <PackageVersion Include="MailKit" Version="4.2.0" />
+    <PackageVersion Include="MailKit" Version="4.3.0" />
     <PackageVersion Include="HtmlAgilityPack" Version="1.11.54" />
     <PackageVersion Include="Razor.Templating.Core" Version="1.9.0" />
   </ItemGroup>
