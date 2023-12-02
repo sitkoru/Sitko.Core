@@ -24,7 +24,7 @@ public class
             var options = serviceProvider
                 .GetRequiredService<IOptions<PostgresStorageMetadataModuleOptions<TStorageOptions>>>();
             var dataSourceBuilder = new NpgsqlDataSourceBuilder(options.Value.GetConnectionString());
-            dataSourceBuilder.EnableDynamicJsonMappings();
+            dataSourceBuilder.EnableDynamicJson();
             var dataSource = dataSourceBuilder.Build();
             builder.UseNpgsql(dataSource, optionsBuilder =>
             {
