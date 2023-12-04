@@ -15,5 +15,5 @@ public record BaseTask : EntityRecord<Guid>, IBaseTask
     public Guid? ParentId { get; set; }
     public string? UserId { get; set; }
     public DateTimeOffset? LastActivityDate { get; set; }
-    public string GetKey() => Type;
+    public virtual string GetKey() => $"{Type}_{Guid.NewGuid()}";
 }
