@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace Sitko.Core.App;
@@ -17,6 +18,12 @@ public class SitkoCoreServerApplicationBuilder : SitkoCoreBaseApplicationBuilder
             _ => BeforeContainerBuild());
     }
 
+    protected override IConfigurationBuilder SetupConfiguration(IConfigurationBuilder configurationBuilder)
+    {
+        base.SetupConfiguration(configurationBuilder);
+        configurationBuilder.AddJsonFile("appsettings.local.json", true, false);
+        return configurationBuilder;
+    }
 
     protected override void BeforeModuleRegistration<TModule, TModuleOptions>(IApplicationContext applicationContext,
         ApplicationModuleRegistration moduleRegistration)
