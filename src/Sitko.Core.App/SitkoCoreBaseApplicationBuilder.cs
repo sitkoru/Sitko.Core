@@ -117,6 +117,7 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
         Services.AddTransient<IScheduler, Scheduler>();
         Services.AddFluentValidationExtensions();
         Services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
+        Services.AddSingleton<IApplicationLifecycle, ApplicationLifecycle>(); // только Hosted? Проверить для Wasm
         Services.AddHostedService<HostedLifecycleService>(); // только Hosted? Проверить для Wasm
     }
 

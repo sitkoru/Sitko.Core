@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Sitko.Core.App;
 using Sitko.Core.Puppeteer;
 
@@ -18,11 +17,4 @@ public class PdfRendererModule : BaseApplicationModule
 
     public override IEnumerable<Type> GetRequiredModules(IApplicationContext applicationContext,
         BaseApplicationModuleOptions options) => new[] { typeof(PuppeteerModule) };
-
-    public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider)
-    {
-        await base.InitAsync(applicationContext, serviceProvider);
-        var logger = serviceProvider.GetRequiredService<ILogger<PdfRendererModule>>();
-        logger.LogCritical("PDF INIT");
-    }
 }
