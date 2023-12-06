@@ -18,38 +18,30 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
     private readonly List<ApplicationModuleRegistration> moduleRegistrations = new();
     private readonly SerilogConfigurator serilogConfigurator = new();
 
+    private IApplicationContext? bootApplicationContext;
+
+    private ILogger<ISitkoCoreApplicationBuilder>? internalLogger;
+
     protected SitkoCoreBaseApplicationBuilder(string[] args, IServiceCollection services,
         IConfigurationBuilder configuration, IApplicationEnvironment environment, ILoggingBuilder logging)
     {
+        Args = args;
         Services = services;
         Configuration = configuration;
         Environment = environment;
         Logging = logging;
-        var argsProvider = new ApplicationArgsProvider(args);
-        var bootConfig = Configuration.Build();
-        BootApplicationContext = new BuilderApplicationContext(bootConfig, Environment, argsProvider);
-
-        // configure logging
-        Configuration.Add(new SerilogDynamicConfigurationSource());
-        InternalLogger = CreateInternalLogger();
-        Logging.ClearProviders();
-        Logging.AddSerilog();
-        serilogConfigurator.Configure(ConfigureDefautLogger);
-
-        AddModule<CommandsModule>();
-
-        Services.AddSingleton<IApplicationArgsProvider>(argsProvider);
-        Services.AddSingleton(environment);
-        Services.AddSingleton<IApplicationContext, BuilderApplicationContext>();
-        Services.AddTransient<IScheduler, Scheduler>();
-        Services.AddFluentValidationExtensions();
-        Services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
-        Services.AddHostedService<HostedLifecycleService>(); // только Hosted? Проверить для Wasm
+        Init();
     }
 
-    protected ILogger<ISitkoCoreApplicationBuilder> InternalLogger { get; }
-    protected IApplicationContext BootApplicationContext { get; }
+    protected ILogger<ISitkoCoreApplicationBuilder> InternalLogger => internalLogger ??
+                                                                      throw new InvalidOperationException(
+                                                                          "Application init is not executed");
 
+    protected IApplicationContext BootApplicationContext => bootApplicationContext ??
+                                                            throw new InvalidOperationException(
+                                                                "Application init is not executed");
+
+    public string[] Args { get; }
     protected IServiceCollection Services { get; }
     protected IConfigurationBuilder Configuration { get; }
     protected IApplicationEnvironment Environment { get; }
@@ -102,6 +94,31 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
 
     public bool HasModule<TModule>() where TModule : IApplicationModule =>
         moduleRegistrations.Any(r => r.Type == typeof(TModule));
+
+    private void Init()
+    {
+        var argsProvider = new ApplicationArgsProvider(Args);
+        SetupConfiguration(Configuration);
+        var bootConfig = Configuration.Build();
+        bootApplicationContext = new BuilderApplicationContext(bootConfig, Environment, argsProvider);
+
+        // configure logging
+        Configuration.Add(new SerilogDynamicConfigurationSource());
+        internalLogger = CreateInternalLogger();
+        Logging.ClearProviders();
+        Logging.AddSerilog();
+        serilogConfigurator.Configure(ConfigureDefautLogger);
+
+        AddModule<CommandsModule>();
+
+        Services.AddSingleton<IApplicationArgsProvider>(argsProvider);
+        Services.AddSingleton(Environment);
+        Services.AddSingleton<IApplicationContext, BuilderApplicationContext>();
+        Services.AddTransient<IScheduler, Scheduler>();
+        Services.AddFluentValidationExtensions();
+        Services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
+        Services.AddHostedService<HostedLifecycleService>(); // только Hosted? Проверить для Wasm
+    }
 
     private ILogger<ISitkoCoreApplicationBuilder> CreateInternalLogger()
     {
@@ -161,6 +178,9 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
         where TModuleOptions : BaseModuleOptions, new()
     {
     }
+
+    protected virtual IConfigurationBuilder SetupConfiguration(IConfigurationBuilder configurationBuilder) =>
+        configurationBuilder;
 
     protected virtual LoggerConfiguration ConfigureDefautLogger(LoggerConfiguration loggerConfiguration)
     {
