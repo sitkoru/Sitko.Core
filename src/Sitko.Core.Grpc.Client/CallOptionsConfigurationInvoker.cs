@@ -1,4 +1,6 @@
+using System.Reflection;
 using Grpc.Core;
+using Grpc.Net.ClientFactory;
 
 namespace Sitko.Core.Grpc.Client;
 
@@ -16,9 +18,19 @@ internal sealed class CallOptionsConfigurationInvoker : CallInvoker
         this.serviceProvider = serviceProvider;
     }
 
+    public static T CreateInstance<T>(params object[] args)
+    {
+        var type = typeof(T);
+        var instance = type.Assembly.CreateInstance(
+            type.FullName!, false,
+            BindingFlags.Instance | BindingFlags.NonPublic,
+            null, args, null, null);
+        return (T)instance!;
+    }
+
     private CallOptions ResolveCallOptions(CallOptions callOptions)
     {
-        var context = new CallOptionsContext(callOptions, serviceProvider);
+        var context = CreateInstance<CallOptionsContext>(callOptions, serviceProvider);
 
         foreach (var t in callOptionsActions)
         {
@@ -48,4 +60,3 @@ internal sealed class CallOptionsConfigurationInvoker : CallInvoker
         CallOptions options, TRequest request) =>
         innerInvoker.BlockingUnaryCall(method, host, ResolveCallOptions(options), request);
 }
-

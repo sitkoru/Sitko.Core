@@ -55,9 +55,7 @@ public class FooEntity : Entity<Guid>
     public string Test { get; set; } = "";
 }
 
-public class BarEntity : Entity<Guid>
-{
-}
+public class BarEntity : Entity<Guid>;
 
 public record FooRecord : EntityRecord<Guid>
 {

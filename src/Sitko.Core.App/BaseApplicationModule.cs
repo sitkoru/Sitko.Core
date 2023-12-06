@@ -3,13 +3,9 @@ using Microsoft.Extensions.Options;
 
 namespace Sitko.Core.App;
 
-public abstract class BaseApplicationModule : BaseApplicationModule<BaseApplicationModuleOptions>
-{
-}
+public abstract class BaseApplicationModule : BaseApplicationModule<BaseApplicationModuleOptions>;
 
-public class BaseApplicationModuleOptions : BaseModuleOptions
-{
-}
+public class BaseApplicationModuleOptions : BaseModuleOptions;
 
 public abstract class BaseApplicationModule<TModuleOptions> : IApplicationModule<TModuleOptions>
     where TModuleOptions : BaseModuleOptions, new()

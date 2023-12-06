@@ -24,24 +24,20 @@ public class ProviderTests : BaseTest<GrpcClientScope>
             (TestGrpcClientResolver<TestService.TestServiceClient>)scope
                 .GetService<IGrpcServiceAddressResolver<TestService.TestServiceClient>>();
         resolver.SetPort(4000);
-        var provider1 = scope.GetService<IGrpcClientProvider<TestService.TestServiceClient>>();
-        var client1 = provider1.Instance;
+        var factory = scope.GetService<GrpcCallInvokerFactory>();
+        var client1 = scope.GetService<TestService.TestServiceClient>();
         Assert.NotNull(client1);
         Assert.Throws<RpcException>(() => client1.Request(new TestRequest()));
-        Assert.Equal(new Uri("http://localhost:4000"), provider1.CurrentAddress);
+        Assert.Equal(new Uri("http://localhost:4000"), factory.GetClientAddress<TestService.TestServiceClient>());
         resolver.SetPort(5000);
-        var provider2 = scope.GetService<IGrpcClientProvider<TestService.TestServiceClient>>();
-        var client2 = provider2.Instance;
+        var client2 = scope.GetService<TestService.TestServiceClient>();
         Assert.NotNull(client2);
         Assert.Throws<RpcException>(() => client2.Request(new TestRequest()));
-        Assert.Equal(new Uri("http://localhost:5000"), provider2.CurrentAddress);
-        Assert.Equal(provider1.CurrentAddress, provider2.CurrentAddress);
+        Assert.Equal(new Uri("http://localhost:5000"), factory.GetClientAddress<TestService.TestServiceClient>());
     }
 }
 
-public class TestInterceptor : Interceptor
-{
-}
+public class TestInterceptor : Interceptor;
 
 public class GrpcClientScope : BaseTestScope
 {
@@ -63,16 +59,14 @@ public class GrpcClientScope : BaseTestScope
 
 public class
     TestGrpcClientModule<TClient> : GrpcClientModule<TClient, TestGrpcClientResolver<TClient>,
-        TestGrpcClientModuleOptions<TClient>>
+    TestGrpcClientModuleOptions<TClient>>
     where TClient : ClientBase<TClient>
 {
     public override string OptionsKey => "Grpc:Client:Test";
 }
 
 public class TestGrpcClientModuleOptions<TClient> : GrpcClientModuleOptions<TClient>
-    where TClient : ClientBase<TClient>
-{
-}
+    where TClient : ClientBase<TClient>;
 
 public class TestGrpcClientResolver<TClient> : IGrpcServiceAddressResolver<TClient>
     where TClient : ClientBase<TClient>

@@ -35,9 +35,7 @@ public class InMemoryStorageCache<TStorageOptions> : BaseStorageCache<TStorageOp
     }
 }
 
-public class InMemoryStorageCacheOptions : StorageCacheOptions
-{
-}
+public class InMemoryStorageCacheOptions : StorageCacheOptions;
 
 public class InMemoryStorageCacheRecord : IStorageCacheRecord
 {

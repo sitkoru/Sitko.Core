@@ -1,8 +1,6 @@
 namespace Sitko.Core.Queue.Exceptions;
 
-public class QueueException : Exception
-{
-}
+public class QueueException : Exception;
 
 public class QueueRequestTimeoutException : QueueException
 {

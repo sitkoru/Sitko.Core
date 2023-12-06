@@ -26,7 +26,5 @@ public class LoggingTests : BaseTest<LoggingTestScope>
 }
 
 [UsedImplicitly]
-public class LoggingTestScope : BaseTestScope
-{
-}
+public class LoggingTestScope : BaseTestScope;
 

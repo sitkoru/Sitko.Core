@@ -10,9 +10,7 @@ using Sitko.Core.Blazor.Forms;
 
 namespace Sitko.Core.Blazor.Wasm;
 
-public interface ISitkoCoreBlazorWasmApplicationBuilder : ISitkoCoreBlazorApplicationBuilder
-{
-}
+public interface ISitkoCoreBlazorWasmApplicationBuilder : ISitkoCoreBlazorApplicationBuilder;
 
 public class WasmApplicationEnvironment : IApplicationEnvironment
 {

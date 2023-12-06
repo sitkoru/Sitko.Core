@@ -10,9 +10,7 @@ using StackExchange.Redis;
 
 namespace Sitko.Core.Auth;
 
-public interface IAuthModule : IApplicationModule
-{
-}
+public interface IAuthModule : IApplicationModule;
 
 internal static class AuthMiddlewareState
 {

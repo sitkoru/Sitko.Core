@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
-    <PackageReference Include="VaultSharp.Extensions.Configuration"/>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Threading" />
+    <PackageReference Include="VaultSharp" />
   </ItemGroup>
 </Project>

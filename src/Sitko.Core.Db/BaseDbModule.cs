@@ -6,9 +6,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Db;
 
-public interface IDbModule : IApplicationModule
-{
-}
+public interface IDbModule : IApplicationModule;
 
 public abstract class BaseDbModule<TDbContext, TConfig> : BaseApplicationModule<TConfig>, IDbModule
     where TDbContext : DbContext
@@ -36,7 +34,5 @@ public abstract class BaseDbModuleOptions<TDbContext> : BaseModuleOptions where 
 }
 
 public abstract class BaseDbModuleOptionsValidator<TOptions, TDbContext> : AbstractValidator<TOptions>
-    where TOptions : BaseDbModuleOptions<TDbContext> where TDbContext : DbContext
-{
-}
+    where TOptions : BaseDbModuleOptions<TDbContext> where TDbContext : DbContext;
 

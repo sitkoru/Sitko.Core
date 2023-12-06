@@ -146,6 +146,4 @@ public abstract class BaseTestScope<TConfig> : BaseTestScope<HostApplicationBuil
     protected override IHost BuildApplication(HostApplicationBuilder builder) => builder.Build();
 }
 
-public abstract class BaseTestScope : BaseTestScope<BaseTestConfig>
-{
-}
+public abstract class BaseTestScope : BaseTestScope<BaseTestConfig>;

@@ -69,7 +69,5 @@ public class FileSystemStorageMetadataProvider<TStorageOptions> : EmbedStorageMe
 
 public class
     FileSystemStorageMetadataModuleOptions<TStorageOptions> : EmbedStorageMetadataModuleOptions<TStorageOptions>
-    where TStorageOptions : StorageOptions
-{
-}
+    where TStorageOptions : StorageOptions;
 

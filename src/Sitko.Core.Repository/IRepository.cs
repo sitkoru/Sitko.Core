@@ -4,9 +4,7 @@ using JetBrains.Annotations;
 namespace Sitko.Core.Repository;
 
 [PublicAPI]
-public interface IRepository
-{
-}
+public interface IRepository;
 
 [PublicAPI]
 public interface IRepository<TEntity, TEntityPk> : IRepository

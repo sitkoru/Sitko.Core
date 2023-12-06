@@ -5,7 +5,7 @@
 @using Microsoft.Extensions.Configuration
 @using Sitko.Core.App.Logging
 @inherits BaseComponent
-@attribute [RenderModeInteractiveServer]
+@rendermode InteractiveServer
 <MudPageLayout Title="Logging">
     <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="@(() => SetLevel(LogEventLevel.Debug))">Set debug</MudButton>
     <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="@(() => SetLevel(LogEventLevel.Information))">Set info</MudButton>

@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using KafkaFlow;
 using KafkaFlow.Serializer;
-using KafkaFlow.TypedHandler;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.Kafka;
@@ -72,8 +71,7 @@ public class
                     consumerBuilder.AddMiddlewares(
                         middlewares =>
                         {
-                            middlewares
-                                .AddSerializer<JsonCoreSerializer>();
+                            middlewares.AddDeserializer<JsonCoreDeserializer>();
                             middlewares.AddTypedHandlers(handlers =>
                                 handlers.AddHandlers(groupConsumers.Select(r =>
                                         executorType.MakeGenericType(r.EventType, r.ExecutorType)))

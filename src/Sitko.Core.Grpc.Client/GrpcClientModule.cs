@@ -6,9 +6,7 @@ using Sitko.Core.Grpc.Client.Discovery;
 
 namespace Sitko.Core.Grpc.Client;
 
-public interface IGrpcClientModule<TClient> where TClient : ClientBase<TClient>
-{
-}
+public interface IGrpcClientModule<TClient> where TClient : ClientBase<TClient>;
 
 public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOptions> :
     BaseApplicationModule<TGrpcClientModuleOptions>,
@@ -27,15 +25,33 @@ public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOpti
                 "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
         }
 
-        services.AddSingleton<IGrpcClientProvider<TClient>, GrpcClientProvider<TClient, TGrpcClientModuleOptions>>();
+        services.TryAddSingleton<GrpcClientActivator<TClient>>();
+        services.TryAddSingleton<GrpcCallInvokerFactory>();
+        services.TryAddTransient<global::Grpc.Net.ClientFactory.GrpcClientFactory, GrpcClientFactory>();
+        var builder = services.AddGrpcClient<TClient>();
+        services.AddTransient<IGrpcClientProvider<TClient>, GrpcClientProvider<TClient>>();
         RegisterResolver(services, startupOptions);
-        if (startupOptions.Interceptors.Any())
+        startupOptions.ConfigureClient(services, builder);
+        builder.ConfigurePrimaryHttpMessageHandler(() =>
         {
-            foreach (var type in startupOptions.Interceptors)
+            var handler = new HttpClientHandler();
+            if (startupOptions.DisableCertificatesValidation)
             {
-                services.TryAddSingleton(type);
+                handler.ServerCertificateCustomValidationCallback =
+                    HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             }
-        }
+
+            if (startupOptions.ConfigureHttpHandler is not null)
+            {
+                return startupOptions.ConfigureHttpHandler(handler);
+            }
+
+            return handler;
+        });
+        builder.ConfigureChannel(options =>
+        {
+            startupOptions.ConfigureChannelOptions?.Invoke(options);
+        });
 
         services.AddHealthChecks()
             .AddCheck<GrpcClientHealthCheck<TClient>>($"GRPC Client check: {typeof(TClient)}");
@@ -51,4 +67,3 @@ public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOpti
     protected virtual void RegisterResolver(IServiceCollection services, TGrpcClientModuleOptions config) =>
         services.AddSingleton<IGrpcServiceAddressResolver<TClient>, TResolver>();
 }
-

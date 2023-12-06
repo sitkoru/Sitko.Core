@@ -27,7 +27,5 @@ public abstract class BaseStateComponent<TState> : BaseComponent where TState : 
     protected abstract Task<TState> LoadStateAsync();
 }
 
-public abstract class BaseComponentState
-{
-}
+public abstract class BaseComponentState;
 

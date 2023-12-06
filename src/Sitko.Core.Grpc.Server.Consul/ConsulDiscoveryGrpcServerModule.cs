@@ -9,7 +9,5 @@ public class
     public override string OptionsKey => "Grpc:Server:Consul";
 }
 
-public class ConsulDiscoveryGrpcServerModuleOptions : GrpcServerModuleOptions
-{
-}
+public class ConsulDiscoveryGrpcServerModuleOptions : GrpcServerModuleOptions;
 

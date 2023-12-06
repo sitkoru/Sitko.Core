@@ -60,7 +60,5 @@ public class S3StorageMetadataProvider<TStorageOptions> : EmbedStorageMetadataPr
 }
 
 public class S3StorageMetadataModuleOptions<TStorageOptions> : EmbedStorageMetadataModuleOptions<TStorageOptions>
-    where TStorageOptions : StorageOptions
-{
-}
+    where TStorageOptions : StorageOptions;
 
