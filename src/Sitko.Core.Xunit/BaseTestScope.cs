@@ -77,7 +77,19 @@ public abstract class BaseTestScope<THostApplicationBuilder, TConfig> : IBaseTes
     public ILogger<T> GetLogger<T>() => ServiceProvider!.GetRequiredService<ILogger<T>>();
 
     public virtual Task BeforeConfiguredAsync(string name) => Task.CompletedTask;
-    public virtual Task OnCreatedAsync() => Task.CompletedTask;
+
+    public virtual async Task OnCreatedAsync()
+    {
+        if (!isApplicationStarted)
+        {
+            var applicationLifecycle = ServiceProvider?.GetRequiredService<IApplicationLifecycle>();
+            if (applicationLifecycle is not null)
+            {
+                await applicationLifecycle.StartingAsync(CancellationToken.None);
+                await applicationLifecycle.StartedAsync(CancellationToken.None);
+            }
+        }
+    }
 
     public async ValueTask DisposeAsync()
     {
@@ -89,6 +101,15 @@ public abstract class BaseTestScope<THostApplicationBuilder, TConfig> : IBaseTes
                 if (isApplicationStarted)
                 {
                     await app.StopAsync();
+                }
+                else
+                {
+                    var applicationLifecycle = ServiceProvider?.GetRequiredService<IApplicationLifecycle>();
+                    if (applicationLifecycle is not null)
+                    {
+                        await applicationLifecycle.StoppingAsync(CancellationToken.None);
+                        await applicationLifecycle.StoppedAsync(CancellationToken.None);
+                    }
                 }
 
                 app.Dispose();
