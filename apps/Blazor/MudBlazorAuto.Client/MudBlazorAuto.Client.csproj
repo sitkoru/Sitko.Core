@@ -9,11 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+
     <ProjectReference Include="..\..\..\src\Sitko.Core.Blazor.MudBlazor\Sitko.Core.Blazor.MudBlazor.csproj" />
     <ProjectReference Include="..\..\..\src\Sitko.Core.Blazor.Wasm\Sitko.Core.Blazor.Wasm.csproj" />
     <ProjectReference Include="..\..\..\src\Sitko.Core.Repository.Remote.Wasm\Sitko.Core.Repository.Remote.Wasm.csproj" />
     <ProjectReference Include="..\..\..\src\Sitko.Core.Storage.Remote\Sitko.Core.Storage.Remote.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
     <ProjectReference Include="..\MudBlazorAuto.Data\MudBlazorAuto.Data.csproj" />
   </ItemGroup>
 

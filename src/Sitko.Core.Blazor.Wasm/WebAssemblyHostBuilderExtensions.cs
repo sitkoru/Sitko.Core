@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -59,4 +60,38 @@ public static class WebAssemblyHostBuilderExtensions
         string[] args) =>
         ApplicationBuilderFactory.GetOrCreateApplicationBuilder(builder,
             applicationBuilder => new SitkoCoreBlazorWasmApplicationBuilder(applicationBuilder, args));
+
+    public static async Task RunApplicationAsync(this WebAssemblyHostBuilder builder)
+    {
+        var host = builder.Build();
+        var lifecycle = host.Services.GetRequiredService<IApplicationLifecycle>();
+        await lifecycle.StartingAsync(CancellationToken.None);
+        await lifecycle.StartedAsync(CancellationToken.None);
+        await host.RunAsync();
+        await lifecycle.StoppingAsync(CancellationToken.None);
+        await lifecycle.StoppedAsync(CancellationToken.None);
+    }
+
+    public static WebAssemblyHostBuilder ConfigureLocalization(this WebAssemblyHostBuilder builder, string culture)
+    {
+        builder.Services.AddLocalization();
+        CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("ru-RU");
+        CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ru-RU");
+
+
+        return builder;
+    }
+
+    public static ISitkoCoreBlazorWasmApplicationBuilder AddWebAssemblyAuth<TAuthenticationStateProvider>(
+        this ISitkoCoreBlazorWasmApplicationBuilder builder)
+        where TAuthenticationStateProvider : AuthenticationStateProvider
+    {
+        builder.ConfigureServices(services =>
+        {
+            services.AddAuthorizationCore();
+            services.AddCascadingAuthenticationState();
+            services.AddSingleton<AuthenticationStateProvider, TAuthenticationStateProvider>();
+        });
+        return builder;
+    }
 }
