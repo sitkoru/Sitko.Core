@@ -59,4 +59,15 @@ public static class WebAssemblyHostBuilderExtensions
         string[] args) =>
         ApplicationBuilderFactory.GetOrCreateApplicationBuilder(builder,
             applicationBuilder => new SitkoCoreBlazorWasmApplicationBuilder(applicationBuilder, args));
+
+    public static async Task RunApplicationAsync(this WebAssemblyHostBuilder builder)
+    {
+        var host = builder.Build();
+        var lifecycle = host.Services.GetRequiredService<IApplicationLifecycle>();
+        await lifecycle.StartingAsync(CancellationToken.None);
+        await lifecycle.StartedAsync(CancellationToken.None);
+        await host.RunAsync();
+        await lifecycle.StoppingAsync(CancellationToken.None);
+        await lifecycle.StoppedAsync(CancellationToken.None);
+    }
 }
