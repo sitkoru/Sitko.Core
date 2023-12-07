@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -76,6 +77,21 @@ public static class WebAssemblyHostBuilderExtensions
         builder.Services.AddLocalization();
         CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("ru-RU");
         CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ru-RU");
+
+
+        return builder;
+    }
+
+    public static ISitkoCoreBlazorWasmApplicationBuilder AddWebAssemblyAuth<TAuthenticationStateProvider>(
+        this ISitkoCoreBlazorWasmApplicationBuilder builder)
+        where TAuthenticationStateProvider : AuthenticationStateProvider
+    {
+        builder.ConfigureServices(services =>
+        {
+            services.AddAuthorizationCore();
+            services.AddCascadingAuthenticationState();
+            services.AddSingleton<AuthenticationStateProvider, TAuthenticationStateProvider>();
+        });
         return builder;
     }
 }
