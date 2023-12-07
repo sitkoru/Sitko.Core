@@ -41,8 +41,12 @@ public static class ApplicationExtensions
         return builder;
     }
 
-    public static RazorComponentsEndpointConventionBuilder MapSitkoCoreBlazor<TRootComponent>(this WebApplication app)
+    public static RazorComponentsEndpointConventionBuilder MapSitkoCoreBlazor<TRootComponent>(this WebApplication app, bool enableWasmDebug = false)
     {
+        if (enableWasmDebug)
+        {
+            app.UseWebAssemblyDebugging();
+        }
         app.MapSitkoCore();
         return app.MapRazorComponents<TRootComponent>()
             .AddInteractiveServerRenderMode();
