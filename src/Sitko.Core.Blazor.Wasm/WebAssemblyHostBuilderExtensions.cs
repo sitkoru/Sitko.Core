@@ -70,4 +70,12 @@ public static class WebAssemblyHostBuilderExtensions
         await lifecycle.StoppingAsync(CancellationToken.None);
         await lifecycle.StoppedAsync(CancellationToken.None);
     }
+
+    public static WebAssemblyHostBuilder ConfigureLocalization(this WebAssemblyHostBuilder builder, string culture)
+    {
+        builder.Services.AddLocalization();
+        CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("ru-RU");
+        CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ru-RU");
+        return builder;
+    }
 }
