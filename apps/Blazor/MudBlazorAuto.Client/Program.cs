@@ -24,7 +24,7 @@ builder.Services
     .AddHttpClient(nameof(HttpRepositoryTransport)).AddHttpMessageHandler<CookieHandler>();
 builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-await builder.Build().RunAsync();
+await builder.RunApplicationAsync();
 
 public class TestRemoteStorageOptions : StorageOptions, IRemoteStorageOptions
 {
