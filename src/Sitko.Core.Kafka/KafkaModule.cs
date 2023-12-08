@@ -55,7 +55,7 @@ public class KafkaModuleOptions : BaseModuleOptions
     public Confluent.Kafka.AutoOffsetReset AutoOffsetReset { get; set; } = Confluent.Kafka.AutoOffsetReset.Latest;
 
     public PartitionAssignmentStrategy PartitionAssignmentStrategy { get; set; } =
-        PartitionAssignmentStrategy.CooperativeSticky;
+        PartitionAssignmentStrategy.Range;
 
     public TimeSpan MessageTimeout { get; set; } = TimeSpan.FromSeconds(12);
     public int MessageMaxBytes { get; set; } = 5 * 1024 * 1024;

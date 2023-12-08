@@ -99,7 +99,7 @@ public class KafkaConfigurator
                             MaxPartitionFetchBytes = options.MaxPartitionFetchBytes,
                             AutoOffsetReset = options.AutoOffsetReset,
                             ClientId = registration.Name,
-                            GroupInstanceId = registration.Name,
+                            // GroupInstanceId = registration.Name, // TODO: Try after https://github.com/Farfetch/kafkaflow/issues/456
                             BootstrapServers = string.Join(",", options.Brokers),
                             SessionTimeoutMs = (int)options.SessionTimeout.TotalMilliseconds,
                             PartitionAssignmentStrategy = options.PartitionAssignmentStrategy
