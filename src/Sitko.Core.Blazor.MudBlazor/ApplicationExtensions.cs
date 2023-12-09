@@ -22,7 +22,7 @@ public static class ApplicationExtensions
         applicationBuilder.ConfigureServices(services =>
         {
             services.AddMudServices();
-            services.AddScoped<ILayoutManager<MudLayoutData, MudLayoutOptions>, MudLayoutManager>();
+            // services.AddScoped<ILayoutManager<MudLayoutData, MudLayoutOptions>, MudLayoutManager>();
             services.Configure<JsonLocalizationModuleOptions>(options =>
             {
                 options.AddDefaultResource(typeof(ApplicationExtensions));

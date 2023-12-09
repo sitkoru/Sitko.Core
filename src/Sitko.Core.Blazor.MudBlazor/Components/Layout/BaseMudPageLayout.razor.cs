@@ -1,23 +1,67 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Options;
 using MudBlazor;
+using Sitko.Core.App;
 using Sitko.Core.Blazor.Layout;
 
-// ReSharper disable once CheckNamespace
 namespace Sitko.Core.Blazor.MudBlazorComponents;
 
-public abstract class BaseMudLayout : BaseLayoutComponent<MudLayoutData, MudLayoutOptions>
+public abstract class BaseMudPageLayout<TMenu> : BaseMudPageLayout where TMenu : ComponentBase
 {
+    private RenderFragment RenderMenu() => builder =>
+    {
+        builder.OpenComponent(0, typeof(TMenu));
+        builder.CloseComponent();
+    };
+
+    protected override void Initialize()
+    {
+        base.Initialize();
+        Menu = RenderMenu();
+    }
+}
+
+public abstract partial class BaseMudPageLayout
+{
+    [Parameter] public string Title { get; set; }
+
+    [Parameter] public string Description { get; set; } = "";
+
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    [Parameter] public string Logo { get; set; } = "";
+
+    [Parameter] public virtual RenderFragment? Menu { get; set; }
+
+    [Parameter] public RenderFragment? Extra { get; set; }
+
+    [Parameter] public List<BreadcrumbItem> Breadcrumbs { get; set; } = new();
+    protected virtual string PageTitleSeparator => "/";
+
+    [Inject] private IOptionsMonitor<MudLayoutOptions> OptionsMonitor { get; set; } = null!;
+    [Inject] private IApplicationContext ApplicationContext { get; set; } = null!;
     protected bool DrawerOpen { get; set; } = true;
+    protected void DrawerToggle() => DrawerOpen = !DrawerOpen;
 
-    protected RenderFragment? Extra { get; private set; }
+    protected virtual string PageTitle
+    {
+        get
+        {
+            var prefix = $" {PageTitleSeparator} {ApplicationContext.Name}";
+            if (!string.IsNullOrEmpty(OptionsMonitor.CurrentValue.PageTitlePostfix))
+            {
+                prefix = OptionsMonitor.CurrentValue.PageTitlePostfix;
+            }
 
-    protected List<BreadcrumbItem> Breadcrumbs { get; private set; } = new();
+            return $"{Title}{prefix}";
+        }
+    }
 
     protected virtual MudTheme Theme
     {
         get
         {
-            switch (LayoutManager.LayoutOptions.Theme)
+            switch (OptionsMonitor.CurrentValue.Theme)
             {
                 case AppTheme.Light:
                     return new MudTheme();
@@ -64,14 +108,4 @@ public abstract class BaseMudLayout : BaseLayoutComponent<MudLayoutData, MudLayo
             }
         }
     }
-
-    protected void DrawerToggle() => DrawerOpen = !DrawerOpen;
-
-    protected override void ProcessLayoutDataChange(MudLayoutData layoutData)
-    {
-        base.ProcessLayoutDataChange(layoutData);
-        Breadcrumbs = layoutData.Breadcrumbs;
-        Extra = layoutData.Extra;
-    }
 }
-

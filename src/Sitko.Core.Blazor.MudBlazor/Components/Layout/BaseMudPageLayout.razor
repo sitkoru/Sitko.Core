@@ -1,5 +1,6 @@
 ﻿@namespace Sitko.Core.Blazor.MudBlazorComponents
-@inherits BaseMudLayout
+@inherits Sitko.Core.Blazor.Components.BaseComponent
+
 <MudThemeProvider Theme="Theme"/>
 <MudDialogProvider/>
 <MudSnackbarProvider/>
@@ -29,7 +30,7 @@
     }
     <MudMainContent>
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            @if (Extra is not  null || Breadcrumbs.Count > 0)
+            @if (Extra is not null || Breadcrumbs.Count > 0)
             {
                 <MudToolBar DisableGutters="true" Class="px-4">
                     <MudBreadcrumbs Items="Breadcrumbs"></MudBreadcrumbs>
@@ -59,15 +60,3 @@
         </MudContainer>
     </MudMainContent>
 </MudLayout>
-
-
-@code {
-
-    [Parameter]
-    public string Logo { get; set; } = "";
-
-    [EditorRequired]
-    [Parameter]
-    public RenderFragment? Menu { get; set; }
-
-}
