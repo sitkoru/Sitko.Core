@@ -5,10 +5,7 @@ using Sitko.Core.Repository.Remote.Server;
 
 namespace Sitko.Core.Apps.Blazor.Controllers;
 [Route("/api/BarModel")]
-public class BarModelRepositoryController : BaseRemoteRepositoryController<BarModel, Guid>
-{
-    public BarModelRepositoryController(IRepository<BarModel, Guid> repository,
-        ILogger<BarModelRepositoryController> logger) : base(repository, logger)
-    {
-    }
-}
+public class BarModelRepositoryController(
+    IRepository<BarModel, Guid> repository,
+    ILogger<BarModelRepositoryController> logger)
+    : BaseRemoteRepositoryController<BarModel, Guid>(repository, logger);

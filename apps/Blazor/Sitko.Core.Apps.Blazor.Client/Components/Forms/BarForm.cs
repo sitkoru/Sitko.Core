@@ -1,11 +1,11 @@
-﻿using Sitko.Core.Apps.Blazor.Data.Entities;
-using Sitko.Core.Apps.Blazor.Data.Repositories;
+﻿using MudBlazor.Charts;
+using Sitko.Core.Apps.Blazor.Data.Entities;
 using Sitko.Core.Blazor.MudBlazorComponents;
 using Sitko.Core.Repository;
 
-namespace Sitko.Core.Apps.Blazor.Components.Forms
+namespace Sitko.Core.Apps.Blazor.Client.Components.Forms
 {
-    public class BarForm : BaseMudRepositoryForm<BarModel, Guid, BarRepository>
+    public class BarForm : BaseMudRepositoryForm<BarModel, Guid, IRepository<BarModel, Guid>>
     {
         protected override Task ConfigureQueryAsync(IRepositoryQuery<BarModel> query)
         {

@@ -2,4 +2,4 @@
 
 namespace Sitko.Core.Apps.Blazor.Client.Components.Layout;
 
-public class AppPageLayout : BaseMudPageLayout<NavMenu>;
+public class AppPageLayout : BaseMudPageLayout;

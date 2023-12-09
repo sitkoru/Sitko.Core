@@ -1,8 +1,7 @@
 ﻿@page "/Bars/Add"
 @page "/Bars/{Id:guid}/Edit"
-@rendermode InteractiveServer
-@using Sitko.Core.Apps.Blazor.Components.Forms
-@using Sitko.Core.Apps.Blazor.Client.Pages
+@rendermode InteractiveAuto
+@using Sitko.Core.Apps.Blazor.Client.Components.Forms
 @inherits BaseComponent
 <AppPageLayout Title="Edit" Breadcrumbs="Breadcrumbs" Description="Page description">
     <BarForm @ref="Form" EntityId="Id" Debug="true">
@@ -130,7 +129,7 @@
     [Parameter]
     public Guid Id { get; set; }
 
-    private IStorage<TestRemoteStorageOptions> Storage => GetRequiredService<IStorage<TestRemoteStorageOptions>>();
+    private IStorage Storage => GetRequiredService<IStorage>();
 
     private static Task<object> GenerateMetadataAsync()
     {

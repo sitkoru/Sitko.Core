@@ -1,8 +1,8 @@
 ﻿@page "/Foos/Add"
 @page "/Foos/{Id:guid}/Edit"
-@rendermode InteractiveServer
-@using Sitko.Core.Apps.Blazor.Components.Forms
+@rendermode InteractiveAuto
 @using Sitko.Core.Apps.Blazor.Data.Entities
+@using Sitko.Core.Apps.Blazor.Client.Components.Forms
 @inherits BaseComponent
 <AppPageLayout Title="Edit" Description="Page description">
     <FooForm @ref="Form" EntityId="Id" Debug="true" OnAfterSave="AfterSaveAsync">
