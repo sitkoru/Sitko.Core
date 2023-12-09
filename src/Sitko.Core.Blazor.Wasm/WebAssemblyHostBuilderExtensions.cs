@@ -53,10 +53,10 @@ public class SitkoCoreBlazorWasmApplicationBuilder : SitkoCoreBaseApplicationBui
 
 public static class WebAssemblyHostBuilderExtensions
 {
-    public static ISitkoCoreBlazorApplicationBuilder AddSitkoCoreBlazorWasm(this WebAssemblyHostBuilder builder) =>
+    public static ISitkoCoreBlazorWasmApplicationBuilder AddSitkoCoreBlazorWasm(this WebAssemblyHostBuilder builder) =>
         builder.AddSitkoCoreBlazorWasm(Array.Empty<string>());
 
-    public static ISitkoCoreBlazorApplicationBuilder AddSitkoCoreBlazorWasm(this WebAssemblyHostBuilder builder,
+    public static ISitkoCoreBlazorWasmApplicationBuilder AddSitkoCoreBlazorWasm(this WebAssemblyHostBuilder builder,
         string[] args) =>
         ApplicationBuilderFactory.GetOrCreateApplicationBuilder(builder,
             applicationBuilder => new SitkoCoreBlazorWasmApplicationBuilder(applicationBuilder, args));
