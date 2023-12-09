@@ -75,8 +75,8 @@ public static class WebAssemblyHostBuilderExtensions
     public static WebAssemblyHostBuilder ConfigureLocalization(this WebAssemblyHostBuilder builder, string culture)
     {
         builder.Services.AddLocalization();
-        CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("ru-RU");
-        CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ru-RU");
+        CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(culture);
+        CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(culture);
 
 
         return builder;
