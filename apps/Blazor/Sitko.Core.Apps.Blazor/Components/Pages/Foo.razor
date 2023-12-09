@@ -1,0 +1,43 @@
+﻿@page "/Foos/Add"
+@page "/Foos/{Id:guid}/Edit"
+@rendermode InteractiveServer
+@using Sitko.Core.Apps.Blazor.Components.Forms
+@using Sitko.Core.Apps.Blazor.Data.Entities
+@inherits BaseComponent
+<AppPageLayout Title="Edit" Description="Page description">
+    <FooForm @ref="Form" EntityId="Id" Debug="true" OnAfterSave="AfterSaveAsync">
+        <ChildContent Context="formContext">
+            <MudPaper Class="pa-4">
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mb-4">Foo</MudText>
+                        <MudTextField Label="Foo" @bind-Value="@formContext.Entity.Foo" For="() => formContext.Entity.Foo"></MudTextField>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudPaper Class="mt-2 pa-3">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!formContext.Form.CanSave())" OnClick="@formContext.Form.SaveEntityAsync">Save</MudButton>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="@(!formContext.Form.HasChanges)" OnClick="@formContext.Form.ResetAsync">Reset</MudButton>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </ChildContent>
+    </FooForm>
+</AppPageLayout>
+
+@code {
+
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private FooForm Form { get; set; } = null!;
+
+    private async Task AfterSaveAsync(FooModel arg)
+    {
+        if (Id == Guid.Empty)
+        {
+            await Form.ResetAsync();
+        }
+    }
+
+}

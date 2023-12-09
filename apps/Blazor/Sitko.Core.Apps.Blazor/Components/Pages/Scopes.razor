@@ -1,0 +1,149 @@
+﻿@page "/Bars/Add"
+@page "/Bars/{Id:guid}/Edit"
+@rendermode InteractiveServer
+@using Sitko.Core.Apps.Blazor.Components.Forms
+@using Sitko.Core.Apps.Blazor.Client.Pages
+@inherits BaseComponent
+<AppPageLayout Title="Edit" Breadcrumbs="Breadcrumbs" Description="Page description">
+    <BarForm @ref="Form" EntityId="Id" Debug="true">
+        <ChildContent Context="formContext">
+            <MudPaper Class="pa-4">
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mb-4">Multiple file input</MudText>
+                        <MudTextField Label="Bar" @bind-Value="@formContext.Entity.Bar" For="() => formContext.Entity.Bar"></MudTextField>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mb-4">Edit Foo</MudText>
+                        @if (formContext.Entity.Foo is not null)
+                        {
+                            <MudTextField Label="Foo" @bind-Value="@formContext.Entity.Foo.Foo" For="() => formContext.Entity.Foo.Foo"></MudTextField>
+                        }
+                        <div>
+                            <MudButton Class="mr-3" Variant="Variant.Filled" Color="Color.Primary" OnClick="() => Form.SetFoo()">Set foo</MudButton>
+                            <MudButton Color="Color.Warning" Variant="Variant.Filled" OnClick="() => Form.DeleteFoo()">Delete foo</MudButton>
+                        </div>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mb-4">Edit Foos</MudText>
+                        @foreach (var foo in formContext.Entity.Foos)
+                        {
+                            <MudTextField Label="Foo" @bind-Value="@foo.Foo" For="() => foo.Foo" Class="mt-2"></MudTextField>
+                            <MudButton Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" Class="mt-2" OnClick="() => Form.RemoveFoo(foo)">Remove foo</MudButton>
+                        }
+                        <div>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => Form.AddFoo()">Add foo</MudButton>
+                        </div>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mb-4">Current storage items</MudText>
+                        @if (formContext.Entity.StorageItem is not null)
+                        {
+                            <MudText>Storage item: @formContext.Entity.StorageItem</MudText>
+                        }
+                        @foreach (var file in formContext.Entity.StorageItems)
+                        {
+                            <p>Storage item: @file</p>
+                        }
+                    </MudItem>
+                    <MudItem xs="12">
+                        <Sitko.Core.Blazor.MudBlazorComponents.MudFileUpload
+                            Label="Simple file input"
+                            HelperText="Bla-bla-bla"
+                            Storage="Storage"
+                            @bind-Value="formContext.Entity.StorageItem"
+                            For="() => formContext.Entity.StorageItem"
+                            UploadPath="bars"
+                            MaxFileSize="@(2 * 1024 * 1024)"
+                            GenerateMetadata="@((_, _) => GenerateMetadataAsync())"/>
+
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mb-4">Simple custom file input</MudText>
+                        <Sitko.Core.Blazor.MudBlazorComponents.MudFileUpload
+                            Storage="Storage"
+                            @bind-Value="formContext.Entity.StorageItem"
+                            For="() => formContext.Entity.StorageItem"
+                            UploadPath="bars"
+                            MaxFileSize="@(2 * 1024 * 1024)"
+                            GenerateMetadata="@((_, _) => GenerateMetadataAsync())">
+                            <ChildContent Context="_">
+                                PRESS ME
+                            </ChildContent>
+                        </Sitko.Core.Blazor.MudBlazorComponents.MudFileUpload>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudPaper Class="pa-4">
+                            <MudText Typo="Typo.h6" Class="mb-4">Multiple file input</MudText>
+                            <MudFilesUpload
+                                Storage="Storage"
+                                TCollection="ValueCollection<StorageItem>"
+                                @bind-Value="formContext.Entity.StorageItems"
+                                For="() => formContext.Entity.StorageItems"
+                                UploadPath="bars"
+                                MaxFileSize="@(2 * 1024 * 1024)"
+                                GenerateMetadata="@((_, _) => GenerateMetadataAsync())"/>
+
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mb-4">Single image</MudText>
+                        <Sitko.Core.Blazor.MudBlazorComponents.MudFileUpload
+                            Storage="Storage"
+                            DisplayMode="FileUploadDisplayMode.Image"
+                            @bind-Value="formContext.Entity.StorageItem"
+                            For="() => formContext.Entity.StorageItem"
+                            UploadPath="bars"
+                            MaxFileSize="@(2 * 1024 * 1024)"
+                            GenerateMetadata="@((_, _) => GenerateMetadataAsync())"/>
+
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudPaper Class="pa-4">
+                            <MudText Typo="Typo.h6" Class="mb-4">Multiple image</MudText>
+                            <MudFilesUpload
+                                Storage="Storage"
+                                TCollection="ValueCollection<StorageItem>"
+                                DisplayMode="FileUploadDisplayMode.Image"
+                                @bind-Value="formContext.Entity.StorageItems"
+                                For="() => formContext.Entity.StorageItems"
+                                UploadPath="bars"
+                                MaxAllowedFiles="5"
+                                MaxFileSize="@(2 * 1024 * 1024)"
+                                GenerateMetadata="@((_, _) => GenerateMetadataAsync())"/>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudPaper Class="mt-2 pa-3">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!formContext.Form.CanSave())" OnClick="@formContext.Form.SaveEntityAsync">Save</MudButton>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="@(!formContext.Form.HasChanges)" OnClick="@formContext.Form.ResetAsync">Reset</MudButton>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </ChildContent>
+    </BarForm>
+</AppPageLayout>
+
+@code {
+
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private IStorage<TestRemoteStorageOptions> Storage => GetRequiredService<IStorage<TestRemoteStorageOptions>>();
+
+    private static Task<object> GenerateMetadataAsync()
+    {
+        var metadata = new BarStorageMetadata();
+        return Task.FromResult<object>(metadata);
+    }
+
+    public List<BreadcrumbItem> Breadcrumbs { get; set; } = new()
+    {
+        new BreadcrumbItem("Foo1", "/"),
+        new BreadcrumbItem("Bar", "/")
+    };
+
+    private BarForm Form { get; set; } = null!;
+
+}
