@@ -27,10 +27,12 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService where TT
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        logger.LogInformation("Init scheduling service {Type}", typeof(TTask));
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
+                logger.LogInformation("Run scheduling task {Type}", typeof(TTask));
                 var now = DateTime.UtcNow;
                 var nextDate = taskOptions.Value.CronExpression.GetNextOccurrence(now);
                 if (nextDate != null)
@@ -43,6 +45,7 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService where TT
                 if (optionsMonitor.CurrentValue.IsAllTasksDisabled ||
                     optionsMonitor.CurrentValue.DisabledTasks.Contains(typeof(TTask).Name))
                 {
+                    logger.LogInformation("Skip disabled task {Type}", typeof(TTask));
                     return;
                 }
 
@@ -52,6 +55,7 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService where TT
                 using (await scheduleLock.LockAsync(cts.Token))
                 {
                     var tasks = await scheduler.GetTasksAsync(stoppingToken);
+                    logger.LogInformation("Found {Count} {Type} tasks", tasks.Length, typeof(TTask));
                     foreach (var task in tasks)
                     {
                         try
@@ -68,9 +72,11 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService where TT
                         }
                     }
                 }
+                logger.LogInformation("Scheduling task {Type} success", typeof(TTask));
             }
             catch (TaskCanceledException)
             {
+                logger.LogInformation("Scheduling task {Type} is canceled", typeof(TTask));
                 // do nothing
             }
             catch (Exception ex)
@@ -78,5 +84,6 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService where TT
                 logger.LogError("Error schedule tasks {Type}: {Error}", typeof(TTask), ex);
             }
         }
+        logger.LogInformation("Exit from scheduling task {Type}", typeof(TTask));
     }
 }
