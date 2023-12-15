@@ -32,14 +32,17 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService where TT
         {
             try
             {
-                logger.LogInformation("Run scheduling task {Type}", typeof(TTask));
+                logger.LogInformation("Calculate next scheduling time for task {Type}", typeof(TTask));
                 var now = DateTime.UtcNow;
                 var nextDate = taskOptions.Value.CronExpression.GetNextOccurrence(now);
+                logger.LogInformation("Next scheduling time for task {Type}: {Date}", typeof(TTask), nextDate);
                 if (nextDate != null)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds((nextDate - now).Value.TotalSeconds), stoppingToken);
+                    var secondsToWait = (nextDate - now).Value.TotalSeconds;
+                    logger.LogInformation("Wait {Seconds} seconds before scheduling task {Type}", typeof(TTask), secondsToWait);
+                    await Task.Delay(TimeSpan.FromSeconds(secondsToWait), stoppingToken);
                 }
-
+                logger.LogInformation("Run scheduling task {Type}", typeof(TTask));
                 await using var scope = serviceScopeFactory.CreateAsyncScope();
                 var scheduler = scope.ServiceProvider.GetRequiredService<IBaseTaskFactory<TTask>>();
                 if (optionsMonitor.CurrentValue.IsAllTasksDisabled ||
@@ -63,7 +66,7 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService where TT
                             var runResult = await tasksManager.RunAsync(task, cancellationToken: cts.Token);
                             if (!runResult.IsSuccess)
                             {
-                                throw new Exception(runResult.ErrorMessage);
+                                throw new InvalidOperationException(runResult.ErrorMessage);
                             }
                         }
                         catch (Exception ex)
