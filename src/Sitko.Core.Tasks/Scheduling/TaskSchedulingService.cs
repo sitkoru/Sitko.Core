@@ -39,7 +39,7 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService where TT
                 if (nextDate != null)
                 {
                     var secondsToWait = (nextDate - now).Value.TotalSeconds;
-                    logger.LogInformation("Wait {Seconds} seconds before scheduling task {Type}", typeof(TTask), secondsToWait);
+                    logger.LogInformation("Wait {Seconds} seconds before scheduling task {Type}", secondsToWait, typeof(TTask));
                     await Task.Delay(TimeSpan.FromSeconds(secondsToWait), stoppingToken);
                 }
                 logger.LogInformation("Run scheduling task {Type}", typeof(TTask));
