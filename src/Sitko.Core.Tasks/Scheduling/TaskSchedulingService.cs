@@ -8,7 +8,8 @@ using Sitko.Core.Tasks.Data.Entities;
 
 namespace Sitko.Core.Tasks.Scheduling;
 
-public class TaskSchedulingService<TTask, TOptions> : BackgroundService where TTask : class, IBaseTask  where TOptions : TasksModuleOptions
+public class TaskSchedulingService<TTask, TOptions> : BackgroundService
+    where TTask : class, IBaseTask where TOptions : TasksModuleOptions
 {
     private readonly IServiceScopeFactory serviceScopeFactory;
     private readonly IOptions<TaskSchedulingOptions<TTask>> taskOptions;
@@ -39,9 +40,11 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService where TT
                 if (nextDate != null)
                 {
                     var secondsToWait = (nextDate - now).Value.TotalSeconds;
-                    logger.LogInformation("Wait {Seconds} seconds before scheduling task {Type}", secondsToWait, typeof(TTask));
+                    logger.LogInformation("Wait {Seconds} seconds before scheduling task {Type}", secondsToWait,
+                        typeof(TTask));
                     await Task.Delay(TimeSpan.FromSeconds(secondsToWait), stoppingToken);
                 }
+
                 logger.LogInformation("Run scheduling task {Type}", typeof(TTask));
                 await using var scope = serviceScopeFactory.CreateAsyncScope();
                 var scheduler = scope.ServiceProvider.GetRequiredService<IBaseTaskFactory<TTask>>();
@@ -54,27 +57,24 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService where TT
 
                 var tasksManager = scope.ServiceProvider.GetRequiredService<TasksManager>();
                 var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
-                var scheduleLock = ScheduleLocks.Locks.GetOrAdd(GetType().Name, _ => new AsyncLock());
-                using (await scheduleLock.LockAsync(cts.Token))
+                var tasks = await scheduler.GetTasksAsync(stoppingToken);
+                logger.LogInformation("Found {Count} {Type} tasks", tasks.Length, typeof(TTask));
+                foreach (var task in tasks)
                 {
-                    var tasks = await scheduler.GetTasksAsync(stoppingToken);
-                    logger.LogInformation("Found {Count} {Type} tasks", tasks.Length, typeof(TTask));
-                    foreach (var task in tasks)
+                    try
                     {
-                        try
+                        var runResult = await tasksManager.RunAsync(task, cancellationToken: cts.Token);
+                        if (!runResult.IsSuccess)
                         {
-                            var runResult = await tasksManager.RunAsync(task, cancellationToken: cts.Token);
-                            if (!runResult.IsSuccess)
-                            {
-                                throw new InvalidOperationException(runResult.ErrorMessage);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.LogError("Error running task {Type}: {Ex}", typeof(TTask), ex);
+                            throw new InvalidOperationException(runResult.ErrorMessage);
                         }
                     }
+                    catch (Exception ex)
+                    {
+                        logger.LogError("Error running task {Type}: {Ex}", typeof(TTask), ex);
+                    }
                 }
+
                 logger.LogInformation("Scheduling task {Type} success", typeof(TTask));
             }
             catch (TaskCanceledException)
@@ -87,6 +87,7 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService where TT
                 logger.LogError("Error schedule tasks {Type}: {Error}", typeof(TTask), ex);
             }
         }
+
         logger.LogInformation("Exit from scheduling task {Type}", typeof(TTask));
     }
 }
