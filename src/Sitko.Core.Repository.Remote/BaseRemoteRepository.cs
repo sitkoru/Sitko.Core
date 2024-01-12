@@ -1,20 +1,19 @@
-﻿using System.Linq.Expressions;
+﻿using System.Collections.Concurrent;
+using System.Linq.Expressions;
 using KellermanSoftware.CompareNetObjects;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Json;
 
 namespace Sitko.Core.Repository.Remote;
 
-public interface IRemoteRepository : IRepository
-{
-}
+public interface IRemoteRepository : IRepository;
 
 public class
     BaseRemoteRepository<TEntity, TEntityPk> : BaseRepository<TEntity, TEntityPk, RemoteRepositoryQuery<TEntity>>,
         IRemoteRepository where TEntity : class, IEntity<TEntityPk> where TEntityPk : notnull
 {
     private readonly IRemoteRepositoryTransport repositoryTransport;
-    private readonly Dictionary<TEntityPk, TEntity> snapshots = new();
+    private readonly ConcurrentDictionary<TEntityPk, TEntity> snapshots = new();
 
     private readonly List<Func<Task>> transactionActions = new();
 
@@ -196,6 +195,9 @@ public class
 
     protected virtual TEntity CreateEntitySnapshot(TEntity entity) => JsonHelper.Clone(entity)!;
 
+    protected override async Task DoAddExternalAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+        await DoAddAsync(entity, cancellationToken);
+
     protected override async Task DoAddAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         if (isTransactionStarted)
@@ -254,7 +256,7 @@ public class
 
                 if (result.IsSuccess)
                 {
-                    snapshots.Add(entity.Id, CreateEntitySnapshot(result.Entity));
+                    snapshots.TryAdd(entity.Id, CreateEntitySnapshot(result.Entity));
                 }
                 else
                 {
@@ -295,7 +297,7 @@ public class
             await repositoryTransport.DeleteAsync(entity, cancellationToken);
         }
 
-        snapshots.Remove(entity.Id);
+        snapshots.TryRemove(entity.Id, out _);
     }
 }
 

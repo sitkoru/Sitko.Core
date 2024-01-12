@@ -18,4 +18,3 @@ public class PdfRendererModule : BaseApplicationModule
     public override IEnumerable<Type> GetRequiredModules(IApplicationContext applicationContext,
         BaseApplicationModuleOptions options) => new[] { typeof(PuppeteerModule) };
 }
-

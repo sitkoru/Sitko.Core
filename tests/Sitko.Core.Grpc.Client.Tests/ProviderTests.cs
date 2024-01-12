@@ -1,5 +1,7 @@
 using Grpc.Core;
 using Grpc.Core.Interceptors;
+using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
 using Sitko.Core.Grpc.Client.Discovery;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -35,25 +37,23 @@ public class ProviderTests : BaseTest<GrpcClientScope>
     }
 }
 
-public class TestInterceptor : Interceptor
-{
-}
+public class TestInterceptor : Interceptor;
 
 public class GrpcClientScope : BaseTestScope
 {
-    protected override TestApplication ConfigureApplication(TestApplication application, string name)
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {
-        base.ConfigureApplication(application, name)
+        base.ConfigureApplication(hostBuilder, name);
+        hostBuilder.GetSitkoCore()
             .AddModule<TestGrpcClientModule<TestService.TestServiceClient>,
-                TestGrpcClientModuleOptions<TestService.TestServiceClient>
-            >(
+                TestGrpcClientModuleOptions<TestService.TestServiceClient>>(
                 moduleOptions =>
                 {
                     moduleOptions.EnableHttp2UnencryptedSupport = true;
                     moduleOptions.DisableCertificatesValidation = true;
                     moduleOptions.AddInterceptor<TestInterceptor>();
                 });
-        return application;
+        return hostBuilder;
     }
 }
 
@@ -66,9 +66,7 @@ public class
 }
 
 public class TestGrpcClientModuleOptions<TClient> : GrpcClientModuleOptions<TClient>
-    where TClient : ClientBase<TClient>
-{
-}
+    where TClient : ClientBase<TClient>;
 
 public class TestGrpcClientResolver<TClient> : IGrpcServiceAddressResolver<TClient>
     where TClient : ClientBase<TClient>

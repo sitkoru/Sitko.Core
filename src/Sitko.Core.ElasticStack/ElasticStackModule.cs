@@ -2,18 +2,24 @@ using System.Globalization;
 using Elastic.Apm.NetCoreAll;
 using Elastic.Apm.SerilogEnricher;
 using Elastic.CommonSchema.Serilog;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.Elasticsearch;
 using Sitko.Core.App;
+using Sitko.Core.App.Web;
 
 namespace Sitko.Core.ElasticStack;
 
 public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOptions>,
-    IHostBuilderModule<ElasticStackModuleOptions>, ILoggingModule<ElasticStackModuleOptions>
+    IHostBuilderModule<ElasticStackModuleOptions>, ILoggingModule<ElasticStackModuleOptions>,
+    IWebApplicationModule<ElasticStackModuleOptions>
 {
-    public void ConfigureHostBuilder(IApplicationContext context, IHostBuilder hostBuilder,
+    public override string OptionsKey => "ElasticApm";
+
+    public void ConfigureHostBuilder(IApplicationContext context, IHostApplicationBuilder hostBuilder,
         ElasticStackModuleOptions startupOptions)
     {
         if (startupOptions.ApmEnabled)
@@ -28,13 +34,13 @@ public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOption
                 startupOptions.ApmCentralConfig.ToString(CultureInfo.InvariantCulture));
             Environment.SetEnvironmentVariable("ElasticApm:SanitizeFieldNames",
                 startupOptions.ApmCentralConfig.ToString(CultureInfo.InvariantCulture));
-            if (startupOptions.ApmSanitizeFieldNames != null && startupOptions.ApmSanitizeFieldNames.Any())
+            if (startupOptions.ApmSanitizeFieldNames != null && startupOptions.ApmSanitizeFieldNames.Count != 0)
             {
                 Environment.SetEnvironmentVariable("ElasticApm:SanitizeFieldNames",
                     string.Join(", ", startupOptions.ApmSanitizeFieldNames));
             }
 
-            if (startupOptions.ApmGlobalLabels.Any())
+            if (startupOptions.ApmGlobalLabels.Count != 0)
             {
                 Environment.SetEnvironmentVariable("ElasticApm:GlobalLabels",
                     string.Join(",", startupOptions.ApmGlobalLabels.Select(kv => $"{kv.Key}={kv.Value}")));
@@ -55,7 +61,7 @@ public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOption
                 startupOptions.ApmMaxQueueEventCount.ToString(CultureInfo.InvariantCulture));
             Environment.SetEnvironmentVariable("ElasticApm:MetricsInterval",
                 $"{TimeSpan.FromSeconds(startupOptions.ApmMetricsIntervalInSeconds).TotalSeconds}s");
-            if (startupOptions.ApmDisableMetrics != null && startupOptions.ApmDisableMetrics.Any())
+            if (startupOptions.ApmDisableMetrics != null && startupOptions.ApmDisableMetrics.Count != 0)
             {
                 Environment.SetEnvironmentVariable("ElasticApm:DisableMetrics",
                     string.Join(",", startupOptions.ApmDisableMetrics));
@@ -63,7 +69,7 @@ public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOption
 
             Environment.SetEnvironmentVariable("ElasticApm:CaptureBody", startupOptions.ApmCaptureBody);
             if (startupOptions.ApmCaptureBodyContentTypes != null &&
-                startupOptions.ApmCaptureBodyContentTypes.Any())
+                startupOptions.ApmCaptureBodyContentTypes.Count != 0)
             {
                 Environment.SetEnvironmentVariable("ElasticApm:CaptureBodyContentTypes",
                     string.Join(",", startupOptions.ApmCaptureBodyContentTypes));
@@ -78,11 +84,8 @@ public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOption
             Environment.SetEnvironmentVariable("ElasticApm:SpanFramesMinDuration",
                 $"{TimeSpan.FromSeconds(startupOptions.ApmSpanFramesMinDurationInSeconds).TotalMilliseconds}ms");
             Environment.SetEnvironmentVariable("ElasticApm:ApmLogLevel", startupOptions.ApmLogLevel);
-            hostBuilder.UseAllElasticApm();
         }
     }
-
-    public override string OptionsKey => "ElasticApm";
 
     public LoggerConfiguration ConfigureLogging(IApplicationContext context, ElasticStackModuleOptions options,
         LoggerConfiguration loggerConfiguration)
@@ -133,5 +136,15 @@ public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOption
         }
 
         return loggerConfiguration;
+    }
+
+    public void ConfigureEndpoints(IApplicationContext applicationContext,
+        IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
+    {
+        var options = GetOptions(appBuilder.ApplicationServices);
+        if (options.ApmEnabled)
+        {
+            appBuilder.UseAllElasticApm();
+        }
     }
 }

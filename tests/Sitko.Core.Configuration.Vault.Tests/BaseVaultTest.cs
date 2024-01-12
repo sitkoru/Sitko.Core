@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.Xunit;
 using VaultSharp;
@@ -28,21 +29,17 @@ public class VaultTestScope : BaseTestScope
     public TestConfig FirstConfig { get; } = new() { Bar = Guid.NewGuid(), Foo = Guid.NewGuid().ToString() };
     public TestConfig2 SecondConfig { get; } = new() { Bar = Guid.NewGuid(), Foo = Guid.NewGuid().ToString() };
 
-    protected override TestApplication ConfigureApplication(TestApplication application, string name)
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {
-        base.ConfigureApplication(application, name);
-
-        application.AddVaultConfiguration(options =>
-        {
-            options.Secrets = new List<string> { firstSecretId.ToString(), secondSecretId.ToString() };
-        });
-        application.ConfigureServices((context, collection) =>
-        {
-            collection.Configure<TestConfig>(context.Configuration.GetSection("test"));
-            collection.Configure<TestConfig2>(context.Configuration.GetSection("test2"));
-        });
-        application.AddModule<TestModule, TestModuleConfig>();
-        return application;
+        base.ConfigureApplication(hostBuilder, name)
+            .AddVaultConfiguration(options =>
+            {
+                options.Secrets = new List<string> { firstSecretId.ToString(), secondSecretId.ToString() };
+            });
+        hostBuilder.Services.Configure<TestConfig>(hostBuilder.Configuration.GetSection("test"));
+        hostBuilder.Services.Configure<TestConfig2>(hostBuilder.Configuration.GetSection("test2"));
+        hostBuilder.GetSitkoCore().AddModule<TestModule, TestModuleConfig>();
+        return hostBuilder;
     }
 
     public override async Task BeforeConfiguredAsync(string name)
@@ -71,24 +68,27 @@ public class VaultTestScope : BaseTestScope
 
 public class FailingVaultTestScope : BaseTestScope
 {
-    protected override TestApplication ConfigureApplication(TestApplication application, string name)
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name) =>
+        base.ConfigureApplication(hostBuilder, name)
+            .AddVaultConfiguration(options =>
+            {
+                options.Secrets = new List<string> { "NonExistingSecret" };
+            });
+
+    public override async Task OnCreatedAsync()
     {
-        base.ConfigureApplication(application, name);
-        application.AddVaultConfiguration(options =>
-        {
-            options.Secrets = new List<string> { "NonExistingSecret" };
-        });
-        return application;
+        await base.OnCreatedAsync();
+        await StartApplicationAsync();
     }
 }
 
 public class VaultTestScopeWithValidationFailure : VaultTestScope
 {
-    protected override TestApplication ConfigureApplication(TestApplication application, string name)
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {
-        base.ConfigureApplication(application, name);
-        application.AddModule<TestModuleWithValidation, TestModuleWithValidationConfig>();
-        return application;
+        base.ConfigureApplication(hostBuilder, name);
+        hostBuilder.GetSitkoCore().AddModule<TestModuleWithValidation, TestModuleWithValidationConfig>();
+        return hostBuilder;
     }
 }
 
@@ -131,4 +131,3 @@ public class TestModuleWithValidationConfigValidator : AbstractValidator<TestMod
     public TestModuleWithValidationConfigValidator() =>
         RuleFor(o => o.Bar).Empty().WithMessage("Bar must be empty!");
 }
-

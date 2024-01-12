@@ -31,9 +31,7 @@ public interface IStorageMetadataProvider<TStorageOptions> where TStorageOptions
 // Generic interface is required for dependency injection
 // ReSharper disable once UnusedTypeParameter
 public interface IStorageMetadataProvider<TStorageOptions, TOptions> : IStorageMetadataProvider<TStorageOptions>
-    where TStorageOptions : StorageOptions
-{
-}
+    where TStorageOptions : StorageOptions;
 
 public interface IEmbedStorageMetadataProvider
 {
@@ -42,7 +40,5 @@ public interface IEmbedStorageMetadataProvider
 
 // ReSharper disable once UnusedTypeParameter
 public abstract class StorageMetadataModuleOptions<TStorageOptions> : BaseModuleOptions
-    where TStorageOptions : StorageOptions
-{
-}
+    where TStorageOptions : StorageOptions;
 

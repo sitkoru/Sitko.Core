@@ -1,5 +1,6 @@
 using Amazon;
 using Amazon.Auth.AccessControlPolicy;
+using Amazon.Runtime;
 using Amazon.S3;
 using FluentValidation;
 using HealthChecks.Aws.S3;
@@ -27,15 +28,14 @@ public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3Sto
                 var config = GetOptions(serviceProvider);
                 var options = new S3BucketOptions
                 {
-                    AccessKey = config.AccessKey,
                     BucketName = config.Bucket,
-                    SecretKey = config.SecretKey,
                     S3Config = new AmazonS3Config
                     {
                         RegionEndpoint = config.Region,
                         ServiceURL = config.Server?.ToString(),
                         ForcePathStyle = true
-                    }
+                    },
+                    Credentials = new BasicAWSCredentials(config.AccessKey, config.SecretKey)
                 };
                 return new S3HealthCheck(options);
             }, null, null, null));
@@ -82,4 +82,3 @@ public class S3StorageOptionsValidator : StorageOptionsValidator<S3StorageOption
         RuleFor(o => o.SecretKey).NotEmpty().WithMessage("S3 secret key is empty");
     }
 }
-

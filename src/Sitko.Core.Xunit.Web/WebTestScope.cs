@@ -1,48 +1,49 @@
-﻿using Microsoft.AspNetCore.TestHost;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
+using Sitko.Core.App.Web;
 
 namespace Sitko.Core.Xunit.Web;
 
-public class WebTestScope : WebTestScope<WebTestApplication, TestStartup>
+public class WebTestScope : WebTestScope<HostApplicationBuilder, BaseTestConfig>
 {
+    protected override HostApplicationBuilder CreateHostBuilder()
+    {
+        var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder();
+        builder.AddSitkoCore();
+        return builder;
+    }
+
+    protected override IHost BuildApplication(HostApplicationBuilder builder) => builder.Build();
 }
 
-public class WebTestScope<TWebApplication, TWebStartup> : WebTestScope<TWebApplication, TWebStartup,
-    TestApplication, BaseTestConfig> where TWebApplication : WebTestApplication<TWebStartup>
-    where TWebStartup : TestStartup
-{
-}
-
-public class WebTestScope<TWebApplication, TWebStartup, TApplication, TConfig> : BaseTestScope<TApplication, TConfig>
-    where TWebApplication : WebTestApplication<TWebStartup>
-    where TWebStartup : TestStartup
-    where TApplication : HostedApplication
+public abstract class WebTestScope<TApplicationBuilder, TConfig> : BaseTestScope<TApplicationBuilder, TConfig>
     where TConfig : BaseTestConfig, new()
+    where TApplicationBuilder : IHostApplicationBuilder
 {
     protected IHost? Host { get; private set; }
     protected TestServer? Server { get; private set; }
-    protected virtual TWebApplication ConfigureWebApplication(TWebApplication application, string name) => application;
+
+    protected virtual WebApplicationBuilder ConfigureWebApplication(WebApplicationBuilder webApplicationBuilder,
+        string name) => webApplicationBuilder;
 
     public override async Task BeforeConfiguredAsync(string name)
     {
-        if (Activator.CreateInstance(typeof(TWebApplication), new object[] { Array.Empty<string>() }) is TWebApplication
-            application)
-        {
-            ConfigureWebApplication(application, name);
-            application.ConfigureServices(services =>
-            {
-                services.AddMvc().AddApplicationPart(GetType().Assembly).AddControllersAsServices();
-            });
-            Host = await application.StartAsync();
-            Server = Host.GetTestServer();
-            await InitWebApplicationAsync(Host.Services);
-        }
-        else
-        {
-            throw new InvalidOperationException($"Can't create {typeof(TWebApplication)}");
-        }
+        var builder = WebApplication.CreateBuilder();
+        builder.AddSitkoCoreWeb();
+        ConfigureWebApplication(builder, name);
+        builder.Services.AddMvc().AddApplicationPart(GetType().Assembly)
+            .AddControllersAsServices();
+        builder.WebHost.UseTestServer();
+        var host = builder.Build();
+        host.MapControllers();
+        host.MapSitkoCore();
+        await host.StartAsync();
+        Server = host.GetTestServer();
+        Host = host;
+        await InitWebApplicationAsync(host.Services);
     }
 
     protected virtual Task InitWebApplicationAsync(IServiceProvider hostServices) => Task.CompletedTask;
@@ -57,4 +58,3 @@ public class WebTestScope<TWebApplication, TWebStartup, TApplication, TConfig> :
         }
     }
 }
-

@@ -83,17 +83,23 @@ public class
     {
         var config = GetOptions(serviceProvider);
         var schemaExtensions = new SchemaDbContextOptionsExtension(config.Schema);
-        options.UseNpgsql(config.CreateBuilder().ConnectionString,
-            builder =>
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(config.CreateBuilder().ConnectionString);
+        if (config.EnableJsonConversion)
+        {
+            dataSourceBuilder.EnableDynamicJson();
+        }
+
+        var dataSource = dataSourceBuilder.Build();
+        options.UseNpgsql(dataSource, builder =>
+        {
+            builder.MigrationsAssembly(config.MigrationsAssembly != null
+                ? config.MigrationsAssembly.FullName
+                : typeof(TDbContext).Assembly.FullName);
+            if (schemaExtensions.IsCustomSchema)
             {
-                builder.MigrationsAssembly(config.MigrationsAssembly != null
-                    ? config.MigrationsAssembly.FullName
-                    : typeof(TDbContext).Assembly.FullName);
-                if (schemaExtensions.IsCustomSchema)
-                {
-                    builder.MigrationsHistoryTable("__EFMigrationsHistory", schemaExtensions.Schema);
-                }
-            });
+                builder.MigrationsHistoryTable("__EFMigrationsHistory", schemaExtensions.Schema);
+            }
+        });
         if (config.EnableSensitiveLogging)
         {
             options.EnableSensitiveDataLogging();

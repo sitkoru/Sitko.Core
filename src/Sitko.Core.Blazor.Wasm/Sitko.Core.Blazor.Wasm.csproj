@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly"/>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication"/>
+    <PackageReference Include="Microsoft.Extensions.Localization" />
     <PackageReference Include="Serilog.Sinks.BrowserConsole"/>
   </ItemGroup>
   <ItemGroup>

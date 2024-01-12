@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Npgsql;
 using Sitko.Core.App;
 using Sitko.Core.Storage.Metadata.Postgres.DB;
 
@@ -22,11 +23,13 @@ public class
         {
             var options = serviceProvider
                 .GetRequiredService<IOptions<PostgresStorageMetadataModuleOptions<TStorageOptions>>>();
-            builder.UseNpgsql(options.Value.GetConnectionString(), optionsBuilder =>
+            var dataSourceBuilder = new NpgsqlDataSourceBuilder(options.Value.GetConnectionString());
+            dataSourceBuilder.EnableDynamicJson();
+            var dataSource = dataSourceBuilder.Build();
+            builder.UseNpgsql(dataSource, optionsBuilder =>
             {
                 optionsBuilder.MigrationsHistoryTable("__EFMigrationsHistory", StorageDbContext.Schema);
             });
         });
     }
 }
-

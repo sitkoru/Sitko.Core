@@ -104,7 +104,14 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         return result.First();
     }
 
-    public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> AddAsync(IEnumerable<TEntity> entities,
+    public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> AddExternalAsync(TEntity entity,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await AddExternalAsync(new[] { entity }, cancellationToken);
+        return result.First();
+    }
+
+    private async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> AddAsync(IEnumerable<TEntity> entities, Func<TEntity, CancellationToken, Task> doAddAsync,
         CancellationToken cancellationToken = default)
     {
         var results = new List<AddOrUpdateOperationResult<TEntity, TEntityPk>>();
@@ -120,7 +127,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
                 {
                     if (await BeforeSaveAsync(item, validationResult, true, cancellationToken))
                     {
-                        await DoAddAsync(item, cancellationToken);
+                        await doAddAsync(item, cancellationToken);
                     }
                 }
             }
@@ -149,6 +156,14 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
 
         return results.ToArray();
     }
+
+    public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> AddAsync(IEnumerable<TEntity> entities,
+        CancellationToken cancellationToken = default) =>
+        await AddAsync(entities, DoAddAsync, cancellationToken);
+
+    public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> AddExternalAsync(IEnumerable<TEntity> entities,
+        CancellationToken cancellationToken = default) =>
+        await AddAsync(entities, DoAddExternalAsync, cancellationToken);
 
     public virtual Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity entity,
         CancellationToken cancellationToken = default) => UpdateAsync(entity, null, cancellationToken);
@@ -704,6 +719,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
     protected abstract Task<PropertyChange[]> GetChangesAsync(TEntity item);
 
     protected abstract Task DoAddAsync(TEntity entity, CancellationToken cancellationToken = default);
+    protected abstract Task DoAddExternalAsync(TEntity entity, CancellationToken cancellationToken = default);
 
     protected abstract Task<PropertyChange[]> DoUpdateAsync(TEntity entity, TEntity? oldEntity,
         CancellationToken cancellationToken = default);

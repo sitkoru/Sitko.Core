@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.App.Localization;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -145,37 +146,24 @@ public class LocalizationTests : BaseTest<LocalizationTestScope>
     }
 }
 
-public class LocalizationTests<T>
-{
-}
+public class LocalizationTests<T>;
 
-public class LocalizationTests<T, T2>
-{
-}
+public class LocalizationTests<T, T2>;
 
 // ReSharper disable once InconsistentNaming
-public interface ILocalizationTests<T, T2, T3>
+public interface ILocalizationTests<T, T2, T3>;
+
+public class Default;
+
+public class LocalizationTestScope : BaseTestScope
 {
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
+    {
+        base.ConfigureApplication(hostBuilder, name)
+            .GetSitkoCore()
+            .AddJsonLocalization(options => options.AddDefaultResource<Default>());
+        return hostBuilder;
+    }
 }
 
-public class Default
-{
-}
-
-public class LocalizationTestApplication : TestApplication
-{
-    public LocalizationTestApplication(string[] args) : base(args) =>
-        this.AddJsonLocalization(moduleOptions =>
-        {
-            moduleOptions.AddDefaultResource<Default>();
-        });
-}
-
-public class LocalizationTestScope : BaseTestScope<LocalizationTestApplication>
-{
-}
-
-public class NoLocalizationTestScope : BaseTestScope
-{
-}
-
+public class NoLocalizationTestScope : BaseTestScope;

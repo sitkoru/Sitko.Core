@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.App.Web;
 
@@ -10,7 +9,7 @@ namespace Sitko.Core.Grpc.Server;
 
 public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TConfig>, IGrpcServerModule,
     IHostBuilderModule<TConfig>,
-    IWebApplicationModule where TConfig : GrpcServerModuleOptions, new()
+    IWebApplicationModule<TConfig> where TConfig : GrpcServerModuleOptions, new()
 {
     private readonly List<Action<IEndpointRouteBuilder>> endpointRegistrations = new();
 
@@ -48,16 +47,9 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
         }
     }
 
-    public void ConfigureHostBuilder(IApplicationContext context, IHostBuilder hostBuilder, TConfig startupOptions)
-    {
-        if (startupOptions.ConfigureWebHostDefaults is not null)
-        {
-            hostBuilder.ConfigureWebHostDefaults(builder =>
-            {
-                startupOptions.ConfigureWebHostDefaults(builder);
-            });
-        }
-    }
+    public void ConfigureWebHost(IApplicationContext applicationContext, ConfigureWebHostBuilder webHostBuilder,
+        TConfig options) =>
+        options.ConfigureWebHostDefaults?.Invoke(webHostBuilder);
 
     public void ConfigureEndpoints(IApplicationContext applicationContext,
         IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)

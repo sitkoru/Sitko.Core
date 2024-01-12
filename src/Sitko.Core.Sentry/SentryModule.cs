@@ -1,32 +1,31 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Sentry.AspNetCore;
 using Sitko.Core.App;
+using Sitko.Core.App.Web;
 
 namespace Sitko.Core.Sentry;
 
 public class SentryModule : BaseApplicationModule<SentryModuleOptions>,
-    IHostBuilderModule<SentryModuleOptions>
+    IWebApplicationModule<SentryModuleOptions>
 {
     public override string OptionsKey => "Sentry";
 
-    public void PostConfigureHostBuilder(IApplicationContext context, IHostBuilder hostBuilder, SentryModuleOptions startupOptions) =>
-        hostBuilder.ConfigureWebHostDefaults(webHostBuilder =>
+    public void ConfigureWebHost(IApplicationContext applicationContext, ConfigureWebHostBuilder webHostBuilder,
+        SentryModuleOptions options) =>
+        webHostBuilder.UseSentry(builder =>
         {
-            webHostBuilder.UseSentry(builder =>
+            options.ConfigureSentry?.Invoke(applicationContext, builder, options);
+            builder.AddSentryOptions(o =>
             {
-                startupOptions.ConfigureSentry?.Invoke(context, builder, startupOptions);
-                builder.AddSentryOptions(o =>
-                {
-                    o.Dsn = startupOptions.Dsn;
-                    o.Debug = startupOptions.EnableDebug;
-                    o.TracesSampleRate = startupOptions.TracesSampleRate;
-                    o.DefaultTags.Add("ServiceId", context.Id.ToString());
-                    o.DefaultTags.Add("Service", context.Name);
-                    o.DefaultTags.Add("Environment", context.Environment);
-                    o.DefaultTags.Add("Version", context.Version);
-                    startupOptions.ConfigureSentryOptions?.Invoke(context, o, startupOptions);
-                });
+                o.Dsn = options.Dsn;
+                o.Debug = options.EnableDebug;
+                o.TracesSampleRate = options.TracesSampleRate;
+                o.DefaultTags.Add("ServiceId", applicationContext.Id.ToString());
+                o.DefaultTags.Add("Service", applicationContext.Name);
+                o.DefaultTags.Add("Environment", applicationContext.Environment);
+                o.DefaultTags.Add("Version", applicationContext.Version);
+                options.ConfigureSentryOptions?.Invoke(applicationContext, o, options);
             });
         });
 }

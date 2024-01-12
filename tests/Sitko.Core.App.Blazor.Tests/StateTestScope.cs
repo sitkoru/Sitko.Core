@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.Blazor.Components;
 using Sitko.Core.Xunit;
 
@@ -6,7 +7,9 @@ namespace Sitko.Core.App.Blazor.Tests;
 
 public class StateTestScope : BaseTestScope
 {
-    protected override IServiceCollection ConfigureServices(IApplicationContext applicationContext,
-        IServiceCollection services, string name) => base.ConfigureServices(applicationContext, services, name)
-        .AddScoped<IStateCompressor, JsonHelperStateCompressor>();
+    protected override IHostApplicationBuilder ConfigureServices(IHostApplicationBuilder builder, string name)
+    {
+        base.ConfigureServices(builder, name).Services.AddScoped<IStateCompressor, JsonHelperStateCompressor>();
+        return builder;
+    }
 }

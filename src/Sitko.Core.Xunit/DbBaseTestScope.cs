@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.Db.InMemory;
 using Sitko.Core.Db.Postgres;
@@ -8,49 +9,52 @@ using Sitko.Core.Db.Postgres;
 namespace Sitko.Core.Xunit;
 
 [PublicAPI]
-public abstract class DbBaseTestScope<TApplication, TConfig> : BaseTestScope<TApplication, TConfig>
-    where TApplication : HostedApplication where TConfig : BaseDbTestConfig, new()
+public abstract class DbBaseTestScope<TApplicationBuilder, TConfig> : BaseTestScope<TApplicationBuilder, TConfig>
+    where TConfig : BaseDbTestConfig, new() where TApplicationBuilder : IHostApplicationBuilder
 {
     private readonly List<DbContext> dbContexts = new();
 
     private readonly List<Func<Task>> dbInitActions = new();
 
-    protected void AddDbContext<TDbContext>(TApplication application, string name, Action<DbContextOptionsBuilder,
+    protected void AddDbContext<TDbContext>(IHostApplicationBuilder applicationBuilder, string name,
+        Action<DbContextOptionsBuilder,
             IApplicationContext>? configureInMemory = null,
         Action<IApplicationContext, PostgresDatabaseModuleOptions<TDbContext>, Guid,
             string>? configurePostgres = null, Func<TDbContext, Task>? initDbContext = null)
         where TDbContext : DbContext
     {
         var dbName = $"{typeof(TDbContext).Name}_{name}";
-        application.AddInMemoryDatabase<TDbContext>((applicationContext, moduleOptions) =>
-        {
-            if (GetConfig(applicationContext.Configuration).UsePostgres)
+        applicationBuilder
+            .AddInMemoryDatabase<TDbContext>((applicationContext, moduleOptions) =>
             {
-                moduleOptions.Enabled = false;
-            }
-            else
-            {
-                moduleOptions.Database = dbName;
-                moduleOptions.ConfigureDbContextOptions = (builder, _, currentApplicationContext) =>
+                if (GetConfig(applicationContext.Configuration).UsePostgres)
                 {
-                    configureInMemory?.Invoke(builder, currentApplicationContext);
-                };
-            }
-        });
-        application.AddPostgresDatabase<TDbContext>((applicationContext, moduleOptions) =>
-        {
-            if (GetConfig(applicationContext.Configuration).UsePostgres)
+                    moduleOptions.Enabled = false;
+                }
+                else
+                {
+                    moduleOptions.Database = dbName;
+                    moduleOptions.ConfigureDbContextOptions = (builder, _, currentApplicationContext) =>
+                    {
+                        configureInMemory?.Invoke(builder, currentApplicationContext);
+                    };
+                }
+            })
+            .AddPostgresDatabase<TDbContext>((applicationContext, moduleOptions) =>
             {
-                moduleOptions.Database = $"{Id}_{dbName}";
-                moduleOptions.EnableSensitiveLogging = true;
-                moduleOptions.IncludeErrorDetails = true;
-                configurePostgres?.Invoke(applicationContext, moduleOptions, Id, dbName);
-            }
-            else
-            {
-                moduleOptions.Enabled = false;
-            }
-        });
+                if (GetConfig(applicationContext.Configuration).UsePostgres)
+                {
+                    moduleOptions.Database = $"{Id}_{dbName}";
+                    moduleOptions.EnableSensitiveLogging = true;
+                    moduleOptions.IncludeErrorDetails = true;
+                    moduleOptions.EnableNpgsqlPooling = false;
+                    configurePostgres?.Invoke(applicationContext, moduleOptions, Id, dbName);
+                }
+                else
+                {
+                    moduleOptions.Enabled = false;
+                }
+            });
 
         dbInitActions.Add(async () =>
         {
@@ -95,17 +99,19 @@ public abstract class DbBaseTestScope<TApplication, TConfig> : BaseTestScope<TAp
 }
 
 [PublicAPI]
-public abstract class DbBaseTestScope<TApplication, TDbContext, TConfig> : DbBaseTestScope<TApplication, TConfig>
-    where TDbContext : DbContext where TApplication : HostedApplication where TConfig : BaseDbTestConfig, new()
+public abstract class
+    DbBaseTestScope<TApplicationBuilder, TDbContext, TConfig> : DbBaseTestScope<TApplicationBuilder, TConfig>
+    where TDbContext : DbContext
+    where TConfig : BaseDbTestConfig, new()
+    where TApplicationBuilder : IHostApplicationBuilder
 {
-    protected override TApplication ConfigureApplication(TApplication application, string name)
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {
-        base.ConfigureApplication(application, name);
-        AddDbContext<TDbContext>(application, name, ConfigureInMemoryDatabaseModule, ConfigurePostgresDatabaseModule,
+        base.ConfigureApplication(hostBuilder, name);
+        AddDbContext<TDbContext>(hostBuilder, name, ConfigureInMemoryDatabaseModule, ConfigurePostgresDatabaseModule,
             InitDbContextAsync);
-        return application;
+        return hostBuilder;
     }
-
 
     protected virtual void ConfigureInMemoryDatabaseModule(DbContextOptionsBuilder builder,
         IApplicationContext applicationContext)
@@ -123,8 +129,15 @@ public abstract class DbBaseTestScope<TApplication, TDbContext, TConfig> : DbBas
     }
 }
 
-public abstract class DbBaseTestScope<TDbContext> : DbBaseTestScope<TestApplication, TDbContext, BaseDbTestConfig>
+public abstract class
+    DbBaseTestScope<TDbContext> : DbBaseTestScope<HostApplicationBuilder, TDbContext, BaseDbTestConfig>
     where TDbContext : DbContext
 {
+    protected override IHost BuildApplication(HostApplicationBuilder builder) => builder.Build();
+    protected override HostApplicationBuilder CreateHostBuilder()
+    {
+        var builder = Host.CreateApplicationBuilder();
+        builder.AddSitkoCore();
+        return builder;
+    }
 }
-

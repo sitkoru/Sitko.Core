@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
     <DisableAppCheck>true</DisableAppCheck>
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.7" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.10" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Sitko.Core.App\Sitko.Core.App.csproj" />

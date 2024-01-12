@@ -19,7 +19,5 @@ public abstract class LocalizationModule<TModuleOptions, TFactory> : BaseApplica
     }
 }
 
-public class LocalizationModuleOptions : BaseModuleOptions
-{
-}
+public class LocalizationModuleOptions : BaseModuleOptions;
 

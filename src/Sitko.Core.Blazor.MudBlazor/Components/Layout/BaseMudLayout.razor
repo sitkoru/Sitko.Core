@@ -1,0 +1,27 @@
+﻿@namespace Sitko.Core.Blazor.MudBlazorComponents
+<MudThemeProvider Theme="Theme"/>
+<MudLayout>
+    <MudAppBar Fixed="true" Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@DrawerToggle"/>
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudIcon Icon="@Logo" Size="Size.Large"/>
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudIconButton Icon="@Icons.Material.Outlined.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(_ => DrawerToggle())"/>
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.Xs">
+            <MudText Typo="Typo.h6" Class="ml-4">@ApplicationContext.Name</MudText>
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
+            <MudText Typo="Typo.subtitle2">@ApplicationContext.Name</MudText>
+        </MudHidden>
+        <MudSpacer/>
+    </MudAppBar>
+    @if (Menu is not null)
+    {
+        <MudDrawer @bind-Open="DrawerOpen" ClipMode="DrawerClipMode.Always" Variant="@DrawerVariant.Mini" Elevation="1" PreserveOpenState="true">
+            @Menu
+        </MudDrawer>
+    }
+    @ChildContent
+</MudLayout>

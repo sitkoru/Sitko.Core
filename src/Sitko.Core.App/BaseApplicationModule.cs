@@ -3,13 +3,9 @@ using Microsoft.Extensions.Options;
 
 namespace Sitko.Core.App;
 
-public abstract class BaseApplicationModule : BaseApplicationModule<BaseApplicationModuleOptions>
-{
-}
+public abstract class BaseApplicationModule : BaseApplicationModule<BaseApplicationModuleOptions>;
 
-public class BaseApplicationModuleOptions : BaseModuleOptions
-{
-}
+public class BaseApplicationModuleOptions : BaseModuleOptions;
 
 public abstract class BaseApplicationModule<TModuleOptions> : IApplicationModule<TModuleOptions>
     where TModuleOptions : BaseModuleOptions, new()
@@ -43,11 +39,13 @@ public abstract class BaseApplicationModule<TModuleOptions> : IApplicationModule
         IServiceProvider serviceProvider) =>
         Task.CompletedTask;
 
-    public virtual Task<bool> OnBeforeRunAsync(Application application, IApplicationContext applicationContext,
-        string[] args) => Task.FromResult(true);
+    public virtual Task<bool>
+        OnBeforeRunAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider) =>
+        Task.FromResult(true);
 
-    public virtual Task<bool> OnAfterRunAsync(Application application, IApplicationContext applicationContext,
-        string[] args) => Task.FromResult(true);
+    public virtual Task<bool>
+        OnAfterRunAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider) =>
+        Task.FromResult(true);
 
     public abstract string OptionsKey { get; }
     public virtual string[] OptionKeys => new[] { OptionsKey };

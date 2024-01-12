@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using KafkaFlow;
 using KafkaFlow.Serializer;
-using KafkaFlow.TypedHandler;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.Kafka;
@@ -25,15 +24,15 @@ public class
         KafkaTasksModuleOptions<TBaseTask, TDbContext> startupOptions, List<ExecutorRegistration> executors)
     {
         var kafkaTopicPrefix = startupOptions.AddTopicPrefix
-            ? (string.IsNullOrEmpty(startupOptions.TopicPrefix)
+            ? string.IsNullOrEmpty(startupOptions.TopicPrefix)
                 ? $"{applicationContext.Name}_{applicationContext.Environment}"
-                : startupOptions.TopicPrefix)
+                : startupOptions.TopicPrefix
             : "";
         var kafkaTopic = $"{kafkaTopicPrefix}_{startupOptions.TasksTopic}".Replace(".", "_");
         var kafkaGroupPrefix = startupOptions.AddConsumerGroupPrefix
-            ? (string.IsNullOrEmpty(startupOptions.ConsumerGroupPrefix)
+            ? string.IsNullOrEmpty(startupOptions.ConsumerGroupPrefix)
                 ? $"{applicationContext.Name}_{applicationContext.Environment}"
-                : startupOptions.ConsumerGroupPrefix)
+                : startupOptions.ConsumerGroupPrefix
             : "";
 
         var producerName = $"Tasks_{typeof(TBaseTask).Name}";
@@ -72,8 +71,7 @@ public class
                     consumerBuilder.AddMiddlewares(
                         middlewares =>
                         {
-                            middlewares
-                                .AddSerializer<JsonCoreSerializer>();
+                            middlewares.AddDeserializer<JsonCoreDeserializer>();
                             middlewares.AddTypedHandlers(handlers =>
                                 handlers.AddHandlers(groupConsumers.Select(r =>
                                         executorType.MakeGenericType(r.EventType, r.ExecutorType)))

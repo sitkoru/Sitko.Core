@@ -20,7 +20,5 @@ public partial class AntStorageItemsInput<TValue> where TValue : ICollection<Sto
     }
 }
 
-public class ListAntStorageItemsInput : AntStorageItemsInput<List<StorageItem>>
-{
-}
+public class ListAntStorageItemsInput : AntStorageItemsInput<List<StorageItem>>;
 

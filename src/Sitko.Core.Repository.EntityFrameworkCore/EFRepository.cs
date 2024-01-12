@@ -48,7 +48,9 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
     {
         var tableName = dbContext.Model.FindEntityType(typeof(TEntity))?.GetSchemaQualifiedTableName() ??
                         throw new InvalidOperationException($"Can't find table name for entity {typeof(TEntity)}");
+#pragma warning disable EF1002
         return ExecuteDbContextOperationAsync(context => context.Database.ExecuteSqlRawAsync(
+#pragma warning restore EF1002
                 $"DELETE FROM \"{tableName.Replace(".", "\".\"")}\" WHERE {conditions}", cancellationToken),
             cancellationToken);
     }
@@ -444,7 +446,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
             currentDbContext => currentDbContext.SaveChangesAsync(cancellationToken),
             cancellationToken);
 
-    protected override async Task DoAddAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+    protected override async Task DoAddExternalAsync(TEntity entity, CancellationToken cancellationToken = default) =>
         await ExecuteDbContextOperationAsync(
             currentDbContext =>
             {
@@ -461,6 +463,11 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
                 });
                 return currentDbContext.AddAsync(entity, cancellationToken).AsTask();
             },
+            cancellationToken);
+
+    protected override async Task DoAddAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+        await ExecuteDbContextOperationAsync(
+            currentDbContext => currentDbContext.AddAsync(entity, cancellationToken).AsTask(),
             cancellationToken);
 
     public DbSet<T> Set<T>() where T : class => dbContext.Set<T>();

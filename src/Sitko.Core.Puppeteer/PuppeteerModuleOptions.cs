@@ -12,6 +12,6 @@ public class PuppeteerModuleOptions : BaseModuleOptions
     [JsonIgnore] public ViewPortOptions ViewPortOptions { get; set; } = ViewPortOptions.Default;
     public string[] BrowserArgs { get; set; } = { "--no-sandbox" };
     public bool Headless { get; set; } = true;
-    public Product Product { get; set; } = Product.Chrome;
+    public SupportedBrowser Product { get; set; } = SupportedBrowser.Chrome;
     public string? Revision { get; set; }
 }

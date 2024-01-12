@@ -108,7 +108,7 @@ public class BaseRemoteRepositoryController<TEntity, TEntityPK> : Controller
                 return Error("Empty request");
             }
 
-            var result = await repository.AddAsync(entity);
+            var result = await repository.AddExternalAsync(entity);
             return Created("", JsonHelper.SerializeWithMetadata(result));
         }
         catch (Exception ex)

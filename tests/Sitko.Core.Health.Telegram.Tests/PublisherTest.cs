@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -94,11 +95,6 @@ public class TelegramPublisherTest : BaseTest<TelegramPublisherTestScope>
 
 public class TelegramPublisherTestScope : BaseTestScope
 {
-    protected override TestApplication ConfigureApplication(TestApplication application, string name)
-    {
-        base.ConfigureApplication(application, name);
-        application.AddTelegramHealthReporter();
-        return application;
-    }
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name) =>
+        base.ConfigureApplication(hostBuilder, name).AddTelegramHealthReporter();
 }
-

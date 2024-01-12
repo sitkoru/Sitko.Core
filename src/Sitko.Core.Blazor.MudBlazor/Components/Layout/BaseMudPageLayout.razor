@@ -1,0 +1,39 @@
+﻿@namespace Sitko.Core.Blazor.MudBlazorComponents
+@inherits Sitko.Core.Blazor.Components.BaseComponent
+
+
+<MudDialogProvider/>
+<MudSnackbarProvider/>
+<PageTitle>@PageTitle</PageTitle>
+
+<MudMainContent>
+    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+        @if (Extra is not null || Breadcrumbs.Count > 0)
+        {
+            <MudToolBar DisableGutters="true" Class="px-4">
+                <MudBreadcrumbs Items="Breadcrumbs"></MudBreadcrumbs>
+                @if (Extra is not null)
+                {
+                    <MudSpacer/>
+                    @Extra
+                }
+            </MudToolBar>
+        }
+    </MudHidden>
+    @if (!string.IsNullOrEmpty(Title) || !string.IsNullOrEmpty(Description))
+    {
+        <MudContainer MaxWidth="MaxWidth.False" Class="mb-10">
+            @if (!string.IsNullOrEmpty(Title))
+            {
+                <MudText Typo="Typo.h3" Class="mb-2">@Title</MudText>
+            }
+            @if (!string.IsNullOrEmpty(Description))
+            {
+                <MudText Typo="Typo.subtitle1">@Description</MudText>
+            }
+        </MudContainer>
+    }
+    <MudContainer MaxWidth="MaxWidth.False" Class="pb-10">
+        @ChildContent
+    </MudContainer>
+</MudMainContent>

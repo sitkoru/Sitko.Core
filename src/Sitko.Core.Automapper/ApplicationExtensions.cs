@@ -1,17 +1,35 @@
-﻿using Sitko.Core.App;
+﻿using JetBrains.Annotations;
+using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
 
 namespace Sitko.Core.Automapper;
 
+[PublicAPI]
 public static class ApplicationExtensions
 {
-    public static Application AddAutoMapper(this Application application,
+    public static IHostApplicationBuilder AddAutoMapper(this IHostApplicationBuilder hostApplicationBuilder,
+        Action<IApplicationContext, AutoMapperModuleOptions> configure,
+        string? optionsKey = null)
+    {
+        hostApplicationBuilder.GetSitkoCore().AddAutoMapper(configure, optionsKey);
+        return hostApplicationBuilder;
+    }
+
+    public static IHostApplicationBuilder AddAutoMapper(this IHostApplicationBuilder hostApplicationBuilder,
+        Action<AutoMapperModuleOptions>? configure = null,
+        string? optionsKey = null)
+    {
+        hostApplicationBuilder.GetSitkoCore().AddAutoMapper(configure, optionsKey);
+        return hostApplicationBuilder;
+    }
+
+    public static ISitkoCoreApplicationBuilder AddAutoMapper(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, AutoMapperModuleOptions> configure,
         string? optionsKey = null) =>
-        application.AddModule<AutoMapperModule, AutoMapperModuleOptions>(configure, optionsKey);
+        applicationBuilder.AddModule<AutoMapperModule, AutoMapperModuleOptions>(configure, optionsKey);
 
-    public static Application AddAutoMapper(this Application application,
+    public static ISitkoCoreApplicationBuilder AddAutoMapper(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<AutoMapperModuleOptions>? configure = null,
         string? optionsKey = null) =>
-        application.AddModule<AutoMapperModule, AutoMapperModuleOptions>(configure, optionsKey);
+        applicationBuilder.AddModule<AutoMapperModule, AutoMapperModuleOptions>(configure, optionsKey);
 }
-

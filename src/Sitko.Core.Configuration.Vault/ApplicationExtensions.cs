@@ -1,18 +1,35 @@
-﻿using Sitko.Core.App;
+﻿using JetBrains.Annotations;
+using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
 
 namespace Sitko.Core.Configuration.Vault;
 
+[PublicAPI]
 public static class ApplicationExtensions
 {
-    public static Application AddVaultConfiguration(this Application application,
+    public static IHostApplicationBuilder AddVaultConfiguration(this IHostApplicationBuilder hostApplicationBuilder,
+        Action<IApplicationContext, VaultConfigurationModuleOptions> configure,
+        string? optionsKey = null)
+    {
+        hostApplicationBuilder.GetSitkoCore().AddVaultConfiguration(configure, optionsKey);
+        return hostApplicationBuilder;
+    }
+
+    public static IHostApplicationBuilder AddVaultConfiguration(this IHostApplicationBuilder hostApplicationBuilder,
+        Action<VaultConfigurationModuleOptions>? configure = null, string? optionsKey = null)
+    {
+        hostApplicationBuilder.GetSitkoCore().AddVaultConfiguration(configure, optionsKey);
+        return hostApplicationBuilder;
+    }
+
+    public static ISitkoCoreApplicationBuilder AddVaultConfiguration(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, VaultConfigurationModuleOptions> configure,
         string? optionsKey = null) =>
-        application.AddModule<VaultConfigurationModule, VaultConfigurationModuleOptions>(configure,
+        applicationBuilder.AddModule<VaultConfigurationModule, VaultConfigurationModuleOptions>(configure,
             optionsKey);
 
-    public static Application AddVaultConfiguration(this Application application,
+    public static ISitkoCoreApplicationBuilder AddVaultConfiguration(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<VaultConfigurationModuleOptions>? configure = null, string? optionsKey = null) =>
-        application.AddModule<VaultConfigurationModule, VaultConfigurationModuleOptions>(configure,
+        applicationBuilder.AddModule<VaultConfigurationModule, VaultConfigurationModuleOptions>(configure,
             optionsKey);
 }
-

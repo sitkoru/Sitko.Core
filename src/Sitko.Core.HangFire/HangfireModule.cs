@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using Hangfire;
 using Hangfire.PostgreSql;
+using Hangfire.PostgreSql.Factories;
 using HealthChecks.Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,9 +10,7 @@ using Sitko.Core.App.Web;
 
 namespace Sitko.Core.HangFire;
 
-public interface IHangfireModule : IApplicationModule
-{
-}
+public interface IHangfireModule : IApplicationModule;
 
 public class HangfireModule<THangfireConfig> : BaseApplicationModule<THangfireConfig>, IHangfireModule,
     IWebApplicationModule
@@ -101,16 +100,18 @@ public class HangfirePostgresModuleOptions : HangfireModuleOptions
     public HangfirePostgresModuleOptions() =>
         ConfigureHangfire = configuration =>
         {
-            configuration.UsePostgreSqlStorage(ConnectionString,
-                new PostgreSqlStorageOptions
-                {
-                    InvisibilityTimeout = TimeSpan.FromMinutes(InvisibilityTimeoutInMinutes),
-                    DistributedLockTimeout = TimeSpan.FromMinutes(DistributedLockTimeoutInMinutes)
-                });
+            configuration.UsePostgreSqlStorage(options =>
+            {
+                options.UseConnectionFactory(new NpgsqlConnectionFactory(ConnectionString,
+                    new PostgreSqlStorageOptions
+                    {
+                        InvisibilityTimeout = TimeSpan.FromMinutes(InvisibilityTimeoutInMinutes),
+                        DistributedLockTimeout = TimeSpan.FromMinutes(DistributedLockTimeoutInMinutes)
+                    }));
+            });
         };
 
     public string ConnectionString { get; set; } = string.Empty;
     public int InvisibilityTimeoutInMinutes { get; set; } = 300;
     public int DistributedLockTimeoutInMinutes { get; set; } = 300;
 }
-

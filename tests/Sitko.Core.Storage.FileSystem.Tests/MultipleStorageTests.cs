@@ -1,4 +1,5 @@
 ﻿using JetBrains.Annotations;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -41,28 +42,25 @@ public class MultipleStorageTests : BaseTest<MultipleStorageTestsScope>
 [UsedImplicitly]
 public class MultipleStorageTestsScope : BaseFileSystemStorageTestScope
 {
-    protected override TestApplication ConfigureApplication(TestApplication application, string name)
-    {
-        base.ConfigureApplication(application, name);
-        application.AddFileSystemStorage<MultipleStorageTestsOptionsSecond>(
-            moduleOptions =>
-            {
-                var folder = Path.GetTempPath() + "/" + Guid.NewGuid();
-                moduleOptions.PublicUri = new Uri(folder);
-                moduleOptions.StoragePath = folder;
-                moduleOptions.IsDefault = true;
-            });
-        application.AddFileSystemStorageMetadata<MultipleStorageTestsOptionsSecond>();
-        application.AddFileSystemStorage<MultipleStorageTestsOptionsThird>(
-            moduleOptions =>
-            {
-                var folder = Path.GetTempPath() + "/" + Guid.NewGuid();
-                moduleOptions.PublicUri = new Uri(folder);
-                moduleOptions.StoragePath = folder;
-            });
-        application.AddFileSystemStorageMetadata<MultipleStorageTestsOptionsThird>();
-        return application;
-    }
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name) =>
+        base.ConfigureApplication(hostBuilder, name)
+            .AddFileSystemStorage<MultipleStorageTestsOptionsSecond>(
+                moduleOptions =>
+                {
+                    var folder = Path.GetTempPath() + "/" + Guid.NewGuid();
+                    moduleOptions.PublicUri = new Uri(folder);
+                    moduleOptions.StoragePath = folder;
+                    moduleOptions.IsDefault = true;
+                })
+            .AddFileSystemStorageMetadata<MultipleStorageTestsOptionsSecond>()
+            .AddFileSystemStorage<MultipleStorageTestsOptionsThird>(
+                moduleOptions =>
+                {
+                    var folder = Path.GetTempPath() + "/" + Guid.NewGuid();
+                    moduleOptions.PublicUri = new Uri(folder);
+                    moduleOptions.StoragePath = folder;
+                })
+            .AddFileSystemStorageMetadata<MultipleStorageTestsOptionsThird>();
 }
 
 public class MultipleStorageTestsOptionsSecond : StorageOptions, IFileSystemStorageOptions
@@ -74,4 +72,3 @@ public class MultipleStorageTestsOptionsThird : StorageOptions, IFileSystemStora
 {
     public string StoragePath { get; set; } = "/tmp/storage/third";
 }
-

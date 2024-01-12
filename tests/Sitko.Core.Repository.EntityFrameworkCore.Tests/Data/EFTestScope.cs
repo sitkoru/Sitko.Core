@@ -1,17 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Hosting;
 using Serilog.Events;
 using Sitko.Core.App;
 using Sitko.Core.Db.Postgres;
 using Sitko.Core.Repository.Tests.Data;
-using Sitko.Core.Xunit;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore.Tests.Data;
 
 public class EFTestScope : BaseEFTestScope
 {
-    protected override TestApplication ConfigureApplication(TestApplication application, string name)
+    protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {
-        application.AddEFRepositories(options =>
+        hostBuilder.GetSitkoCore().ConfigureLogging((_, configuration) =>
+            configuration.MinimumLevel.Override("Sitko.Core.Repository", LogEventLevel.Debug));
+        return base.ConfigureApplication(hostBuilder, name).AddEFRepositories(options =>
         {
             options.AddRepository<BarRepository>();
             options.AddRepository<FooRepository>();
@@ -19,9 +21,6 @@ public class EFTestScope : BaseEFTestScope
             options.AddRepository<BazRepository>();
             options.AddRepositoriesFromAssemblyOf<TestModel>();
         });
-        application.ConfigureLogging((_, configuration) =>
-            configuration.MinimumLevel.Override("Sitko.Core.Repository", LogEventLevel.Debug));
-        return base.ConfigureApplication(application, name);
     }
 
     protected override void ConfigurePostgresDatabaseModule<TSomeDbContext>(IApplicationContext applicationContext,

@@ -4,9 +4,7 @@
     <PackageReference Include="KafkaFlow.Extensions.Hosting" />
     <PackageReference Include="KafkaFlow.LogHandler.Microsoft" />
     <PackageReference Include="KafkaFlow.Microsoft.DependencyInjection" />
-    <PackageReference Include="KafkaFlow.Serializer" />
     <PackageReference Include="KafkaFlow.Serializer.JsonCore" />
-    <PackageReference Include="KafkaFlow.TypedHandler" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />

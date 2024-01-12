@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -12,6 +12,6 @@
     <ProjectReference Include="..\..\src\Sitko.Core.Xunit\Sitko.Core.Xunit.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="GitHubActionsTestLogger" Version="2.3.2"/>
+    <PackageReference Include="GitHubActionsTestLogger" Version="2.3.3"/>
   </ItemGroup>
 </Project>

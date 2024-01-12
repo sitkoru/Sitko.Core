@@ -86,7 +86,7 @@ internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : A
     }
 
     public override ApplicationModuleRegistration ConfigureHostBuilder(IApplicationContext context,
-        IHostBuilder hostBuilder)
+        IHostApplicationBuilder hostBuilder)
     {
         if (instance is IHostBuilderModule<TModuleOptions> hostBuilderModule)
         {
@@ -98,7 +98,7 @@ internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : A
     }
 
     public override ApplicationModuleRegistration PostConfigureHostBuilder(IApplicationContext context,
-        IHostBuilder hostBuilder)
+        IHostApplicationBuilder hostBuilder)
     {
         if (instance is IHostBuilderModule<TModuleOptions> hostBuilderModule)
         {
@@ -248,10 +248,10 @@ public abstract class ApplicationModuleRegistration
     public abstract Task InitAsync(IApplicationContext context, IServiceProvider serviceProvider);
 
     public abstract ApplicationModuleRegistration ConfigureHostBuilder(IApplicationContext context,
-        IHostBuilder hostBuilder);
+        IHostApplicationBuilder hostBuilder);
 
     public abstract ApplicationModuleRegistration PostConfigureHostBuilder(IApplicationContext context,
-        IHostBuilder hostBuilder);
+        IHostApplicationBuilder hostBuilder);
 
     public abstract ApplicationModuleRegistration ConfigureAppConfiguration(IApplicationContext context,
         IConfigurationBuilder configurationBuilder);
