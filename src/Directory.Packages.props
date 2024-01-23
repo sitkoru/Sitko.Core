@@ -87,7 +87,7 @@
   </ItemGroup>
   <!--Kafka libraries-->
   <ItemGroup>
-    <PackageVersion Include="KafkaFlow" Version="3.0.0" />
+    <PackageVersion Include="KafkaFlow" Version="3.0.3" />
     <PackageVersion Include="KafkaFlow.LogHandler.Microsoft" Version="3.0.0" />
     <PackageVersion Include="KafkaFlow.Microsoft.DependencyInjection" Version="3.0.0" />
     <PackageVersion Include="KafkaFlow.Serializer.JsonCore" Version="3.0.0" />
