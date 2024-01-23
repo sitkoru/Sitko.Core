@@ -13,18 +13,17 @@ internal class KafkaConsumerOffsetsEnsurer
 
     public async Task EnsureOffsetsAsync(KafkaConfigurator configurator, KafkaModuleOptions options)
     {
-        var adminClient = GetAdminClient(options.Brokers);
+        var adminClient = GetAdminClient(options);
         foreach (var consumer in configurator.Consumers)
         {
             foreach (var topic in consumer.Topics)
             {
-                await EnsureTopicOffsetsAsync(consumer, adminClient, topic, options.Brokers);
+                await EnsureTopicOffsetsAsync(consumer, adminClient, topic, options);
             }
         }
     }
 
-    private async Task EnsureTopicOffsetsAsync(ConsumerRegistration consumer, IAdminClient adminClient, TopicInfo topic,
-        string[] brokers)
+    private async Task EnsureTopicOffsetsAsync(ConsumerRegistration consumer, IAdminClient adminClient, TopicInfo topic, KafkaModuleOptions options)
     {
         logger.LogDebug("Try to create topic {Topic}", topic);
         try
@@ -84,8 +83,15 @@ internal class KafkaConsumerOffsetsEnsurer
         {
             var consumerConfig = new ConsumerConfig
             {
-                BootstrapServers = string.Join(",", brokers), GroupId = consumer.GroupId, EnableAutoCommit = false
+                BootstrapServers = string.Join(",", options.Brokers), GroupId = consumer.GroupId, EnableAutoCommit = false
             };
+            if (options.UseSaslAuth)
+            {
+                consumerConfig.SaslPassword = options.SaslPassword;
+                consumerConfig.SaslUsername = options.SaslUserName;
+                consumerConfig.SaslMechanism = (SaslMechanism?)options.SaslMechanisms;
+                consumerConfig.SecurityProtocol = (SecurityProtocol?)options.SecurityProtocol;
+            }
             var cts = new CancellationTokenSource();
             using var confluentConsumer = new ConsumerBuilder<byte[], byte[]>(consumerConfig)
                 .SetPartitionsAssignedHandler((_, _) => { cts.Cancel(); })
@@ -135,12 +141,21 @@ internal class KafkaConsumerOffsetsEnsurer
         }
     }
 
-    private IAdminClient GetAdminClient(string[] brokers)
+    private IAdminClient GetAdminClient(KafkaModuleOptions options)
     {
         var adminClientConfig = new AdminClientConfig
         {
-            BootstrapServers = string.Join(",", brokers), ClientId = "AdminClient"
+            BootstrapServers = string.Join(",", options.Brokers), ClientId = "AdminClient"
         };
+
+        if (options.UseSaslAuth)
+        {
+            adminClientConfig.SaslPassword = options.SaslPassword;
+            adminClientConfig.SaslUsername = options.SaslUserName;
+            adminClientConfig.SaslMechanism = (SaslMechanism?)options.SaslMechanisms;
+            adminClientConfig.SecurityProtocol = (SecurityProtocol?)options.SecurityProtocol;
+        }
+
         var adminClient = new AdminClientBuilder(adminClientConfig)
             .SetLogHandler((_, m) => logger.LogInformation("{Message}", m.Message))
             .SetErrorHandler((_, error) => logger.LogError("Kafka Consumer Error: {Error}", error))
