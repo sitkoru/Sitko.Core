@@ -57,6 +57,17 @@ public class KafkaConfigurator
                 clusterBuilder
                     .WithName(clusterName)
                     .WithBrokers(options.Brokers);
+                if (options.UseSaslAuth)
+                {
+                    clusterBuilder
+                        .WithSecurityInformation(information =>
+                        {
+                            information.SaslPassword = options.SaslPassword;
+                            information.SaslUsername = options.SaslUserName;
+                            information.SaslMechanism = options.SaslMechanisms;
+                            information.SecurityProtocol = options.SecurityProtocol;
+                        });
+                }
                 if (!ensureOffsets)
                 {
                     foreach (var (topic, config) in topics)

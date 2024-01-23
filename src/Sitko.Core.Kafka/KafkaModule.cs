@@ -4,6 +4,7 @@ using KafkaFlow;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Acks = Confluent.Kafka.Acks;
+using SecurityProtocol = KafkaFlow.Configuration.SecurityProtocol;
 
 namespace Sitko.Core.Kafka;
 
@@ -51,6 +52,12 @@ public class KafkaModuleOptions : BaseModuleOptions
     public string[] Brokers { get; set; } = Array.Empty<string>();
     public TimeSpan SessionTimeout { get; set; } = TimeSpan.FromSeconds(15);
     public TimeSpan MaxPollInterval { get; set; } = TimeSpan.FromMinutes(5);
+
+    public bool UseSaslAuth { get; set; }
+    public string SaslUserName { get; set; } = "";
+    public string SaslPassword { get; set; } = "";
+    public KafkaFlow.Configuration.SaslMechanism SaslMechanisms { get; set; } = KafkaFlow.Configuration.SaslMechanism.ScramSha512;
+    public SecurityProtocol? SecurityProtocol { get; set; } = KafkaFlow.Configuration.SecurityProtocol.Plaintext;
     public int MaxPartitionFetchBytes { get; set; } = 5 * 1024 * 1024;
     public Confluent.Kafka.AutoOffsetReset AutoOffsetReset { get; set; } = Confluent.Kafka.AutoOffsetReset.Latest;
 
