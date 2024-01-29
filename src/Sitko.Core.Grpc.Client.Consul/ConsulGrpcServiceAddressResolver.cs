@@ -101,7 +101,7 @@ public class ConsulGrpcServiceAddressResolver<TClient> : IGrpcServiceAddressReso
 
                 var serviceUrls = services.Select(service => new Uri(
                         $"{(Options.EnableHttp2UnencryptedSupport ? "http" : "https")}://{service.ServiceAddress}:{service.ServicePort}"))
-                    .OrderBy(uri => uri).ToList();
+                    .OrderBy(uri => uri.ToString(), StringComparer.OrdinalIgnoreCase).ToList();
 
                 if (serviceUrls.SequenceEqual(target))
                 {
