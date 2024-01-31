@@ -60,6 +60,12 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
         return this;
     }
 
+    public ISitkoCoreApplicationBuilder ConfigureServices(Action<IApplicationContext, IServiceCollection> configure)
+    {
+        configure(bootApplicationContext!, Services);
+        return this;
+    }
+
     public ISitkoCoreApplicationBuilder ConfigureServices(Action<IServiceCollection> configure)
     {
         configure(Services);

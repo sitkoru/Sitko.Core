@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 
@@ -28,4 +29,5 @@ public interface ISitkoCoreApplicationBuilder
         Func<IApplicationContext, LoggerConfiguration, LoggerConfiguration> configure);
 
     ISitkoCoreApplicationBuilder ConfigureServices(Action<IServiceCollection> configure);
+    ISitkoCoreApplicationBuilder ConfigureServices(Action<IApplicationContext, IServiceCollection> configure);
 }
