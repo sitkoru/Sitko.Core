@@ -88,21 +88,16 @@ public class SitkoCoreWebApplicationBuilder : SitkoCoreServerApplicationBuilder,
             });
         }
 
-        AddDataProtection();
+        var dataProtectionBuilder = Services.AddDataProtection()
+            .SetApplicationName(BootApplicationContext.Name)
+            .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
+        webOptions.ConfigureDataProtection?.Invoke(dataProtectionBuilder);
+
         ConfigureHealthChecks(Services.AddHealthChecks());
     }
 
     protected virtual IHealthChecksBuilder ConfigureHealthChecks(IHealthChecksBuilder healthChecksBuilder) =>
         healthChecksBuilder;
-
-    private void AddDataProtection() =>
-        ConfigureDataProtection(Services.AddDataProtection());
-
-    protected virtual IDataProtectionBuilder
-        ConfigureDataProtection(IDataProtectionBuilder dataProtectionBuilder) =>
-        dataProtectionBuilder
-            .SetApplicationName(BootApplicationContext.Name)
-            .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
 
     // https://devblogs.microsoft.com/aspnet/upcoming-samesite-cookie-changes-in-asp-net-and-asp-net-core/
     private static void CheckSameSite(HttpContext httpContext, CookieOptions options)
@@ -162,6 +157,8 @@ public class SitkoCoreWebOptions
     public bool EnableSameSiteCookiePolicy { get; set; } = true;
     public bool AllowAllForwardedHeaders { get; set; } = true;
     public bool EnableStaticFiles { get; set; } = true;
+
+    public Action<IDataProtectionBuilder>? ConfigureDataProtection { get; set; }
 
     public SitkoCoreWebOptions AddCorsPolicy(string name, CorsPolicy policy, bool isDefault = false)
     {
