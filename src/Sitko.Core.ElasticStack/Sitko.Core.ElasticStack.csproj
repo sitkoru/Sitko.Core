@@ -6,6 +6,6 @@
     <PackageReference Include="Serilog.Sinks.Elasticsearch"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
   </ItemGroup>
 </Project>
