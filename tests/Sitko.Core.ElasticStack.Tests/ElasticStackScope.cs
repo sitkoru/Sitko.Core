@@ -10,6 +10,7 @@ public class ElasticStackScope : BaseTestScope
         base.ConfigureApplication(hostBuilder, name).AddElasticStack(options =>
         {
             options.ElasticSearchUrls = new List<Uri> { new("http://localhost:9200") };
+            options.ApmServerUrls = new List<Uri> { new("http://localhost:8500") };
             options.LoggingTemplateVersion = AutoRegisterTemplateVersion.ESv8;
             options.LoggingIndexFormat = "logs-test";
             options.EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog | EmitEventFailureHandling.RaiseCallback;
