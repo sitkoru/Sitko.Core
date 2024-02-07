@@ -10,6 +10,7 @@ using Sitko.Core.App.Localization;
 using Sitko.Core.App.Logging;
 using Sitko.FluentValidation;
 using Tempus;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Sitko.Core.App;
 
@@ -111,12 +112,15 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
         // configure logging
         Configuration.Add(new SerilogDynamicConfigurationSource());
         internalLogger = CreateInternalLogger();
+        internalLogger.LogInformation("Start application in {Environment}", Environment.EnvironmentName);
         Logging.ClearProviders();
         Logging.AddSerilog();
         serilogConfigurator.Configure(ConfigureDefautLogger);
 
         AddModule<CommandsModule>();
 
+        Services.AddKeyedSingleton<ILogger>("BootLogger", InternalLogger);
+        Services.AddSingleton(typeof(IBootLogger<>), typeof(BootLogger<>));
         Services.AddSingleton<IApplicationArgsProvider>(argsProvider);
         Services.AddSingleton(Environment);
         Services.AddSingleton<IApplicationContext, BuilderApplicationContext>();

@@ -1,14 +1,15 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Sitko.Core.App.Logging;
 
 namespace Sitko.Core.App;
 
-public class ApplicationLifecycle(
+internal class ApplicationLifecycle(
     IApplicationContext context,
     IServiceProvider provider,
     IEnumerable<ApplicationModuleRegistration> applicationModuleRegistrations,
-    ILogger<ApplicationLifecycle> logger)
+    IBootLogger<ApplicationLifecycle> logger)
     : IApplicationLifecycle
 {
     private readonly IReadOnlyList<ApplicationModuleRegistration> enabledModules =
@@ -16,6 +17,7 @@ public class ApplicationLifecycle(
 
     public async Task StartingAsync(CancellationToken cancellationToken)
     {
+        logger.LogInformation("Applicaiton starting");
         await using var scope = provider.CreateAsyncScope();
 
         foreach (var enabledModule in enabledModules)
@@ -93,10 +95,13 @@ public class ApplicationLifecycle(
                     ex.ToString());
             }
         }
+
+        logger.LogInformation("Applicaiton started");
     }
 
     public async Task StoppingAsync(CancellationToken cancellationToken)
     {
+        logger.LogInformation("Applicaiton stopping");
         foreach (var moduleRegistration in enabledModules)
         {
             try
@@ -127,5 +132,7 @@ public class ApplicationLifecycle(
                     ex.ToString());
             }
         }
+
+        logger.LogInformation("Applicaiton stopped");
     }
 }
