@@ -115,7 +115,7 @@ internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : A
         if (instance is IConfigurationModule<TModuleOptions> configurationModule)
         {
             var options = CreateOptions(context);
-            configurationModule.ConfigureAppConfiguration(configurationBuilder,
+            configurationModule.ConfigureAppConfiguration(context, configurationBuilder,
                 options);
         }
 

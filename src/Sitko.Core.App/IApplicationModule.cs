@@ -70,6 +70,6 @@ public interface IConfigurationModule : IApplicationModule
 public interface IConfigurationModule<in TModuleOptions> : IApplicationModule<TModuleOptions>, IConfigurationModule
     where TModuleOptions : class, new()
 {
-    void ConfigureAppConfiguration(IConfigurationBuilder configurationBuilder,
+    void ConfigureAppConfiguration(IApplicationContext context, IConfigurationBuilder configurationBuilder,
         TModuleOptions startupOptions);
 }

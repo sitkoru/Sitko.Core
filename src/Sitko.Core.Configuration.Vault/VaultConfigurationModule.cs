@@ -14,7 +14,7 @@ public class VaultConfigurationModule : BaseApplicationModule<VaultConfiguration
 {
     public override string OptionsKey => "Vault";
 
-    public void ConfigureAppConfiguration(IConfigurationBuilder configurationBuilder,
+    public void ConfigureAppConfiguration(IApplicationContext context, IConfigurationBuilder configurationBuilder,
         VaultConfigurationModuleOptions startupOptions)
     {
         foreach (var secret in startupOptions.Secrets)
