@@ -143,6 +143,8 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
                 restrictedToMinimumLevel: LogEventLevel.Debug);
         }
 
+        tmpLoggerConfiguration.MinimumLevel.Warning();
+        tmpLoggerConfiguration.MinimumLevel.Override("Sitko.Core", LogEventLevel.Information);
         var tmpLogger = tmpLoggerConfiguration.CreateLogger();
         Log.Logger = tmpLogger; // set default logger until host is started
         Console.OutputEncoding = Encoding.UTF8;
