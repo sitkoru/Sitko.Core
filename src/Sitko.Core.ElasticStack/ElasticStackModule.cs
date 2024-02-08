@@ -18,7 +18,7 @@ public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOption
 {
     public override string OptionsKey => "ElasticApm";
 
-    public void ConfigureHostBuilder(IApplicationContext context, IHostApplicationBuilder hostBuilder,
+    public void PostConfigureHostBuilder(IApplicationContext context, IHostApplicationBuilder hostBuilder,
         ElasticStackModuleOptions startupOptions)
     {
         if (startupOptions.ApmEnabled)
