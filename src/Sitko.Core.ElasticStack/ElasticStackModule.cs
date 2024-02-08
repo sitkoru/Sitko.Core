@@ -147,7 +147,7 @@ public class ElasticStackModule : BaseApplicationModule<ElasticStackModuleOption
     }
 
     private static void AddOption(IDictionary<string, string?> options, ConfigurationOption option, string? value) =>
-        options[$"ElasticApm:{Enum.GetName(typeof(CompareOptions), option)}"] = value;
+        options[$"ElasticApm:{Enum.GetName(typeof(ConfigurationOption), option)}"] = value;
 
     public void CheckConfiguration(IApplicationContext context, IServiceProvider serviceProvider)
     {
