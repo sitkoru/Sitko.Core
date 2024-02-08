@@ -20,7 +20,7 @@ public class FileSystemStorageMetadataProvider<TStorageOptions> : EmbedStorageMe
     {
     }
 
-    protected override Task DoDeleteMetadataAsync(string filePath, CancellationToken cancellationToken = default)
+    protected override Task DeleteEmbededMetadataAsync(string filePath, CancellationToken cancellationToken = default)
     {
         var fullPath = Path.Combine(StorageOptions.CurrentValue.StoragePath, filePath);
         var metaDataPath = GetMetaDataPath(fullPath);
@@ -32,7 +32,7 @@ public class FileSystemStorageMetadataProvider<TStorageOptions> : EmbedStorageMe
         return Task.CompletedTask;
     }
 
-    protected override Task DoDeleteAllMetadataAsync(CancellationToken cancellationToken = default) =>
+    protected override Task DeleteAllEmbededMetadataAsync(CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
     protected override async Task<StorageItemMetadata?> DoGetMetadataJsonAsync(string path,
@@ -53,7 +53,7 @@ public class FileSystemStorageMetadataProvider<TStorageOptions> : EmbedStorageMe
         return null;
     }
 
-    protected override async Task DoSaveMetadataAsync(StorageItem storageItem, StorageItemMetadata? metadata = null,
+    protected override async Task SaveEmbededMetadataAsync(StorageItem storageItem, StorageItemMetadata? metadata = null,
         bool isNew = true,
         CancellationToken cancellationToken = default)
     {

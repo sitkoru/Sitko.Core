@@ -17,7 +17,7 @@ public class S3StorageMetadataProvider<TStorageOptions> : EmbedStorageMetadataPr
     {
     }
 
-    protected override async Task DoDeleteMetadataAsync(string filePath,
+    protected override async Task DeleteEmbededMetadataAsync(string filePath,
         CancellationToken cancellationToken = default)
     {
         if (await Storage.IsObjectExistsAsync(filePath, cancellationToken))
@@ -27,10 +27,11 @@ public class S3StorageMetadataProvider<TStorageOptions> : EmbedStorageMetadataPr
         }
     }
 
-    protected override Task DoDeleteAllMetadataAsync(CancellationToken cancellationToken = default) =>
+    protected override Task DeleteAllEmbededMetadataAsync(CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
-    protected override async Task DoSaveMetadataAsync(StorageItem storageItem, StorageItemMetadata? metadata = null,
+    protected override async Task SaveEmbededMetadataAsync(StorageItem storageItem,
+        StorageItemMetadata? metadata = null,
         bool isNew = true,
         CancellationToken cancellationToken = default)
     {
@@ -61,4 +62,3 @@ public class S3StorageMetadataProvider<TStorageOptions> : EmbedStorageMetadataPr
 
 public class S3StorageMetadataModuleOptions<TStorageOptions> : EmbedStorageMetadataModuleOptions<TStorageOptions>
     where TStorageOptions : StorageOptions;
-
