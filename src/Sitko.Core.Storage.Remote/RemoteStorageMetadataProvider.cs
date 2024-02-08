@@ -17,15 +17,15 @@ public class RemoteStorageMetadataProvider<TStorageOptions> : EmbedStorageMetada
     }
 
     protected override Task
-        DoDeleteMetadataAsync(string filePath, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        DeleteEmbededMetadataAsync(string filePath, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
-    protected override Task DoDeleteAllMetadataAsync(CancellationToken cancellationToken = default) =>
+    protected override Task DeleteAllEmbededMetadataAsync(CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
     protected override Task<StorageItemMetadata?> DoGetMetadataJsonAsync(string path,
         CancellationToken cancellationToken = default) => Task.FromResult<StorageItemMetadata?>(null);
 
-    protected override Task DoSaveMetadataAsync(StorageItem storageItem, StorageItemMetadata? metadata = null,
+    protected override Task SaveEmbededMetadataAsync(StorageItem storageItem, StorageItemMetadata? metadata = null,
         bool isNew = true,
         CancellationToken cancellationToken = default) => isNew
         ? Task.CompletedTask

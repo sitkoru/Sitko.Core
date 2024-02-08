@@ -8,7 +8,7 @@ namespace Sitko.Core.Storage.Metadata;
 
 public abstract class
     EmbedStorageMetadataProvider<TStorage, TStorageOptions, TOptions> : BaseStorageMetadataProvider<TOptions,
-        TStorageOptions>, IEmbedStorageMetadataProvider
+    TStorageOptions>, IEmbedStorageMetadataProvider
     where TStorage : IStorage<TStorageOptions>
     where TOptions : EmbedStorageMetadataModuleOptions<TStorageOptions>
     where TStorageOptions : StorageOptions
@@ -135,6 +135,37 @@ public abstract class
             Logger.LogInformation("Done building storage tree");
         }
     }
+
+
+    protected sealed override async Task DoDeleteMetadataAsync(string filePath,
+        CancellationToken cancellationToken = default)
+    {
+        await DeleteEmbededMetadataAsync(filePath, cancellationToken);
+        tree?.RemoveItem(filePath);
+    }
+
+    protected sealed override async Task DoSaveMetadataAsync(StorageItem storageItem,
+        StorageItemMetadata? metadata = null,
+        bool isNew = true,
+        CancellationToken cancellationToken = default)
+    {
+        await SaveEmbededMetadataAsync(storageItem, metadata, isNew, cancellationToken);
+        tree?.AddOrUpdateItem(storageItem);
+    }
+
+    protected sealed override async Task DoDeleteAllMetadataAsync(CancellationToken cancellationToken = default)
+    {
+        await DeleteAllEmbededMetadataAsync(cancellationToken);
+        tree = null;
+    }
+
+    protected abstract Task DeleteEmbededMetadataAsync(string filePath, CancellationToken cancellationToken = default);
+
+    protected abstract Task DeleteAllEmbededMetadataAsync(CancellationToken cancellationToken = default);
+
+    protected abstract Task SaveEmbededMetadataAsync(StorageItem storageItem, StorageItemMetadata? metadata = null,
+        bool isNew = true,
+        CancellationToken cancellationToken = default);
 }
 
 public class EmbedStorageMetadataModuleOptions<TStorageOptions> : StorageMetadataModuleOptions<TStorageOptions>
@@ -142,4 +173,3 @@ public class EmbedStorageMetadataModuleOptions<TStorageOptions> : StorageMetadat
 {
     public int StorageTreeCacheTimeoutInMinutes { get; set; } = 30;
 }
-

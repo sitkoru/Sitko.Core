@@ -120,6 +120,12 @@ public sealed record StorageNode
     }
 
     private static string PreparePath(string path) => path.Replace("\\", "/").Replace("//", "/");
+
+    public void AddOrUpdateItem(StorageItem storageItem)
+    {
+        RemoveItem(storageItem);
+        AddItem(storageItem);
+    }
 }
 
 public enum StorageNodeType
@@ -127,4 +133,3 @@ public enum StorageNodeType
     Directory,
     StorageItem
 }
-

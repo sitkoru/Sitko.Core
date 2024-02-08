@@ -131,6 +131,42 @@ public abstract class BasicTests<T> : BaseTest<T>
         await CheckFoldersContent(storage, uploaded, metaData);
     }
 
+    [Fact]
+    public async Task TraverseAfterUpdate()
+    {
+        var scope = await GetScopeAsync();
+
+        var storage = scope.GetService<IStorage>();
+
+        Assert.NotNull(storage);
+
+        StorageItem uploaded;
+        const string fileName = "file.txt";
+        var metaData = new FileMetaData();
+        var dir = "upload/dir1/dir2";
+        await using (var file = File.Open("Data/file.txt", FileMode.Open))
+        {
+            uploaded = await storage.SaveAsync(file, fileName, dir, metaData);
+        }
+
+        Assert.NotNull(uploaded);
+
+        var content = await storage.GetDirectoryContentsAsync(dir);
+        content.Should().HaveCount(1);
+
+        const string fileName2 = "file2.txt";
+        var metaData2 = new FileMetaData();
+        await using (var file = File.Open("Data/file.txt", FileMode.Open))
+        {
+            uploaded = await storage.SaveAsync(file, fileName2, dir, metaData2);
+        }
+
+        uploaded.Should().NotBeNull();
+
+        content = await storage.GetDirectoryContentsAsync(dir);
+        content.Should().HaveCount(2);
+    }
+
     protected static async Task CheckFoldersContent(IStorage storage, StorageItem uploaded,
         FileMetaData? metaData)
     {
