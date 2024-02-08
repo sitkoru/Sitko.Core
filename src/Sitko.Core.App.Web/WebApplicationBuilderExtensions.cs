@@ -66,22 +66,29 @@ public static class WebApplicationBuilderExtensions
             }
         }
 
-        if (webOptions.EnableMvc)
-        {
-            webApplication.MapControllers();
-        }
-
         var webModules =
             ModulesHelper.GetEnabledModuleRegistrations(applicationContext, applicationModuleRegistrations)
                 .Select(r => r.GetInstance())
                 .OfType<IWebApplicationModule>()
                 .ToList();
+
+        var authModules = webModules.OfType<IAuthApplicationModule>().ToList();
+        if (authModules.Count != 0)
+        {
+            webApplication.UseAuthentication();
+            webApplication.UseAuthorization();
+        }
+
         foreach (var webModule in webModules)
         {
             webModule.ConfigureBeforeUseRouting(applicationContext, webApplication);
             webModule.ConfigureAfterUseRouting(applicationContext, webApplication);
-            webModule.ConfigureAuthMiddleware(applicationContext, webApplication);
             webModule.ConfigureEndpoints(applicationContext, webApplication, webApplication);
+        }
+
+        if (webOptions.EnableMvc)
+        {
+            webApplication.MapControllers();
         }
 
         return webApplication;

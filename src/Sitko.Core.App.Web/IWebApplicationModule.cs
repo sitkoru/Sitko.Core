@@ -24,11 +24,6 @@ public interface IWebApplicationModule : IApplicationModule
         IApplicationBuilder appBuilder)
     {
     }
-
-    void ConfigureAuthMiddleware(IApplicationContext applicationContext,
-        IApplicationBuilder appBuilder)
-    {
-    }
 }
 
 public interface IWebApplicationModule<TModuleOptions> : IWebApplicationModule, IApplicationModule<TModuleOptions>
@@ -39,3 +34,5 @@ public interface IWebApplicationModule<TModuleOptions> : IWebApplicationModule, 
     {
     }
 }
+
+public interface IAuthApplicationModule : IWebApplicationModule;

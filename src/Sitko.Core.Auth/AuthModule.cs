@@ -12,26 +12,10 @@ namespace Sitko.Core.Auth;
 
 public interface IAuthModule : IApplicationModule;
 
-internal static class AuthMiddlewareState
-{
-    public static bool IsConfigured { get; set; }
-}
-
-public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOptions>, IWebApplicationModule,
+public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOptions>, IAuthApplicationModule,
     IAuthModule
     where TAuthOptions : AuthOptions, new()
 {
-    public virtual void ConfigureAuthMiddleware(IApplicationContext applicationContext,
-        IApplicationBuilder appBuilder)
-    {
-        if (!AuthMiddlewareState.IsConfigured)
-        {
-            AuthMiddlewareState.IsConfigured = true;
-            appBuilder.UseAuthentication().UseAuthorization();
-            appBuilder.UseMiddleware<AuthorizationMiddleware<TAuthOptions>>();
-        }
-    }
-
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TAuthOptions startupOptions)
     {
@@ -65,15 +49,21 @@ public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOpti
             {
                 options.AddPolicy(name, policy);
             }
+
+            if (!string.IsNullOrEmpty(startupOptions.ForcePolicy))
+            {
+                options.FallbackPolicy = startupOptions.Policies
+                    .FirstOrDefault(pair => pair.Key == startupOptions.ForcePolicy).Value;
+            }
         });
         if (startupOptions.EnableRedisDataProtection)
         {
             services.AddDataProtection().PersistKeysToStackExchangeRedis(() =>
-                {
-                    var redis = ConnectionMultiplexer
-                        .Connect($"{startupOptions.RedisHost}:{startupOptions.RedisPort}");
-                    return redis.GetDatabase(startupOptions.RedisDb);
-                }, $"{applicationContext.Name}-DP")
+                    {
+                        var redis = ConnectionMultiplexer
+                            .Connect($"{startupOptions.RedisHost}:{startupOptions.RedisPort}");
+                        return redis.GetDatabase(startupOptions.RedisDb);
+                    }, $"{applicationContext.Name}-DP")
                 .SetApplicationName(applicationContext.Name)
                 .SetDefaultKeyLifetime(TimeSpan.FromMinutes(startupOptions.DataProtectionLifeTimeInMinutes));
         }
@@ -86,4 +76,3 @@ public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOpti
     protected abstract void ConfigureAuthentication(AuthenticationBuilder authenticationBuilder,
         TAuthOptions startupOptions);
 }
-

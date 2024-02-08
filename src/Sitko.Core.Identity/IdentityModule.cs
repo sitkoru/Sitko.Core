@@ -12,7 +12,7 @@ using Sitko.Core.App.Web;
 namespace Sitko.Core.Identity;
 
 public class IdentityModule<TUser, TRole, TPk, TDbContext> : BaseApplicationModule<IdentityModuleOptions>,
-    IWebApplicationModule
+    IAuthApplicationModule
     where TUser : IdentityUser<TPk>
     where TRole : IdentityRole<TPk>
     where TDbContext : IdentityDbContext<TUser, TRole, TPk>
@@ -29,13 +29,6 @@ public class IdentityModule<TUser, TRole, TPk, TDbContext> : BaseApplicationModu
         {
             endpoints.MapRazorPages();
         }
-    }
-
-    public void ConfigureAfterUseRouting(IApplicationContext applicationContext,
-        IApplicationBuilder appBuilder)
-    {
-        appBuilder.UseAuthentication();
-        appBuilder.UseAuthorization();
     }
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
@@ -110,4 +103,3 @@ public class FakeEnv : IWebHostEnvironment
     public string WebRootPath { get; set; } = "";
     public IFileProvider WebRootFileProvider { get; set; } = null!;
 }
-
