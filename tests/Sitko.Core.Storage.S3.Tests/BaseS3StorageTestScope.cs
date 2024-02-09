@@ -13,6 +13,7 @@ public class BaseS3StorageTestScope : BaseTestScope
             {
                 moduleOptions.Bucket = bucketName.ToString().ToLowerInvariant();
                 moduleOptions.Prefix = "test";
+                moduleOptions.DeleteBucketOnCleanup = true;
             })
             .AddS3StorageMetadata<TestS3StorageSettings>();
 
