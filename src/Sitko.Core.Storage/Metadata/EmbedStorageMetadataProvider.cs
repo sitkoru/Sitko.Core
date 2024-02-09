@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using System.Collections.Concurrent;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nito.AsyncEx;
@@ -110,18 +111,32 @@ public abstract class
             Logger.LogInformation("Start building storage tree");
             treeBuildTaskSource = new TaskCompletionSource<bool>();
             tree = StorageNode.CreateDirectory("/", "/");
-            var items = await Storage.GetAllItemsAsync("/", cancellationToken);
-            foreach (var info in items)
+            var items = (await Storage.GetAllItemsAsync("/", cancellationToken)).ToDictionary(info => info.Path,
+                info => info);
+            var metadataItems =
+                items.Where(pair => pair.Key.EndsWith(MetaDataExtension, StringComparison.InvariantCulture))
+                    .Select(pair => pair.Value).ToList();
+            var allMetadata = new ConcurrentDictionary<string, StorageItemMetadata?>();
+            Logger.LogInformation("Download {Count} metadata items", metadataItems.Count);
+            await Parallel.ForEachAsync(metadataItems,
+                new ParallelOptions
+                {
+                    CancellationToken = cancellationToken,
+                    MaxDegreeOfParallelism = Options.CurrentValue.MaxParallelDownloadStreams
+                }, async (info, token) =>
+                {
+                    var filePath = info.Path.Replace(MetaDataExtension, "");
+                    var metadata = await DoGetMetadataAsync(filePath, token);
+                    allMetadata.TryAdd(filePath, metadata);
+                });
+            Logger.LogInformation("Metadata downloaded");
+            foreach (var (path, info) in items.Where(pair =>
+                         !pair.Key.EndsWith(MetaDataExtension, StringComparison.InvariantCulture)))
             {
-                if (info.Path.EndsWith(MetaDataExtension, StringComparison.InvariantCulture))
-                {
-                    continue;
-                }
-
                 StorageItemMetadata? metadata = null;
-                if (info.Metadata is null)
+                if (allMetadata.TryGetValue(path, out var itemMetadata) && itemMetadata is not null)
                 {
-                    metadata = await DoGetMetadataAsync(info.Path, cancellationToken);
+                    metadata = itemMetadata;
                 }
 
                 var item = info.GetStorageItem(metadata);
@@ -172,4 +187,5 @@ public class EmbedStorageMetadataModuleOptions<TStorageOptions> : StorageMetadat
     where TStorageOptions : StorageOptions
 {
     public int StorageTreeCacheTimeoutInMinutes { get; set; } = 30;
+    public int MaxParallelDownloadStreams { get; set; } = 8;
 }
