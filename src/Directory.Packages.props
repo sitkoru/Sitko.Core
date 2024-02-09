@@ -68,8 +68,8 @@
   </ItemGroup>
   <!--Hangfire libraries-->
   <ItemGroup>
-    <PackageVersion Include="Hangfire.Core" Version="1.8.6" />
-    <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.6" />
+    <PackageVersion Include="Hangfire.Core" Version="1.8.9" />
+    <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.9" />
     <PackageVersion Include="Hangfire.PostgreSql" Version="1.20.4" />
   </ItemGroup>
   <!--MS libraries-->
