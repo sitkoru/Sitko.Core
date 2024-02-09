@@ -219,7 +219,7 @@ public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsy
             filePath = Helpers.PreparePath(Path.Combine(Options.Prefix, filePath))!;
         }
 
-        return filePath;
+        return Helpers.PreparePath(filePath)!;
     }
 
     private async Task<StorageItemDownloadInfo?> GetStorageItemInfoAsync(string path,

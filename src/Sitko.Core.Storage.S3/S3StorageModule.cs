@@ -54,6 +54,7 @@ public class S3StorageOptions : StorageOptions, IModuleOptionsWithValidation
     public bool GeneratePreSignedUrls { get; set; }
     public int PreSignedUrlsExpirationInHours { get; set; } = 1;
     public Policy? BucketPolicy { get; set; }
+    public bool DeleteBucketOnCleanup { get; set; }
 
     public Policy AnonymousReadPolicy => new()
     {
