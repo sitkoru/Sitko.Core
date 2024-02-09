@@ -160,16 +160,23 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
             if (string.IsNullOrEmpty(Options.Prefix))
             {
                 using var s3Client = s3ClientProvider.S3Client;
-                try
+                if (Options.DeleteBucketOnCleanup)
                 {
-                    await AmazonS3Util.DeleteS3BucketWithObjectsAsync(s3Client, Options.Bucket,
-                        cancellationToken);
+                    try
+                    {
+                        await AmazonS3Util.DeleteS3BucketWithObjectsAsync(s3Client, Options.Bucket,
+                            cancellationToken);
+                    }
+                    catch (AmazonS3Exception ex) when (ex.Message.Contains(
+                                                           "A header you provided implies functionality that is not implemented"))
+                    {
+                        await DeleteAllObjectsInBucket(cancellationToken);
+                        await s3Client.DeleteBucketAsync(Options.Bucket, cancellationToken);
+                    }
                 }
-                catch (AmazonS3Exception ex) when (ex.Message.Contains(
-                                                       "A header you provided implies functionality that is not implemented"))
+                else
                 {
                     await DeleteAllObjectsInBucket(cancellationToken);
-                    await s3Client.DeleteBucketAsync(Options.Bucket, cancellationToken);
                 }
             }
             else
@@ -273,4 +280,3 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
         return items;
     }
 }
-
