@@ -31,7 +31,7 @@
   </ItemGroup>
   <!--Sitko libraries-->
   <ItemGroup>
-    <PackageVersion Include="Sitko.FluentValidation" Version="1.10.0" />
+    <PackageVersion Include="Sitko.FluentValidation" Version="1.11.0" />
     <PackageVersion Include="Sitko.Blazor.ScriptInjector" Version="3.1.0" />
   </ItemGroup>
   <!--ASP.NET Core libraries-->
