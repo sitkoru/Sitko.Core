@@ -60,13 +60,13 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
 
     public override IRepositoryQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> orderBy)
     {
-        orderByExpressions.Add(orderBy);
+        orderByDescendingExpressions.Add(orderBy);
         return this;
     }
 
     public override IRepositoryQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> orderBy)
     {
-        orderByDescendingExpressions.Add(orderBy);
+        orderByExpressions.Add(orderBy);
         return this;
     }
 
