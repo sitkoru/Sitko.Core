@@ -240,6 +240,7 @@ public class
     }
 
     protected override async Task<PropertyChange[]> DoUpdateAsync(TEntity entity, TEntity? oldEntity,
+        EntityUpdateOptions<TEntity, TEntityPk> options,
         CancellationToken cancellationToken = default)
     {
         var changes = await GetChangesAsync(entity);

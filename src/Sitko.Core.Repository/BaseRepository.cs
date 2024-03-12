@@ -166,7 +166,8 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         await AddAsync(entities, DoAddExternalAsync, cancellationToken);
 
     public virtual Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity entity,
-        CancellationToken cancellationToken = default) => UpdateAsync(entity, null, cancellationToken);
+        CancellationToken cancellationToken = default) => UpdateAsync(entity, null,
+        new EntityUpdateOptions<TEntity, TEntityPk>(), cancellationToken);
 
     public Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> UpdateAsync(IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default) =>
@@ -180,8 +181,31 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         return result.First();
     }
 
-    public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> UpdateAsync(
+    public virtual Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity entity,
+        EntityUpdateOptions<TEntity, TEntityPk> options,
+        CancellationToken cancellationToken = default) => UpdateAsync(entity, null,
+        options, cancellationToken);
+
+    public Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> UpdateAsync(IEnumerable<TEntity> entities,
+        EntityUpdateOptions<TEntity, TEntityPk> options,
+        CancellationToken cancellationToken = default) =>
+        UpdateAsync(entities.Select(e => (e, (TEntity?)null)), options, cancellationToken);
+
+    public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>> UpdateAsync(TEntity entity,
+        TEntity? oldEntity, EntityUpdateOptions<TEntity, TEntityPk> options,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await UpdateAsync(new[] { (entity, oldEntity) }, options, cancellationToken);
+        return result.First();
+    }
+
+    public virtual Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> UpdateAsync(
         IEnumerable<(TEntity entity, TEntity? oldEntity)> entities,
+        CancellationToken cancellationToken = default) => UpdateAsync(entities,
+        new EntityUpdateOptions<TEntity, TEntityPk>(), cancellationToken);
+
+    public virtual async Task<AddOrUpdateOperationResult<TEntity, TEntityPk>[]> UpdateAsync(
+        IEnumerable<(TEntity entity, TEntity? oldEntity)> entities, EntityUpdateOptions<TEntity, TEntityPk> options,
         CancellationToken cancellationToken = default)
     {
         var results = new List<AddOrUpdateOperationResult<TEntity, TEntityPk>>();
@@ -198,7 +222,8 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
                 {
                     if (await BeforeSaveAsync(entityTuple.entity, validationResult, false, cancellationToken))
                     {
-                        changes = await DoUpdateAsync(entityTuple.entity, entityTuple.oldEntity, cancellationToken);
+                        changes = await DoUpdateAsync(entityTuple.entity, entityTuple.oldEntity, options,
+                            cancellationToken);
                         if (!hasErrors)
                         {
                             await SaveAsync(
@@ -722,6 +747,7 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
     protected abstract Task DoAddExternalAsync(TEntity entity, CancellationToken cancellationToken = default);
 
     protected abstract Task<PropertyChange[]> DoUpdateAsync(TEntity entity, TEntity? oldEntity,
+        EntityUpdateOptions<TEntity, TEntityPk> options,
         CancellationToken cancellationToken = default);
 
     protected abstract Task DoDeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
@@ -799,4 +825,3 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         FiltersManager.BeforeValidateAsync<TEntity, TEntityPk>(item, validationResult, isNew,
             cancellationToken);
 }
-

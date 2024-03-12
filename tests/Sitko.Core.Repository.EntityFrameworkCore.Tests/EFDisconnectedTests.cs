@@ -113,5 +113,43 @@ public class EFDisconnectedTests : BaseTest<EFTestScope>
             Assert.Null(updatedBar);
         }
     }
-}
 
+    [Fact]
+    public async Task UpdateWithExistingInDbContext()
+    {
+        var scope = await GetScopeAsync();
+        var repository = scope.GetService<BarRepository>();
+        var attached = await repository.GetAsync(q => q.Where(b => b.TestId != null));
+        attached.Should().NotBeNull();
+
+        var detached = await repository.GetAsync(q => q.Where(b => b.TestId != null).AsNoTracking());
+        detached.Should().NotBeNull();
+        attached.Should().Be(detached);
+
+        detached!.TestId = Guid.NewGuid();
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await repository.UpdateAsync(detached));
+        ex.Message.Should()
+            .Contain(
+                $"Entity {typeof(BarModel)} with Pk {detached.Id} was already loaded into DbContext. Set OverrideExistingEntity option to true if you want to override it.");
+    }
+
+    [Fact]
+    public async Task UpdateWithExistingInDbContextAndOverride()
+    {
+        var scope = await GetScopeAsync();
+        var repository = scope.GetService<FooRepository>();
+        var attached = await repository.GetAsync();
+        attached.Should().NotBeNull();
+
+        var detached = await repository.GetByIdAsync(attached!.Id, q => q.AsNoTracking());
+        detached.Should().NotBeNull();
+        attached.Id.Should().Be(detached!.Id);
+
+        detached.FooText = Guid.NewGuid().ToString();
+        await repository.UpdateAsync(detached,
+            new EntityUpdateOptions<FooModel, Guid> { OverrideExistingEntity = true });
+        attached = await repository.GetByIdAsync(attached.Id);
+        attached!.FooText.Should().Be(detached.FooText);
+    }
+}
