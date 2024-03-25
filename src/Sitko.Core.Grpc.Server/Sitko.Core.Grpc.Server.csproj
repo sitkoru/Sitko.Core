@@ -6,6 +6,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore"/>
+    <PackageReference Include="Grpc.AspNetCore.Web"/>
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection"/>
   </ItemGroup>
 </Project>

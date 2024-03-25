@@ -13,15 +13,21 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
 {
     private readonly List<Action<IEndpointRouteBuilder>> endpointRegistrations = new();
 
-    public virtual void RegisterService<TService>(string? requiredAuthorizarionSchemeName) where TService : class =>
+    public virtual void RegisterService<TService>(string? requiredAuthorizationSchemeName, bool enableGrpcWeb = false)
+        where TService : class =>
         endpointRegistrations.Add(builder =>
         {
-            var grpcBuidler = builder.MapGrpcService<TService>();
-            if (!string.IsNullOrEmpty(requiredAuthorizarionSchemeName))
+            var grpcEndpoint = builder.MapGrpcService<TService>();
+            if (enableGrpcWeb)
             {
-                grpcBuidler.RequireAuthorization(new AuthorizeAttribute
+                grpcEndpoint = grpcEndpoint.EnableGrpcWeb();
+            }
+
+            if (!string.IsNullOrEmpty(requiredAuthorizationSchemeName))
+            {
+                grpcEndpoint.RequireAuthorization(new AuthorizeAttribute
                 {
-                    AuthenticationSchemes = requiredAuthorizarionSchemeName
+                    AuthenticationSchemes = requiredAuthorizationSchemeName,
                 });
             }
         });
@@ -55,6 +61,11 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
         IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
     {
         var config = GetOptions(appBuilder.ApplicationServices);
+        if (config.EnableGrpcWeb)
+        {
+            appBuilder.UseGrpcWeb();
+        }
+
         foreach (var endpointRegistration in endpointRegistrations)
         {
             endpointRegistration(endpoints);
