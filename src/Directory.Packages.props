@@ -76,7 +76,7 @@
   <ItemGroup>
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     <PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0" />
-    <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.8.14" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.9.28" />
   </ItemGroup>
   <!--EF Core libraries-->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
