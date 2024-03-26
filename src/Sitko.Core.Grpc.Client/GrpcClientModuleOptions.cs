@@ -29,6 +29,34 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
         configureAuthAction?.Invoke(services, builder);
     }
 
+    public GrpcClientModuleOptions<TClient> AddMetadataProvider<TMetadataProvider>()
+        where TMetadataProvider : class, IGrpcMetadataProvider
+    {
+        configureAuthAction = (services, builder) =>
+        {
+            services.TryAddTransient<IGrpcMetadataProvider, TMetadataProvider>();
+            builder.AddCallCredentials(async (_, metadata, serviceProvider) =>
+            {
+                var provider = serviceProvider.GetRequiredService<IGrpcMetadataProvider>();
+                var newMetadata = await provider.GetMetadataAsync();
+                if (newMetadata?.Count > 0)
+                {
+                    foreach (var (key, value) in newMetadata)
+                    {
+                        var oldEntries = metadata.GetAll(key);
+                        foreach (var entry in oldEntries)
+                        {
+                            metadata.Remove(entry);
+                        }
+
+                        metadata.Add(key, value);
+                    }
+                }
+            });
+        };
+        return this;
+    }
+
     public GrpcClientModuleOptions<TClient> AddTokenAuth<TTokenProvider>()
         where TTokenProvider : class, IGrpcTokenProvider
     {
