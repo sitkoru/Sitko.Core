@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Serilog.Events;
 using Sitko.Core.App;
 using Sitko.Core.Db.Postgres;
@@ -28,11 +27,6 @@ public class EFTestScope : BaseEFTestScope
     {
         base.ConfigurePostgresDatabaseModule(applicationContext, moduleOptions, applicationId, dbName);
         moduleOptions.Schema = dbName + applicationId;
-        moduleOptions.ConfigureDbContextOptions = (builder, _, _) =>
-        {
-            builder.ConfigureWarnings(configurationBuilder =>
-                configurationBuilder.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning));
-        };
     }
 
     protected override async Task InitDbContextAsync(TestDbContext dbContext)

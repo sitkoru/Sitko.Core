@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
@@ -124,9 +125,12 @@ public abstract class
 
     protected virtual void ConfigurePostgresDatabaseModule<TSomeDbContext>(IApplicationContext applicationContext,
         PostgresDatabaseModuleOptions<TSomeDbContext> moduleOptions, Guid applicationId,
-        string dbName) where TSomeDbContext : DbContext
-    {
-    }
+        string dbName) where TSomeDbContext : DbContext =>
+        moduleOptions.ConfigureDbContextOptions = (builder, _, _) =>
+        {
+            builder.ConfigureWarnings(configurationBuilder =>
+                configurationBuilder.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning));
+        };
 }
 
 public abstract class
