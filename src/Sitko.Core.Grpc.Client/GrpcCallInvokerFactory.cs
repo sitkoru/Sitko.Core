@@ -109,7 +109,7 @@ internal class GrpcCallInvokerFactory
             if (address == null)
             {
                 logger.LogError("Could not resolve the address for gRPC client '{Name}'", name);
-                address = new Uri("https://localhost"); // fake address
+                return new NoAddressCallInvoker(name);
             }
 
             addresses[key.Type] = address;
