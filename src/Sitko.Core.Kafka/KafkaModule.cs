@@ -52,10 +52,10 @@ public class KafkaModuleOptions : BaseModuleOptions
     public string[] Brokers { get; set; } = Array.Empty<string>();
     public TimeSpan SessionTimeout { get; set; } = TimeSpan.FromSeconds(15);
     public TimeSpan MaxPollInterval { get; set; } = TimeSpan.FromMinutes(5);
-
     public bool UseSaslAuth { get; set; }
     public string SaslUserName { get; set; } = "";
     public string SaslPassword { get; set; } = "";
+    public string SaslCertBase64 { get; set; } = "";
     public KafkaFlow.Configuration.SaslMechanism SaslMechanisms { get; set; } = KafkaFlow.Configuration.SaslMechanism.ScramSha512;
     public SecurityProtocol? SecurityProtocol { get; set; } = KafkaFlow.Configuration.SecurityProtocol.Plaintext;
     public int MaxPartitionFetchBytes { get; set; } = 5 * 1024 * 1024;
@@ -70,10 +70,22 @@ public class KafkaModuleOptions : BaseModuleOptions
     public bool EnableIdempotence { get; set; } = true;
     public bool SocketNagleDisable { get; set; } = true;
     public Acks Acks { get; set; } = Acks.All;
+
+    public string GetSaslCertPath()
+    {
+        var cert = Convert.FromBase64String(SaslCertBase64);
+        var path = Path.GetTempFileName();
+        File.WriteAllBytes(path, cert);
+        return path;
+    }
 }
 
 public class KafkaModuleOptionsValidator : AbstractValidator<KafkaModuleOptions>
 {
-    public KafkaModuleOptionsValidator() =>
+    public KafkaModuleOptionsValidator()
+    {
         RuleFor(options => options.Brokers).NotEmpty().WithMessage("Specify Kafka brokers");
+        RuleFor(options => options.SaslCertBase64).NotEmpty()
+            .When(options => options.SecurityProtocol == SecurityProtocol.SaslSsl).WithMessage("Specify kafka sasl certificate");
+    }
 }

@@ -91,6 +91,10 @@ internal class KafkaConsumerOffsetsEnsurer
                 consumerConfig.SaslUsername = options.SaslUserName;
                 consumerConfig.SaslMechanism = (SaslMechanism?)options.SaslMechanisms;
                 consumerConfig.SecurityProtocol = (SecurityProtocol?)options.SecurityProtocol;
+                if (consumerConfig.SecurityProtocol == SecurityProtocol.SaslSsl)
+                {
+                    consumerConfig.SslCaLocation = options.GetSaslCertPath();
+                }
             }
             var cts = new CancellationTokenSource();
             using var confluentConsumer = new ConsumerBuilder<byte[], byte[]>(consumerConfig)
@@ -154,6 +158,10 @@ internal class KafkaConsumerOffsetsEnsurer
             adminClientConfig.SaslUsername = options.SaslUserName;
             adminClientConfig.SaslMechanism = (SaslMechanism?)options.SaslMechanisms;
             adminClientConfig.SecurityProtocol = (SecurityProtocol?)options.SecurityProtocol;
+            if (adminClientConfig.SecurityProtocol == SecurityProtocol.SaslSsl)
+            {
+                adminClientConfig.SslCaLocation = options.GetSaslCertPath();
+            }
         }
 
         var adminClient = new AdminClientBuilder(adminClientConfig)
