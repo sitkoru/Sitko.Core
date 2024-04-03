@@ -65,7 +65,9 @@ public abstract class BaseRepositoryForm<TEntity, TEntityPk, TRepository> : Base
     {
         using var scope = CreateServicesScope();
         var repository = scope.ServiceProvider.GetRequiredService<TRepository>();
-        var result = await repository.AddAsync(entity);
+        //Т.к. здесь создаётся новый scope, то при использовании .AddAsync поломаются все формы, в которых есть связи many-to-many
+        //(при создании сущности будет попытка создания и связанных сущностей, не смотря на то, что они уже есть)
+        var result = await repository.AddExternalAsync(entity);
 
         return new FormSaveResult(result.IsSuccess, result.ErrorsString);
     }
