@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Nito.AsyncEx;
 using Sitko.Core.Tasks.Components;
 using Sitko.Core.Tasks.Data.Entities;
 
@@ -39,7 +38,7 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService
                 logger.LogInformation("Next scheduling time for task {Type}: {Date}", typeof(TTask), nextDate);
                 if (nextDate != null)
                 {
-                    var secondsToWait = (nextDate - now).Value.TotalSeconds;
+                    var secondsToWait = Math.Round((nextDate - now).Value.TotalSeconds, MidpointRounding.ToPositiveInfinity);
                     logger.LogInformation("Wait {Seconds} seconds before scheduling task {Type}", secondsToWait,
                         typeof(TTask));
                     await Task.Delay(TimeSpan.FromSeconds(secondsToWait), stoppingToken);
