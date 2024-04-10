@@ -1,6 +1,6 @@
-using FluentEmail.Core.Interfaces;
+using System.Net;
+using System.Net.Mail;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Sitko.Core.Email.Smtp;
 
@@ -10,6 +10,18 @@ public class SmtpEmailModule : FluentEmailModule<SmtpEmailModuleOptions>
 
     protected override void ConfigureBuilder(FluentEmailServicesBuilder builder,
         SmtpEmailModuleOptions moduleOptions) =>
-        builder.Services.TryAddScoped<ISender, MailKitSender>();
-}
+        builder.AddSmtpSender(() =>
+        {
+            var client = new SmtpClient(moduleOptions.Server)
+            {
+                Port = moduleOptions.Port, EnableSsl = moduleOptions.EnableSsl
+            };
 
+            if (!string.IsNullOrEmpty(moduleOptions.UserName))
+            {
+                client.Credentials = new NetworkCredential(moduleOptions.UserName, moduleOptions.Password);
+            }
+
+            return client;
+        });
+}

@@ -3,6 +3,6 @@
     <ProjectReference Include="..\Sitko.Core.Email\Sitko.Core.Email.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MailKit"/>
+    <PackageReference Include="FluentEmail.Smtp" />
   </ItemGroup>
 </Project>
