@@ -41,13 +41,7 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
                 var token = await tokenProvider.GetTokenAsync();
                 if (!string.IsNullOrEmpty(token))
                 {
-                    var oldAuthHeaders = metadata.GetAll(AuthorizationHeader);
-                    foreach (var entry in oldAuthHeaders)
-                    {
-                        metadata.Remove(entry);
-                    }
-
-                    metadata.Add(AuthorizationHeader, token);
+                    SetMetadata(metadata, AuthorizationHeader, token);
                 }
             }
 
@@ -59,17 +53,22 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
                 {
                     foreach (var (key, value) in newMetadata)
                     {
-                        var oldEntries = metadata.GetAll(key);
-                        foreach (var entry in oldEntries)
-                        {
-                            metadata.Remove(entry);
-                        }
-
-                        metadata.Add(key, value);
+                        SetMetadata(metadata, key, value);
                     }
                 }
             }
         });
+    }
+
+    private static void SetMetadata(Metadata metadata, string key, string value)
+    {
+        var oldEntries = metadata.GetAll(key);
+        foreach (var entry in oldEntries)
+        {
+            metadata.Remove(entry);
+        }
+
+        metadata.Add(key, value);
     }
 
     public GrpcClientModuleOptions<TClient> AddMetadataProvider<TMetadataProvider>()
