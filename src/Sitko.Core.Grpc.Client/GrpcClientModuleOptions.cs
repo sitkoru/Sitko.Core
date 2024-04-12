@@ -76,7 +76,7 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
     {
         configureServicesActions.Add(services =>
         {
-            services.AddTransient<IGrpcMetadataProvider, IGrpcMetadataProvider>();
+            services.AddTransient<IGrpcMetadataProvider, TMetadataProvider>();
         });
         return this;
     }
