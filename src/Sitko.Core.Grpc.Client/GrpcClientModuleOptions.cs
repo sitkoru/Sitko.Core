@@ -12,8 +12,9 @@ namespace Sitko.Core.Grpc.Client;
 [PublicAPI]
 public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient : ClientBase<TClient>
 {
+    private const string AuthorizationHeader = "Authorization";
     private readonly Dictionary<Type, Action<IServiceCollection, IHttpClientBuilder>> interceptorActions = new();
-    private Action<IServiceCollection, IHttpClientBuilder>? configureAuthAction;
+    private readonly List<Action<IServiceCollection>> configureServicesActions = new();
     public bool EnableHttp2UnencryptedSupport { get; set; }
     public bool DisableCertificatesValidation { get; set; }
     [JsonIgnore] public Action<GrpcChannelOptions>? ConfigureChannelOptions { get; set; }
@@ -26,60 +27,67 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
             configure(services, builder);
         }
 
-        configureAuthAction?.Invoke(services, builder);
+
+        foreach (var configure in configureServicesActions)
+        {
+            configure(services);
+        }
+
+        builder.AddCallCredentials(async (_, metadata, serviceProvider) =>
+        {
+            var tokenProvider = serviceProvider.GetService<IGrpcTokenProvider>();
+            if (tokenProvider is not null)
+            {
+                var token = await tokenProvider.GetTokenAsync();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    SetMetadata(metadata, AuthorizationHeader, token);
+                }
+            }
+
+            var metadataProviders = serviceProvider.GetServices<IGrpcMetadataProvider>();
+            foreach (var metadataProvider in metadataProviders)
+            {
+                var newMetadata = await metadataProvider.GetMetadataAsync();
+                if (newMetadata?.Count > 0)
+                {
+                    foreach (var (key, value) in newMetadata)
+                    {
+                        SetMetadata(metadata, key, value);
+                    }
+                }
+            }
+        });
+    }
+
+    private static void SetMetadata(Metadata metadata, string key, string value)
+    {
+        var oldEntries = metadata.GetAll(key);
+        foreach (var entry in oldEntries)
+        {
+            metadata.Remove(entry);
+        }
+
+        metadata.Add(key, value);
     }
 
     public GrpcClientModuleOptions<TClient> AddMetadataProvider<TMetadataProvider>()
         where TMetadataProvider : class, IGrpcMetadataProvider
     {
-        configureAuthAction = (services, builder) =>
+        configureServicesActions.Add(services =>
         {
-            services.TryAddTransient<IGrpcMetadataProvider, TMetadataProvider>();
-            builder.AddCallCredentials(async (_, metadata, serviceProvider) =>
-            {
-                var provider = serviceProvider.GetRequiredService<IGrpcMetadataProvider>();
-                var newMetadata = await provider.GetMetadataAsync();
-                if (newMetadata?.Count > 0)
-                {
-                    foreach (var (key, value) in newMetadata)
-                    {
-                        var oldEntries = metadata.GetAll(key);
-                        foreach (var entry in oldEntries)
-                        {
-                            metadata.Remove(entry);
-                        }
-
-                        metadata.Add(key, value);
-                    }
-                }
-            });
-        };
+            services.AddTransient<IGrpcMetadataProvider, TMetadataProvider>();
+        });
         return this;
     }
 
     public GrpcClientModuleOptions<TClient> AddTokenAuth<TTokenProvider>()
         where TTokenProvider : class, IGrpcTokenProvider
     {
-        const string AuthorizationHeader = "Authorization";
-        configureAuthAction = (services, builder) =>
+        configureServicesActions.Add(services =>
         {
             services.TryAddTransient<IGrpcTokenProvider, TTokenProvider>();
-            builder.AddCallCredentials(async (_, metadata, serviceProvider) =>
-            {
-                var provider = serviceProvider.GetRequiredService<IGrpcTokenProvider>();
-                var token = await provider.GetTokenAsync();
-                if (!string.IsNullOrEmpty(token))
-                {
-                    var oldAuthHeaders = metadata.GetAll(AuthorizationHeader);
-                    foreach (var entry in oldAuthHeaders)
-                    {
-                        metadata.Remove(entry);
-                    }
-
-                    metadata.Add(AuthorizationHeader, token);
-                }
-            });
-        };
+        });
         return this;
     }
 
