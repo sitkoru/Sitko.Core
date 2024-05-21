@@ -8,9 +8,12 @@ public interface IGrpcTokenProviderFactory<TClient> where TClient : ClientBase<T
     public IGrpcTokenProvider GetProvider(IServiceProvider serviceProvider);
 }
 
-internal class GrpcTokenProviderFactory<TClient, TTokenProvider> : IGrpcTokenProviderFactory<TClient> where TClient : ClientBase<TClient>
+internal class GrpcTokenProviderFactory<TClient, TTokenProvider> : IGrpcTokenProviderFactory<TClient>
+    where TClient : ClientBase<TClient>
     where TTokenProvider : class, IGrpcTokenProvider
 
 {
-    public IGrpcTokenProvider GetProvider(IServiceProvider serviceProvider) => serviceProvider.GetService<TTokenProvider>()!;
+    public IGrpcTokenProvider GetProvider(IServiceProvider serviceProvider) =>
+        serviceProvider.GetServices<IGrpcTokenProvider>().OfType<TTokenProvider>().FirstOrDefault() ??
+        throw new InvalidDataException($"Service {typeof(TTokenProvider)} is not register");
 }

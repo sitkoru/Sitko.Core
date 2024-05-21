@@ -80,7 +80,7 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
         configureServicesActions.Add(services =>
         {
             services.AddTransient<IGrpcMetadataProviderFactory<TClient>, GrpcMetadataProviderFactory<TClient, TMetadataProvider>>();
-            services.TryAddTransient<IGrpcMetadataProvider, TMetadataProvider>();
+            services.AddTransient<IGrpcMetadataProvider, TMetadataProvider>();
         });
         return this;
     }
@@ -91,7 +91,7 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
         configureServicesActions.Add(services =>
         {
             services.AddTransient<IGrpcTokenProviderFactory<TClient>, GrpcTokenProviderFactory<TClient, TTokenProvider>>();
-            services.TryAddTransient<IGrpcTokenProvider, TTokenProvider>();
+            services.AddTransient<IGrpcTokenProvider, TTokenProvider>();
         });
         return this;
     }
