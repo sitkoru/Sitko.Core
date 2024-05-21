@@ -35,9 +35,10 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
 
         builder.AddCallCredentials(async (_, metadata, serviceProvider) =>
         {
-            var tokenProvider = serviceProvider.GetService<IGrpcTokenProvider>();
-            if (tokenProvider is not null)
+            var tokenProviderFactory = serviceProvider.GetService<IGrpcTokenProviderFactory<TClient>>();
+            if (tokenProviderFactory is not null)
             {
+                var tokenProvider = tokenProviderFactory.GetProvider(serviceProvider);
                 var token = await tokenProvider.GetTokenAsync();
                 if (!string.IsNullOrEmpty(token))
                 {
@@ -45,9 +46,11 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
                 }
             }
 
-            var metadataProviders = serviceProvider.GetServices<IGrpcMetadataProvider>();
-            foreach (var metadataProvider in metadataProviders)
+
+            var metadataProviderFactory = serviceProvider.GetService<IGrpcMetadataProviderFactory<TClient>>();
+            if (metadataProviderFactory is not null)
             {
+                var metadataProvider = metadataProviderFactory.GetProvider(serviceProvider);
                 var newMetadata = await metadataProvider.GetMetadataAsync();
                 if (newMetadata?.Count > 0)
                 {
@@ -76,7 +79,8 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
     {
         configureServicesActions.Add(services =>
         {
-            services.AddTransient<IGrpcMetadataProvider, TMetadataProvider>();
+            services.AddTransient<IGrpcMetadataProviderFactory<TClient>, GrpcMetadataProviderFactory<TClient, TMetadataProvider>>();
+            services.TryAddTransient<IGrpcMetadataProvider, TMetadataProvider>();
         });
         return this;
     }
@@ -86,6 +90,7 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
     {
         configureServicesActions.Add(services =>
         {
+            services.AddTransient<IGrpcTokenProviderFactory<TClient>, GrpcTokenProviderFactory<TClient, TTokenProvider>>();
             services.TryAddTransient<IGrpcTokenProvider, TTokenProvider>();
         });
         return this;
