@@ -5,8 +5,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NLog.Targets.OpenSearch" />
-    <PackageReference Include="NLog.Web.AspNetCore" />
     <PackageReference Include="Serilog.Sinks.OpenSearch" />
   </ItemGroup>
 

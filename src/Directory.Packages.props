@@ -95,8 +95,6 @@
   </ItemGroup>
   <!--OpenSearch libraries-->
   <ItemGroup>
-    <PackageVersion Include="NLog.Targets.OpenSearch" Version="1.0.0" />
-    <PackageVersion Include="NLog.Web.AspNetCore" Version="5.3.11" />
     <PackageVersion Include="Serilog.Sinks.OpenSearch" Version="1.0.0" />
   </ItemGroup>
   <!--Elastic libraries-->
