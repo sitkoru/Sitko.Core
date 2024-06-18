@@ -8,7 +8,7 @@ namespace Sitko.Core.OpenSearch;
 
 public class OpenSearchLoggingModule : BaseApplicationModule<OpenSearchLoggingModuleOptions>, ILoggingModule<OpenSearchLoggingModuleOptions>
 {
-    public override string OptionsKey => "OpenSearch";
+    public override string OptionsKey => "OpenSearch:Logging";
 
     public LoggerConfiguration ConfigureLogging(IApplicationContext context, OpenSearchLoggingModuleOptions options,
         LoggerConfiguration loggerConfiguration)
