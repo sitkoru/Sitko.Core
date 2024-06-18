@@ -7,25 +7,25 @@ namespace Sitko.Core.OpenSearch;
 [PublicAPI]
 public static class ApplicationExtensions
 {
-    public static IHostApplicationBuilder AddOpenSearch(this IHostApplicationBuilder hostApplicationBuilder,
-        Action<IApplicationContext, OpenSearchModuleOptions> configure, string? optionsKey = null)
+    public static IHostApplicationBuilder AddOpenSearchLogging(this IHostApplicationBuilder hostApplicationBuilder,
+        Action<IApplicationContext, OpenSearchLoggingModuleOptions> configure, string? optionsKey = null)
     {
-        hostApplicationBuilder.GetSitkoCore().AddOpenSearch(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddOpenSearchLogging(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
-    public static IHostApplicationBuilder AddOpenSearch(this IHostApplicationBuilder hostApplicationBuilder,
-        Action<OpenSearchModuleOptions>? configure = null, string? optionsKey = null)
+    public static IHostApplicationBuilder AddOpenSearchLogging(this IHostApplicationBuilder hostApplicationBuilder,
+        Action<OpenSearchLoggingModuleOptions>? configure = null, string? optionsKey = null)
     {
-        hostApplicationBuilder.GetSitkoCore().AddOpenSearch(configure, optionsKey);
+        hostApplicationBuilder.GetSitkoCore().AddOpenSearchLogging(configure, optionsKey);
         return hostApplicationBuilder;
     }
 
-    public static ISitkoCoreApplicationBuilder AddOpenSearch(this ISitkoCoreApplicationBuilder applicationBuilder,
-        Action<IApplicationContext, OpenSearchModuleOptions> configure, string? optionsKey = null) =>
-        applicationBuilder.AddModule<OpenSearchModule, OpenSearchModuleOptions>(configure, optionsKey);
+    public static ISitkoCoreApplicationBuilder AddOpenSearchLogging(this ISitkoCoreApplicationBuilder applicationBuilder,
+        Action<IApplicationContext, OpenSearchLoggingModuleOptions> configure, string? optionsKey = null) =>
+        applicationBuilder.AddModule<OpenSearchLoggingModule, OpenSearchLoggingModuleOptions>(configure, optionsKey);
 
-    public static ISitkoCoreApplicationBuilder AddOpenSearch(this ISitkoCoreApplicationBuilder applicationBuilder,
-        Action<OpenSearchModuleOptions>? configure = null, string? optionsKey = null) =>
-        applicationBuilder.AddModule<OpenSearchModule, OpenSearchModuleOptions>(configure, optionsKey);
+    public static ISitkoCoreApplicationBuilder AddOpenSearchLogging(this ISitkoCoreApplicationBuilder applicationBuilder,
+        Action<OpenSearchLoggingModuleOptions>? configure = null, string? optionsKey = null) =>
+        applicationBuilder.AddModule<OpenSearchLoggingModule, OpenSearchLoggingModuleOptions>(configure, optionsKey);
 }

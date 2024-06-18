@@ -6,11 +6,11 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.OpenSearch;
 
-public class OpenSearchModule : BaseApplicationModule<OpenSearchModuleOptions>, ILoggingModule<OpenSearchModuleOptions>
+public class OpenSearchLoggingModule : BaseApplicationModule<OpenSearchLoggingModuleOptions>, ILoggingModule<OpenSearchLoggingModuleOptions>
 {
     public override string OptionsKey => "OpenSearch";
 
-    public LoggerConfiguration ConfigureLogging(IApplicationContext context, OpenSearchModuleOptions options,
+    public LoggerConfiguration ConfigureLogging(IApplicationContext context, OpenSearchLoggingModuleOptions options,
         LoggerConfiguration loggerConfiguration)
     {
         if (options.LoggingEnabled)

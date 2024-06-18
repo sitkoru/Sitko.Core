@@ -6,7 +6,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.OpenSearch;
 
-public class OpenSearchModuleOptions : BaseModuleOptions
+public class OpenSearchLoggingModuleOptions : BaseModuleOptions
 {
     public bool LoggingEnabled => !string.IsNullOrEmpty(Url);
     public string Url { get; set; } = "";
@@ -24,9 +24,9 @@ public class OpenSearchModuleOptions : BaseModuleOptions
     public string? LogIndexTypeName { get; set; }
 }
 
-public class OpenSearchModuleOptionsValidator : AbstractValidator<OpenSearchModuleOptions>
+public class OpenSearchLoggingModuleOptionsValidator : AbstractValidator<OpenSearchLoggingModuleOptions>
 {
-    public OpenSearchModuleOptionsValidator()
+    public OpenSearchLoggingModuleOptionsValidator()
     {
         RuleFor(o => o.Url).NotEmpty().When(o => o.LoggingEnabled)
             .WithMessage("OpenSearch url can't be empty");
