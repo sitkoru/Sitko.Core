@@ -31,9 +31,20 @@ public class OpenSearchModule : BaseApplicationModule<OpenSearchModuleOptions>,
                 FailureSink = options.FailureSink,
                 TypeName = options.LogIndexTypeName,
                 ModifyConnectionSettings = x =>
-                    x.BasicAuthentication(options.Login, options.Password)
-                        .ServerCertificateValidationCallback(CertificateValidations.AllowAll)
-                        .ServerCertificateValidationCallback((_, _, _, _) => true),
+                {
+                    if (!string.IsNullOrEmpty(options.Login) && !string.IsNullOrEmpty(options.Password))
+                    {
+                        x = x.BasicAuthentication(options.Login, options.Password);
+                    }
+
+                    if (options.DisableCertificatesValidation)
+                    {
+                        return x.ServerCertificateValidationCallback(CertificateValidations.AllowAll)
+                            .ServerCertificateValidationCallback((_, _, _, _) => true);
+                    }
+
+                    return x;
+                },
             };
             if (!string.IsNullOrEmpty(options.LoggingLifeCycleName))
             {

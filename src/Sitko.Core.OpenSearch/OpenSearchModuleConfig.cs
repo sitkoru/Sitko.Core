@@ -11,6 +11,7 @@ public class OpenSearchModuleOptions : BaseModuleOptions
     public bool LoggingEnabled => !string.IsNullOrEmpty(Url);
     public string Url { get; set; } = "";
     public string Login { get; set; } = "";
+    public bool DisableCertificatesValidation { get; set; }
     public string Password { get; set; } = "";
     public string? LoggingIndexFormat { get; set; }
     public AutoRegisterTemplateVersion? LoggingTemplateVersion { get; set; }
@@ -29,10 +30,8 @@ public class OpenSearchModuleOptionsValidator : AbstractValidator<OpenSearchModu
     {
         RuleFor(o => o.Url).NotEmpty().When(o => o.LoggingEnabled)
             .WithMessage("OpenSearch url can't be empty");
-        RuleFor(o => o.Login).NotEmpty().When(o => o.LoggingEnabled)
+        RuleFor(o => o.Login).NotEmpty().When(o => !string.IsNullOrEmpty(o.Password))
             .WithMessage("OpenSearch login can't be empty");
-        RuleFor(o => o.Password).NotEmpty().When(o => o.LoggingEnabled)
-            .WithMessage("OpenSearch password can't be empty");
     }
 }
 
