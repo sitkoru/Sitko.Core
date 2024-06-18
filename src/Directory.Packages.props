@@ -93,6 +93,12 @@
     <PackageVersion Include="KafkaFlow.Serializer.JsonCore" Version="3.0.3" />
     <PackageVersion Include="KafkaFlow.Extensions.Hosting" Version="3.0.0" />
   </ItemGroup>
+  <!--OpenSearch libraries-->
+  <ItemGroup>
+    <PackageVersion Include="NLog.Targets.OpenSearch" Version="1.0.0" />
+    <PackageVersion Include="NLog.Web.AspNetCore" Version="5.3.11" />
+    <PackageVersion Include="Serilog.Sinks.OpenSearch" Version="1.0.0" />
+  </ItemGroup>
   <!--Elastic libraries-->
   <ItemGroup>
     <PackageVersion Include="Elastic.Apm.NetCoreAll" Version="1.25.3" />

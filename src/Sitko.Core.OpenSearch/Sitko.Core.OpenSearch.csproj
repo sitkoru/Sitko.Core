@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NLog.Targets.OpenSearch" />
+    <PackageReference Include="NLog.Web.AspNetCore" />
+    <PackageReference Include="Serilog.Sinks.OpenSearch" />
+  </ItemGroup>
+
+</Project>
