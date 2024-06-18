@@ -114,7 +114,8 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
         internalLogger = CreateInternalLogger();
         internalLogger.LogInformation("Start application in {Environment}", Environment.EnvironmentName);
         Logging.ClearProviders();
-        Logging.AddSerilog();
+        Logging.AddSerilog().Configure(options =>
+            options.ActivityTrackingOptions = ActivityTrackingOptions.SpanId | ActivityTrackingOptions.TraceId);
         serilogConfigurator.Configure(ConfigureDefautLogger);
 
         AddModule<CommandsModule>();
@@ -203,7 +204,10 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
             .Enrich.WithProperty("App", BootApplicationContext.Name)
             .Enrich.WithProperty("AppVersion", BootApplicationContext.Version)
             .Enrich.WithProperty("AppEnvironment", BootApplicationContext.Environment)
-            .Enrich.WithMachineName();
+            .Enrich.WithMachineName()
+            // TODO: Убрать после обновления на Serilog.Extensions.Logging 8.0.1+
+            .Enrich.With<TraceMetaEnricher>();
+
         if (BootApplicationContext.Options.EnableConsoleLogging == true)
         {
             loggerConfiguration = loggerConfiguration.WriteTo.Console(
