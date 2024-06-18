@@ -1,5 +1,4 @@
-﻿using Elastic.Apm.Api;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.Repository;
 using Sitko.Core.Tasks.Data.Entities;
 
@@ -9,13 +8,10 @@ internal class TaskExecutorContext<TTask> : ITaskExecutorContext<TTask> where TT
 {
     public IServiceScopeFactory ServiceScopeFactory { get; }
     public IRepository<TTask, Guid> Repository { get; }
-    public ITracer? Tracer { get; }
 
-    public TaskExecutorContext(IServiceScopeFactory serviceScopeFactory, IRepository<TTask, Guid> repository,
-        ITracer? tracer = null)
+    public TaskExecutorContext(IServiceScopeFactory serviceScopeFactory, IRepository<TTask, Guid> repository)
     {
         ServiceScopeFactory = serviceScopeFactory;
         Repository = repository;
-        Tracer = tracer;
     }
 }

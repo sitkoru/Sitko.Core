@@ -1,9 +1,9 @@
-﻿using Elastic.Apm.Api;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog.Context;
 using Sitko.Core.Repository;
 using Sitko.Core.Tasks.Data.Entities;
+using Sitko.Core.Tasks.Tracing;
 using TaskStatus = Sitko.Core.Tasks.Data.Entities.TaskStatus;
 
 namespace Sitko.Core.Tasks.Execution;
@@ -22,7 +22,6 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
         ILogger<BaseTaskExecutor<TTask, TConfig, TResult>> logger)
     {
         Logger = logger;
-        tracer = executorContext.Tracer;
         serviceScopeFactory = executorContext.ServiceScopeFactory;
         repository = executorContext.Repository;
     }
@@ -36,22 +35,13 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
         {
             try
             {
-                if (tracer is not null)
+                using var activity = TracingHelper.ActivitySource.StartActivity($"Tasks/{typeof(TTask)}");
+                activity?.SetTag("jobId", id.ToString());
+                var task = await ExecuteTaskAsync(id, cancellationToken);
+                if (task.TaskStatus == TaskStatus.Fails)
                 {
-                    await tracer.CaptureTransaction($"Tasks/{typeof(TTask)}", "Task", async transaction =>
-                    {
-                        transaction.SetLabel("jobId", id.ToString());
-                        var task = await ExecuteTaskAsync(id, cancellationToken);
-                        if (task.TaskStatus == TaskStatus.Fails)
-                        {
-                            throw new JobFailedException(id, typeof(TTask).Name,
-                                task.Result?.ErrorMessage ?? "Unknown error");
-                        }
-                    });
-                }
-                else
-                {
-                    await ExecuteTaskAsync(id, cancellationToken);
+                    throw new JobFailedException(id, typeof(TTask).Name,
+                        task.Result?.ErrorMessage ?? "Unknown error");
                 }
             }
             catch (JobFailedException)
