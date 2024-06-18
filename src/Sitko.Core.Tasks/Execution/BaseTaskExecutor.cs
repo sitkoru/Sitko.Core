@@ -8,7 +8,8 @@ using TaskStatus = Sitko.Core.Tasks.Data.Entities.TaskStatus;
 
 namespace Sitko.Core.Tasks.Execution;
 
-public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<TTask, TConfig, TResult>
+public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<TTask, TConfig, TResult>,
+    IAsyncDisposable
     where TTask : class, IBaseTask<TConfig, TResult>
     where TConfig : BaseTaskConfig, new()
     where TResult : BaseTaskResult, new()
@@ -16,7 +17,7 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
     private readonly CancellationTokenSource activityTaskCts = new();
     private readonly IRepository<TTask, Guid> repository;
     private readonly IServiceScopeFactory serviceScopeFactory;
-    private readonly ITracer? tracer;
+    private Task? activityTask;
 
     protected BaseTaskExecutor(ITaskExecutorContext<TTask> executorContext,
         ILogger<BaseTaskExecutor<TTask, TConfig, TResult>> logger)
@@ -85,7 +86,7 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
 
         TResult result;
         TaskStatus status;
-        var activityTask = Task.Run(async () =>
+        activityTask = Task.Run(async () =>
         {
             while (!activityTaskCts.IsCancellationRequested)
             {
@@ -125,7 +126,7 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
             result = new TResult { IsSuccess = false, ErrorMessage = ex.Message };
         }
 
-        activityTaskCts.Cancel();
+        await activityTaskCts.CancelAsync();
         try
         {
             await activityTask;
@@ -151,6 +152,16 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
     }
 
     protected abstract Task<TResult> ExecuteAsync(TTask task, CancellationToken cancellationToken);
+
+    public async ValueTask DisposeAsync()
+    {
+        await activityTaskCts.CancelAsync();
+        if (activityTask is not null)
+        {
+            await activityTask;
+        }
+        GC.SuppressFinalize(this);
+    }
 }
 
 public record ExecutorRegistration(
