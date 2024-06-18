@@ -1,5 +1,4 @@
 using System.Globalization;
-using Microsoft.Extensions.Configuration;
 using OpenSearch.Net;
 using Serilog;
 using Serilog.Sinks.OpenSearch;
@@ -7,9 +6,7 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.OpenSearch;
 
-public class OpenSearchModule : BaseApplicationModule<OpenSearchModuleOptions>,
-    IHostBuilderModule<OpenSearchModuleOptions>, ILoggingModule<OpenSearchModuleOptions>,
-    IConfigurationModule<OpenSearchModuleOptions>
+public class OpenSearchModule : BaseApplicationModule<OpenSearchModuleOptions>, ILoggingModule<OpenSearchModuleOptions>
 {
     public override string OptionsKey => "OpenSearch";
 
@@ -69,14 +66,5 @@ public class OpenSearchModule : BaseApplicationModule<OpenSearchModuleOptions>,
         }
 
         return loggerConfiguration;
-    }
-
-    public void ConfigureAppConfiguration(IApplicationContext context, IConfigurationBuilder configurationBuilder,
-        OpenSearchModuleOptions startupOptions)
-    {
-    }
-
-    public void CheckConfiguration(IApplicationContext context, IServiceProvider serviceProvider)
-    {
     }
 }
