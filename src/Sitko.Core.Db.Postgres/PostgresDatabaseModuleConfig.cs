@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Sitko.Core.App;
+using Sitko.Core.App.Helpers;
 
 namespace Sitko.Core.Db.Postgres;
 
@@ -15,6 +16,8 @@ public class PostgresDatabaseModuleOptions<TDbContext> : BaseDbModuleOptions<TDb
     public int Port { get; set; } = 5432;
     public string Username { get; set; } = "postgres";
     public string Password { get; set; } = string.Empty;
+    public SslMode SslMode { get; set; } = SslMode.Disable;
+    public string? SaslCertBase64 { get; set; }
     public bool EnableNpgsqlPooling { get; set; } = true;
     [JsonIgnore] public Assembly? MigrationsAssembly { get; set; }
     public bool AutoApplyMigrations { get; set; } = true;
@@ -38,8 +41,17 @@ public class PostgresDatabaseModuleOptions<TDbContext> : BaseDbModuleOptions<TDb
             Password = Password,
             Database = Database,
             Pooling = EnableNpgsqlPooling,
-            IncludeErrorDetail = IncludeErrorDetails
+            IncludeErrorDetail = IncludeErrorDetails,
+            SslMode = SslMode
         };
+
+        switch (SslMode)
+        {
+            case SslMode.VerifyFull:
+            case SslMode.VerifyCA:
+                connBuilder.RootCertificate = CertHelper.GetCertPath(SaslCertBase64!);
+                break;
+        }
 
         foreach (var (key, value) in ConnectionOptions)
         {
@@ -68,6 +80,7 @@ public class
         RuleFor(o => o.Username).NotEmpty().WithMessage("Postgres username is empty");
         RuleFor(o => o.Database).NotEmpty().WithMessage("Postgres database is empty");
         RuleFor(o => o.Port).GreaterThan(0).WithMessage("Postgres port is empty");
+        RuleFor(o => o.SaslCertBase64).NotEmpty().When(o => o.SslMode is SslMode.VerifyFull or SslMode.VerifyCA).WithMessage("Ssl cert base64 is empty");
     }
 }
 
