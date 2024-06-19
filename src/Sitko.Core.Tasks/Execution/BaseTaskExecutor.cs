@@ -1,14 +1,15 @@
-﻿using Elastic.Apm.Api;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog.Context;
 using Sitko.Core.Repository;
 using Sitko.Core.Tasks.Data.Entities;
+using Sitko.Core.Tasks.Tracing;
 using TaskStatus = Sitko.Core.Tasks.Data.Entities.TaskStatus;
 
 namespace Sitko.Core.Tasks.Execution;
 
-public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<TTask, TConfig, TResult>
+public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<TTask, TConfig, TResult>,
+    IAsyncDisposable
     where TTask : class, IBaseTask<TConfig, TResult>
     where TConfig : BaseTaskConfig, new()
     where TResult : BaseTaskResult, new()
@@ -16,13 +17,12 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
     private readonly CancellationTokenSource activityTaskCts = new();
     private readonly IRepository<TTask, Guid> repository;
     private readonly IServiceScopeFactory serviceScopeFactory;
-    private readonly ITracer? tracer;
+    private Task? activityTask;
 
     protected BaseTaskExecutor(ITaskExecutorContext<TTask> executorContext,
         ILogger<BaseTaskExecutor<TTask, TConfig, TResult>> logger)
     {
         Logger = logger;
-        tracer = executorContext.Tracer;
         serviceScopeFactory = executorContext.ServiceScopeFactory;
         repository = executorContext.Repository;
     }
@@ -36,22 +36,13 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
         {
             try
             {
-                if (tracer is not null)
+                using var activity = TracingHelper.ActivitySource.StartActivity($"Tasks/{typeof(TTask)}");
+                activity?.SetTag("jobId", id.ToString());
+                var task = await ExecuteTaskAsync(id, cancellationToken);
+                if (task.TaskStatus == TaskStatus.Fails)
                 {
-                    await tracer.CaptureTransaction($"Tasks/{typeof(TTask)}", "Task", async transaction =>
-                    {
-                        transaction.SetLabel("jobId", id.ToString());
-                        var task = await ExecuteTaskAsync(id, cancellationToken);
-                        if (task.TaskStatus == TaskStatus.Fails)
-                        {
-                            throw new JobFailedException(id, typeof(TTask).Name,
-                                task.Result?.ErrorMessage ?? "Unknown error");
-                        }
-                    });
-                }
-                else
-                {
-                    await ExecuteTaskAsync(id, cancellationToken);
+                    throw new JobFailedException(id, typeof(TTask).Name,
+                        task.Result?.ErrorMessage ?? "Unknown error");
                 }
             }
             catch (JobFailedException)
@@ -95,7 +86,7 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
 
         TResult result;
         TaskStatus status;
-        var activityTask = Task.Run(async () =>
+        activityTask = Task.Run(async () =>
         {
             while (!activityTaskCts.IsCancellationRequested)
             {
@@ -135,7 +126,7 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
             result = new TResult { IsSuccess = false, ErrorMessage = ex.Message };
         }
 
-        activityTaskCts.Cancel();
+        await activityTaskCts.CancelAsync();
         try
         {
             await activityTask;
@@ -161,6 +152,16 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
     }
 
     protected abstract Task<TResult> ExecuteAsync(TTask task, CancellationToken cancellationToken);
+
+    public async ValueTask DisposeAsync()
+    {
+        await activityTaskCts.CancelAsync();
+        if (activityTask is not null)
+        {
+            await activityTask;
+        }
+        GC.SuppressFinalize(this);
+    }
 }
 
 public record ExecutorRegistration(

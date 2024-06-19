@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OpenTelemetry.Resources;
 using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
@@ -114,7 +115,8 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
         internalLogger = CreateInternalLogger();
         internalLogger.LogInformation("Start application in {Environment}", Environment.EnvironmentName);
         Logging.ClearProviders();
-        Logging.AddSerilog();
+        Logging.AddSerilog().Configure(options =>
+            options.ActivityTrackingOptions = ActivityTrackingOptions.SpanId | ActivityTrackingOptions.TraceId);
         serilogConfigurator.Configure(ConfigureDefautLogger);
 
         AddModule<CommandsModule>();
@@ -129,6 +131,10 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
         Services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
         Services.AddSingleton<IApplicationLifecycle, ApplicationLifecycle>(); // только Hosted? Проверить для Wasm
         Services.AddHostedService<HostedLifecycleService>(); // только Hosted? Проверить для Wasm
+        // TODO: Add extension points
+        Services.AddOpenTelemetry()
+            .ConfigureResource(builder => builder.AddService(bootApplicationContext.Name))
+            .WithTracing(builder => { builder.AddSource("Sitko.*"); });
     }
 
     private ILogger<ISitkoCoreApplicationBuilder> CreateInternalLogger()
@@ -203,7 +209,10 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
             .Enrich.WithProperty("App", BootApplicationContext.Name)
             .Enrich.WithProperty("AppVersion", BootApplicationContext.Version)
             .Enrich.WithProperty("AppEnvironment", BootApplicationContext.Environment)
-            .Enrich.WithMachineName();
+            .Enrich.WithMachineName()
+            // TODO: Убрать после обновления на Serilog.Extensions.Logging 8.0.1+
+            .Enrich.With<TraceMetaEnricher>();
+
         if (BootApplicationContext.Options.EnableConsoleLogging == true)
         {
             loggerConfiguration = loggerConfiguration.WriteTo.Console(

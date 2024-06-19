@@ -8,6 +8,7 @@
     <PackageVersion Include="IL.FluentValidation.Extensions.Options" Version="11.0.2" />
     <PackageVersion Include="JetBrains.Annotations" Version="2023.3.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
     <PackageVersion Include="PeanutButter.DuckTyping" Version="3.0.264" />
     <PackageVersion Include="Tempus" Version="1.0.0" />
     <PackageVersion Include="Scrutor" Version="4.2.2" />
