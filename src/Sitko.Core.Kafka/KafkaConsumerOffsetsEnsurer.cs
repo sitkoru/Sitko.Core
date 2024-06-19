@@ -1,6 +1,7 @@
 ﻿using Confluent.Kafka;
 using Confluent.Kafka.Admin;
 using Microsoft.Extensions.Logging;
+using Sitko.Core.App.Helpers;
 
 namespace Sitko.Core.Kafka;
 
@@ -93,7 +94,7 @@ internal class KafkaConsumerOffsetsEnsurer
                 consumerConfig.SecurityProtocol = (SecurityProtocol?)options.SecurityProtocol;
                 if (consumerConfig.SecurityProtocol == SecurityProtocol.SaslSsl)
                 {
-                    consumerConfig.SslCaLocation = options.GetSaslCertPath();
+                    consumerConfig.SslCaLocation = CertHelper.GetCertPath(options.SaslCertBase64);
                 }
             }
             var cts = new CancellationTokenSource();
@@ -160,7 +161,7 @@ internal class KafkaConsumerOffsetsEnsurer
             adminClientConfig.SecurityProtocol = (SecurityProtocol?)options.SecurityProtocol;
             if (adminClientConfig.SecurityProtocol == SecurityProtocol.SaslSsl)
             {
-                adminClientConfig.SslCaLocation = options.GetSaslCertPath();
+                adminClientConfig.SslCaLocation = CertHelper.GetCertPath(options.SaslCertBase64);
             }
         }
 

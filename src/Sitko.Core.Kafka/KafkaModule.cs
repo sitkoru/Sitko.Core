@@ -70,14 +70,6 @@ public class KafkaModuleOptions : BaseModuleOptions
     public bool EnableIdempotence { get; set; } = true;
     public bool SocketNagleDisable { get; set; } = true;
     public Acks Acks { get; set; } = Acks.All;
-
-    public string GetSaslCertPath()
-    {
-        var cert = Convert.FromBase64String(SaslCertBase64);
-        var path = Path.GetTempFileName();
-        File.WriteAllBytes(path, cert);
-        return path;
-    }
 }
 
 public class KafkaModuleOptionsValidator : AbstractValidator<KafkaModuleOptions>

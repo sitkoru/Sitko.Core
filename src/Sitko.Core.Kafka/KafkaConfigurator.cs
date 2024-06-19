@@ -2,6 +2,7 @@
 using KafkaFlow;
 using KafkaFlow.Configuration;
 using KafkaFlow.Consumers.DistributionStrategies;
+using Sitko.Core.App.Helpers;
 using SecurityProtocol = KafkaFlow.Configuration.SecurityProtocol;
 
 namespace Sitko.Core.Kafka;
@@ -69,7 +70,7 @@ public class KafkaConfigurator
                             information.SecurityProtocol = options.SecurityProtocol;
                             if (information.SecurityProtocol == SecurityProtocol.SaslSsl)
                             {
-                                information.SslCaLocation = options.GetSaslCertPath();
+                                information.SslCaLocation = CertHelper.GetCertPath(options.SaslCertBase64);
                             }
                         });
                 }
