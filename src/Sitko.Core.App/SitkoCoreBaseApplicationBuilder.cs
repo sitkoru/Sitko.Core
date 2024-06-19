@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OpenTelemetry.Resources;
 using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
@@ -130,6 +131,10 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
         Services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
         Services.AddSingleton<IApplicationLifecycle, ApplicationLifecycle>(); // только Hosted? Проверить для Wasm
         Services.AddHostedService<HostedLifecycleService>(); // только Hosted? Проверить для Wasm
+        // TODO: Add extension points
+        Services.AddOpenTelemetry()
+            .ConfigureResource(builder => builder.AddService(bootApplicationContext.Name))
+            .WithTracing(builder => { builder.AddSource("Sitko.*"); });
     }
 
     private ILogger<ISitkoCoreApplicationBuilder> CreateInternalLogger()
