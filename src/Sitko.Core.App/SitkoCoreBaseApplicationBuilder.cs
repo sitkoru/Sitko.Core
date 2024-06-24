@@ -18,7 +18,7 @@ namespace Sitko.Core.App;
 public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBuilder
 {
     private readonly List<ApplicationModuleRegistration> moduleRegistrations = new();
-    private readonly List<Action> modulePostConfigureCallbacks = new();
+    private readonly List<Action> moduleConfigurationCallbacks = new();
     private readonly SerilogConfigurator serilogConfigurator = new();
 
     private IApplicationContext? bootApplicationContext;
@@ -174,22 +174,23 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
             new ApplicationModuleRegistration<TModule, TModuleOptions>(instance, configureOptions, optionsKey);
         if (registration.IsEnabled(BootApplicationContext))
         {
-            BeforeModuleRegistration<TModule, TModuleOptions>(BootApplicationContext, registration);
-
             registration.ConfigureAppConfiguration(BootApplicationContext, Configuration);
-            registration.ConfigureOptions(BootApplicationContext, Services);
-            registration.ConfigureServices(BootApplicationContext, Services);
-
-            AfterModuleRegistration<TModule, TModuleOptions>(BootApplicationContext, registration);
         }
 
         moduleRegistrations.Add(registration);
-        modulePostConfigureCallbacks.Add(() =>
+        moduleConfigurationCallbacks.Add(() =>
         {
             if (registration.IsEnabled(BootApplicationContext))
             {
-                var (_, options) = registration.GetOptions(BootApplicationContext);
-                PostConfigureModule(instance, (TModuleOptions)options);
+                if (registration.IsEnabled(BootApplicationContext))
+                {
+                    BeforeModuleRegistration<TModule, TModuleOptions>(BootApplicationContext, registration);
+
+                    registration.ConfigureOptions(BootApplicationContext, Services);
+                    registration.ConfigureServices(BootApplicationContext, Services);
+
+                    AfterModuleRegistration<TModule, TModuleOptions>(BootApplicationContext, registration);
+                }
             }
         });
         Services.AddSingleton<ApplicationModuleRegistration>(registration);
@@ -236,21 +237,15 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
     {
         var enabledModules = ModulesHelper.GetEnabledModuleRegistrations(BootApplicationContext, moduleRegistrations);
         serilogConfigurator.ApplyLogging(BootApplicationContext, enabledModules);
+        foreach (var postConfigureCallback in moduleConfigurationCallbacks)
+        {
+            postConfigureCallback();
+        }
+
         foreach (var moduleRegistration in enabledModules)
         {
             moduleRegistration.PostConfigureServices(BootApplicationContext, Services);
         }
-
-        foreach (var postConfigureCallback in modulePostConfigureCallbacks)
-        {
-            postConfigureCallback();
-        }
-    }
-
-    protected virtual void PostConfigureModule<TModule, TModuleOptions>(TModule instance, TModuleOptions options)
-        where TModule : IApplicationModule<TModuleOptions>, new()
-        where TModuleOptions : BaseModuleOptions, new()
-    {
     }
 
     protected void LogInternal(string message) => InternalLogger.LogInformation("Check log: {Message}", message);

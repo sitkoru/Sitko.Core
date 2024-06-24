@@ -33,11 +33,6 @@ public interface IWebApplicationModule<TModuleOptions> : IWebApplicationModule, 
         TModuleOptions options)
     {
     }
-
-    void PostConfigureWebHost(IApplicationContext applicationContext, ConfigureWebHostBuilder webHostBuilder,
-        TModuleOptions options)
-    {
-    }
 }
 
 public interface IAuthApplicationModule : IWebApplicationModule;
