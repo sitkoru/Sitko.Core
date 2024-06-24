@@ -141,6 +141,8 @@ internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : A
 
     public override bool IsEnabled(IApplicationContext context) => CreateOptions(context).Enabled;
 
+    public override void ClearOptionsCache() => optionsCache.Clear();
+
     private TModuleOptions CreateOptions(IApplicationContext applicationContext, bool validateOptions = false)
     {
         TModuleOptions options;
@@ -261,4 +263,6 @@ public abstract class ApplicationModuleRegistration
         Type[] registeredModules);
 
     public abstract bool IsEnabled(IApplicationContext context);
+
+    public abstract void ClearOptionsCache();
 }

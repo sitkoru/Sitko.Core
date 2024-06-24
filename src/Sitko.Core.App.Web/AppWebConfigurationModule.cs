@@ -13,7 +13,7 @@ public class AppWebConfigurationModule : BaseApplicationModule<AppWebConfigurati
 {
     public override string OptionsKey => "Application:Web";
 
-    public void PostConfigureWebHost(IApplicationContext applicationContext, ConfigureWebHostBuilder webHostBuilder,
+    public void ConfigureWebHost(IApplicationContext applicationContext, ConfigureWebHostBuilder webHostBuilder,
         AppWebConfigurationModuleOptions options)
     {
         if (options.Ports.Count != 0)
