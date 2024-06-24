@@ -42,6 +42,15 @@ public class SitkoCoreWebApplicationBuilder : SitkoCoreServerApplicationBuilder,
         }
     }
 
+    protected override void PostConfigureModule<TModule, TModuleOptions>(TModule instance, TModuleOptions options)
+    {
+        base.PostConfigureModule(instance, options);
+        if (instance is IWebApplicationModule<TModuleOptions> webModule)
+        {
+            webModule.PostConfigureWebHost(BootApplicationContext, webApplicationBuilder.WebHost, options);
+        }
+    }
+
     protected override void BeforeContainerBuild()
     {
         base.BeforeContainerBuild();
