@@ -61,7 +61,13 @@ public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOpti
             services.AddDataProtection().PersistKeysToStackExchangeRedis(() =>
                     {
                         var redis = ConnectionMultiplexer
-                            .Connect($"{startupOptions.RedisHost}:{startupOptions.RedisPort}");
+                            .Connect($"{startupOptions.RedisHost}:{startupOptions.RedisPort}", options =>
+                            {
+                                if (!string.IsNullOrEmpty(startupOptions.RedisPassword))
+                                {
+                                    options.Password = startupOptions.RedisPassword;
+                                }
+                            });
                         return redis.GetDatabase(startupOptions.RedisDb);
                     }, $"{applicationContext.Name}-DP")
                 .SetApplicationName(applicationContext.Name)

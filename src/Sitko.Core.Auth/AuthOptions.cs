@@ -16,6 +16,7 @@ public abstract class AuthOptions : BaseModuleOptions
     public string? RedisHost { get; set; }
     public int RedisPort { get; set; } = 6379;
     public int RedisDb { get; set; }
+    public string? RedisPassword { get; set; }
     public int DataProtectionLifeTimeInMinutes { get; set; } = 90 * 24 * 60;
     public abstract bool RequiresCookie { get; }
     public abstract string SignInScheme { get; }
