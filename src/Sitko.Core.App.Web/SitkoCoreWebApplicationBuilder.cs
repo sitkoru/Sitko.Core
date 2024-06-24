@@ -23,7 +23,7 @@ public class SitkoCoreWebApplicationBuilder : SitkoCoreServerApplicationBuilder,
     {
         webApplicationBuilder = builder;
         webApplicationBuilder.Services.AddSingleton(webOptions);
-        AddModule<AppPortsConfigurationModule, AppPortsConfigurationModuleOptions>();
+        AddModule<AppWebConfigurationModule, AppWebConfigurationModuleOptions>();
     }
 
     protected override void ConfigureHostBuilder<TModule, TModuleOptions>(ApplicationModuleRegistration registration)

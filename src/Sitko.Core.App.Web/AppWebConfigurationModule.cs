@@ -7,13 +7,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.App.Web;
 
-public class AppPortsConfigurationModule : BaseApplicationModule<AppPortsConfigurationModuleOptions>,
-    IWebApplicationModule<AppPortsConfigurationModuleOptions>
+public class AppWebConfigurationModule : BaseApplicationModule<AppWebConfigurationModuleOptions>,
+    IHostBuilderModule,
+    IWebApplicationModule<AppWebConfigurationModuleOptions>
 {
-    public override string OptionsKey => "Application:Ports";
+    public override string OptionsKey => "Application:Web";
 
     public void ConfigureWebHost(IApplicationContext applicationContext, ConfigureWebHostBuilder webHostBuilder,
-        AppPortsConfigurationModuleOptions options)
+        AppWebConfigurationModuleOptions options)
     {
         if (options.Ports.Count != 0)
         {
@@ -68,10 +69,16 @@ public class AppPortsConfigurationModule : BaseApplicationModule<AppPortsConfigu
     }
 }
 
-public class AppPortsConfigurationModuleOptions : BaseModuleOptions
+public class AppWebConfigurationModuleOptions : BaseModuleOptions
 {
     public Dictionary<string, ApplicationPort> Ports { get; set; } = new();
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public record ApplicationPort(int Port, HttpProtocols Protocol, bool UseTLS, string TLSDomain = "localhost");
+public class ApplicationPort
+{
+    public int Port { get; set; }
+    public HttpProtocols Protocol { get; set; } = HttpProtocols.Http1AndHttp2;
+    public bool UseTLS { get; set; }
+    public string TLSDomain { get; set; } = "localhost";
+}
