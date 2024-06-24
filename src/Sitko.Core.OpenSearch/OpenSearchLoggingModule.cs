@@ -18,7 +18,7 @@ public class OpenSearchLoggingModule : BaseApplicationModule<OpenSearchLoggingMo
             var sinkOptions = new OpenSearchSinkOptions(new Uri(options.Url))
             {
                 AutoRegisterTemplate = true,
-                AutoRegisterTemplateVersion = options.LoggingTemplateVersion ?? AutoRegisterTemplateVersion.OSv2,
+                AutoRegisterTemplateVersion = options.LoggingTemplateVersion ?? AutoRegisterTemplateVersion.OSv1,
                 NumberOfReplicas = options.LoggingNumberOfReplicas,
                 IndexFormat =
                     options.LoggingIndexFormat ??
