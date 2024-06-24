@@ -236,6 +236,10 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
     protected virtual void BeforeContainerBuild()
     {
         var enabledModules = ModulesHelper.GetEnabledModuleRegistrations(BootApplicationContext, moduleRegistrations);
+        foreach (var applicationModuleRegistration in enabledModules)
+        {
+            applicationModuleRegistration.ClearOptionsCache();
+        }
         serilogConfigurator.ApplyLogging(BootApplicationContext, enabledModules);
         foreach (var postConfigureCallback in moduleConfigurationCallbacks)
         {
