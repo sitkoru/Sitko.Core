@@ -96,7 +96,7 @@
   </ItemGroup>
   <!--OpenSearch libraries-->
   <ItemGroup>
-    <PackageVersion Include="Serilog.Sinks.OpenSearch" Version="1.0.0" />
+    <PackageVersion Include="Serilog.Sinks.OpenSearch" Version="1.2.0" />
   </ItemGroup>
   <!--Elastic libraries-->
   <ItemGroup>
