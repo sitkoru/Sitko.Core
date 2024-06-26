@@ -2,6 +2,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj"/>
     <ProjectReference Include="..\Sitko.Core.Grpc\Sitko.Core.Grpc.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.ServiceDiscovery\Sitko.Core.ServiceDiscovery.csproj" />
     <Protobuf Include="health.proto" GrpcServices="Server"/>
   </ItemGroup>
   <ItemGroup>
