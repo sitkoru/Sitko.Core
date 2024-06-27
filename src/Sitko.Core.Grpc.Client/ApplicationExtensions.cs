@@ -2,6 +2,7 @@
 using JetBrains.Annotations;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
+using Sitko.Core.Grpc.Client.Discovery;
 using Sitko.Core.Grpc.Client.External;
 
 namespace Sitko.Core.Grpc.Client;

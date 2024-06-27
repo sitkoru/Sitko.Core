@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
+using Sitko.Core.Consul.ServiceDiscovery;
 
 namespace Sitko.Core.Consul;
 
@@ -13,6 +14,7 @@ public class ConsulModule : BaseApplicationModule<ConsulModuleOptions>
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddSingleton<IConsulClientProvider, ConsulClientProvider>();
+        services.AddSingleton<IServiceDiscoveryManager, ServiceDiscoveryManager>();
         services.AddSingleton(provider => provider.GetRequiredService<IConsulClientProvider>().Client);
         services.AddHealthChecks().AddCheck<ConsulHealthCheck>("Consul connection");
     }
@@ -21,6 +23,8 @@ public class ConsulModule : BaseApplicationModule<ConsulModuleOptions>
 public class ConsulModuleOptions : BaseModuleOptions
 {
     public string ConsulUri { get; set; } = "http://localhost:8500";
+    public int ChecksIntervalInSeconds { get; set; } = 60;
+    public int DeregisterTimeoutInSeconds { get; set; } = 60;
 }
 
 public class ConsulModuleOptionsValidator : AbstractValidator<ConsulModuleOptions>

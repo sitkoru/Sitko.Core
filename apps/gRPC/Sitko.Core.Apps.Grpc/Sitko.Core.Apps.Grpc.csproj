@@ -17,7 +17,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Sitko.Core.Grpc.Client\Sitko.Core.Grpc.Client.csproj" />
     <ProjectReference Include="..\..\..\src\Sitko.Core.Grpc.Server\Sitko.Core.Grpc.Server.csproj"/>
-    <ProjectReference Include="..\..\..\src\Sitko.Core.ServiceDiscovery.Consul\Sitko.Core.ServiceDiscovery.Consul.csproj"/>
+    <ProjectReference Include="..\..\..\src\Sitko.Core.ServiceDiscovery.Resolver.Consul\Sitko.Core.ServiceDiscovery.Resolver.Consul.csproj" />
+    <ProjectReference Include="..\..\..\src\Sitko.Core.ServiceDiscovery.Server.Consul\Sitko.Core.ServiceDiscovery.Server.Consul.csproj" />
   </ItemGroup>
 
 

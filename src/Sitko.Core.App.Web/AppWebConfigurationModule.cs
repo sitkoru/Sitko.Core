@@ -81,4 +81,6 @@ public class ApplicationPort
     public HttpProtocols Protocol { get; set; } = HttpProtocols.Http1AndHttp2;
     public bool UseTLS { get; set; }
     public string TLSDomain { get; set; } = "localhost";
+    public string? ExternalAddress { get; set; }
+    public int? ExternalPort { get; set; }
 }

@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Grpc\Sitko.Core.Grpc.csproj"/>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
     <ProjectReference Include="..\Sitko.Core.ServiceDiscovery\Sitko.Core.ServiceDiscovery.csproj" />
   </ItemGroup>
   <ItemGroup>
