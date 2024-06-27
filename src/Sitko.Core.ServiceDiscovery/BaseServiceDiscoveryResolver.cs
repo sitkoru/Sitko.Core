@@ -18,7 +18,7 @@ public abstract class BaseServiceDiscoveryResolver(
 
     private bool isInit;
     private bool isLoaded;
-    private readonly CancellationTokenSource cts = new();
+    private readonly CancellationTokenSource loadCancellationTokenSource = new();
     private Task? refreshTask;
     private ICollection<ResolvedService> services = Array.Empty<ResolvedService>();
 
@@ -27,7 +27,7 @@ public abstract class BaseServiceDiscoveryResolver(
         if (!isInit)
         {
             isInit = true;
-            await LoadServicesAsync();
+            await LoadServicesAsync(loadCancellationTokenSource.Token);
             refreshTask = StartRefreshTaskAsync();
         }
     }
@@ -45,9 +45,9 @@ public abstract class BaseServiceDiscoveryResolver(
             });
     }
 
-    private async Task LoadServicesAsync()
+    private async Task LoadServicesAsync(CancellationToken cancellationToken)
     {
-        var result = await DoLoadServicesAsync();
+        var result = await DoLoadServicesAsync(cancellationToken);
         if (result is not null)
         {
             services = result;
@@ -66,16 +66,20 @@ public abstract class BaseServiceDiscoveryResolver(
         }
     }
 
-    protected abstract Task<ICollection<ResolvedService>?> DoLoadServicesAsync();
+    protected abstract Task<ICollection<ResolvedService>?> DoLoadServicesAsync(CancellationToken cancellationToken);
 
     private async Task StartRefreshTaskAsync()
     {
-        while (!cts.IsCancellationRequested)
+        while (!loadCancellationTokenSource.IsCancellationRequested)
         {
             try
             {
                 Logger.LogDebug("Wait for configuration load");
-                await LoadServicesAsync();
+                await LoadServicesAsync(loadCancellationTokenSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                logger.LogInformation("Service discovery load task was cancelled");
             }
             catch (Exception ex)
             {
@@ -88,7 +92,7 @@ public abstract class BaseServiceDiscoveryResolver(
 
     public async ValueTask DisposeAsync()
     {
-        await cts.CancelAsync();
+        await loadCancellationTokenSource.CancelAsync();
         if (refreshTask != null)
         {
             await refreshTask;

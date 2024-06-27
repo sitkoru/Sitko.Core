@@ -9,6 +9,6 @@ public class ConsulServiceDiscoveryResolver(
     IServiceDiscoveryManager serviceDiscoveryManager,
     ILogger<ConsulServiceDiscoveryResolver> logger) : BaseServiceDiscoveryResolver(logger)
 {
-    protected override async Task<ICollection<ResolvedService>?> DoLoadServicesAsync() =>
-        await serviceDiscoveryManager.LoadAsync();
+    protected override async Task<ICollection<ResolvedService>?> DoLoadServicesAsync(CancellationToken cancellationToken) =>
+        await serviceDiscoveryManager.LoadAsync(cancellationToken);
 }
