@@ -2,13 +2,13 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Sitko.Core.ServiceDiscovery.Server;
+namespace Sitko.Core.ServiceDiscovery;
 
-public class ServiceDiscoveryRefresherService<TOptions>(
+public class ServiceDiscoveryRefresherService(
     IServiceDiscoveryRegistrar registrar,
-    IOptionsMonitor<TOptions> hostOptions,
-    ILogger<ServiceDiscoveryRefresherService<TOptions>> logger)
-    : BackgroundService where TOptions : ServiceDiscoveryModuleOptions, new()
+    IOptionsMonitor<ServiceDiscoveryModuleOptions> hostOptions,
+    ILogger<ServiceDiscoveryRefresherService> logger)
+    : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

@@ -4,10 +4,9 @@ using Sitko.Core.Apps.Grpc.Services;
 using Sitko.Core.Consul;
 using Sitko.Core.Grpc.Client;
 using Sitko.Core.Grpc.Server;
+using Sitko.Core.ServiceDiscovery;
 using Sitko.Core.ServiceDiscovery.Resolver.Consul;
 using Sitko.Core.ServiceDiscovery.Server.Consul;
-using ConsulServiceDiscoveryModuleOptions =
-    Sitko.Core.ServiceDiscovery.Resolver.Consul.ConsulServiceDiscoveryModuleOptions;
 using FooService = Sitko.Core.Apps.Grpc.Services.FooService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,8 +24,7 @@ builder
         options.DisableCertificatesValidation = true);
 builder.AddSitkoCoreWeb()
     .AddConsul()
-    .AddModule<ConsulServiceDiscoveryServerModule, ConsulServiceDiscoveryServerModuleOptions>()
-    .AddModule<ConsulServiceDiscoveryResolverModule, ConsulServiceDiscoveryModuleOptions>();
+    .AddServiceDiscovery<ConsulServiceDiscoveryRegistrar, ConsulServiceDiscoveryResolver>();
 
 var app = builder.Build();
 

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 
-namespace Sitko.Core.ServiceDiscovery.Server;
+namespace Sitko.Core.ServiceDiscovery;
 
 public class ServiceDiscoveryHostedService(IServiceDiscoveryRegistrar registrar) : IHostedService
 {
