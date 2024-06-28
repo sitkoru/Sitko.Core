@@ -15,6 +15,8 @@ public interface IApplicationEnvironment
     string EnvironmentName { get; }
     bool IsDevelopment();
     bool IsProduction();
+    bool IsStaging();
+    bool IsEnvironment(string environmentName);
 }
 
 public class ServerApplicationEnvironment : IApplicationEnvironment
@@ -27,6 +29,8 @@ public class ServerApplicationEnvironment : IApplicationEnvironment
     public bool IsDevelopment() => hostEnvironment.IsDevelopment();
 
     public bool IsProduction() => hostEnvironment.IsProduction();
+    public bool IsStaging() =>  hostEnvironment.IsStaging();
+    public bool IsEnvironment(string environmentName) => hostEnvironment.IsEnvironment(environmentName);
 }
 
 public class BuilderApplicationContext : IApplicationContext
@@ -65,6 +69,10 @@ public class BuilderApplicationContext : IApplicationContext
     public bool IsDevelopment() => environment.IsDevelopment();
 
     public bool IsProduction() => environment.IsProduction();
+    public bool IsStaging() => environment.IsStaging();
+
+    public bool IsEnvironment(string environmentName) => environment.IsEnvironment(environmentName);
+
     public string[] Args { get; }
 
     private ApplicationOptions GetApplicationOptions()
