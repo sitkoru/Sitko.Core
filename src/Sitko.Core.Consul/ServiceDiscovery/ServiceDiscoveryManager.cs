@@ -200,7 +200,7 @@ public class ServiceDiscoveryManager(
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Error updating TTL for {ServiceId}: {ErrorText}",
+            logger.LogError(exception, "Error deregistering service {ServiceId}: {ErrorText}",
                 serviceId, exception.ToString());
         }
     }
