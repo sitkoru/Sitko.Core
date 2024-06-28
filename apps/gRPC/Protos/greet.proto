@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+option csharp_namespace = "Sitko.Core.Apps.Grpc";
+
+package greet;
+
+// The greeting service definition.
+service Greeter {
+  // Sends a greeting
+  rpc SayHello (HelloRequest) returns (HelloReply);
+}
+
+// The request message containing the user's name.
+message HelloRequest {
+  string name = 1;
+}
+
+// The response message containing the greetings.
+message HelloReply {
+  string message = 1;
+}
+
+
+service FooService {
+    // Sends a greeting
+    rpc Foo (FooRequest) returns (FooReply);
+}
+
+// The request message containing the user's name.
+message FooRequest {
+    string Bar = 1;
+}
+
+// The response message containing the greetings.
+message FooReply {
+    string Baz = 1;
+}

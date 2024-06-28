@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.App.Web;
+using Sitko.Core.ServiceDiscovery;
 
 namespace Sitko.Core.Grpc.Server;
 
@@ -47,9 +48,14 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
             services.AddGrpcReflection();
         }
 
-        foreach (var registration in startupOptions.ServiceRegistrations)
+        foreach (var (name, registrationAction) in startupOptions.ServiceRegistrations)
         {
-            registration(this);
+            registrationAction(this);
+            if (startupOptions.EnableServiceDiscovery)
+            {
+                services.AddToServiceDiscovery(new ServiceDiscoveryService(GrpcModuleConstants.GrpcServiceDiscoveryType,
+                    name, new Dictionary<string, string>(), startupOptions.ServiceDiscoveryPortNames));
+            }
         }
     }
 

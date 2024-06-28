@@ -9,11 +9,13 @@ namespace Sitko.Core.Grpc.Server;
 [PublicAPI]
 public class GrpcServerModuleOptions : BaseModuleOptions
 {
-    private readonly List<Action<IGrpcServerModule>> serviceRegistrations = new();
+    private readonly Dictionary<string, Action<IGrpcServerModule>> serviceRegistrations = new();
     internal string? RequiredAuthorizationSchemeName { get; private set; }
     internal bool EnableGrpcWeb { get; private set; }
     public string? Host { get; set; }
     public int? Port { get; set; }
+    public bool EnableServiceDiscovery { get; set; } = true;
+    public List<string> ServiceDiscoveryPortNames { get; set; } = ["gRPC", "https"];
     [JsonIgnore] public Action<IWebHostBuilder>? ConfigureWebHostDefaults { get; set; }
 
     public int ChecksIntervalInSeconds { get; set; } = 60;
@@ -26,18 +28,22 @@ public class GrpcServerModuleOptions : BaseModuleOptions
 
     public bool AutoFixRegistration { get; set; }
 
-    [JsonIgnore] public Action<IGrpcServerModule>[] ServiceRegistrations => serviceRegistrations.ToArray();
+    [JsonIgnore]
+    internal IReadOnlyDictionary<string, Action<IGrpcServerModule>> ServiceRegistrations =>
+        serviceRegistrations.AsReadOnly();
 
     public GrpcServerModuleOptions RegisterService<TService>() where TService : class
     {
-        serviceRegistrations.Add(module => module.RegisterService<TService>(RequiredAuthorizationSchemeName));
+        serviceRegistrations.Add(GrpcServicesHelper.GetServiceName<TService>(),
+            module => module.RegisterService<TService>(RequiredAuthorizationSchemeName));
         return this;
     }
 
     public GrpcServerModuleOptions RegisterServiceWithGrpcWeb<TService>() where TService : class
     {
         EnableGrpcWeb = true;
-        serviceRegistrations.Add(module => module.RegisterService<TService>(RequiredAuthorizationSchemeName, true));
+        serviceRegistrations.Add(GrpcServicesHelper.GetServiceName<TService>(),
+            module => module.RegisterService<TService>(RequiredAuthorizationSchemeName, true));
         return this;
     }
 
