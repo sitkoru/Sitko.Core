@@ -16,4 +16,6 @@ public interface IApplicationContext
     public string[] Args { get; }
     bool IsDevelopment();
     bool IsProduction();
+    bool IsStaging();
+    bool IsEnvironment(string environmentName);
 }

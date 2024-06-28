@@ -24,6 +24,8 @@ public class WasmApplicationEnvironment : IApplicationEnvironment
     public bool IsDevelopment() => builderHostEnvironment.IsDevelopment();
 
     public bool IsProduction() => builderHostEnvironment.IsProduction();
+    public bool IsStaging() => builderHostEnvironment.IsStaging();
+    public bool IsEnvironment(string environmentName) => builderHostEnvironment.IsEnvironment(environmentName);
 }
 
 public class SitkoCoreBlazorWasmApplicationBuilder : SitkoCoreBaseApplicationBuilder,
