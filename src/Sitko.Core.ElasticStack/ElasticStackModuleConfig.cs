@@ -39,7 +39,7 @@ public class ElasticStackModuleOptions : BaseModuleOptions
     public string? LoggingRolloverAlias { get; set; }
     public EmitEventFailureHandling EmitEventFailure { get; set; } = EmitEventFailureHandling.WriteToSelfLog;
     public ILogEventSink? FailureSink { get; set; }
-    public Action<LogEvent>? FailureCallback { get; set; }
+    public Action<LogEvent, Exception>? FailureCallback { get; set; }
     public string? LogIndexTypeName { get; set; }
 }
 
