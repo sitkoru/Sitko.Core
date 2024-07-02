@@ -117,7 +117,7 @@
     <PackageVersion Include="Serilog.Sinks.Graylog" Version="3.1.1" />
     <PackageVersion Include="Serilog.Sinks.Async" Version="2.0.0" />
     <PackageVersion Include="NewRelic.LogEnrichers.Serilog" Version="1.2.0" />
-    <PackageVersion Include="Serilog.Sinks.NewRelic.Logs" Version="1.2.0" />
+    <PackageVersion Include="Serilog.Sinks.NewRelic.Logs" Version="1.3.0" />
   </ItemGroup>
   <!--Grpc and protobuf libraries-->
   <ItemGroup>
