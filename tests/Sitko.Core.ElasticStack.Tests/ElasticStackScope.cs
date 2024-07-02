@@ -14,6 +14,7 @@ public class ElasticStackScope : BaseTestScope
             options.LoggingTemplateVersion = AutoRegisterTemplateVersion.ESv8;
             options.LoggingIndexFormat = "logs-test";
             options.EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog | EmitEventFailureHandling.RaiseCallback;
-            options.FailureCallback = e => Console.WriteLine("Unable to submit event to elastic: " + e.MessageTemplate);
+            options.FailureCallback = (e, ex) =>
+                Console.WriteLine("Unable to submit event to elastic: " + e.MessageTemplate + $". Exception: {ex}");
         });
 }
