@@ -75,7 +75,7 @@ public class AppWebConfigurationModuleOptions : BaseModuleOptions
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class ApplicationPort
+public record ApplicationPort
 {
     public int Port { get; set; }
     public HttpProtocols Protocol { get; set; } = HttpProtocols.Http1AndHttp2;
