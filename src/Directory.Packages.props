@@ -113,7 +113,7 @@
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageVersion Include="Serilog.Sinks.BrowserConsole" Version="2.0.0" />
-    <PackageVersion Include="Serilog.Sinks.Elasticsearch" Version="9.0.3" />
+    <PackageVersion Include="Serilog.Sinks.Elasticsearch" Version="10.0.0" />
     <PackageVersion Include="Serilog.Sinks.Graylog" Version="3.1.1" />
     <PackageVersion Include="Serilog.Sinks.Async" Version="2.0.0" />
     <PackageVersion Include="NewRelic.LogEnrichers.Serilog" Version="1.2.0" />
