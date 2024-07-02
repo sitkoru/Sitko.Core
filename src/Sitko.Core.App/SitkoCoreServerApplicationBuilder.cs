@@ -37,7 +37,7 @@ public class SitkoCoreServerApplicationBuilder : SitkoCoreBaseApplicationBuilder
 
     protected virtual void ConfigureHostBuilder<TModule, TModuleOptions>(ApplicationModuleRegistration registration)
         where TModule : IApplicationModule<TModuleOptions>, new() where TModuleOptions : BaseModuleOptions, new() =>
-        registration.ConfigureHostBuilder(BootApplicationContext, applicationBuilder);
+        registration.ConfigureHostBuilder(Context, applicationBuilder);
 
     protected override void AfterModuleRegistration<TModule, TModuleOptions>(IApplicationContext applicationContext,
         ApplicationModuleRegistration moduleRegistration)
@@ -45,7 +45,7 @@ public class SitkoCoreServerApplicationBuilder : SitkoCoreBaseApplicationBuilder
         base.AfterModuleRegistration<TModule, TModuleOptions>(applicationContext, moduleRegistration);
         if (typeof(TModule).IsAssignableTo(typeof(IHostBuilderModule)))
         {
-            moduleRegistration.PostConfigureHostBuilder(BootApplicationContext, applicationBuilder);
+            moduleRegistration.PostConfigureHostBuilder(Context, applicationBuilder);
         }
     }
 }

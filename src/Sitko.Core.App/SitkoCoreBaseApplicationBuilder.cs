@@ -40,9 +40,8 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
                                                                       throw new InvalidOperationException(
                                                                           "Application init is not executed");
 
-    protected IApplicationContext BootApplicationContext => bootApplicationContext ??
-                                                            throw new InvalidOperationException(
-                                                                "Application init is not executed");
+    public IApplicationContext Context => bootApplicationContext ?? throw new InvalidOperationException(
+        "Application init is not executed");
 
     public string[] Args { get; }
     protected IServiceCollection Services { get; }
@@ -142,7 +141,7 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
     {
         var tmpLoggerConfiguration = new LoggerConfiguration();
         tmpLoggerConfiguration = ConfigureDefautLogger(tmpLoggerConfiguration);
-        if (BootApplicationContext.Options.EnableConsoleLogging != true)
+        if (Context.Options.EnableConsoleLogging != true)
         {
             tmpLoggerConfiguration = tmpLoggerConfiguration.WriteTo.Console(
                 outputTemplate: ApplicationOptions.BaseConsoleLogFormat,
@@ -172,24 +171,24 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
 
         var registration =
             new ApplicationModuleRegistration<TModule, TModuleOptions>(instance, configureOptions, optionsKey);
-        if (registration.IsEnabled(BootApplicationContext))
+        if (registration.IsEnabled(Context))
         {
-            registration.ConfigureAppConfiguration(BootApplicationContext, Configuration);
+            registration.ConfigureAppConfiguration(Context, Configuration);
         }
 
         moduleRegistrations.Add(registration);
         moduleConfigurationCallbacks.Add(() =>
         {
-            if (registration.IsEnabled(BootApplicationContext))
+            if (registration.IsEnabled(Context))
             {
-                if (registration.IsEnabled(BootApplicationContext))
+                if (registration.IsEnabled(Context))
                 {
-                    BeforeModuleRegistration<TModule, TModuleOptions>(BootApplicationContext, registration);
+                    BeforeModuleRegistration<TModule, TModuleOptions>(Context, registration);
 
-                    registration.ConfigureOptions(BootApplicationContext, Services);
-                    registration.ConfigureServices(BootApplicationContext, Services);
+                    registration.ConfigureOptions(Context, Services);
+                    registration.ConfigureServices(Context, Services);
 
-                    AfterModuleRegistration<TModule, TModuleOptions>(BootApplicationContext, registration);
+                    AfterModuleRegistration<TModule, TModuleOptions>(Context, registration);
                 }
             }
         });
@@ -213,20 +212,20 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
 
     protected virtual LoggerConfiguration ConfigureDefautLogger(LoggerConfiguration loggerConfiguration)
     {
-        loggerConfiguration = loggerConfiguration.ReadFrom.Configuration(BootApplicationContext.Configuration);
+        loggerConfiguration = loggerConfiguration.ReadFrom.Configuration(Context.Configuration);
         loggerConfiguration = loggerConfiguration
             .Enrich.FromLogContext()
-            .Enrich.WithProperty("App", BootApplicationContext.Name)
-            .Enrich.WithProperty("AppVersion", BootApplicationContext.Version)
-            .Enrich.WithProperty("AppEnvironment", BootApplicationContext.Environment)
+            .Enrich.WithProperty("App", Context.Name)
+            .Enrich.WithProperty("AppVersion", Context.Version)
+            .Enrich.WithProperty("AppEnvironment", Context.Environment)
             .Enrich.WithMachineName()
             // TODO: Убрать после обновления на Serilog.Extensions.Logging 8.0.1+
             .Enrich.With<TraceMetaEnricher>();
 
-        if (BootApplicationContext.Options.EnableConsoleLogging == true)
+        if (Context.Options.EnableConsoleLogging == true)
         {
             loggerConfiguration = loggerConfiguration.WriteTo.Console(
-                outputTemplate: BootApplicationContext.Options.ConsoleLogFormat,
+                outputTemplate: Context.Options.ConsoleLogFormat,
                 formatProvider: CultureInfo.InvariantCulture);
         }
 
@@ -235,12 +234,13 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
 
     protected virtual void BeforeContainerBuild()
     {
-        var enabledModules = ModulesHelper.GetEnabledModuleRegistrations(BootApplicationContext, moduleRegistrations);
+        var enabledModules = ModulesHelper.GetEnabledModuleRegistrations(Context, moduleRegistrations);
         foreach (var applicationModuleRegistration in enabledModules)
         {
             applicationModuleRegistration.ClearOptionsCache();
         }
-        serilogConfigurator.ApplyLogging(BootApplicationContext, enabledModules);
+
+        serilogConfigurator.ApplyLogging(Context, enabledModules);
         foreach (var postConfigureCallback in moduleConfigurationCallbacks)
         {
             postConfigureCallback();
@@ -248,7 +248,7 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
 
         foreach (var moduleRegistration in enabledModules)
         {
-            moduleRegistration.PostConfigureServices(BootApplicationContext, Services);
+            moduleRegistration.PostConfigureServices(Context, Services);
         }
     }
 

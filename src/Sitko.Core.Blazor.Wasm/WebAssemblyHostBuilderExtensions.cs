@@ -48,7 +48,7 @@ public class SitkoCoreBlazorWasmApplicationBuilder : SitkoCoreBaseApplicationBui
     {
         base.ConfigureDefautLogger(loggerConfiguration);
         return loggerConfiguration.WriteTo.BrowserConsole(
-            outputTemplate: BootApplicationContext.Options.ConsoleLogFormat,
+            outputTemplate: Context.Options.ConsoleLogFormat,
             formatProvider: CultureInfo.InvariantCulture);
     }
 }

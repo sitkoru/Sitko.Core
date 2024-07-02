@@ -33,11 +33,11 @@ public class SitkoCoreWebApplicationBuilder : SitkoCoreServerApplicationBuilder,
         if (typeof(TModule).IsAssignableTo(typeof(IWebApplicationModule)))
         {
             var module = registration.GetInstance();
-            var (_, options) = registration.GetOptions(BootApplicationContext);
+            var (_, options) = registration.GetOptions(Context);
             if (module is TModule and IWebApplicationModule<TModuleOptions> webModule &&
                 options is TModuleOptions webModuleOptions)
             {
-                webModule.ConfigureWebHost(BootApplicationContext, webApplicationBuilder.WebHost, webModuleOptions);
+                webModule.ConfigureWebHost(Context, webApplicationBuilder.WebHost, webModuleOptions);
             }
         }
     }
@@ -90,7 +90,7 @@ public class SitkoCoreWebApplicationBuilder : SitkoCoreServerApplicationBuilder,
         }
 
         var dataProtectionBuilder = Services.AddDataProtection()
-            .SetApplicationName(BootApplicationContext.Name)
+            .SetApplicationName(Context.Name)
             .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
         webOptions.ConfigureDataProtection?.Invoke(dataProtectionBuilder);
 

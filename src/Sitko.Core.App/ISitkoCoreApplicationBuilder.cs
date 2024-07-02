@@ -7,6 +7,7 @@ namespace Sitko.Core.App;
 
 public interface ISitkoCoreApplicationBuilder
 {
+    IApplicationContext Context { get; }
     ISitkoCoreApplicationBuilder AddModule<TModule>() where TModule : BaseApplicationModule, new();
 
     ISitkoCoreApplicationBuilder AddModule<TModule, TModuleOptions>(
