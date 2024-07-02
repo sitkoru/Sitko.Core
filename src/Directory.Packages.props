@@ -23,7 +23,7 @@
     <PackageVersion Include="PuppeteerSharp" Version="13.0.1" />
     <PackageVersion Include="NATS.Client" Version="1.1.0" />
     <PackageVersion Include="STAN.Client" Version="0.3.0" />
-    <PackageVersion Include="System.Linq.Dynamic.Core" Version="1.4.1" />
+    <PackageVersion Include="System.Linq.Dynamic.Core" Version="1.4.3" />
     <PackageVersion Include="CompareNETObjects" Version="4.83.0" />
     <PackageVersion Include="Serialize.Linq" Version="2.0.0" />
     <PackageVersion Include="MimeMapping" Version="3.0.1" />
