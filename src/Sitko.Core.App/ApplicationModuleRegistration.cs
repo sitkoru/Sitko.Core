@@ -2,6 +2,7 @@
 using FluentValidation;
 using IL.FluentValidation.Extensions.Options;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -117,6 +118,13 @@ internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : A
             var options = CreateOptions(context);
             configurationModule.ConfigureAppConfiguration(context, configurationBuilder,
                 options);
+            var envProviders = configurationBuilder.Sources
+                .Where(source => source is EnvironmentVariablesConfigurationSource).ToArray();
+            foreach (var envProvider in envProviders)
+            {
+                configurationBuilder.Sources.Remove(envProvider);
+                configurationBuilder.Add(envProvider);
+            }
         }
 
         return this;
