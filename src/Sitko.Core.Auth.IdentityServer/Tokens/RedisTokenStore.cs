@@ -21,7 +21,13 @@ internal class RedisTokenStore : IUserTokenStore
     {
         this.applicationContext = applicationContext;
         this.options = options;
-        redis = ConnectionMultiplexer.Connect($"{options.Value.RedisHost}:{options.Value.RedisPort}")
+        redis = ConnectionMultiplexer.Connect($"{options.Value.RedisHost}:{options.Value.RedisPort}", configureOptions =>
+            {
+                if (!string.IsNullOrEmpty(options.Value.RedisPassword))
+                {
+                    configureOptions.Password = options.Value.RedisPassword;
+                }
+            })
             .GetDatabase(options.Value.RedisDb);
         dataProtector = dataProtectionProvider.CreateProtector(nameof(RedisTokenStore));
     }
