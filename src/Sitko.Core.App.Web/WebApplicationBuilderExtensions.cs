@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -65,6 +66,10 @@ public static class WebApplicationBuilderExtensions
                 webApplication.UseCors(defaultPolicy);
             }
         }
+
+        webApplication.MapHealthChecks("/health/startup");
+        webApplication.MapHealthChecks("/healthz", new HealthCheckOptions { Predicate = _ => false });
+        webApplication.MapHealthChecks("/ready", new HealthCheckOptions { Predicate = _ => false });
 
         var webModules =
             ModulesHelper.GetEnabledModuleRegistrations(applicationContext, applicationModuleRegistrations)
