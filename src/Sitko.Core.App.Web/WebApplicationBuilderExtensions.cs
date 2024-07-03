@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Sitko.Core.App.Health;
 
 namespace Sitko.Core.App.Web;
 
@@ -67,9 +69,22 @@ public static class WebApplicationBuilderExtensions
             }
         }
 
-        webApplication.MapHealthChecks("/health/startup");
-        webApplication.MapHealthChecks("/healthz", new HealthCheckOptions { Predicate = _ => false });
-        webApplication.MapHealthChecks("/ready", new HealthCheckOptions { Predicate = _ => false });
+        webApplication.MapHealthChecks("/health/all");
+        webApplication.MapHealthChecks("/health/startup",
+            new HealthCheckOptions
+            {
+                Predicate = registration => ShouldRunHealthCheck(registration, HealthCheckStages.Startup)
+            });
+        webApplication.MapHealthChecks("/healthz",
+            new HealthCheckOptions
+            {
+                Predicate = registration => ShouldRunHealthCheck(registration, HealthCheckStages.Startup)
+            });
+        webApplication.MapHealthChecks("/ready",
+            new HealthCheckOptions
+            {
+                Predicate = registration => ShouldRunHealthCheck(registration, HealthCheckStages.Startup)
+            });
 
         var webModules =
             ModulesHelper.GetEnabledModuleRegistrations(applicationContext, applicationModuleRegistrations)
@@ -98,4 +113,8 @@ public static class WebApplicationBuilderExtensions
 
         return webApplication;
     }
+
+    private static bool ShouldRunHealthCheck(HealthCheckRegistration registration, string stage) =>
+        !registration.Tags.Contains(HealthCheckStages.GetSkipTag(stage)) &&
+        !registration.Tags.Contains(HealthCheckStages.GetSkipAllTag());
 }

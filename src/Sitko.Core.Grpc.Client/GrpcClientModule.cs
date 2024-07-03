@@ -2,6 +2,7 @@ using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sitko.Core.App;
+using Sitko.Core.App.Health;
 using Sitko.Core.Grpc.Client.Discovery;
 
 namespace Sitko.Core.Grpc.Client;
@@ -54,7 +55,8 @@ public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOpti
         });
 
         services.AddHealthChecks()
-            .AddCheck<GrpcClientHealthCheck<TClient>>($"GRPC Client check: {typeof(TClient)}");
+            .AddCheck<GrpcClientHealthCheck<TClient>>($"GRPC Client check: {typeof(TClient)}",
+                tags: HealthCheckStages.GetSkipAllTags());
     }
 
     public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider)

@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App;
+using Sitko.Core.App.Health;
+using Sitko.Core.App.Web;
 
 namespace Sitko.Core.Consul.Web;
 
@@ -13,7 +15,7 @@ public class ConsulWebModule : BaseApplicationModule<ConsulWebModuleOptions>
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddSingleton<ConsulWebClient>();
-        services.AddHealthChecks().AddCheck<ConsulWebHealthCheck>("Consul registration");
+        services.AddHealthChecks().AddCheck<ConsulWebHealthCheck>("Consul registration", tags: HealthCheckStages.GetSkipAllTags());
     }
 
     public override Task ApplicationStarted(IApplicationContext applicationContext,
