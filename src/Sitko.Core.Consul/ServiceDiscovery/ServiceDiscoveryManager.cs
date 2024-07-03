@@ -162,7 +162,7 @@ public class ServiceDiscoveryManager(
                             foreach (var sdService in meta.Services)
                             {
                                 var resolvedService = new ResolvedService(sdService.Type, sdService.Name,
-                                    new Dictionary<string, string>(), meta.ApplicationService.Scheme, service.Address,
+                                    new Dictionary<string, string>(), meta.ApplicationService.Scheme, service.ServiceAddress,
                                     service.ServicePort);
                                 resolvedServices.Add(resolvedService);
                             }
