@@ -13,6 +13,9 @@ public abstract class BaseServiceDiscoveryRegistrar(
     ILogger<BaseServiceDiscoveryRegistrar> logger)
     : IServiceDiscoveryRegistrar
 {
+    private const string IpV6Localhost = "[::]";
+    private const string IpV4Localhost = "127.0.0.1";
+
     protected ILogger<BaseServiceDiscoveryRegistrar> Logger { get; } = logger;
 
     public async Task RegisterAsync(CancellationToken cancellationToken = default) =>
@@ -31,7 +34,7 @@ public abstract class BaseServiceDiscoveryRegistrar(
         {
             foreach (var (portName, applicationPort) in hostOptions.CurrentValue.Ports)
             {
-                var address = "127.0.0.1";
+                var address = IpV4Localhost;
                 var port = applicationPort.Port;
                 if (!string.IsNullOrEmpty(applicationPort.ExternalAddress))
                 {
@@ -50,7 +53,7 @@ public abstract class BaseServiceDiscoveryRegistrar(
                             .FirstOrDefault(u => u.Port == port);
                         if (addressForPort != null)
                         {
-                            if (addressForPort.Host != "[::]")
+                            if (addressForPort.Host != IpV6Localhost)
                             {
                                 address = addressForPort.Host;
                             }
@@ -75,7 +78,7 @@ public abstract class BaseServiceDiscoveryRegistrar(
             {
                 var uri = new Uri(address);
                 var appService =
-                    new ApplicationService(uri.Scheme, uri.Host, uri.Port,
+                    new ApplicationService(uri.Scheme, uri.Host == IpV6Localhost ? IpV4Localhost : uri.Host, uri.Port,
                         uri.Scheme);
                 registry[appService] = new List<ServiceDiscoveryService>();
             }
