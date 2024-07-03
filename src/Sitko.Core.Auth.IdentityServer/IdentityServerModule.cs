@@ -23,9 +23,8 @@ public abstract class IdentityServerModule<TAuthOptions> : AuthModule<TAuthOptio
         {
             if (IdentityServerModuleChecks.Checks.TryAdd(oidcUri.ToString(), true))
             {
-                services.AddHealthChecks().AddIdentityServer(oidcUri, $"IdSrv: {oidcUri}");
+                services.AddHealthChecks().AddIdentityServer(oidcUri, name: $"IdSrv: {oidcUri}");
             }
         }
     }
 }
-
