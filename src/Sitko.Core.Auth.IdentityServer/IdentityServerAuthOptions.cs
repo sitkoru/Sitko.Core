@@ -6,6 +6,7 @@ public abstract class IdentityServerAuthOptions : AuthOptions
 {
     public string OidcServerUrl { get; set; } = "https://localhost";
     public bool RequireHttps { get; set; }
+    public bool EnableHealthChecks { get; set; } = true;
 }
 
 public class IdentityServerAuthOptionsValidator<TOptions> : AuthOptionsValidator<TOptions>

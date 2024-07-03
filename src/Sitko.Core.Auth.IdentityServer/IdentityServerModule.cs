@@ -19,11 +19,14 @@ public abstract class IdentityServerModule<TAuthOptions> : AuthModule<TAuthOptio
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
         services.TryAddScoped<IUserTokenProvider, UserTokenProvider>();
-        if (Uri.TryCreate(startupOptions.OidcServerUrl, UriKind.Absolute, out var oidcUri))
+        if (startupOptions.EnableHealthChecks)
         {
-            if (IdentityServerModuleChecks.Checks.TryAdd(oidcUri.ToString(), true))
+            if (Uri.TryCreate(startupOptions.OidcServerUrl, UriKind.Absolute, out var oidcUri))
             {
-                services.AddHealthChecks().AddIdentityServer(oidcUri, name: $"IdSrv: {oidcUri}");
+                if (IdentityServerModuleChecks.Checks.TryAdd(oidcUri.ToString(), true))
+                {
+                    services.AddHealthChecks().AddIdentityServer(oidcUri, name: $"IdSrv: {oidcUri}");
+                }
             }
         }
     }
