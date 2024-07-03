@@ -9,18 +9,22 @@ public abstract class BaseServiceDiscoveryResolver(
 {
     protected ILogger<BaseServiceDiscoveryResolver> Logger { get; } = logger;
 
-    public ResolvedService? Resolve(string type, string name) =>
-        !isLoaded
-            ? null
-            : services.FirstOrDefault(service =>
-                service.Type.Equals(type, StringComparison.OrdinalIgnoreCase) &&
-                service.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+    public ResolvedService? Resolve(string type, string name)
+    {
+        var key = GenerateServiceKey(type, name);
+        if (isLoaded && services.TryGetValue(key, out var service))
+        {
+            return service;
+        }
+
+        return null;
+    }
 
     private bool isInit;
     private bool isLoaded;
     private readonly CancellationTokenSource loadCancellationTokenSource = new();
     private Task? refreshTask;
-    private ICollection<ResolvedService> services = Array.Empty<ResolvedService>();
+    private Dictionary<string, ResolvedService> services = new();
 
     public async Task LoadAsync()
     {
@@ -34,15 +38,21 @@ public abstract class BaseServiceDiscoveryResolver(
 
     private readonly ConcurrentDictionary<string, List<Action<ResolvedService>>> resolveCallbacks = new();
 
+    private static string GenerateServiceKey(string serviceType, string name) =>
+        $"{serviceType}|{name}".ToLowerInvariant();
+
+    private static string GenerateServiceKey(ResolvedService service) => GenerateServiceKey(service.Type, service.Name);
+
     public void Subscribe(string serviceType, string name, Action<ResolvedService> callback)
     {
-        var key = $"{serviceType}|{name}".ToLowerInvariant();
+        var key = GenerateServiceKey(serviceType, name);
         resolveCallbacks.AddOrUpdate(key, _ => [callback],
             (_, list) =>
             {
                 list.Add(callback);
                 return list;
             });
+        UpdateSubscriptions();
     }
 
     private async Task LoadServicesAsync(CancellationToken cancellationToken)
@@ -50,17 +60,21 @@ public abstract class BaseServiceDiscoveryResolver(
         var result = await DoLoadServicesAsync(cancellationToken);
         if (result is not null)
         {
-            services = result;
+            services = result.ToDictionary(GenerateServiceKey, service => service);
             isLoaded = true;
-            foreach (var resolvedService in result)
+            UpdateSubscriptions();
+        }
+    }
+
+    private void UpdateSubscriptions()
+    {
+        foreach (var (key, service) in services)
+        {
+            if (resolveCallbacks.TryGetValue(key, out var serviceCallbacks))
             {
-                var key = $"{resolvedService.Type}|{resolvedService.Name}".ToLowerInvariant();
-                if (resolveCallbacks.TryGetValue(key, out var callbacks))
+                foreach (var serviceCallback in serviceCallbacks)
                 {
-                    foreach (var callback in callbacks)
-                    {
-                        callback(resolvedService);
-                    }
+                    serviceCallback(service);
                 }
             }
         }
@@ -79,7 +93,7 @@ public abstract class BaseServiceDiscoveryResolver(
             }
             catch (TaskCanceledException)
             {
-                logger.LogInformation("Service discovery load task was cancelled");
+                Logger.LogInformation("Service discovery load task was cancelled");
             }
             catch (Exception ex)
             {
