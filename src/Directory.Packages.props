@@ -123,7 +123,7 @@
   <ItemGroup>
     <PackageVersion Include="Grpc.Core.Api" Version="2.63.0" />
     <PackageVersion Include="Grpc.Tools" Version="2.64.0" />
-    <PackageVersion Include="Google.Protobuf" Version="3.27.1" />
+    <PackageVersion Include="Google.Protobuf" Version="3.27.2" />
     <PackageVersion Include="Grpc.Net.ClientFactory" Version="2.63.0" />
     <PackageVersion Include="Grpc.Net.Client.Web" Version="2.63.0" />
     <PackageVersion Include="Grpc.AspNetCore" Version="2.63.0" />
