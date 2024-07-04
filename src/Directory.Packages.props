@@ -102,6 +102,10 @@
     <PackageVersion Include="KafkaFlow.TypedHandler" Version="2.4.1"/>
     <PackageVersion Include="KafkaFlow.Extensions.Hosting" Version="2.4.1"/>
   </ItemGroup>
+  <!--OpenSearch libraries-->
+  <ItemGroup>
+    <PackageVersion Include="Serilog.Sinks.OpenSearch" Version="1.0.0" />
+  </ItemGroup>
   <!--Elastic libraries-->
   <ItemGroup>
     <PackageVersion Include="Elastic.Apm.NetCoreAll" Version="1.23.0"/>
