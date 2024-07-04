@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,7 +70,11 @@ public static class WebApplicationBuilderExtensions
             }
         }
 
-        webApplication.MapHealthChecks("/health/all");
+        webApplication.MapHealthChecks("/health/all",
+            new HealthCheckOptions
+            {
+                Predicate = _ => true, ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
         webApplication.MapHealthChecks("/health/startup",
             new HealthCheckOptions
             {

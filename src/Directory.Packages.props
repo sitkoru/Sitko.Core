@@ -158,5 +158,6 @@
     <PackageVersion Include="AspNetCore.HealthChecks.Aws.S3" Version="8.0.1" />
     <PackageVersion Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="8.0.1" />
     <PackageVersion Include="AspNetCore.HealthChecks.Hangfire" Version="8.0.1" />
+    <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.1" />
   </ItemGroup>
 </Project>
