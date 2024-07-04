@@ -15,8 +15,9 @@ public class ServiceDiscoveryAddressResolver<TClient>(IServiceDiscoveryResolver 
     {
         await resolver.LoadAsync();
         resolver.Subscribe(GrpcModuleConstants.GrpcServiceDiscoveryType,
-            GrpcServicesHelper.GetServiceNameForClient<TClient>(), service =>
+            GrpcServicesHelper.GetServiceNameForClient<TClient>(), services =>
             {
+                var service = services.OrderBy(_ => Guid.NewGuid()).First(); // Round Robin
                 var url = new Uri($"{service.Scheme}://{service.Host}:{service.Port}");
                 if (url != currentAddress)
                 {

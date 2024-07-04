@@ -9,12 +9,12 @@ public abstract class BaseServiceDiscoveryResolver(
 {
     protected ILogger<BaseServiceDiscoveryResolver> Logger { get; } = logger;
 
-    public ResolvedService? Resolve(string type, string name)
+    public ResolvedService[]? Resolve(string type, string name)
     {
         var key = GenerateServiceKey(type, name);
-        if (isLoaded && services.TryGetValue(key, out var service))
+        if (isLoaded && services.TryGetValue(key, out var resolvedServices))
         {
-            return service;
+            return resolvedServices;
         }
 
         return null;
@@ -24,7 +24,7 @@ public abstract class BaseServiceDiscoveryResolver(
     private bool isLoaded;
     private readonly CancellationTokenSource loadCancellationTokenSource = new();
     private Task? refreshTask;
-    private Dictionary<string, ResolvedService> services = new();
+    private Dictionary<string, ResolvedService[]> services = new();
 
     public async Task LoadAsync()
     {
@@ -36,14 +36,14 @@ public abstract class BaseServiceDiscoveryResolver(
         }
     }
 
-    private readonly ConcurrentDictionary<string, List<Action<ResolvedService>>> resolveCallbacks = new();
+    private readonly ConcurrentDictionary<string, List<Action<ResolvedService[]>>> resolveCallbacks = new();
 
     private static string GenerateServiceKey(string serviceType, string name) =>
         $"{serviceType}|{name}".ToLowerInvariant();
 
     private static string GenerateServiceKey(ResolvedService service) => GenerateServiceKey(service.Type, service.Name);
 
-    public void Subscribe(string serviceType, string name, Action<ResolvedService> callback)
+    public void Subscribe(string serviceType, string name, Action<ResolvedService[]> callback)
     {
         var key = GenerateServiceKey(serviceType, name);
         resolveCallbacks.AddOrUpdate(key, _ => [callback],
@@ -60,7 +60,13 @@ public abstract class BaseServiceDiscoveryResolver(
         var result = await DoLoadServicesAsync(cancellationToken);
         if (result is not null)
         {
-            services = result.ToDictionary(GenerateServiceKey, service => service);
+            var newServices = new Dictionary<string, ResolvedService[]>();
+            foreach (var servicesGroup in result.GroupBy(GenerateServiceKey))
+            {
+                newServices[servicesGroup.Key] = servicesGroup.ToArray();
+            }
+
+            services = newServices;
             isLoaded = true;
             UpdateSubscriptions();
         }

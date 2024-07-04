@@ -6,6 +6,7 @@ using Consul.Filtering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sitko.Core.App;
+using Sitko.Core.App.Helpers;
 using Sitko.Core.ServiceDiscovery;
 
 namespace Sitko.Core.Consul.ServiceDiscovery;
@@ -104,7 +105,8 @@ public class ServiceDiscoveryManager(
         List<ServiceDiscoveryService> services, CancellationToken cancellationToken)
     {
         var serviceName = $"{applicationContext.Name}_{applicationService.Name}";
-        var serviceId = $"{applicationService.Name}_{applicationService.Address}_{applicationService.Port}";
+        var serviceId =
+            $"{applicationService.Name}_{applicationService.Address}_{applicationService.Port}_{(DockerHelper.IsRunningInDocker() ? Environment.MachineName : applicationContext.Id)}";
         var meta = BuildMetadata(applicationService, services);
         meta.Add(EnvironmentKey, applicationContext.Environment);
         meta.Add(VersionKey, applicationContext.Version);
@@ -162,7 +164,8 @@ public class ServiceDiscoveryManager(
                             foreach (var sdService in meta.Services)
                             {
                                 var resolvedService = new ResolvedService(sdService.Type, sdService.Name,
-                                    new Dictionary<string, string>(), meta.ApplicationService.Scheme, service.ServiceAddress,
+                                    new Dictionary<string, string>(), meta.ApplicationService.Scheme,
+                                    service.ServiceAddress,
                                     service.ServicePort);
                                 resolvedServices.Add(resolvedService);
                             }
