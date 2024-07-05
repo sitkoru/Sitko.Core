@@ -17,7 +17,7 @@ internal class ApplicationLifecycle(
 
     public async Task StartingAsync(CancellationToken cancellationToken)
     {
-        logger.LogInformation("Applicaiton starting");
+        logger.LogInformation("Application starting");
         await using var scope = provider.CreateAsyncScope();
 
         foreach (var enabledModule in enabledModules)
