@@ -8,6 +8,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Sitko.Core.App;
+using Sitko.Core.App.Health;
 
 namespace Sitko.Core.Storage.S3;
 
@@ -38,7 +39,8 @@ public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3Sto
                     Credentials = new BasicAWSCredentials(config.AccessKey, config.SecretKey)
                 };
                 return new S3HealthCheck(options);
-            }, null, null, null));
+            }, null, tags: HealthCheckStages.GetSkipTags(HealthCheckStages.Liveness, HealthCheckStages.Readiness),
+            null));
     }
 }
 
