@@ -28,7 +28,7 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
     protected SitkoCoreBaseApplicationBuilder(string[] args, IServiceCollection services,
         IConfigurationBuilder configuration, IApplicationEnvironment environment, ILoggingBuilder logging)
     {
-        Args = args;
+        Args = args.Length != 0 ? args : System.Environment.GetCommandLineArgs().Skip(1).ToArray();
         Services = services;
         Configuration = configuration;
         Environment = environment;
