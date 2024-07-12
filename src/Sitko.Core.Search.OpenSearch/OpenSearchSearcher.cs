@@ -5,13 +5,14 @@ using OpenSearch.Client;
 
 namespace Sitko.Core.Search.OpenSearch;
 
-public class OpenSearchSearcher<TSearchModel>(OpenSearchClient? client,
+public class OpenSearchSearcher<TSearchModel>(
     IOptionsMonitor<OpenSearchModuleOptions> optionsMonitor,
     ILogger<OpenSearchSearcher<TSearchModel>> logger)
     : ISearcher<TSearchModel>
     where TSearchModel : BaseSearchModel
 {
     private OpenSearchModuleOptions Options => optionsMonitor.CurrentValue;
+    private OpenSearchClient? client;
 
     public async Task<bool> AddOrUpdateAsync(string indexName, IEnumerable<TSearchModel> searchModels,
         CancellationToken cancellationToken = default)
@@ -224,12 +225,12 @@ public class OpenSearchSearcher<TSearchModel>(OpenSearchClient? client,
 
     private AnalysisDescriptor BuildIndexDescriptor(AnalysisDescriptor analysisDescriptor) =>
         analysisDescriptor.Analyzers(analyzersDescriptor => analyzersDescriptor
-                .Custom("default",
-                    descriptor =>
-                        descriptor.Tokenizer("standard")
-                            .CharFilters("html_strip")
-                            .Filters("lowercase", "ru_RU", "en_US"))
-            ).TokenFilters(descriptor =>
-                descriptor.Hunspell("ru_RU", hh => hh.Dedup().Locale("ru_RU"))
-                    .Hunspell("en_US", hh => hh.Dedup().Locale("en_US")));
+            .Custom("default",
+                descriptor =>
+                    descriptor.Tokenizer("standard")
+                        .CharFilters("html_strip")
+                        .Filters("lowercase", "ru_RU", "en_US"))
+        ).TokenFilters(descriptor =>
+            descriptor.Hunspell("ru_RU", hh => hh.Dedup().Locale("ru_RU"))
+                .Hunspell("en_US", hh => hh.Dedup().Locale("en_US")));
 }

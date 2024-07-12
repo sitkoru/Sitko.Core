@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Sitko.Core.Search.OpenSearch\Sitko.Core.Search.OpenSearch.csproj"/>
+  </ItemGroup>
+</Project>
