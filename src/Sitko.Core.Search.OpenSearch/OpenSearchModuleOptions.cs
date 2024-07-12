@@ -5,7 +5,7 @@ namespace Sitko.Core.Search.OpenSearch;
 public class OpenSearchModuleOptions : SearchModuleOptions
 {
     public string Prefix { get; set; } = "";
-    public string Url { get; set; } = "https://localhost:9200";
+    public string Url { get; set; } = "http://localhost:9200";
     public string Login { get; set; } = "";
     public string Password { get; set; } = "";
     public bool EnableClientLogging { get; set; }
