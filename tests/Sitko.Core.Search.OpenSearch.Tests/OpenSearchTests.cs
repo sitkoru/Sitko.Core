@@ -52,6 +52,8 @@ public class OpenSearchTestScope : BaseTestScope
         {
             moduleOptions.Prefix = name.ToLower(CultureInfo.InvariantCulture);
             moduleOptions.EnableClientLogging = true;
+            moduleOptions.Login = hostBuilder.Configuration.GetSection("OpenSearchModuleOptions")["Login"];
+            moduleOptions.Password = hostBuilder.Configuration.GetSection("OpenSearchModuleOptions")["Password"];
         });
 
         hostBuilder.Services.AddSingleton<TestModelProvider>();
