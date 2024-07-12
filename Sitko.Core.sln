@@ -268,6 +268,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.ServiceDiscovery
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.ServiceDiscovery.Server.Consul", "src\Sitko.Core.ServiceDiscovery.Server.Consul\Sitko.Core.ServiceDiscovery.Server.Consul.csproj", "{0E38CE06-301D-44CF-9093-A7119876059C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Search.OpenSearch", "src\Sitko.Core.Search.OpenSearch\Sitko.Core.Search.OpenSearch.csproj", "{0275F631-EAD9-4BAB-BA5F-1820526B69FA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1613,6 +1615,18 @@ Global
 		{0E38CE06-301D-44CF-9093-A7119876059C}.Release|x64.Build.0 = Release|Any CPU
 		{0E38CE06-301D-44CF-9093-A7119876059C}.Release|x86.ActiveCfg = Release|Any CPU
 		{0E38CE06-301D-44CF-9093-A7119876059C}.Release|x86.Build.0 = Release|Any CPU
+		{0275F631-EAD9-4BAB-BA5F-1820526B69FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0275F631-EAD9-4BAB-BA5F-1820526B69FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0275F631-EAD9-4BAB-BA5F-1820526B69FA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0275F631-EAD9-4BAB-BA5F-1820526B69FA}.Debug|x64.Build.0 = Debug|Any CPU
+		{0275F631-EAD9-4BAB-BA5F-1820526B69FA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0275F631-EAD9-4BAB-BA5F-1820526B69FA}.Debug|x86.Build.0 = Debug|Any CPU
+		{0275F631-EAD9-4BAB-BA5F-1820526B69FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0275F631-EAD9-4BAB-BA5F-1820526B69FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0275F631-EAD9-4BAB-BA5F-1820526B69FA}.Release|x64.ActiveCfg = Release|Any CPU
+		{0275F631-EAD9-4BAB-BA5F-1820526B69FA}.Release|x64.Build.0 = Release|Any CPU
+		{0275F631-EAD9-4BAB-BA5F-1820526B69FA}.Release|x86.ActiveCfg = Release|Any CPU
+		{0275F631-EAD9-4BAB-BA5F-1820526B69FA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6677865F-C349-4D25-9E19-3DEC43E92DD5} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
@@ -1729,5 +1743,6 @@ Global
 		{991FDA4A-8103-4BC2-934A-6EC039164E15} = {361A42BE-0F1F-47D0-9A70-0702D95BA6F5}
 		{FFA5D00A-2CB6-4AAA-9345-0D3BCC13D7FA} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 		{0E38CE06-301D-44CF-9093-A7119876059C} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
+		{0275F631-EAD9-4BAB-BA5F-1820526B69FA} = {109B331E-71B9-483C-8FC1-13B10C92A7F1}
 	EndGlobalSection
 EndGlobal
