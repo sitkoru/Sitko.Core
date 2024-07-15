@@ -63,6 +63,7 @@ public interface IModuleOptionsWithValidation
 public abstract class BaseModuleOptions
 {
     public virtual bool Enabled { get; set; } = true;
+    public virtual bool InitProviders { get; set; } = true;
 
     public virtual void Configure(IApplicationContext applicationContext)
     {

@@ -16,6 +16,8 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         var scope = await GetScopeAsync();
         var provider = scope.GetService<TestModelProvider>();
         var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid>>();
+        await searchProvider.DeleteIndexAsync();
+        await searchProvider.InitAsync();
 
         var fooModel = new TestModel
         {
@@ -55,6 +57,7 @@ public class OpenSearchTestScope : BaseTestScope
             moduleOptions.Url = hostBuilder.Configuration.GetSection("OpenSearchModuleOptions")["Url"];
             moduleOptions.Login = hostBuilder.Configuration.GetSection("OpenSearchModuleOptions")["Login"];
             moduleOptions.Password = hostBuilder.Configuration.GetSection("OpenSearchModuleOptions")["Password"];
+            moduleOptions.InitProviders = false;
         });
 
         hostBuilder.Services.AddSingleton<TestModelProvider>();
