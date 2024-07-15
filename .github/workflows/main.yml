@@ -132,8 +132,9 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
     env:
-      OPENSEARCH__TESTOPENSEARCHSETTINGS__ADMIN_PASSWORD: sikdadasDA123@ituDSSaMydfdssdss
       OpenSearchModuleOptions__Url: http://localhost:9200
+      OpenSearchModuleOptions__Login: admin
+      OpenSearchModuleOptions__Password: sikdadasDA123@ituDSSaMydfdssdss
     services:
       opensearch:
         image: opensearchproject/opensearch
