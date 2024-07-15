@@ -138,6 +138,8 @@ jobs:
     services:
       opensearch:
         image: opensearchproject/opensearch
+        ports:
+          - 9200:9200
         env:
           cluster.name: opensearch-cluster
           node.name: opensearch-node1
