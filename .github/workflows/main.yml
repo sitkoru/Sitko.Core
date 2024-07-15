@@ -128,6 +128,27 @@ jobs:
       - name: Run tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.SonyFlake.Tests/Sitko.Core.SonyFlake.Tests.csproj
 
+  opensearch:
+    runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
+    env:
+      OPENSEARCH__TESTOPENSEARCHSETTINGS__ADMIN_PASSWORD: sikdadasDA123@ituDSSaMydfdssdss
+    services:
+      opensearch:
+        image: opensearchproject/opensearch
+        env:
+          cluster.name: opensearch-cluster
+          node.name: opensearch-node1
+          discovery.seed_hosts: opensearch-node1
+          cluster.initial_cluster_manager_nodes: opensearch-node1
+          bootstrap.memory_lock: true
+          OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
+          OPENSEARCH_INITIAL_ADMIN_PASSWORD: sikdadasDA123@ituDSSaMydfdssdss
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run opensearch tests
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Search.OpenSearch.Tests/Sitko.Core.Search.OpenSearch.Tests.csproj
+
   storage:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
@@ -183,7 +204,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    needs: [ build, apps, blazor, grpc, imgproxy, pdf, queue, repository, sonyflake, storage, vault ]
+    needs: [ build, apps, blazor, grpc, imgproxy, pdf, queue, repository, sonyflake, storage, vault, opensearch ]
     if: ${{ github.event_name == 'push' }}
     steps:
       - name: Checkout
