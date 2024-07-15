@@ -136,10 +136,8 @@ jobs:
       OpenSearchModuleOptions__Login: admin
       OpenSearchModuleOptions__Password: sikdadasDA123@ituDSSaMydfdssdss
     services:
-      opensearch:
+      opensearch-node1:
         image: opensearchproject/opensearch
-        ports:
-          - 9200:9200
         env:
           cluster.name: opensearch-cluster
           node.name: opensearch-node1
@@ -148,6 +146,11 @@ jobs:
           bootstrap.memory_lock: true
           OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
           OPENSEARCH_INITIAL_ADMIN_PASSWORD: sikdadasDA123@ituDSSaMydfdssdss
+        volumes:
+          - opensearch-data1:/usr/share/opensearch/data
+        ports:
+          - 9200:9200
+          - 9600:9600
     steps:
       - uses: actions/checkout@v4
       - name: Run opensearch tests
