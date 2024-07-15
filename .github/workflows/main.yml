@@ -132,7 +132,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
     env:
-      OpenSearchModuleOptions__Url: http://localhost:9200
+      OpenSearchModuleOptions__Url: https://localhost:9200
       OpenSearchModuleOptions__Login: admin
       OpenSearchModuleOptions__Password: sikdadasDA123@ituDSSaMydfdssdss
     services:
