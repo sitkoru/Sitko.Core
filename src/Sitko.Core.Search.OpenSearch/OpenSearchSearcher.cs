@@ -136,26 +136,13 @@ public class OpenSearchSearcher<TSearchModel>(
     {
         indexName = $"{Options.Prefix}_{indexName}";
         var indexExists = await GetClient().Indices.ExistsAsync(indexName, ct: cancellationToken);
-        if (indexExists.Exists)
-        {
-            logger.LogDebug("Update existing index {IndexName}", indexName);
-            await GetClient().Indices.CloseAsync(indexName, ct: cancellationToken);
-            var result = await GetClient().Indices.UpdateSettingsAsync(indexName, c => c.IndexSettings(s =>
-                s.Analysis(BuildIndexDescriptor)), cancellationToken);
-            await GetClient().Indices.OpenAsync(indexName, ct: cancellationToken);
-            if (!result.IsValid)
-            {
-                throw result.OriginalException;
-            }
-        }
-        else
+        if (!indexExists.Exists)
         {
             logger.LogDebug("Create new index {IndexName}", indexName);
-            var result = await GetClient()
-                .Indices.CreateAsync(indexName,
-                    c => c.Settings(s => s.Analysis(BuildIndexDescriptor)), cancellationToken);
+            var result = await GetClient().Indices.CreateAsync(indexName, ct: cancellationToken);
             if (!result.IsValid)
             {
+                logger.LogError(result.OriginalException?.Message);
                 throw result.OriginalException;
             }
         }
@@ -222,15 +209,4 @@ public class OpenSearchSearcher<TSearchModel>(
             .Size(limit > 0 ? limit : 20)
             .Index(indexName.ToLowerInvariant());
     }
-
-    private AnalysisDescriptor BuildIndexDescriptor(AnalysisDescriptor analysisDescriptor) =>
-        analysisDescriptor.Analyzers(analyzersDescriptor => analyzersDescriptor
-            .Custom("default",
-                descriptor =>
-                    descriptor.Tokenizer("standard")
-                        .CharFilters("html_strip")
-                        .Filters("lowercase", "ru_RU", "en_US"))
-        ).TokenFilters(descriptor =>
-            descriptor.Hunspell("ru_RU", hh => hh.Dedup().Locale("ru_RU"))
-                .Hunspell("en_US", hh => hh.Dedup().Locale("en_US")));
 }
