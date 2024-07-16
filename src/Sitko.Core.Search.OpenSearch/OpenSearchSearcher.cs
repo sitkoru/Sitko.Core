@@ -13,6 +13,7 @@ public class OpenSearchSearcher<TSearchModel>(
 {
     private OpenSearchModuleOptions Options => optionsMonitor.CurrentValue;
     private OpenSearchClient? client;
+    private const string CustomAnalyze= "custom_analyze";
 
     public async Task<bool> AddOrUpdateAsync(string indexName, IEnumerable<TSearchModel> searchModels,
         CancellationToken cancellationToken = default)
@@ -136,10 +137,23 @@ public class OpenSearchSearcher<TSearchModel>(
     {
         indexName = $"{Options.Prefix}_{indexName}";
         var indexExists = await GetClient().Indices.ExistsAsync(indexName, ct: cancellationToken);
-        if (!indexExists.Exists)
+        if (indexExists.Exists)
+        {
+            logger.LogDebug("Update existing index {IndexName}", indexName);
+            await GetClient().Indices.CloseAsync(indexName, ct: cancellationToken);
+            var result = await GetClient().Indices.UpdateSettingsAsync(indexName, c => c.IndexSettings(s =>
+                s.Analysis(CreateAnalysisDescriptor)), cancellationToken);
+            await GetClient().Indices.OpenAsync(indexName, ct: cancellationToken);
+            if (!result.IsValid)
+            {
+                logger.LogError(result.OriginalException?.Message);
+                throw result.OriginalException;
+            }
+        }
+        else
         {
             logger.LogDebug("Create new index {IndexName}", indexName);
-            var result = await GetClient().Indices.CreateAsync(indexName, ct: cancellationToken);
+            var result = await GetClient().Indices.CreateAsync(indexName, CreateIndexDescriptor, ct: cancellationToken);
             if (!result.IsValid)
             {
                 logger.LogError(result.OriginalException?.Message);
@@ -202,10 +216,27 @@ public class OpenSearchSearcher<TSearchModel>(
         string indexName, string term, int limit = 0)
     {
         var names = GetSearchText(term);
-        return descriptor.Query(q => q.Match(m =>
-                m.Query(names)))
+        return descriptor.Query(q => q.QueryString(qs => qs.Query(names)))
             .Sort(s => s.Descending(SortSpecialField.Score).Descending(model => model.Date))
             .Size(limit > 0 ? limit : 20)
             .Index(indexName.ToLowerInvariant());
     }
+
+    private AnalysisDescriptor CreateAnalysisDescriptor(AnalysisDescriptor a) =>
+        a.Analyzers(aa => aa.Custom(CustomAnalyze, ca => ca
+                .Tokenizer("standard")
+                .Filters("lowercase", "stop", "snowball")
+            )
+        );
+
+    private CreateIndexDescriptor CreateIndexDescriptor(CreateIndexDescriptor createIndexDescriptor) =>
+        createIndexDescriptor.Settings(s => s.Analysis(CreateAnalysisDescriptor))
+            .Map<TSearchModel>(mm => mm
+                .Properties(p => p
+                    .Text(t => t
+                        .Name(n => n.Content)
+                        .Analyzer(CustomAnalyze)
+                    )
+                )
+            );
 }
