@@ -202,9 +202,8 @@ public class OpenSearchSearcher<TSearchModel>(
         string indexName, string term, int limit = 0)
     {
         var names = GetSearchText(term);
-        return descriptor.Query(q =>
-                q.QueryString(qs =>
-                    qs.Query(names)))
+        return descriptor.Query(q => q.Match(m =>
+                m.Query(names)))
             .Sort(s => s.Descending(SortSpecialField.Score).Descending(model => model.Date))
             .Size(limit > 0 ? limit : 20)
             .Index(indexName.ToLowerInvariant());

@@ -43,6 +43,43 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         Assert.Equal(provider.Models.Count, result.Length);
         Assert.Equal(barModel.Id, result.First().Id);
     }
+
+    [Fact]
+    public async Task MorphologyTestAsync()
+    {
+        var scope = await GetScopeAsync();
+        var provider = scope.GetService<TestModelProvider>();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid>>();
+        await searchProvider.DeleteIndexAsync();
+        await searchProvider.InitAsync();
+
+        var fooModel = new TestModel
+        {
+            Id = Guid.NewGuid(),
+            Title = "MMI",
+            Description = "Геймеры играют в компьютерные игры.",
+            Url = "mmicentre"
+        };
+        provider.AddModel(fooModel);
+
+        await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
+        await Task.Delay(TimeSpan.FromSeconds(5));
+
+        var result = await searchProvider.SearchAsync("Геймеры", 10);
+        Assert.Equal(provider.Models.Count, result.Length);
+
+        result = await searchProvider.SearchAsync("игра", 10);
+        Assert.Equal(provider.Models.Count, result.Length);
+
+        result = await searchProvider.SearchAsync("играть", 10);
+        Assert.Equal(provider.Models.Count, result.Length);
+
+        result = await searchProvider.SearchAsync("компьютер", 10);
+        Assert.Equal(provider.Models.Count, result.Length);
+
+        result = await searchProvider.SearchAsync("геймер", 10);
+        Assert.Equal(provider.Models.Count, result.Length);
+    }
 }
 
 public class OpenSearchTestScope : BaseTestScope
