@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenSearch.Client;
+using OpenSearch.Net;
 
 namespace Sitko.Core.Search.OpenSearch;
 
@@ -197,7 +198,11 @@ public class OpenSearchSearcher<TSearchModel>(
             settings.BasicAuthentication(Options.Login, Options.Password);
         }
 
-        settings.ServerCertificateValidationCallback((_, _, _, _) => true);
+        if (Options.DisableCertificatesValidation)
+        {
+            settings.ServerCertificateValidationCallback(CertificateValidations.AllowAll)
+                .ServerCertificateValidationCallback((_, _, _, _) => true);
+        }
         client = new OpenSearchClient(settings);
         return client;
     }

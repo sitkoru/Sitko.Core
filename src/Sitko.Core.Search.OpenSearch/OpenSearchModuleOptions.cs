@@ -9,6 +9,7 @@ public class OpenSearchModuleOptions : SearchModuleOptions
     public string Login { get; set; } = "";
     public string Password { get; set; } = "";
     public bool EnableClientLogging { get; set; }
+    public bool DisableCertificatesValidation { get; set; }
 }
 
 public class OpenSearchModuleOptionsValidator : AbstractValidator<OpenSearchModuleOptions>

@@ -127,6 +127,7 @@ public class OpenSearchTestScope : BaseTestScope
             moduleOptions.Login = hostBuilder.Configuration.GetSection("OpenSearchModuleOptions")["Login"];
             moduleOptions.Password = hostBuilder.Configuration.GetSection("OpenSearchModuleOptions")["Password"];
             moduleOptions.InitProviders = false;
+            moduleOptions.DisableCertificatesValidation = true;
         });
 
         hostBuilder.Services.AddSingleton<TestModelProvider>();
