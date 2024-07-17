@@ -45,7 +45,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
     }
 
     [Fact]
-    public async Task MorphologyTestAsync()
+    public async Task MorphologyRusTestAsync()
     {
         var scope = await GetScopeAsync();
         var provider = scope.GetService<TestModelProvider>();
@@ -62,7 +62,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         };
         var secondModel = new TestModel
         {
-            Id = Guid.NewGuid(), Title = "MMI", Description = "Дракон", Url = "mmicentre"
+            Id = Guid.NewGuid(), Title = "MMI", Description = "компьютерный", Url = "mmicentre"
         };
         var thirdModel = new TestModel { Id = Guid.NewGuid(), Title = "MMI", Description = "ГГ", Url = "mmicentre" };
         var forthModel = new TestModel { Id = Guid.NewGuid(), Title = "MMI", Description = "MMI", Url = "mmicentre" };
@@ -72,19 +72,19 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         await Task.Delay(TimeSpan.FromSeconds(5));
 
         var result = await searchProvider.SearchAsync("Геймеры", 10);
-        //Assert.Equal(provider.Models.Count, result.Length);
+        Assert.Equal(1, result.Length);
 
         result = await searchProvider.SearchAsync("игра", 10);
-        //Assert.Equal(provider.Models.Count, result.Length);
+        Assert.Equal(1, result.Length);
 
         result = await searchProvider.SearchAsync("играть", 10);
-        //Assert.Equal(provider.Models.Count, result.Length);
+        Assert.Equal(1, result.Length);
 
-        result = await searchProvider.SearchAsync("компьютер", 10);
-        //Assert.Equal(provider.Models.Count, result.Length);
+        result = await searchProvider.SearchAsync("компьютерный", 10);
+        Assert.Equal(2, result.Length);
 
         result = await searchProvider.SearchAsync("геймер", 10);
-        //Assert.Equal(provider.Models.Count, result.Length);
+        Assert.Equal(1, result.Length);
     }
 
     [Fact]
@@ -109,7 +109,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result = await searchProvider.SearchAsync("walk", 10);
+        var result = await searchProvider.SearchAsync("walked", 10);
         Assert.Equal(3, result.Length);
     }
 }
