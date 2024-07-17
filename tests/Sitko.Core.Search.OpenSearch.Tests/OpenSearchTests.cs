@@ -128,6 +128,7 @@ public class OpenSearchTestScope : BaseTestScope
             moduleOptions.Password = hostBuilder.Configuration.GetSection("OpenSearchModuleOptions")["Password"];
             moduleOptions.InitProviders = false;
             moduleOptions.DisableCertificatesValidation = true;
+            moduleOptions.CustomStemmer = "russian";
         });
 
         hostBuilder.Services.AddSingleton<TestModelProvider>();

@@ -15,7 +15,7 @@ public class OpenSearchSearcher<TSearchModel>(
     private OpenSearchModuleOptions Options => optionsMonitor.CurrentValue;
     private OpenSearchClient? client;
     private const string CustomAnalyze = "custom_analyze";
-    private const string RussianStemmer = "russian_stemmer";
+    private const string StemmerName = "custom_stemmer";
 
     public async Task<bool> AddOrUpdateAsync(string indexName, IEnumerable<TSearchModel> searchModels,
         CancellationToken cancellationToken = default)
@@ -231,10 +231,10 @@ public class OpenSearchSearcher<TSearchModel>(
     private AnalysisDescriptor CreateAnalysisDescriptor(AnalysisDescriptor a) =>
         a.Analyzers(aa => aa.Custom(CustomAnalyze, ca => ca
                 .Tokenizer("standard")
-                .Filters("lowercase", "stop", "snowball", RussianStemmer)
+                .Filters("lowercase", "stop", "snowball", StemmerName)
             )
         ).TokenFilters(descriptor =>
-            descriptor.Stemmer(RussianStemmer, filterDescriptor => filterDescriptor.Language("russian")));
+            descriptor.Stemmer(StemmerName, filterDescriptor => filterDescriptor.Language(Options.CustomStemmer)));
 
     private CreateIndexDescriptor CreateIndexDescriptor(CreateIndexDescriptor createIndexDescriptor) =>
         createIndexDescriptor.Settings(s => s.Analysis(CreateAnalysisDescriptor))
