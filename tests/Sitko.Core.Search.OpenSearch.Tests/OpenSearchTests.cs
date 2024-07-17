@@ -1,4 +1,5 @@
 using System.Globalization;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -11,7 +12,7 @@ namespace Sitko.Core.Search.OpenSearch.Tests;
 public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<OpenSearchTestScope>(testOutputHelper)
 {
     [Fact]
-    public async Task Search()
+    public async Task SearchAsync()
     {
         var scope = await GetScopeAsync();
         var provider = scope.GetService<TestModelProvider>();
@@ -21,7 +22,6 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
 
         var fooModel = new TestModel
         {
-            Id = Guid.NewGuid(),
             Title = "MMI",
             Description =
                 "Компания MMI предоставляет своим клиентам лучшие условия для покупки современных гаджетов.&nbsp;</em></strong> Мы предлагаем только оригинальные и проверенные товары по самым низким ценам в городе. Лучшие продукты от Apple, HTC, Samsung, Blackberry и других производителей.",
@@ -29,7 +29,6 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         };
         var barModel = new TestModel
         {
-            Id = Guid.NewGuid(),
             Title = "Samsung",
             Description =
                 "Samsung придерживается простой философии бизнеса: использовать имеющиеся таланты и технологии для производства совершенных продуктов и услуг, которые способны изменить мир к лучшему.",
@@ -40,12 +39,17 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
         var result = await searchProvider.SearchAsync("samsung", 10);
-        Assert.Equal(provider.Models.Count, result.Length);
-        Assert.Equal(barModel.Id, result.First().Id);
+        result.Length.Should().Be(provider.Models.Count);
+        result.First().Id.Should().Be(barModel.Id);
     }
 
-    [Fact]
-    public async Task MorphologyRusTestAsync()
+    [Theory(DisplayName = "MorphologyRusTest")]
+    [InlineData(1, "Геймеры")]
+    [InlineData(1, "игра")]
+    [InlineData(1, "играть")]
+    [InlineData(2, "компьютерный")]
+    [InlineData(1, "геймер")]
+    public async Task MorphologyRusTestAsync(int foundDocs, string searchText)
     {
         var scope = await GetScopeAsync();
         var provider = scope.GetService<TestModelProvider>();
@@ -55,36 +59,18 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
 
         var firstModel = new TestModel
         {
-            Id = Guid.NewGuid(),
-            Title = "MMI",
-            Description = "Геймеры играют в компьютерные игры.",
-            Url = "mmicentre"
+            Title = "MMI", Description = "Геймеры играют в компьютерные игры.", Url = "mmicentre"
         };
-        var secondModel = new TestModel
-        {
-            Id = Guid.NewGuid(), Title = "MMI", Description = "компьютерный", Url = "mmicentre"
-        };
-        var thirdModel = new TestModel { Id = Guid.NewGuid(), Title = "MMI", Description = "ГГ", Url = "mmicentre" };
-        var forthModel = new TestModel { Id = Guid.NewGuid(), Title = "MMI", Description = "MMI", Url = "mmicentre" };
+        var secondModel = new TestModel { Title = "MMI", Description = "компьютерный", Url = "mmicentre" };
+        var thirdModel = new TestModel { Title = "MMI", Description = "ГГ", Url = "mmicentre" };
+        var forthModel = new TestModel { Title = "MMI", Description = "MMI", Url = "mmicentre" };
         provider.AddModel(firstModel).AddModel(secondModel).AddModel(thirdModel).AddModel(forthModel);
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result = await searchProvider.SearchAsync("Геймеры", 10);
-        Assert.Equal(1, result.Length);
-
-        result = await searchProvider.SearchAsync("игра", 10);
-        Assert.Equal(1, result.Length);
-
-        result = await searchProvider.SearchAsync("играть", 10);
-        Assert.Equal(1, result.Length);
-
-        result = await searchProvider.SearchAsync("компьютерный", 10);
-        Assert.Equal(2, result.Length);
-
-        result = await searchProvider.SearchAsync("геймер", 10);
-        Assert.Equal(1, result.Length);
+        var result = await searchProvider.SearchAsync(searchText, 10);
+        result.Length.Should().Be(foundDocs);
     }
 
     [Fact]
@@ -96,21 +82,18 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         await searchProvider.DeleteIndexAsync();
         await searchProvider.InitAsync();
 
-        var firstModel = new TestModel { Id = Guid.NewGuid(), Title = "MMI", Description = "Walk", Url = "mmicentre" };
-        var secondModel = new TestModel
-        {
-            Id = Guid.NewGuid(), Title = "MMI", Description = "walked", Url = "mmicentre"
-        };
+        var firstModel = new TestModel { Title = "MMI", Description = "Walk", Url = "mmicentre" };
+        var secondModel = new TestModel { Title = "MMI", Description = "walked", Url = "mmicentre" };
         var thirdModel =
-            new TestModel { Id = Guid.NewGuid(), Title = "MMI", Description = "walking", Url = "mmicentre" };
-        var forthModel = new TestModel { Id = Guid.NewGuid(), Title = "MMI", Description = "MMI", Url = "mmicentre" };
+            new TestModel { Title = "MMI", Description = "walking", Url = "mmicentre" };
+        var forthModel = new TestModel { Title = "MMI", Description = "MMI", Url = "mmicentre" };
         provider.AddModel(firstModel).AddModel(secondModel).AddModel(thirdModel).AddModel(forthModel);
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
 
         var result = await searchProvider.SearchAsync("walked", 10);
-        Assert.Equal(3, result.Length);
+        result.Length.Should().Be(3);
     }
 }
 
@@ -139,7 +122,7 @@ public class OpenSearchTestScope : BaseTestScope
 
 public class TestModel
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
     public string Title { get; set; } = string.Empty;
     public string Url { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
