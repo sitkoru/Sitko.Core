@@ -24,7 +24,7 @@ public abstract class SearchModule<TConfig> : BaseApplicationModule<TConfig>, IS
         await base.InitAsync(applicationContext, serviceProvider);
         var searchProviders = serviceProvider.GetServices<ISearchProvider>().ToList();
         var logger = serviceProvider.GetRequiredService<ILogger<SearchModule<TConfig>>>();
-        if (searchProviders.Any())
+        if (searchProviders.Count != 0 && GetOptions(serviceProvider).InitProviders)
         {
 #pragma warning disable 4014
             Task.Run(async () =>

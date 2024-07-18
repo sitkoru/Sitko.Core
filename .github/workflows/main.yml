@@ -128,6 +128,31 @@ jobs:
       - name: Run tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.SonyFlake.Tests/Sitko.Core.SonyFlake.Tests.csproj
 
+  opensearch:
+    runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
+    env:
+      OpenSearchModuleOptions__Url: http://opensearch:9200
+      OpenSearchModuleOptions__Login: admin
+      OpenSearchModuleOptions__Password: sikdadasDA123@ituDSSaMydfdssdss
+    services:
+      opensearch:
+        image: opensearchproject/opensearch:latest
+        ports: [ "9200:9200" ]
+        env:
+          discovery.type: single-node
+          plugins.security.disabled: true
+          OPENSEARCH_INITIAL_ADMIN_PASSWORD: sikdadasDA123@ituDSSaMydfdssdss
+        options: >-
+          --health-cmd="curl http://localhost:9200/_cluster/health"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run opensearch tests
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Search.OpenSearch.Tests/Sitko.Core.Search.OpenSearch.Tests.csproj
+
   storage:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
@@ -183,7 +208,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    needs: [ build, apps, blazor, grpc, imgproxy, pdf, queue, repository, sonyflake, storage, vault ]
+    needs: [ build, apps, blazor, grpc, imgproxy, pdf, queue, repository, sonyflake, storage, vault, opensearch ]
     if: ${{ github.event_name == 'push' }}
     steps:
       - name: Checkout
