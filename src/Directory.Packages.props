@@ -71,7 +71,7 @@
   <ItemGroup>
     <PackageVersion Include="Hangfire.Core" Version="1.8.14" />
     <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.14" />
-    <PackageVersion Include="Hangfire.PostgreSql" Version="1.20.8" />
+    <PackageVersion Include="Hangfire.PostgreSql" Version="1.20.9" />
   </ItemGroup>
   <!--MS libraries-->
   <ItemGroup>
