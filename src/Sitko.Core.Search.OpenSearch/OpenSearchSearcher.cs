@@ -52,8 +52,7 @@ public class OpenSearchSearcher<TSearchModel>(
             foreach (var item in result.ItemsWithErrors)
             {
                 logger.LogError("Error while deleting document {Id} from {IndexName}: {ErrorText}", item.Id,
-                    indexName,
-                    item.Error);
+                    indexName, item.Error);
             }
         }
 
@@ -148,8 +147,17 @@ public class OpenSearchSearcher<TSearchModel>(
             await GetClient().Indices.OpenAsync(indexName, ct: cancellationToken);
             if (!result.IsValid)
             {
-                logger.LogError(result.OriginalException?.Message);
-                throw result.OriginalException;
+                if (result.ServerError != null)
+                {
+                    logger.LogError("Error while init {IndexName} index: {ErrorText}", indexName,
+                        result.ServerError);
+                }
+
+                if (result.OriginalException != null)
+                {
+                    logger.LogError(result.OriginalException.Message);
+                    throw result.OriginalException;
+                }
             }
         }
         else
@@ -158,8 +166,17 @@ public class OpenSearchSearcher<TSearchModel>(
             var result = await GetClient().Indices.CreateAsync(indexName, CreateIndexDescriptor, ct: cancellationToken);
             if (!result.IsValid)
             {
-                logger.LogError(result.OriginalException?.Message);
-                throw result.OriginalException;
+                if (result.ServerError != null)
+                {
+                    logger.LogError("Error while create {IndexName} index: {ErrorText}", indexName,
+                        result.ServerError);
+                }
+
+                if (result.OriginalException != null)
+                {
+                    logger.LogError(result.OriginalException.Message);
+                    throw result.OriginalException;
+                }
             }
         }
     }
