@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenSearch.Client;
 using OpenSearch.Net;
+using Exception = System.Exception;
 
 namespace Sitko.Core.Search.OpenSearch;
 
@@ -151,6 +152,7 @@ public class OpenSearchSearcher<TSearchModel>(
                 {
                     logger.LogError("Error while init {IndexName} index: {ErrorText}", indexName,
                         result.ServerError);
+                    throw new Exception("Error while init " + indexName + " index: " + result.ServerError);
                 }
 
                 if (result.OriginalException != null)
@@ -170,6 +172,7 @@ public class OpenSearchSearcher<TSearchModel>(
                 {
                     logger.LogError("Error while create {IndexName} index: {ErrorText}", indexName,
                         result.ServerError);
+                    throw new Exception("Error while init " + indexName + " index: " + result.ServerError);
                 }
 
                 if (result.OriginalException != null)
