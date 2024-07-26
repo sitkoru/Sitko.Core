@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenSearch.Client;
 using OpenSearch.Net;
-using Exception = System.Exception;
 
 namespace Sitko.Core.Search.OpenSearch;
 
