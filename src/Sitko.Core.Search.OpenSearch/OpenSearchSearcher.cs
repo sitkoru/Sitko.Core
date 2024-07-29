@@ -98,11 +98,11 @@ public class OpenSearchSearcher<TSearchModel>(
     }
 
     public async Task<TSearchModel[]> SearchAsync(string indexName, string term, int limit,
-        CancellationToken cancellationToken = default)
+        SearchType searchType, CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";
         var results = await GetClient()
-            .SearchAsync<TSearchModel>(x => GetSearchRequest(x, indexName, term, limit), cancellationToken);
+            .SearchAsync<TSearchModel>(x => GetSearchRequest(x, indexName, term, searchType, limit), cancellationToken);
         if (results.ServerError != null)
         {
             logger.LogError("Error while searching in {IndexName}: {ErrorText}", indexName, results.ServerError);
@@ -240,11 +240,21 @@ public class OpenSearchSearcher<TSearchModel>(
     }
 
     private static SearchDescriptor<TSearchModel> GetSearchRequest(SearchDescriptor<TSearchModel> descriptor,
-        string indexName, string term, int limit = 0)
+        string indexName, string term, SearchType searchType, int limit = 0)
     {
         var names = GetSearchText(term);
-        return descriptor.Query(q => q.QueryString(qs => qs.Query(names)))
-            .Sort(s => s.Descending(SortSpecialField.Score).Descending(model => model.Date))
+        switch (searchType)
+        {
+            case SearchType.Morphology:
+                descriptor.Query(q => q.QueryString(qs => qs.Query(names)));
+                break;
+            case SearchType.Wildcard:
+                descriptor.Query(q =>
+                    q.QueryString(qs => qs.Query($"*{names}*").AnalyzeWildcard()));
+                break;
+        }
+
+        return descriptor.Sort(s => s.Descending(SortSpecialField.Score).Descending(model => model.Date))
             .Size(limit > 0 ? limit : 20)
             .Index(indexName.ToLowerInvariant());
     }

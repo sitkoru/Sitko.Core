@@ -38,7 +38,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
-        var result = await searchProvider.SearchAsync("samsung", 10);
+        var result = await searchProvider.SearchAsync("samsung", 10, SearchType.Morphology);
         result.Length.Should().Be(provider.Models.Count);
         result.First().Id.Should().Be(barModel.Id);
     }
@@ -69,7 +69,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result = await searchProvider.SearchAsync(searchText, 10);
+        var result = await searchProvider.SearchAsync(searchText, 10, SearchType.Morphology);
         result.Length.Should().Be(foundDocs);
     }
 
@@ -92,8 +92,62 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result = await searchProvider.SearchAsync("walked", 10);
+        var result = await searchProvider.SearchAsync("walked", 10, SearchType.Morphology);
         result.Length.Should().Be(3);
+    }
+
+    [Theory(DisplayName = "PartialSearchEngTest")]
+    [InlineData(1, "74")]
+    [InlineData(1, "kol")]
+    [InlineData(1, "kolesa")]
+    [InlineData(1, "74ko")]
+    public async Task PartialSearchEngTestAsync(int foundDocs, string searchText)
+    {
+        var scope = await GetScopeAsync();
+        var provider = scope.GetService<TestModelProvider>();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid>>();
+        await searchProvider.DeleteIndexAsync();
+        await searchProvider.InitAsync();
+
+        var firstModel = new TestModel { Title = "MMI", Description = "74kolesa", Url = "mmicentre" };
+        var secondModel = new TestModel { Title = "MMI", Description = "walked", Url = "mmicentre" };
+        var thirdModel =
+            new TestModel { Title = "MMI", Description = "walking", Url = "mmicentre" };
+        var forthModel = new TestModel { Title = "MMI", Description = "MMI", Url = "mmicentre" };
+        provider.AddModel(firstModel).AddModel(secondModel).AddModel(thirdModel).AddModel(forthModel);
+
+        await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
+        await Task.Delay(TimeSpan.FromSeconds(5));
+
+        var result = await searchProvider.SearchAsync(searchText, 10, SearchType.Wildcard);
+        result.Length.Should().Be(foundDocs);
+    }
+
+    [Theory(DisplayName = "PartialSearchRusTest")]
+    [InlineData(1, "74")]
+    [InlineData(1, "кол")]
+    [InlineData(1, "колеса")]
+    [InlineData(1, "74ко")]
+    public async Task PartialSearchRusTestAsync(int foundDocs, string searchText)
+    {
+        var scope = await GetScopeAsync();
+        var provider = scope.GetService<TestModelProvider>();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid>>();
+        await searchProvider.DeleteIndexAsync();
+        await searchProvider.InitAsync();
+
+        var firstModel = new TestModel { Title = "MMI", Description = "74колеса", Url = "mmicentre" };
+        var secondModel = new TestModel { Title = "MMI", Description = "walked", Url = "mmicentre" };
+        var thirdModel =
+            new TestModel { Title = "MMI", Description = "walking", Url = "mmicentre" };
+        var forthModel = new TestModel { Title = "MMI", Description = "MMI", Url = "mmicentre" };
+        provider.AddModel(firstModel).AddModel(secondModel).AddModel(thirdModel).AddModel(forthModel);
+
+        await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
+        await Task.Delay(TimeSpan.FromSeconds(5));
+
+        var result = await searchProvider.SearchAsync(searchText, 10, SearchType.Wildcard);
+        result.Length.Should().Be(foundDocs);
     }
 }
 
