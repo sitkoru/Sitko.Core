@@ -101,7 +101,7 @@ public class ElasticSearcher<TSearchModel> : ISearcher<TSearchModel> where TSear
         return resultsCount.Count;
     }
 
-    public async Task<TSearchModel[]> SearchAsync(string indexName, string term, int limit,
+    public async Task<TSearchModel[]> SearchAsync(string indexName, string term, int limit, SearchType searchType,
         CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";

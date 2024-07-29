@@ -10,8 +10,8 @@ public interface ISearchProvider
 
 public interface ISearchProvider<TEntity, TEntityPk> : ISearchProvider where TEntity : class
 {
-    Task<TEntity[]> SearchAsync(string term, int limit, CancellationToken cancellationToken = default);
-    Task<TEntityPk[]> GetIdsAsync(string term, int limit, CancellationToken cancellationToken = default);
+    Task<TEntity[]> SearchAsync(string term, int limit, SearchType searchType, CancellationToken cancellationToken = default);
+    Task<TEntityPk[]> GetIdsAsync(string term, int limit, SearchType searchType, CancellationToken cancellationToken = default);
     Task<TEntity[]> GetSimilarAsync(string id, int limit, CancellationToken cancellationToken = default);
 
     Task<TEntityPk[]> GetSimilarIdsAsync(string id, int limit,
