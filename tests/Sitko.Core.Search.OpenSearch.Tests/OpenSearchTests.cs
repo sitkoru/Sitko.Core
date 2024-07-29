@@ -124,9 +124,9 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
     }
 
     [Theory(DisplayName = "PartialSearchRusTest")]
-    [InlineData(1, "74")]
     [InlineData(1, "кол")]
-    [InlineData(1, "колеса")]
+    [InlineData(1, "74кол")]
+    [InlineData(1, "74колес")]
     [InlineData(1, "74ко")]
     public async Task PartialSearchRusTestAsync(int foundDocs, string searchText)
     {
