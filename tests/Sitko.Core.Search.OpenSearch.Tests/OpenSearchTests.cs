@@ -149,6 +149,32 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         var result = await searchProvider.SearchAsync(searchText, 10, SearchType.Wildcard);
         result.Length.Should().Be(foundDocs);
     }
+
+    [Theory(DisplayName = "SearchByNumbersTest")]
+    [InlineData(2, "74", SearchType.Morphology)]
+    [InlineData(2, "74", SearchType.Wildcard)]
+    public async Task SearchByNumbersTestAsync(int foundDocs, string searchText, SearchType searchType)
+    {
+        var scope = await GetScopeAsync();
+        var provider = scope.GetService<TestModelProvider>();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid>>();
+        await searchProvider.DeleteIndexAsync();
+        await searchProvider.InitAsync();
+        var firstGuid = Guid.Parse("dd134352-da92-4cd2-9c" + searchText + "-440be713aba5");
+        var secondGuid = Guid.Parse("dd134352-da92-4cd2-9c88-440be713aba5");
+        var thirdGuid = Guid.Parse("dd134352-da92-4cd3-9c88-440be713aba5");
+
+        var firstModel = new TestModel { Id = firstGuid, Title = "MMI", Description = "MMI", Url = $"/page/{firstGuid.ToString()}" };
+        var secondModel = new TestModel { Id = secondGuid, Title = "MMI", Description = searchText, Url = "mmicentre" };
+        var thirdModel = new TestModel { Id = thirdGuid, Title = searchText, Description = "MMI", Url = "mmicentre" };
+        provider.AddModel(firstModel).AddModel(secondModel).AddModel(thirdModel);
+
+        await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
+        await Task.Delay(TimeSpan.FromSeconds(5));
+
+        var result2 = await searchProvider.SearchAsync(searchText, 10, searchType);
+        result2.Length.Should().Be(foundDocs);
+    }
 }
 
 public class OpenSearchTestScope : BaseTestScope
