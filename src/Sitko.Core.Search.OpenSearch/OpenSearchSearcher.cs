@@ -246,11 +246,15 @@ public class OpenSearchSearcher<TSearchModel>(
         switch (searchType)
         {
             case SearchType.Morphology:
-                descriptor.Query(q => q.QueryString(qs => qs.Query(names)));
+                descriptor.Query(q => q.QueryString(qs =>
+                    qs.Fields(fieldsDescriptor => fieldsDescriptor.Field(searchModel => searchModel.Title)
+                        .Field(searchModel => searchModel.Content)).Query(names)));
                 break;
             case SearchType.Wildcard:
                 descriptor.Query(q =>
-                    q.QueryString(qs => qs.Query($"*{names}*").AnalyzeWildcard()));
+                    q.QueryString(qs => qs.Fields(fieldsDescriptor => fieldsDescriptor
+                        .Field(searchModel => searchModel.Title)
+                        .Field(searchModel => searchModel.Content)).Query($"*{names}*").AnalyzeWildcard()));
                 break;
         }
 
