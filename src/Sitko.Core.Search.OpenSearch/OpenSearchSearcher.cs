@@ -15,7 +15,9 @@ public class OpenSearchSearcher<TSearchModel>(
     private OpenSearchModuleOptions Options => optionsMonitor.CurrentValue;
     private OpenSearchClient? client;
     private const string CustomAnalyze = "custom_analyze";
+    private const string CustomCharFilterAnalyze = "char_filter_analyze";
     private const string StemmerName = "custom_stemmer";
+    private const string CustomCharFilter = "rus_en_key";
 
     public async Task<bool> AddOrUpdateAsync(string indexName, IEnumerable<TSearchModel> searchModels,
         CancellationToken cancellationToken = default)
@@ -264,12 +266,20 @@ public class OpenSearchSearcher<TSearchModel>(
     }
 
     private AnalysisDescriptor CreateAnalysisDescriptor(AnalysisDescriptor a) =>
-        a.Analyzers(aa => aa.Custom(CustomAnalyze, ca => ca
-                .Tokenizer("standard")
-                .Filters("lowercase", "stop", "snowball", StemmerName)
+        a.Analyzers(aa =>
+                aa.Custom(CustomAnalyze, ca => ca
+                        .Tokenizer("standard")
+                        .Filters("lowercase", "stop", "snowball", StemmerName))
+                    .Custom(CustomCharFilterAnalyze, ca => ca
+                        .Tokenizer("standard")
+                        .Filters("lowercase", "stop")
+                        .CharFilters(CustomCharFilter))
             )
-        ).TokenFilters(descriptor =>
-            descriptor.Stemmer(StemmerName, filterDescriptor => filterDescriptor.Language(Options.CustomStemmer)));
+            .CharFilters(descriptor =>
+                descriptor.Mapping(CustomCharFilter,
+                    filterDescriptor => filterDescriptor.Mappings(OpenSearchHelper.RusEnKeys)))
+            .TokenFilters(descriptor =>
+                descriptor.Stemmer(StemmerName, filterDescriptor => filterDescriptor.Language(Options.CustomStemmer)));
 
     private CreateIndexDescriptor CreateIndexDescriptor(CreateIndexDescriptor createIndexDescriptor) =>
         createIndexDescriptor.Settings(s => s.Analysis(CreateAnalysisDescriptor))
@@ -278,6 +288,10 @@ public class OpenSearchSearcher<TSearchModel>(
                     .Text(t => t
                         .Name(n => n.Content)
                         .Analyzer(CustomAnalyze)
+                    )
+                    .Text(t => t
+                        .Name(n => n.Title)
+                        .Analyzer(CustomCharFilterAnalyze)
                     )
                 )
             );
