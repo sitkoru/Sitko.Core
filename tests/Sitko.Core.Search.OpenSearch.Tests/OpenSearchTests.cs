@@ -175,6 +175,26 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         var result2 = await searchProvider.SearchAsync(searchText, 10, searchType);
         result2.Length.Should().Be(foundDocs);
     }
+
+    [Fact]
+    public async Task IncorrectLayoutKeyboardTestAsync()
+    {
+        var scope = await GetScopeAsync();
+        var provider = scope.GetService<TestModelProvider>();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid>>();
+        await searchProvider.DeleteIndexAsync();
+        await searchProvider.InitAsync();
+
+        var firstModel = new TestModel { Title = "kolesa", Description = "MMI", Url = "/page/" };
+        var secondModel = new TestModel { Title = "MMI", Description = "mmicentre", Url = "mmicentre" };
+        provider.AddModel(firstModel).AddModel(secondModel);
+
+        await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
+        await Task.Delay(TimeSpan.FromSeconds(5));
+
+        var result = await searchProvider.SearchAsync("лщдуыф", 10, SearchType.Wildcard);
+        result.Length.Should().Be(1);
+    }
 }
 
 public class OpenSearchTestScope : BaseTestScope
