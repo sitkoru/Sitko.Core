@@ -61,7 +61,7 @@ public class ElasticSearchTestScope : BaseTestScope
         });
 
         hostBuilder.Services.AddSingleton<TestModelProvider>();
-        hostBuilder.Services.RegisterSearchProvider<TestSearchProvider, TestModel, Guid, BaseSearchModel>();
+        hostBuilder.Services.RegisterSearchProvider<TestSearchProvider, TestModel, Guid, TestSearchModel>();
         return hostBuilder;
     }
 }
@@ -75,28 +75,42 @@ public class TestModel
     public DateTimeOffset Date { get; set; } = DateTimeOffset.UtcNow;
 }
 
-public class TestSearchProvider : BaseSearchProvider<TestModel, Guid, BaseSearchModel>
+public class TestSearchModel : BaseSearchModel
+{
+    public TestSearchModel()
+    {
+    }
+}
+
+public class TestSearchProvider : BaseSearchProvider<TestModel, Guid, TestSearchModel>
 {
     private readonly TestModelProvider testModelProvider;
 
     public TestSearchProvider(ILogger<TestSearchProvider> logger,
         TestModelProvider testModelProvider,
-        ISearcher<BaseSearchModel>? searcher = null) : base(logger, searcher) =>
+        ISearcher<TestSearchModel>? searcher = null) : base(logger, searcher) =>
         this.testModelProvider = testModelProvider;
 
     protected override Guid ParseId(string id) => Guid.Parse(id);
 
-    protected override Task<BaseSearchModel[]> GetSearchModelsAsync(TestModel[] entities,
+    protected override Task<TestSearchModel[]> GetSearchModelsAsync(TestModel[] entities,
         CancellationToken cancellationToken = default) =>
         Task.FromResult(entities
-            .Select(e => new BaseSearchModel(e.Id.ToString(), e.Title, e.Url, e.Description, e.Date)).ToArray());
+            .Select(e => new TestSearchModel
+                {
+                    Id = e.Id.ToString(),
+                    Title = e.Title,
+                    Url = e.Url,
+                    Date = e.Date,
+                    Content = e.Description
+                }).ToArray());
 
-    protected override Task<(TestModel entity, BaseSearchModel searchResult)[]> GetEntitiesAsync(BaseSearchModel[] searchModels,
+    protected override Task<(TestModel entity, TestSearchModel searchResult)[]> GetEntitiesAsync(TestSearchModel[] searchModels,
         CancellationToken cancellationToken = default)
     {
         var ids = searchModels.Select(m => Guid.Parse(m.Id));
         var entities = testModelProvider.Models.Where(m => ids.Contains(m.Id));
-        List<(TestModel, BaseSearchModel)> result = [];
+        List<(TestModel, TestSearchModel)> result = [];
         foreach (var entity in entities)
         {
             var searchModel = searchModels.ToList().FirstOrDefault(model => model.Id == entity.Id.ToString());

@@ -2,15 +2,8 @@ namespace Sitko.Core.Search;
 
 public class BaseSearchModel
 {
-    public BaseSearchModel(string id, string title, string url, string content, DateTimeOffset date,
-        IReadOnlyDictionary<string, IReadOnlyCollection<string>>? highlight = null)
+    public BaseSearchModel()
     {
-        Highlight = highlight;
-        Id = id;
-        Title = title;
-        Url = url;
-        Content = content;
-        Date = date;
     }
 
     public string Id { get; set; }
@@ -18,5 +11,5 @@ public class BaseSearchModel
     public string Url { get; set; }
     public DateTimeOffset Date { get; set; }
     public string Content { get; set; }
-    public IReadOnlyDictionary<string, IReadOnlyCollection<string>>? Highlight { get; set; }
+    public IReadOnlyDictionary<string, IReadOnlyCollection<string>> Highlight { get; set; }
 }

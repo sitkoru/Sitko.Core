@@ -10,7 +10,7 @@ public class OpenSearchSearcher<TSearchModel>(
     IOptionsMonitor<OpenSearchModuleOptions> optionsMonitor,
     ILogger<OpenSearchSearcher<TSearchModel>> logger)
     : ISearcher<TSearchModel>
-    where TSearchModel : BaseSearchModel
+    where TSearchModel : BaseSearchModel, new()
 {
     private OpenSearchModuleOptions Options => optionsMonitor.CurrentValue;
     private OpenSearchClient? client;
@@ -111,8 +111,15 @@ public class OpenSearchSearcher<TSearchModel>(
         }
 
         var result = searchResponse.Hits.Select(h =>
-            (TSearchModel)new BaseSearchModel(h.Source.Id, h.Source.Title, h.Source.Content, h.Source.Url,
-                h.Source.Date, h.Highlight)).ToArray();
+            new TSearchModel
+            {
+                Id = h.Source.Id,
+                Content = h.Source.Content,
+                Date = h.Source.Date,
+                Title = h.Source.Title,
+                Url = h.Source.Url,
+                Highlight = h.Highlight
+            }).ToArray();
         return result;
     }
 

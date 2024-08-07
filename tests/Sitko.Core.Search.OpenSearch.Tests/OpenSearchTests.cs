@@ -16,7 +16,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
     {
         var scope = await GetScopeAsync();
         var provider = scope.GetService<TestModelProvider>();
-        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, BaseSearchModel>>();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
         await searchProvider.DeleteIndexAsync();
         await searchProvider.InitAsync();
 
@@ -52,7 +52,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
     {
         var scope = await GetScopeAsync();
         var provider = scope.GetService<TestModelProvider>();
-        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, BaseSearchModel>>();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
         await searchProvider.DeleteIndexAsync();
         await searchProvider.InitAsync();
 
@@ -77,7 +77,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
     {
         var scope = await GetScopeAsync();
         var provider = scope.GetService<TestModelProvider>();
-        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, BaseSearchModel>>();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
         await searchProvider.DeleteIndexAsync();
         await searchProvider.InitAsync();
 
@@ -104,7 +104,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
     {
         var scope = await GetScopeAsync();
         var provider = scope.GetService<TestModelProvider>();
-        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, BaseSearchModel>>();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
         await searchProvider.DeleteIndexAsync();
         await searchProvider.InitAsync();
 
@@ -131,7 +131,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
     {
         var scope = await GetScopeAsync();
         var provider = scope.GetService<TestModelProvider>();
-        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, BaseSearchModel>>();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
         await searchProvider.DeleteIndexAsync();
         await searchProvider.InitAsync();
 
@@ -156,7 +156,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
     {
         var scope = await GetScopeAsync();
         var provider = scope.GetService<TestModelProvider>();
-        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, BaseSearchModel>>();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
         await searchProvider.DeleteIndexAsync();
         await searchProvider.InitAsync();
         var firstGuid = Guid.Parse("dd134352-da92-4cd2-9c" + searchText + "-440be713aba5");
@@ -180,7 +180,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
     {
         var scope = await GetScopeAsync();
         var provider = scope.GetService<TestModelProvider>();
-        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, BaseSearchModel>>();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
         await searchProvider.DeleteIndexAsync();
         await searchProvider.InitAsync();
 
@@ -200,7 +200,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
     {
         var scope = await GetScopeAsync();
         var provider = scope.GetService<TestModelProvider>();
-        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, BaseSearchModel>>();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
         await searchProvider.DeleteIndexAsync();
         await searchProvider.InitAsync();
 
@@ -241,7 +241,7 @@ public class OpenSearchTestScope : BaseTestScope
         });
 
         hostBuilder.Services.AddSingleton<TestModelProvider>();
-        hostBuilder.Services.RegisterSearchProvider<TestSearchProvider, TestModel, Guid, BaseSearchModel>();
+        hostBuilder.Services.RegisterSearchProvider<TestSearchProvider, TestModel, Guid, TestSearchModel>();
         return hostBuilder;
     }
 }
@@ -255,26 +255,40 @@ public class TestModel
     public DateTimeOffset Date { get; set; } = DateTimeOffset.UtcNow;
 }
 
+public class TestSearchModel : BaseSearchModel
+{
+    public TestSearchModel()
+    {
+    }
+}
+
 public class TestSearchProvider(
     ILogger<TestSearchProvider> logger,
     TestModelProvider testModelProvider,
-    ISearcher<BaseSearchModel>? searcher = null)
-    : BaseSearchProvider<TestModel, Guid, BaseSearchModel>(logger, searcher)
+    ISearcher<TestSearchModel>? searcher = null)
+    : BaseSearchProvider<TestModel, Guid, TestSearchModel>(logger, searcher)
 {
     protected override Guid ParseId(string id) => Guid.Parse(id);
 
-    protected override Task<BaseSearchModel[]> GetSearchModelsAsync(TestModel[] entities,
+    protected override Task<TestSearchModel[]> GetSearchModelsAsync(TestModel[] entities,
         CancellationToken cancellationToken = default) =>
         Task.FromResult(entities
-            .Select(e => new BaseSearchModel(e.Id.ToString(), e.Title, e.Url, e.Description, e.Date))
+            .Select(e => new TestSearchModel
+            {
+                Id = e.Id.ToString(),
+                Date = e.Date,
+                Url = e.Url,
+                Title = e.Title,
+                Content = e.Description
+            })
             .ToArray());
 
-    protected override Task<(TestModel entity, BaseSearchModel searchResult)[]> GetEntitiesAsync(BaseSearchModel[] searchModels,
+    protected override Task<(TestModel entity, TestSearchModel searchResult)[]> GetEntitiesAsync(TestSearchModel[] searchModels,
         CancellationToken cancellationToken = default)
     {
         var ids = searchModels.Select(m => Guid.Parse(m.Id));
         var entities = testModelProvider.Models.Where(m => ids.Contains(m.Id));
-        List<(TestModel, BaseSearchModel)> result = [];
+        List<(TestModel, TestSearchModel)> result = [];
         foreach (var entity in entities)
         {
             var searchModel = searchModels.ToList().FirstOrDefault(model => model.Id == entity.Id.ToString());
