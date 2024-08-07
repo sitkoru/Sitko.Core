@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 namespace Sitko.Core.Search;
 
 [PublicAPI]
-public abstract class BaseSearchProvider<T, TEntityPk, TSearchModel> : ISearchProvider<T, TEntityPk>
+public abstract class BaseSearchProvider<T, TEntityPk, TSearchModel> : ISearchProvider<T, TEntityPk, TSearchModel>
     where T : class where TSearchModel : BaseSearchModel
 {
     private readonly ISearcher<TSearchModel> searcher;
@@ -31,7 +31,7 @@ public abstract class BaseSearchProvider<T, TEntityPk, TSearchModel> : ISearchPr
     public Task InitAsync(CancellationToken cancellationToken = default) =>
         searcher.InitAsync(IndexName, cancellationToken);
 
-    public async Task<T[]> SearchAsync(string term, int limit, SearchType searchType, CancellationToken cancellationToken = default)
+    public async Task<(T entity, TSearchModel searchResult)[]> SearchAsync(string term, int limit, SearchType searchType, CancellationToken cancellationToken = default)
     {
         var result = await searcher.SearchAsync(IndexName, term, limit, searchType, cancellationToken);
         return await LoadEntities(result, cancellationToken);
@@ -44,7 +44,7 @@ public abstract class BaseSearchProvider<T, TEntityPk, TSearchModel> : ISearchPr
         return result.Select(m => ParseId(m.Id)).ToArray();
     }
 
-    public async Task<T[]> GetSimilarAsync(string id, int limit, CancellationToken cancellationToken = default)
+    public async Task<(T entity, TSearchModel searchResult)[]> GetSimilarAsync(string id, int limit, CancellationToken cancellationToken = default)
     {
         var result = await searcher.GetSimilarAsync(IndexName, id, limit, cancellationToken);
         return await LoadEntities(result, cancellationToken);
@@ -74,17 +74,17 @@ public abstract class BaseSearchProvider<T, TEntityPk, TSearchModel> : ISearchPr
 
     protected abstract TEntityPk ParseId(string id);
 
-    protected virtual async Task<T[]> LoadEntities(TSearchModel[] searchModels,
+    protected virtual async Task<(T entity, TSearchModel searchResult)[]> LoadEntities(TSearchModel[] searchModels,
         CancellationToken cancellationToken = default)
     {
         var entities = await GetEntitiesAsync(searchModels, cancellationToken);
-        return entities.OrderBy(e => Array.FindIndex(searchModels, model => model.Id == GetId(e))).ToArray();
+        return entities.OrderBy(e => Array.FindIndex(searchModels, model => model.Id == GetId(e.entity))).ToArray();
     }
 
     protected abstract Task<TSearchModel[]> GetSearchModelsAsync(T[] entities,
         CancellationToken cancellationToken = default);
 
-    protected abstract Task<T[]> GetEntitiesAsync(TSearchModel[] searchModels,
+    protected abstract Task<(T entity, TSearchModel searchResult)[]> GetEntitiesAsync(TSearchModel[] searchModels,
         CancellationToken cancellationToken = default);
 
     protected abstract string GetId(T entity);

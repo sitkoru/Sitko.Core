@@ -11,6 +11,8 @@ public class OpenSearchModuleOptions : SearchModuleOptions
     public bool EnableClientLogging { get; set; }
     public bool DisableCertificatesValidation { get; set; }
     public string CustomStemmer { get; set; } = "";
+    public string PreTags { get; set; } = "";
+    public string PostTags { get; set; } = "";
 }
 
 public class OpenSearchModuleOptionsValidator : AbstractValidator<OpenSearchModuleOptions>

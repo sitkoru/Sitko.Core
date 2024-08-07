@@ -49,10 +49,11 @@ public abstract class SearchModule<TConfig> : BaseApplicationModule<TConfig>, IS
 
 public static class SearchModuleExtensions
 {
-    public static IServiceCollection RegisterSearchProvider<TSearchProvider, TEntity, TEntityPk>(
+    public static IServiceCollection RegisterSearchProvider<TSearchProvider, TEntity, TEntityPk, TSearchModel>(
         this IServiceCollection serviceCollection)
-        where TSearchProvider : class, ISearchProvider<TEntity, TEntityPk>
-        where TEntity : class =>
+        where TSearchProvider : class, ISearchProvider<TEntity, TEntityPk, TSearchModel>
+        where TEntity : class
+        where TSearchModel : BaseSearchModel =>
         serviceCollection.Scan(a => a.FromType<TSearchProvider>().AsSelfWithInterfaces());
 }
 

@@ -103,14 +103,17 @@ public class OpenSearchSearcher<TSearchModel>(
         SearchType searchType, CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";
-        var results = await GetClient()
+        var searchResponse = await GetClient()
             .SearchAsync<TSearchModel>(x => GetSearchRequest(x, indexName, term, searchType, limit), cancellationToken);
-        if (results.ServerError != null)
+        if (searchResponse.ServerError != null)
         {
-            logger.LogError("Error while searching in {IndexName}: {ErrorText}", indexName, results.ServerError);
+            logger.LogError("Error while searching in {IndexName}: {ErrorText}", indexName, searchResponse.ServerError);
         }
 
-        return results.Documents.ToArray();
+        var result = searchResponse.Hits.Select(h =>
+            (TSearchModel)new BaseSearchModel(h.Source.Id, h.Source.Title, h.Source.Content, h.Source.Url,
+                h.Source.Date, h.Highlight)).ToArray();
+        return result;
     }
 
     public async Task<TSearchModel[]> GetSimilarAsync(string indexName, string id, int limit,
@@ -241,7 +244,7 @@ public class OpenSearchSearcher<TSearchModel>(
         return names;
     }
 
-    private static SearchDescriptor<TSearchModel> GetSearchRequest(SearchDescriptor<TSearchModel> descriptor,
+    private SearchDescriptor<TSearchModel> GetSearchRequest(SearchDescriptor<TSearchModel> descriptor,
         string indexName, string term, SearchType searchType, int limit = 0)
     {
         var names = GetSearchText(term);
@@ -260,7 +263,14 @@ public class OpenSearchSearcher<TSearchModel>(
                 break;
         }
 
-        return descriptor.Sort(s => s.Descending(SortSpecialField.Score).Descending(model => model.Date))
+        return descriptor
+            .Highlight(h =>
+                h.Fields(fs => fs
+                    .Field(p => p.Title)
+                    .PreTags(Options.PreTags)
+                    .PostTags(Options.PostTags))
+            )
+            .Sort(s => s.Descending(SortSpecialField.Score).Descending(model => model.Date))
             .Size(limit > 0 ? limit : 20)
             .Index(indexName.ToLowerInvariant());
     }

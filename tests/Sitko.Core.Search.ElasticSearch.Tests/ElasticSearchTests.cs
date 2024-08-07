@@ -61,7 +61,7 @@ public class ElasticSearchTestScope : BaseTestScope
         });
 
         hostBuilder.Services.AddSingleton<TestModelProvider>();
-        hostBuilder.Services.RegisterSearchProvider<TestSearchProvider, TestModel, Guid>();
+        hostBuilder.Services.RegisterSearchProvider<TestSearchProvider, TestModel, Guid, BaseSearchModel>();
         return hostBuilder;
     }
 }
@@ -91,11 +91,22 @@ public class TestSearchProvider : BaseSearchProvider<TestModel, Guid, BaseSearch
         Task.FromResult(entities
             .Select(e => new BaseSearchModel(e.Id.ToString(), e.Title, e.Url, e.Description, e.Date)).ToArray());
 
-    protected override Task<TestModel[]> GetEntitiesAsync(BaseSearchModel[] searchModels,
+    protected override Task<(TestModel entity, BaseSearchModel searchResult)[]> GetEntitiesAsync(BaseSearchModel[] searchModels,
         CancellationToken cancellationToken = default)
     {
         var ids = searchModels.Select(m => Guid.Parse(m.Id));
-        return Task.FromResult(testModelProvider.Models.Where(m => ids.Contains(m.Id)).ToArray());
+        var entities = testModelProvider.Models.Where(m => ids.Contains(m.Id));
+        List<(TestModel, BaseSearchModel)> result = [];
+        foreach (var entity in entities)
+        {
+            var searchModel = searchModels.ToList().FirstOrDefault(model => model.Id == entity.Id.ToString());
+            if (searchModel != null)
+            {
+                result.Add((entity, searchModel));
+            }
+        }
+
+        return Task.FromResult(result.ToArray());
     }
 
     protected override string GetId(TestModel entity) => entity.Id.ToString();

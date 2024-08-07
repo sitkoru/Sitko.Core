@@ -34,11 +34,22 @@ public abstract class
         }
     }
 
-    protected override Task<TEntity[]> GetEntitiesAsync(TSearchModel[] searchModels,
+    protected override async Task<(TEntity entity, TSearchModel searchResult)[]> GetEntitiesAsync(TSearchModel[] searchModels,
         CancellationToken cancellationToken = default)
     {
         var ids = searchModels.Select(s => ParseId(s.Id)).Distinct().ToArray();
-        return repository.GetByIdsAsync(ids, cancellationToken);
+        var entities = await repository.GetByIdsAsync(ids, cancellationToken);
+        List<(TEntity, TSearchModel)> result = [];
+        foreach (var entity in entities)
+        {
+            var searchModel = searchModels.ToList().FirstOrDefault(model => model.Id == entity.Id.ToString());
+            if (searchModel != null)
+            {
+                result.Add((entity, searchModel));
+            }
+        }
+
+        return result.ToArray();
     }
 
     protected override string GetId(TEntity entity) =>
