@@ -295,7 +295,7 @@ public class OpenSearchSearcher<TSearchModel>(
                         .Filters("lowercase", "stop", "snowball", StemmerName))
                     .Custom(CustomCharFilterAnalyze, ca => ca
                         .Tokenizer("standard")
-                        .Filters("lowercase", "stop")
+                        .Filters("lowercase", "stop", "snowball", StemmerName)
                         .CharFilters(CustomCharFilter))
             )
             .CharFilters(descriptor =>
