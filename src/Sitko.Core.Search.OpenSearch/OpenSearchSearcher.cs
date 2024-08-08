@@ -10,7 +10,7 @@ public class OpenSearchSearcher<TSearchModel>(
     IOptionsMonitor<OpenSearchModuleOptions> optionsMonitor,
     ILogger<OpenSearchSearcher<TSearchModel>> logger)
     : ISearcher<TSearchModel>
-    where TSearchModel : BaseSearchModel
+    where TSearchModel : BaseSearchModel, new()
 {
     private OpenSearchModuleOptions Options => optionsMonitor.CurrentValue;
     private OpenSearchClient? client;
@@ -100,17 +100,29 @@ public class OpenSearchSearcher<TSearchModel>(
     }
 
     public async Task<TSearchModel[]> SearchAsync(string indexName, string term, int limit,
-        SearchType searchType, CancellationToken cancellationToken = default)
+        SearchType searchType, bool withHighlight = false, CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";
-        var results = await GetClient()
-            .SearchAsync<TSearchModel>(x => GetSearchRequest(x, indexName, term, searchType, limit), cancellationToken);
-        if (results.ServerError != null)
+        var searchResponse = await GetClient()
+            .SearchAsync<TSearchModel>(x => GetSearchRequest(x, indexName, term, searchType, limit, withHighlight),
+                cancellationToken);
+        if (searchResponse.ServerError != null)
         {
-            logger.LogError("Error while searching in {IndexName}: {ErrorText}", indexName, results.ServerError);
+            logger.LogError("Error while searching in {IndexName}: {ErrorText}", indexName, searchResponse.ServerError);
         }
 
-        return results.Documents.ToArray();
+        var result = searchResponse.Hits.Select(h =>
+            new TSearchModel
+            {
+                Id = h.Source.Id,
+                Content = h.Source.Content,
+                Date = h.Source.Date,
+                Title = h.Source.Title,
+                Url = h.Source.Url,
+                Highlight = h.Highlight
+            }
+        ).ToArray();
+        return result;
     }
 
     public async Task<TSearchModel[]> GetSimilarAsync(string indexName, string id, int limit,
@@ -226,6 +238,7 @@ public class OpenSearchSearcher<TSearchModel>(
             settings.ServerCertificateValidationCallback(CertificateValidations.AllowAll)
                 .ServerCertificateValidationCallback((_, _, _, _) => true);
         }
+
         client = new OpenSearchClient(settings);
         return client;
     }
@@ -241,8 +254,8 @@ public class OpenSearchSearcher<TSearchModel>(
         return names;
     }
 
-    private static SearchDescriptor<TSearchModel> GetSearchRequest(SearchDescriptor<TSearchModel> descriptor,
-        string indexName, string term, SearchType searchType, int limit = 0)
+    private SearchDescriptor<TSearchModel> GetSearchRequest(SearchDescriptor<TSearchModel> descriptor,
+        string indexName, string term, SearchType searchType, int limit = 0, bool withHighlight = false)
     {
         var names = GetSearchText(term);
         switch (searchType)
@@ -260,7 +273,17 @@ public class OpenSearchSearcher<TSearchModel>(
                 break;
         }
 
-        return descriptor.Sort(s => s.Descending(SortSpecialField.Score).Descending(model => model.Date))
+        if (withHighlight)
+        {
+            descriptor.Highlight(h =>
+                h.Fields(fs => fs
+                    .Field(p => p.Title)
+                    .PreTags(Options.PreTags)
+                    .PostTags(Options.PostTags)));
+        }
+
+        return descriptor
+            .Sort(s => s.Descending(SortSpecialField.Score).Descending(model => model.Date))
             .Size(limit > 0 ? limit : 20)
             .Index(indexName.ToLowerInvariant());
     }

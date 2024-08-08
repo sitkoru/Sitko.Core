@@ -8,18 +8,40 @@ public interface ISearchProvider
     Task InitAsync(CancellationToken cancellationToken = default);
 }
 
-public interface ISearchProvider<TEntity, TEntityPk> : ISearchProvider where TEntity : class
+public interface ISearchProvider<TEntity> : ISearchProvider where TEntity : class
 {
-    Task<TEntity[]> SearchAsync(string term, int limit, SearchType searchType, CancellationToken cancellationToken = default);
-    Task<TEntityPk[]> GetIdsAsync(string term, int limit, SearchType searchType, CancellationToken cancellationToken = default);
-    Task<TEntity[]> GetSimilarAsync(string id, int limit, CancellationToken cancellationToken = default);
-
-    Task<TEntityPk[]> GetSimilarIdsAsync(string id, int limit,
-        CancellationToken cancellationToken = default);
-
     Task AddOrUpdateEntityAsync(TEntity entity, CancellationToken cancellationToken = default);
     Task<bool> AddOrUpdateEntitiesAsync(TEntity[] entities, CancellationToken cancellationToken = default);
     Task<bool> DeleteEntityAsync(TEntity entity, CancellationToken cancellationToken = default);
     Task<bool> DeleteEntitiesAsync(TEntity[] entities, CancellationToken cancellationToken = default);
 }
 
+public interface ISearchProvider<TEntity, TEntityPk> : ISearchProvider<TEntity> where TEntity : class
+{
+    Task<TEntity[]> SearchAsync(string term, int limit, SearchType searchType,
+        CancellationToken cancellationToken = default);
+
+    Task<TEntityPk[]> GetIdsAsync(string term, int limit, SearchType searchType,
+        CancellationToken cancellationToken = default);
+
+    Task<TEntity[]> GetSimilarAsync(string id, int limit, CancellationToken cancellationToken = default);
+
+    Task<TEntityPk[]> GetSimilarIdsAsync(string id, int limit,
+        CancellationToken cancellationToken = default);
+}
+
+public interface ISearchProvider<TEntity, TEntityPk, TSearchModel> : ISearchProvider<TEntity>
+    where TEntity : class where TSearchModel : BaseSearchModel
+{
+    Task<SearchResult<TEntity, TSearchModel>[]> SearchAsync(string term, int limit, SearchType searchType,
+        bool withHighlight = false, CancellationToken cancellationToken = default);
+
+    Task<TEntityPk[]> GetIdsAsync(string term, int limit, SearchType searchType, bool withHighlight = false,
+        CancellationToken cancellationToken = default);
+
+    Task<SearchResult<TEntity, TSearchModel>[]> GetSimilarAsync(string id, int limit,
+        CancellationToken cancellationToken = default);
+
+    Task<TEntityPk[]> GetSimilarIdsAsync(string id, int limit,
+        CancellationToken cancellationToken = default);
+}
