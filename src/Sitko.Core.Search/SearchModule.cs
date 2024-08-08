@@ -58,4 +58,3 @@ public static class SearchModuleExtensions
 }
 
 public abstract class SearchModuleOptions : BaseModuleOptions;
-

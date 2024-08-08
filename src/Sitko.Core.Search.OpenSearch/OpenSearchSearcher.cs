@@ -238,6 +238,7 @@ public class OpenSearchSearcher<TSearchModel>(
             settings.ServerCertificateValidationCallback(CertificateValidations.AllowAll)
                 .ServerCertificateValidationCallback((_, _, _, _) => true);
         }
+
         client = new OpenSearchClient(settings);
         return client;
     }

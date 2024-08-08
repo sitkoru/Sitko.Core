@@ -34,18 +34,20 @@ public abstract class BaseSearchProvider<T, TEntityPk, TSearchModel> : ISearchPr
     public async Task<SearchResult<T, TSearchModel>[]> SearchAsync(string term, int limit, SearchType searchType,
         bool withHighlight = false, CancellationToken cancellationToken = default)
     {
-        var result = await searcher.SearchAsync(IndexName, term, limit, searchType,withHighlight, cancellationToken);
+        var result = await searcher.SearchAsync(IndexName, term, limit, searchType, withHighlight, cancellationToken);
         return await LoadEntities(result, cancellationToken);
     }
 
-    public async Task<TEntityPk[]> GetIdsAsync(string term, int limit, SearchType searchType, bool withHighlight = false,
+    public async Task<TEntityPk[]> GetIdsAsync(string term, int limit, SearchType searchType,
+        bool withHighlight = false,
         CancellationToken cancellationToken = default)
     {
         var result = await searcher.SearchAsync(IndexName, term, limit, searchType, withHighlight, cancellationToken);
         return result.Select(m => ParseId(m.Id)).ToArray();
     }
 
-    public async Task<SearchResult<T, TSearchModel>[]> GetSimilarAsync(string id, int limit, CancellationToken cancellationToken = default)
+    public async Task<SearchResult<T, TSearchModel>[]> GetSimilarAsync(string id, int limit,
+        CancellationToken cancellationToken = default)
     {
         var result = await searcher.GetSimilarAsync(IndexName, id, limit, cancellationToken);
         return await LoadEntities(result, cancellationToken);
@@ -90,4 +92,3 @@ public abstract class BaseSearchProvider<T, TEntityPk, TSearchModel> : ISearchPr
 
     protected abstract string GetId(T entity);
 }
-

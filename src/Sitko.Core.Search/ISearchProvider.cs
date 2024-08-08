@@ -33,8 +33,8 @@ public interface ISearchProvider<TEntity, TEntityPk> : ISearchProvider<TEntity> 
 public interface ISearchProvider<TEntity, TEntityPk, TSearchModel> : ISearchProvider<TEntity>
     where TEntity : class where TSearchModel : BaseSearchModel
 {
-    Task<SearchResult<TEntity, TSearchModel>[]> SearchAsync(string term, int limit, SearchType searchType, bool withHighlight = false,
-        CancellationToken cancellationToken = default);
+    Task<SearchResult<TEntity, TSearchModel>[]> SearchAsync(string term, int limit, SearchType searchType,
+        bool withHighlight = false, CancellationToken cancellationToken = default);
 
     Task<TEntityPk[]> GetIdsAsync(string term, int limit, SearchType searchType, bool withHighlight = false,
         CancellationToken cancellationToken = default);
