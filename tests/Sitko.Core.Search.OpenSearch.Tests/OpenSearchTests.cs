@@ -214,7 +214,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result = await searchProvider.SearchAsync("играют", 10, SearchType.Morphology, true);
+        var result = await searchProvider.SearchAsync("компьютерный", 10, SearchType.Morphology, true);
         result.Length.Should().Be(1);
         result.First().ResultModel.Highlight.Count.Should().Be(1);
         result.First().ResultModel.Highlight.First().Value.First().Contains("<span class='highlight'>").Should().BeTrue();
