@@ -195,8 +195,11 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         result.Length.Should().Be(1);
     }
 
-    [Fact]
-    public async Task HighlightingTestAsync()
+
+    [Theory(DisplayName = "HighlightingTest")]
+    [InlineData("играют", SearchType.Wildcard)]
+    [InlineData("компьютерный", SearchType.Morphology)]
+    public async Task HighlightingTestAsync(string searchText, SearchType searchType)
     {
         var scope = await GetScopeAsync();
         var provider = scope.GetService<TestModelProvider>();
@@ -206,7 +209,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
 
         var firstModel = new TestModel
         {
-            Title = "Геймеры играют в компьютерные игры.", Description = "MMI", Url = "mmicentre"
+            Title = "Геймеры играют в компьютерные игры.", Description = "Геймеры играют в компьютерные игры.", Url = "mmicentre"
         };
         var secondModel = new TestModel { Title = "MMI", Description = "mmicentre", Url = "mmicentre" };
         provider.AddModel(firstModel).AddModel(secondModel);
@@ -214,7 +217,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result = await searchProvider.SearchAsync("компьютерный", 10, SearchType.Morphology, true);
+        var result = await searchProvider.SearchAsync(searchText, 10, searchType, true);
         result.Length.Should().Be(1);
         result.First().ResultModel.Highlight.Count.Should().Be(1);
         result.First().ResultModel.Highlight.First().Value.First().Contains("<span class='highlight'>").Should().BeTrue();
