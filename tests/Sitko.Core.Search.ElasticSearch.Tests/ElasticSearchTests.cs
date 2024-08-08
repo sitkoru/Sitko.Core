@@ -105,18 +105,18 @@ public class TestSearchProvider : BaseSearchProvider<TestModel, Guid, TestSearch
                     Content = e.Description
                 }).ToArray());
 
-    protected override Task<(TestModel entity, TestSearchModel searchResult)[]> GetEntitiesAsync(TestSearchModel[] searchModels,
+    protected override Task<SearchResult<TestModel, TestSearchModel>[]> GetEntitiesAsync(TestSearchModel[] searchModels,
         CancellationToken cancellationToken = default)
     {
         var ids = searchModels.Select(m => Guid.Parse(m.Id));
         var entities = testModelProvider.Models.Where(m => ids.Contains(m.Id));
-        List<(TestModel, TestSearchModel)> result = [];
+        List<SearchResult<TestModel, TestSearchModel>> result = [];
         foreach (var entity in entities)
         {
             var searchModel = searchModels.ToList().FirstOrDefault(model => model.Id == entity.Id.ToString());
             if (searchModel != null)
             {
-                result.Add((entity, searchModel));
+                result.Add(new SearchResult<TestModel, TestSearchModel> { Entity = entity, ResultModel = searchModel });
             }
         }
 

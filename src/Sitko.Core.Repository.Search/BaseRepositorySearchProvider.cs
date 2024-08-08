@@ -34,18 +34,18 @@ public abstract class
         }
     }
 
-    protected override async Task<(TEntity entity, TSearchModel searchResult)[]> GetEntitiesAsync(TSearchModel[] searchModels,
+    protected override async Task<SearchResult<TEntity, TSearchModel>[]> GetEntitiesAsync(TSearchModel[] searchModels,
         CancellationToken cancellationToken = default)
     {
         var ids = searchModels.Select(s => ParseId(s.Id)).Distinct().ToArray();
         var entities = await repository.GetByIdsAsync(ids, cancellationToken);
-        List<(TEntity, TSearchModel)> result = [];
+        List<SearchResult<TEntity, TSearchModel>> result = [];
         foreach (var entity in entities)
         {
             var searchModel = searchModels.ToList().FirstOrDefault(model => model.Id == entity.Id.ToString());
             if (searchModel != null)
             {
-                result.Add((entity, searchModel));
+                result.Add(new SearchResult<TEntity, TSearchModel> { Entity = entity, ResultModel = searchModel });
             }
         }
 

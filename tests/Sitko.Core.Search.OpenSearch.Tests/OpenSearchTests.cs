@@ -216,8 +216,8 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
 
         var result = await searchProvider.SearchAsync("играют", 10, SearchType.Morphology, true);
         result.Length.Should().Be(1);
-        result.First().searchResult.Highlight.Count.Should().Be(1);
-        result.First().searchResult.Highlight.First().Value.Contains("<span class='highlight'>");
+        result.First().ResultModel.Highlight.Count.Should().Be(1);
+        result.First().ResultModel.Highlight.First().Value.Contains("<span class='highlight'>");
     }
 }
 
@@ -283,18 +283,18 @@ public class TestSearchProvider(
             })
             .ToArray());
 
-    protected override Task<(TestModel entity, TestSearchModel searchResult)[]> GetEntitiesAsync(TestSearchModel[] searchModels,
+    protected override Task<SearchResult<TestModel, TestSearchModel>[]> GetEntitiesAsync(TestSearchModel[] searchModels,
         CancellationToken cancellationToken = default)
     {
         var ids = searchModels.Select(m => Guid.Parse(m.Id));
         var entities = testModelProvider.Models.Where(m => ids.Contains(m.Id));
-        List<(TestModel, TestSearchModel)> result = [];
+        List<SearchResult<TestModel, TestSearchModel>> result = [];
         foreach (var entity in entities)
         {
             var searchModel = searchModels.ToList().FirstOrDefault(model => model.Id == entity.Id.ToString());
             if (searchModel != null)
             {
-                result.Add((entity, searchModel));
+                result.Add(new SearchResult<TestModel, TestSearchModel> { Entity = entity, ResultModel = searchModel });
             }
         }
 

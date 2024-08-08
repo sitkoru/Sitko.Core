@@ -33,13 +33,13 @@ public interface ISearchProvider<TEntity, TEntityPk> : ISearchProvider<TEntity> 
 public interface ISearchProvider<TEntity, TEntityPk, TSearchModel> : ISearchProvider<TEntity>
     where TEntity : class where TSearchModel : BaseSearchModel
 {
-    Task<(TEntity entity, TSearchModel searchResult)[]> SearchAsync(string term, int limit, SearchType searchType, bool withHighlight = false,
+    Task<SearchResult<TEntity, TSearchModel>[]> SearchAsync(string term, int limit, SearchType searchType, bool withHighlight = false,
         CancellationToken cancellationToken = default);
 
     Task<TEntityPk[]> GetIdsAsync(string term, int limit, SearchType searchType, bool withHighlight = false,
         CancellationToken cancellationToken = default);
 
-    Task<(TEntity entity, TSearchModel searchResult)[]> GetSimilarAsync(string id, int limit,
+    Task<SearchResult<TEntity, TSearchModel>[]> GetSimilarAsync(string id, int limit,
         CancellationToken cancellationToken = default);
 
     Task<TEntityPk[]> GetSimilarIdsAsync(string id, int limit,
