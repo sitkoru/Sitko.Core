@@ -100,7 +100,7 @@ public class OpenSearchSearcher<TSearchModel>(
     }
 
     public async Task<TSearchModel[]> SearchAsync(string indexName, string term, int limit,
-        SearchType searchType, CancellationToken cancellationToken = default)
+        SearchType searchType, bool withHighlight = false, CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";
         var searchResponse = await GetClient()
@@ -111,15 +111,24 @@ public class OpenSearchSearcher<TSearchModel>(
         }
 
         var result = searchResponse.Hits.Select(h =>
-            new TSearchModel
             {
-                Id = h.Source.Id,
-                Content = h.Source.Content,
-                Date = h.Source.Date,
-                Title = h.Source.Title,
-                Url = h.Source.Url,
-                Highlight = h.Highlight
-            }).ToArray();
+                var searchModel = new TSearchModel
+                {
+                    Id = h.Source.Id,
+                    Content = h.Source.Content,
+                    Date = h.Source.Date,
+                    Title = h.Source.Title,
+                    Url = h.Source.Url
+                };
+
+                if (withHighlight)
+                {
+                    searchModel.Highlight = h.Highlight;
+                }
+
+                return searchModel;
+            }
+        ).ToArray();
         return result;
     }
 

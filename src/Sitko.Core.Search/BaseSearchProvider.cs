@@ -31,16 +31,16 @@ public abstract class BaseSearchProvider<T, TEntityPk, TSearchModel> : ISearchPr
     public Task InitAsync(CancellationToken cancellationToken = default) =>
         searcher.InitAsync(IndexName, cancellationToken);
 
-    public async Task<(T entity, TSearchModel searchResult)[]> SearchAsync(string term, int limit, SearchType searchType, CancellationToken cancellationToken = default)
+    public async Task<(T entity, TSearchModel searchResult)[]> SearchAsync(string term, int limit, SearchType searchType, bool withHighlight = false, CancellationToken cancellationToken = default)
     {
-        var result = await searcher.SearchAsync(IndexName, term, limit, searchType, cancellationToken);
+        var result = await searcher.SearchAsync(IndexName, term, limit, searchType,withHighlight, cancellationToken);
         return await LoadEntities(result, cancellationToken);
     }
 
-    public async Task<TEntityPk[]> GetIdsAsync(string term, int limit, SearchType searchType,
+    public async Task<TEntityPk[]> GetIdsAsync(string term, int limit, SearchType searchType, bool withHighlight = false,
         CancellationToken cancellationToken = default)
     {
-        var result = await searcher.SearchAsync(IndexName, term, limit, searchType, cancellationToken);
+        var result = await searcher.SearchAsync(IndexName, term, limit, searchType, withHighlight, cancellationToken);
         return result.Select(m => ParseId(m.Id)).ToArray();
     }
 
