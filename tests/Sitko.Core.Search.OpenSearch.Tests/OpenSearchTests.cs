@@ -217,7 +217,8 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         var result = await searchProvider.SearchAsync("играют", 10, SearchType.Morphology, true);
         result.Length.Should().Be(1);
         result.First().ResultModel.Highlight.Count.Should().Be(1);
-        result.First().ResultModel.Highlight.First().Value.Contains("<span class='highlight'>");
+        result.First().ResultModel.Highlight.First().Value.First().Contains("<span class='highlight'>").Should().BeTrue();
+        result.First().ResultModel.Highlight.First().Value.First().Contains("</span>").Should().BeTrue();
     }
 }
 
@@ -237,7 +238,7 @@ public class OpenSearchTestScope : BaseTestScope
             moduleOptions.DisableCertificatesValidation = true;
             moduleOptions.CustomStemmer = "russian";
             moduleOptions.PreTags = "<span class='highlight'>";
-            moduleOptions.PreTags = "</span>";
+            moduleOptions.PostTags = "</span>";
         });
 
         hostBuilder.Services.AddSingleton<TestModelProvider>();
