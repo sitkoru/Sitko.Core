@@ -104,29 +104,22 @@ public class OpenSearchSearcher<TSearchModel>(
     {
         indexName = $"{Options.Prefix}_{indexName}";
         var searchResponse = await GetClient()
-            .SearchAsync<TSearchModel>(x => GetSearchRequest(x, indexName, term, searchType, limit), cancellationToken);
+            .SearchAsync<TSearchModel>(x => GetSearchRequest(x, indexName, term, searchType, limit, withHighlight),
+                cancellationToken);
         if (searchResponse.ServerError != null)
         {
             logger.LogError("Error while searching in {IndexName}: {ErrorText}", indexName, searchResponse.ServerError);
         }
 
         var result = searchResponse.Hits.Select(h =>
+            new TSearchModel
             {
-                var searchModel = new TSearchModel
-                {
-                    Id = h.Source.Id,
-                    Content = h.Source.Content,
-                    Date = h.Source.Date,
-                    Title = h.Source.Title,
-                    Url = h.Source.Url
-                };
-
-                if (withHighlight)
-                {
-                    searchModel.Highlight = h.Highlight;
-                }
-
-                return searchModel;
+                Id = h.Source.Id,
+                Content = h.Source.Content,
+                Date = h.Source.Date,
+                Title = h.Source.Title,
+                Url = h.Source.Url,
+                Highlight = h.Highlight
             }
         ).ToArray();
         return result;
@@ -261,7 +254,7 @@ public class OpenSearchSearcher<TSearchModel>(
     }
 
     private SearchDescriptor<TSearchModel> GetSearchRequest(SearchDescriptor<TSearchModel> descriptor,
-        string indexName, string term, SearchType searchType, int limit = 0)
+        string indexName, string term, SearchType searchType, int limit = 0, bool withHighlight = false)
     {
         var names = GetSearchText(term);
         switch (searchType)
@@ -279,13 +272,16 @@ public class OpenSearchSearcher<TSearchModel>(
                 break;
         }
 
-        return descriptor
-            .Highlight(h =>
+        if (withHighlight)
+        {
+            descriptor.Highlight(h =>
                 h.Fields(fs => fs
                     .Field(p => p.Title)
                     .PreTags(Options.PreTags)
-                    .PostTags(Options.PostTags))
-            )
+                    .PostTags(Options.PostTags)));
+        }
+
+        return descriptor
             .Sort(s => s.Descending(SortSpecialField.Score).Descending(model => model.Date))
             .Size(limit > 0 ? limit : 20)
             .Index(indexName.ToLowerInvariant());
