@@ -277,9 +277,13 @@ public class OpenSearchSearcher<TSearchModel>(
         {
             descriptor.Highlight(h =>
                 h.Fields(fs => fs
-                    .Field(p => p.Title)
-                    .PreTags(Options.PreTags)
-                    .PostTags(Options.PostTags)));
+                        .Field(p => p.Title)
+                        .PreTags(Options.PreTags)
+                        .PostTags(Options.PostTags),
+                    fs => fs
+                        .Field(p => p.Content)
+                        .PreTags(Options.PreTags)
+                        .PostTags(Options.PostTags)));
         }
 
         return descriptor
@@ -295,7 +299,7 @@ public class OpenSearchSearcher<TSearchModel>(
                         .Filters("lowercase", "stop", "snowball", StemmerName))
                     .Custom(CustomCharFilterAnalyze, ca => ca
                         .Tokenizer("standard")
-                        .Filters("lowercase", "stop", "snowball", StemmerName)
+                        .Filters("lowercase", "stop")
                         .CharFilters(CustomCharFilter))
             )
             .CharFilters(descriptor =>
