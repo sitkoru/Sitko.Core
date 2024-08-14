@@ -17,6 +17,7 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
     private readonly List<Action<IServiceCollection>> configureServicesActions = new();
     public bool EnableHttp2UnencryptedSupport { get; set; }
     public bool DisableCertificatesValidation { get; set; }
+    public TimeSpan? DefaultDeadline { get; set; } = TimeSpan.FromMinutes(30);
     [JsonIgnore] public Action<GrpcChannelOptions>? ConfigureChannelOptions { get; set; }
     [JsonIgnore] public Func<HttpClientHandler, HttpMessageHandler>? ConfigureHttpHandler { get; set; }
 

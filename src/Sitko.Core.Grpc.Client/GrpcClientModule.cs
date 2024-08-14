@@ -26,10 +26,22 @@ public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOpti
                 "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
         }
 
+        services.TryAddSingleton(TimeProvider.System);
         services.TryAddSingleton<GrpcClientActivator<TClient>>();
         services.TryAddSingleton<GrpcCallInvokerFactory>();
         services.TryAddTransient<global::Grpc.Net.ClientFactory.GrpcClientFactory, GrpcClientFactory>();
-        var builder = services.AddGrpcClient<TClient>();
+        var builder = services.AddGrpcClient<TClient>((provider, options) =>
+        {
+            options.CallOptionsActions.Add(context =>
+            {
+                if (startupOptions.DefaultDeadline is not null)
+                {
+                    context.CallOptions = context.CallOptions.WithDeadline(provider.GetRequiredService<TimeProvider>()
+                        .GetUtcNow()
+                        .Add(startupOptions.DefaultDeadline.Value).DateTime);
+                }
+            });
+        });
         services.AddTransient<IGrpcClientProvider<TClient>, GrpcClientProvider<TClient>>();
         RegisterResolver(services, startupOptions);
         startupOptions.ConfigureClient(services, builder);
