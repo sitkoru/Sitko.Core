@@ -9,7 +9,7 @@ using TaskStatus = Sitko.Core.Tasks.Data.Entities.TaskStatus;
 namespace Sitko.Core.Tasks.Execution;
 
 public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<TTask, TConfig, TResult>,
-    IAsyncDisposable
+    IDisposable
     where TTask : class, IBaseTask<TConfig, TResult>
     where TConfig : BaseTaskConfig, new()
     where TResult : BaseTaskResult, new()
@@ -153,13 +153,10 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
 
     protected abstract Task<TResult> ExecuteAsync(TTask task, CancellationToken cancellationToken);
 
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
-        await activityTaskCts.CancelAsync();
-        if (activityTask is not null)
-        {
-            await activityTask;
-        }
+        activityTaskCts.Cancel();
+        activityTask?.GetAwaiter().GetResult();
         GC.SuppressFinalize(this);
     }
 }
