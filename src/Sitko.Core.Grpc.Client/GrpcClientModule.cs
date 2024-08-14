@@ -38,7 +38,7 @@ public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOpti
                 {
                     context.CallOptions = context.CallOptions.WithDeadline(provider.GetRequiredService<TimeProvider>()
                         .GetUtcNow()
-                        .Add(startupOptions.DefaultDeadline.Value).DateTime);
+                        .Add(startupOptions.DefaultDeadline.Value).UtcDateTime);
                 }
             });
         });
