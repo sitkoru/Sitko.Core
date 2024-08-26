@@ -4,22 +4,13 @@ using PuppeteerSharp;
 
 namespace Sitko.Core.Puppeteer;
 
-public class BrowserProvider : IBrowserProvider
+public class BrowserProvider(
+    IOptionsMonitor<PuppeteerModuleOptions> optionsMonitor,
+    ILoggerFactory loggerFactory,
+    ILogger<BrowserProvider> logger)
+    : IBrowserProvider
 {
-    private readonly ILogger<BrowserProvider> logger;
-    private readonly ILoggerFactory loggerFactory;
-    private readonly IOptionsMonitor<PuppeteerModuleOptions> optionsMonitor;
-
-    public BrowserProvider(IOptionsMonitor<PuppeteerModuleOptions> optionsMonitor, ILoggerFactory loggerFactory,
-        ILogger<BrowserProvider> logger)
-    {
-        this.optionsMonitor = optionsMonitor;
-        this.loggerFactory = loggerFactory;
-        this.logger = logger;
-    }
-
     private PuppeteerModuleOptions Options => optionsMonitor.CurrentValue;
-
 
     public async Task<IBrowser> GetBrowserAsync()
     {
@@ -30,7 +21,7 @@ public class BrowserProvider : IBrowserProvider
                 new ConnectOptions
                 {
                     BrowserWSEndpoint = Options.BrowserWsEndpoint,
-                    IgnoreHTTPSErrors = Options.IgnoreHTTPSErrors,
+                    AcceptInsecureCerts = Options.AcceptInsecureCerts,
                     DefaultViewport = Options.ViewPortOptions
                 },
                 loggerFactory);
@@ -39,7 +30,7 @@ public class BrowserProvider : IBrowserProvider
         if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PUPPETEER_EXECUTABLE_PATH")))
         {
             logger.LogDebug("Download browser");
-            using var browserFetcher = new BrowserFetcher(Options.Product);
+            var browserFetcher = new BrowserFetcher(Options.Product);
             if (!string.IsNullOrEmpty(Options.Revision))
             {
                 await browserFetcher.DownloadAsync(Options.Revision);
@@ -58,9 +49,8 @@ public class BrowserProvider : IBrowserProvider
             {
                 Headless = Options.Headless,
                 Args = Options.BrowserArgs,
-                IgnoreHTTPSErrors = Options.IgnoreHTTPSErrors,
+                AcceptInsecureCerts = Options.AcceptInsecureCerts,
                 DefaultViewport = Options.ViewPortOptions
             }, loggerFactory);
     }
 }
-
