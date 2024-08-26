@@ -7,7 +7,7 @@ namespace Sitko.Core.Puppeteer;
 public class PuppeteerModuleOptions : BaseModuleOptions
 {
     public string? BrowserWsEndpoint { get; set; }
-    public bool IgnoreHTTPSErrors { get; set; }
+    public bool AcceptInsecureCerts { get; set; }
 
     [JsonIgnore] public ViewPortOptions ViewPortOptions { get; set; } = ViewPortOptions.Default;
     public string[] BrowserArgs { get; set; } = { "--no-sandbox" };
