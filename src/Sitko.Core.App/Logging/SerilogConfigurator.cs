@@ -22,7 +22,7 @@ internal class SerilogConfigurator
 
     public SerilogConfigurator ConfigureLogLevel(string source, LogEventLevel level)
     {
-        logEventLevels.Add(source, level);
+        logEventLevels[source] = level;
         return this;
     }
 
