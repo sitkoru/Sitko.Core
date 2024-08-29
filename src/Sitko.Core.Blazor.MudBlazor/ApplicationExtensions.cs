@@ -4,7 +4,6 @@ using Microsoft.Extensions.Hosting;
 using MudBlazor.Services;
 using Sitko.Core.App;
 using Sitko.Core.App.Localization;
-using Sitko.Core.Blazor.Layout;
 
 namespace Sitko.Core.Blazor.MudBlazorComponents;
 

@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App;
 using Sitko.Core.App.Health;
-using Sitko.Core.App.Web;
 
 namespace Sitko.Core.Consul.Web;
 

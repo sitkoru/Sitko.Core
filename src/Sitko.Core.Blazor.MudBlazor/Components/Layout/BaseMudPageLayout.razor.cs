@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Options;
 using MudBlazor;
 using Sitko.Core.App;
-using Sitko.Core.Blazor.Layout;
 
 // ReSharper disable once CheckNamespace
 namespace Sitko.Core.Blazor.MudBlazorComponents;

@@ -1,4 +1,4 @@
-using Sitko.Core.App;
+//using Sitko.Core.App;
 
 namespace Sitko.Core.ServiceDiscovery.Resolver.Consul;
 

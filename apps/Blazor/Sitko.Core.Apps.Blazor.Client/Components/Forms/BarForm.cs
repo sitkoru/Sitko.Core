@@ -1,5 +1,4 @@
-﻿using MudBlazor.Charts;
-using Sitko.Core.Apps.Blazor.Data.Entities;
+﻿using Sitko.Core.Apps.Blazor.Data.Entities;
 using Sitko.Core.Blazor.MudBlazorComponents;
 using Sitko.Core.Repository;
 

@@ -1,5 +1,5 @@
-﻿using Sitko.Core.App;
-using Sitko.Core.Consul;
+﻿// using Sitko.Core.App;
+// using Sitko.Core.Consul;
 
 namespace Sitko.Core.ServiceDiscovery.Resolver.Consul;
 
