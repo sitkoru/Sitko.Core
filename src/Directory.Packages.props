@@ -56,7 +56,7 @@
   <ItemGroup>
     <PackageVersion Include="AntDesign" Version="0.16.2" />
     <PackageVersion Include="Tewr.Blazor.FileReader" Version="3.3.2.23201" />
-    <PackageVersion Include="MudBlazor" Version="6.20.0" />
+    <PackageVersion Include="MudBlazor" Version="7.7.0" />
   </ItemGroup>
   <!--Tests libraries-->
   <ItemGroup>
@@ -137,8 +137,8 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Localization.Abstractions" Version="8.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Localization" Version="8.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.Localization.Abstractions" Version="8.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Localization" Version="8.0.8" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.6" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
@@ -147,7 +147,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="8.0.6" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.6" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.6" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components" Version="8.0.6" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components" Version="8.0.8" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.6" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.6" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.6" />
