@@ -103,7 +103,7 @@
   <ItemGroup>
     <PackageVersion Include="Elastic.Apm.NetCoreAll" Version="1.27.3" />
     <PackageVersion Include="Elastic.Apm.SerilogEnricher" Version="8.6.1" />
-    <PackageVersion Include="Elastic.CommonSchema.Serilog" Version="8.6.1" />
+    <PackageVersion Include="Elastic.CommonSchema.Serilog" Version="8.12.0" />
     <PackageVersion Include="NEST" Version="7.17.5" />
   </ItemGroup>
   <!--Serilog libraries-->
