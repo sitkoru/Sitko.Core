@@ -41,7 +41,8 @@ public abstract class DbBaseTestScope<TApplication, TConfig> : BaseTestScope<TAp
         {
             if (GetConfig(applicationContext.Configuration).UsePostgres)
             {
-                moduleOptions.Database = $"{Id}_{dbName}";
+                var fullDbName = $"{Id.ToString()[..8]}_{dbName}";
+                moduleOptions.Database = fullDbName;
                 moduleOptions.EnableSensitiveLogging = true;
                 moduleOptions.IncludeErrorDetails = true;
                 configurePostgres?.Invoke(applicationContext, moduleOptions, Id, dbName);
