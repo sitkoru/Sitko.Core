@@ -18,7 +18,7 @@ public class PdfTest : BasePdfTest
         var scope = await GetScopeAsync();
         var renderer = scope.GetService<IPdfRenderer>();
 
-        var url = "https://github.com";
+        var url = "https://www.wikipedia.org/";
         var bytes = await renderer.GetPdfByUrlAsync(url);
         Assert.NotEmpty(bytes);
 
@@ -26,7 +26,7 @@ public class PdfTest : BasePdfTest
         var text = PdfTextExtractor.GetTextFromPage(pdf.GetPage(1), new LocationTextExtractionStrategy());
         pdf.Close();
 
-        Assert.Contains("GitHub", text);
+        Assert.Contains("The Free Encyclopedia", text);
     }
 
     [Fact]
