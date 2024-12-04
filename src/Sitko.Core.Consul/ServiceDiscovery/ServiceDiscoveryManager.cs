@@ -110,7 +110,12 @@ public class ServiceDiscoveryManager(
         var meta = BuildMetadata(applicationService, services);
         meta.Add(EnvironmentKey, applicationContext.Environment);
         meta.Add(VersionKey, applicationContext.Version);
-        var tags = new List<string> { ServiceDiscoveryEnabledTag, $"{SchemeTag}:{applicationService.Scheme}" };
+        var tags = new List<string>
+        {
+            ServiceDiscoveryEnabledTag,
+            $"{SchemeTag}:{applicationService.Scheme}",
+            $"{EnvironmentKey}:{applicationContext.Environment}"
+        };
         tags.AddRange(services.Select(service => $"{ServiceTag}:{service.Name}"));
 
         var registration = new AgentServiceRegistration
@@ -137,7 +142,7 @@ public class ServiceDiscoveryManager(
 
     public async Task<ICollection<ResolvedService>?> LoadAsync(CancellationToken cancellationToken = default)
     {
-        var filter = new ServiceTagsSelector().Contains("sd:true");
+        var filter = new ServiceTagsSelector().Contains(ServiceDiscoveryEnabledTag);
         var request = new GetRequest<Dictionary<string, string[]>>((ConsulClient)consulClientProvider.Client,
             "/v1/catalog/services",
             new QueryOptions { WaitIndex = lastIndex }, filter);
