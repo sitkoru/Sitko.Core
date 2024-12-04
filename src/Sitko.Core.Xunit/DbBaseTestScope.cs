@@ -46,6 +46,11 @@ public abstract class DbBaseTestScope<TApplicationBuilder, TConfig> : BaseTestSc
                 if (GetConfig(applicationContext.Configuration).UsePostgres)
                 {
                     var fullDbName = $"{Id.ToString()[..8]}_{dbName}";
+                    if (fullDbName.Length > 63)
+                    {
+                        fullDbName = $"{fullDbName[..50]}_{Id.ToString()[^6]}";
+                    }
+
                     moduleOptions.Database = fullDbName;
                     moduleOptions.EnableSensitiveLogging = true;
                     moduleOptions.IncludeErrorDetails = true;
@@ -139,6 +144,7 @@ public abstract class
     where TDbContext : DbContext
 {
     protected override IHost BuildApplication(HostApplicationBuilder builder) => builder.Build();
+
     protected override HostApplicationBuilder CreateHostBuilder()
     {
         var builder = Host.CreateApplicationBuilder();
