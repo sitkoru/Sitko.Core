@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Configuration;
+using Sitko.Core.Email.Tests.Data;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -31,8 +31,9 @@ public abstract class BasicTests<T> : BaseTest<T>
                 new MailEntryAttachment(imgName, "image/jpg", imgFile)
             }
         };
+        var data = new Dictionary<string, object?> { { "Model", new TestModel() } };
 
-        var result = await mailer.SendMailAsync(entry, "<strong>Test email</strong>");
+        var result = await mailer.SendHtmlMailAsync<TestComponent>(entry, data);
         Assert.True(result.IsSuccess, result.ErrorMessage);
     }
 }
