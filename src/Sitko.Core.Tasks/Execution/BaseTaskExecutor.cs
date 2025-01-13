@@ -99,7 +99,14 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
                     await scopedRepository.UpdateAsync(scopedTask, CancellationToken.None);
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(5), activityTaskCts.Token);
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(5), activityTaskCts.Token);
+                }
+                catch (TaskCanceledException)
+                {
+                    Logger.LogDebug("Activity task was cancelled");
+                }
             }
         }, activityTaskCts.Token);
         try
@@ -156,7 +163,15 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
     public void Dispose()
     {
         activityTaskCts.Cancel();
-        activityTask?.GetAwaiter().GetResult();
+        try
+        {
+            activityTask?.GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error in activity task: {ErrorText}", ex.ToString());
+        }
+
         GC.SuppressFinalize(this);
     }
 }
