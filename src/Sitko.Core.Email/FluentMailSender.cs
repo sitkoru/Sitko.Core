@@ -127,5 +127,18 @@ public class FluentMailSender<TOptions> : IMailSender where TOptions : EmailModu
             throw new InvalidOperationException("No background client!");
         }
     }
+
+    public void SendInBackground<T>(MailEntry mailEntry, Dictionary<string, object?> data)
+        where T : IComponent
+    {
+        if (backgroundJobClient != null)
+        {
+            backgroundJobClient.Enqueue(() => SendHtmlMailAsync<T>(mailEntry, data));
+        }
+        else
+        {
+            throw new InvalidOperationException("No background client!");
+        }
+    }
 }
 
