@@ -15,17 +15,15 @@ public class FluentMailSender<TOptions> : IMailSender where TOptions : EmailModu
     private readonly IBackgroundJobClient? backgroundJobClient;
     private readonly IFluentEmailFactory emailFactory;
     private readonly ILogger<FluentMailSender<TOptions>> logger;
-    private readonly IServiceProvider serviceProvider;
-    private readonly ILoggerFactory loggerFactory;
+    private readonly HtmlRenderer htmlRenderer;
 
     public FluentMailSender(IFluentEmailFactory emailFactory,
-        ILogger<FluentMailSender<TOptions>> logger, IServiceProvider serviceProvider,
-        ILoggerFactory loggerFactory, IBackgroundJobClient? backgroundJobClient = null)
+        ILogger<FluentMailSender<TOptions>> logger, HtmlRenderer htmlRenderer,
+        IBackgroundJobClient? backgroundJobClient = null)
     {
         this.emailFactory = emailFactory;
         this.logger = logger;
-        this.serviceProvider = serviceProvider;
-        this.loggerFactory = loggerFactory;
+        this.htmlRenderer = htmlRenderer;
         this.backgroundJobClient = backgroundJobClient;
     }
 
@@ -43,7 +41,6 @@ public class FluentMailSender<TOptions> : IMailSender where TOptions : EmailModu
 
     public async Task<IOperationResult> SendHtmlMailAsync<T>(MailEntry mailEntry, Dictionary<string, object?> data) where T : IComponent
     {
-        await using var htmlRenderer = new HtmlRenderer(serviceProvider, loggerFactory);
         var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
             var parameters = ParameterView.FromDictionary(data);

@@ -1,4 +1,5 @@
 using System.Net.Mail;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 
@@ -11,6 +12,7 @@ public abstract class FluentEmailModule<TEmailModuleOptions> : EmailModule<TEmai
         TEmailModuleOptions startupOptions)
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
+        services.AddScoped<HtmlRenderer>();
         services.AddScoped<IMailSender, FluentMailSender<TEmailModuleOptions>>();
         var address = new MailAddress(startupOptions.From);
         var builder = services.AddFluentEmail(address.Address, address.DisplayName);
