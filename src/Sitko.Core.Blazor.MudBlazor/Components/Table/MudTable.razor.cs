@@ -27,6 +27,8 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
 
     [EditorRequired] [Parameter] public RenderFragment? HeaderContent { get; set; }
 
+    [Parameter] public RenderFragment<TableGroupData<object, TItem>?>? GroupHeaderTemplate { get; set; }
+
     [Parameter] public RenderFragment? FooterContent { get; set; }
 
     [Parameter] public RenderFragment? PagerContent { get; set; }
