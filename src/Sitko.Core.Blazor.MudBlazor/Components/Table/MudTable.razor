@@ -53,6 +53,12 @@
         <HeaderContent>
             @HeaderContent
         </HeaderContent>
+        <GroupHeaderTemplate>
+            @if (GroupHeaderTemplate != null)
+            {
+                @GroupHeaderTemplate(context)
+            }
+        </GroupHeaderTemplate>
         <RowTemplate>
             @ChildContent(context)
         </RowTemplate>
