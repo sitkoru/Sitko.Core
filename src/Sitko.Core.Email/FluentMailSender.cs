@@ -2,6 +2,8 @@ using FluentEmail.Core;
 using FluentEmail.Core.Models;
 using Hangfire;
 using HtmlAgilityPack;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using Razor.Templating.Core;
 using Sitko.Core.App.Results;
@@ -13,12 +15,15 @@ public class FluentMailSender<TOptions> : IMailSender where TOptions : EmailModu
     private readonly IBackgroundJobClient? backgroundJobClient;
     private readonly IFluentEmailFactory emailFactory;
     private readonly ILogger<FluentMailSender<TOptions>> logger;
+    private readonly HtmlRenderer htmlRenderer;
 
     public FluentMailSender(IFluentEmailFactory emailFactory,
-        ILogger<FluentMailSender<TOptions>> logger, IBackgroundJobClient? backgroundJobClient = null)
+        ILogger<FluentMailSender<TOptions>> logger, HtmlRenderer htmlRenderer,
+        IBackgroundJobClient? backgroundJobClient = null)
     {
         this.emailFactory = emailFactory;
         this.logger = logger;
+        this.htmlRenderer = htmlRenderer;
         this.backgroundJobClient = backgroundJobClient;
     }
 
@@ -31,6 +36,18 @@ public class FluentMailSender<TOptions> : IMailSender where TOptions : EmailModu
     public async Task<IOperationResult> SendHtmlMailAsync(MailEntry mailEntry, string templatePath)
     {
         var html = await RazorTemplateEngine.RenderAsync(templatePath, mailEntry);
+        return await SendMailAsync(mailEntry, html);
+    }
+
+    public async Task<IOperationResult> SendHtmlMailAsync<T>(MailEntry mailEntry, Dictionary<string, object?> data) where T : IComponent
+    {
+        var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var parameters = ParameterView.FromDictionary(data);
+            var output = await htmlRenderer.RenderComponentAsync<T>(parameters);
+
+            return output.ToHtmlString();
+        });
         return await SendMailAsync(mailEntry, html);
     }
 
@@ -101,6 +118,19 @@ public class FluentMailSender<TOptions> : IMailSender where TOptions : EmailModu
         if (backgroundJobClient != null)
         {
             backgroundJobClient.Enqueue(() => SendHtmlMailAsync(mailEntry, templatePath));
+        }
+        else
+        {
+            throw new InvalidOperationException("No background client!");
+        }
+    }
+
+    public void SendInBackground<T>(MailEntry mailEntry, Dictionary<string, object?> data)
+        where T : IComponent
+    {
+        if (backgroundJobClient != null)
+        {
+            backgroundJobClient.Enqueue(() => SendHtmlMailAsync<T>(mailEntry, data));
         }
         else
         {
