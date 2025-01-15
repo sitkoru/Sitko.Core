@@ -5,5 +5,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Grpc.Net.ClientFactory"/>
+    <PackageReference Include="OpenTelemetry.Instrumentation.GrpcNetClient"/>
   </ItemGroup>
 </Project>

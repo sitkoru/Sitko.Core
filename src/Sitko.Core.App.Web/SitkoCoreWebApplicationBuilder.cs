@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 
 namespace Sitko.Core.App.Web;
 
@@ -24,6 +26,11 @@ public class SitkoCoreWebApplicationBuilder : SitkoCoreServerApplicationBuilder,
         webApplicationBuilder = builder;
         webApplicationBuilder.Services.AddSingleton(webOptions);
         AddModule<AppWebConfigurationModule, AppWebConfigurationModuleOptions>();
+        ConfigureOpenTelemetry((_, _, otelBuilder) =>
+        {
+            otelBuilder.WithTracing(providerBuilder => providerBuilder.AddAspNetCoreInstrumentation());
+            otelBuilder.WithMetrics(providerBuilder => providerBuilder.AddAspNetCoreInstrumentation());
+        });
     }
 
     protected override void ConfigureHostBuilder<TModule, TModuleOptions>(ApplicationModuleRegistration registration)

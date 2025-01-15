@@ -3,12 +3,13 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using OpenTelemetry.Resources;
+using OpenTelemetry;
 using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
 using Sitko.Core.App.Localization;
 using Sitko.Core.App.Logging;
+using Sitko.Core.App.OpenTelemetry;
 using Sitko.FluentValidation;
 using Tempus;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -20,6 +21,9 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
     private readonly List<ApplicationModuleRegistration> moduleRegistrations = new();
     private readonly List<Action> moduleConfigurationCallbacks = new();
     private readonly SerilogConfigurator serilogConfigurator = new();
+
+    private readonly List<Action<IApplicationContext, OpenTelemetryModuleOptions, OpenTelemetryBuilder>>
+        openTelemetryConfigureActions = new();
 
     private IApplicationContext? bootApplicationContext;
 
@@ -65,6 +69,13 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
     public ISitkoCoreApplicationBuilder ConfigureServices(Action<IApplicationContext, IServiceCollection> configure)
     {
         configure(bootApplicationContext!, Services);
+        return this;
+    }
+
+    public ISitkoCoreApplicationBuilder ConfigureOpenTelemetry(
+        Action<IApplicationContext, OpenTelemetryModuleOptions, OpenTelemetryBuilder> configure)
+    {
+        openTelemetryConfigureActions.Add(configure);
         return this;
     }
 
@@ -131,10 +142,6 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
         Services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
         Services.AddSingleton<IApplicationLifecycle, ApplicationLifecycle>(); // только Hosted? Проверить для Wasm
         Services.AddHostedService<HostedLifecycleService>(); // только Hosted? Проверить для Wasm
-        // TODO: Add extension points
-        Services.AddOpenTelemetry()
-            .ConfigureResource(builder => builder.AddService(bootApplicationContext.Name))
-            .WithTracing(builder => { builder.AddSource("Sitko.*"); });
     }
 
     private ILogger<ISitkoCoreApplicationBuilder> CreateInternalLogger()
@@ -181,15 +188,12 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
         {
             if (registration.IsEnabled(Context))
             {
-                if (registration.IsEnabled(Context))
-                {
-                    BeforeModuleRegistration<TModule, TModuleOptions>(Context, registration);
+                BeforeModuleRegistration<TModule, TModuleOptions>(Context, registration);
 
-                    registration.ConfigureOptions(Context, Services);
-                    registration.ConfigureServices(Context, Services);
+                registration.ConfigureOptions(Context, Services);
+                registration.ConfigureServices(Context, Services);
 
-                    AfterModuleRegistration<TModule, TModuleOptions>(Context, registration);
-                }
+                AfterModuleRegistration<TModule, TModuleOptions>(Context, registration);
             }
         });
         Services.AddSingleton<ApplicationModuleRegistration>(registration);
@@ -234,6 +238,26 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
 
     protected virtual void BeforeContainerBuild()
     {
+
+        var enabledModulesBeforeOpenTelemetry = ModulesHelper.GetEnabledModuleRegistrations(Context, moduleRegistrations);
+
+        AddModule<OpenTelemetryModule, OpenTelemetryModuleOptions>((context, options) =>
+        {
+            foreach (var openTelemetryConfigureAction in openTelemetryConfigureActions)
+            {
+                options.Configure(openTelemetryConfigureAction);
+            }
+
+            foreach (var moduleRegistration in ModulesHelper.GetEnabledModuleRegistrations<IOpenTelemetryModule>(
+                         context, enabledModulesBeforeOpenTelemetry))
+            {
+                options.Configure((applicationContext, _, opentTelemetryBuilder) =>
+                {
+                    moduleRegistration.ConfigureOpenTelemetry(applicationContext, opentTelemetryBuilder);
+                });
+            }
+        });
+
         var enabledModules = ModulesHelper.GetEnabledModuleRegistrations(Context, moduleRegistrations);
         foreach (var applicationModuleRegistration in enabledModules)
         {

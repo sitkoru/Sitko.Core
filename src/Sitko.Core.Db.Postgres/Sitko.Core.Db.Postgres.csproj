@@ -4,5 +4,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL"/>
+    <PackageReference Include="Npgsql.OpenTelemetry" />
   </ItemGroup>
 </Project>

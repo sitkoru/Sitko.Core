@@ -1,13 +1,12 @@
-﻿using System.Reflection;
-using FluentValidation;
-using IL.FluentValidation.Extensions.Options;
+﻿using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using OpenTelemetry;
 using Serilog;
+using Sitko.Core.App.Helpers;
+using Sitko.Core.App.OpenTelemetry;
 
 namespace Sitko.Core.App;
 
@@ -51,25 +50,7 @@ internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : A
     public override ApplicationModuleRegistration ConfigureOptions(IApplicationContext context,
         IServiceCollection services)
     {
-        var builder = services.AddOptions<TModuleOptions>();
-        foreach (var optionsKey in optionKeys)
-        {
-            builder = builder.Bind(context.Configuration.GetSection(optionsKey));
-        }
-
-        builder = builder.PostConfigure(
-            options =>
-            {
-                options.Configure(context);
-                configureOptions?.Invoke(context, options);
-            });
-
-        if (validatorType is not null)
-        {
-            builder.Services.AddTransient(validatorType);
-            builder.FluentValidate()
-                .With(provider => (IValidator<TModuleOptions>)provider.GetRequiredService(validatorType));
-        }
+        OptionsHelper.AddOptions(context, services, optionKeys, configureOptions, validatorType);
 
         return this;
     }
@@ -84,6 +65,18 @@ internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : A
 
         var options = CreateOptions(context, true);
         return loggingModule.ConfigureLogging(context, options, loggerConfiguration);
+    }
+
+    public override OpenTelemetryBuilder ConfigureOpenTelemetry(IApplicationContext context,
+        OpenTelemetryBuilder builder)
+    {
+        if (instance is not IOpenTelemetryModule<TModuleOptions> openTelemetryModule)
+        {
+            return builder;
+        }
+
+        var options = CreateOptions(context, true);
+        return openTelemetryModule.ConfigureOpenTelemetry(context, options, builder);
     }
 
     public override ApplicationModuleRegistration ConfigureHostBuilder(IApplicationContext context,
@@ -160,36 +153,14 @@ internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : A
         }
         else
         {
-            options = Activator.CreateInstance<TModuleOptions>();
-            foreach (var optionsKey in optionKeys)
-            {
-                applicationContext.Configuration.Bind(optionsKey, options);
-            }
+            options = OptionsHelper.GetOptions(applicationContext, optionKeys, configureOptions);
 
-            options.Configure(applicationContext);
-            configureOptions?.Invoke(applicationContext, options);
             optionsCache[applicationContext.Id] = options;
         }
 
         if (validatorType is not null && validateOptions)
         {
-            try
-            {
-                if (Activator.CreateInstance(validatorType) is IValidator<TModuleOptions> validator)
-                {
-                    var result = validator.Validate(options);
-                    if (!result.IsValid)
-                    {
-                        throw new OptionsValidationException(options.GetType().Name, options.GetType(),
-                            result.Errors.Select(e => $"{options.GetType().Name}: {e}"));
-                    }
-                }
-            }
-            catch (TargetInvocationException exception)
-            {
-                applicationContext.Logger.LogDebug(exception, "Can't create validator {ValidatorType}: {ErrorText}",
-                    validatorType, exception.ToString());
-            }
+            OptionsHelper.ValidateOptions(applicationContext, options, validatorType);
         }
 
         return options;
@@ -240,6 +211,9 @@ public abstract class ApplicationModuleRegistration
 
     public abstract LoggerConfiguration ConfigureLogging(IApplicationContext context,
         LoggerConfiguration loggerConfiguration);
+
+    public abstract OpenTelemetryBuilder ConfigureOpenTelemetry(IApplicationContext context,
+        OpenTelemetryBuilder builder);
 
     public abstract ApplicationModuleRegistration ConfigureServices(IApplicationContext context,
         IServiceCollection services);
