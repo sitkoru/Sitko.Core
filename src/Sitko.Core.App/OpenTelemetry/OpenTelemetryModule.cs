@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
-using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -23,11 +22,6 @@ public class OpenTelemetryModule : BaseApplicationModule<OpenTelemetryModuleOpti
         var otelBuilder = services.AddOpenTelemetry();
         otelBuilder
             .ConfigureResource(builder => builder.AddService(applicationContext.Name));
-        if (startupOptions.EnableOtlpExport)
-        {
-            otelBuilder.UseOtlpExporter(startupOptions.OtlpExportProtocol,
-                startupOptions.Endpoint!);
-        }
 
         if (startupOptions.EnableTracing)
         {
@@ -35,6 +29,14 @@ public class OpenTelemetryModule : BaseApplicationModule<OpenTelemetryModuleOpti
             {
                 builder.AddSource("Sitko.*");
                 builder.AddHttpClientInstrumentation();
+                if (startupOptions.EnableOtlpExport)
+                {
+                    builder.AddOtlpExporter(exporterBuilder =>
+                    {
+                        exporterBuilder.Endpoint = startupOptions.Endpoint!;
+                        exporterBuilder.Protocol = startupOptions.OtlpExportProtocol;
+                    });
+                }
             });
         }
 
@@ -43,6 +45,14 @@ public class OpenTelemetryModule : BaseApplicationModule<OpenTelemetryModuleOpti
             otelBuilder.WithMetrics(builder =>
             {
                 builder.AddHttpClientInstrumentation();
+                if (startupOptions.EnableOtlpExport)
+                {
+                    builder.AddOtlpExporter(exporterBuilder =>
+                    {
+                        exporterBuilder.Endpoint = startupOptions.Endpoint!;
+                        exporterBuilder.Protocol = startupOptions.OtlpExportProtocol;
+                    });
+                }
             });
         }
 
