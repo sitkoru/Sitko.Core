@@ -4,6 +4,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson"/>
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis"/>
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client"/>
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>

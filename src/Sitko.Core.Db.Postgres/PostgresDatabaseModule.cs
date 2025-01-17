@@ -2,17 +2,25 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using OpenTelemetry;
 using Sitko.Core.App;
+using Sitko.Core.App.OpenTelemetry;
 
 namespace Sitko.Core.Db.Postgres;
 
 public class
-    PostgresDatabaseModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleOptions<TDbContext>>
+    PostgresDatabaseModule<TDbContext> : BaseDbModule<TDbContext, PostgresDatabaseModuleOptions<TDbContext>>,
+    IOpenTelemetryModule<PostgresDatabaseModuleOptions<TDbContext>>
     where TDbContext : DbContext
 {
     public override string OptionsKey => $"Db:Postgres:{typeof(TDbContext).Name}";
 
     public override string[] OptionKeys => new[] { "Db:Postgres:Default", OptionsKey };
+
+    public OpenTelemetryBuilder ConfigureOpenTelemetry(IApplicationContext context,
+        PostgresDatabaseModuleOptions<TDbContext> options,
+        OpenTelemetryBuilder builder) =>
+        builder.WithTracing(providerBuilder => providerBuilder.AddNpgsql());
 
     public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider)
     {

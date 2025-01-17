@@ -1,8 +1,11 @@
 using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 using Sitko.Core.App;
 using Sitko.Core.App.Health;
+using Sitko.Core.App.OpenTelemetry;
 using Sitko.Core.Grpc.Client.Discovery;
 
 namespace Sitko.Core.Grpc.Client;
@@ -11,7 +14,7 @@ public interface IGrpcClientModule<TClient> where TClient : ClientBase<TClient>;
 
 public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOptions> :
     BaseApplicationModule<TGrpcClientModuleOptions>,
-    IGrpcClientModule<TClient>
+    IGrpcClientModule<TClient>, IOpenTelemetryModule<TGrpcClientModuleOptions>
     where TClient : ClientBase<TClient>
     where TResolver : class, IGrpcServiceAddressResolver<TClient>
     where TGrpcClientModuleOptions : GrpcClientModuleOptions<TClient>, new()
@@ -70,6 +73,10 @@ public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOpti
             .AddCheck<GrpcClientHealthCheck<TClient>>($"GRPC Client check: {typeof(TClient)}",
                 tags: HealthCheckStages.GetSkipAllTags());
     }
+
+    public OpenTelemetryBuilder ConfigureOpenTelemetry(IApplicationContext context, TGrpcClientModuleOptions options,
+        OpenTelemetryBuilder builder) =>
+        builder.WithTracing(providerBuilder => providerBuilder.AddGrpcClientInstrumentation());
 
     public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider)
     {

@@ -8,7 +8,6 @@
     <PackageVersion Include="IL.FluentValidation.Extensions.Options" Version="11.0.2" />
     <PackageVersion Include="JetBrains.Annotations" Version="2023.3.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
     <PackageVersion Include="PeanutButter.DuckTyping" Version="3.0.306" />
     <PackageVersion Include="Tempus" Version="1.0.0" />
     <PackageVersion Include="Scrutor" Version="4.2.2" />
@@ -43,6 +42,15 @@
     <PackageVersion Include="Swashbuckle.AspNetCore.Annotations" Version="6.6.2" />
     <PackageVersion Include="Duende.AccessTokenManagement.OpenIdConnect" Version="2.1.2" />
     <PackageVersion Include="Sentry.AspNetCore" Version="4.8.0" />
+  </ItemGroup>
+  <!-- OpenTelemetry -->
+  <ItemGroup>
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.9.0" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.10.1" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.10.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.GrpcNetClient" Version="1.10.0-beta.1" />
+    <PackageVersion Include="Npgsql.OpenTelemetry" Version="8.0.6" />
   </ItemGroup>
   <!--Email libraries-->
   <ItemGroup>
@@ -117,6 +125,7 @@
     <PackageVersion Include="Serilog.Sinks.Elasticsearch" Version="10.0.0" />
     <PackageVersion Include="Serilog.Sinks.Graylog" Version="3.1.1" />
     <PackageVersion Include="Serilog.Sinks.Async" Version="2.0.0" />
+    <PackageVersion Include="Serilog.Sinks.OpenTelemetry" Version="4.1.1" />
     <PackageVersion Include="NewRelic.LogEnrichers.Serilog" Version="1.2.0" />
     <PackageVersion Include="Serilog.Sinks.NewRelic.Logs" Version="1.3.0" />
   </ItemGroup>

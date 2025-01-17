@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry;
 using Serilog;
 using Serilog.Events;
+using Sitko.Core.App.OpenTelemetry;
 
 namespace Sitko.Core.App;
 
@@ -30,4 +32,7 @@ public interface ISitkoCoreApplicationBuilder
 
     ISitkoCoreApplicationBuilder ConfigureServices(Action<IServiceCollection> configure);
     ISitkoCoreApplicationBuilder ConfigureServices(Action<IApplicationContext, IServiceCollection> configure);
+
+    ISitkoCoreApplicationBuilder ConfigureOpenTelemetry(
+        Action<IApplicationContext, OpenTelemetryModuleOptions, OpenTelemetryBuilder> configure);
 }
