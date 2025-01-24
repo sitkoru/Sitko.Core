@@ -62,6 +62,12 @@
         <RowTemplate>
             @ChildContent(context)
         </RowTemplate>
+        <GroupFooterTemplate>
+            @if (GroupFooterTemplate != null)
+            {
+                @GroupFooterTemplate(context)
+            }
+        </GroupFooterTemplate>
         <FooterContent>
             @FooterContent
         </FooterContent>
