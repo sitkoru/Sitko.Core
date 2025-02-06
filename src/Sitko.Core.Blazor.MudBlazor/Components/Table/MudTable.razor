@@ -4,7 +4,7 @@
 @inherits Sitko.Core.Blazor.Components.BaseComponent
 @if (ChildContent is not null)
 {
-    <MudTable ServerData="async state => await ServerReloadAsync(state)"
+    <MudTable ServerData="async (state, token) => await ServerReloadAsync(state, token)"
               @ref="Table"
               Dense="@Dense"
               Hover="@Hover"
@@ -32,7 +32,6 @@
               FooterClass="@FooterClass"
               GroupBy="@GroupBy"
               HeaderClass="@HeaderClass"
-              QuickColumns="@QuickColumns"
               HorizontalScrollbar="@HorizontalScrollbar"
               ReadOnly="@ReadOnly"
               RowClass="@RowClass"
@@ -49,7 +48,8 @@
               RowsPerPage="@RowsPerPage"
               SelectedItems="@SelectedItems"
               SelectedItemChanged="@SelectedItemChanged"
-              SelectedItem="@SelectedItem">
+              SelectedItem="@SelectedItem"
+              >
         <HeaderContent>
             @HeaderContent
         </HeaderContent>

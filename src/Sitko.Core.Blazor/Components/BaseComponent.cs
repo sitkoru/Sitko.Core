@@ -274,41 +274,41 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable
         StateHasChanged();
     }
 
-    protected async Task StartLoadingAsync()
+    protected async Task StartLoadingAsync(CancellationToken cancellationToken = default)
     {
         IsLoading = true;
-        await OnStartLoadingAsync();
+        await OnStartLoadingAsync(cancellationToken);
         await NotifyStateChangeAsync();
     }
 
-    protected async Task StopLoadingAsync()
+    protected async Task StopLoadingAsync(CancellationToken cancellationToken = default)
     {
         IsLoading = false;
-        await OnStopLoadingAsync();
+        await OnStopLoadingAsync(cancellationToken);
         await NotifyStateChangeAsync();
     }
 
     [PublicAPI]
-    protected virtual void OnStartLoading()
+    protected virtual void OnStartLoading(CancellationToken cancellationToken = default)
     {
     }
 
     [PublicAPI]
-    protected virtual void OnStopLoading()
+    protected virtual void OnStopLoading(CancellationToken cancellationToken = default)
     {
     }
 
     [PublicAPI]
-    protected virtual Task OnStartLoadingAsync()
+    protected virtual Task OnStartLoadingAsync(CancellationToken cancellationToken = default)
     {
-        OnStartLoading();
+        OnStartLoading(cancellationToken);
         return Task.CompletedTask;
     }
 
     [PublicAPI]
-    protected virtual Task OnStopLoadingAsync()
+    protected virtual Task OnStopLoadingAsync(CancellationToken cancellationToken = default)
     {
-        OnStopLoading();
+        OnStopLoading(cancellationToken);
         return Task.CompletedTask;
     }
 
