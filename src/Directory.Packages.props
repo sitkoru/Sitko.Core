@@ -63,8 +63,8 @@
   <!--Blazor libraries-->
   <ItemGroup>
     <PackageVersion Include="AntDesign" Version="0.16.2" />
-    <PackageVersion Include="Tewr.Blazor.FileReader" Version="3.3.2.23201" />
-    <PackageVersion Include="MudBlazor" Version="6.20.0" />
+    <PackageVersion Include="Tewr.Blazor.FileReader" Version="3.4.0.24340" />
+    <PackageVersion Include="MudBlazor" Version="8.2.0" />
   </ItemGroup>
   <!--Tests libraries-->
   <ItemGroup>

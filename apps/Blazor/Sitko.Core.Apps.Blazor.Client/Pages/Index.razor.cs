@@ -45,9 +45,9 @@ namespace Sitko.Core.Apps.Blazor.Client.Pages
             bars = await BarRepository.GetAllAsync();
         }
 
-        private async Task<IEnumerable<BarModel>> SearchIdsAsync(string? value) => string.IsNullOrEmpty(value)
-            ? (await BarRepository.GetAllAsync()).items
-            : (await BarRepository.GetAllAsync(q => q.Where(b => b.Id == Guid.Parse(value)))).items;
+        private async Task<IEnumerable<BarModel>> SearchIdsAsync(string? value, CancellationToken cancellationToken) => string.IsNullOrEmpty(value)
+            ? (await BarRepository.GetAllAsync(cancellationToken)).items
+            : (await BarRepository.GetAllAsync(q => q.Where(b => b.Id == Guid.Parse(value)), cancellationToken)).items;
 
         private async Task ChangeDateAsync(DateRange? dateRange)
         {
@@ -58,7 +58,7 @@ namespace Sitko.Core.Apps.Blazor.Client.Pages
         private async Task ChangeIdAsync(Guid? id)
         {
             FilterList.Model = bars.items.FirstOrDefault(b => id != null && b.Id == id);
-            await IdFilterAutocomplete.ToggleMenu();
+            await IdFilterAutocomplete.ToggleMenuAsync();
             await barList.RefreshAsync();
         }
 

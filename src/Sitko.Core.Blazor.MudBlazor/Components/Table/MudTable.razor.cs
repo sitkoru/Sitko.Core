@@ -92,10 +92,8 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
     [Parameter] public TableGroupDefinition<TItem?>? GroupBy { get; set; }
 
     [Parameter] public string HeaderClass { get; set; } = "";
-    [Parameter] public string QuickColumns { get; set; } = "";
     [Parameter] public bool HorizontalScrollbar { get; set; }
     [Parameter] public bool ReadOnly { get; set; }
-
     [Parameter] public string RowClass { get; set; } = "";
     [Parameter] public string RowStyle { get; set; } = "";
     [Parameter] public string SortLabel { get; set; } = "";
@@ -118,7 +116,7 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
 
     protected bool IsFirstLoad { get; set; } = true;
 
-    protected async Task DoGetParamsFromUrlAsync(TableState state)
+    protected async Task DoGetParamsFromUrlAsync(TableState state, CancellationToken cancellationToken = default)
     {
         if (GetParamsFromUrl is not null)
         {
@@ -159,7 +157,7 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
         }
     }
 
-    protected async Task DoAddUrlParamsAsync(TableState state)
+    protected async Task DoAddUrlParamsAsync(TableState state, CancellationToken cancellationToken = default)
     {
         if (!IsFirstLoad)
         {
@@ -189,20 +187,20 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
         }
     }
 
-    private async Task<TableData<TItem?>> ServerReloadAsync(TableState state)
+    private async Task<TableData<TItem?>> ServerReloadAsync(TableState state, CancellationToken cancellationToken = default)
     {
         if (IsFirstLoad && EnableUrlNavigation)
         {
-            await DoGetParamsFromUrlAsync(state);
+            await DoGetParamsFromUrlAsync(state, cancellationToken);
         }
         else
         {
             RowsPerPage = state.PageSize;
         }
 
-        await StartLoadingAsync();
-        var result = await GetDataAsync(state, Filter);
-        await StopLoadingAsync();
+        await StartLoadingAsync(cancellationToken);
+        var result = await GetDataAsync(state, Filter, cancellationToken);
+        await StopLoadingAsync(cancellationToken);
         LastState = state;
         LastFilter = Filter;
         if (OnDataLoaded is not null)
@@ -217,7 +215,7 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
     }
 
 
-    protected abstract Task<(TItem[] items, int itemsCount)> GetDataAsync(TableState state, TFilter filter);
+    protected abstract Task<(TItem[] items, int itemsCount)> GetDataAsync(TableState state, TFilter filter, CancellationToken cancellationToken = default);
 
     private Task OnSearchAsync(string text) => UpdateFilterAsync(filter => filter.Search = text);
 
@@ -252,27 +250,27 @@ public abstract class MudRepositoryTable<TEntity, TEntityPk, TRepository, TFilte
         ExecuteServiceOperation(operation);
 
     protected override Task<(TEntity[] items, int itemsCount)> GetDataAsync(TableState state,
-        TFilter filter) =>
+        TFilter filter, CancellationToken cancellationToken = default) =>
         ExecuteRepositoryOperationAsync(repository =>
         {
             return repository.GetAllAsync(async query =>
             {
-                await DoConfigureQueryAsync(state, filter, query);
+                await DoConfigureQueryAsync(state, filter, query, cancellationToken);
 
 
                 query.Paginate(state.Page + 1, state.PageSize);
-            });
+            }, cancellationToken);
         });
 
     private async Task DoConfigureQueryAsync(TableState state, TFilter filter,
-        IRepositoryQuery<TEntity> query)
+        IRepositoryQuery<TEntity> query, CancellationToken cancellationToken = default)
     {
         if (ConfigureQuery is not null)
         {
             await ConfigureQuery(query);
         }
 
-        await ConfigureQueryAsync(query, filter);
+        await ConfigureQueryAsync(query, filter, cancellationToken);
 
         if (state.SortDirection == SortDirection.Ascending)
         {
@@ -285,11 +283,11 @@ public abstract class MudRepositoryTable<TEntity, TEntityPk, TRepository, TFilte
 
         if (!IsFirstLoad && EnableUrlNavigation)
         {
-            await DoAddUrlParamsAsync(state);
+            await DoAddUrlParamsAsync(state, cancellationToken);
         }
     }
 
-    protected virtual Task ConfigureQueryAsync(IRepositoryQuery<TEntity> query, TFilter filter) =>
+    protected virtual Task ConfigureQueryAsync(IRepositoryQuery<TEntity> query, TFilter filter, CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
     protected Task<TResult> ExecuteRepositoryOperation<TResult>(
