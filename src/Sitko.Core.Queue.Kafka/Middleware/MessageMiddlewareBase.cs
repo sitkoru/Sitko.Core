@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 using KafkaFlow;
 using Sitko.Core.Queue.Kafka.Events;
 
@@ -47,16 +46,4 @@ public abstract class MessageMiddlewareBase : IMessageMiddleware
     }
 
     protected virtual bool HandleBefore(BaseEvent message, IMessageContext context) => true;
-
-
-    protected static string GetMessageKey(IMessageContext context)
-    {
-        var key = "";
-        if (context.Message.Key is byte[] bytes)
-        {
-            key = Encoding.UTF8.GetString(bytes);
-        }
-
-        return key;
-    }
 }

@@ -15,7 +15,7 @@ public class EventsProducingLogger
         logger.LogInformation(
         "Producing event of type {MessageType} with key {MessageKey} to topic {Topic} started",
         message.GetType().Name,
-        GetMessageKey(context), context.ProducerContext.Topic);
+        context.Message.Key, context.ProducerContext.Topic);
         return true;
     }
 
@@ -27,7 +27,7 @@ public class EventsProducingLogger
 
         logger.LogError(exception,
         "An error occurred while processing the event. Type of event: {MessageType}. Event key: {MessageKey}",
-        message.GetType().FullName, GetMessageKey(context));
+        message.GetType().FullName, context.Message.Key);
     }
 
     protected override void HandleFinally(BaseEvent message, IMessageContext context)
@@ -36,6 +36,6 @@ public class EventsProducingLogger
         logger.LogInformation(
         "Producing event of type {MessageType} with key {MessageKey} to topic {Topic} completed",
         message.GetType().Name,
-        GetMessageKey(context), context.ProducerContext.Topic);
+        context.Message.Key, context.ProducerContext.Topic);
     }
 }

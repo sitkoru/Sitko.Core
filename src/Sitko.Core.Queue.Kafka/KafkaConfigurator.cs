@@ -182,7 +182,6 @@ public class KafkaConfigurator
                         consumerBuilder.WithBufferSize(consumer.Attribute.BufferSize);
                         consumerBuilder.AddMiddlewares(middlewares =>
                         {
-                            middlewares.Add<ConsumptionDelayMiddleware>();
                             middlewares.Add<EventConsumptionLogger>();
                             middlewares.AddDeserializer<JsonCoreDeserializer>();
                             middlewares.AddTypedHandlers(handlers =>

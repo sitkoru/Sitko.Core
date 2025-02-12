@@ -16,7 +16,7 @@ public class EventConsumptionLogger
         "Consuming event {Offset} of type {MessageType} with key {MessageKey} from topic {Topic}:{Partition} started",
         context.ConsumerContext.Offset,
         message.GetType().Name,
-        GetMessageKey(context),
+        context.Message.Key,
         context.ConsumerContext.Topic,
         context.ConsumerContext.Partition
         );
@@ -31,7 +31,7 @@ public class EventConsumptionLogger
 
         logger.LogError(exception,
         "An error occurred while processing the event. Type of event: {MessageType}. Event key: {MessageKey}",
-        message.GetType().FullName, GetMessageKey(context));
+        message.GetType().FullName, context.Message.Key);
     }
 
     protected override void HandleFinally(BaseEvent message, IMessageContext context)
@@ -41,7 +41,7 @@ public class EventConsumptionLogger
         "Consuming event {Offset} of type {MessageType} with key {MessageKey} from topic {Topic}:{Partition} completed",
         context.ConsumerContext.Offset,
         message.GetType().Name,
-        GetMessageKey(context),
+        context.Message.Key,
         context.ConsumerContext.Topic,
         context.ConsumerContext.Partition
         );
