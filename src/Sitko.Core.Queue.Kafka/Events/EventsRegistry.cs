@@ -10,3 +10,8 @@ internal static class EventsRegistry
         ? (eventData.Topic, eventData.ProducerName)
         : throw new InvalidOperationException($"Can't find producer for event {eventType}");
 }
+
+public static class EventsProvider
+{
+    public static string GetProducerName(Type eventType) => EventsRegistry.GetProducerName(eventType).ProducerName;
+}

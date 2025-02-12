@@ -6,16 +6,17 @@ namespace Sitko.Core.Queue.Kafka;
 public static class ApplicationExtensions
 {
     public static IHostApplicationBuilder AddKafkaQueue(this IHostApplicationBuilder applicationBuilder,
-        Action<KafkaModuleOptions>? configureKafkaAction = null)
+        string clusterName, Action<KafkaConfigurator> configure, Action<KafkaModuleOptions>? configureKafkaAction = null)
     {
         applicationBuilder.GetSitkoCore<ISitkoCoreServerApplicationBuilder>()
-            .AddKafkaQueue(configureKafkaAction);
+            .AddKafkaQueue(clusterName, configure, configureKafkaAction);
         return applicationBuilder;
     }
 
     public static ISitkoCoreServerApplicationBuilder AddKafkaQueue(this ISitkoCoreServerApplicationBuilder applicationBuilder,
-        Action<KafkaModuleOptions>? configureKafkaAction = null)
+        string clusterName, Action<KafkaConfigurator> configure, Action<KafkaModuleOptions>? configureKafkaAction = null)
     {
+        configure(KafkaModule.CreateConfigurator(clusterName));
         applicationBuilder.AddModule<KafkaModule, KafkaModuleOptions>(configureKafkaAction);
         return applicationBuilder;
     }

@@ -11,7 +11,7 @@ internal class EventProducer(IProducerAccessor producerAccessor) : IEventProduce
 
     public async Task<EventProducingResult> ProduceAsync<TEvent>(TEvent @event) where TEvent : BaseEvent
     {
-        var (producerName, topic) = EventsRegistry.GetProducerName(@event.GetType());
+        var (topic, producerName) = EventsRegistry.GetProducerName(@event.GetType());
         var producer = producerAccessor.GetProducer(producerName);
         return await ProduceAsync(producer, topic, @event).ConfigureAwait(false);
     }

@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Db.Postgres\Sitko.Core.Db.Postgres.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Queue.Kafka\Sitko.Core.Queue.Kafka.csproj" />
     <ProjectReference Include="..\Sitko.Core.Repository\Sitko.Core.Repository.csproj" />
     <ProjectReference Include="..\Sitko.Core.Repository.EntityFrameworkCore\Sitko.Core.Repository.EntityFrameworkCore.csproj" />
   </ItemGroup>

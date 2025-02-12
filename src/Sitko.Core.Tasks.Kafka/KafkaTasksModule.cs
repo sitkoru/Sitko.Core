@@ -1,13 +1,10 @@
 ﻿using FluentValidation;
-using KafkaFlow;
-using KafkaFlow.Serializer;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.Queue.Kafka;
 using Sitko.Core.Tasks.Data;
 using Sitko.Core.Tasks.Data.Entities;
 using Sitko.Core.Tasks.Execution;
-using Sitko.Core.Tasks.Kafka.Execution;
 using Sitko.Core.Tasks.Kafka.Scheduling;
 
 namespace Sitko.Core.Tasks.Kafka;
@@ -35,51 +32,22 @@ public class
                 : startupOptions.ConsumerGroupPrefix
             : "";
 
+        var kafkaConfigurator = KafkaModule.CreateConfigurator("Kafka_Tasks_Cluster");
         var producerName = $"Tasks_{typeof(TBaseTask).Name}";
+
         foreach (var executor in executors)
         {
-            EventsRegistry.Register(executor.EventType, kafkaTopic, producerName);
+            kafkaConfigurator.RegisterEvent(executor.EventType, kafkaTopic, producerName);
+            kafkaConfigurator.AddConsumer(executor.ExecutorType, applicationContext,
+            [
+                new TopicInfo(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
+            ], kafkaGroupPrefix);
         }
 
-        var kafkaConfigurator = KafkaModule.CreateConfigurator("Kafka_Tasks_Cluster");
         kafkaConfigurator
             .AutoCreateTopic(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
             .EnsureOffsets()
-            .AddProducer(producerName, (builder, _) =>
-            {
-                builder.DefaultTopic(kafkaTopic);
-                builder.AddMiddlewares(middlewareBuilder =>
-                    middlewareBuilder.AddSerializer<JsonCoreSerializer>());
-            });
-        var executorType = typeof(KafkaExecutor<,>);
-        foreach (var groupConsumers in executors.GroupBy(r => r.GroupId))
-        {
-            var commonRegistration = groupConsumers.First();
-            var name =
-                $"{applicationContext.Name}/{applicationContext.Id}/{typeof(TBaseTask).Name}/{commonRegistration.GroupId}";
-            var parallelThreadCount = groupConsumers.Max(r => r.ParallelThreadCount);
-            var bufferSize = groupConsumers.Max(r => r.BufferSize);
-            var groupId = $"{kafkaGroupPrefix}_{commonRegistration.GroupId}".Replace(".", "_");
-            kafkaConfigurator.AddConsumer(name, groupId,
-                new[]
-                {
-                    new TopicInfo(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
-                }, (consumerBuilder, _) =>
-                {
-                    consumerBuilder.WithWorkersCount(parallelThreadCount);
-                    consumerBuilder.WithBufferSize(bufferSize);
-                    consumerBuilder.AddMiddlewares(
-                        middlewares =>
-                        {
-                            middlewares.AddDeserializer<JsonCoreDeserializer>();
-                            middlewares.AddTypedHandlers(handlers =>
-                                handlers.AddHandlers(groupConsumers.Select(r =>
-                                        executorType.MakeGenericType(r.EventType, r.ExecutorType)))
-                                    .WithHandlerLifetime(InstanceLifetime.Scoped));
-                        }
-                    );
-                });
-        }
+            .AddProducer(producerName, kafkaTopic);
     }
 }
 
