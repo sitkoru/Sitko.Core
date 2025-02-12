@@ -38,7 +38,7 @@ public class
         foreach (var executor in executors)
         {
             kafkaConfigurator.RegisterEvent(executor.EventType, kafkaTopic, producerName);
-            kafkaConfigurator.AddConsumer(executor.ExecutorType, applicationContext,
+            kafkaConfigurator.AddConsumer(applicationContext, executor.ExecutorType,
             [
                 new TopicInfo(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
             ], kafkaGroupPrefix);

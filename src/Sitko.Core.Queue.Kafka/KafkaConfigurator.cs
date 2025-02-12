@@ -41,7 +41,7 @@ public class KafkaConfigurator
         return this;
     }
 
-    public KafkaConfigurator AddConsumer(Type consumerType, IApplicationContext applicationContext, TopicInfo[] consumerTopics, string groupPrefix = "")
+    public KafkaConfigurator AddConsumer(IApplicationContext applicationContext, Type consumerType, TopicInfo[] consumerTopics, string groupPrefix = "")
     {
         var attribute = consumerType.FindAttribute<MessageHandlerAttribute>();
         if (attribute == null)
@@ -63,7 +63,7 @@ public class KafkaConfigurator
 
     public KafkaConfigurator AddConsumer<TConsumer>(IApplicationContext applicationContext, TopicInfo[] consumerTopics, string groupPrefix = "")
     {
-        AddConsumer(typeof(TConsumer), applicationContext, consumerTopics, groupPrefix);
+        AddConsumer(applicationContext, typeof(TConsumer), consumerTopics, groupPrefix);
         return this;
     }
 
@@ -182,6 +182,7 @@ public class KafkaConfigurator
                         consumerBuilder.WithBufferSize(consumer.Attribute.BufferSize);
                         consumerBuilder.AddMiddlewares(middlewares =>
                         {
+
                             middlewares.Add<EventConsumptionLogger>();
                             middlewares.AddDeserializer<JsonCoreDeserializer>();
                             middlewares.AddTypedHandlers(handlers =>
