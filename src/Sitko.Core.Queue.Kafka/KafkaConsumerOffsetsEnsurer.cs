@@ -3,7 +3,7 @@ using Confluent.Kafka.Admin;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Helpers;
 
-namespace Sitko.Core.Kafka;
+namespace Sitko.Core.Queue.Kafka;
 
 internal class KafkaConsumerOffsetsEnsurer
 {

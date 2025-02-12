@@ -3,7 +3,7 @@ using KafkaFlow;
 using KafkaFlow.Serializer;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
-using Sitko.Core.Kafka;
+using Sitko.Core.Queue.Kafka;
 using Sitko.Core.Tasks.Data;
 using Sitko.Core.Tasks.Data.Entities;
 using Sitko.Core.Tasks.Execution;

@@ -5,7 +5,7 @@ using KafkaFlow.Consumers.DistributionStrategies;
 using Sitko.Core.App.Helpers;
 using SecurityProtocol = KafkaFlow.Configuration.SecurityProtocol;
 
-namespace Sitko.Core.Kafka;
+namespace Sitko.Core.Queue.Kafka;
 
 public class KafkaConfigurator
 {

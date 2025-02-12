@@ -1,7 +1,7 @@
-﻿namespace Sitko.Core.Kafka;
+﻿namespace Sitko.Core.Queue.Kafka.Attributes;
 
 [AttributeUsage(AttributeTargets.Class)]
-public class KafkaConsumerAttribute(
+public class MessageHandlerAttribute(
     string groupId,
     int parallelThreadCount,
     int bufferSize = 10)

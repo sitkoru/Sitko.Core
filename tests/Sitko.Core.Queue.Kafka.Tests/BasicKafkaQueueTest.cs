@@ -1,4 +1,5 @@
-﻿using Sitko.Core.Queue.Kafka.Tests.Data;
+﻿using Sitko.Core.Queue.Kafka.Producing;
+using Sitko.Core.Queue.Kafka.Tests.Data;
 using Sitko.Core.Xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -14,12 +15,12 @@ public class BasicKafkaQueueTest
     public async Task TestQueueAsync()
     {
         var scope = await GetScopeAsync();
-        var kafkaQueue = scope.GetService<KafkaQueue>();
+        var kafkaQueue = scope.GetService<IEventProducer>();
 
-        var result = await kafkaQueue.PublishAsync
-            (TestMessageData.Message, TestMessageData.MessageContext);
+        var result = await kafkaQueue.ProduceAsync(TestEventData.Message);
 
-        Assert.True(result.IsSuccess);
+        Assert.Null(result.ErrorMessage);
+        Assert.Null(result.Exception);
     }
 
 }

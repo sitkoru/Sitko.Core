@@ -1,19 +1,18 @@
-﻿using KafkaFlow;
-using Sitko.Core.Kafka;
+﻿using Microsoft.Extensions.Logging;
+using Sitko.Core.Queue.Kafka.Attributes;
+using Sitko.Core.Queue.Kafka.Consumption;
 using Sitko.Core.Queue.Kafka.Tests.Data;
-using Sitko.Core.Queue.Tests;
 using Xunit;
 
 namespace Sitko.Core.Queue.Kafka.Tests;
 
-[KafkaConsumer("Test", 10)]
-public class KafkaQueueTestConsumer : BaseQueueConsumer<TestMessage>
+[MessageHandler("Test", 10)]
+public class KafkaQueueTestConsumer(ILogger<BaseMessageHandler<TestEvent>> logger) : BaseMessageHandler<TestEvent>(logger)
 {
-    public override Task Handle(IMessageContext context, TestMessage message)
+    public override Task HandleAsync(TestEvent @event)
     {
-        var headers = DeserializeMessageHeaders(context.Headers);
-        Assert.Equal(headers, TestMessageData.MessageContext);
-        Assert.Equal(message, TestMessageData.Message);
+        Assert.Equal(@event, TestEventData.Message);
+
         return Task.CompletedTask;
     }
 }

@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.Db.Postgres;
-using Sitko.Core.Kafka;
+using Sitko.Core.Queue.Kafka;
 using Sitko.Core.Tasks.Data;
 using Sitko.Core.Tasks.Data.Entities;
 

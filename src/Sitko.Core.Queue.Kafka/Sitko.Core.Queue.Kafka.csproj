@@ -1,6 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Sitko.Core.Queue.Kafka</RootNamespace>
+  </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Kafka\Sitko.Core.Kafka.csproj" />
-    <ProjectReference Include="..\Sitko.Core.Queue\Sitko.Core.Queue.csproj"/>
+    <PackageReference Include="KafkaFlow" />
+    <PackageReference Include="KafkaFlow.Extensions.Hosting" />
+    <PackageReference Include="KafkaFlow.LogHandler.Microsoft" />
+    <PackageReference Include="KafkaFlow.Microsoft.DependencyInjection" />
+    <PackageReference Include="KafkaFlow.Serializer.JsonCore" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
   </ItemGroup>
 </Project>
