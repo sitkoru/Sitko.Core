@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenSearch.Client;
@@ -23,8 +24,16 @@ public class OpenSearchSearcher<TSearchModel>(
         CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";
-        var result = await GetClient().IndexManyAsync(searchModels, indexName.ToLowerInvariant(),
-            cancellationToken);
+
+        var bulkRequest = new BulkRequest(indexName.ToLowerInvariant());
+        var indexOps = searchModels
+            .Select(o => new BulkIndexOperation<TSearchModel>(o))
+            .Cast<IBulkOperation>()
+            .ToList();
+        bulkRequest.Operations = new BulkOperationsCollection<IBulkOperation>(indexOps);
+        bulkRequest.Refresh = optionsMonitor.CurrentValue.Refresh;
+        var result = await GetClient().BulkAsync(bulkRequest, cancellationToken);
+
         if (result.Errors)
         {
             foreach (var item in result.ItemsWithErrors)
@@ -82,13 +91,18 @@ public class OpenSearchSearcher<TSearchModel>(
         return result.Acknowledged;
     }
 
-    public async Task<long> CountAsync(string indexName, string term, CancellationToken cancellationToken = default)
+    public async Task<long> CountAsync(string indexName, string term, SearchOptions? searchOptions,
+        CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";
         var names = GetSearchText(term);
+        searchOptions ??= new SearchOptions();
         var resultsCount = await GetClient().CountAsync<TSearchModel>(x =>
             x.Query(q =>
-                    q.QueryString(qs => qs.Query(names)))
+                {
+                    q.QueryString(qs => qs.Query(names));
+                    return ApplyTagsFilter(q, searchOptions);
+                })
                 .Index(indexName.ToLowerInvariant()), cancellationToken);
         if (resultsCount.ServerError != null)
         {
@@ -99,43 +113,60 @@ public class OpenSearchSearcher<TSearchModel>(
         return resultsCount.Count;
     }
 
-    public async Task<TSearchModel[]> SearchAsync(string indexName, string term, int limit,
-        SearchType searchType, bool withHighlight = false, CancellationToken cancellationToken = default)
+#pragma warning disable CA1859
+    private static QueryContainer ApplyTagsFilter(QueryContainerDescriptor<TSearchModel> q,
+#pragma warning restore CA1859
+        SearchOptions? searchOptions)
+    {
+        if (searchOptions?.Tags.Length > 0)
+        {
+            return q && q
+                .TermsSet(ts => ts
+                    .Field(d => d.Tags)
+                    .Terms(searchOptions.Tags)
+                    .MinimumShouldMatchScript(sr => sr
+                        .Source(searchOptions.TagsMinimumMatch.ToString(CultureInfo
+                            .InvariantCulture))
+                    )
+                );
+        }
+
+        return q;
+    }
+
+    public async Task<SearcherEntity<TSearchModel>[]> SearchAsync(string indexName, string term, int limit,
+        SearchOptions? searchOptions, CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";
+        searchOptions ??= new SearchOptions();
         var searchResponse = await GetClient()
-            .SearchAsync<TSearchModel>(x => GetSearchRequest(x, indexName, term, searchType, limit, withHighlight),
+            .SearchAsync<TSearchModel>(
+                x => GetSearchRequest(x, indexName, term, limit, searchOptions),
                 cancellationToken);
         if (searchResponse.ServerError != null)
         {
             logger.LogError("Error while searching in {IndexName}: {ErrorText}", indexName, searchResponse.ServerError);
         }
 
-        var result = searchResponse.Hits.Select(h =>
-            new TSearchModel
-            {
-                Id = h.Source.Id,
-                Content = h.Source.Content,
-                Date = h.Source.Date,
-                Title = h.Source.Title,
-                Url = h.Source.Url,
-                Highlight = h.Highlight
-            }
-        ).ToArray();
+        var result = searchResponse.Hits.Select(h => new SearcherEntity<TSearchModel>(h.Source, h.Highlight)).ToArray();
         return result;
     }
 
-    public async Task<TSearchModel[]> GetSimilarAsync(string indexName, string id, int limit,
+    public async Task<SearcherEntity<TSearchModel>[]> GetSimilarAsync(string indexName, string id, int limit,
+        SearchOptions? searchOptions,
         CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";
         var results = await GetClient()
             .SearchAsync<TSearchModel>(x => x.Query(q =>
+                {
                     q.MoreLikeThis(qs => qs.Like(descriptor =>
                             descriptor.Document(documentDescriptor => documentDescriptor.Index(indexName).Id(id)))
                         .MinDocumentFrequency(1)
                         .MinTermFrequency(1)
-                        .MaxQueryTerms(12)))
+                        .MaxQueryTerms(12));
+                    return ApplyTagsFilter(q, searchOptions);
+                })
                 .Sort(s => s.Descending(SortSpecialField.Score).Descending(model => model.Date))
                 .Size(limit > 0 ? limit : 20)
                 .Index(indexName.ToLowerInvariant()), cancellationToken);
@@ -145,7 +176,8 @@ public class OpenSearchSearcher<TSearchModel>(
                 results.ServerError);
         }
 
-        return results.Documents.ToArray();
+        return results.Documents.Select(h =>
+            new SearcherEntity<TSearchModel>(h, new Dictionary<string, IReadOnlyCollection<string>>())).ToArray();
     }
 
     public async Task InitAsync(string indexName, CancellationToken cancellationToken = default)
@@ -255,25 +287,23 @@ public class OpenSearchSearcher<TSearchModel>(
     }
 
     private SearchDescriptor<TSearchModel> GetSearchRequest(SearchDescriptor<TSearchModel> descriptor,
-        string indexName, string term, SearchType searchType, int limit = 0, bool withHighlight = false)
+        string indexName, string term, int limit, SearchOptions searchOptions)
     {
         var names = GetSearchText(term);
-        switch (searchType)
+        descriptor.Query(q =>
         {
-            case SearchType.Morphology:
-                descriptor.Query(q => q.QueryString(qs =>
-                    qs.Fields(fieldsDescriptor => fieldsDescriptor.Field(searchModel => searchModel.Title)
-                        .Field(searchModel => searchModel.Content)).Query(names)));
-                break;
-            case SearchType.Wildcard:
-                descriptor.Query(q =>
-                    q.QueryString(qs => qs.Fields(fieldsDescriptor => fieldsDescriptor
+            q.QueryString(qs =>
+                searchOptions.SearchType == SearchType.Morphology
+                    ? qs.Fields(fieldsDescriptor => fieldsDescriptor.Field(searchModel => searchModel.Title)
+                        .Field(searchModel => searchModel.Content)).Query(names)
+                    : qs.Fields(fieldsDescriptor => fieldsDescriptor
                         .Field(searchModel => searchModel.Title)
-                        .Field(searchModel => searchModel.Content)).Query($"*{names}*").AnalyzeWildcard()));
-                break;
-        }
+                        .Field(searchModel => searchModel.Content)).Query($"*{names}*").AnalyzeWildcard());
 
-        if (withHighlight)
+            return ApplyTagsFilter(q, searchOptions);
+        });
+
+        if (searchOptions.WithHighlight)
         {
             descriptor.Highlight(h =>
                 h.Fields(fs => fs
@@ -320,6 +350,7 @@ public class OpenSearchSearcher<TSearchModel>(
                         .Name(n => n.Title)
                         .Analyzer(CustomCharFilterAnalyze)
                     )
+                    .Keyword(t => t.Name(x => x.Tags))
                 )
             );
 }

@@ -84,7 +84,8 @@ public class ElasticSearcher<TSearchModel> : ISearcher<TSearchModel> where TSear
         return result.Acknowledged;
     }
 
-    public async Task<long> CountAsync(string indexName, string term, CancellationToken cancellationToken = default)
+    public async Task<long> CountAsync(string indexName, string term, SearchOptions? searchOptions,
+        CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";
         var names = GetSearchText(term);
@@ -101,7 +102,8 @@ public class ElasticSearcher<TSearchModel> : ISearcher<TSearchModel> where TSear
         return resultsCount.Count;
     }
 
-    public async Task<TSearchModel[]> SearchAsync(string indexName, string term, int limit, SearchType searchType, bool withHighlight = false,
+    public async Task<SearcherEntity<TSearchModel>[]> SearchAsync(string indexName, string term, int limit,
+        SearchOptions? searchOptions,
         CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";
@@ -112,10 +114,12 @@ public class ElasticSearcher<TSearchModel> : ISearcher<TSearchModel> where TSear
             logger.LogError("Error while searching in {IndexName}: {ErrorText}", indexName, results.ServerError);
         }
 
-        return results.Documents.ToArray();
+        return results.Documents.Select(x =>
+            new SearcherEntity<TSearchModel>(x, new Dictionary<string, IReadOnlyCollection<string>>())).ToArray();
     }
 
-    public async Task<TSearchModel[]> GetSimilarAsync(string indexName, string id, int limit,
+    public async Task<SearcherEntity<TSearchModel>[]> GetSimilarAsync(string indexName, string id, int limit,
+        SearchOptions? searchOptions,
         CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";
@@ -135,7 +139,8 @@ public class ElasticSearcher<TSearchModel> : ISearcher<TSearchModel> where TSear
                 results.ServerError);
         }
 
-        return results.Documents.ToArray();
+        return results.Documents.Select(x =>
+            new SearcherEntity<TSearchModel>(x, new Dictionary<string, IReadOnlyCollection<string>>())).ToArray();
     }
 
     public async Task InitAsync(string indexName, CancellationToken cancellationToken = default)
@@ -240,4 +245,3 @@ public class ElasticSearcher<TSearchModel> : ISearcher<TSearchModel> where TSear
                 descriptor.Hunspell("ru_RU", hh => hh.Dedup().Locale("ru_RU"))
                     .Hunspell("en_US", hh => hh.Dedup().Locale("en_US")));
 }
-
