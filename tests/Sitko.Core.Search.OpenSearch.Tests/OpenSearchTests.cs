@@ -37,7 +37,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
-        var result = await searchProvider.SearchAsync("samsung", 10, SearchType.Morphology);
+        var result = await searchProvider.SearchAsync("samsung", 10);
         result.Length.Should().Be(provider.Models.Count);
     }
 
@@ -67,7 +67,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result = await searchProvider.SearchAsync(searchText, 10, SearchType.Morphology);
+        var result = await searchProvider.SearchAsync(searchText, 10);
         result.Length.Should().Be(foundDocs);
     }
 
@@ -90,7 +90,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result = await searchProvider.SearchAsync("walked", 10, SearchType.Morphology);
+        var result = await searchProvider.SearchAsync("walked", 10);
         result.Length.Should().Be(3);
     }
 
@@ -117,7 +117,8 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result = await searchProvider.SearchAsync(searchText, 10, SearchType.Wildcard);
+        var result =
+            await searchProvider.SearchAsync(searchText, 10, new SearchOptions { SearchType = SearchType.Wildcard });
         result.Length.Should().Be(foundDocs);
     }
 
@@ -144,7 +145,8 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result = await searchProvider.SearchAsync(searchText, 10, SearchType.Wildcard);
+        var result =
+            await searchProvider.SearchAsync(searchText, 10, new SearchOptions { SearchType = SearchType.Wildcard });
         result.Length.Should().Be(foundDocs);
     }
 
@@ -173,7 +175,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result2 = await searchProvider.SearchAsync(searchText, 10, searchType);
+        var result2 = await searchProvider.SearchAsync(searchText, 10, new SearchOptions { SearchType = searchType });
         result2.Length.Should().Be(foundDocs);
     }
 
@@ -193,7 +195,8 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result = await searchProvider.SearchAsync("лщдуыф", 10, SearchType.Wildcard);
+        var result =
+            await searchProvider.SearchAsync("лщдуыф", 10, new SearchOptions { SearchType = SearchType.Wildcard });
         result.Length.Should().Be(1);
     }
 
@@ -221,12 +224,57 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result = await searchProvider.SearchAsync(searchText, 10, searchType, true);
+        var result = await searchProvider.SearchAsync(searchText, 10,
+            new SearchOptions { SearchType = searchType, WithHighlight = true });
         result.Length.Should().Be(1);
-        result.First().ResultModel.Highlight.Count.Should().Be(1);
-        result.First().ResultModel.Highlight.First().Value.First().Contains("<span class='highlight'>").Should()
+        result.First().Highlight.Count.Should().Be(1);
+        result.First().Highlight.First().Value.First().Contains("<span class='highlight'>").Should()
             .BeTrue();
-        result.First().ResultModel.Highlight.First().Value.First().Contains("</span>").Should().BeTrue();
+        result.First().Highlight.First().Value.First().Contains("</span>").Should().BeTrue();
+    }
+
+
+    [Theory(DisplayName = "Search with tags")]
+    [InlineData(new[] { "ProjectId1" }, 1, 1)]
+    [InlineData(new[] { "ProjectId2" }, 1, 1)]
+    [InlineData(new[] { "ProjectId1", "ProjectId2" }, 1, 2)]
+    [InlineData(new[] { "ProjectId1", "ProjectId2" }, 2, 0)]
+    [InlineData(new[] { "ProjectId1", "ProjectId2", "ProjectId3", "SomeOtherTag" }, 1, 2)]
+    [InlineData(new[] { "ProjectId1", "ProjectId2", "ProjectId3", "SomeOtherTag" }, 2, 2)]
+    [InlineData(new[] { "ProjectId1", "ProjectId2", "ProjectId3", "SomeOtherTag" }, 3, 0)]
+    [InlineData(new[] { "ProjectId3" }, 1, 0)]
+    [InlineData(new string[0], 1, 2)]
+    public async Task TagsAsync(string[] tags, int minimalMatch, int expected)
+    {
+        var scope = await GetScopeAsync();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
+        var provider = scope.GetService<TestModelProvider>();
+        await searchProvider.DeleteIndexAsync();
+        await searchProvider.InitAsync();
+        var firstModel = new TestModel
+        {
+            Title = "Геймеры играют в компьютерные игры.",
+            Description = "Геймеры играют в компьютерные игры.",
+            Url = "mmicentre",
+            ProjectId = 1
+        };
+        var secondModel = new TestModel
+        {
+            Title = "Геймеры играют в настольные игры.",
+            Description = "Геймеры играют в настольные игры.",
+            Url = "mmicentre",
+            ProjectId = 2
+        };
+        provider.AddModel(firstModel).AddModel(secondModel);
+
+        await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
+
+        await Task.Delay(TimeSpan.FromSeconds(5));
+
+
+        var result = await searchProvider.SearchAsync("играют", 10,
+            new SearchOptions { Tags = tags, TagsMinimumMatch = minimalMatch });
+        result.Length.Should().Be(expected);
     }
 }
 
@@ -239,9 +287,6 @@ public class OpenSearchTestScope : BaseTestScope
         {
             moduleOptions.Prefix = name.ToLower(CultureInfo.InvariantCulture);
             moduleOptions.EnableClientLogging = true;
-            moduleOptions.Url = hostBuilder.Configuration.GetSection("OpenSearchModuleOptions")["Url"];
-            moduleOptions.Login = hostBuilder.Configuration.GetSection("OpenSearchModuleOptions")["Login"];
-            moduleOptions.Password = hostBuilder.Configuration.GetSection("OpenSearchModuleOptions")["Password"];
             moduleOptions.InitProviders = false;
             moduleOptions.DisableCertificatesValidation = true;
             moduleOptions.CustomStemmer = "russian";
@@ -262,13 +307,12 @@ public class TestModel
     public string Url { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public DateTimeOffset Date { get; set; } = DateTimeOffset.UtcNow;
+
+    public int? ProjectId { get; set; }
 }
 
 public class TestSearchModel : BaseSearchModel
 {
-    public TestSearchModel()
-    {
-    }
 }
 
 public class TestSearchProvider(
@@ -288,22 +332,24 @@ public class TestSearchProvider(
                 Date = e.Date,
                 Url = e.Url,
                 Title = e.Title,
-                Content = e.Description
+                Content = e.Description,
+                Tags = [$"ProjectId{e.ProjectId}", "SomeOtherTag"]
             })
             .ToArray());
 
-    protected override Task<SearchResult<TestModel, TestSearchModel>[]> GetEntitiesAsync(TestSearchModel[] searchModels,
+    protected override Task<SearchResult<TestModel>[]> GetEntitiesAsync(SearcherEntity<TestSearchModel>[] searchModels,
         CancellationToken cancellationToken = default)
     {
-        var ids = searchModels.Select(m => Guid.Parse(m.Id));
+        var ids = searchModels.Select(m => Guid.Parse(m.SearchModel.Id));
         var entities = testModelProvider.Models.Where(m => ids.Contains(m.Id));
-        List<SearchResult<TestModel, TestSearchModel>> result = [];
+        List<SearchResult<TestModel>> result = [];
         foreach (var entity in entities)
         {
-            var searchModel = searchModels.ToList().FirstOrDefault(model => model.Id == entity.Id.ToString());
-            if (searchModel != null)
+            var searcherResult = searchModels.ToList()
+                .FirstOrDefault(model => model.SearchModel.Id == entity.Id.ToString());
+            if (searcherResult != null)
             {
-                result.Add(new SearchResult<TestModel, TestSearchModel> { Entity = entity, ResultModel = searchModel });
+                result.Add(new SearchResult<TestModel>(entity, searcherResult.Highlight));
             }
         }
 

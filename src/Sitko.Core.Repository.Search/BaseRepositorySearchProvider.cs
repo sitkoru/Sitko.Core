@@ -5,7 +5,7 @@ namespace Sitko.Core.Repository.Search;
 
 public abstract class
     BaseRepositorySearchProvider<TEntity, TEntityPk, TSearchModel> : BaseSearchProvider<TEntity, TEntityPk,
-        TSearchModel>, IRepositorySearchProvider<TEntity>
+    TSearchModel>, IRepositorySearchProvider<TEntity>
     where TSearchModel : BaseSearchModel where TEntity : class, IEntity<TEntityPk> where TEntityPk : notnull
 {
     private readonly IRepository<TEntity, TEntityPk> repository;
@@ -34,18 +34,19 @@ public abstract class
         }
     }
 
-    protected override async Task<SearchResult<TEntity, TSearchModel>[]> GetEntitiesAsync(TSearchModel[] searchModels,
+    protected override async Task<SearchResult<TEntity>[]> GetEntitiesAsync(SearcherEntity<TSearchModel>[] searchModels,
         CancellationToken cancellationToken = default)
     {
-        var ids = searchModels.Select(s => ParseId(s.Id)).Distinct().ToArray();
+        var ids = searchModels.Select(s => ParseId(s.SearchModel.Id)).Distinct().ToArray();
         var entities = await repository.GetByIdsAsync(ids, cancellationToken);
-        List<SearchResult<TEntity, TSearchModel>> result = [];
+        List<SearchResult<TEntity>> result = [];
         foreach (var entity in entities)
         {
-            var searchModel = searchModels.ToList().FirstOrDefault(model => model.Id == entity.Id.ToString());
-            if (searchModel != null)
+            var searcherResult = searchModels.ToList()
+                .FirstOrDefault(model => model.SearchModel.Id == entity.Id.ToString());
+            if (searcherResult != null)
             {
-                result.Add(new SearchResult<TEntity, TSearchModel> { Entity = entity, ResultModel = searchModel });
+                result.Add(new SearchResult<TEntity>(entity, searcherResult.Highlight));
             }
         }
 
@@ -55,4 +56,3 @@ public abstract class
     protected override string GetId(TEntity entity) =>
         entity.Id.ToString() ?? throw new InvalidOperationException("Empty entity id");
 }
-
