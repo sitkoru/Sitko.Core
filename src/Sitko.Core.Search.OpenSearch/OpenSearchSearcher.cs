@@ -24,8 +24,16 @@ public class OpenSearchSearcher<TSearchModel>(
         CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";
-        var result = await GetClient().IndexManyAsync(searchModels, indexName.ToLowerInvariant(),
-            cancellationToken);
+
+        var bulkRequest = new BulkRequest(indexName.ToLowerInvariant());
+        var indexOps = searchModels
+            .Select(o => new BulkIndexOperation<TSearchModel>(o))
+            .Cast<IBulkOperation>()
+            .ToList();
+        bulkRequest.Operations = new BulkOperationsCollection<IBulkOperation>(indexOps);
+        bulkRequest.Refresh = optionsMonitor.CurrentValue.Refresh;
+        var result = await GetClient().BulkAsync(bulkRequest, cancellationToken);
+
         if (result.Errors)
         {
             foreach (var item in result.ItemsWithErrors)

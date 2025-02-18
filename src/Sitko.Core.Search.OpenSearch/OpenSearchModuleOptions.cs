@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using OpenSearch.Net;
 
 namespace Sitko.Core.Search.OpenSearch;
 
@@ -13,6 +14,7 @@ public class OpenSearchModuleOptions : SearchModuleOptions
     public string CustomStemmer { get; set; } = "";
     public string PreTags { get; set; } = "";
     public string PostTags { get; set; } = "";
+    public Refresh? Refresh { get; set; } = global::OpenSearch.Net.Refresh.False;
 }
 
 public class OpenSearchModuleOptionsValidator : AbstractValidator<OpenSearchModuleOptions>
