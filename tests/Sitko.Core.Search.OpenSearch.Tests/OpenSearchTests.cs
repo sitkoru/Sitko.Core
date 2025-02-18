@@ -3,6 +3,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OpenSearch.Net;
 using Sitko.Core.Xunit;
 using Xunit;
 
@@ -36,7 +37,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         provider.AddModel(fooModel).AddModel(barModel);
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
-        await Task.Delay(TimeSpan.FromSeconds(5));
+
         var result = await searchProvider.SearchAsync("samsung", 10);
         result.Length.Should().Be(provider.Models.Count);
     }
@@ -65,7 +66,6 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         provider.AddModel(firstModel).AddModel(secondModel).AddModel(thirdModel).AddModel(forthModel);
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
-        await Task.Delay(TimeSpan.FromSeconds(5));
 
         var result = await searchProvider.SearchAsync(searchText, 10);
         result.Length.Should().Be(foundDocs);
@@ -88,7 +88,6 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         provider.AddModel(firstModel).AddModel(secondModel).AddModel(thirdModel).AddModel(forthModel);
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
-        await Task.Delay(TimeSpan.FromSeconds(5));
 
         var result = await searchProvider.SearchAsync("walked", 10);
         result.Length.Should().Be(3);
@@ -115,7 +114,6 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         provider.AddModel(firstModel).AddModel(secondModel).AddModel(thirdModel).AddModel(forthModel);
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
-        await Task.Delay(TimeSpan.FromSeconds(5));
 
         var result =
             await searchProvider.SearchAsync(searchText, 10, new SearchOptions { SearchType = SearchType.Wildcard });
@@ -143,7 +141,6 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         provider.AddModel(firstModel).AddModel(secondModel).AddModel(thirdModel).AddModel(forthModel);
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
-        await Task.Delay(TimeSpan.FromSeconds(5));
 
         var result =
             await searchProvider.SearchAsync(searchText, 10, new SearchOptions { SearchType = SearchType.Wildcard });
@@ -173,7 +170,6 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         provider.AddModel(firstModel).AddModel(secondModel).AddModel(thirdModel);
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
-        await Task.Delay(TimeSpan.FromSeconds(5));
 
         var result2 = await searchProvider.SearchAsync(searchText, 10, new SearchOptions { SearchType = searchType });
         result2.Length.Should().Be(foundDocs);
@@ -193,7 +189,6 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         provider.AddModel(firstModel).AddModel(secondModel);
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
-        await Task.Delay(TimeSpan.FromSeconds(5));
 
         var result =
             await searchProvider.SearchAsync("лщдуыф", 10, new SearchOptions { SearchType = SearchType.Wildcard });
@@ -222,7 +217,6 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         provider.AddModel(firstModel).AddModel(secondModel);
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
-        await Task.Delay(TimeSpan.FromSeconds(5));
 
         var result = await searchProvider.SearchAsync(searchText, 10,
             new SearchOptions { SearchType = searchType, WithHighlight = true });
@@ -269,9 +263,6 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
 
-        await Task.Delay(TimeSpan.FromSeconds(5));
-
-
         var result = await searchProvider.SearchAsync("играют", 10,
             new SearchOptions { Tags = tags, TagsMinimumMatch = minimalMatch });
         result.Length.Should().Be(expected);
@@ -292,6 +283,7 @@ public class OpenSearchTestScope : BaseTestScope
             moduleOptions.CustomStemmer = "russian";
             moduleOptions.PreTags = "<span class='highlight'>";
             moduleOptions.PostTags = "</span>";
+            moduleOptions.Refresh = Refresh.True; // Force new data propagation
         });
 
         hostBuilder.Services.AddSingleton<TestModelProvider>();
