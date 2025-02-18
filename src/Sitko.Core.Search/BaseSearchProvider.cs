@@ -25,43 +25,46 @@ public abstract class BaseSearchProvider<T, TEntityPk, TSearchModel> : ISearchPr
     public Task DeleteIndexAsync(CancellationToken cancellationToken = default) =>
         searcher.DeleteAsync(IndexName, cancellationToken);
 
-    public Task<long> CountAsync(string term, CancellationToken cancellationToken = default) =>
-        searcher.CountAsync(IndexName, term, cancellationToken);
+    public Task<long> CountAsync(string term, SearchOptions? searchOptions = null,
+        CancellationToken cancellationToken = default) =>
+        searcher.CountAsync(IndexName, term, searchOptions, cancellationToken);
 
     public Task InitAsync(CancellationToken cancellationToken = default) =>
         searcher.InitAsync(IndexName, cancellationToken);
 
-    public async Task<SearchResult<T, TSearchModel>[]> SearchAsync(string term, int limit, SearchType searchType,
-        bool withHighlight = false, CancellationToken cancellationToken = default)
+    public async Task<SearchResult<T>[]> SearchAsync(string term, int limit,
+        SearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        var result = await searcher.SearchAsync(IndexName, term, limit, searchType, withHighlight, cancellationToken);
+        var result =
+            await searcher.SearchAsync(IndexName, term, limit, searchOptions, cancellationToken);
         return await LoadEntities(result, cancellationToken);
     }
 
-    public async Task<TEntityPk[]> GetIdsAsync(string term, int limit, SearchType searchType,
-        bool withHighlight = false,
+    public async Task<TEntityPk[]> GetIdsAsync(string term, int limit, SearchOptions? searchOptions = null,
         CancellationToken cancellationToken = default)
     {
-        var result = await searcher.SearchAsync(IndexName, term, limit, searchType, withHighlight, cancellationToken);
-        return result.Select(m => ParseId(m.Id)).ToArray();
+        var result =
+            await searcher.SearchAsync(IndexName, term, limit, searchOptions, cancellationToken);
+        return result.Select(m => ParseId(m.SearchModel.Id)).ToArray();
     }
 
-    public async Task<SearchResult<T, TSearchModel>[]> GetSimilarAsync(string id, int limit,
+    public async Task<SearchResult<T>[]> GetSimilarAsync(string id, int limit,
+        SearchOptions? searchOptions = null,
         CancellationToken cancellationToken = default)
     {
-        var result = await searcher.GetSimilarAsync(IndexName, id, limit, cancellationToken);
+        var result = await searcher.GetSimilarAsync(IndexName, id, limit, searchOptions, cancellationToken);
         return await LoadEntities(result, cancellationToken);
     }
 
-    public async Task<TEntityPk[]> GetSimilarIdsAsync(string id, int limit,
+    public async Task<TEntityPk[]> GetSimilarIdsAsync(string id, int limit, SearchOptions? searchOptions = null,
         CancellationToken cancellationToken = default)
     {
-        var result = await searcher.GetSimilarAsync(IndexName, id, limit, cancellationToken);
-        return result.Select(m => ParseId(m.Id)).ToArray();
+        var result = await searcher.GetSimilarAsync(IndexName, id, limit, searchOptions, cancellationToken);
+        return result.Select(m => ParseId(m.SearchModel.Id)).ToArray();
     }
 
     public Task AddOrUpdateEntityAsync(T entity, CancellationToken cancellationToken = default) =>
-        AddOrUpdateEntitiesAsync(new[] { entity }, cancellationToken);
+        AddOrUpdateEntitiesAsync([entity], cancellationToken);
 
     public async Task<bool> AddOrUpdateEntitiesAsync(T[] entities, CancellationToken cancellationToken = default) =>
         await searcher.AddOrUpdateAsync(IndexName, await GetSearchModelsAsync(entities, cancellationToken),
@@ -77,17 +80,17 @@ public abstract class BaseSearchProvider<T, TEntityPk, TSearchModel> : ISearchPr
 
     protected abstract TEntityPk ParseId(string id);
 
-    protected virtual async Task<SearchResult<T, TSearchModel>[]> LoadEntities(TSearchModel[] searchModels,
+    protected virtual async Task<SearchResult<T>[]> LoadEntities(SearcherEntity<TSearchModel>[] searchModels,
         CancellationToken cancellationToken = default)
     {
         var entities = await GetEntitiesAsync(searchModels, cancellationToken);
-        return entities.OrderBy(e => Array.FindIndex(searchModels, model => model.Id == GetId(e.Entity))).ToArray();
+        return entities.OrderBy(e => Array.FindIndex(searchModels, model => model.SearchModel.Id == GetId(e.Entity))).ToArray();
     }
 
     protected abstract Task<TSearchModel[]> GetSearchModelsAsync(T[] entities,
         CancellationToken cancellationToken = default);
 
-    protected abstract Task<SearchResult<T, TSearchModel>[]> GetEntitiesAsync(TSearchModel[] searchModels,
+    protected abstract Task<SearchResult<T>[]> GetEntitiesAsync(SearcherEntity<TSearchModel>[] searchModels,
         CancellationToken cancellationToken = default);
 
     protected abstract string GetId(T entity);
