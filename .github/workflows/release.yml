@@ -15,7 +15,7 @@ jobs:
         id: prep
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
-          echo ::set-output name=version::${VERSION}
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
       - name: Install node.js
         uses: actions/setup-node@v4
         with:
