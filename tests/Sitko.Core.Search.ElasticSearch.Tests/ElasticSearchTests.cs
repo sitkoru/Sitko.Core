@@ -43,7 +43,7 @@ public class ElasticSearchTests : BaseTest<ElasticSearchTestScope>
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
-        var result = await searchProvider.SearchAsync("samsung", 10);
+        var result = await searchProvider.SearchAsync("samsung");
         Assert.Equal(provider.Models.Count, result.Length);
         Assert.Equal(barModel.Id, result.First().Id);
     }
