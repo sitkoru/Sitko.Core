@@ -13,12 +13,12 @@ public class OpenSearchSearcher<TSearchModel>(
     : ISearcher<TSearchModel>
     where TSearchModel : BaseSearchModel, new()
 {
-    private OpenSearchModuleOptions Options => optionsMonitor.CurrentValue;
-    private OpenSearchClient? client;
     private const string CustomAnalyze = "custom_analyze";
     private const string CustomCharFilterAnalyze = "char_filter_analyze";
     private const string StemmerName = "custom_stemmer";
     private const string CustomCharFilter = "rus_en_key";
+    private OpenSearchClient? client;
+    private OpenSearchModuleOptions Options => optionsMonitor.CurrentValue;
 
     public async Task<bool> AddOrUpdateAsync(string indexName, IEnumerable<TSearchModel> searchModels,
         CancellationToken cancellationToken = default)
@@ -113,35 +113,14 @@ public class OpenSearchSearcher<TSearchModel>(
         return resultsCount.Count;
     }
 
-#pragma warning disable CA1859
-    private static QueryContainer ApplyTagsFilter(QueryContainerDescriptor<TSearchModel> q,
-#pragma warning restore CA1859
-        SearchOptions? searchOptions)
-    {
-        if (searchOptions?.Tags.Length > 0)
-        {
-            return q && q
-                .TermsSet(ts => ts
-                    .Field(d => d.Tags)
-                    .Terms(searchOptions.Tags)
-                    .MinimumShouldMatchScript(sr => sr
-                        .Source(searchOptions.TagsMinimumMatch.ToString(CultureInfo
-                            .InvariantCulture))
-                    )
-                );
-        }
-
-        return q;
-    }
-
-    public async Task<SearcherEntity<TSearchModel>[]> SearchAsync(string indexName, string term, int limit,
+    public async Task<SearcherEntity<TSearchModel>[]> SearchAsync(string indexName, string term,
         SearchOptions? searchOptions, CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";
         searchOptions ??= new SearchOptions();
         var searchResponse = await GetClient()
             .SearchAsync<TSearchModel>(
-                x => GetSearchRequest(x, indexName, term, limit, searchOptions),
+                x => GetSearchRequest(x, indexName, term, searchOptions),
                 cancellationToken);
         if (searchResponse.ServerError != null)
         {
@@ -152,11 +131,12 @@ public class OpenSearchSearcher<TSearchModel>(
         return result;
     }
 
-    public async Task<SearcherEntity<TSearchModel>[]> GetSimilarAsync(string indexName, string id, int limit,
+    public async Task<SearcherEntity<TSearchModel>[]> GetSimilarAsync(string indexName, string id,
         SearchOptions? searchOptions,
         CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";
+        searchOptions ??= new SearchOptions();
         var results = await GetClient()
             .SearchAsync<TSearchModel>(x => x.Query(q =>
                 {
@@ -168,7 +148,8 @@ public class OpenSearchSearcher<TSearchModel>(
                     return ApplyTagsFilter(q, searchOptions);
                 })
                 .Sort(s => s.Descending(SortSpecialField.Score).Descending(model => model.Date))
-                .Size(limit > 0 ? limit : 20)
+                .Skip(searchOptions.Offset)
+                .Take(searchOptions.Limit)
                 .Index(indexName.ToLowerInvariant()), cancellationToken);
         if (results.ServerError != null)
         {
@@ -231,6 +212,27 @@ public class OpenSearchSearcher<TSearchModel>(
         }
     }
 
+#pragma warning disable CA1859
+    private static QueryContainer ApplyTagsFilter(QueryContainerDescriptor<TSearchModel> q,
+#pragma warning restore CA1859
+        SearchOptions? searchOptions)
+    {
+        if (searchOptions?.Tags.Length > 0)
+        {
+            return q && q
+                .TermsSet(ts => ts
+                    .Field(d => d.Tags)
+                    .Terms(searchOptions.Tags)
+                    .MinimumShouldMatchScript(sr => sr
+                        .Source(searchOptions.TagsMinimumMatch.ToString(CultureInfo
+                            .InvariantCulture))
+                    )
+                );
+        }
+
+        return q;
+    }
+
     private OpenSearchClient GetClient()
     {
         if (client != null)
@@ -287,7 +289,7 @@ public class OpenSearchSearcher<TSearchModel>(
     }
 
     private SearchDescriptor<TSearchModel> GetSearchRequest(SearchDescriptor<TSearchModel> descriptor,
-        string indexName, string term, int limit, SearchOptions searchOptions)
+        string indexName, string term, SearchOptions searchOptions)
     {
         var names = GetSearchText(term);
         descriptor.Query(q =>
@@ -318,7 +320,8 @@ public class OpenSearchSearcher<TSearchModel>(
 
         return descriptor
             .Sort(s => s.Descending(SortSpecialField.Score).Descending(model => model.Date))
-            .Size(limit > 0 ? limit : 20)
+            .Skip(searchOptions.Offset)
+            .Take(searchOptions.Limit)
             .Index(indexName.ToLowerInvariant());
     }
 
