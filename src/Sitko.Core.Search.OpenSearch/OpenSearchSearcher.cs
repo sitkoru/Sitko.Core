@@ -34,6 +34,7 @@ public class OpenSearchSearcher<TSearchModel>(
         bulkRequest.Refresh = optionsMonitor.CurrentValue.Refresh;
         var result = await GetClient().BulkAsync(bulkRequest, cancellationToken);
 
+        var hasErrors = result.ApiCall.Success;
         if (result.Errors)
         {
             foreach (var item in result.ItemsWithErrors)
@@ -42,17 +43,17 @@ public class OpenSearchSearcher<TSearchModel>(
                     item.Error);
             }
 
-            return false;
+            hasErrors = true;
         }
 
         if (result.ServerError != null)
         {
             logger.LogError("Error while indexing {IndexName} documents: {ErrorText}", indexName,
                 result.ServerError);
-            return false;
+            hasErrors = true;
         }
 
-        return result.ApiCall.Success;
+        return !hasErrors;
     }
 
     public async Task<bool> DeleteAsync(string indexName, IEnumerable<TSearchModel> searchModels,
