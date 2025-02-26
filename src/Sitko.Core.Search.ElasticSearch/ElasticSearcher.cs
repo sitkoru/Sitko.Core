@@ -102,13 +102,15 @@ public class ElasticSearcher<TSearchModel> : ISearcher<TSearchModel> where TSear
         return resultsCount.Count;
     }
 
-    public async Task<SearcherEntity<TSearchModel>[]> SearchAsync(string indexName, string term, int limit,
+    public async Task<SearcherEntity<TSearchModel>[]> SearchAsync(string indexName, string term,
         SearchOptions? searchOptions,
         CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";
+        searchOptions ??= new SearchOptions();
         var results = await GetClient()
-            .SearchAsync<TSearchModel>(x => GetSearchRequest(x, indexName, term, limit), cancellationToken);
+            .SearchAsync<TSearchModel>(x => GetSearchRequest(x, indexName, term, searchOptions),
+                cancellationToken);
         if (results.ServerError != null)
         {
             logger.LogError("Error while searching in {IndexName}: {ErrorText}", indexName, results.ServerError);
@@ -118,11 +120,12 @@ public class ElasticSearcher<TSearchModel> : ISearcher<TSearchModel> where TSear
             new SearcherEntity<TSearchModel>(x, new Dictionary<string, IReadOnlyCollection<string>>())).ToArray();
     }
 
-    public async Task<SearcherEntity<TSearchModel>[]> GetSimilarAsync(string indexName, string id, int limit,
+    public async Task<SearcherEntity<TSearchModel>[]> GetSimilarAsync(string indexName, string id,
         SearchOptions? searchOptions,
         CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";
+        searchOptions ??= new SearchOptions();
         var results = await GetClient()
             .SearchAsync<TSearchModel>(x => x.Query(q =>
                     q.MoreLikeThis(qs => qs.Like(descriptor =>
@@ -131,7 +134,8 @@ public class ElasticSearcher<TSearchModel> : ISearcher<TSearchModel> where TSear
                         .MinTermFrequency(1)
                         .MaxQueryTerms(12)))
                 .Sort(s => s.Descending(SortSpecialField.Score).Descending(model => model.Date))
-                .Size(limit > 0 ? limit : 20)
+                .Skip(searchOptions.Offset)
+                .Take(searchOptions.Limit)
                 .Index(indexName.ToLowerInvariant()), cancellationToken);
         if (results.ServerError != null)
         {
@@ -210,7 +214,7 @@ public class ElasticSearcher<TSearchModel> : ISearcher<TSearchModel> where TSear
 
     private static SearchDescriptor<TSearchModel> GetSearchRequest(SearchDescriptor<TSearchModel> descriptor,
         string indexName, string term,
-        int limit = 0)
+        SearchOptions searchOptions)
     {
         var names = GetSearchText(term);
 
@@ -218,7 +222,8 @@ public class ElasticSearcher<TSearchModel> : ISearcher<TSearchModel> where TSear
                 q.QueryString(qs =>
                     qs.Query(names)))
             .Sort(s => s.Descending(SortSpecialField.Score).Descending(model => model.Date))
-            .Size(limit > 0 ? limit : 20)
+            .Skip(searchOptions.Offset)
+            .Take(searchOptions.Limit)
             .Index(indexName.ToLowerInvariant());
     }
 

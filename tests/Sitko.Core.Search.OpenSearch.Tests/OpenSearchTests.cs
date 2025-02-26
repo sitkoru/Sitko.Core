@@ -39,7 +39,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
 
-        var result = await searchProvider.SearchAsync("samsung", 10);
+        var result = await searchProvider.SearchAsync("samsung");
         result.Length.Should().Be(provider.Models.Count);
     }
 
@@ -68,7 +68,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
 
-        var result = await searchProvider.SearchAsync(searchText, 10);
+        var result = await searchProvider.SearchAsync(searchText);
         result.Length.Should().Be(foundDocs);
     }
 
@@ -90,7 +90,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
 
-        var result = await searchProvider.SearchAsync("walked", 10);
+        var result = await searchProvider.SearchAsync("walked");
         result.Length.Should().Be(3);
     }
 
@@ -117,7 +117,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
 
         var result =
-            await searchProvider.SearchAsync(searchText, 10, new SearchOptions { SearchType = SearchType.Wildcard });
+            await searchProvider.SearchAsync(searchText, new SearchOptions { SearchType = SearchType.Wildcard });
         result.Length.Should().Be(foundDocs);
     }
 
@@ -144,7 +144,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
 
         var result =
-            await searchProvider.SearchAsync(searchText, 10, new SearchOptions { SearchType = SearchType.Wildcard });
+            await searchProvider.SearchAsync(searchText, new SearchOptions { SearchType = SearchType.Wildcard });
         result.Length.Should().Be(foundDocs);
     }
 
@@ -172,7 +172,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
 
-        var result2 = await searchProvider.SearchAsync(searchText, 10, new SearchOptions { SearchType = searchType });
+        var result2 = await searchProvider.SearchAsync(searchText, new SearchOptions { SearchType = searchType });
         result2.Length.Should().Be(foundDocs);
     }
 
@@ -192,7 +192,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
 
         var result =
-            await searchProvider.SearchAsync("лщдуыф", 10, new SearchOptions { SearchType = SearchType.Wildcard });
+            await searchProvider.SearchAsync("лщдуыф", new SearchOptions { SearchType = SearchType.Wildcard });
         result.Length.Should().Be(1);
     }
 
@@ -219,7 +219,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
 
-        var result = await searchProvider.SearchAsync(searchText, 10,
+        var result = await searchProvider.SearchAsync(searchText,
             new SearchOptions { SearchType = searchType, WithHighlight = true });
         result.Length.Should().Be(1);
         result.First().Highlight.Count.Should().Be(1);
@@ -264,7 +264,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
 
-        var result = await searchProvider.SearchAsync("играют", 10,
+        var result = await searchProvider.SearchAsync("играют",
             new SearchOptions { Tags = tags, TagsMinimumMatch = minimalMatch });
         result.Length.Should().Be(expected);
     }

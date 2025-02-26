@@ -32,34 +32,33 @@ public abstract class BaseSearchProvider<T, TEntityPk, TSearchModel> : ISearchPr
     public Task InitAsync(CancellationToken cancellationToken = default) =>
         searcher.InitAsync(IndexName, cancellationToken);
 
-    public async Task<SearchResult<T>[]> SearchAsync(string term, int limit,
-        SearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
-    {
-        var result =
-            await searcher.SearchAsync(IndexName, term, limit, searchOptions, cancellationToken);
-        return await LoadEntities(result, cancellationToken);
-    }
-
-    public async Task<TEntityPk[]> GetIdsAsync(string term, int limit, SearchOptions? searchOptions = null,
+    public async Task<SearchResult<T>[]> SearchAsync(string term, SearchOptions? searchOptions = null,
         CancellationToken cancellationToken = default)
     {
         var result =
-            await searcher.SearchAsync(IndexName, term, limit, searchOptions, cancellationToken);
+            await searcher.SearchAsync(IndexName, term, searchOptions, cancellationToken);
+        return await LoadEntities(result, cancellationToken);
+    }
+
+    public async Task<TEntityPk[]> GetIdsAsync(string term, SearchOptions? searchOptions = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result =
+            await searcher.SearchAsync(IndexName, term, searchOptions, cancellationToken);
         return result.Select(m => ParseId(m.SearchModel.Id)).ToArray();
     }
 
-    public async Task<SearchResult<T>[]> GetSimilarAsync(string id, int limit,
-        SearchOptions? searchOptions = null,
+    public async Task<SearchResult<T>[]> GetSimilarAsync(string id, SearchOptions? searchOptions = null,
         CancellationToken cancellationToken = default)
     {
-        var result = await searcher.GetSimilarAsync(IndexName, id, limit, searchOptions, cancellationToken);
+        var result = await searcher.GetSimilarAsync(IndexName, id, searchOptions, cancellationToken);
         return await LoadEntities(result, cancellationToken);
     }
 
-    public async Task<TEntityPk[]> GetSimilarIdsAsync(string id, int limit, SearchOptions? searchOptions = null,
+    public async Task<TEntityPk[]> GetSimilarIdsAsync(string id, SearchOptions? searchOptions = null,
         CancellationToken cancellationToken = default)
     {
-        var result = await searcher.GetSimilarAsync(IndexName, id, limit, searchOptions, cancellationToken);
+        var result = await searcher.GetSimilarAsync(IndexName, id, searchOptions, cancellationToken);
         return result.Select(m => ParseId(m.SearchModel.Id)).ToArray();
     }
 
@@ -84,7 +83,8 @@ public abstract class BaseSearchProvider<T, TEntityPk, TSearchModel> : ISearchPr
         CancellationToken cancellationToken = default)
     {
         var entities = await GetEntitiesAsync(searchModels, cancellationToken);
-        return entities.OrderBy(e => Array.FindIndex(searchModels, model => model.SearchModel.Id == GetId(e.Entity))).ToArray();
+        return entities.OrderBy(e => Array.FindIndex(searchModels, model => model.SearchModel.Id == GetId(e.Entity)))
+            .ToArray();
     }
 
     protected abstract Task<TSearchModel[]> GetSearchModelsAsync(T[] entities,
