@@ -41,12 +41,15 @@ public class OpenSearchSearcher<TSearchModel>(
                 logger.LogError("Error while indexing document {IndexName} {Id}: {ErrorText}", indexName, item.Id,
                     item.Error);
             }
+
+            return false;
         }
 
         if (result.ServerError != null)
         {
             logger.LogError("Error while indexing {IndexName} documents: {ErrorText}", indexName,
                 result.ServerError);
+            return false;
         }
 
         return result.ApiCall.Success;
