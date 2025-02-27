@@ -267,6 +267,74 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
             new SearchOptions { Tags = tags, TagsMinimumMatch = minimalMatch });
         result.Length.Should().Be(expected);
     }
+
+    [Theory(DisplayName = "Search with limit")]
+    [InlineData(1, 1)]
+    [InlineData(2, 2)]
+    [InlineData(3, 2)]
+    public async Task LimitAsync(int limit, int expected)
+    {
+        var scope = await GetScopeAsync();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
+        var provider = scope.GetService<TestModelProvider>();
+        await searchProvider.DeleteIndexAsync();
+        await searchProvider.InitAsync();
+
+        var firstModel = new TestModel
+        {
+            Title = "Геймеры играют в компьютерные игры.",
+            Description = "Геймеры играют в компьютерные игры.",
+            Url = "mmicentre"
+        };
+        var secondModel = new TestModel
+        {
+            Title = "Геймеры играют в настольные игры.",
+            Description = "Геймеры играют в настольные игры.",
+            Url = "mmicentre"
+        };
+
+        provider.AddModel(firstModel).AddModel(secondModel);
+
+        await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
+
+        var result = await searchProvider.SearchAsync("играют",
+        new SearchOptions { Limit = limit });
+        result.Length.Should().Be(expected);
+    }
+
+    [Theory(DisplayName = "Search with offset")]
+    [InlineData(0, 2)]
+    [InlineData(1, 1)]
+    [InlineData(2, 0)]
+    public async Task OffsetAsync(int offset, int expected)
+    {
+        var scope = await GetScopeAsync();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
+        var provider = scope.GetService<TestModelProvider>();
+        await searchProvider.DeleteIndexAsync();
+        await searchProvider.InitAsync();
+
+        var firstModel = new TestModel
+        {
+            Title = "Геймеры играют в компьютерные игры.",
+            Description = "Геймеры играют в компьютерные игры.",
+            Url = "mmicentre"
+        };
+        var secondModel = new TestModel
+        {
+            Title = "Геймеры играют в настольные игры.",
+            Description = "Геймеры играют в настольные игры.",
+            Url = "mmicentre"
+        };
+
+        provider.AddModel(firstModel).AddModel(secondModel);
+
+        await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
+
+        var result = await searchProvider.SearchAsync("играют",
+        new SearchOptions { Offset = offset });
+        result.Length.Should().Be(expected);
+    }
 }
 
 public class OpenSearchTestScope : BaseTestScope
