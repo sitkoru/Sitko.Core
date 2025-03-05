@@ -9,14 +9,14 @@ internal class EventProducer(IProducerAccessor producerAccessor) : IEventProduce
 {
     private const int MaxProducingBatchSize = 100;
 
-    public async Task<EventProducingResult> ProduceAsync<TEvent>(TEvent @event) where TEvent : BaseEvent
+    public async Task<EventProducingResult> ProduceAsync<TEvent>(TEvent @event) where TEvent : IBaseEvent
     {
         var (topic, producerName) = EventsRegistry.GetProducerName(@event.GetType());
         var producer = producerAccessor.GetProducer(producerName);
         return await ProduceAsync(producer, topic, @event).ConfigureAwait(false);
     }
 
-    public async Task ProduceAsync<TEvent>(IEnumerable<TEvent> events) where TEvent : BaseEvent
+    public async Task ProduceAsync<TEvent>(IEnumerable<TEvent> events) where TEvent : IBaseEvent
     {
         foreach (var eventBatch in events.Chunk(MaxProducingBatchSize))
         {
@@ -40,14 +40,14 @@ internal class EventProducer(IProducerAccessor producerAccessor) : IEventProduce
 
     private static async Task<EventProducingResult> ProduceAsync<TEvent>
         (IMessageProducer? producer, string topic, TEvent @event)
-        where TEvent : BaseEvent
+        where TEvent : IBaseEvent
     {
         if (producer == null)
         {
             return new EventProducingResult("Producer is null or empty");
         }
 
-        var result = await producer.ProduceAsync(topic, @event.ObjectId, @event).ConfigureAwait(false);
+        var result = await producer.ProduceAsync(topic, @event.GetKey(), @event).ConfigureAwait(false);
         if (result.Status != PersistenceStatus.Persisted)
         {
             throw new InvalidOperationException("Message was not persisted");

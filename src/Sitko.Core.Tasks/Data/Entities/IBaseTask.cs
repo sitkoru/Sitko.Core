@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using Sitko.Core.Queue.Kafka.Events;
 using Sitko.Core.Repository;
 
 namespace Sitko.Core.Tasks.Data.Entities;
 
-public interface IBaseTask : IEntity<Guid>
+public interface IBaseTask : IEntity<Guid>, IBaseEvent
 {
     TaskStatus TaskStatus { get; set; }
     DateTimeOffset? ExecuteDateStart { get; set; }
@@ -12,7 +13,6 @@ public interface IBaseTask : IEntity<Guid>
     Guid? ParentId { get; set; }
     string? UserId { get; set; }
     DateTimeOffset? LastActivityDate { get; set; }
-    string GetKey();
 }
 
 public interface IBaseTask<TConfig> : IBaseTask where TConfig : BaseTaskConfig, new()

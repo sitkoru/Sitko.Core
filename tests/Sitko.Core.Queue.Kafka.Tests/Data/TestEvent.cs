@@ -2,9 +2,10 @@
 
 namespace Sitko.Core.Queue.Kafka.Tests.Data;
 
-public class TestEvent : BaseEvent
+public class TestEvent : IBaseEvent
 {
-    public override string ObjectId { get; set; }
+    public string ObjectId { get; set; }
+    public string GetKey() => throw new NotImplementedException();
 }
 
 public static class TestEventData

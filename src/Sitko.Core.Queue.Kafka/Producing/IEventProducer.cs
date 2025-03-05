@@ -4,9 +4,9 @@ namespace Sitko.Core.Queue.Kafka.Producing;
 
 public interface IEventProducer
 {
-    Task<EventProducingResult> ProduceAsync<TEvent>(TEvent @event) where TEvent : BaseEvent;
+    Task<EventProducingResult> ProduceAsync<TEvent>(TEvent @event) where TEvent : IBaseEvent;
 
-    Task ProduceAsync<TEvent>(IEnumerable<TEvent> events) where TEvent : BaseEvent;
+    Task ProduceAsync<TEvent>(IEnumerable<TEvent> events) where TEvent : IBaseEvent;
 
     Task PingAsync();
 }

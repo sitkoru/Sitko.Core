@@ -1,6 +1,6 @@
 ﻿namespace Sitko.Core.Queue.Kafka.Events;
 
-public class PingEvent : BaseEvent
+public class PingEvent : IBaseEvent
 {
-    public override string ObjectId { get; set; } = Guid.NewGuid().ToString();
+    public string GetKey() => Guid.NewGuid().ToString();
 }

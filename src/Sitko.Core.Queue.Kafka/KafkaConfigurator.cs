@@ -41,17 +41,18 @@ public class KafkaConfigurator
         return this;
     }
 
-    public KafkaConfigurator AddConsumer(IApplicationContext applicationContext, Type consumerType, TopicInfo[] consumerTopics, string groupPrefix = "")
+    public KafkaConfigurator AddConsumer(IApplicationContext applicationContext, Type consumerType,
+        TopicInfo[] consumerTopics, MessageHandlerAttribute? attribute = null, string groupPrefix = "")
     {
-        var attribute = consumerType.FindAttribute<MessageHandlerAttribute>();
+        attribute ??= consumerType.FindAttribute<MessageHandlerAttribute>();
         if (attribute == null)
         {
             return this;
         }
         var eventType = consumerType.BaseType is { IsGenericType: true } ?
             consumerType.BaseType.GenericTypeArguments
-                .FirstOrDefault()?.Name ?? nameof(BaseEvent) :
-            nameof(BaseEvent);
+                .FirstOrDefault()?.Name ?? nameof(IBaseEvent) :
+            nameof(IBaseEvent);
 
         var name =
             $"{applicationContext.Name}/{applicationContext.Id}/{eventType}/{attribute.GroupId}";
@@ -61,9 +62,10 @@ public class KafkaConfigurator
         return this;
     }
 
-    public KafkaConfigurator AddConsumer<TConsumer>(IApplicationContext applicationContext, TopicInfo[] consumerTopics, string groupPrefix = "")
+    public KafkaConfigurator AddConsumer<TConsumer>(IApplicationContext applicationContext,
+        TopicInfo[] consumerTopics, MessageHandlerAttribute? attribute = null, string groupPrefix = "")
     {
-        AddConsumer(applicationContext, typeof(TConsumer), consumerTopics, groupPrefix);
+        AddConsumer(applicationContext, typeof(TConsumer), consumerTopics, attribute, groupPrefix);
         return this;
     }
 
@@ -182,12 +184,12 @@ public class KafkaConfigurator
                         consumerBuilder.WithBufferSize(consumer.Attribute.BufferSize);
                         consumerBuilder.AddMiddlewares(middlewares =>
                         {
-
-                            middlewares.Add<EventConsumptionLogger>();
-                            middlewares.AddDeserializer<JsonCoreDeserializer>();
-                            middlewares.AddTypedHandlers(handlers =>
-                                handlers.AddHandlers(consumersGroup.Select(c => c.Type))
-                                    .WithHandlerLifetime(InstanceLifetime.Scoped));
+                            middlewares
+                                .AddDeserializer<JsonCoreDeserializer>()
+                                .Add<EventConsumptionLogger>()
+                                .AddTypedHandlers(handlers =>
+                                    handlers.AddHandlers(consumersGroup.Select(c => c.Type))
+                                        .WithHandlerLifetime(InstanceLifetime.Scoped));
                             foreach (var middleware in consumerMiddlewares)
                             {
                                 middleware(middlewares);

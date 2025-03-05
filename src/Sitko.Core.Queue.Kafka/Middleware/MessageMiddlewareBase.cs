@@ -10,7 +10,7 @@ public abstract class MessageMiddlewareBase : IMessageMiddleware
 
     public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
     {
-        if (context.Message.Value is BaseEvent message)
+        if (context.Message.Value is IBaseEvent message)
         {
             try
             {
@@ -33,17 +33,17 @@ public abstract class MessageMiddlewareBase : IMessageMiddleware
         }
     }
 
-    protected virtual void HandleFinally(BaseEvent message, IMessageContext context)
+    protected virtual void HandleFinally(IBaseEvent message, IMessageContext context)
     {
     }
 
-    protected virtual void HandleFail(Exception exception, BaseEvent message, IMessageContext context)
+    protected virtual void HandleFail(Exception exception, IBaseEvent message, IMessageContext context)
     {
     }
 
-    protected virtual void HandleSuccess(BaseEvent message, IMessageContext context)
+    protected virtual void HandleSuccess(IBaseEvent message, IMessageContext context)
     {
     }
 
-    protected virtual bool HandleBefore(BaseEvent message, IMessageContext context) => true;
+    protected virtual bool HandleBefore(IBaseEvent message, IMessageContext context) => true;
 }

@@ -2,9 +2,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.Queue.Kafka;
+using Sitko.Core.Queue.Kafka.Attributes;
 using Sitko.Core.Tasks.Data;
 using Sitko.Core.Tasks.Data.Entities;
 using Sitko.Core.Tasks.Execution;
+using Sitko.Core.Tasks.Kafka.Execution;
 using Sitko.Core.Tasks.Kafka.Scheduling;
 
 namespace Sitko.Core.Tasks.Kafka;
@@ -35,19 +37,23 @@ public class
         var kafkaConfigurator = KafkaModule.CreateConfigurator("Kafka_Tasks_Cluster");
         var producerName = $"Tasks_{typeof(TBaseTask).Name}";
 
-        foreach (var executor in executors)
-        {
-            kafkaConfigurator.RegisterEvent(executor.EventType, kafkaTopic, producerName);
-            kafkaConfigurator.AddConsumer(applicationContext, executor.ExecutorType,
-            [
-                new TopicInfo(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
-            ], kafkaGroupPrefix);
-        }
-
         kafkaConfigurator
             .AutoCreateTopic(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
             .EnsureOffsets()
             .AddProducer(producerName, kafkaTopic);
+
+        var executorType = typeof(KafkaExecutor<,>);
+        foreach (var executor in executors)
+        {
+            kafkaConfigurator.RegisterEvent(executor.EventType, kafkaTopic, producerName);
+            kafkaConfigurator.AddConsumer(applicationContext,
+            executorType.MakeGenericType(executor.EventType, executor.ExecutorType),
+            [
+                new TopicInfo(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
+            ],
+            new MessageHandlerAttribute(executor.GroupId, executor.ParallelThreadCount, executor.BufferSize),
+            kafkaGroupPrefix);
+        }
     }
 }
 

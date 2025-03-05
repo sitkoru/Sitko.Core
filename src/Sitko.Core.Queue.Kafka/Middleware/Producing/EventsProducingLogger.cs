@@ -9,7 +9,7 @@ public class EventsProducingLogger
     (ILogger<EventsProducingLogger> logger)
     : MessageMiddlewareBase
 {
-    protected override bool HandleBefore(BaseEvent message, IMessageContext context)
+    protected override bool HandleBefore(IBaseEvent message, IMessageContext context)
     {
         base.HandleBefore(message, context);
         logger.LogInformation(
@@ -19,7 +19,7 @@ public class EventsProducingLogger
         return true;
     }
 
-    protected override void HandleFail(Exception exception, BaseEvent message, IMessageContext context)
+    protected override void HandleFail(Exception exception, IBaseEvent message, IMessageContext context)
     {
         base.HandleFail(exception, message, context);
 
@@ -30,7 +30,7 @@ public class EventsProducingLogger
         message.GetType().FullName, context.Message.Key);
     }
 
-    protected override void HandleFinally(BaseEvent message, IMessageContext context)
+    protected override void HandleFinally(IBaseEvent message, IMessageContext context)
     {
         base.HandleFinally(message, context);
         logger.LogInformation(
