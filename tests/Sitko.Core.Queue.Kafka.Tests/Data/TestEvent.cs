@@ -5,7 +5,7 @@ namespace Sitko.Core.Queue.Kafka.Tests.Data;
 public class TestEvent : IBaseEvent
 {
     public string ObjectId { get; set; }
-    public string GetKey() => throw new NotImplementedException();
+    public string GetKey() => Guid.NewGuid().ToString();
 }
 
 public static class TestEventData
