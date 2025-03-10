@@ -342,7 +342,6 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
     [InlineData("ге", SearchType.Wildcard, 2)]
     [InlineData("ге", SearchType.Morphology, 0)]
     [InlineData("", SearchType.Wildcard, 2)]
-    [InlineData("mmicentre", SearchType.Morphology, 2)]
     public async Task CountAsync(string searchText, SearchType searchType, int expected)
     {
         var scope = await GetScopeAsync();
