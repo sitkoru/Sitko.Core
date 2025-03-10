@@ -104,7 +104,10 @@ public class OpenSearchSearcher<TSearchModel>(
         var resultsCount = await GetClient().CountAsync<TSearchModel>(x =>
             x.Query(q =>
                 {
-                    q.QueryString(qs => qs.Query(names));
+                    q.QueryString(qs =>
+                        searchOptions.SearchType == SearchType.Morphology
+                        ? qs.Query(names)
+                        : qs.Query($"*{names}*").AnalyzeWildcard());
                     return ApplyTagsFilter(q, searchOptions);
                 })
                 .Index(indexName.ToLowerInvariant()), cancellationToken);

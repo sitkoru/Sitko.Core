@@ -336,6 +336,42 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         new SearchOptions { Offset = offset });
         result.Length.Should().Be(expected);
     }
+
+    [Theory(DisplayName = "Counting")]
+    [InlineData("компьютерные", SearchType.Morphology, 1)]
+    [InlineData("ге", SearchType.Wildcard, 2)]
+    [InlineData("ге", SearchType.Morphology, 0)]
+    [InlineData("", SearchType.Wildcard, 2)]
+    [InlineData("mmicentre", SearchType.Morphology, 2)]
+    public async Task CountAsync(string searchText, SearchType searchType, int expected)
+    {
+        var scope = await GetScopeAsync();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
+        var provider = scope.GetService<TestModelProvider>();
+        await searchProvider.DeleteIndexAsync();
+        await searchProvider.InitAsync();
+
+        var firstModel = new TestModel
+        {
+            Title = "Геймеры играют в компьютерные игры.",
+            Description = "Геймеры играет в компьютерные игры.",
+            Url = "mmicentre"
+        };
+        var secondModel = new TestModel
+        {
+            Title = "Геймер играют в настольные игры.",
+            Description = "Геймеры играют в настольные игры.",
+            Url = "mmicentre"
+        };
+
+        provider.AddModel(firstModel).AddModel(secondModel);
+
+        await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
+
+        var result = await searchProvider.CountAsync(searchText,
+        new SearchOptions { SearchType = searchType });
+        result.Should().Be(expected);
+    }
 }
 
 public class OpenSearchTestScope : BaseTestScope
@@ -353,6 +389,9 @@ public class OpenSearchTestScope : BaseTestScope
             moduleOptions.PreTags = "<span class='highlight'>";
             moduleOptions.PostTags = "</span>";
             moduleOptions.Refresh = Refresh.True; // Force new data propagation
+            moduleOptions.Login = "admin";
+            moduleOptions.Password = "8r1#jt2!^YI6";
+            moduleOptions.Url = "https://localhost:9200/";
         });
 
         hostBuilder.Services.AddSingleton<TestModelProvider>();
