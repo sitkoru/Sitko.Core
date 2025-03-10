@@ -104,10 +104,7 @@ public class OpenSearchSearcher<TSearchModel>(
         var resultsCount = await GetClient().CountAsync<TSearchModel>(x =>
             x.Query(q =>
                 {
-                    q.QueryString(qs =>
-                        searchOptions.SearchType == SearchType.Morphology
-                        ? qs.Query(names)
-                        : qs.Query($"*{names}*").AnalyzeWildcard());
+                    GetFieldsSearchRequest(q, names, searchOptions);
                     return ApplyTagsFilter(q, searchOptions);
                 })
                 .Index(indexName.ToLowerInvariant()), cancellationToken);
@@ -301,14 +298,7 @@ public class OpenSearchSearcher<TSearchModel>(
         var names = GetSearchText(term);
         descriptor.Query(q =>
         {
-            q.QueryString(qs =>
-                searchOptions.SearchType == SearchType.Morphology
-                    ? qs.Fields(fieldsDescriptor => fieldsDescriptor.Field(searchModel => searchModel.Title)
-                        .Field(searchModel => searchModel.Content)).Query(names)
-                    : qs.Fields(fieldsDescriptor => fieldsDescriptor
-                        .Field(searchModel => searchModel.Title)
-                        .Field(searchModel => searchModel.Content)).Query($"*{names}*").AnalyzeWildcard());
-
+            GetFieldsSearchRequest(q, names, searchOptions);
             return ApplyTagsFilter(q, searchOptions);
         });
 
@@ -331,6 +321,17 @@ public class OpenSearchSearcher<TSearchModel>(
             .Take(searchOptions.Limit)
             .Index(indexName.ToLowerInvariant());
     }
+
+    private static QueryContainer GetFieldsSearchRequest(QueryContainerDescriptor<TSearchModel> q,
+        string names, SearchOptions? searchOptions) =>
+        q && q.QueryString(qs =>
+            searchOptions?.SearchType == SearchType.Wildcard
+                ? qs.Fields(fieldsDescriptor => fieldsDescriptor
+                    .Field(searchModel => searchModel.Title)
+                    .Field(searchModel => searchModel.Content)).Query($"*{names}*").AnalyzeWildcard()
+                : qs.Fields(fieldsDescriptor => fieldsDescriptor.Field(searchModel => searchModel.Title)
+                    .Field(searchModel => searchModel.Content)).Query(names));
+
 
     private AnalysisDescriptor CreateAnalysisDescriptor(AnalysisDescriptor a) =>
         a.Analyzers(aa =>
