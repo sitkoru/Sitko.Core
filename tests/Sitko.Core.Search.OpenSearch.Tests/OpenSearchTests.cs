@@ -388,9 +388,6 @@ public class OpenSearchTestScope : BaseTestScope
             moduleOptions.PreTags = "<span class='highlight'>";
             moduleOptions.PostTags = "</span>";
             moduleOptions.Refresh = Refresh.True; // Force new data propagation
-            moduleOptions.Login = "admin";
-            moduleOptions.Password = "8r1#jt2!^YI6";
-            moduleOptions.Url = "https://localhost:9200/";
         });
 
         hostBuilder.Services.AddSingleton<TestModelProvider>();
