@@ -399,6 +399,9 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         var addResult = await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         addResult.Should().BeTrue();
 
+        var addEmptyResult = await searchProvider.AddOrUpdateEntitiesAsync([]);
+        addEmptyResult.Should().BeFalse();
+
         firstModel.Title = "Все играют в компьютерные игры.";
         secondModel.Title = "Все играют в настольные игры.";
 
