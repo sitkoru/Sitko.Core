@@ -353,7 +353,7 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         var firstModel = new TestModel
         {
             Title = "Геймеры играют в компьютерные игры.",
-            Description = "Геймеры играет в компьютерные игры.",
+            Description = "Геймеры играют в компьютерные игры.",
             Url = "mmicentre"
         };
         var secondModel = new TestModel
@@ -370,6 +370,51 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         var result = await searchProvider.CountAsync(searchText,
         new SearchOptions { SearchType = searchType });
         result.Should().Be(expected);
+    }
+
+    [Fact]
+    public async Task AddOrUpdateAsync()
+    {
+        var scope = await GetScopeAsync();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
+        var provider = scope.GetService<TestModelProvider>();
+        await searchProvider.DeleteIndexAsync();
+        await searchProvider.InitAsync();
+
+        var firstModel = new TestModel
+        {
+            Title = "Геймеры играют в компьютерные игры.",
+            Description = "Геймеры играют в компьютерные игры.",
+            Url = "mmicentre"
+        };
+        var secondModel = new TestModel
+        {
+            Title = "Геймер играют в настольные игры.",
+            Description = "Геймеры играют в настольные игры.",
+            Url = "mmicentre"
+        };
+
+        provider.AddModel(firstModel).AddModel(secondModel);
+
+        var addResult = await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
+        addResult.Should().BeTrue();
+
+        var addEmptyResult = await searchProvider.AddOrUpdateEntitiesAsync([]);
+        addEmptyResult.Should().BeFalse();
+
+        firstModel.Title = "Все играют в компьютерные игры.";
+        secondModel.Title = "Все играют в настольные игры.";
+
+        var updateResult = await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
+        updateResult.Should().BeTrue();
+
+        var firstSearchResult = await searchProvider.SearchAsync("компьютерные");
+        firstSearchResult.Length.Should().Be(1);
+        Assert.Equal(firstSearchResult[0].Entity.Title, firstModel.Title);
+
+        var secondSearchResult = await searchProvider.SearchAsync("настольные");
+        secondSearchResult.Length.Should().Be(1);
+        Assert.Equal(secondSearchResult[0].Entity.Title, secondModel.Title);
     }
 }
 
