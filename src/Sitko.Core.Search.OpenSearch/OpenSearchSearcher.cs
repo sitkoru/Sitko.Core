@@ -34,7 +34,7 @@ public class OpenSearchSearcher<TSearchModel>(
         bulkRequest.Refresh = optionsMonitor.CurrentValue.Refresh;
         var result = await GetClient().BulkAsync(bulkRequest, cancellationToken);
 
-        var hasErrors = result.ApiCall.Success;
+        var hasErrors = !result.ApiCall.Success;
         if (result.Errors)
         {
             foreach (var item in result.ItemsWithErrors)
