@@ -9,12 +9,14 @@ public interface ISearcher<T> where T : BaseSearchModel
         CancellationToken cancellationToken = default);
 
     Task<bool> DeleteAsync(string indexName, CancellationToken cancellationToken = default);
-    Task<long> CountAsync(string indexName, string term, CancellationToken cancellationToken = default);
 
-    Task<T[]> SearchAsync(string indexName, string term, int limit, SearchType searchType, bool withHighlight = false,
+    Task<long> CountAsync(string indexName, string term, SearchOptions? searchOptions,
         CancellationToken cancellationToken = default);
 
-    Task<T[]> GetSimilarAsync(string indexName, string id, int limit,
+    Task<SearcherEntity<T>[]> SearchAsync(string indexName, string term, SearchOptions? searchOptions,
+        CancellationToken cancellationToken = default);
+
+    Task<SearcherEntity<T>[]> GetSimilarAsync(string indexName, string id, SearchOptions? searchOptions,
         CancellationToken cancellationToken = default);
 
     Task InitAsync(string indexName, CancellationToken cancellationToken = default);
