@@ -116,6 +116,19 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
 
     protected bool IsFirstLoad { get; set; } = true;
 
+    private int RowsPerPageFinal
+    {
+        get
+        {
+            if (EnableUrlNavigation && TryGetQueryString<int?>(PageSizeParam, out var pageSize) && pageSize > 0)
+            {
+                return pageSize.Value;
+            }
+
+            return RowsPerPage;
+        }
+    }
+
     protected async Task DoGetParamsFromUrlAsync(TableState state, CancellationToken cancellationToken = default)
     {
         if (GetParamsFromUrl is not null)
@@ -187,7 +200,8 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
         }
     }
 
-    private async Task<TableData<TItem?>> ServerReloadAsync(TableState state, CancellationToken cancellationToken = default)
+    private async Task<TableData<TItem?>> ServerReloadAsync(TableState state,
+        CancellationToken cancellationToken = default)
     {
         if (IsFirstLoad && EnableUrlNavigation)
         {
@@ -215,7 +229,8 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
     }
 
 
-    protected abstract Task<(TItem[] items, int itemsCount)> GetDataAsync(TableState state, TFilter filter, CancellationToken cancellationToken = default);
+    protected abstract Task<(TItem[] items, int itemsCount)> GetDataAsync(TableState state, TFilter filter,
+        CancellationToken cancellationToken = default);
 
     private Task OnSearchAsync(string text) => UpdateFilterAsync(filter => filter.Search = text);
 
@@ -232,7 +247,7 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
 
 public class
     MudRepositoryTable<TEntity, TEntityPk, TRepository> : MudRepositoryTable<TEntity, TEntityPk, TRepository
-        , MudTableFilter>
+    , MudTableFilter>
     where TEntity : class, IEntity<TEntityPk>
     where TRepository : IRepository<TEntity, TEntityPk>
     where TEntityPk : notnull;
@@ -287,7 +302,8 @@ public abstract class MudRepositoryTable<TEntity, TEntityPk, TRepository, TFilte
         }
     }
 
-    protected virtual Task ConfigureQueryAsync(IRepositoryQuery<TEntity> query, TFilter filter, CancellationToken cancellationToken = default) =>
+    protected virtual Task ConfigureQueryAsync(IRepositoryQuery<TEntity> query, TFilter filter,
+        CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
     protected Task<TResult> ExecuteRepositoryOperation<TResult>(
