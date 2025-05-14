@@ -16,6 +16,7 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
     private const string SearchParam = "query";
 
     private int perPage = 50;
+    private int currentPage;
     protected MudTable<TItem?> Table { get; set; } = null!;
 
     [EditorRequired] [Parameter] public RenderFragment<TItem?>? ChildContent { get; set; }
@@ -85,6 +86,26 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
 
     [Parameter] public EventCallback<int> RowsPerPageChanged { get; set; }
 
+    [Parameter]
+#pragma warning disable BL0007
+    public int CurrentPage
+#pragma warning restore BL0007
+    {
+        get => currentPage;
+        set
+        {
+            if (currentPage == value)
+            {
+                return;
+            }
+
+            currentPage = value;
+            CurrentPageChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter] public EventCallback<int> CurrentPageChanged { get; set; }
+
+
     // [Parameter] public int CurrentPage { get; set; } = 1; TODO: until https://github.com/MudBlazor/MudBlazor/issues/1403
     [Parameter] public bool CustomFooter { get; set; }
     [Parameter] public bool CustomHeader { get; set; }
@@ -120,12 +141,25 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
     {
         get
         {
-            if (EnableUrlNavigation && TryGetQueryString<int?>(PageSizeParam, out var pageSize) && pageSize > 0)
+            if (IsFirstLoad && EnableUrlNavigation && TryGetQueryString<int?>(PageSizeParam, out var pageSize) && pageSize > 0)
             {
                 return pageSize.Value;
             }
 
             return RowsPerPage;
+        }
+    }
+
+    private int CurrentPageFinal
+    {
+        get
+        {
+            if (IsFirstLoad && EnableUrlNavigation && TryGetQueryString<int?>(PageParam, out var page) && page > 0)
+            {
+                return page.Value - 1;
+            }
+
+            return CurrentPage;
         }
     }
 
@@ -159,9 +193,7 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
         if (TryGetQueryString<int?>(PageParam, out var defaultPage))
         {
             state.Page = defaultPage.Value - 1;
-#pragma warning disable BL0005
-            Table.CurrentPage = state.Page;
-#pragma warning restore BL0005
+            CurrentPage = state.Page;
         }
 
         if (TryGetQueryString<string?>(SearchParam, out var defaultQuery) && !string.IsNullOrEmpty(defaultQuery))
@@ -210,6 +242,7 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
         else
         {
             RowsPerPage = state.PageSize;
+            CurrentPage = state.Page;
         }
 
         await StartLoadingAsync(cancellationToken);
