@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -8,10 +10,11 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.App.Web;
+using Sitko.Core.Auth;
 
 namespace Sitko.Core.Identity;
 
-public class IdentityModule<TUser, TRole, TPk, TDbContext> : BaseApplicationModule<IdentityModuleOptions>,
+public class IdentityModule<TUser, TRole, TPk, TDbContext> : AuthModule<IdentityModuleOptions>,
     IAuthApplicationModule
     where TUser : IdentityUser<TPk>
     where TRole : IdentityRole<TPk>
@@ -71,27 +74,32 @@ public class IdentityModule<TUser, TRole, TPk, TDbContext> : BaseApplicationModu
                 services.Remove(services.Last(d => d.ServiceType == typeof(IWebHostEnvironment)));
             }
         }
+    }
 
-        services.ConfigureApplicationCookie(options =>
-        {
-            options.LoginPath = startupOptions.LoginPath;
-            options.LogoutPath = startupOptions.LogoutPath;
-            options.ExpireTimeSpan = TimeSpan.FromDays(startupOptions.CookieExpireDays);
-            options.SlidingExpiration = startupOptions.CookieSlidingExpiration;
-        });
+    protected override void ConfigureCookieOptions(CookieAuthenticationOptions options,
+        IdentityModuleOptions moduleOptions)
+    {
+        base.ConfigureCookieOptions(options, moduleOptions);
+        options.LoginPath = moduleOptions.LoginPath;
+        options.LogoutPath = moduleOptions.LogoutPath;
+    }
+
+    protected override void ConfigureAuthentication(AuthenticationBuilder authenticationBuilder,
+        IdentityModuleOptions startupOptions)
+    {
+        // do nothing
     }
 }
 
-public class IdentityModuleOptions : BaseModuleOptions
+public class IdentityModuleOptions : AuthOptions
 {
     public bool AddDefaultUi { get; set; }
-    public int CookieExpireDays { get; set; } = 30;
-    public bool CookieSlidingExpiration { get; set; } = true;
     public bool RequireConfirmedAccount { get; set; } = true;
-
     public string LoginPath { get; set; } = "/Identity/Account/Login";
-
     public string LogoutPath { get; set; } = "/Identity/Account/Logout";
+    public override bool RequiresCookie => true;
+    public override string SignInScheme => IdentityConstants.ExternalScheme;
+    public override string ChallengeScheme => IdentityConstants.ApplicationScheme;
 }
 
 public class FakeEnv : IWebHostEnvironment
