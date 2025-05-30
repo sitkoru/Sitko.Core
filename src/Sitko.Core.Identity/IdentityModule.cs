@@ -98,6 +98,7 @@ public class IdentityModuleOptions : AuthOptions
     public string LoginPath { get; set; } = "/Identity/Account/Login";
     public string LogoutPath { get; set; } = "/Identity/Account/Logout";
     public override bool RequiresCookie => true;
+    public override bool RequiresAuthentication => false;
     public override string SignInScheme => IdentityConstants.ExternalScheme;
     public override string ChallengeScheme => IdentityConstants.ApplicationScheme;
 }

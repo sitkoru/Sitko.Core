@@ -7,6 +7,7 @@ public class JwtIdentityServerModuleOptions : IdentityServerAuthOptions
 {
     public string JwtAudience { get; set; } = string.Empty;
     public override bool RequiresCookie => false;
+    public override bool RequiresAuthentication => true;
     public override string SignInScheme => JwtBearerDefaults.AuthenticationScheme;
     public override string ChallengeScheme => JwtBearerDefaults.AuthenticationScheme;
 }
