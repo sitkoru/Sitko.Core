@@ -19,6 +19,7 @@ public abstract class AuthOptions : BaseModuleOptions
     public string? RedisPassword { get; set; }
     public int DataProtectionLifeTimeInMinutes { get; set; } = 90 * 24 * 60;
     public abstract bool RequiresCookie { get; }
+    public abstract bool RequiresAuthentication { get; }
     public abstract string SignInScheme { get; }
     public abstract string ChallengeScheme { get; }
     public int CookieExpireInMinutes { get; set; } = 30 * 24 * 60;

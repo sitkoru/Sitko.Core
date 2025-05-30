@@ -15,6 +15,7 @@ public class OidcIdentityServerModuleOptions : IdentityServerAuthOptions
     public bool SaveTokens { get; set; } = true;
     public bool GetClaimsFromUserInfoEndpoint { get; set; } = true;
     public override bool RequiresCookie => true;
+    public override bool RequiresAuthentication => true;
     public override string SignInScheme => "Cookies";
     public override string ChallengeScheme => "oidc";
     public TokenStoreType TokenStoreType { get; set; } = TokenStoreType.None;

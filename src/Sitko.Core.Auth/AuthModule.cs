@@ -19,28 +19,31 @@ public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOpti
         TAuthOptions startupOptions)
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
-        var authenticationBuilder = services.AddAuthentication(options =>
+        if (startupOptions.RequiresAuthentication)
         {
-            options.DefaultScheme = startupOptions.SignInScheme;
-            options.DefaultChallengeScheme = startupOptions.ChallengeScheme;
-        });
-        if (startupOptions.RequiresCookie)
-        {
-            authenticationBuilder.AddCookie(startupOptions.SignInScheme, options =>
+            var authenticationBuilder = services.AddAuthentication(options =>
             {
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(startupOptions.CookieExpireInMinutes);
-                options.SlidingExpiration = true;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                options.Cookie.SameSite = SameSiteMode.None;
-                options.Cookie.IsEssential = true;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                ConfigureCookieOptions(options, startupOptions);
-                startupOptions.ConfigureCookie?.Invoke(options.Cookie);
+                options.DefaultScheme = startupOptions.SignInScheme;
+                options.DefaultChallengeScheme = startupOptions.ChallengeScheme;
             });
+
+            if (startupOptions.RequiresCookie)
+            {
+                authenticationBuilder.AddCookie(startupOptions.SignInScheme, options =>
+                {
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(startupOptions.CookieExpireInMinutes);
+                    options.SlidingExpiration = true;
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                    options.Cookie.SameSite = SameSiteMode.None;
+                    options.Cookie.IsEssential = true;
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                    ConfigureCookieOptions(options, startupOptions);
+                    startupOptions.ConfigureCookie?.Invoke(options.Cookie);
+                });
+            }
+
+            ConfigureAuthentication(authenticationBuilder, startupOptions);
         }
-
-        ConfigureAuthentication(authenticationBuilder, startupOptions);
-
 
         services.AddAuthorization(options =>
         {

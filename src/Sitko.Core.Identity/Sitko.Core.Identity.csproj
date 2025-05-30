@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.Auth\Sitko.Core.Auth.csproj"/>
     <ProjectReference Include="..\Sitko.Core.Db\Sitko.Core.Db.csproj"/>
   </ItemGroup>
   <ItemGroup>
