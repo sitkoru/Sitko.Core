@@ -21,7 +21,10 @@ public class OpenTelemetryModule : BaseApplicationModule<OpenTelemetryModuleOpti
 
         var otelBuilder = services.AddOpenTelemetry();
         otelBuilder
-            .ConfigureResource(builder => builder.AddService(applicationContext.Name));
+            .ConfigureResource(builder => builder.AddService(applicationContext.Name).AddAttributes([
+                new KeyValuePair<string, object>("deployment.environment", applicationContext.Environment),
+                new KeyValuePair<string, object>("host.name", Environment.MachineName)
+            ]));
 
         if (startupOptions.EnableTracing)
         {
@@ -82,7 +85,12 @@ public class OpenTelemetryModule : BaseApplicationModule<OpenTelemetryModuleOpti
                     sinkOptions.Endpoint = options.Endpoint!.ToString();
                     sinkOptions.LogsEndpoint = options.Endpoint!.ToString();
                     sinkOptions.TracesEndpoint = options.Endpoint!.ToString();
-                    sinkOptions.ResourceAttributes = new Dictionary<string, object> { ["service.name"] = context.Name };
+                    sinkOptions.ResourceAttributes = new Dictionary<string, object>
+                    {
+                        ["service.name"] = context.Name,
+                        ["deployment.environment"] = context.Environment,
+                        ["host.name"] = Environment.MachineName
+                    };
                 });
         }
 
