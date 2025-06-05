@@ -13,8 +13,9 @@ public abstract class GrpcClientTest<TScope>(ITestOutputHelper testOutputHelper)
     {
         var scope = await GetScopeAsync();
         var client = scope.GetService<TestService.TestServiceClient>();
-        //await Task.Delay(TimeSpan.FromMinutes(1));
-        var result = await client.RequestAsync(new TestRequest());
+        var data = Guid.NewGuid().ToString();
+        var result = await client.RequestAsync(new TestRequest { Data = data });
         result.ResponseInfo.IsSuccess.Should().BeTrue();
+        result.Data.Should().Be(data);
     }
 }
