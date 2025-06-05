@@ -18,12 +18,13 @@ namespace Sitko.Core.App;
 
 public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBuilder
 {
-    private readonly List<ApplicationModuleRegistration> moduleRegistrations = new();
     private readonly List<Action> moduleConfigurationCallbacks = new();
-    private readonly SerilogConfigurator serilogConfigurator = new();
+    private readonly List<ApplicationModuleRegistration> moduleRegistrations = new();
 
     private readonly List<Action<IApplicationContext, OpenTelemetryModuleOptions, OpenTelemetryBuilder>>
         openTelemetryConfigureActions = new();
+
+    private readonly SerilogConfigurator serilogConfigurator = new();
 
     private IApplicationContext? bootApplicationContext;
 
@@ -44,14 +45,14 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
                                                                       throw new InvalidOperationException(
                                                                           "Application init is not executed");
 
-    public IApplicationContext Context => bootApplicationContext ?? throw new InvalidOperationException(
-        "Application init is not executed");
-
     public string[] Args { get; }
     protected IServiceCollection Services { get; }
     protected IConfigurationBuilder Configuration { get; }
     protected IApplicationEnvironment Environment { get; }
     protected ILoggingBuilder Logging { get; }
+
+    public IApplicationContext Context => bootApplicationContext ?? throw new InvalidOperationException(
+        "Application init is not executed");
 
     public ISitkoCoreApplicationBuilder ConfigureLogLevel(string source, LogEventLevel level)
     {
@@ -136,7 +137,7 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
         Services.AddSingleton(typeof(IBootLogger<>), typeof(BootLogger<>));
         Services.AddSingleton<IApplicationArgsProvider>(argsProvider);
         Services.AddSingleton(Environment);
-        Services.AddSingleton<IApplicationContext, BuilderApplicationContext>();
+        Services.AddSingleton(bootApplicationContext);
         Services.AddTransient<IScheduler, Scheduler>();
         Services.AddFluentValidationExtensions();
         Services.AddTransient(typeof(ILocalizationProvider<>), typeof(LocalizationProvider<>));
@@ -238,8 +239,8 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
 
     protected virtual void BeforeContainerBuild()
     {
-
-        var enabledModulesBeforeOpenTelemetry = ModulesHelper.GetEnabledModuleRegistrations(Context, moduleRegistrations);
+        var enabledModulesBeforeOpenTelemetry =
+            ModulesHelper.GetEnabledModuleRegistrations(Context, moduleRegistrations);
 
         AddModule<OpenTelemetryModule, OpenTelemetryModuleOptions>((context, options) =>
         {

@@ -5,10 +5,12 @@ package Sitko.Core.Grpc.Client.Tests;
 
 message TestRequest {
     Sitko.Core.Grpc.ApiRequestInfo RequestInfo = 1;
+    string Data = 2;
 }
 
 message TestResponse {
     Sitko.Core.Grpc.ApiResponseInfo ResponseInfo = 1;
+    string Data = 2;
 }
 
 service TestService {
