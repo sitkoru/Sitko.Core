@@ -34,7 +34,13 @@ public class ServiceDiscoveryResolver(
         resolver.Subscribe(GrpcModuleConstants.GrpcServiceDiscoveryType,
             address.LocalPath.TrimStart('/'), services =>
             {
-                var addresses = services.Select(s => new BalancerAddress(s.Host, s.Port)).ToArray();
+                var addresses = services.Select(s =>
+                {
+                    var balancerAddress = new BalancerAddress(s.Host, s.Port);
+                    // fill attributes to avoid equality problems in BalancerAddressEqualityComparer
+                    balancerAddress.Attributes.TryAdd("Name", s.Name);
+                    return balancerAddress;
+                }).ToArray();
                 logger.LogInformation("Resolved {Address} service discovery to {Addresses}", address, addresses);
                 listener(ResolverResult.ForResult(addresses));
             });

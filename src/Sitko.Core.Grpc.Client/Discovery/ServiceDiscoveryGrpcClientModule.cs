@@ -11,8 +11,10 @@ public class ServiceDiscoveryGrpcClientModule<TClient> : GrpcClientModule<TClien
     where TClient : ClientBase<TClient>
 {
     public override string OptionsKey => $"Grpc:Client:{typeof(TClient).Name}";
+    protected override bool NeedSocketHandler => true;
 
-    protected override string ResolverFactoryScheme => ServiceDiscoveryResolverFactory.SchemeName;
+    protected override Uri GenerateAddress(ServiceDiscoveryGrpcClientModuleOptions<TClient> options) => new(
+        $"{ServiceDiscoveryResolverFactory.SchemeName}:///{GrpcServicesHelper.GetServiceNameForClient<TClient>()}");
 
     public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider)
     {
@@ -21,6 +23,10 @@ public class ServiceDiscoveryGrpcClientModule<TClient> : GrpcClientModule<TClien
         await resolver.LoadAsync();
     }
 
-    protected override ResolverFactory CreateResolverFactory(IServiceProvider sp) =>
-        new ServiceDiscoveryResolverFactory();
+    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
+        ServiceDiscoveryGrpcClientModuleOptions<TClient> startupOptions)
+    {
+        base.ConfigureServices(applicationContext, services, startupOptions);
+        services.AddSingleton<ResolverFactory, ServiceDiscoveryResolverFactory>();
+    }
 }

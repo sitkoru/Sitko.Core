@@ -1,6 +1,6 @@
 using Grpc.Core;
-using Grpc.Net.Client.Balancer;
 using Grpc.Net.Client.Configuration;
+using Grpc.Net.Client.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenTelemetry;
@@ -18,7 +18,7 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
     where TClient : ClientBase<TClient>
     where TGrpcClientModuleOptions : GrpcClientModuleOptions<TClient>, new()
 {
-    protected abstract string ResolverFactoryScheme { get; }
+    protected virtual bool NeedSocketHandler => false;
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TGrpcClientModuleOptions startupOptions)
@@ -31,12 +31,9 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
         }
 
         services.TryAddSingleton(TimeProvider.System);
-        services.AddSingleton(CreateResolverFactory);
-        RegisterClient<TClient>(applicationContext, startupOptions);
         var builder = services.AddGrpcClient<TClient>((provider, options) =>
         {
-            options.Address =
-                new Uri($"{ResolverFactoryScheme}:///{GrpcServicesHelper.GetServiceNameForClient<TClient>()}");
+            options.Address = GenerateAddress(startupOptions);
             options.CallOptionsActions.Add(context =>
             {
                 if (startupOptions.DefaultDeadline is not null)
@@ -49,24 +46,10 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
         });
         services.AddTransient<IGrpcClientProvider<TClient>, GrpcClientProvider<TClient>>();
         startupOptions.ConfigureClient(services, builder);
-        builder.ConfigurePrimaryHttpMessageHandler(() =>
-        {
-            var handler = new SocketsHttpHandler();
-
-            if (startupOptions.DisableCertificatesValidation)
-            {
-#pragma warning disable CA5359
-                handler.SslOptions.RemoteCertificateValidationCallback = (_, _, _, _) => true;
-#pragma warning restore CA5359
-            }
-
-            if (startupOptions.ConfigureHttpHandler is not null)
-            {
-                return startupOptions.ConfigureHttpHandler(handler);
-            }
-
-            return handler;
-        });
+        builder.ConfigurePrimaryHttpMessageHandler(provider =>
+            NeedSocketHandler
+                ? CreateSocketHttpHandler(provider, startupOptions)
+                : CreateHttpClientHandler(provider, startupOptions));
         builder.ConfigureChannel(options =>
         {
             if (!startupOptions.EnableHttp2UnencryptedSupport)
@@ -74,7 +57,10 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
                 options.Credentials = ChannelCredentials.SecureSsl;
             }
 
-            options.ServiceConfig = new ServiceConfig { LoadBalancingConfigs = { new RoundRobinConfig() } };
+            if (NeedSocketHandler)
+            {
+                options.ServiceConfig = new ServiceConfig { LoadBalancingConfigs = { new RoundRobinConfig() } };
+            }
 
             startupOptions.ConfigureChannelOptions?.Invoke(options);
         });
@@ -84,11 +70,49 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
         OpenTelemetryBuilder builder) =>
         builder.WithTracing(providerBuilder => providerBuilder.AddGrpcClientInstrumentation());
 
-    protected virtual void RegisterClient<TClientBase>(IApplicationContext applicationContext,
+    protected abstract Uri GenerateAddress(TGrpcClientModuleOptions options);
+
+    protected virtual HttpMessageHandler CreateHttpClientHandler(IServiceProvider provider,
         TGrpcClientModuleOptions options)
-        where TClientBase : ClientBase<TClientBase>
     {
+        var httpClientHandler = new HttpClientHandler();
+        if (options.DisableCertificatesValidation)
+        {
+            httpClientHandler.ServerCertificateCustomValidationCallback =
+                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+        }
+
+        HttpMessageHandler handler = httpClientHandler;
+        if (options.ConfigureHttpHandler is not null)
+        {
+            handler = options.ConfigureHttpHandler(handler);
+        }
+
+        return options.UseGrpcWeb ? new GrpcWebHandler(handler) : handler;
     }
 
-    protected abstract ResolverFactory CreateResolverFactory(IServiceProvider sp);
+    protected virtual HttpMessageHandler CreateSocketHttpHandler(IServiceProvider serviceProvider,
+        TGrpcClientModuleOptions options)
+    {
+        var handler = new SocketsHttpHandler
+        {
+            ConnectTimeout = TimeSpan.FromSeconds(5),
+            PooledConnectionIdleTimeout = TimeSpan.FromMinutes(1),
+            EnableMultipleHttp2Connections = true
+        };
+
+        if (options.DisableCertificatesValidation)
+        {
+#pragma warning disable CA5359
+            handler.SslOptions.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+#pragma warning restore CA5359
+        }
+
+        if (options.ConfigureHttpHandler is not null)
+        {
+            return options.ConfigureHttpHandler(handler);
+        }
+
+        return handler;
+    }
 }

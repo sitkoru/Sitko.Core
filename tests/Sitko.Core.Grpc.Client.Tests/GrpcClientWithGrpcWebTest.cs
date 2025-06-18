@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Hosting;
-using Sitko.Core.Grpc.Client.Web;
 using Sitko.Core.Grpc.Server;
 using Xunit.Abstractions;
 

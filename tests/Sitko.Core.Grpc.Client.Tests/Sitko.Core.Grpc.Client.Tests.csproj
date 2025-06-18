@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Sitko.Core.Grpc.Client.Web\Sitko.Core.Grpc.Client.Web.csproj"/>
     <ProjectReference Include="..\..\src\Sitko.Core.Grpc.Client\Sitko.Core.Grpc.Client.csproj"/>
     <ProjectReference Include="..\..\src\Sitko.Core.Grpc.Server\Sitko.Core.Grpc.Server.csproj"/>
     <ProjectReference Include="..\..\src\Sitko.Core.Grpc\Sitko.Core.Grpc.csproj"/>

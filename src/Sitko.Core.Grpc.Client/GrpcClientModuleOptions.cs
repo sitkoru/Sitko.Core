@@ -20,6 +20,7 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
     public TimeSpan? DefaultDeadline { get; set; } = TimeSpan.FromMinutes(30);
     [JsonIgnore] public Action<GrpcChannelOptions>? ConfigureChannelOptions { get; set; }
     [JsonIgnore] public Func<HttpMessageHandler, HttpMessageHandler>? ConfigureHttpHandler { get; set; }
+    public bool UseGrpcWeb { get; set; }
 
     internal void ConfigureClient(IServiceCollection services, IHttpClientBuilder builder)
     {
