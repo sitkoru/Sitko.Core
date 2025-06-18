@@ -8,6 +8,7 @@ public class BasicAuthModuleOptions : AuthOptions
     public string Realm { get; set; } = "Basic Auth";
     public string Username { get; set; } = "";
     public string Password { get; set; } = "";
+    public bool AllowInsecureProtocol { get; set; }
     public override bool RequiresCookie => false;
     public override bool RequiresAuthentication => true;
     public override string SignInScheme => BasicAuthenticationDefaults.AuthenticationScheme;
@@ -23,4 +24,3 @@ public class BasicAuthModuleOptionsValidator : AbstractValidator<BasicAuthModule
         RuleFor(o => o.Password).NotEmpty().WithMessage("Password can't be empty");
     }
 }
-

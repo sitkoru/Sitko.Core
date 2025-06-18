@@ -14,6 +14,7 @@ public class BasicAuthModule : AuthModule<BasicAuthModuleOptions>
         authenticationBuilder.AddBasic(options =>
         {
             options.Realm = startupOptions.Realm;
+            options.AllowInsecureProtocol = startupOptions.AllowInsecureProtocol;
             options.Events = new BasicAuthenticationEvents
             {
                 OnValidateCredentials = validateContext =>
@@ -45,4 +46,3 @@ public class BasicAuthModule : AuthModule<BasicAuthModuleOptions>
             };
         });
 }
-
