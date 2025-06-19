@@ -1,7 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\..\src\Sitko.Core.Grpc.Client\Sitko.Core.Grpc.Client.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.Grpc.Server\Sitko.Core.Grpc.Server.csproj"/>
     <ProjectReference Include="..\..\src\Sitko.Core.Grpc\Sitko.Core.Grpc.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.ServiceDiscovery.Resolver.Consul\Sitko.Core.ServiceDiscovery.Resolver.Consul.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.ServiceDiscovery.Server.Consul\Sitko.Core.ServiceDiscovery.Server.Consul.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.Xunit.Web\Sitko.Core.Xunit.Web.csproj"/>
     <Protobuf Include="**/*.proto" GrpcServices="Both" AdditionalImportDirs="..\..\src\Sitko.Core.Grpc\Proto"/>
   </ItemGroup>
 </Project>

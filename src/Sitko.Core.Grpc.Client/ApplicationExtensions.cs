@@ -33,16 +33,20 @@ public static class ApplicationExtensions
         Action<IApplicationContext, ServiceDiscoveryGrpcClientModuleOptions<TClient>> configure,
         string? optionsKey = null)
         where TClient : ClientBase<TClient> =>
-        applicationBuilder.AddModule<ServiceDiscoveryGrpcClientModule<TClient>, ServiceDiscoveryGrpcClientModuleOptions<TClient>>(configure,
-            optionsKey);
+        applicationBuilder
+            .AddModule<ServiceDiscoveryGrpcClientModule<TClient>, ServiceDiscoveryGrpcClientModuleOptions<TClient>>(
+                configure,
+                optionsKey);
 
     public static ISitkoCoreApplicationBuilder AddGrpcClient<TClient>(
         this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<ServiceDiscoveryGrpcClientModuleOptions<TClient>>? configure = null,
         string? optionsKey = null)
         where TClient : ClientBase<TClient> =>
-        applicationBuilder.AddModule<ServiceDiscoveryGrpcClientModule<TClient>, ServiceDiscoveryGrpcClientModuleOptions<TClient>>(configure,
-            optionsKey);
+        applicationBuilder
+            .AddModule<ServiceDiscoveryGrpcClientModule<TClient>, ServiceDiscoveryGrpcClientModuleOptions<TClient>>(
+                configure,
+                optionsKey);
 
     public static IHostApplicationBuilder AddExternalGrpcClient<TClient>(
         this IHostApplicationBuilder hostApplicationBuilder,
@@ -80,5 +84,49 @@ public static class ApplicationExtensions
         where TClient : ClientBase<TClient> =>
         applicationBuilder.AddModule<ExternalGrpcClientModule<TClient>, ExternalGrpcClientModuleOptions<TClient>>(
             configure,
+            optionsKey);
+
+    public static IHostApplicationBuilder AddGrpcWebClient<TClient>(this IHostApplicationBuilder hostApplicationBuilder,
+        Action<IApplicationContext, ExternalGrpcClientModuleOptions<TClient>> configure,
+        string? optionsKey = null)
+        where TClient : ClientBase<TClient>
+    {
+        hostApplicationBuilder.GetSitkoCore().AddGrpcWebClient(configure, optionsKey);
+        return hostApplicationBuilder;
+    }
+
+    public static IHostApplicationBuilder AddGrpcWebClient<TClient>(this IHostApplicationBuilder hostApplicationBuilder,
+        Action<ExternalGrpcClientModuleOptions<TClient>>? configure = null,
+        string? optionsKey = null)
+        where TClient : ClientBase<TClient>
+    {
+        hostApplicationBuilder.GetSitkoCore().AddGrpcWebClient(configure, optionsKey);
+        return hostApplicationBuilder;
+    }
+
+    public static ISitkoCoreApplicationBuilder AddGrpcWebClient<TClient>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
+        Action<IApplicationContext, ExternalGrpcClientModuleOptions<TClient>> configure,
+        string? optionsKey = null)
+        where TClient : ClientBase<TClient> =>
+        applicationBuilder.AddModule<ExternalGrpcClientModule<TClient>, ExternalGrpcClientModuleOptions<TClient>>(
+            (context, options) =>
+            {
+                options.UseGrpcWeb = true;
+                configure(context, options);
+            },
+            optionsKey);
+
+    public static ISitkoCoreApplicationBuilder AddGrpcWebClient<TClient>(
+        this ISitkoCoreApplicationBuilder applicationBuilder,
+        Action<ExternalGrpcClientModuleOptions<TClient>>? configure = null,
+        string? optionsKey = null)
+        where TClient : ClientBase<TClient> =>
+        applicationBuilder.AddModule<ExternalGrpcClientModule<TClient>, ExternalGrpcClientModuleOptions<TClient>>(
+            options =>
+            {
+                options.UseGrpcWeb = true;
+                configure?.Invoke(options);
+            },
             optionsKey);
 }
