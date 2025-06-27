@@ -50,6 +50,11 @@ jobs:
   grpc:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
+    env:
+      CONSUL__CONSULURI: http://consul:8500
+    services:
+      consul:
+        image: hashicorp/consul
     steps:
       - uses: actions/checkout@v4
       - name: Run tests
