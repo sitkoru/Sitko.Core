@@ -13,13 +13,14 @@ namespace Sitko.Core.Grpc.Client;
 public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient : ClientBase<TClient>
 {
     private const string AuthorizationHeader = "Authorization";
-    private readonly Dictionary<Type, Action<IServiceCollection, IHttpClientBuilder>> interceptorActions = new();
     private readonly List<Action<IServiceCollection>> configureServicesActions = new();
+    private readonly Dictionary<Type, Action<IServiceCollection, IHttpClientBuilder>> interceptorActions = new();
     public bool EnableHttp2UnencryptedSupport { get; set; }
     public bool DisableCertificatesValidation { get; set; }
     public TimeSpan? DefaultDeadline { get; set; } = TimeSpan.FromMinutes(30);
     [JsonIgnore] public Action<GrpcChannelOptions>? ConfigureChannelOptions { get; set; }
-    [JsonIgnore] public Func<HttpClientHandler, HttpMessageHandler>? ConfigureHttpHandler { get; set; }
+    [JsonIgnore] public Func<HttpMessageHandler, HttpMessageHandler>? ConfigureHttpHandler { get; set; }
+    public bool UseGrpcWeb { get; set; }
 
     internal void ConfigureClient(IServiceCollection services, IHttpClientBuilder builder)
     {
@@ -80,7 +81,9 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
     {
         configureServicesActions.Add(services =>
         {
-            services.AddTransient<IGrpcMetadataProviderFactory<TClient>, GrpcMetadataProviderFactory<TClient, TMetadataProvider>>();
+            services
+                .AddTransient<IGrpcMetadataProviderFactory<TClient>,
+                    GrpcMetadataProviderFactory<TClient, TMetadataProvider>>();
             services.AddTransient<IGrpcMetadataProvider, TMetadataProvider>();
         });
         return this;
@@ -91,7 +94,8 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
     {
         configureServicesActions.Add(services =>
         {
-            services.AddTransient<IGrpcTokenProviderFactory<TClient>, GrpcTokenProviderFactory<TClient, TTokenProvider>>();
+            services
+                .AddTransient<IGrpcTokenProviderFactory<TClient>, GrpcTokenProviderFactory<TClient, TTokenProvider>>();
             services.AddTransient<IGrpcTokenProvider, TTokenProvider>();
         });
         return this;

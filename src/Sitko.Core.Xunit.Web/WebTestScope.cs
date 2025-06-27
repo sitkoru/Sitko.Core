@@ -26,6 +26,8 @@ public abstract class WebTestScope<TApplicationBuilder, TConfig> : BaseTestScope
     protected IHost? Host { get; private set; }
     protected TestServer? Server { get; private set; }
 
+    protected virtual bool UseTestServer => true;
+
     protected virtual WebApplicationBuilder ConfigureWebApplication(WebApplicationBuilder webApplicationBuilder,
         string name) => webApplicationBuilder;
 
@@ -36,12 +38,20 @@ public abstract class WebTestScope<TApplicationBuilder, TConfig> : BaseTestScope
         ConfigureWebApplication(builder, name);
         builder.Services.AddMvc().AddApplicationPart(GetType().Assembly)
             .AddControllersAsServices();
-        builder.WebHost.UseTestServer();
+        if (UseTestServer)
+        {
+            builder.WebHost.UseTestServer();
+        }
+
         var host = builder.Build();
         host.MapControllers();
         host.MapSitkoCore();
         await host.StartAsync();
-        Server = host.GetTestServer();
+        if (UseTestServer)
+        {
+            Server = host.GetTestServer();
+        }
+
         Host = host;
         await InitWebApplicationAsync(host.Services);
     }

@@ -1,24 +1,25 @@
 using Grpc.Core;
+using Grpc.Net.Client.Configuration;
+using Grpc.Net.Client.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenTelemetry;
 using OpenTelemetry.Trace;
 using Sitko.Core.App;
-using Sitko.Core.App.Health;
 using Sitko.Core.App.OpenTelemetry;
-using Sitko.Core.Grpc.Client.Discovery;
 
 namespace Sitko.Core.Grpc.Client;
 
 public interface IGrpcClientModule<TClient> where TClient : ClientBase<TClient>;
 
-public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOptions> :
+public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
     BaseApplicationModule<TGrpcClientModuleOptions>,
     IGrpcClientModule<TClient>, IOpenTelemetryModule<TGrpcClientModuleOptions>
     where TClient : ClientBase<TClient>
-    where TResolver : class, IGrpcServiceAddressResolver<TClient>
     where TGrpcClientModuleOptions : GrpcClientModuleOptions<TClient>, new()
 {
+    protected virtual bool NeedSocketHandler => false;
+
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TGrpcClientModuleOptions startupOptions)
     {
@@ -30,11 +31,9 @@ public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOpti
         }
 
         services.TryAddSingleton(TimeProvider.System);
-        services.TryAddSingleton<GrpcClientActivator<TClient>>();
-        services.TryAddSingleton<GrpcCallInvokerFactory>();
-        services.TryAddTransient<global::Grpc.Net.ClientFactory.GrpcClientFactory, GrpcClientFactory>();
         var builder = services.AddGrpcClient<TClient>((provider, options) =>
         {
+            options.Address = GenerateAddress(startupOptions);
             options.CallOptionsActions.Add(context =>
             {
                 if (startupOptions.DefaultDeadline is not null)
@@ -46,45 +45,74 @@ public abstract class GrpcClientModule<TClient, TResolver, TGrpcClientModuleOpti
             });
         });
         services.AddTransient<IGrpcClientProvider<TClient>, GrpcClientProvider<TClient>>();
-        RegisterResolver(services, startupOptions);
         startupOptions.ConfigureClient(services, builder);
-        builder.ConfigurePrimaryHttpMessageHandler(() =>
-        {
-            var handler = new HttpClientHandler();
-            if (startupOptions.DisableCertificatesValidation)
-            {
-                handler.ServerCertificateCustomValidationCallback =
-                    HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-            }
-
-            if (startupOptions.ConfigureHttpHandler is not null)
-            {
-                return startupOptions.ConfigureHttpHandler(handler);
-            }
-
-            return handler;
-        });
+        builder.ConfigurePrimaryHttpMessageHandler(provider =>
+            NeedSocketHandler
+                ? CreateSocketHttpHandler(provider, startupOptions)
+                : CreateHttpClientHandler(provider, startupOptions));
         builder.ConfigureChannel(options =>
         {
+            if (!startupOptions.EnableHttp2UnencryptedSupport)
+            {
+                options.Credentials = ChannelCredentials.SecureSsl;
+            }
+
+            if (NeedSocketHandler)
+            {
+                options.ServiceConfig = new ServiceConfig { LoadBalancingConfigs = { new RoundRobinConfig() } };
+            }
+
             startupOptions.ConfigureChannelOptions?.Invoke(options);
         });
-
-        services.AddHealthChecks()
-            .AddCheck<GrpcClientHealthCheck<TClient>>($"GRPC Client check: {typeof(TClient)}",
-                tags: HealthCheckStages.GetSkipAllTags());
     }
 
     public OpenTelemetryBuilder ConfigureOpenTelemetry(IApplicationContext context, TGrpcClientModuleOptions options,
         OpenTelemetryBuilder builder) =>
         builder.WithTracing(providerBuilder => providerBuilder.AddGrpcClientInstrumentation());
 
-    public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider)
+    protected abstract Uri GenerateAddress(TGrpcClientModuleOptions options);
+
+    protected virtual HttpMessageHandler CreateHttpClientHandler(IServiceProvider provider,
+        TGrpcClientModuleOptions options)
     {
-        await base.InitAsync(applicationContext, serviceProvider);
-        var resolver = serviceProvider.GetRequiredService<IGrpcServiceAddressResolver<TClient>>();
-        await resolver.InitAsync();
+        var httpClientHandler = new HttpClientHandler();
+        if (options.DisableCertificatesValidation)
+        {
+            httpClientHandler.ServerCertificateCustomValidationCallback =
+                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+        }
+
+        HttpMessageHandler handler = httpClientHandler;
+        if (options.ConfigureHttpHandler is not null)
+        {
+            handler = options.ConfigureHttpHandler(handler);
+        }
+
+        return options.UseGrpcWeb ? new GrpcWebHandler(handler) : handler;
     }
 
-    protected virtual void RegisterResolver(IServiceCollection services, TGrpcClientModuleOptions config) =>
-        services.AddSingleton<IGrpcServiceAddressResolver<TClient>, TResolver>();
+    protected virtual HttpMessageHandler CreateSocketHttpHandler(IServiceProvider serviceProvider,
+        TGrpcClientModuleOptions options)
+    {
+        var handler = new SocketsHttpHandler
+        {
+            ConnectTimeout = TimeSpan.FromSeconds(5),
+            PooledConnectionIdleTimeout = TimeSpan.FromMinutes(1),
+            EnableMultipleHttp2Connections = true
+        };
+
+        if (options.DisableCertificatesValidation)
+        {
+#pragma warning disable CA5359
+            handler.SslOptions.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+#pragma warning restore CA5359
+        }
+
+        if (options.ConfigureHttpHandler is not null)
+        {
+            return options.ConfigureHttpHandler(handler);
+        }
+
+        return handler;
+    }
 }
