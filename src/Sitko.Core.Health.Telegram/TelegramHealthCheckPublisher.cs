@@ -47,8 +47,8 @@ public class TelegramHealthCheckPublisher : BaseHealthCheckPublisher<TelegramHea
             }
         }
 
-        return telegramBotClient.SendTextMessageAsync(chatId,
-            text, null, ParseMode.Markdown,
+        return telegramBotClient.SendMessage(chatId,
+            text, ParseMode.Markdown,
             cancellationToken: cancellationToken);
     }
 }

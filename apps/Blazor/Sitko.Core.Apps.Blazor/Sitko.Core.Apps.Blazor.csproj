@@ -15,8 +15,8 @@
     <ProjectReference Include="..\..\..\src\Sitko.Core.Storage.Metadata.Postgres\Sitko.Core.Storage.Metadata.Postgres.csproj" />
     <ProjectReference Include="..\..\..\src\Sitko.Core.Storage.Remote.Server\Sitko.Core.Storage.Remote.Server.csproj" />
     <ProjectReference Include="..\Sitko.Core.Apps.Blazor.Client\Sitko.Core.Apps.Blazor.Client.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.6">
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.17" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
