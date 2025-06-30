@@ -261,7 +261,7 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
                 response = await s3Client.ListObjectsV2Async(request, cancellationToken);
                 items.AddRange(response.S3Objects.Select(s3Object =>
                     new StorageItemInfo(Helpers.GetPathWithoutPrefix(Options.Prefix, s3Object.Key), (long)s3Object.Size!,
-                        s3Object.LastModified!.Value.ToUniversalTime())));
+                        s3Object.LastModified?.ToUniversalTime() ?? DateTimeOffset.UtcNow)));
 
                 request.ContinuationToken = response.NextContinuationToken;
             } while ((bool)response.IsTruncated!);

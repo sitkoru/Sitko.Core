@@ -14,7 +14,7 @@ public static class S3ClientExtensions
 
         var response = await client.ListObjectsAsync(request, cancellationToken);
 
-        return response.S3Objects.Any();
+        return response.S3Objects?.Any() ?? false;
     }
 
     internal static async Task<GetObjectResponse?> DownloadFileAsync(this AmazonS3Client client, string bucket,
