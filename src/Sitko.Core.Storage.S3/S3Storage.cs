@@ -264,7 +264,7 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
                         s3Object.LastModified?.ToUniversalTime() ?? DateTimeOffset.UtcNow)));
 
                 request.ContinuationToken = response.NextContinuationToken;
-            } while ((bool)response.IsTruncated!);
+            } while (response.IsTruncated ?? false);
         }
         catch (AmazonS3Exception amazonS3Exception)
         {

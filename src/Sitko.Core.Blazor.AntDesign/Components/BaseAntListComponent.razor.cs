@@ -70,7 +70,7 @@ public abstract partial class BaseAntListComponent<TItem> where TItem : class
 
     [Parameter] public EventCallback<RowData<TItem>> OnExpand { get; set; }
 
-    [Parameter] public SortDirection[] SortDirections { get; set; } = [SortDirection.Ascending, SortDirection.Descending, SortDirection.None];
+    [Parameter] public SortDirection[] SortDirections { get; set; } = SortDirection.Preset.Default;
 
     [Parameter] public string TableLayout { get; set; } = "";
 
