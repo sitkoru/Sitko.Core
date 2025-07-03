@@ -242,7 +242,7 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
             return null;
         }
 
-        return new StorageItemDownloadInfo(path, fileResponse.ContentLength, fileResponse.LastModified,
+        return new StorageItemDownloadInfo(path, fileResponse.ContentLength, fileResponse.LastModified!.Value,
             () => Task.FromResult(fileResponse.ResponseStream));
     }
 
@@ -260,11 +260,11 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
                 using var s3Client = s3ClientProvider.S3Client;
                 response = await s3Client.ListObjectsV2Async(request, cancellationToken);
                 items.AddRange(response.S3Objects.Select(s3Object =>
-                    new StorageItemInfo(Helpers.GetPathWithoutPrefix(Options.Prefix, s3Object.Key), s3Object.Size,
-                        s3Object.LastModified.ToUniversalTime())));
+                    new StorageItemInfo(Helpers.GetPathWithoutPrefix(Options.Prefix, s3Object.Key), (long)s3Object.Size!,
+                        s3Object.LastModified?.ToUniversalTime() ?? DateTimeOffset.UtcNow)));
 
                 request.ContinuationToken = response.NextContinuationToken;
-            } while (response.IsTruncated);
+            } while (response.IsTruncated ?? false);
         }
         catch (AmazonS3Exception amazonS3Exception)
         {
