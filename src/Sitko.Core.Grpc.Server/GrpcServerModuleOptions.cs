@@ -18,15 +18,10 @@ public class GrpcServerModuleOptions : BaseModuleOptions
     public List<string> ServiceDiscoveryPortNames { get; set; } = ["gRPC", "https"];
     [JsonIgnore] public Action<IWebHostBuilder>? ConfigureWebHostDefaults { get; set; }
 
-    public int ChecksIntervalInSeconds { get; set; } = 60;
-    public int DeregisterTimeoutInSeconds { get; set; } = 60;
-
     public bool EnableReflection { get; set; }
     public bool EnableDetailedErrors { get; set; }
 
     [JsonIgnore] public Action<GrpcServiceOptions>? ConfigureGrpcService { get; set; }
-
-    public bool AutoFixRegistration { get; set; }
 
     [JsonIgnore]
     internal IReadOnlyDictionary<string, Action<IGrpcServerModule>> ServiceRegistrations =>
