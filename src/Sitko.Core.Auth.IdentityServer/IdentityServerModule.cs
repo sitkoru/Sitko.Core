@@ -27,7 +27,7 @@ public abstract class IdentityServerModule<TAuthOptions> : AuthModule<TAuthOptio
             {
                 if (IdentityServerModuleChecks.Checks.TryAdd(oidcUri.ToString(), true))
                 {
-                    services.AddHealthChecks().AddIdentityServer(oidcUri, name: $"IdSrv: {oidcUri}",
+                    services.AddHealthChecks().AddOpenIdConnectServer(oidcUri, name: $"IdSrv: {oidcUri}",
                         failureStatus: HealthStatus.Unhealthy,
                         tags: HealthCheckStages.GetSkipTags(HealthCheckStages.Liveness, HealthCheckStages.Readiness));
                 }
