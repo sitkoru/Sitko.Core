@@ -23,24 +23,28 @@ public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3Sto
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddSingleton<S3ClientProvider<TS3StorageOptions>>();
-        services.AddHealthChecks().Add(new HealthCheckRegistration(GetType().Name,
-            serviceProvider =>
-            {
-                var config = GetOptions(serviceProvider);
-                var options = new S3BucketOptions
+        if (!startupOptions.DisableHealthCheck)
+        {
+            services.AddHealthChecks().Add(new HealthCheckRegistration(GetType().Name,
+                serviceProvider =>
                 {
-                    BucketName = config.Bucket,
-                    S3Config = new AmazonS3Config
+                    var config = GetOptions(serviceProvider);
+                    var options = new S3BucketOptions
                     {
-                        RegionEndpoint = config.Region,
-                        ServiceURL = config.Server?.ToString(),
-                        ForcePathStyle = true
-                    },
-                    Credentials = new BasicAWSCredentials(config.AccessKey, config.SecretKey)
-                };
-                return new S3HealthCheck(options);
-            }, null, tags: HealthCheckStages.GetSkipTags(HealthCheckStages.Liveness, HealthCheckStages.Readiness),
-            null));
+                        BucketName = config.Bucket,
+                        S3Config = new AmazonS3Config
+                        {
+                            RegionEndpoint = config.Region,
+                            ServiceURL = config.Server?.ToString(),
+                            ForcePathStyle = true
+                        },
+                        Credentials = new BasicAWSCredentials(config.AccessKey, config.SecretKey)
+                    };
+                    return new S3HealthCheck(options);
+                }, HealthStatus.Unhealthy,
+                HealthCheckStages.GetSkipTags(HealthCheckStages.Liveness, HealthCheckStages.Readiness),
+                startupOptions.HealthCheckTimeout));
+        }
     }
 }
 
@@ -57,6 +61,9 @@ public class S3StorageOptions : StorageOptions, IModuleOptionsWithValidation
     public int PreSignedUrlsExpirationInHours { get; set; } = 1;
     public Policy? BucketPolicy { get; set; }
     public bool DeleteBucketOnCleanup { get; set; }
+
+    public bool DisableHealthCheck { get; set; }
+    public TimeSpan? HealthCheckTimeout { get; set; } = TimeSpan.FromSeconds(10);
 
     public Policy AnonymousReadPolicy => new()
     {
