@@ -2,7 +2,9 @@ using System.Text.Json.Serialization;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Sitko.Core.App;
+using Sitko.Core.App.Health;
 
 namespace Sitko.Core.Db;
 
@@ -16,7 +18,13 @@ public abstract class BaseDbModule<TDbContext, TConfig> : BaseApplicationModule<
         TConfig startupOptions)
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
-        services.AddHealthChecks().AddDbContextCheck<TDbContext>($"DB {typeof(TDbContext)} check");
+        if (!startupOptions.DisableHealthCheck)
+        {
+            services.AddHealthChecks().AddDbContextCheck<TDbContext>($"DB {typeof(TDbContext)} check",
+                HealthStatus.Unhealthy,
+                HealthCheckStages.GetSkipTags(HealthCheckStages.Liveness, HealthCheckStages.Readiness));
+        }
+
         services.AddScoped<IDbContextProvider<TDbContext>, DbContextProvider<TDbContext>>();
     }
 }
@@ -27,6 +35,7 @@ public abstract class BaseDbModuleOptions<TDbContext> : BaseModuleOptions where 
     public bool EnableContextPooling { get; set; } = true;
     public bool IncludeErrorDetails { get; set; }
     public bool EnableSensitiveLogging { get; set; }
+    public bool DisableHealthCheck { get; set; }
 
     [JsonIgnore]
     public Action<DbContextOptionsBuilder<TDbContext>, IServiceProvider, IApplicationContext>?
@@ -35,4 +44,3 @@ public abstract class BaseDbModuleOptions<TDbContext> : BaseModuleOptions where 
 
 public abstract class BaseDbModuleOptionsValidator<TOptions, TDbContext> : AbstractValidator<TOptions>
     where TOptions : BaseDbModuleOptions<TDbContext> where TDbContext : DbContext;
-

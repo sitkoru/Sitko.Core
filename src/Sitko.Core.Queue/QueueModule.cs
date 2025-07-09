@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
+using Sitko.Core.App.Health;
 using Sitko.Core.MediatR;
 using Sitko.Core.Queue.Internal;
 
@@ -21,7 +23,9 @@ public abstract class QueueModule<TQueue, TConfig> : BaseApplicationModule<TConf
 
         if (startupOptions.HealthChecksEnabled)
         {
-            services.AddHealthChecks().AddCheck<QueueHealthCheck>("Queue health check");
+            services.AddHealthChecks().AddCheck<QueueHealthCheck>("Queue health check",
+                HealthStatus.Unhealthy,
+                HealthCheckStages.GetSkipTags(HealthCheckStages.Liveness, HealthCheckStages.Readiness));
         }
 
         if (startupOptions.Middlewares.Any())
@@ -65,4 +69,3 @@ public abstract class QueueModule<TQueue, TConfig> : BaseApplicationModule<TConf
         return modules;
     }
 }
-

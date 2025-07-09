@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Sitko.Core.App;
 using Sitko.Core.App.Health;
 
@@ -40,6 +41,7 @@ public abstract class DiscoveryGrpcServerModule<TRegistrar, TConfig> : BaseGrpcS
         healthChecksRegistrations.Add(healthCheckBuilder =>
             healthCheckBuilder.AddCheck<GrpcServiceHealthCheck<TService>>(
                 $"Grpc service {typeof(TService).BaseType?.DeclaringType?.Name}",
+                HealthStatus.Degraded,
                 tags: HealthCheckStages.GetSkipAllTags()));
     }
 }

@@ -1,7 +1,9 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Sitko.Core.App;
+using Sitko.Core.App.Health;
 using Sitko.Core.Auth.IdentityServer.Tokens;
 
 namespace Sitko.Core.Auth.IdentityServer;
@@ -25,7 +27,9 @@ public abstract class IdentityServerModule<TAuthOptions> : AuthModule<TAuthOptio
             {
                 if (IdentityServerModuleChecks.Checks.TryAdd(oidcUri.ToString(), true))
                 {
-                    services.AddHealthChecks().AddIdentityServer(oidcUri, name: $"IdSrv: {oidcUri}");
+                    services.AddHealthChecks().AddIdentityServer(oidcUri, name: $"IdSrv: {oidcUri}",
+                        failureStatus: HealthStatus.Unhealthy,
+                        tags: HealthCheckStages.GetSkipTags(HealthCheckStages.Liveness, HealthCheckStages.Readiness));
                 }
             }
         }
