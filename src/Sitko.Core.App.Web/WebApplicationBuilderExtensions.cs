@@ -83,12 +83,12 @@ public static class WebApplicationBuilderExtensions
         webApplication.MapHealthChecks("/healthz",
             new HealthCheckOptions
             {
-                Predicate = registration => ShouldRunHealthCheck(registration, HealthCheckStages.Startup)
+                Predicate = registration => ShouldRunHealthCheck(registration, HealthCheckStages.Liveness)
             });
         webApplication.MapHealthChecks("/ready",
             new HealthCheckOptions
             {
-                Predicate = registration => ShouldRunHealthCheck(registration, HealthCheckStages.Startup)
+                Predicate = registration => ShouldRunHealthCheck(registration, HealthCheckStages.Readiness)
             });
 
         var webModules =
