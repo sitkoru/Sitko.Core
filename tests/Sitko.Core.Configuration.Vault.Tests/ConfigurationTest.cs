@@ -58,6 +58,19 @@ public class ConfigurationTest : BaseVaultTest
         });
         result.Message.Should().Contain("No data loaded from Vault secrets NonExistingSecret");
     }
+
+    [Fact]
+    public async Task HotSettings()
+    {
+        var scope = await GetScopeAsync();
+        await scope.StartApplicationAsync();
+        var vaultConfig = scope.GetService<IOptions<VaultConfigurationModuleOptions>>();
+        var config = scope.GetService<IOptionsMonitor<TestConfig>>();
+        config.CurrentValue.Foo.Should().Be(scope.FirstConfig.Foo);
+
+        var changedConfig = await scope.UpdateConfigAsync();
+        await Task.Delay(TimeSpan.FromSeconds(vaultConfig.Value.ReloadCheckIntervalSeconds + 1));
+        config.CurrentValue.Foo.Should().Be(changedConfig.Foo);
+    }
 }
 #pragma warning restore VSTHRD200
-
