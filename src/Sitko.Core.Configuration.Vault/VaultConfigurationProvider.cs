@@ -3,7 +3,6 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using Microsoft.VisualStudio.Threading;
 using VaultSharp;
 using VaultSharp.Core;
 using VaultSharp.V1.AuthMethods;
@@ -15,9 +14,9 @@ namespace Sitko.Core.Configuration.Vault;
 
 public class VaultConfigurationProvider : ConfigurationProvider
 {
-    private IVaultClient? vaultClient;
     private readonly Dictionary<string, int> versionsCache;
     private bool hasSuccessAuth;
+    private IVaultClient? vaultClient;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VaultConfigurationProvider"/> class.
@@ -56,10 +55,7 @@ public class VaultConfigurationProvider : ConfigurationProvider
                 vaultClient = new VaultClient(vaultClientSettings);
             }
 
-            using var ctx = new JoinableTaskContext();
-            var jtf = new JoinableTaskFactory(ctx);
-            var hasChanges = jtf.RunAsync(
-                async () => await LoadVaultDataAsync(vaultClient).ConfigureAwait(true)).Join();
+            var hasChanges = LoadVaultDataAsync(vaultClient).GetAwaiter().GetResult();
 
             if (hasChanges)
             {
