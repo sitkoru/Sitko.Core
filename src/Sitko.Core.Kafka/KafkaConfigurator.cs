@@ -9,11 +9,12 @@ namespace Sitko.Core.Kafka;
 
 public class KafkaConfigurator
 {
+    private readonly string clusterName;
+
     private readonly Dictionary<ConsumerRegistration, Action<IConsumerConfigurationBuilder, ConsumerConfig>>
         consumerActions = new();
 
     private readonly HashSet<ConsumerRegistration> consumers = new();
-    private readonly string clusterName;
     private readonly Dictionary<string, Action<IProducerConfigurationBuilder, ProducerConfig>> producerActions = new();
     private readonly Dictionary<string, (int Partitions, short ReplicationFactor)> topics = new();
     private bool ensureOffsets;
@@ -74,6 +75,7 @@ public class KafkaConfigurator
                             }
                         });
                 }
+
                 if (!ensureOffsets)
                 {
                     foreach (var (topic, config) in topics)
@@ -103,10 +105,13 @@ public class KafkaConfigurator
 
                 foreach (var (registration, configureAction) in consumerActions)
                 {
+                    var consumerTopics = registration.Topics.Select(info => info.Name).ToArray();
+                    var consumerName =
+                        $"{Environment.MachineName}/{registration.GroupId}/{string.Join('/', consumerTopics)}";
                     clusterBuilder.AddConsumer(consumerBuilder =>
                     {
-                        consumerBuilder.WithName(registration.Name);
-                        consumerBuilder.Topics(registration.Topics.Select(info => info.Name));
+                        consumerBuilder.WithName(consumerName);
+                        consumerBuilder.Topics(consumerTopics);
                         consumerBuilder.WithGroupId(registration.GroupId);
                         consumerBuilder
                             .WithWorkerDistributionStrategy<BytesSumDistributionStrategy>(); // guarantee events order
@@ -115,12 +120,16 @@ public class KafkaConfigurator
                         {
                             MaxPartitionFetchBytes = options.MaxPartitionFetchBytes,
                             AutoOffsetReset = options.AutoOffsetReset,
-                            ClientId = registration.Name,
-                            // GroupInstanceId = registration.Name, // TODO: Try after https://github.com/Farfetch/kafkaflow/issues/456
+                            ClientId = consumerName,
                             BootstrapServers = string.Join(",", options.Brokers),
                             SessionTimeoutMs = (int)options.SessionTimeout.TotalMilliseconds,
                             PartitionAssignmentStrategy = options.PartitionAssignmentStrategy
                         };
+                        if (options.PartitionAssignmentStrategy == PartitionAssignmentStrategy.CooperativeSticky)
+                        {
+                            consumerConfig.GroupInstanceId = consumerName;
+                        }
+
                         consumerBuilder.WithConsumerConfig(consumerConfig);
                         configureAction(consumerBuilder, consumerConfig);
                     });

@@ -4,6 +4,8 @@ using KafkaFlow;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Acks = Confluent.Kafka.Acks;
+using AutoOffsetReset = Confluent.Kafka.AutoOffsetReset;
+using SaslMechanism = KafkaFlow.Configuration.SaslMechanism;
 using SecurityProtocol = KafkaFlow.Configuration.SecurityProtocol;
 
 namespace Sitko.Core.Kafka;
@@ -56,13 +58,13 @@ public class KafkaModuleOptions : BaseModuleOptions
     public string SaslUserName { get; set; } = "";
     public string SaslPassword { get; set; } = "";
     public string SaslCertBase64 { get; set; } = "";
-    public KafkaFlow.Configuration.SaslMechanism SaslMechanisms { get; set; } = KafkaFlow.Configuration.SaslMechanism.ScramSha512;
+    public SaslMechanism SaslMechanisms { get; set; } = SaslMechanism.ScramSha512;
     public SecurityProtocol? SecurityProtocol { get; set; } = KafkaFlow.Configuration.SecurityProtocol.Plaintext;
     public int MaxPartitionFetchBytes { get; set; } = 5 * 1024 * 1024;
-    public Confluent.Kafka.AutoOffsetReset AutoOffsetReset { get; set; } = Confluent.Kafka.AutoOffsetReset.Latest;
+    public AutoOffsetReset AutoOffsetReset { get; set; } = AutoOffsetReset.Latest;
 
     public PartitionAssignmentStrategy PartitionAssignmentStrategy { get; set; } =
-        PartitionAssignmentStrategy.Range;
+        PartitionAssignmentStrategy.CooperativeSticky;
 
     public TimeSpan MessageTimeout { get; set; } = TimeSpan.FromSeconds(12);
     public int MessageMaxBytes { get; set; } = 5 * 1024 * 1024;
@@ -78,6 +80,7 @@ public class KafkaModuleOptionsValidator : AbstractValidator<KafkaModuleOptions>
     {
         RuleFor(options => options.Brokers).NotEmpty().WithMessage("Specify Kafka brokers");
         RuleFor(options => options.SaslCertBase64).NotEmpty()
-            .When(options => options.SecurityProtocol == SecurityProtocol.SaslSsl).WithMessage("Specify kafka sasl certificate");
+            .When(options => options.SecurityProtocol == SecurityProtocol.SaslSsl)
+            .WithMessage("Specify kafka sasl certificate");
     }
 }
