@@ -236,7 +236,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run tests
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj
+        run: dotnet test --diag:logs/log.txt --logger GitHubActions tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: logs
+          path: logs/
 
   release:
     name: Release
