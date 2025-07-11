@@ -1,4 +1,5 @@
-﻿using Grpc.Net.Client.Balancer;
+﻿using Grpc.Core;
+using Grpc.Net.Client.Balancer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.ServiceDiscovery;
@@ -30,7 +31,9 @@ public class ServiceDiscoveryResolver(
     ILogger<ServiceDiscoveryResolver> logger)
     : Resolver
 {
-    public override void Start(Action<ResolverResult> listener) =>
+    public override void Start(Action<ResolverResult> listener)
+    {
+        listener(ResolverResult.ForFailure(new Status(StatusCode.ResourceExhausted, "Replicas not resolved yet")));
         resolver.Subscribe(GrpcModuleConstants.GrpcServiceDiscoveryType,
             address.LocalPath.TrimStart('/'), services =>
             {
@@ -44,4 +47,5 @@ public class ServiceDiscoveryResolver(
                 logger.LogInformation("Resolved {Address} service discovery to {Addresses}", address, addresses);
                 listener(ResolverResult.ForResult(addresses));
             });
+    }
 }
