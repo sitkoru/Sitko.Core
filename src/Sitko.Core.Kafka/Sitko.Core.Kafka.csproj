@@ -5,6 +5,7 @@
     <PackageReference Include="KafkaFlow.LogHandler.Microsoft" />
     <PackageReference Include="KafkaFlow.Microsoft.DependencyInjection" />
     <PackageReference Include="KafkaFlow.Serializer.JsonCore" />
+    <PackageReference Include="Microsoft.Extensions.Resilience"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />

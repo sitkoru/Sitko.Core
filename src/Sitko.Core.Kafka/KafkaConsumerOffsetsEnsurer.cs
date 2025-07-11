@@ -1,16 +1,17 @@
 ﻿using Confluent.Kafka;
 using Confluent.Kafka.Admin;
 using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.Registry;
 using Sitko.Core.App.Helpers;
 
 namespace Sitko.Core.Kafka;
 
-internal class KafkaConsumerOffsetsEnsurer
+internal class KafkaConsumerOffsetsEnsurer(
+    ResiliencePipelineProvider<string> pipelineProvider,
+    ILogger<KafkaConsumerOffsetsEnsurer> logger)
 {
-    private readonly ILogger<KafkaConsumerOffsetsEnsurer> logger;
     private readonly TimeSpan lockTimeout = TimeSpan.FromSeconds(30);
-
-    public KafkaConsumerOffsetsEnsurer(ILogger<KafkaConsumerOffsetsEnsurer> logger) => this.logger = logger;
 
     public async Task EnsureOffsetsAsync(KafkaConfigurator configurator, KafkaModuleOptions options)
     {
@@ -24,7 +25,8 @@ internal class KafkaConsumerOffsetsEnsurer
         }
     }
 
-    private async Task EnsureTopicOffsetsAsync(ConsumerRegistration consumer, IAdminClient adminClient, TopicInfo topic, KafkaModuleOptions options)
+    private async Task EnsureTopicOffsetsAsync(ConsumerRegistration consumer, IAdminClient adminClient, TopicInfo topic,
+        KafkaModuleOptions options)
     {
         logger.LogDebug("Try to create topic {Topic}", topic);
         try
@@ -55,7 +57,7 @@ internal class KafkaConsumerOffsetsEnsurer
         }
 
         var topicInfo = adminClient.GetMetadata(topic.Name, TimeSpan.FromSeconds(30)).Topics.First();
-        if (topicInfo is null || !topicInfo.Partitions.Any())
+        if (topicInfo is null || topicInfo.Partitions.Count == 0)
         {
             logger.LogError("Still no metadata for topic {Topic}", topic.Name);
             return;
@@ -67,7 +69,7 @@ internal class KafkaConsumerOffsetsEnsurer
         {
             new ConsumerGroupTopicPartitions(consumer.GroupId, partitions)
         });
-        if (!committed.Any())
+        if (committed.Count == 0)
         {
             logger.LogWarning(
                 "Can't find offsets for group {ConsumerGroup} and topic {Topic}",
@@ -75,16 +77,17 @@ internal class KafkaConsumerOffsetsEnsurer
             return;
         }
 
-        var badPartitions = committed.First().Partitions.Where(
-            partitionOffset =>
-                partitionOffset.Offset == Offset.Unset
+        var badPartitions = committed.First().Partitions.Where(partitionOffset =>
+            partitionOffset.Offset == Offset.Unset
         ).Select(error => error.Partition).ToList();
 
-        if (badPartitions.Any())
+        if (badPartitions.Count != 0)
         {
             var consumerConfig = new ConsumerConfig
             {
-                BootstrapServers = string.Join(",", options.Brokers), GroupId = consumer.GroupId, EnableAutoCommit = false
+                BootstrapServers = string.Join(",", options.Brokers),
+                GroupId = consumer.GroupId,
+                EnableAutoCommit = false
             };
             if (options.UseSaslAuth)
             {
@@ -97,24 +100,14 @@ internal class KafkaConsumerOffsetsEnsurer
                     consumerConfig.SslCaLocation = CertHelper.GetCertPath(options.SaslCertBase64);
                 }
             }
+
             var cts = new CancellationTokenSource();
             using var confluentConsumer = new ConsumerBuilder<byte[], byte[]>(consumerConfig)
                 .SetPartitionsAssignedHandler((_, _) => { cts.Cancel(); })
                 .Build();
-            var watermarkOffsetsTasks = badPartitions.Select(
-                partition => Task.Run(
-                    () =>
-                    {
-                        var topicPartition = new TopicPartition(topic.Name, partition);
-                        var partitionOffset =
-                            // ReSharper disable once AccessToDisposedClosure
-                            confluentConsumer.QueryWatermarkOffsets(topicPartition, lockTimeout);
-                        var newOffset = new TopicPartitionOffset(topicPartition, partitionOffset.High);
-                        logger.LogWarning("Ensure {Partition} offset for consumer {GroupId}: {Offset}", partition, consumer.GroupId, newOffset.Offset);
-                        return newOffset;
-                    }, CancellationToken.None
-                )
-            ).ToList();
+            var pipeline = pipelineProvider.GetPipeline(nameof(KafkaConsumerOffsetsEnsurer));
+            var watermarkOffsetsTasks = badPartitions.Select(partition =>
+                GetWatermarkOffsetsAsync(topic, partition, confluentConsumer, consumer.GroupId, pipeline)).ToList();
             await Task.WhenAll(watermarkOffsetsTasks);
             var toCommit = watermarkOffsetsTasks.Select(task => task.Result);
 
@@ -144,6 +137,23 @@ internal class KafkaConsumerOffsetsEnsurer
                 "No partitions without stored offsets in topic {Topic} for consumer group {ConsumerGroupName}", topic,
                 consumer.GroupId);
         }
+    }
+
+    private async Task<TopicPartitionOffset> GetWatermarkOffsetsAsync(TopicInfo topic, int partition,
+        IConsumer<byte[], byte[]> consumer,
+        string groupId, ResiliencePipeline pipeline)
+    {
+        var topicPartition = new TopicPartition(topic.Name, partition);
+        var partitionOffset = await pipeline.ExecuteAsync(_ =>
+        {
+            var offsets = consumer.QueryWatermarkOffsets(topicPartition, lockTimeout);
+            return ValueTask.FromResult(offsets);
+        });
+
+        var newOffset = new TopicPartitionOffset(topicPartition, partitionOffset.High);
+        logger.LogWarning("Ensure {Partition} offset for consumer {GroupId}: {Offset}", partition,
+            groupId, newOffset.Offset);
+        return newOffset;
     }
 
     private IAdminClient GetAdminClient(KafkaModuleOptions options)
