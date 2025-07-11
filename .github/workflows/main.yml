@@ -215,6 +215,8 @@ jobs:
     container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v4
+      - name: Install deps
+        run: apt update && apt install -y gettext-base
       - name: Run Kafka KRaft Broker
         uses: spicyparrot/kafka-kraft-action@v1.1.3
         with:
