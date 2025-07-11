@@ -213,23 +213,15 @@ jobs:
   kafka:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
-    env:
-      KAFKA__BROKERS__0: kafka:9092
-    services:
-      kafka:
-        image: docker.io/bitnami/kafka:3.9
-        env:
-          KAFKA_CFG_NODE_ID: 0
-          KAFKA_CFG_PROCESS_ROLES: controller,broker
-          KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@kafka:9093
-          KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-          KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://127.0.0.1:9092
-          KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-          KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
-          KAFKA_CFG_INTER_BROKER_LISTENER_NAME: PLAINTEXT
     steps:
       - uses: actions/checkout@v4
+      - name: Run Kafka KRaft Broker
+        uses: spicyparrot/kafka-kraft-action@v1.1.3
+        with:
+          kafka-version: "3.9.0"
       - name: Run tests
+        env:
+          KAFKA__BROKERS__0: ${{ env.kafka_runner_address }}:9093
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj
 
   release:
