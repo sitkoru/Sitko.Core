@@ -213,35 +213,10 @@ jobs:
   kafka:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
-    env:
-      KAFKA__BROKERS__0: kafka:9092
-    services:
-      kafka:
-        image: docker.io/bitnami/kafka:3.9
-        ports: [ "9092:9092" ]
-        env:
-          KAFKA_CFG_NODE_ID: 0
-          KAFKA_CFG_PROCESS_ROLES: controller,broker
-          KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@kafka:9093
-          KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-          KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-          KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-          KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
-          KAFKA_CFG_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-        options: >-
-          --health-cmd "kafka-broker-api-versions.sh --version"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - name: Run tests
-        run: dotnet test --diag:logs/log.txt --logger GitHubActions tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: logs
-          path: logs/
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj
 
   release:
     name: Release
