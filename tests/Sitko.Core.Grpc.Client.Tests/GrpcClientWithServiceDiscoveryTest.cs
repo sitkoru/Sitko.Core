@@ -9,10 +9,16 @@ using Xunit.Abstractions;
 namespace Sitko.Core.Grpc.Client.Tests;
 
 public class GrpcClientWithServiceDiscoveryTest(ITestOutputHelper testOutputHelper)
-    : GrpcClientTest<GrpcClientWithServiceDiscoveryScope>(testOutputHelper);
+    : GrpcClientTest<GrpcClientWithServiceDiscoveryScope>(testOutputHelper)
+{
+    protected override async Task AfterRequestStartAsync(GrpcClientWithServiceDiscoveryScope scope) =>
+        await scope.StartWebApplicationAsync();
+}
 
 public class GrpcClientWithServiceDiscoveryScope : GrpcClientScope
 {
+    protected override bool RunApplication => false;
+
     protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {
         base.ConfigureApplication(hostBuilder, name);

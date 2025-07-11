@@ -14,8 +14,12 @@ public abstract class GrpcClientTest<TScope>(ITestOutputHelper testOutputHelper)
         var scope = await GetScopeAsync();
         var client = scope.GetService<TestService.TestServiceClient>();
         var data = Guid.NewGuid().ToString();
-        var result = await client.RequestAsync(new TestRequest { Data = data });
+        var resultTask = client.RequestAsync(new TestRequest { Data = data });
+        await AfterRequestStartAsync(scope);
+        var result = await resultTask;
         result.ResponseInfo.IsSuccess.Should().BeTrue();
         result.Data.Should().Be(data);
     }
+
+    protected virtual Task AfterRequestStartAsync(TScope scope) => Task.CompletedTask;
 }
