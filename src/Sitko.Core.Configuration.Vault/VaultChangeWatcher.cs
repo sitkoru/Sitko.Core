@@ -6,8 +6,8 @@ namespace Sitko.Core.Configuration.Vault;
 
 public class VaultChangeWatcher : BackgroundService
 {
+    private readonly VaultConfigurationProvider[] configProviders;
     private readonly ILogger? logger;
-    private readonly IEnumerable<VaultConfigurationProvider> configProviders;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VaultChangeWatcher"/> class.
@@ -26,7 +26,7 @@ public class VaultChangeWatcher : BackgroundService
         this.logger = logger;
 
         configProviders = configurationRoot.Providers.OfType<VaultConfigurationProvider>()
-            .Where(p => p.ConfigurationSource.Options.ReloadOnChange).ToList() !;
+            .Where(p => p.ConfigurationSource.Options.ReloadOnChange).ToArray();
     }
 
     /// <inheritdoc />
@@ -53,14 +53,14 @@ public class VaultChangeWatcher : BackgroundService
                 break;
             }
 
-            for (var j = 0; j < this.configProviders.Count(); j++)
+            for (var j = 0; j < configProviders.Length; j++)
             {
                 var timer = timers[j];
                 timer -= minTime;
                 if (timer <= 0)
                 {
-                    this.configProviders.ElementAt(j).Load();
-                    timers[j] = this.configProviders.ElementAt(j).ConfigurationSource.Options
+                    await configProviders[j].LoadAsync();
+                    timers[j] = configProviders[j].ConfigurationSource.Options
                         .ReloadCheckIntervalSeconds;
                 }
                 else

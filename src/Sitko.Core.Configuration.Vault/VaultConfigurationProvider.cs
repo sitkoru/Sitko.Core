@@ -3,7 +3,6 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using Microsoft.VisualStudio.Threading;
 using VaultSharp;
 using VaultSharp.Core;
 using VaultSharp.V1.AuthMethods;
@@ -15,8 +14,8 @@ namespace Sitko.Core.Configuration.Vault;
 
 public class VaultConfigurationProvider : ConfigurationProvider
 {
-    private IVaultClient? vaultClient;
     private readonly Dictionary<string, int> versionsCache;
+    private IVaultClient? currentVaultClient;
     private bool hasSuccessAuth;
 
     /// <summary>
@@ -35,59 +34,7 @@ public class VaultConfigurationProvider : ConfigurationProvider
     internal VaultConfigurationSource ConfigurationSource { get; private set; }
 
     /// <inheritdoc/>
-    public override void Load()
-    {
-        try
-        {
-            if (vaultClient == null)
-            {
-                IAuthMethodInfo authMethod = ConfigurationSource.Options.AuthType switch
-                {
-                    VaultAuthType.Token => new TokenAuthMethodInfo(ConfigurationSource.Options.Token),
-                    VaultAuthType.RoleApp => new AppRoleAuthMethodInfo(ConfigurationSource.Options.VaultRoleId,
-                        ConfigurationSource.Options.VaultSecret),
-                    _ => throw new ArgumentOutOfRangeException()
-                };
-
-                var vaultClientSettings = new VaultClientSettings(ConfigurationSource.Options.Uri, authMethod)
-                {
-                    UseVaultTokenHeaderInsteadOfAuthorizationHeader = true
-                };
-                vaultClient = new VaultClient(vaultClientSettings);
-            }
-
-            using var ctx = new JoinableTaskContext();
-            var jtf = new JoinableTaskFactory(ctx);
-            var hasChanges = jtf.RunAsync(
-                async () => await LoadVaultDataAsync(vaultClient).ConfigureAwait(true)).Join();
-
-            if (hasChanges)
-            {
-                OnReload();
-            }
-
-            hasSuccessAuth = true;
-        }
-        catch (VaultApiException e) when (e is
-                                          {
-                                              StatusCode: (int)HttpStatusCode.Forbidden
-                                              or (int)HttpStatusCode.Unauthorized
-                                          })
-        {
-            if (hasSuccessAuth)
-            {
-                vaultClient?.V1.Auth.ResetVaultToken();
-            }
-            else
-            {
-                throw;
-            }
-        }
-        catch (Exception e) when (e is VaultApiException || e is HttpRequestException)
-        {
-            //logger?.Log(LogLevel.Error, e, "Cannot load configuration from Vault");
-        }
-    }
+    public override void Load() => LoadAsync().GetAwaiter().GetResult();
 
     private async Task<bool> LoadVaultDataAsync(IVaultClient vaultClient)
     {
@@ -134,14 +81,11 @@ public class VaultConfigurationProvider : ConfigurationProvider
 
     private void SetItemData(string nestedKey, JsonElement nestedValue)
     {
-        switch ((nestedValue).ValueKind)
+        switch (nestedValue.ValueKind)
         {
             case JsonValueKind.Object:
                 var jObject = nestedValue.EnumerateObject().ToDictionary(x => x.Name, x => x.Value).ToList();
-                if (jObject != null)
-                {
-                    SetData(jObject, nestedKey);
-                }
+                SetData(jObject, nestedKey);
 
                 break;
             case JsonValueKind.Array:
@@ -188,12 +132,12 @@ public class VaultConfigurationProvider : ConfigurationProvider
         Secret<ListInfo>? keys = null;
         var folderPath = path;
 
-        if (folderPath.EndsWith("/", StringComparison.InvariantCulture) == false)
+        if (folderPath.EndsWith('/') == false)
         {
             folderPath += "/";
         }
 
-        if (folderPath.EndsWith("/", StringComparison.InvariantCulture))
+        if (folderPath.EndsWith('/'))
         {
             try
             {
@@ -219,7 +163,7 @@ public class VaultConfigurationProvider : ConfigurationProvider
         }
 
         var valuePath = path;
-        if (valuePath.EndsWith("/", StringComparison.InvariantCulture) == true)
+        if (valuePath.EndsWith('/'))
         {
             valuePath = valuePath.TrimEnd('/');
         }
@@ -258,6 +202,57 @@ public class VaultConfigurationProvider : ConfigurationProvider
         }
 
         return outputKey.ToString();
+    }
+
+    public async Task LoadAsync()
+    {
+        try
+        {
+            if (currentVaultClient == null)
+            {
+                IAuthMethodInfo authMethod = ConfigurationSource.Options.AuthType switch
+                {
+                    VaultAuthType.Token => new TokenAuthMethodInfo(ConfigurationSource.Options.Token),
+                    VaultAuthType.RoleApp => new AppRoleAuthMethodInfo(ConfigurationSource.Options.VaultRoleId,
+                        ConfigurationSource.Options.VaultSecret),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+
+                var vaultClientSettings = new VaultClientSettings(ConfigurationSource.Options.Uri, authMethod)
+                {
+                    UseVaultTokenHeaderInsteadOfAuthorizationHeader = true
+                };
+                currentVaultClient = new VaultClient(vaultClientSettings);
+            }
+
+            var hasChanges = await LoadVaultDataAsync(currentVaultClient);
+
+            if (hasChanges)
+            {
+                OnReload();
+            }
+
+            hasSuccessAuth = true;
+        }
+        catch (VaultApiException e) when (e is
+                                          {
+                                              StatusCode: (int)HttpStatusCode.Forbidden
+                                              or (int)HttpStatusCode.Unauthorized
+                                          })
+        {
+            if (hasSuccessAuth)
+            {
+                currentVaultClient?.V1.Auth.ResetVaultToken();
+            }
+            else
+            {
+                throw;
+            }
+        }
+        catch (Exception e) when (e is VaultApiException || e is HttpRequestException)
+        {
+            //logger?.Log(LogLevel.Error, e, "Cannot load configuration from Vault");
+        }
     }
 
     private class KeyedSecretData

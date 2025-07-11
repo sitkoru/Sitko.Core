@@ -34,7 +34,9 @@ public class VaultTestScope : BaseTestScope
         base.ConfigureApplication(hostBuilder, name)
             .AddVaultConfiguration(options =>
             {
-                options.Secrets = new List<string> { firstSecretId.ToString(), secondSecretId.ToString() };
+                options.Secrets = [firstSecretId.ToString(), secondSecretId.ToString()];
+                options.ReloadCheckIntervalSeconds = 1;
+                options.ReloadOnChange = true;
             });
         hostBuilder.Services.Configure<TestConfig>(hostBuilder.Configuration.GetSection("test"));
         hostBuilder.Services.Configure<TestConfig2>(hostBuilder.Configuration.GetSection("test2"));
@@ -63,6 +65,16 @@ public class VaultTestScope : BaseTestScope
             .ConfigureAwait(false);
         await vaultClient.V1.Secrets.KeyValue.V2.DeleteMetadataAsync(secondSecretId.ToString(), "/secret")
             .ConfigureAwait(false);
+    }
+
+    public async Task<TestConfig> UpdateConfigAsync()
+    {
+        var changedConfig = new TestConfig { Bar = Guid.NewGuid(), Foo = Guid.NewGuid().ToString() };
+        await vaultClient.V1.Secrets.KeyValue.V2.WriteSecretAsync(
+            firstSecretId.ToString(),
+            new { test = changedConfig },
+            mountPoint: "/secret").ConfigureAwait(false);
+        return changedConfig;
     }
 }
 
