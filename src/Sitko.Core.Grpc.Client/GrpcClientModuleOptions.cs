@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
 using Grpc.Net.Client;
+using Grpc.Net.Client.Configuration;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -21,6 +22,8 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
     [JsonIgnore] public Action<GrpcChannelOptions>? ConfigureChannelOptions { get; set; }
     [JsonIgnore] public Func<HttpMessageHandler, HttpMessageHandler>? ConfigureHttpHandler { get; set; }
     public bool UseGrpcWeb { get; set; }
+
+    [JsonIgnore] public RetryPolicy? RetryPolicy { get; set; } = GrpcClientRetryPolicies.Default;
 
     internal void ConfigureClient(IServiceCollection services, IHttpClientBuilder builder)
     {

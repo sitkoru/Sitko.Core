@@ -27,6 +27,7 @@ public abstract class WebTestScope<TApplicationBuilder, TConfig> : BaseTestScope
     protected TestServer? Server { get; private set; }
 
     protected virtual bool UseTestServer => true;
+    protected virtual bool RunApplication => true;
 
     protected virtual WebApplicationBuilder ConfigureWebApplication(WebApplicationBuilder webApplicationBuilder,
         string name) => webApplicationBuilder;
@@ -46,15 +47,23 @@ public abstract class WebTestScope<TApplicationBuilder, TConfig> : BaseTestScope
         var host = builder.Build();
         host.MapControllers();
         host.MapSitkoCore();
-        await host.StartAsync();
+        Host = host;
+        if (RunApplication)
+        {
+            await StartWebApplicationAsync();
+        }
+
         if (UseTestServer)
         {
             Server = host.GetTestServer();
         }
 
-        Host = host;
         await InitWebApplicationAsync(host.Services);
     }
+
+    public Task StartWebApplicationAsync() => Host is not null
+        ? Host.StartAsync()
+        : throw new InvalidOperationException("Host is not configured");
 
     protected virtual Task InitWebApplicationAsync(IServiceProvider hostServices) => Task.CompletedTask;
 
