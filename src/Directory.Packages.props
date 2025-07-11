@@ -97,7 +97,7 @@
   <!--Kafka libraries-->
   <ItemGroup>
     <PackageVersion Include="KafkaFlow" Version="4.0.0" />
-    <PackageVersion Include="KafkaFlow.LogHandler.Microsoft" Version="3.0.9" />
+    <PackageVersion Include="KafkaFlow.LogHandler.Microsoft" Version="4.0.0"/>
     <PackageVersion Include="KafkaFlow.Microsoft.DependencyInjection" Version="4.0.0" />
     <PackageVersion Include="KafkaFlow.Serializer.JsonCore" Version="4.0.0" />
     <PackageVersion Include="KafkaFlow.Extensions.Hosting" Version="4.0.0" />
