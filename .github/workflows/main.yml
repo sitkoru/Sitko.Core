@@ -216,7 +216,7 @@ jobs:
     env:
       KAFKA__BROKERS__0: kafka:9092
     services:
-      vault:
+      kafka:
         image: docker.io/bitnami/kafka:3.9
         env:
           KAFKA_CFG_NODE_ID: 0
