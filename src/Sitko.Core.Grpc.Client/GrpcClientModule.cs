@@ -57,9 +57,18 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
                 options.Credentials = ChannelCredentials.SecureSsl;
             }
 
+            options.ServiceConfig = new ServiceConfig();
+
             if (NeedSocketHandler)
             {
-                options.ServiceConfig = new ServiceConfig { LoadBalancingConfigs = { new RoundRobinConfig() } };
+                options.ServiceConfig.LoadBalancingConfigs.Add(new RoundRobinConfig());
+            }
+
+            if (startupOptions.RetryPolicy is not null)
+            {
+                options.ServiceConfig.MethodConfigs.Add(
+                    new MethodConfig { Names = { MethodName.Default }, RetryPolicy = startupOptions.RetryPolicy }
+                );
             }
 
             startupOptions.ConfigureChannelOptions?.Invoke(options);
