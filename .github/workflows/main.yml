@@ -216,7 +216,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install deps
-        run: apt update && apt install -y gettext-base
+        run: apt update && apt install -y gettext-base docker-compose-plugin
       - name: Run Kafka KRaft Broker
         uses: spicyparrot/kafka-kraft-action@v1.1.3
         with:
