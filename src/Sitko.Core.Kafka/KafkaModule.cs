@@ -64,7 +64,7 @@ public class KafkaModule : BaseApplicationModule<KafkaModuleOptions>
 
 public class KafkaModuleOptions : BaseModuleOptions
 {
-    public string[] Brokers { get; set; } = ["localhost:9092"];
+    public string[] Brokers { get; set; } = [];
     public TimeSpan SessionTimeout { get; set; } = TimeSpan.FromSeconds(15);
     public TimeSpan MaxPollInterval { get; set; } = TimeSpan.FromMinutes(5);
     public bool UseSaslAuth { get; set; }
