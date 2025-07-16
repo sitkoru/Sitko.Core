@@ -110,6 +110,11 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
             EnableMultipleHttp2Connections = true
         };
 
+        if (options.PooledConnectionLifetime is not null)
+        {
+            handler.PooledConnectionLifetime = options.PooledConnectionLifetime.Value;
+        }
+
         if (options.DisableCertificatesValidation)
         {
 #pragma warning disable CA5359

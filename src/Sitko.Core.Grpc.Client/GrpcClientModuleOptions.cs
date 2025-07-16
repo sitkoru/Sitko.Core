@@ -22,6 +22,7 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
     [JsonIgnore] public Action<GrpcChannelOptions>? ConfigureChannelOptions { get; set; }
     [JsonIgnore] public Func<HttpMessageHandler, HttpMessageHandler>? ConfigureHttpHandler { get; set; }
     public bool UseGrpcWeb { get; set; }
+    public TimeSpan? PooledConnectionLifetime { get; set; } = TimeSpan.FromMinutes(2);
 
     [JsonIgnore] public RetryPolicy? RetryPolicy { get; set; } = GrpcClientRetryPolicies.Default;
 
