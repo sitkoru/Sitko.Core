@@ -19,6 +19,7 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
     where TGrpcClientModuleOptions : GrpcClientModuleOptions<TClient>, new()
 {
     protected virtual bool NeedSocketHandler => false;
+    public override string[] OptionKeys => ["Grpc:Client:Default", OptionsKey];
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TGrpcClientModuleOptions startupOptions)
