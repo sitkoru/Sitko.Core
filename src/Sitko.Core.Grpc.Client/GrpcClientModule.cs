@@ -60,9 +60,10 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
 
             options.ServiceConfig = new ServiceConfig();
 
-            if (NeedSocketHandler)
+            var loadBalancingConfig = startupOptions.GetLoadBalancingConfig();
+            if (loadBalancingConfig is not null && NeedSocketHandler)
             {
-                options.ServiceConfig.LoadBalancingConfigs.Add(new RoundRobinConfig());
+                options.ServiceConfig.LoadBalancingConfigs.Add(loadBalancingConfig);
             }
 
             if (startupOptions.RetryPolicy is not null)

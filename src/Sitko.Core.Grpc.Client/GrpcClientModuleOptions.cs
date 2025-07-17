@@ -23,6 +23,7 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
     [JsonIgnore] public Func<HttpMessageHandler, HttpMessageHandler>? ConfigureHttpHandler { get; set; }
     public bool UseGrpcWeb { get; set; }
     public TimeSpan? PooledConnectionLifetime { get; set; } = TimeSpan.FromMinutes(2);
+    public LoadBalancingPolicy LoadBalancingPolicy { get; set; } = LoadBalancingPolicy.RoundRobin;
 
     [JsonIgnore] public RetryPolicy? RetryPolicy { get; set; } = GrpcClientRetryPolicies.Default;
 
@@ -114,4 +115,13 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
         };
         return this;
     }
+
+    internal LoadBalancingConfig? GetLoadBalancingConfig() =>
+        LoadBalancingPolicy switch
+        {
+            LoadBalancingPolicy.None => null,
+            LoadBalancingPolicy.RoundRobin => new RoundRobinConfig(),
+            LoadBalancingPolicy.PickFirst => new PickFirstConfig(),
+            _ => throw new ArgumentOutOfRangeException()
+        };
 }
