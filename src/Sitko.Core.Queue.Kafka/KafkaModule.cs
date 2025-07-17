@@ -3,10 +3,11 @@ using FluentValidation;
 using KafkaFlow;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
-using Acks = Confluent.Kafka.Acks;
-using SecurityProtocol = KafkaFlow.Configuration.SecurityProtocol;
+using Sitko.Core.Queue.Kafka.Producing;
+using Acks=Confluent.Kafka.Acks;
+using SecurityProtocol=KafkaFlow.Configuration.SecurityProtocol;
 
-namespace Sitko.Core.Kafka;
+namespace Sitko.Core.Queue.Kafka;
 
 public class KafkaModule : BaseApplicationModule<KafkaModuleOptions>
 {
@@ -23,6 +24,7 @@ public class KafkaModule : BaseApplicationModule<KafkaModuleOptions>
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddSingleton<KafkaConsumerOffsetsEnsurer>();
+        services.AddSingleton<IEventProducer, EventProducer>();
         services.AddKafkaFlowHostedService(builder =>
         {
             foreach (var (_, configurator) in Configurators)

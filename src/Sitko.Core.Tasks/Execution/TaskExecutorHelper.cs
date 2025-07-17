@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+﻿using Sitko.Core.Queue.Kafka.Attributes;
 
 namespace Sitko.Core.Tasks.Execution;
 
@@ -15,8 +15,4 @@ internal static class TaskExecutorHelper
         var groupId = attribute.GroupId;
         return (groupId, attribute.ParallelThreadCount, attribute.BufferSize, attribute.AllowRetry);
     }
-
-    public static TResult? FindAttribute<TResult>(this ICustomAttributeProvider provider, bool withInherit = true)
-        where TResult : Attribute =>
-        provider.GetCustomAttributes(typeof(TResult), withInherit).Cast<TResult>().FirstOrDefault();
 }

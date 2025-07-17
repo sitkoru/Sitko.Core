@@ -1,4 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Sitko.Core.Queue.Kafka</RootNamespace>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="KafkaFlow" />
     <PackageReference Include="KafkaFlow.Extensions.Hosting" />
