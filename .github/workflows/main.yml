@@ -210,10 +210,18 @@ jobs:
       - name: Run tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Configuration.Vault.Tests/Sitko.Core.Configuration.Vault.Tests.csproj
 
+  kafka:
+    runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run tests
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj
+
   release:
     name: Release
     runs-on: ubuntu-latest
-    needs: [ build, apps, blazor, grpc, imgproxy, pdf, queue, repository, sonyflake, storage, vault, opensearch ]
+    needs: [ build, apps, blazor, grpc, imgproxy, pdf, queue, repository, sonyflake, storage, vault, opensearch, kafka ]
     if: ${{ github.event_name == 'push' }}
     steps:
       - name: Checkout
