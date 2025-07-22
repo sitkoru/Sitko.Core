@@ -59,6 +59,13 @@ public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3Sto
                 }, HealthStatus.Unhealthy,
                 HealthCheckStages.GetSkipTags(HealthCheckStages.Liveness, HealthCheckStages.Readiness),
                 startupOptions.HealthCheckTimeout));
+            services.AddSingleton<S3BucketHealthCheck<TS3StorageOptions>>();
+            services.AddHealthChecks().Add(new HealthCheckRegistration(
+                $"S3 Storage ({typeof(TS3StorageOptions).Name}) Bucket",
+                serviceProvider => serviceProvider.GetRequiredService<S3BucketHealthCheck<TS3StorageOptions>>(),
+                HealthStatus.Unhealthy,
+                [], // don't skip for now
+                startupOptions.HealthCheckTimeout));
         }
     }
 
