@@ -7,6 +7,7 @@ using HealthChecks.Aws.S3;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
 using Sitko.Core.App;
 using Sitko.Core.App.Health;
 
@@ -22,7 +23,19 @@ public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3Sto
         TS3StorageOptions startupOptions)
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
-        services.AddSingleton<S3ClientProvider<TS3StorageOptions>>();
+        services.AddHttpClient(nameof(TS3StorageOptions), client =>
+        {
+            startupOptions.ConfigureHttpClient?.Invoke(client);
+        });
+        services.AddSingleton(typeof(S3HttpClientFactory<>));
+        services.AddKeyedSingleton<AmazonS3Client>(nameof(TS3StorageOptions), (provider, _) =>
+        {
+            var options = provider.GetRequiredService<IOptionsMonitor<TS3StorageOptions>>();
+            return new AmazonS3Client(options.CurrentValue.AccessKey,
+                options.CurrentValue.SecretKey,
+                options.CurrentValue.GetAmazonS3Config(provider
+                    .GetRequiredService<S3HttpClientFactory<TS3StorageOptions>>()));
+        });
         if (!startupOptions.DisableHealthCheck)
         {
             services.AddHealthChecks().Add(new HealthCheckRegistration(GetType().Name,
@@ -32,12 +45,9 @@ public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3Sto
                     var options = new S3BucketOptions
                     {
                         BucketName = config.Bucket,
-                        S3Config = new AmazonS3Config
-                        {
-                            RegionEndpoint = config.Region,
-                            ServiceURL = config.Server?.ToString(),
-                            ForcePathStyle = true
-                        },
+                        S3Config =
+                            config.GetAmazonS3Config(serviceProvider
+                                .GetRequiredService<S3HttpClientFactory<TS3StorageOptions>>()),
                         Credentials = new BasicAWSCredentials(config.AccessKey, config.SecretKey)
                     };
                     return new S3HealthCheck(options);
@@ -78,6 +88,8 @@ public class S3StorageOptions : StorageOptions, IModuleOptionsWithValidation
             }
         }
     };
+
+    public Action<HttpClient>? ConfigureHttpClient { get; set; }
 
     public Type GetValidatorType() => typeof(S3StorageOptionsValidator);
 }

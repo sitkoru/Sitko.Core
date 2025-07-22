@@ -14,7 +14,7 @@ public static class S3ClientExtensions
 
         var response = await client.ListObjectsAsync(request, cancellationToken);
 
-        return response.S3Objects?.Any() ?? false;
+        return response.S3Objects?.Count > 0;
     }
 
     internal static async Task<GetObjectResponse?> DownloadFileAsync(this AmazonS3Client client, string bucket,
@@ -51,5 +51,17 @@ public static class S3ClientExtensions
         await stream.CopyToAsync(buffer, cancellationToken);
         return Encoding.UTF8.GetString(buffer.ToArray());
     }
-}
 
+    internal static AmazonS3Config GetAmazonS3Config<TS3StorageOptions>(this TS3StorageOptions s3StorageOptions,
+        S3HttpClientFactory<TS3StorageOptions> httpClientFactory) where TS3StorageOptions : S3StorageOptions, new()
+    {
+        var config = new AmazonS3Config
+        {
+            RegionEndpoint = s3StorageOptions.Region,
+            ServiceURL = s3StorageOptions.Server!.ToString(),
+            ForcePathStyle = true,
+            HttpClientFactory = httpClientFactory
+        };
+        return config;
+    }
+}
