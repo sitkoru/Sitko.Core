@@ -165,7 +165,6 @@
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="8.0.17" />
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.17" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.17" />
-    <PackageVersion Include="AspNetCore.HealthChecks.Aws.S3" Version="9.0.0"/>
     <PackageVersion Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="9.0.0"/>
     <PackageVersion Include="AspNetCore.HealthChecks.Hangfire" Version="9.0.0"/>
     <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0"/>

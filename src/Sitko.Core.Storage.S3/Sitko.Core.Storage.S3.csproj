@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <PackageReference Include="AWSSDK.S3"  />
-    <PackageReference Include="AspNetCore.HealthChecks.Aws.S3"/>
     <PackageReference Include="OpenTelemetry.Instrumentation.AWS"/>
   </ItemGroup>
   <ItemGroup>

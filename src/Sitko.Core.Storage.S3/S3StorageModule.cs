@@ -1,9 +1,8 @@
+using System.Runtime.CompilerServices;
 using Amazon;
 using Amazon.Auth.AccessControlPolicy;
-using Amazon.Runtime;
 using Amazon.S3;
 using FluentValidation;
-using HealthChecks.Aws.S3;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -12,6 +11,8 @@ using OpenTelemetry;
 using OpenTelemetry.Trace;
 using Sitko.Core.App;
 using Sitko.Core.App.OpenTelemetry;
+
+[assembly: InternalsVisibleTo("Sitko.Core.Storage.S3.Tests")]
 
 namespace Sitko.Core.Storage.S3;
 
@@ -45,22 +46,15 @@ public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3Sto
             string[]
                 skipTags = /*HealthCheckStages.GetSkipTags(HealthCheckStages.Liveness, HealthCheckStages.Readiness)*/
                     []; // don't skip for now
-            services.AddHealthChecks().Add(new HealthCheckRegistration(GetType().Name,
-                serviceProvider =>
-                {
-                    var config = GetOptions(serviceProvider);
-                    var options = new S3BucketOptions
-                    {
-                        BucketName = config.Bucket,
-                        S3Config =
-                            config.GetAmazonS3Config(serviceProvider
-                                .GetRequiredService<S3HttpClientFactory<TS3StorageOptions>>()),
-                        Credentials = new BasicAWSCredentials(config.AccessKey, config.SecretKey)
-                    };
-                    return new S3HealthCheck(options);
-                }, HealthStatus.Unhealthy,
+
+            services.AddSingleton<S3HealthCheck<TS3StorageOptions>>();
+            services.AddHealthChecks().Add(new HealthCheckRegistration(
+                $"S3 Storage ({typeof(TS3StorageOptions).Name}) Objects",
+                serviceProvider => serviceProvider.GetRequiredService<S3HealthCheck<TS3StorageOptions>>(),
+                HealthStatus.Unhealthy,
                 skipTags,
                 startupOptions.HealthCheckTimeout));
+
             services.AddSingleton<S3BucketHealthCheck<TS3StorageOptions>>();
             services.AddHealthChecks().Add(new HealthCheckRegistration(
                 $"S3 Storage ({typeof(TS3StorageOptions).Name}) Bucket",
