@@ -17,7 +17,7 @@ public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3Sto
     where TS3StorageOptions : S3StorageOptions, new()
 {
     public override string OptionsKey => $"Storage:S3:{typeof(TS3StorageOptions).Name}";
-    public override string[] OptionKeys => new[] { "Storage:S3:Default", OptionsKey };
+    public override string[] OptionKeys => ["Storage:S3:Default", OptionsKey];
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TS3StorageOptions startupOptions)
@@ -28,7 +28,8 @@ public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3Sto
             startupOptions.ConfigureHttpClient?.Invoke(client);
         });
         services.AddSingleton(typeof(S3HttpClientFactory<>));
-        services.AddKeyedSingleton<AmazonS3Client>(nameof(TS3StorageOptions), (provider, _) =>
+        services.AddSingleton<S3ClientProvider>();
+        services.AddKeyedSingleton<IAmazonS3, AmazonS3Client>(typeof(TS3StorageOptions).Name, (provider, _) =>
         {
             var options = provider.GetRequiredService<IOptionsMonitor<TS3StorageOptions>>();
             return new AmazonS3Client(options.CurrentValue.AccessKey,
