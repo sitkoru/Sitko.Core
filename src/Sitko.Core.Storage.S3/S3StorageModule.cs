@@ -8,12 +8,16 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 using Sitko.Core.App;
 using Sitko.Core.App.Health;
+using Sitko.Core.App.OpenTelemetry;
 
 namespace Sitko.Core.Storage.S3;
 
-public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3StorageOptions>, TS3StorageOptions>
+public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3StorageOptions>, TS3StorageOptions>,
+    IOpenTelemetryModule<TS3StorageOptions>
     where TS3StorageOptions : S3StorageOptions, new()
 {
     public override string OptionsKey => $"Storage:S3:{typeof(TS3StorageOptions).Name}";
@@ -57,6 +61,11 @@ public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3Sto
                 startupOptions.HealthCheckTimeout));
         }
     }
+
+
+    public OpenTelemetryBuilder ConfigureOpenTelemetry(IApplicationContext context, TS3StorageOptions options,
+        OpenTelemetryBuilder builder) =>
+        builder.WithTracing(providerBuilder => providerBuilder.AddAWSInstrumentation());
 }
 
 [PublicAPI]
