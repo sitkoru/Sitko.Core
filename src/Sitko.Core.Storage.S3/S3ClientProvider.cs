@@ -1,28 +1,10 @@
-﻿using Amazon.S3;
-using Microsoft.Extensions.Options;
+using Amazon.S3;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Sitko.Core.Storage.S3;
 
-public class S3ClientProvider<TS3StorageOptions> where TS3StorageOptions : S3StorageOptions, new()
+public class S3ClientProvider(IServiceProvider serviceProvider)
 {
-    private readonly IOptionsMonitor<TS3StorageOptions> optionsMonitor;
-
-    public S3ClientProvider(IOptionsMonitor<TS3StorageOptions> optionsMonitor) =>
-        this.optionsMonitor = optionsMonitor;
-
-    public AmazonS3Client S3Client
-    {
-        get
-        {
-            var config = new AmazonS3Config
-            {
-                RegionEndpoint = optionsMonitor.CurrentValue.Region,
-                ServiceURL = optionsMonitor.CurrentValue.Server!.ToString(),
-                ForcePathStyle = true
-            };
-            return new AmazonS3Client(optionsMonitor.CurrentValue.AccessKey,
-                optionsMonitor.CurrentValue.SecretKey, config);
-        }
-    }
+    public IAmazonS3 GetS3Client<TS3StorageOptions>() where TS3StorageOptions : S3StorageOptions, new() =>
+        serviceProvider.GetRequiredKeyedService<IAmazonS3>(typeof(TS3StorageOptions).Name);
 }
-

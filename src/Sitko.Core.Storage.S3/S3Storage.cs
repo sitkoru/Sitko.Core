@@ -10,17 +10,15 @@ using Sitko.Core.Storage.Metadata;
 
 namespace Sitko.Core.Storage.S3;
 
-public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
-    where TStorageOptions : S3StorageOptions, new()
+public sealed class S3Storage<TStorageOptions>(
+    IOptionsMonitor<TStorageOptions> options,
+    S3ClientProvider s3ClientProvider,
+    ILogger<S3Storage<TStorageOptions>> logger,
+    IStorageCache<TStorageOptions>? cache = null,
+    IStorageMetadataProvider<TStorageOptions>? metadataProvider = null)
+    : Storage<TStorageOptions>(options, logger, cache, metadataProvider) where TStorageOptions : S3StorageOptions, new()
 {
-    private readonly S3ClientProvider<TStorageOptions> s3ClientProvider;
-
-    public S3Storage(IOptionsMonitor<TStorageOptions> options, S3ClientProvider<TStorageOptions> s3ClientProvider,
-        ILogger<S3Storage<TStorageOptions>> logger,
-        IStorageCache<TStorageOptions>? cache = null,
-        IStorageMetadataProvider<TStorageOptions>? metadataProvider = null) : base(options, logger,
-        cache, metadataProvider) =>
-        this.s3ClientProvider = s3ClientProvider;
+    private IAmazonS3 S3Client => s3ClientProvider.GetS3Client<TStorageOptions>();
 
     private async Task CreateBucketAsync(string bucketName, CancellationToken cancellationToken = default)
     {
@@ -31,11 +29,10 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
             {
                 var putBucketRequest = new PutBucketRequest { BucketName = bucketName, UseClientRegion = true };
 
-                using var s3Client = s3ClientProvider.S3Client;
-                await s3Client.PutBucketAsync(putBucketRequest, cancellationToken);
+                await S3Client.PutBucketAsync(putBucketRequest, cancellationToken);
                 if (Options.BucketPolicy is not null)
                 {
-                    await s3Client.PutBucketPolicyAsync(bucketName,
+                    await S3Client.PutBucketPolicyAsync(bucketName,
                         Options.BucketPolicy.ToJson(),
                         cancellationToken);
                 }
@@ -48,18 +45,14 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
         }
     }
 
-    private async Task<bool> IsBucketExistsAsync(string bucketName)
-    {
-        using var s3Client = s3ClientProvider.S3Client;
-        return await AmazonS3Util.DoesS3BucketExistV2Async(s3Client, bucketName);
-    }
+    private async Task<bool> IsBucketExistsAsync(string bucketName) =>
+        await AmazonS3Util.DoesS3BucketExistV2Async(S3Client, bucketName);
 
     internal async Task<bool> DoSaveInternalAsync(string destinationPath, Stream stream,
         CancellationToken cancellationToken = default)
     {
         await CreateBucketAsync(Options.Bucket, cancellationToken);
-        using var s3Client = s3ClientProvider.S3Client;
-        using var fileTransferUtility = new TransferUtility(s3Client);
+        using var fileTransferUtility = new TransferUtility(S3Client);
         try
         {
             var request = new TransferUtilityUploadRequest
@@ -85,18 +78,12 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
         return uploadRequest.GetStorageItem(Helpers.GetPathWithoutPrefix(Options.Prefix, destinationPath));
     }
 
-    internal async Task<bool> IsObjectExistsAsync(string filePath, CancellationToken cancellationToken = default)
-    {
-        using var s3Client = s3ClientProvider.S3Client;
-        return await s3Client.IsObjectExistsAsync(Options.Bucket, filePath, cancellationToken);
-    }
+    internal async Task<bool> IsObjectExistsAsync(string filePath, CancellationToken cancellationToken = default) =>
+        await S3Client.IsObjectExistsAsync(Options.Bucket, filePath, cancellationToken);
 
-    internal async Task DeleteObjectAsync(string filePath, CancellationToken cancellationToken = default)
-    {
-        using var s3Client = s3ClientProvider.S3Client;
-        await s3Client.DeleteObjectAsync(Options.Bucket, filePath,
+    internal async Task DeleteObjectAsync(string filePath, CancellationToken cancellationToken = default) =>
+        await S3Client.DeleteObjectAsync(Options.Bucket, filePath,
             cancellationToken);
-    }
 
     protected override async Task<bool> DoDeleteAsync(string filePath,
         CancellationToken cancellationToken = default)
@@ -125,8 +112,7 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
         CancellationToken cancellationToken = default)
     {
         var request = new GetObjectMetadataRequest { BucketName = Options.Bucket, Key = item.FilePath };
-        using var s3Client = s3ClientProvider.S3Client;
-        await s3Client.GetObjectMetadataAsync(request, cancellationToken);
+        await S3Client.GetObjectMetadataAsync(request, cancellationToken);
     }
 
     protected override async Task<bool> DoIsFileExistsAsync(StorageItem item,
@@ -159,19 +145,18 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
         {
             if (string.IsNullOrEmpty(Options.Prefix))
             {
-                using var s3Client = s3ClientProvider.S3Client;
                 if (Options.DeleteBucketOnCleanup)
                 {
                     try
                     {
-                        await AmazonS3Util.DeleteS3BucketWithObjectsAsync(s3Client, Options.Bucket,
+                        await AmazonS3Util.DeleteS3BucketWithObjectsAsync(S3Client, Options.Bucket,
                             cancellationToken);
                     }
                     catch (AmazonS3Exception ex) when (ex.Message.Contains(
                                                            "A header you provided implies functionality that is not implemented"))
                     {
                         await DeleteAllObjectsInBucket(cancellationToken);
-                        await s3Client.DeleteBucketAsync(Options.Bucket, cancellationToken);
+                        await S3Client.DeleteBucketAsync(Options.Bucket, cancellationToken);
                     }
                 }
                 else
@@ -191,14 +176,13 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
         var objects = await GetAllItemsAsync("/", cancellationToken);
         foreach (var chunk in SplitList(objects.ToList(), 1000))
         {
-            using var s3Client = s3ClientProvider.S3Client;
             var request = new DeleteObjectsRequest
             {
                 BucketName = Options.Bucket,
                 Objects = chunk.Select(item => new KeyVersion { Key = GetPathWithPrefix(item.Path) })
                     .ToList()
             };
-            await s3Client.DeleteObjectsAsync(request, cancellationToken);
+            await S3Client.DeleteObjectsAsync(request, cancellationToken);
         }
     }
 
@@ -206,8 +190,7 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
     {
         if (Options.GeneratePreSignedUrls)
         {
-            using var s3Client = s3ClientProvider.S3Client;
-            var url = s3Client.GetPreSignedURL(new GetPreSignedUrlRequest
+            var url = S3Client.GetPreSignedURL(new GetPreSignedUrlRequest
             {
                 Key = filePath, Expires = DateTime.UtcNow.AddHours(Options.PreSignedUrlsExpirationInHours)
             });
@@ -226,12 +209,9 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
     }
 
     internal async Task<GetObjectResponse?> DownloadFileAsync(string filePath,
-        CancellationToken cancellationToken = default)
-    {
-        using var s3Client = s3ClientProvider.S3Client;
-        return await s3Client.DownloadFileAsync(Options.Bucket, filePath, Logger,
+        CancellationToken cancellationToken = default) =>
+        await S3Client.DownloadFileAsync(Options.Bucket, filePath, Logger,
             cancellationToken);
-    }
 
     protected override async Task<StorageItemDownloadInfo?> DoGetFileAsync(string path,
         CancellationToken cancellationToken = default)
@@ -257,10 +237,10 @@ public sealed class S3Storage<TStorageOptions> : Storage<TStorageOptions>
             do
             {
                 Logger.LogDebug("Get objects list from S3. Current objects count: {Count}", items.Count);
-                using var s3Client = s3ClientProvider.S3Client;
-                response = await s3Client.ListObjectsV2Async(request, cancellationToken);
+                response = await S3Client.ListObjectsV2Async(request, cancellationToken);
                 items.AddRange(response.S3Objects.Select(s3Object =>
-                    new StorageItemInfo(Helpers.GetPathWithoutPrefix(Options.Prefix, s3Object.Key), (long)s3Object.Size!,
+                    new StorageItemInfo(Helpers.GetPathWithoutPrefix(Options.Prefix, s3Object.Key),
+                        (long)s3Object.Size!,
                         s3Object.LastModified?.ToUniversalTime() ?? DateTimeOffset.UtcNow)));
 
                 request.ContinuationToken = response.NextContinuationToken;

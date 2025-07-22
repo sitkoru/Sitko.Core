@@ -7,24 +7,44 @@ using HealthChecks.Aws.S3;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 using Sitko.Core.App;
-using Sitko.Core.App.Health;
+using Sitko.Core.App.OpenTelemetry;
 
 namespace Sitko.Core.Storage.S3;
 
-public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3StorageOptions>, TS3StorageOptions>
+public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3StorageOptions>, TS3StorageOptions>,
+    IOpenTelemetryModule<TS3StorageOptions>
     where TS3StorageOptions : S3StorageOptions, new()
 {
     public override string OptionsKey => $"Storage:S3:{typeof(TS3StorageOptions).Name}";
-    public override string[] OptionKeys => new[] { "Storage:S3:Default", OptionsKey };
+    public override string[] OptionKeys => ["Storage:S3:Default", OptionsKey];
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TS3StorageOptions startupOptions)
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
-        services.AddSingleton<S3ClientProvider<TS3StorageOptions>>();
+        services.AddHttpClient(nameof(TS3StorageOptions), client =>
+        {
+            startupOptions.ConfigureHttpClient?.Invoke(client);
+        });
+        services.AddSingleton(typeof(S3HttpClientFactory<>));
+        services.AddSingleton<S3ClientProvider>();
+        services.AddKeyedSingleton<IAmazonS3, AmazonS3Client>(typeof(TS3StorageOptions).Name, (provider, _) =>
+        {
+            var options = provider.GetRequiredService<IOptionsMonitor<TS3StorageOptions>>();
+            return new AmazonS3Client(options.CurrentValue.AccessKey,
+                options.CurrentValue.SecretKey,
+                options.CurrentValue.GetAmazonS3Config(provider
+                    .GetRequiredService<S3HttpClientFactory<TS3StorageOptions>>()));
+        });
         if (!startupOptions.DisableHealthCheck)
         {
+            string[]
+                skipTags = /*HealthCheckStages.GetSkipTags(HealthCheckStages.Liveness, HealthCheckStages.Readiness)*/
+                    []; // don't skip for now
             services.AddHealthChecks().Add(new HealthCheckRegistration(GetType().Name,
                 serviceProvider =>
                 {
@@ -32,20 +52,29 @@ public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3Sto
                     var options = new S3BucketOptions
                     {
                         BucketName = config.Bucket,
-                        S3Config = new AmazonS3Config
-                        {
-                            RegionEndpoint = config.Region,
-                            ServiceURL = config.Server?.ToString(),
-                            ForcePathStyle = true
-                        },
+                        S3Config =
+                            config.GetAmazonS3Config(serviceProvider
+                                .GetRequiredService<S3HttpClientFactory<TS3StorageOptions>>()),
                         Credentials = new BasicAWSCredentials(config.AccessKey, config.SecretKey)
                     };
                     return new S3HealthCheck(options);
                 }, HealthStatus.Unhealthy,
-                HealthCheckStages.GetSkipTags(HealthCheckStages.Liveness, HealthCheckStages.Readiness),
+                skipTags,
+                startupOptions.HealthCheckTimeout));
+            services.AddSingleton<S3BucketHealthCheck<TS3StorageOptions>>();
+            services.AddHealthChecks().Add(new HealthCheckRegistration(
+                $"S3 Storage ({typeof(TS3StorageOptions).Name}) Bucket",
+                serviceProvider => serviceProvider.GetRequiredService<S3BucketHealthCheck<TS3StorageOptions>>(),
+                HealthStatus.Unhealthy,
+                skipTags,
                 startupOptions.HealthCheckTimeout));
         }
     }
+
+
+    public OpenTelemetryBuilder ConfigureOpenTelemetry(IApplicationContext context, TS3StorageOptions options,
+        OpenTelemetryBuilder builder) =>
+        builder.WithTracing(providerBuilder => providerBuilder.AddAWSInstrumentation());
 }
 
 [PublicAPI]
@@ -78,6 +107,8 @@ public class S3StorageOptions : StorageOptions, IModuleOptionsWithValidation
             }
         }
     };
+
+    public Action<HttpClient>? ConfigureHttpClient { get; set; }
 
     public Type GetValidatorType() => typeof(S3StorageOptionsValidator);
 }

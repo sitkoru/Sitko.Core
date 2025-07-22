@@ -2,6 +2,7 @@
   <ItemGroup>
     <PackageReference Include="AWSSDK.S3"  />
     <PackageReference Include="AspNetCore.HealthChecks.Aws.S3"/>
+    <PackageReference Include="OpenTelemetry.Instrumentation.AWS"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Storage\Sitko.Core.Storage.csproj" />
