@@ -31,9 +31,5 @@ public class BasicTests : BasicTests<BaseS3StorageTestScope>
         var s3BucketHealthCheck = scope.GetService<S3BucketHealthCheck<TestS3StorageSettings>>();
         var bucketHcResult = await s3BucketHealthCheck.CheckHealthAsync(new HealthCheckContext());
         bucketHcResult.Status.Should().Be(HealthStatus.Healthy);
-
-        var s3HealthCheck = scope.GetService<S3HealthCheck<TestS3StorageSettings>>();
-        var objectsHcResult = await s3HealthCheck.CheckHealthAsync(new HealthCheckContext());
-        objectsHcResult.Status.Should().Be(HealthStatus.Healthy);
     }
 }

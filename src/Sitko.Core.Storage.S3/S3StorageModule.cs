@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using OpenTelemetry;
 using OpenTelemetry.Trace;
 using Sitko.Core.App;
+using Sitko.Core.App.Health;
 using Sitko.Core.App.OpenTelemetry;
 
 [assembly: InternalsVisibleTo("Sitko.Core.Storage.S3.Tests")]
@@ -43,24 +44,12 @@ public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3Sto
         });
         if (!startupOptions.DisableHealthCheck)
         {
-            string[]
-                skipTags = /*HealthCheckStages.GetSkipTags(HealthCheckStages.Liveness, HealthCheckStages.Readiness)*/
-                    []; // don't skip for now
-
-            services.AddSingleton<S3HealthCheck<TS3StorageOptions>>();
-            services.AddHealthChecks().Add(new HealthCheckRegistration(
-                $"S3 Storage ({typeof(TS3StorageOptions).Name}) Objects",
-                serviceProvider => serviceProvider.GetRequiredService<S3HealthCheck<TS3StorageOptions>>(),
-                HealthStatus.Unhealthy,
-                skipTags,
-                startupOptions.HealthCheckTimeout));
-
             services.AddSingleton<S3BucketHealthCheck<TS3StorageOptions>>();
             services.AddHealthChecks().Add(new HealthCheckRegistration(
                 $"S3 Storage ({typeof(TS3StorageOptions).Name}) Bucket",
                 serviceProvider => serviceProvider.GetRequiredService<S3BucketHealthCheck<TS3StorageOptions>>(),
                 HealthStatus.Unhealthy,
-                skipTags,
+                HealthCheckStages.GetSkipTags(HealthCheckStages.Liveness, HealthCheckStages.Readiness),
                 startupOptions.HealthCheckTimeout));
         }
     }
