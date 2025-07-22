@@ -5,6 +5,10 @@ services:
     command: -cid tests
     ports:
       - 4222:4222
+  consul:
+    image: hashicorp/consul
+    ports:
+      - "8500:8500"
   postgres:
     image: postgres:alpine
     environment:
@@ -40,8 +44,7 @@ services:
     ports:
       - 5601:5601
   minio:
-    image: minio/minio
-    command: server /data --console-address ":9001"
+    image: bitnami/minio
     ports:
       - 9000:9000
       - 9001:9001
@@ -61,7 +64,7 @@ services:
     ports:
       - "8200:8200"
   kafka:
-    image: docker.io/bitnami/kafka:3.5
+    image: docker.io/bitnami/kafka:3.9
     ports:
       - "9092:9092"
     volumes:
