@@ -107,7 +107,6 @@ public class KafkaQueueModule : BaseApplicationModule<KafkaQueueModuleOptions>
                 consumerBuilder.WithBufferSize(bufferSize);
                 consumerBuilder.AddMiddlewares(middlewares =>
                     {
-                        middlewares.AddDeserializer<JsonCoreDeserializer, EventTypeIdTypeResolver>();
                         switch (commonRegistration.RetryStrategy)
                         {
                             case ConsumerGroupRetryStrategy.Simple:
@@ -124,6 +123,7 @@ public class KafkaQueueModule : BaseApplicationModule<KafkaQueueModuleOptions>
                                 break;
                         }
 
+                        middlewares.AddDeserializer<JsonCoreDeserializer, EventTypeIdTypeResolver>();
                         middlewares.AddTypedHandlers(handlers =>
                             handlers.AddHandlers(handlerTypes).WithHandlerLifetime(InstanceLifetime.Scoped));
                     }
