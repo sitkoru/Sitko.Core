@@ -1,10 +1,13 @@
 ﻿using Confluent.Kafka;
 using FluentValidation;
 using KafkaFlow;
+using KafkaFlow.OpenTelemetry;
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry;
 using Polly;
 using Polly.Retry;
 using Sitko.Core.App;
+using Sitko.Core.App.OpenTelemetry;
 using Acks = Confluent.Kafka.Acks;
 using AutoOffsetReset = Confluent.Kafka.AutoOffsetReset;
 using SaslMechanism = KafkaFlow.Configuration.SaslMechanism;
@@ -12,15 +15,12 @@ using SecurityProtocol = KafkaFlow.Configuration.SecurityProtocol;
 
 namespace Sitko.Core.Kafka;
 
-public class KafkaModule : BaseApplicationModule<KafkaModuleOptions>
+public class KafkaModule : BaseApplicationModule<KafkaModuleOptions>, IOpenTelemetryModule<KafkaModuleOptions>
 {
     private static readonly Dictionary<string, KafkaConfigurator> Configurators = new();
-    public override bool AllowMultiple => false;
 
     public override string OptionsKey => "Kafka";
-
-    public static KafkaConfigurator CreateConfigurator(string name) =>
-        Configurators.SafeGetOrAdd(name, _ => new KafkaConfigurator(name));
+    public override bool AllowMultiple => false;
 
     public override void PostConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         KafkaModuleOptions startupOptions)
@@ -47,6 +47,13 @@ public class KafkaModule : BaseApplicationModule<KafkaModuleOptions>
         });
     }
 
+    public OpenTelemetryBuilder ConfigureOpenTelemetry(IApplicationContext context, KafkaModuleOptions options,
+        OpenTelemetryBuilder builder) =>
+        builder.WithTracing(providerBuilder =>
+        {
+            providerBuilder.AddSource(KafkaFlowInstrumentation.ActivitySourceName);
+        });
+
     public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider)
     {
         await base.InitAsync(applicationContext, serviceProvider);
@@ -60,6 +67,9 @@ public class KafkaModule : BaseApplicationModule<KafkaModuleOptions>
             }
         }
     }
+
+    public static KafkaConfigurator CreateConfigurator(string name) =>
+        Configurators.SafeGetOrAdd(name, _ => new KafkaConfigurator(name));
 }
 
 public class KafkaModuleOptions : BaseModuleOptions

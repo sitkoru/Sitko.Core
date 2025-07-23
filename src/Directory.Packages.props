@@ -103,6 +103,7 @@
     <PackageVersion Include="KafkaFlow.Serializer.JsonCore" Version="4.0.0" />
     <PackageVersion Include="KafkaFlow.Extensions.Hosting" Version="4.0.0" />
     <PackageVersion Include="KafkaFlow.Retry" Version="3.1.0"/>
+    <PackageVersion Include="KafkaFlow.OpenTelemetry" Version="4.0.0"/>
   </ItemGroup>
   <!--OpenSearch libraries-->
   <ItemGroup>

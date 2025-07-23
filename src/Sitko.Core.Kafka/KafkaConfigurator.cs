@@ -55,6 +55,7 @@ public class KafkaConfigurator
     public void Build(IKafkaConfigurationBuilder builder, KafkaModuleOptions options) =>
         builder
             .UseMicrosoftLog()
+            .AddOpenTelemetryInstrumentation()
             .AddCluster(clusterBuilder =>
             {
                 clusterBuilder
