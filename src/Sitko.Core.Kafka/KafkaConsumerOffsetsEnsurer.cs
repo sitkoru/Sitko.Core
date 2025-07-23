@@ -16,13 +16,15 @@ internal class KafkaConsumerOffsetsEnsurer(
     public async Task EnsureOffsetsAsync(KafkaConfigurator configurator, KafkaModuleOptions options)
     {
         var adminClient = GetAdminClient(options);
+        var tasks = new List<Task>();
         foreach (var consumer in configurator.Consumers)
         {
-            foreach (var topic in consumer.Topics)
-            {
-                await EnsureTopicOffsetsAsync(consumer, adminClient, topic, options);
-            }
+            tasks.AddRange(consumer.Topics.Select(topic =>
+                Task.Run(async () => await EnsureTopicOffsetsAsync(consumer, adminClient, topic, options))));
         }
+
+        await Task.WhenAll(tasks);
+        adminClient.Dispose();
     }
 
     private async Task EnsureTopicOffsetsAsync(ConsumerRegistration consumer, IAdminClient adminClient, TopicInfo topic,
@@ -31,15 +33,14 @@ internal class KafkaConsumerOffsetsEnsurer(
         logger.LogDebug("Try to create topic {Topic}", topic);
         try
         {
-            await adminClient.CreateTopicsAsync(new[]
-            {
+            await adminClient.CreateTopicsAsync([
                 new TopicSpecification
                 {
                     Name = topic.Name,
                     NumPartitions = topic.PartitionsCount,
                     ReplicationFactor = topic.ReplicationFactor
                 }
-            });
+            ]);
             logger.LogInformation("Topic {Topic} created", topic);
         }
         catch (Exception ex)
