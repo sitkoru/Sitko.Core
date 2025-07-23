@@ -1,0 +1,8 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Sitko.Core.Kafka\Sitko.Core.Kafka.csproj"/>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="KafkaFlow.Retry"/>
+  </ItemGroup>
+</Project>
