@@ -5,6 +5,7 @@ public static class EventRegistrator
     private static readonly HashSet<Guid> RegisteredEvents = new();
     private static readonly Dictionary<int, Guid[]> RegisteredBatches = new();
     public static int BatchesCount => RegisteredBatches.Count;
+    public static int BatchesMessagesCount => RegisteredBatches.SelectMany(x => x.Value).Count();
     public static int ProcessedCount => RegisteredEvents.Count;
 
     public static void Register(Guid messageId) => RegisteredEvents.Add(messageId);

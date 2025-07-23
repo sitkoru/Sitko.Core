@@ -33,7 +33,7 @@ public class KafkaQueueTest(ITestOutputHelper testOutputHelper) : BaseKafkaQueue
         }
 
         await Task.Delay(TimeSpan.FromSeconds(10));
-        EventRegistrator.ProcessedCount.Should().Be(100);
+        EventRegistrator.BatchesMessagesCount.Should().Be(100);
         EventRegistrator.BatchesCount.Should().Be(10);
     }
 }
