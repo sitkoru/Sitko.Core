@@ -41,9 +41,9 @@ public class BaseKafkaQueueTestScope : BaseTestScope
             .ConfigureAwait(false);
     }
 
-    protected override async Task OnDisposeAsync()
+    protected override async Task OnAfterDisposeAsync()
     {
-        await base.OnDisposeAsync();
+        await base.OnAfterDisposeAsync();
         await container.StopAsync(CancellationToken.None);
     }
 

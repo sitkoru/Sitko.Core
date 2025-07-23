@@ -115,6 +115,8 @@ public abstract class BaseTestScope<THostApplicationBuilder, TConfig> : IBaseTes
                 app.Dispose();
             }
 
+            await OnAfterDisposeAsync();
+
             GC.SuppressFinalize(this);
             isDisposed = true;
         }
@@ -130,6 +132,7 @@ public abstract class BaseTestScope<THostApplicationBuilder, TConfig> : IBaseTes
     }
 
     protected virtual Task OnDisposeAsync() => Task.CompletedTask;
+    protected virtual Task OnAfterDisposeAsync() => Task.CompletedTask;
 
     public TConfig GetConfig(IConfiguration configuration)
     {
