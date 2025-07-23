@@ -6,6 +6,7 @@ namespace Sitko.Core.Queue.Kafka;
 
 public class KafkaQueueModuleOptions : BaseModuleOptions
 {
+    public string ClusterName { get; set; } = "Kafka_Queue";
     public int PartitionsCount { get; set; } = 24;
     public short ReplicationFactor { get; set; } = 1;
     public string TopicPrefix { get; set; } = "";

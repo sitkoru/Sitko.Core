@@ -105,8 +105,9 @@ public class KafkaQueueModule : BaseApplicationModule<KafkaQueueModuleOptions>
 
         services.AddSingleton(new KafkaMetadata(events));
         services.AddScoped<IEventProducer, EventProducer>();
+        services.AddSingleton<IKafkaQueueController, KafkaQueueController>();
 
-        var kafkaConfigurator = KafkaModule.CreateConfigurator("Kafka_Queue");
+        var kafkaConfigurator = KafkaModule.CreateConfigurator(startupOptions.ClusterName);
         kafkaConfigurator.EnsureOffsets();
         foreach (var topicName in events.Values.Select(x => x.PrefixedTopicName).Distinct())
         {

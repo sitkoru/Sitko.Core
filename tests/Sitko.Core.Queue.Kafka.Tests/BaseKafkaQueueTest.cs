@@ -8,11 +8,16 @@ using Xunit.Abstractions;
 namespace Sitko.Core.Queue.Kafka.Tests;
 
 public abstract class BaseKafkaQueueTest(ITestOutputHelper testOutputHelper)
-    : BaseTest<BaseKafkaQueueTestScope>(testOutputHelper);
+    : BaseKafkaQueueTest<BaseKafkaQueueTestScope>(testOutputHelper);
+
+public abstract class BaseKafkaQueueTest<T>(ITestOutputHelper testOutputHelper)
+    : BaseTest<T>(testOutputHelper) where T : BaseKafkaQueueTestScope;
 
 public class BaseKafkaQueueTestScope : BaseTestScope
 {
     private KafkaContainer container = null!;
+
+    protected virtual bool StartConsumers => true;
 
     protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {
@@ -27,6 +32,7 @@ public class BaseKafkaQueueTestScope : BaseTestScope
             options.TopicPrefix = Guid.NewGuid().ToString();
             options.GroupPrefix = Guid.NewGuid().ToString();
             options.AddAssembly<BaseKafkaQueueTest>();
+            options.StartConsumers = StartConsumers;
         });
 
         return hostBuilder;
@@ -52,4 +58,9 @@ public class BaseKafkaQueueTestScope : BaseTestScope
         await StartApplicationAsync();
         await base.OnCreatedAsync();
     }
+}
+
+public class StoppedKafkaQueueTestScope : BaseKafkaQueueTestScope
+{
+    protected override bool StartConsumers => false;
 }
