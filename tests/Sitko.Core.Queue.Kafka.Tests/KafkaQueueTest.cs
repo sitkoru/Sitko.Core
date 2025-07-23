@@ -18,4 +18,22 @@ public class KafkaQueueTest(ITestOutputHelper testOutputHelper) : BaseKafkaQueue
         await Task.Delay(TimeSpan.FromSeconds(5));
         EventRegistrator.IsRegistered(testEvent.Id).Should().BeTrue();
     }
+
+    [Fact]
+    public async Task ProduceBatch()
+    {
+        var scope = await GetScopeAsync();
+        var producer = scope.GetService<IEventProducer>();
+        var range = Enumerable.Range(1, 100);
+        var testEvents =
+            range.Select(_ => new BatchTestEvent { Id = Guid.NewGuid(), Name = Guid.NewGuid().ToString() });
+        foreach (var testEvent in testEvents)
+        {
+            producer.Produce($"test{testEvent.Id}", testEvent);
+        }
+
+        await Task.Delay(TimeSpan.FromSeconds(10));
+        EventRegistrator.ProcessedCount.Should().Be(100);
+        EventRegistrator.BatchesCount.Should().Be(10);
+    }
 }
