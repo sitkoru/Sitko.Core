@@ -19,7 +19,7 @@ public interface IBaseTestScope : IAsyncDisposable
     ILogger<T> GetLogger<T>();
     Task OnCreatedAsync();
     Task BeforeConfiguredAsync(string name);
-    Task StartApplicationAsync();
+    Task StartApplicationAsync(CancellationToken cancellationToken = default);
 }
 
 public abstract class BaseTestScope<THostApplicationBuilder, TConfig> : IBaseTestScope
@@ -122,11 +122,11 @@ public abstract class BaseTestScope<THostApplicationBuilder, TConfig> : IBaseTes
         }
     }
 
-    public async Task StartApplicationAsync()
+    public async Task StartApplicationAsync(CancellationToken cancellationToken = default)
     {
         if (app != null && !isApplicationStarted)
         {
-            await app.StartAsync();
+            await app.StartAsync(cancellationToken);
             isApplicationStarted = true;
         }
     }

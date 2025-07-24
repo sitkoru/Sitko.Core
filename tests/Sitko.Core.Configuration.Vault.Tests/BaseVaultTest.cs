@@ -90,7 +90,7 @@ public class FailingVaultTestScope : BaseTestScope
     public override async Task OnCreatedAsync()
     {
         await base.OnCreatedAsync();
-        await StartApplicationAsync();
+        await StartApplicationAsync(TestContext.Current.CancellationToken);
     }
 }
 

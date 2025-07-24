@@ -17,7 +17,7 @@ public class ProcessorTests : BaseTest
     {
         var scope = await GetScopeAsync<ProcessorQueueTestScope>();
 
-        await scope.StartApplicationAsync(); // need to start hosted services
+        await scope.StartApplicationAsync(TestContext.Current.CancellationToken); // need to start hosted services
         var processor = scope.GetService<FooTestMessageProcessor>();
         Assert.NotNull(processor);
 
@@ -42,7 +42,7 @@ public class ProcessorTests : BaseTest
     {
         var scope = await GetScopeAsync<MultipleProcessorQueueTestScope>();
 
-        await scope.StartApplicationAsync(); // need to start hosted services
+        await scope.StartApplicationAsync(TestContext.Current.CancellationToken); // need to start hosted services
         var counter = scope.GetService<TestQueueProcessorCounter>();
         Assert.NotNull(counter);
 

@@ -22,7 +22,7 @@ public class BasePostgresStorageTestScope : BaseTestScope
     public override async Task OnCreatedAsync()
     {
         await base.OnCreatedAsync();
-        await StartApplicationAsync();
+        await StartApplicationAsync(TestContext.Current.CancellationToken);
     }
 
     protected override async Task OnDisposeAsync()
