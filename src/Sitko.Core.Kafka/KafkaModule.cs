@@ -61,8 +61,13 @@ public class KafkaModule : BaseApplicationModule<KafkaModuleOptions>, IOpenTelem
 
         var options = GetOptions(serviceProvider);
         foreach (var (_, configurator) in Configurators)
+        var logger = serviceProvider.GetRequiredService<ILogger<KafkaModule>>();
+        if (options.EnsureOffsets)
         {
-            if (configurator.NeedToEnsureOffsets)
+            logger.LogInformation("Ensure offsets...");
+            var offsetsEnsurer = serviceProvider.GetRequiredService<KafkaConsumerOffsetsEnsurer>();
+
+            foreach (var (_, configurator) in configurators)
             {
                 await offsetsEnsurer.EnsureOffsetsAsync(configurator, options);
             }
@@ -96,6 +101,8 @@ public class KafkaModuleOptions : BaseModuleOptions
     public bool EnableIdempotence { get; set; } = true;
     public bool SocketNagleDisable { get; set; } = true;
     public Acks Acks { get; set; } = Acks.All;
+
+    public bool EnsureOffsets { get; set; }
 }
 
 public class KafkaModuleOptionsValidator : AbstractValidator<KafkaModuleOptions>

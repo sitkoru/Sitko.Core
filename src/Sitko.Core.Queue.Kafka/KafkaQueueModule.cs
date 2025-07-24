@@ -146,6 +146,11 @@ public class KafkaQueueModule : BaseApplicationModule<KafkaQueueModuleOptions>
                 AddBatchConsumer(kafkaConfigurator, topicConsumersGroup.First(), startupOptions);
             }
         }
+
+        if (!startupOptions.StartConsumers)
+        {
+            kafkaConfigurator.WithConsumerState(ConsumerInitialState.Stopped);
+        }
     }
 
     private static void AddBatchConsumer(KafkaConfigurator kafkaConfigurator, BatchConsumerRegistration consumer,
@@ -168,10 +173,6 @@ public class KafkaQueueModule : BaseApplicationModule<KafkaQueueModuleOptions>
                             factory.Resolve(consumer.EventHandler) as IMessageMiddleware);
                     }
                 );
-                if (!options.StartConsumers)
-                {
-                    consumerBuilder.WithInitialState(ConsumerInitialState.Stopped);
-                }
             });
     }
 
@@ -214,10 +215,6 @@ public class KafkaQueueModule : BaseApplicationModule<KafkaQueueModuleOptions>
                             handlers.AddHandlers(handlerTypes).WithHandlerLifetime(InstanceLifetime.Scoped));
                     }
                 );
-                if (!options.StartConsumers)
-                {
-                    consumerBuilder.WithInitialState(ConsumerInitialState.Stopped);
-                }
             });
     }
 }

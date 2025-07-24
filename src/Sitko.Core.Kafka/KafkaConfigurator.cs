@@ -14,15 +14,14 @@ public class KafkaConfigurator
     private readonly Dictionary<ConsumerRegistration, Action<IConsumerConfigurationBuilder, ConsumerConfig>>
         consumerActions = new();
 
-    private readonly HashSet<ConsumerRegistration> consumers = new();
+    private readonly HashSet<ConsumerRegistration> consumers = [];
     private readonly Dictionary<string, Action<IProducerConfigurationBuilder, ProducerConfig>> producerActions = new();
     private readonly Dictionary<string, (int Partitions, short ReplicationFactor)> topics = new();
-    private bool ensureOffsets;
 
     internal KafkaConfigurator(string clusterName) => this.clusterName = clusterName;
 
     internal HashSet<ConsumerRegistration> Consumers => consumers;
-    internal bool NeedToEnsureOffsets => ensureOffsets;
+    internal ConsumerInitialState ConsumerInitialState { get; private set; } = ConsumerInitialState.Running;
 
     public KafkaConfigurator AddProducer(string producerName,
         Action<IProducerConfigurationBuilder, ProducerConfig> configure)
@@ -46,9 +45,9 @@ public class KafkaConfigurator
         return this;
     }
 
-    public KafkaConfigurator EnsureOffsets(bool enable = true)
+    public KafkaConfigurator WithConsumerState(ConsumerInitialState state = ConsumerInitialState.Running)
     {
-        ensureOffsets = enable;
+        ConsumerInitialState = state;
         return this;
     }
 
@@ -77,7 +76,7 @@ public class KafkaConfigurator
                         });
                 }
 
-                if (!ensureOffsets)
+                if (!options.EnsureOffsets)
                 {
                     foreach (var (topic, config) in topics)
                     {
@@ -133,6 +132,7 @@ public class KafkaConfigurator
 
                         consumerBuilder.WithConsumerConfig(consumerConfig);
                         configureAction(consumerBuilder, consumerConfig);
+                        consumerBuilder.WithInitialState(ConsumerInitialState);
                     });
                 }
             });

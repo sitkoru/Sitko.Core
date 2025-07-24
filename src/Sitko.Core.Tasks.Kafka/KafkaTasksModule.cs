@@ -45,7 +45,6 @@ public class
             .CreateConfigurator("Kafka_Tasks_Cluster");
         kafkaConfigurator
             .AutoCreateTopic(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
-            .EnsureOffsets()
             .AddProducer(producerName, (builder, _) =>
             {
                 builder.DefaultTopic(kafkaTopic);
