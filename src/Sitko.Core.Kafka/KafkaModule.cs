@@ -17,7 +17,7 @@ namespace Sitko.Core.Kafka;
 
 public class KafkaModule : BaseApplicationModule<KafkaModuleOptions>, IOpenTelemetryModule<KafkaModuleOptions>
 {
-    private static readonly Dictionary<string, KafkaConfigurator> Configurators = new();
+    private readonly Dictionary<string, KafkaConfigurator> configurators = new();
 
     public override string OptionsKey => "Kafka";
     public override bool AllowMultiple => false;
@@ -29,7 +29,7 @@ public class KafkaModule : BaseApplicationModule<KafkaModuleOptions>, IOpenTelem
         services.AddSingleton<KafkaConsumerOffsetsEnsurer>();
         services.AddKafkaFlowHostedService(builder =>
         {
-            foreach (var (_, configurator) in Configurators)
+            foreach (var (_, configurator) in configurators)
             {
                 configurator.Build(builder, startupOptions);
             }

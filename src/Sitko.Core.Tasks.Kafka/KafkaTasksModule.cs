@@ -41,7 +41,8 @@ public class
             EventsRegistry.Register(executor.EventType, kafkaTopic, producerName);
         }
 
-        var kafkaConfigurator = KafkaModule.CreateConfigurator("Kafka_Tasks_Cluster");
+        var kafkaConfigurator = applicationContext.GetModuleInstance<KafkaModule>()
+            .CreateConfigurator("Kafka_Tasks_Cluster");
         kafkaConfigurator
             .AutoCreateTopic(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
             .EnsureOffsets()

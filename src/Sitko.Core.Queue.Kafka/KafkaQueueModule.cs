@@ -107,8 +107,8 @@ public class KafkaQueueModule : BaseApplicationModule<KafkaQueueModuleOptions>
         services.AddScoped<IEventProducer, EventProducer>();
         services.AddSingleton<IKafkaQueueController, KafkaQueueController>();
 
-        var kafkaConfigurator = KafkaModule.CreateConfigurator(startupOptions.ClusterName);
-        kafkaConfigurator.EnsureOffsets();
+        var kafkaConfigurator = applicationContext.GetModuleInstance<KafkaModule>()
+            .CreateConfigurator(startupOptions.ClusterName);
         foreach (var topicName in events.Values.Select(x => x.PrefixedTopicName).Distinct())
         {
             kafkaConfigurator.AutoCreateTopic(topicName, startupOptions.PartitionsCount,
