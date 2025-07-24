@@ -129,7 +129,7 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
         Logging.ClearProviders();
         Logging.AddSerilog().Configure(options =>
             options.ActivityTrackingOptions = ActivityTrackingOptions.SpanId | ActivityTrackingOptions.TraceId);
-        serilogConfigurator.Configure(ConfigureDefautLogger);
+        serilogConfigurator.Configure(ConfigureDefaultLogger);
 
         AddModule<CommandsModule>();
 
@@ -148,7 +148,7 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
     private ILogger<ISitkoCoreApplicationBuilder> CreateInternalLogger()
     {
         var tmpLoggerConfiguration = new LoggerConfiguration();
-        tmpLoggerConfiguration = ConfigureDefautLogger(tmpLoggerConfiguration);
+        tmpLoggerConfiguration = ConfigureDefaultLogger(tmpLoggerConfiguration);
         if (Context.Options.EnableConsoleLogging != true)
         {
             tmpLoggerConfiguration = tmpLoggerConfiguration.WriteTo.Console(
@@ -215,7 +215,7 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
     protected virtual IConfigurationBuilder SetupConfiguration(IConfigurationBuilder configurationBuilder) =>
         configurationBuilder;
 
-    protected virtual LoggerConfiguration ConfigureDefautLogger(LoggerConfiguration loggerConfiguration)
+    protected virtual LoggerConfiguration ConfigureDefaultLogger(LoggerConfiguration loggerConfiguration)
     {
         loggerConfiguration = loggerConfiguration.ReadFrom.Configuration(Context.Configuration);
         loggerConfiguration = loggerConfiguration
