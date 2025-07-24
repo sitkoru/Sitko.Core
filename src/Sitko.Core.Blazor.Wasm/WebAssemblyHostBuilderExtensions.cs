@@ -44,9 +44,9 @@ public class SitkoCoreBlazorWasmApplicationBuilder : SitkoCoreBaseApplicationBui
         builder.ConfigureContainer(new SitkoCoreServiceProviderBuilderFactory(), _ => BeforeContainerBuild());
     }
 
-    protected override LoggerConfiguration ConfigureDefautLogger(LoggerConfiguration loggerConfiguration)
+    protected override LoggerConfiguration ConfigureDefaultLogger(LoggerConfiguration loggerConfiguration)
     {
-        base.ConfigureDefautLogger(loggerConfiguration);
+        base.ConfigureDefaultLogger(loggerConfiguration);
         return loggerConfiguration.WriteTo.BrowserConsole(
             outputTemplate: Context.Options.ConsoleLogFormat,
             formatProvider: CultureInfo.InvariantCulture);

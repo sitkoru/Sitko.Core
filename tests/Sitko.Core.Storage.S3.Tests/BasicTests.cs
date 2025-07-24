@@ -2,7 +2,6 @@ using FluentAssertions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Sitko.Core.Storage.Tests;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Storage.S3.Tests;
 

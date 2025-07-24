@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Sitko.Core.Repository.EntityFrameworkCore.Tests.Data.TPH;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore.Tests;
 

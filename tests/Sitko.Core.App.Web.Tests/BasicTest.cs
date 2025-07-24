@@ -2,7 +2,6 @@
 using Razor.Templating.Core;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.App.Web.Tests;
 
@@ -25,4 +24,3 @@ public class TestViewModel
 {
     public Guid Id { get; } = Guid.NewGuid();
 }
-

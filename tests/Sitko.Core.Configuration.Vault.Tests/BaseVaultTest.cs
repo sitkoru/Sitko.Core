@@ -5,7 +5,7 @@ using Sitko.Core.App;
 using Sitko.Core.Xunit;
 using VaultSharp;
 using VaultSharp.V1.AuthMethods.Token;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Sitko.Core.Configuration.Vault.Tests;
 
@@ -90,7 +90,7 @@ public class FailingVaultTestScope : BaseTestScope
     public override async Task OnCreatedAsync()
     {
         await base.OnCreatedAsync();
-        await StartApplicationAsync();
+        await StartApplicationAsync(TestContext.Current.CancellationToken);
     }
 }
 

@@ -22,7 +22,8 @@ public abstract class
     protected IOptionsMonitor<TStorageOptions> StorageOptions { get; }
     protected ILogger<BaseStorageMetadataProvider<TOptions, TStorageOptions>> Logger { get; }
 
-    Task IStorageMetadataProvider<TStorageOptions>.InitAsync() => DoInitAsync();
+    Task IStorageMetadataProvider<TStorageOptions>.InitAsync(CancellationToken cancellationToken) =>
+        DoInitAsync(cancellationToken);
 
     Task IStorageMetadataProvider<TStorageOptions>.SaveMetadataAsync(StorageItem storageItem,
         StorageItemMetadata itemMetadata, bool isNew,
@@ -55,7 +56,7 @@ public abstract class
         CancellationToken cancellationToken) =>
         DoGetMetadataAsync(path, cancellationToken);
 
-    protected virtual Task DoInitAsync() => Task.CompletedTask;
+    protected virtual Task DoInitAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
     protected abstract Task DoDeleteMetadataAsync(string filePath, CancellationToken cancellationToken = default);
 
@@ -75,4 +76,3 @@ public abstract class
         bool isNew = true,
         CancellationToken cancellationToken = default);
 }
-

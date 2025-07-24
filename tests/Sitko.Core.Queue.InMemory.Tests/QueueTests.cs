@@ -1,5 +1,5 @@
 using Sitko.Core.Queue.Tests;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Sitko.Core.Queue.InMemory.Tests;
 
@@ -10,4 +10,3 @@ public class BasicQueueTests : BasicQueueTests<InMemoryQueueTestScope, InMemoryQ
     {
     }
 }
-

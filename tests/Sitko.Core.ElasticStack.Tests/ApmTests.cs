@@ -2,7 +2,6 @@
 using Elastic.Apm.Api;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.ElasticStack.Tests;
 
@@ -16,7 +15,7 @@ public class ApmTests : BaseTest
     public async Task Transaction()
     {
         var scope = await GetScopeAsync<ElasticStackScope>();
-        await scope.StartApplicationAsync();
+        await scope.StartApplicationAsync(TestContext.Current.CancellationToken);
         Assert.True(Agent.IsConfigured, "APM is not configured");
         var tracer = scope.GetService<ITracer>();
         Assert.NotNull(tracer);
@@ -45,4 +44,3 @@ public class ApmTests : BaseTest
         Assert.True(true);
     }
 }
-

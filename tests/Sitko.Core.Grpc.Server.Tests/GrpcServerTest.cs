@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.TestHost;
 using Sitko.Core.App.Web;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Grpc.Server.Tests;
 
@@ -22,7 +21,7 @@ public class GrpcServerTest : BaseTest
         hostBuilder.WebHost.UseTestServer();
         await using var host = hostBuilder.Build();
         host.MapSitkoCore();
-        await host.StartAsync();
+        await host.StartAsync(TestContext.Current.CancellationToken);
         var service = host.GetTestServer();
         var responseVersionHandler = new ResponseVersionHandler { InnerHandler = service.CreateHandler() };
         var client = new HttpClient(responseVersionHandler) { BaseAddress = new Uri("http://localhost") };
@@ -30,7 +29,8 @@ public class GrpcServerTest : BaseTest
             new GrpcChannelOptions { HttpClient = client });
         var grpcClient = new TestService.TestServiceClient(channel);
 
-        var response = await grpcClient.RequestAsync(new TestRequest());
+        var response = await grpcClient.RequestAsync(new TestRequest(),
+            cancellationToken: TestContext.Current.CancellationToken);
         Assert.True(response.ResponseInfo.IsSuccess);
     }
 

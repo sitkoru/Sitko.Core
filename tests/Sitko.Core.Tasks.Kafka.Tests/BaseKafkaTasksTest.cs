@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.Tasks.Kafka.Tests.Data;
 using Sitko.Core.Xunit;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Sitko.Core.Tasks.Kafka.Tests;
 

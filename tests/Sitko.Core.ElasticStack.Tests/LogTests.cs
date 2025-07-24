@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.ElasticStack.Tests;
 
@@ -25,4 +24,3 @@ public class LogTests : BaseTest
         Assert.True(true);
     }
 }
-

@@ -120,7 +120,8 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
         var argsProvider = new ApplicationArgsProvider(Args);
         SetupConfiguration(Configuration);
         var bootConfig = Configuration.Build();
-        bootApplicationContext = new BuilderApplicationContext(bootConfig, Environment, argsProvider);
+        bootApplicationContext =
+            new BuilderApplicationContext(bootConfig, Environment, argsProvider, () => moduleRegistrations);
 
         // configure logging
         Configuration.Add(new SerilogDynamicConfigurationSource());
@@ -129,7 +130,7 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
         Logging.ClearProviders();
         Logging.AddSerilog().Configure(options =>
             options.ActivityTrackingOptions = ActivityTrackingOptions.SpanId | ActivityTrackingOptions.TraceId);
-        serilogConfigurator.Configure(ConfigureDefautLogger);
+        serilogConfigurator.Configure(ConfigureDefaultLogger);
 
         AddModule<CommandsModule>();
 
@@ -148,7 +149,7 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
     private ILogger<ISitkoCoreApplicationBuilder> CreateInternalLogger()
     {
         var tmpLoggerConfiguration = new LoggerConfiguration();
-        tmpLoggerConfiguration = ConfigureDefautLogger(tmpLoggerConfiguration);
+        tmpLoggerConfiguration = ConfigureDefaultLogger(tmpLoggerConfiguration);
         if (Context.Options.EnableConsoleLogging != true)
         {
             tmpLoggerConfiguration = tmpLoggerConfiguration.WriteTo.Console(
@@ -215,7 +216,7 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
     protected virtual IConfigurationBuilder SetupConfiguration(IConfigurationBuilder configurationBuilder) =>
         configurationBuilder;
 
-    protected virtual LoggerConfiguration ConfigureDefautLogger(LoggerConfiguration loggerConfiguration)
+    protected virtual LoggerConfiguration ConfigureDefaultLogger(LoggerConfiguration loggerConfiguration)
     {
         loggerConfiguration = loggerConfiguration.ReadFrom.Configuration(Context.Configuration);
         loggerConfiguration = loggerConfiguration

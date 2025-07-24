@@ -15,9 +15,9 @@ internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : A
 {
     private readonly Action<IApplicationContext, TModuleOptions>? configureOptions;
     private readonly TModule instance;
+    private readonly string[] optionKeys;
 
     private readonly Dictionary<Guid, TModuleOptions> optionsCache = new();
-    private readonly string[] optionKeys;
     private readonly Type? validatorType;
 
     public ApplicationModuleRegistration(
@@ -184,19 +184,20 @@ internal sealed class ApplicationModuleRegistration<TModule, TModuleOptions> : A
     }
 
     public override Task ApplicationStopped(IApplicationContext applicationContext,
-        IServiceProvider serviceProvider) =>
-        instance.ApplicationStopped(applicationContext, serviceProvider);
+        IServiceProvider serviceProvider, CancellationToken cancellationToken = default) =>
+        instance.ApplicationStopped(applicationContext, serviceProvider, cancellationToken);
 
     public override Task ApplicationStopping(IApplicationContext applicationContext,
-        IServiceProvider serviceProvider) =>
-        instance.ApplicationStopping(applicationContext, serviceProvider);
+        IServiceProvider serviceProvider, CancellationToken cancellationToken = default) =>
+        instance.ApplicationStopping(applicationContext, serviceProvider, cancellationToken);
 
     public override Task ApplicationStarted(IApplicationContext applicationContext,
-        IServiceProvider serviceProvider) =>
-        instance.ApplicationStarted(applicationContext, serviceProvider);
+        IServiceProvider serviceProvider, CancellationToken cancellationToken = default) =>
+        instance.ApplicationStarted(applicationContext, serviceProvider, cancellationToken);
 
-    public override Task InitAsync(IApplicationContext context, IServiceProvider serviceProvider) =>
-        instance.InitAsync(context, serviceProvider);
+    public override Task InitAsync(IApplicationContext context, IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default) =>
+        instance.InitAsync(context, serviceProvider, cancellationToken);
 }
 
 public abstract class ApplicationModuleRegistration
@@ -222,14 +223,16 @@ public abstract class ApplicationModuleRegistration
         IServiceCollection services);
 
     public abstract Task ApplicationStopped(IApplicationContext applicationContext,
-        IServiceProvider serviceProvider);
+        IServiceProvider serviceProvider, CancellationToken cancellationToken = default);
 
-    public abstract Task ApplicationStopping(IApplicationContext applicationContext, IServiceProvider serviceProvider);
+    public abstract Task ApplicationStopping(IApplicationContext applicationContext, IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default);
 
     public abstract Task ApplicationStarted(IApplicationContext applicationContext,
-        IServiceProvider serviceProvider);
+        IServiceProvider serviceProvider, CancellationToken cancellationToken = default);
 
-    public abstract Task InitAsync(IApplicationContext context, IServiceProvider serviceProvider);
+    public abstract Task InitAsync(IApplicationContext context, IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default);
 
     public abstract ApplicationModuleRegistration ConfigureHostBuilder(IApplicationContext context,
         IHostApplicationBuilder hostBuilder);

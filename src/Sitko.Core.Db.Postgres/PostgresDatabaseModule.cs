@@ -22,9 +22,10 @@ public class
         OpenTelemetryBuilder builder) =>
         builder.WithTracing(providerBuilder => providerBuilder.AddNpgsql());
 
-    public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider)
+    public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default)
     {
-        await base.InitAsync(applicationContext, serviceProvider);
+        await base.InitAsync(applicationContext, serviceProvider, cancellationToken);
         var options = GetOptions(serviceProvider);
         if (options.AutoApplyMigrations)
         {
@@ -36,9 +37,9 @@ public class
                 try
                 {
                     var dbContext = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<TDbContext>();
-                    if ((await dbContext.Database.GetPendingMigrationsAsync()).Any())
+                    if ((await dbContext.Database.GetPendingMigrationsAsync(cancellationToken)).Any())
                     {
-                        await dbContext.Database.MigrateAsync();
+                        await dbContext.Database.MigrateAsync(cancellationToken);
                     }
 
                     migrated = true;
@@ -49,7 +50,7 @@ public class
                     logger.LogError(ex, "Error migrating database {Database}: {ErrorText}. Try #{TryNumber}",
                         options.Database, ex.ToString(),
                         i);
-                    await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, i)));
+                    await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, i)), cancellationToken);
                 }
             }
 

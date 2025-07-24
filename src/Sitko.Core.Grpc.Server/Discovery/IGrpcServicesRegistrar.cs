@@ -4,8 +4,7 @@ namespace Sitko.Core.Grpc.Server.Discovery;
 
 public interface IGrpcServicesRegistrar
 {
-    Task RegisterAsync<T>() where T : class;
+    Task RegisterAsync<T>(CancellationToken cancellationToken = default) where T : class;
 
     Task<HealthCheckResult> CheckHealthAsync<T>(CancellationToken cancellationToken = default) where T : class;
 }
-

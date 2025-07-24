@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.Storage.S3;
 using Sitko.Core.Xunit;
+using Xunit;
 
 namespace Sitko.Core.Storage.Metadata.Postgres.Tests;
 
@@ -21,7 +22,7 @@ public class BasePostgresStorageTestScope : BaseTestScope
     public override async Task OnCreatedAsync()
     {
         await base.OnCreatedAsync();
-        await StartApplicationAsync();
+        await StartApplicationAsync(TestContext.Current.CancellationToken);
     }
 
     protected override async Task OnDisposeAsync()

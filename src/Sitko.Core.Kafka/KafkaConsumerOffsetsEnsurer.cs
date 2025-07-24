@@ -66,10 +66,9 @@ internal class KafkaConsumerOffsetsEnsurer(
 
         var partitions = topicInfo.Partitions.Select(metadata =>
             new TopicPartition(topic.Name, new Partition(metadata.PartitionId))).ToList();
-        var committed = await adminClient.ListConsumerGroupOffsetsAsync(new[]
-        {
+        var committed = await adminClient.ListConsumerGroupOffsetsAsync([
             new ConsumerGroupTopicPartitions(consumer.GroupId, partitions)
-        });
+        ]);
         if (committed.Count == 0)
         {
             logger.LogWarning(

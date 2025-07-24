@@ -3,7 +3,6 @@ using Sitko.Core.IdProvider;
 using Sitko.Core.IdProvider.SonyFlake;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.SonyFlake.Tests;
 

@@ -2,11 +2,10 @@ using FluentAssertions;
 using Sitko.Core.App.Collections;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.App.Tests;
 
-public class EquatableDictionaryTests: BaseTest
+public class EquatableDictionaryTests : BaseTest
 {
     public EquatableDictionaryTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
@@ -40,4 +39,3 @@ public class EquatableDictionaryTests: BaseTest
         dictionary1.Equals(dictionary2).Should().BeFalse();
     }
 }
-

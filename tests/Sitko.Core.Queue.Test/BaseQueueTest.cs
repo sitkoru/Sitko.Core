@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.Xunit;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Sitko.Core.Queue.Tests;
 

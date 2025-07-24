@@ -4,6 +4,8 @@ using KafkaFlow.Serializer;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.Kafka;
+using Sitko.Core.Kafka.Middleware.Consuming;
+using Sitko.Core.Kafka.Middleware.Producing;
 
 namespace Sitko.Core.Queue.Kafka;
 
@@ -107,8 +109,8 @@ public class KafkaQueueModule : BaseApplicationModule<KafkaQueueModuleOptions>
         services.AddScoped<IEventProducer, EventProducer>();
         services.AddSingleton<IKafkaQueueController, KafkaQueueController>();
 
-        var kafkaConfigurator = KafkaModule.CreateConfigurator(startupOptions.ClusterName);
-        kafkaConfigurator.EnsureOffsets();
+        var kafkaConfigurator = applicationContext.GetModuleInstance<KafkaModule>()
+            .CreateConfigurator(startupOptions.ClusterName);
         foreach (var topicName in events.Values.Select(x => x.PrefixedTopicName).Distinct())
         {
             kafkaConfigurator.AutoCreateTopic(topicName, startupOptions.PartitionsCount,
@@ -118,7 +120,10 @@ public class KafkaQueueModule : BaseApplicationModule<KafkaQueueModuleOptions>
         kafkaConfigurator.AddProducer(startupOptions.ProducerName, (builder, _) =>
         {
             builder.AddMiddlewares(middlewareBuilder =>
-                middlewareBuilder.AddSerializer<JsonCoreSerializer, EventTypeIdTypeResolver>());
+            {
+                middlewareBuilder.Add<ProducingTelemetryMiddleware>();
+                middlewareBuilder.AddSerializer<JsonCoreSerializer, EventTypeIdTypeResolver>();
+            });
         });
 
         foreach (var topicConsumers in consumers.GroupBy(r => r.TopicName))
@@ -140,6 +145,11 @@ public class KafkaQueueModule : BaseApplicationModule<KafkaQueueModuleOptions>
 
                 AddBatchConsumer(kafkaConfigurator, topicConsumersGroup.First(), startupOptions);
             }
+        }
+
+        if (!startupOptions.StartConsumers)
+        {
+            kafkaConfigurator.WithConsumerState(ConsumerInitialState.Stopped);
         }
     }
 
@@ -163,10 +173,6 @@ public class KafkaQueueModule : BaseApplicationModule<KafkaQueueModuleOptions>
                             factory.Resolve(consumer.EventHandler) as IMessageMiddleware);
                     }
                 );
-                if (!options.StartConsumers)
-                {
-                    consumerBuilder.WithInitialState(ConsumerInitialState.Stopped);
-                }
             });
     }
 
@@ -204,14 +210,11 @@ public class KafkaQueueModule : BaseApplicationModule<KafkaQueueModuleOptions>
                         }
 
                         middlewares.AddDeserializer<JsonCoreDeserializer, EventTypeIdTypeResolver>();
+                        middlewares.Add<ConsumingTelemetryMiddleware>();
                         middlewares.AddTypedHandlers(handlers =>
                             handlers.AddHandlers(handlerTypes).WithHandlerLifetime(InstanceLifetime.Scoped));
                     }
                 );
-                if (!options.StartConsumers)
-                {
-                    consumerBuilder.WithInitialState(ConsumerInitialState.Stopped);
-                }
             });
     }
 }

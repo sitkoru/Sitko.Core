@@ -3,7 +3,6 @@ using Microsoft.Extensions.Hosting;
 using Sitko.Core.App.Localization;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 // ReSharper disable UnusedTypeParameter
 

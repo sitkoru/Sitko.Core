@@ -4,7 +4,6 @@ using Sitko.Core.Blazor.Forms;
 using Sitko.Core.Repository;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.App.Blazor.Tests;
 
@@ -124,4 +123,3 @@ internal sealed class SubOtherClassB : SubOtherClass
 {
     public Guid GuidProperty { get; set; } = Guid.NewGuid();
 }
-

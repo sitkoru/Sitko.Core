@@ -2,7 +2,6 @@ using Sitko.Core.App;
 using Sitko.Core.Queue.Tests;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Queue.Nats.Tests;
 
@@ -45,4 +44,3 @@ public class NatsQueueTestScopeWithOptions : NatsQueueTestScope
         });
     }
 }
-

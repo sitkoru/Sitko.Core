@@ -3,7 +3,6 @@ using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Queue.Tests;
 
@@ -18,7 +17,7 @@ public class ProcessorTests : BaseTest
     {
         var scope = await GetScopeAsync<ProcessorQueueTestScope>();
 
-        await scope.StartApplicationAsync(); // need to start hosted services
+        await scope.StartApplicationAsync(TestContext.Current.CancellationToken); // need to start hosted services
         var processor = scope.GetService<FooTestMessageProcessor>();
         Assert.NotNull(processor);
 
@@ -33,7 +32,7 @@ public class ProcessorTests : BaseTest
         var result = await queue.PublishAsync(msg);
         Assert.True(result.IsSuccess);
 
-        await Task.Delay(TimeSpan.FromSeconds(1));
+        await Task.Delay(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
 
         Assert.Equal(1, counter.Count);
     }
@@ -43,7 +42,7 @@ public class ProcessorTests : BaseTest
     {
         var scope = await GetScopeAsync<MultipleProcessorQueueTestScope>();
 
-        await scope.StartApplicationAsync(); // need to start hosted services
+        await scope.StartApplicationAsync(TestContext.Current.CancellationToken); // need to start hosted services
         var counter = scope.GetService<TestQueueProcessorCounter>();
         Assert.NotNull(counter);
 

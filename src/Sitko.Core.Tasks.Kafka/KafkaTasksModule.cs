@@ -14,7 +14,7 @@ namespace Sitko.Core.Tasks.Kafka;
 
 public class
     KafkaTasksModule<TBaseTask, TDbContext> : TasksModule<TBaseTask, TDbContext, KafkaTaskScheduler,
-        KafkaTasksModuleOptions<TBaseTask, TDbContext>> where TBaseTask : BaseTask
+    KafkaTasksModuleOptions<TBaseTask, TDbContext>> where TBaseTask : BaseTask
     where TDbContext : TasksDbContext<TBaseTask>
 {
     public override string OptionsKey => $"Kafka:Tasks:{typeof(TBaseTask).Name}";
@@ -41,10 +41,10 @@ public class
             EventsRegistry.Register(executor.EventType, kafkaTopic, producerName);
         }
 
-        var kafkaConfigurator = KafkaModule.CreateConfigurator("Kafka_Tasks_Cluster");
+        var kafkaConfigurator = applicationContext.GetModuleInstance<KafkaModule>()
+            .CreateConfigurator("Kafka_Tasks_Cluster");
         kafkaConfigurator
             .AutoCreateTopic(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
-            .EnsureOffsets()
             .AddProducer(producerName, (builder, _) =>
             {
                 builder.DefaultTopic(kafkaTopic);
@@ -68,8 +68,7 @@ public class
                 {
                     consumerBuilder.WithWorkersCount(parallelThreadCount);
                     consumerBuilder.WithBufferSize(bufferSize);
-                    consumerBuilder.AddMiddlewares(
-                        middlewares =>
+                    consumerBuilder.AddMiddlewares(middlewares =>
                         {
                             middlewares.AddDeserializer<JsonCoreDeserializer>();
                             middlewares.AddTypedHandlers(handlers =>
@@ -85,7 +84,7 @@ public class
 
 public class
     KafkaModuleOptionsValidator<TBaseTask, TDbContext> : TasksModuleOptionsValidator<TBaseTask, TDbContext,
-        KafkaTasksModuleOptions<TBaseTask, TDbContext>> where TBaseTask : BaseTask
+    KafkaTasksModuleOptions<TBaseTask, TDbContext>> where TBaseTask : BaseTask
     where TDbContext : TasksDbContext<TBaseTask>
 {
     public KafkaModuleOptionsValidator() =>

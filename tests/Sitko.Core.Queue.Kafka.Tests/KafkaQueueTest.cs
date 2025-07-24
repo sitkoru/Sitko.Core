@@ -1,7 +1,6 @@
 using FluentAssertions;
 using Sitko.Core.Queue.Kafka.Tests.Data;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Queue.Kafka.Tests;
 
@@ -11,11 +10,11 @@ public class KafkaQueueTest(ITestOutputHelper testOutputHelper) : BaseKafkaQueue
     public async Task Produce()
     {
         var scope = await GetScopeAsync();
-        var producer = scope.GetService<IEventProducer>();
         var testEvent = new TestEvent { Id = Guid.NewGuid(), Name = Guid.NewGuid().ToString() };
         EventRegistrator.IsRegistered(testEvent.Id).Should().BeFalse();
-        producer.Produce("test", testEvent);
-        await Task.Delay(TimeSpan.FromSeconds(5));
+        var kafkaFlowProducer = scope.GetService<IEventProducer>();
+        kafkaFlowProducer.Produce("test", testEvent);
+        await Task.Delay(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
         EventRegistrator.IsRegistered(testEvent.Id).Should().BeTrue();
     }
 
@@ -32,7 +31,7 @@ public class KafkaQueueTest(ITestOutputHelper testOutputHelper) : BaseKafkaQueue
             producer.Produce($"test{testEvent.Id}", testEvent);
         }
 
-        await Task.Delay(TimeSpan.FromSeconds(10));
+        await Task.Delay(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
         EventRegistrator.BatchesMessagesCount.Should().Be(100);
         EventRegistrator.BatchesCount.Should().Be(10);
     }

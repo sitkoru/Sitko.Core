@@ -5,7 +5,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Search.OpenSearch.Tests;
 
@@ -163,7 +162,10 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         var secondGuid = Guid.Parse("dd134352-da92-4cd2-9c88-440be713aba5");
         var thirdGuid = Guid.Parse("dd134352-da92-4cd3-9c88-440be713aba5");
 
-        var firstModel = new TestModel { Id = firstGuid, Title = "MMI", Description = "MMI", Url = $"/page/{firstGuid.ToString()}" };
+        var firstModel = new TestModel
+        {
+            Id = firstGuid, Title = "MMI", Description = "MMI", Url = $"/page/{firstGuid.ToString()}"
+        };
         var secondModel = new TestModel { Id = secondGuid, Title = "MMI", Description = searchText, Url = "mmicentre" };
         var thirdModel = new TestModel { Id = thirdGuid, Title = searchText, Description = "MMI", Url = "mmicentre" };
         provider.AddModel(firstModel).AddModel(secondModel).AddModel(thirdModel);
@@ -209,7 +211,9 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
 
         var firstModel = new TestModel
         {
-            Title = "Геймеры играют в компьютерные игры.", Description = "Геймеры играют в компьютерные игры.", Url = "mmicentre"
+            Title = "Геймеры играют в компьютерные игры.",
+            Description = "Геймеры играют в компьютерные игры.",
+            Url = "mmicentre"
         };
         var secondModel = new TestModel { Title = "MMI", Description = "mmicentre", Url = "mmicentre" };
         provider.AddModel(firstModel).AddModel(secondModel);
@@ -220,7 +224,8 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         var result = await searchProvider.SearchAsync(searchText, 10, searchType, true);
         result.Length.Should().Be(1);
         result.First().ResultModel.Highlight.Count.Should().Be(1);
-        result.First().ResultModel.Highlight.First().Value.First().Contains("<span class='highlight'>").Should().BeTrue();
+        result.First().ResultModel.Highlight.First().Value.First().Contains("<span class='highlight'>").Should()
+            .BeTrue();
         result.First().ResultModel.Highlight.First().Value.First().Contains("</span>").Should().BeTrue();
     }
 }

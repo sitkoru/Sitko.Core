@@ -3,6 +3,7 @@ using FluentValidation;
 using KafkaFlow;
 using KafkaFlow.OpenTelemetry;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using Polly;
 using Polly.Retry;
@@ -17,7 +18,8 @@ namespace Sitko.Core.Kafka;
 
 public class KafkaModule : BaseApplicationModule<KafkaModuleOptions>, IOpenTelemetryModule<KafkaModuleOptions>
 {
-    private static readonly Dictionary<string, KafkaConfigurator> Configurators = new();
+    private readonly Dictionary<string, KafkaConfigurator> configurators = new();
+    private IKafkaBus? kafkaBus;
 
     public override string OptionsKey => "Kafka";
     public override bool AllowMultiple => false;
@@ -27,9 +29,9 @@ public class KafkaModule : BaseApplicationModule<KafkaModuleOptions>, IOpenTelem
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddSingleton<KafkaConsumerOffsetsEnsurer>();
-        services.AddKafkaFlowHostedService(builder =>
+        services.AddKafka(builder =>
         {
-            foreach (var (_, configurator) in Configurators)
+            foreach (var (_, configurator) in configurators)
             {
                 configurator.Build(builder, startupOptions);
             }
@@ -54,22 +56,70 @@ public class KafkaModule : BaseApplicationModule<KafkaModuleOptions>, IOpenTelem
             providerBuilder.AddSource(KafkaFlowInstrumentation.ActivitySourceName);
         });
 
-    public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider)
+    public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default)
     {
-        await base.InitAsync(applicationContext, serviceProvider);
-        var offsetsEnsurer = serviceProvider.GetRequiredService<KafkaConsumerOffsetsEnsurer>();
+        await base.InitAsync(applicationContext, serviceProvider, cancellationToken);
+
         var options = GetOptions(serviceProvider);
-        foreach (var (_, configurator) in Configurators)
+        var logger = serviceProvider.GetRequiredService<ILogger<KafkaModule>>();
+        if (options.EnsureOffsets)
         {
-            if (configurator.NeedToEnsureOffsets)
+            logger.LogInformation("Ensure offsets...");
+            var offsetsEnsurer = serviceProvider.GetRequiredService<KafkaConsumerOffsetsEnsurer>();
+
+            foreach (var (_, configurator) in configurators)
             {
                 await offsetsEnsurer.EnsureOffsetsAsync(configurator, options);
             }
         }
+
+        kafkaBus = serviceProvider.CreateKafkaBus();
+        await kafkaBus.StartAsync(cancellationToken);
+
+        if (options.WaitForConsumerAssignments)
+        {
+            logger.LogInformation("Wait for consumer assignments...");
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var allAssigned = true;
+                foreach (var (clusterName, configurator) in configurators)
+                {
+                    if (configurator.ConsumerInitialState != ConsumerInitialState.Running)
+                    {
+                        // Consumer are stopped by default, don't wait for them
+                        continue;
+                    }
+
+                    foreach (var consumer in kafkaBus.Consumers.All.Where(c => c.ClusterName == clusterName))
+                    {
+                        if (!consumer.Assignment.Any())
+                        {
+                            allAssigned = false;
+                        }
+                    }
+                }
+
+
+                if (allAssigned)
+                {
+                    break;
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
+            }
+        }
     }
 
-    public static KafkaConfigurator CreateConfigurator(string name) =>
-        Configurators.SafeGetOrAdd(name, _ => new KafkaConfigurator(name));
+    public override async Task ApplicationStopping(IApplicationContext applicationContext,
+        IServiceProvider serviceProvider, CancellationToken cancellationToken = default)
+    {
+        await base.ApplicationStopping(applicationContext, serviceProvider, cancellationToken);
+        await (kafkaBus?.StopAsync() ?? Task.CompletedTask);
+    }
+
+    public KafkaConfigurator CreateConfigurator(string name) =>
+        configurators.SafeGetOrAdd(name, _ => new KafkaConfigurator(name));
 }
 
 public class KafkaModuleOptions : BaseModuleOptions
@@ -95,6 +145,9 @@ public class KafkaModuleOptions : BaseModuleOptions
     public bool EnableIdempotence { get; set; } = true;
     public bool SocketNagleDisable { get; set; } = true;
     public Acks Acks { get; set; } = Acks.All;
+
+    public bool EnsureOffsets { get; set; }
+    public bool WaitForConsumerAssignments { get; set; }
 }
 
 public class KafkaModuleOptionsValidator : AbstractValidator<KafkaModuleOptions>

@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.ImgProxy.Tests;
 
@@ -74,4 +73,3 @@ public class ImgProxyTests : BaseTest<ImgProxyTestsScope>
                 "https://imgproxy.test.com/jUHPR01P3EetzCxdi8MX9cKbYJ7potdoEMO1NxZAIr4/resize:auto:100:100:0:0/aHR0cHM6Ly9pbWcudGVzdC5jb20vaW1nL2Zvby5wbmc");
     }
 }
-
