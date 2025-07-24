@@ -4,6 +4,8 @@ using KafkaFlow.Serializer;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.Kafka;
+using Sitko.Core.Kafka.Middleware.Consuming;
+using Sitko.Core.Kafka.Middleware.Producing;
 
 namespace Sitko.Core.Queue.Kafka;
 
@@ -118,7 +120,10 @@ public class KafkaQueueModule : BaseApplicationModule<KafkaQueueModuleOptions>
         kafkaConfigurator.AddProducer(startupOptions.ProducerName, (builder, _) =>
         {
             builder.AddMiddlewares(middlewareBuilder =>
-                middlewareBuilder.AddSerializer<JsonCoreSerializer, EventTypeIdTypeResolver>());
+            {
+                middlewareBuilder.Add<ProducingTelemetryMiddleware>();
+                middlewareBuilder.AddSerializer<JsonCoreSerializer, EventTypeIdTypeResolver>();
+            });
         });
 
         foreach (var topicConsumers in consumers.GroupBy(r => r.TopicName))
@@ -204,6 +209,7 @@ public class KafkaQueueModule : BaseApplicationModule<KafkaQueueModuleOptions>
                         }
 
                         middlewares.AddDeserializer<JsonCoreDeserializer, EventTypeIdTypeResolver>();
+                        middlewares.Add<ConsumingTelemetryMiddleware>();
                         middlewares.AddTypedHandlers(handlers =>
                             handlers.AddHandlers(handlerTypes).WithHandlerLifetime(InstanceLifetime.Scoped));
                     }
