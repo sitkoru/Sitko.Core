@@ -18,4 +18,6 @@ public interface IApplicationContext
     bool IsProduction();
     bool IsStaging();
     bool IsEnvironment(string environmentName);
+
+    public T GetModuleInstance<T>() where T : class, IApplicationModule;
 }

@@ -120,7 +120,8 @@ public abstract class SitkoCoreBaseApplicationBuilder : ISitkoCoreApplicationBui
         var argsProvider = new ApplicationArgsProvider(Args);
         SetupConfiguration(Configuration);
         var bootConfig = Configuration.Build();
-        bootApplicationContext = new BuilderApplicationContext(bootConfig, Environment, argsProvider);
+        bootApplicationContext =
+            new BuilderApplicationContext(bootConfig, Environment, argsProvider, () => moduleRegistrations);
 
         // configure logging
         Configuration.Add(new SerilogDynamicConfigurationSource());

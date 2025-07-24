@@ -29,22 +29,23 @@ public class ServerApplicationEnvironment : IApplicationEnvironment
     public bool IsDevelopment() => hostEnvironment.IsDevelopment();
 
     public bool IsProduction() => hostEnvironment.IsProduction();
-    public bool IsStaging() =>  hostEnvironment.IsStaging();
+    public bool IsStaging() => hostEnvironment.IsStaging();
     public bool IsEnvironment(string environmentName) => hostEnvironment.IsEnvironment(environmentName);
 }
 
 public class BuilderApplicationContext : IApplicationContext
 {
-    public static string OptionsKey => "Application";
-
     private readonly IApplicationEnvironment environment;
+    private readonly Func<List<ApplicationModuleRegistration>> getModuleRegistrations;
 
     private ApplicationOptions? applicationOptions;
 
     public BuilderApplicationContext(IConfiguration configuration, IApplicationEnvironment environment,
-        IApplicationArgsProvider applicationArgsProvider)
+        IApplicationArgsProvider applicationArgsProvider,
+        Func<List<ApplicationModuleRegistration>> getModuleRegistrations)
     {
         this.environment = environment;
+        this.getModuleRegistrations = getModuleRegistrations;
         Configuration = configuration;
         var loggerConfiguration = new LoggerConfiguration();
         loggerConfiguration
@@ -54,6 +55,8 @@ public class BuilderApplicationContext : IApplicationContext
         Logger = new SerilogLoggerFactory(loggerConfiguration.CreateLogger()).CreateLogger<IApplicationContext>();
         Args = applicationArgsProvider.Args;
     }
+
+    public static string OptionsKey => "Application";
 
     public ApplicationOptions Options => GetApplicationOptions();
 
@@ -72,6 +75,23 @@ public class BuilderApplicationContext : IApplicationContext
     public bool IsStaging() => environment.IsStaging();
 
     public bool IsEnvironment(string environmentName) => environment.IsEnvironment(environmentName);
+
+    T IApplicationContext.GetModuleInstance<T>()
+    {
+        var registration = getModuleRegistrations().FirstOrDefault(x => x.Type == typeof(T));
+        if (registration is null)
+        {
+            throw new InvalidOperationException($"Module {typeof(T).Name} is not registered");
+        }
+
+        var instance = registration.GetInstance();
+        if (instance is T typedInstance)
+        {
+            return typedInstance;
+        }
+
+        throw new InvalidOperationException($"Instance of module {typeof(T).Name} is not of type {typeof(T).Name}");
+    }
 
     public string[] Args { get; }
 
