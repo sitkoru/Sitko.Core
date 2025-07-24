@@ -10,11 +10,11 @@ public class KafkaQueueTest(ITestOutputHelper testOutputHelper) : BaseKafkaQueue
     public async Task Produce()
     {
         var scope = await GetScopeAsync();
-        var producer = scope.GetService<IEventProducer>();
         var testEvent = new TestEvent { Id = Guid.NewGuid(), Name = Guid.NewGuid().ToString() };
         EventRegistrator.IsRegistered(testEvent.Id).Should().BeFalse();
-        producer.Produce("test", testEvent);
-        await Task.Delay(TimeSpan.FromSeconds(5));
+        var kafkaFlowProducer = scope.GetService<IEventProducer>();
+        kafkaFlowProducer.Produce("test", testEvent);
+        await Task.Delay(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
         EventRegistrator.IsRegistered(testEvent.Id).Should().BeTrue();
     }
 
