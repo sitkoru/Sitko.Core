@@ -31,7 +31,7 @@ public class KafkaQueueTest(ITestOutputHelper testOutputHelper) : BaseKafkaQueue
             producer.Produce($"test{testEvent.Id}", testEvent);
         }
 
-        await Task.Delay(TimeSpan.FromSeconds(10));
+        await Task.Delay(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
         EventRegistrator.BatchesMessagesCount.Should().Be(100);
         EventRegistrator.BatchesCount.Should().Be(10);
     }

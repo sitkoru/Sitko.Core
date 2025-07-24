@@ -32,7 +32,7 @@ public class ProcessorTests : BaseTest
         var result = await queue.PublishAsync(msg);
         Assert.True(result.IsSuccess);
 
-        await Task.Delay(TimeSpan.FromSeconds(1));
+        await Task.Delay(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
 
         Assert.Equal(1, counter.Count);
     }

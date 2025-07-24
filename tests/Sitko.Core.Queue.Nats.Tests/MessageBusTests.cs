@@ -31,9 +31,9 @@ public class MessageBusTests : BaseTest<NatsMessageBusTestScope>
 
         var mediator = scope.GetService<IMediator>();
         var request = new TestRequest();
-        await mediator.Publish(request);
+        await mediator.Publish(request, TestContext.Current.CancellationToken);
 
-        await Task.Delay(TimeSpan.FromSeconds(1));
+        await Task.Delay(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
 
         Assert.NotNull(receivedId);
         Assert.Equal(request.Id, receivedId);

@@ -54,7 +54,7 @@ public class BaseKafkaQueueTestScope : BaseTestScope
 
     public override async Task OnCreatedAsync()
     {
-        await StartApplicationAsync();
+        await StartApplicationAsync(TestContext.Current.CancellationToken);
         await base.OnCreatedAsync();
     }
 }

@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Xunit;
-using Xunit.Abstractions;
 
 #pragma warning disable VSTHRD200
 namespace Sitko.Core.Configuration.Vault.Tests;
@@ -63,13 +62,14 @@ public class ConfigurationTest : BaseVaultTest
     public async Task HotSettings()
     {
         var scope = await GetScopeAsync();
-        await scope.StartApplicationAsync();
+        await scope.StartApplicationAsync(TestContext.Current.CancellationToken);
         var vaultConfig = scope.GetService<IOptions<VaultConfigurationModuleOptions>>();
         var config = scope.GetService<IOptionsMonitor<TestConfig>>();
         config.CurrentValue.Foo.Should().Be(scope.FirstConfig.Foo);
 
         var changedConfig = await scope.UpdateConfigAsync();
-        await Task.Delay(TimeSpan.FromSeconds(vaultConfig.Value.ReloadCheckIntervalSeconds + 1));
+        await Task.Delay(TimeSpan.FromSeconds(vaultConfig.Value.ReloadCheckIntervalSeconds + 1),
+            TestContext.Current.CancellationToken);
         config.CurrentValue.Foo.Should().Be(changedConfig.Foo);
     }
 }

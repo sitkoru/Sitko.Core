@@ -27,10 +27,9 @@ public class ProtobufTests : BaseTest<NatsQueueTestScope>
 
         await queue.PublishAsync(msg);
 
-        await Task.Delay(TimeSpan.FromSeconds(1));
+        await Task.Delay(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
 
         Assert.NotNull(receivedText);
         Assert.Equal(msg.Data, receivedText);
     }
 }
-
