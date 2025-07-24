@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.Email.Tests;
 using Sitko.Core.Xunit;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Sitko.Core.Email.Smtp.Tests;
 

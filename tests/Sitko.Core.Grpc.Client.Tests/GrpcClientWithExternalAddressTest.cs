@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Hosting;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Sitko.Core.Grpc.Client.Tests;
 

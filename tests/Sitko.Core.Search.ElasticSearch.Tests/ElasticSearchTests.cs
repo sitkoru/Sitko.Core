@@ -4,7 +4,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Search.ElasticSearch.Tests;
 
@@ -97,13 +96,13 @@ public class TestSearchProvider : BaseSearchProvider<TestModel, Guid, TestSearch
         CancellationToken cancellationToken = default) =>
         Task.FromResult(entities
             .Select(e => new TestSearchModel
-                {
-                    Id = e.Id.ToString(),
-                    Title = e.Title,
-                    Url = e.Url,
-                    Date = e.Date,
-                    Content = e.Description
-                }).ToArray());
+            {
+                Id = e.Id.ToString(),
+                Title = e.Title,
+                Url = e.Url,
+                Date = e.Date,
+                Content = e.Description
+            }).ToArray());
 
     protected override Task<SearchResult<TestModel, TestSearchModel>[]> GetEntitiesAsync(TestSearchModel[] searchModels,
         CancellationToken cancellationToken = default)

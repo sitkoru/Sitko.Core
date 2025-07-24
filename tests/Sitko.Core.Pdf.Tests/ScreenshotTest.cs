@@ -1,5 +1,4 @@
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Pdf.Tests;
 
@@ -32,4 +31,3 @@ public class ScreenshotTest : BasePdfTest
         Assert.NotEmpty(bytes);
     }
 }
-

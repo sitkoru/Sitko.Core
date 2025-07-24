@@ -3,7 +3,6 @@ using Microsoft.Extensions.Hosting;
 using Sitko.Core.App.Helpers;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.App.Tests;
 
@@ -40,4 +39,3 @@ public class EnvHelperTests : BaseTest
         env.Should().Be(result);
     }
 }
-

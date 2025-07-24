@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.Grpc.Server;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Sitko.Core.Grpc.Client.Tests;
 

@@ -1,5 +1,4 @@
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Queue.Tests;
 
@@ -171,4 +170,3 @@ public abstract class
         Assert.Equal(typeof(TestMessage).FullName, receivedContext?.MessageType);
     }
 }
-

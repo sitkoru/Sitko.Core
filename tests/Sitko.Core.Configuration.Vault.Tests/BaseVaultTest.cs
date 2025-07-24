@@ -5,7 +5,7 @@ using Sitko.Core.App;
 using Sitko.Core.Xunit;
 using VaultSharp;
 using VaultSharp.V1.AuthMethods.Token;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Sitko.Core.Configuration.Vault.Tests;
 

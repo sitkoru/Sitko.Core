@@ -4,7 +4,6 @@ using Sitko.Core.Repository.EntityFrameworkCore.Tests.Data;
 using Sitko.Core.Repository.Tests.Data;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore.Tests;
 
@@ -114,4 +113,3 @@ public class EFDisconnectedTests : BaseTest<EFTestScope>
         }
     }
 }
-

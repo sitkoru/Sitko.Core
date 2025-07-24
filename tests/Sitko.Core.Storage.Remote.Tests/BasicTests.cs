@@ -1,5 +1,5 @@
 using Sitko.Core.Storage.Tests;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Sitko.Core.Storage.Remote.Tests;
 

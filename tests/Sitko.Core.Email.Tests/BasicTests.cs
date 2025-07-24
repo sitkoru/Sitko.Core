@@ -1,7 +1,6 @@
 using Sitko.Core.Email.Tests.Data;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Email.Tests;
 
@@ -37,4 +36,3 @@ public abstract class BasicTests<T> : BaseTest<T>
         Assert.True(result.IsSuccess, result.ErrorMessage);
     }
 }
-

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.Storage.S3;
 using Sitko.Core.Xunit;
+using Xunit;
 
 namespace Sitko.Core.Storage.Metadata.Postgres.Tests;
 

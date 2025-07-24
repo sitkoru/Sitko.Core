@@ -6,9 +6,8 @@
   <ItemGroup>
     <PackageReference Include="AutoBogus"/>
     <PackageReference Include="FluentAssertions"/>
-    <PackageReference Include="Serilog.Sinks.XUnit"/>
     <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="None"/>
-    <PackageReference Include="xunit"/>
+    <PackageReference Include="xunit.v3"/>
     <PackageReference Include="Microsoft.NET.Test.Sdk" PrivateAssets="None"/>
   </ItemGroup>
 </Project>

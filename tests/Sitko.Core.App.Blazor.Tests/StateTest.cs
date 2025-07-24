@@ -2,7 +2,6 @@
 using Sitko.Core.Blazor.Components;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.App.Blazor.Tests;
 
@@ -113,4 +112,3 @@ public record TextBlock : TestBlock
     public string Text { get; set; } = string.Empty;
     public override string ToString() => Text;
 }
-

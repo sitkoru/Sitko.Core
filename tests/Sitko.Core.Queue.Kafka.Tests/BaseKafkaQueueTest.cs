@@ -2,8 +2,7 @@
 using Sitko.Core.App;
 using Sitko.Core.Kafka;
 using Sitko.Core.Xunit;
-using Testcontainers.Kafka;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Sitko.Core.Queue.Kafka.Tests;
 

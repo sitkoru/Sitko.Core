@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.TestHost;
 using Sitko.Core.App.Web;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Grpc.Server.Tests;
 

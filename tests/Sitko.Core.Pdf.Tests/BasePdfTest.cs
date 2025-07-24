@@ -1,5 +1,5 @@
 using Sitko.Core.Xunit;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Sitko.Core.Pdf.Tests;
 
@@ -9,4 +9,3 @@ public class BasePdfTest : BaseTest<PdfTestScope>
     {
     }
 }
-

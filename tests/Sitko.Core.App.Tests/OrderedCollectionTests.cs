@@ -1,7 +1,6 @@
 ﻿using Sitko.Core.App.Collections;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.App.Tests;
 
@@ -128,4 +127,3 @@ public class TestItem : IOrdered
     public Guid Id { get; } = Guid.NewGuid();
     public int Position { get; set; }
 }
-

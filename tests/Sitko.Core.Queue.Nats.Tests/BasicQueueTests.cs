@@ -1,7 +1,6 @@
 using Sitko.Core.Queue.Exceptions;
 using Sitko.Core.Queue.Tests;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Queue.Nats.Tests;
 
@@ -33,4 +32,3 @@ public class
         Assert.Equal(timeout, ex.Timeout);
     }
 }
-

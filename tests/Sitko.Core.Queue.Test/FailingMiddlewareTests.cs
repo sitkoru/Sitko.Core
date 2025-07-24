@@ -1,6 +1,5 @@
 using Sitko.Core.App;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Queue.Tests;
 
@@ -80,4 +79,3 @@ public class FailingMiddleware : BaseQueueMiddleware
         Func<T, QueueMessageContext, Task<bool>>? callback = null) =>
         FailOnReceive ? Task.FromResult(false) : base.ReceiveAsync(message, messageContext, callback);
 }
-

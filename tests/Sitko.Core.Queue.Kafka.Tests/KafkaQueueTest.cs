@@ -1,7 +1,6 @@
 using FluentAssertions;
 using Sitko.Core.Queue.Kafka.Tests.Data;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Queue.Kafka.Tests;
 

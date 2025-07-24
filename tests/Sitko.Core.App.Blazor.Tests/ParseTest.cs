@@ -2,7 +2,6 @@ using FluentAssertions;
 using Sitko.Core.Blazor.Components;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.App.Blazor.Tests;
 
@@ -50,4 +49,3 @@ public class ParseTest : BaseTest
         notFoundType.Should().Be(default);
     }
 }
-

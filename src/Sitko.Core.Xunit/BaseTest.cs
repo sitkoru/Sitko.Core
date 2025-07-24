@@ -2,12 +2,11 @@ using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Xunit;
 
 [PublicAPI]
-public abstract class BaseTest : IAsyncDisposable, IAsyncLifetime
+public abstract class BaseTest : IAsyncLifetime
 {
     protected BaseTest(ITestOutputHelper testOutputHelper) => TestOutputHelper = testOutputHelper;
     protected ITestOutputHelper TestOutputHelper { get; }
@@ -24,15 +23,13 @@ public abstract class BaseTest : IAsyncDisposable, IAsyncLifetime
         GC.SuppressFinalize(this);
     }
 
-    async Task IAsyncLifetime.DisposeAsync() => await DisposeAsync();
-
-    public virtual Task InitializeAsync() => Task.CompletedTask;
+    public virtual ValueTask InitializeAsync() => ValueTask.CompletedTask;
 
     protected async Task<T> GetScopeAsync<T>([CallerMemberName] string name = "") where T : IBaseTestScope
     {
         T scope;
 
-        if (!Scopes.ContainsKey(name))
+        if (!Scopes.TryGetValue(name, out var existingScope))
         {
             scope = Activator.CreateInstance<T>();
             await scope.BeforeConfiguredAsync(name);
@@ -42,7 +39,7 @@ public abstract class BaseTest : IAsyncDisposable, IAsyncLifetime
         }
         else
         {
-            if (Scopes[name] is T typedScope)
+            if (existingScope is T typedScope)
             {
                 scope = typedScope;
             }
@@ -59,12 +56,12 @@ public abstract class BaseTest : IAsyncDisposable, IAsyncLifetime
     protected IServiceScope CreateServiceScope<T>([CallerMemberName] string name = "")
         where T : IBaseTestScope
     {
-        if (!Scopes.ContainsKey(name))
+        if (!Scopes.TryGetValue(name, out var existingScope))
         {
             throw new InvalidOperationException("No scope exists");
         }
 
-        var scope = (T)Scopes[name];
+        var scope = (T)existingScope;
         return scope.GetService<IServiceScopeFactory>().CreateScope();
     }
 }
@@ -81,4 +78,3 @@ public abstract class BaseTest<T> : BaseTest where T : IBaseTestScope
 
     protected IServiceScope CreateServiceScope([CallerMemberName] string name = "") => CreateServiceScope<T>(name);
 }
-

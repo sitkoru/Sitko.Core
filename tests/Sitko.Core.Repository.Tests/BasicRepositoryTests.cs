@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration.UserSecrets;
 using Sitko.Core.Repository.Tests.Data;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 [assembly: UserSecretsId("test")]
 
@@ -199,4 +198,3 @@ public abstract class BasicRepositoryTests<TScope> : BaseTest<TScope> where TSco
         res.IsSuccess.Should().BeTrue();
     }
 }
-

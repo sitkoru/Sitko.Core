@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Serilog.Context;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.App.Tests;
 
@@ -27,4 +26,3 @@ public class LoggingTests : BaseTest<LoggingTestScope>
 
 [UsedImplicitly]
 public class LoggingTestScope : BaseTestScope;
-

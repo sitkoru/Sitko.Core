@@ -4,7 +4,7 @@ using Sitko.Core.Consul;
 using Sitko.Core.ServiceDiscovery;
 using Sitko.Core.ServiceDiscovery.Resolver.Consul;
 using Sitko.Core.ServiceDiscovery.Server.Consul;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Sitko.Core.Grpc.Client.Tests;
 

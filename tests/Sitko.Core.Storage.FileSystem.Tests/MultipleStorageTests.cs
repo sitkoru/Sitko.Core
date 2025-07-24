@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Storage.FileSystem.Tests;
 
@@ -44,22 +43,20 @@ public class MultipleStorageTestsScope : BaseFileSystemStorageTestScope
 {
     protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name) =>
         base.ConfigureApplication(hostBuilder, name)
-            .AddFileSystemStorage<MultipleStorageTestsOptionsSecond>(
-                moduleOptions =>
-                {
-                    var folder = Path.GetTempPath() + "/" + Guid.NewGuid();
-                    moduleOptions.PublicUri = new Uri(folder);
-                    moduleOptions.StoragePath = folder;
-                    moduleOptions.IsDefault = true;
-                })
+            .AddFileSystemStorage<MultipleStorageTestsOptionsSecond>(moduleOptions =>
+            {
+                var folder = Path.GetTempPath() + "/" + Guid.NewGuid();
+                moduleOptions.PublicUri = new Uri(folder);
+                moduleOptions.StoragePath = folder;
+                moduleOptions.IsDefault = true;
+            })
             .AddFileSystemStorageMetadata<MultipleStorageTestsOptionsSecond>()
-            .AddFileSystemStorage<MultipleStorageTestsOptionsThird>(
-                moduleOptions =>
-                {
-                    var folder = Path.GetTempPath() + "/" + Guid.NewGuid();
-                    moduleOptions.PublicUri = new Uri(folder);
-                    moduleOptions.StoragePath = folder;
-                })
+            .AddFileSystemStorage<MultipleStorageTestsOptionsThird>(moduleOptions =>
+            {
+                var folder = Path.GetTempPath() + "/" + Guid.NewGuid();
+                moduleOptions.PublicUri = new Uri(folder);
+                moduleOptions.StoragePath = folder;
+            })
             .AddFileSystemStorageMetadata<MultipleStorageTestsOptionsThird>();
 }
 

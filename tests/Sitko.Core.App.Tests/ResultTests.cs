@@ -2,7 +2,6 @@
 using Sitko.Core.App.Results;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.App.Tests;
 
@@ -100,4 +99,3 @@ public class Foo
     public Foo(int value) => Value = value;
     public int Value { get; }
 }
-

@@ -5,9 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Serilog;
+using Serilog.Formatting.Display;
 using Sitko.Core.App;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Sitko.Core.Xunit;
 
@@ -51,10 +51,10 @@ public abstract class BaseTestScope<THostApplicationBuilder, TConfig> : IBaseTes
         hostApplicationBuilder.GetSitkoCore()
             .ConfigureLogging((_, loggerConfiguration) =>
             {
-                loggerConfiguration = loggerConfiguration.WriteTo.TestOutput(testOutputHelper,
-                    outputTemplate:
+                var formatter = new MessageTemplateTextFormatter(
                     "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}{NewLine}---------{NewLine}{Properties:j}{NewLine}---------",
-                    formatProvider: CultureInfo.InvariantCulture);
+                    CultureInfo.InvariantCulture);
+                loggerConfiguration = loggerConfiguration.WriteTo.Sink(new TestOutputSink(testOutputHelper, formatter));
                 return loggerConfiguration;
             });
 

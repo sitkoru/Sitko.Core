@@ -5,7 +5,6 @@ using Sitko.Core.MediatR;
 using Sitko.Core.Queue.Tests;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.Queue.Nats.Tests;
 

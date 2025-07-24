@@ -2,7 +2,6 @@
 using Sitko.Core.App.Collections;
 using Sitko.Core.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Sitko.Core.App.Tests;
 
@@ -51,4 +50,3 @@ public class ValueCollectionTests : BaseTest
 }
 
 public record Entity(Guid Id, int Views, string Text);
-
