@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentEmail.Core"/>
-    <PackageReference Include="Hangfire.Core"/>
-    <PackageReference Include="HtmlAgilityPack"/>
+    <PackageReference Include="FluentEmail.Core" />
+    <PackageReference Include="Hangfire.Core" />
+    <PackageReference Include="HtmlAgilityPack" />
   </ItemGroup>
 </Project>

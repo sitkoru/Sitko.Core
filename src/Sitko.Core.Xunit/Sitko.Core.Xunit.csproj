@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Db.InMemory\Sitko.Core.Db.InMemory.csproj"/>
-    <ProjectReference Include="..\Sitko.Core.Db.Postgres\Sitko.Core.Db.Postgres.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.Db.InMemory\Sitko.Core.Db.InMemory.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Db.Postgres\Sitko.Core.Db.Postgres.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AutoBogus"/>
-    <PackageReference Include="FluentAssertions"/>
-    <PackageReference Include="Serilog.Sinks.XUnit"/>
-    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="None"/>
-    <PackageReference Include="xunit"/>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" PrivateAssets="None"/>
+    <PackageReference Include="AutoBogus" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Serilog.Sinks.XUnit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="None" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" PrivateAssets="None" />
   </ItemGroup>
 </Project>
