@@ -10,7 +10,7 @@ namespace Sitko.Core.Storage.Metadata;
 // ReSharper disable once UnusedTypeParameter
 public interface IStorageMetadataProvider<TStorageOptions> where TStorageOptions : StorageOptions
 {
-    internal Task InitAsync();
+    internal Task InitAsync(CancellationToken cancellationToken = default);
 
     internal Task SaveMetadataAsync(StorageItem storageItem, StorageItemMetadata itemMetadata, bool isNew,
         CancellationToken cancellationToken = default);
@@ -41,4 +41,3 @@ public interface IEmbedStorageMetadataProvider
 // ReSharper disable once UnusedTypeParameter
 public abstract class StorageMetadataModuleOptions<TStorageOptions> : BaseModuleOptions
     where TStorageOptions : StorageOptions;
-

@@ -5,7 +5,7 @@ namespace Sitko.Core.Storage.Metadata;
 
 public abstract class
     BaseStorageMetadataModule<TStorageOptions, TProvider, TProviderOptions> : BaseApplicationModule<
-        TProviderOptions> where TStorageOptions : StorageOptions
+    TProviderOptions> where TStorageOptions : StorageOptions
     where TProvider : class, IStorageMetadataProvider<TStorageOptions, TProviderOptions>
     where TProviderOptions : StorageMetadataModuleOptions<TStorageOptions>, new()
 {
@@ -17,15 +17,15 @@ public abstract class
         services.AddSingleton<TProvider>();
     }
 
-    public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider)
+    public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default)
     {
-        await base.InitAsync(applicationContext, serviceProvider);
+        await base.InitAsync(applicationContext, serviceProvider, cancellationToken);
         var metadataProvider = serviceProvider.GetRequiredService<TProvider>();
-        await metadataProvider.InitAsync();
+        await metadataProvider.InitAsync(cancellationToken);
     }
 
     public override IEnumerable<Type> GetRequiredModules(IApplicationContext applicationContext,
         TProviderOptions options) =>
         new[] { typeof(IStorageModule) };
 }
-

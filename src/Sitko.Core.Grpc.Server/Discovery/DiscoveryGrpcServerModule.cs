@@ -10,7 +10,7 @@ public abstract class DiscoveryGrpcServerModule<TRegistrar, TConfig> : BaseGrpcS
 {
     private readonly List<Action<IHealthChecksBuilder>> healthChecksRegistrations = new();
 
-    private readonly List<Func<IGrpcServicesRegistrar, Task>> serviceRegistrations = new();
+    private readonly List<Func<IGrpcServicesRegistrar, CancellationToken, Task>> serviceRegistrations = new();
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TConfig startupOptions)
@@ -25,19 +25,20 @@ public abstract class DiscoveryGrpcServerModule<TRegistrar, TConfig> : BaseGrpcS
     }
 
     public override async Task ApplicationStarted(IApplicationContext applicationContext,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider, CancellationToken cancellationToken = default)
     {
         var registrar = serviceProvider.GetRequiredService<IGrpcServicesRegistrar>();
         foreach (var serviceRegistration in serviceRegistrations)
         {
-            await serviceRegistration(registrar);
+            await serviceRegistration(registrar, cancellationToken);
         }
     }
 
     public override void RegisterService<TService>(string? requiredAuthorizationSchemeName, bool enableGrpcWeb = false)
     {
         base.RegisterService<TService>(requiredAuthorizationSchemeName, enableGrpcWeb);
-        serviceRegistrations.Add(registrar => registrar.RegisterAsync<TService>());
+        serviceRegistrations.Add((registrar, cancellationToken) =>
+            registrar.RegisterAsync<TService>(cancellationToken));
         healthChecksRegistrations.Add(healthCheckBuilder =>
             healthCheckBuilder.AddCheck<GrpcServiceHealthCheck<TService>>(
                 $"Grpc service {typeof(TService).BaseType?.DeclaringType?.Name}",

@@ -9,9 +9,9 @@ internal sealed class CommandsModule : BaseApplicationModule
     public override string OptionsKey => "Commands";
 
     public override async Task<bool> OnBeforeRunAsync(IApplicationContext applicationContext,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider, CancellationToken cancellationToken = default)
     {
-        await base.OnBeforeRunAsync(applicationContext, serviceProvider);
+        await base.OnBeforeRunAsync(applicationContext, serviceProvider, cancellationToken);
         if (applicationContext.Args.Length > 0)
         {
             var commandName = applicationContext.Args[0];

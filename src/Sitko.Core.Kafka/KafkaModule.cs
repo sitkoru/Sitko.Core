@@ -54,10 +54,11 @@ public class KafkaModule : BaseApplicationModule<KafkaModuleOptions>, IOpenTelem
             providerBuilder.AddSource(KafkaFlowInstrumentation.ActivitySourceName);
         });
 
-    public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider)
+    public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default)
     {
-        await base.InitAsync(applicationContext, serviceProvider);
-        var offsetsEnsurer = serviceProvider.GetRequiredService<KafkaConsumerOffsetsEnsurer>();
+        await base.InitAsync(applicationContext, serviceProvider, cancellationToken);
+
         var options = GetOptions(serviceProvider);
         foreach (var (_, configurator) in Configurators)
         {

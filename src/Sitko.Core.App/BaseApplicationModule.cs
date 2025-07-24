@@ -10,6 +10,8 @@ public class BaseApplicationModuleOptions : BaseModuleOptions;
 public abstract class BaseApplicationModule<TModuleOptions> : IApplicationModule<TModuleOptions>
     where TModuleOptions : BaseModuleOptions, new()
 {
+    public abstract string OptionsKey { get; }
+
     public virtual void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TModuleOptions startupOptions)
     {
@@ -20,7 +22,8 @@ public abstract class BaseApplicationModule<TModuleOptions> : IApplicationModule
     {
     }
 
-    public virtual Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider) =>
+    public virtual Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
     public virtual IEnumerable<Type>
@@ -28,26 +31,27 @@ public abstract class BaseApplicationModule<TModuleOptions> : IApplicationModule
         Type.EmptyTypes;
 
     public virtual Task ApplicationStarted(IApplicationContext applicationContext,
-        IServiceProvider serviceProvider) =>
+        IServiceProvider serviceProvider, CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
     public virtual Task ApplicationStopping(IApplicationContext applicationContext,
-        IServiceProvider serviceProvider) =>
+        IServiceProvider serviceProvider, CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
     public virtual Task ApplicationStopped(IApplicationContext applicationContext,
-        IServiceProvider serviceProvider) =>
+        IServiceProvider serviceProvider, CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
     public virtual Task<bool>
-        OnBeforeRunAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider) =>
+        OnBeforeRunAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider,
+            CancellationToken cancellationToken = default) =>
         Task.FromResult(true);
 
     public virtual Task<bool>
-        OnAfterRunAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider) =>
+        OnAfterRunAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider,
+            CancellationToken cancellationToken = default) =>
         Task.FromResult(true);
 
-    public abstract string OptionsKey { get; }
     public virtual string[] OptionKeys => new[] { OptionsKey };
     public virtual bool AllowMultiple => false;
 

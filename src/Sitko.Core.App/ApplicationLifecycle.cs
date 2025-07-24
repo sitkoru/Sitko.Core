@@ -23,7 +23,7 @@ internal class ApplicationLifecycle(
         foreach (var enabledModule in enabledModules)
         {
             var shouldContinue = await enabledModule.GetInstance()
-                .OnBeforeRunAsync(context, scope.ServiceProvider);
+                .OnBeforeRunAsync(context, scope.ServiceProvider, cancellationToken);
             if (!shouldContinue)
             {
                 Environment.Exit(0);
@@ -66,13 +66,13 @@ internal class ApplicationLifecycle(
         foreach (var registration in enabledModules)
         {
             logger.LogInformation("Init module {Module}", registration.Type);
-            await registration.InitAsync(context, scope.ServiceProvider);
+            await registration.InitAsync(context, scope.ServiceProvider, cancellationToken);
         }
 
         foreach (var enabledModule in enabledModules)
         {
             var shouldContinue =
-                await enabledModule.GetInstance().OnAfterRunAsync(context, scope.ServiceProvider);
+                await enabledModule.GetInstance().OnAfterRunAsync(context, scope.ServiceProvider, cancellationToken);
             if (!shouldContinue)
             {
                 Environment.Exit(0);
@@ -86,7 +86,7 @@ internal class ApplicationLifecycle(
         {
             try
             {
-                await moduleRegistration.ApplicationStarted(context, provider);
+                await moduleRegistration.ApplicationStarted(context, provider, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -106,7 +106,7 @@ internal class ApplicationLifecycle(
         {
             try
             {
-                await moduleRegistration.ApplicationStopping(context, provider);
+                await moduleRegistration.ApplicationStopping(context, provider, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -123,7 +123,7 @@ internal class ApplicationLifecycle(
         {
             try
             {
-                await moduleRegistration.ApplicationStopped(context, provider);
+                await moduleRegistration.ApplicationStopped(context, provider, cancellationToken);
             }
             catch (Exception ex)
             {

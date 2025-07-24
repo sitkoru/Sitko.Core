@@ -7,7 +7,26 @@ public abstract class BaseServiceDiscoveryResolver(
     ILogger<BaseServiceDiscoveryResolver> logger)
     : IServiceDiscoveryResolver, IAsyncDisposable
 {
+    private readonly CancellationTokenSource loadCancellationTokenSource = new();
+
+    private readonly ConcurrentDictionary<string, List<Action<ResolvedService[]>>> resolveCallbacks = new();
+
+    private bool isInit;
+    private bool isLoaded;
+    private Task? refreshTask;
+    private Dictionary<string, ResolvedService[]> services = new();
     protected ILogger<BaseServiceDiscoveryResolver> Logger { get; } = logger;
+
+    public async ValueTask DisposeAsync()
+    {
+        await loadCancellationTokenSource.CancelAsync();
+        if (refreshTask != null)
+        {
+            await refreshTask;
+        }
+
+        GC.SuppressFinalize(this);
+    }
 
     public ResolvedService[]? Resolve(string type, string name)
     {
@@ -20,28 +39,17 @@ public abstract class BaseServiceDiscoveryResolver(
         return null;
     }
 
-    private bool isInit;
-    private bool isLoaded;
-    private readonly CancellationTokenSource loadCancellationTokenSource = new();
-    private Task? refreshTask;
-    private Dictionary<string, ResolvedService[]> services = new();
-
-    public async Task LoadAsync()
+    public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
         if (!isInit)
         {
+            using var cts =
+                CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, loadCancellationTokenSource.Token);
             isInit = true;
-            await LoadServicesAsync(loadCancellationTokenSource.Token);
+            await LoadServicesAsync(cts.Token);
             refreshTask = StartRefreshTaskAsync();
         }
     }
-
-    private readonly ConcurrentDictionary<string, List<Action<ResolvedService[]>>> resolveCallbacks = new();
-
-    private static string GenerateServiceKey(string serviceType, string name) =>
-        $"{serviceType}|{name}".ToLowerInvariant();
-
-    private static string GenerateServiceKey(ResolvedService service) => GenerateServiceKey(service.Type, service.Name);
 
     public void Subscribe(string serviceType, string name, Action<ResolvedService[]> callback)
     {
@@ -54,6 +62,11 @@ public abstract class BaseServiceDiscoveryResolver(
             });
         UpdateSubscriptions();
     }
+
+    private static string GenerateServiceKey(string serviceType, string name) =>
+        $"{serviceType}|{name}".ToLowerInvariant();
+
+    private static string GenerateServiceKey(ResolvedService service) => GenerateServiceKey(service.Type, service.Name);
 
     private async Task LoadServicesAsync(CancellationToken cancellationToken)
     {
@@ -108,16 +121,5 @@ public abstract class BaseServiceDiscoveryResolver(
         }
 
         Logger.LogDebug("Stop waiting for configuration");
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await loadCancellationTokenSource.CancelAsync();
-        if (refreshTask != null)
-        {
-            await refreshTask;
-        }
-
-        GC.SuppressFinalize(this);
     }
 }

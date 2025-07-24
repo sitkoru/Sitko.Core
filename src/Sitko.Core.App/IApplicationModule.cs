@@ -21,20 +21,23 @@ public interface IApplicationModule<in TModuleOptions> : IApplicationModule wher
 
 public interface IApplicationModule
 {
-    Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider);
+    Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default);
 
     Task ApplicationStarted(IApplicationContext applicationContext,
-        IServiceProvider serviceProvider);
+        IServiceProvider serviceProvider, CancellationToken cancellationToken = default);
 
     Task ApplicationStopping(IApplicationContext applicationContext,
-        IServiceProvider serviceProvider);
+        IServiceProvider serviceProvider, CancellationToken cancellationToken = default);
 
     Task ApplicationStopped(IApplicationContext applicationContext,
-        IServiceProvider serviceProvider);
+        IServiceProvider serviceProvider, CancellationToken cancellationToken = default);
 
-    Task<bool> OnBeforeRunAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider);
+    Task<bool> OnBeforeRunAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default);
 
-    Task<bool> OnAfterRunAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider);
+    Task<bool> OnAfterRunAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default);
 }
 
 public interface IHostBuilderModule : IApplicationModule;

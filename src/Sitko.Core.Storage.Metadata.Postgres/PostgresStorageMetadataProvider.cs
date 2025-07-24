@@ -8,7 +8,7 @@ namespace Sitko.Core.Storage.Metadata.Postgres;
 
 public class
     PostgresStorageMetadataProvider<TStorageOptions> : BaseStorageMetadataProvider<
-        PostgresStorageMetadataModuleOptions<TStorageOptions>, TStorageOptions>
+    PostgresStorageMetadataModuleOptions<TStorageOptions>, TStorageOptions>
     where TStorageOptions : StorageOptions
 {
     private readonly IDbContextFactory<StorageDbContext> dbContextFactory;
@@ -111,13 +111,12 @@ public class
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    protected override async Task DoInitAsync()
+    protected override async Task DoInitAsync(CancellationToken cancellationToken = default)
     {
-        await base.DoInitAsync();
+        await base.DoInitAsync(cancellationToken);
         Logger.LogDebug("Migrate Storage metadata database");
         await using var dbContext = GetDbContext();
-        await dbContext.Database.MigrateAsync();
+        await dbContext.Database.MigrateAsync(cancellationToken);
         Logger.LogDebug("Storage metadata database migrated");
     }
 }
-

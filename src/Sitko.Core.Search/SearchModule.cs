@@ -19,9 +19,10 @@ public abstract class SearchModule<TConfig> : BaseApplicationModule<TConfig>, IS
 
     protected abstract void ConfigureSearch(IServiceCollection services);
 
-    public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider)
+    public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default)
     {
-        await base.InitAsync(applicationContext, serviceProvider);
+        await base.InitAsync(applicationContext, serviceProvider, cancellationToken);
         var searchProviders = serviceProvider.GetServices<ISearchProvider>().ToList();
         var logger = serviceProvider.GetRequiredService<ILogger<SearchModule<TConfig>>>();
         if (searchProviders.Count != 0 && GetOptions(serviceProvider).InitProviders)
@@ -34,7 +35,7 @@ public abstract class SearchModule<TConfig> : BaseApplicationModule<TConfig>, IS
                 {
                     try
                     {
-                        await searchProvider.InitAsync();
+                        await searchProvider.InitAsync(cancellationToken);
                     }
                     catch (Exception e)
                     {
@@ -42,7 +43,7 @@ public abstract class SearchModule<TConfig> : BaseApplicationModule<TConfig>, IS
                             e.ToString());
                     }
                 }
-            });
+            }, cancellationToken);
         }
     }
 }
