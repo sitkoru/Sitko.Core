@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj"/>
-    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis"/>
+    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" />
   </ItemGroup>
 </Project>

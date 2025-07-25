@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3"  />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AWS"/>
+    <PackageReference Include="AWSSDK.S3" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AWS" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Storage\Sitko.Core.Storage.csproj" />

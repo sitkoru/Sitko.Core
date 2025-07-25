@@ -3,11 +3,11 @@
     <RootNamespace>Sitko.Core.Blazor.AntDesignComponents</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Blazor\Sitko.Core.Blazor.csproj"/>
-    <ProjectReference Include="..\Sitko.Core.Blazor.FileUpload\Sitko.Core.Blazor.FileUpload.csproj"/>
-    <ProjectReference Include="..\Sitko.Core.Blazor.FluentValidation\Sitko.Core.Blazor.FluentValidation.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.Blazor\Sitko.Core.Blazor.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Blazor.FileUpload\Sitko.Core.Blazor.FileUpload.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Blazor.FluentValidation\Sitko.Core.Blazor.FluentValidation.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AntDesign"/>
+    <PackageReference Include="AntDesign" />
   </ItemGroup>
 </Project>
