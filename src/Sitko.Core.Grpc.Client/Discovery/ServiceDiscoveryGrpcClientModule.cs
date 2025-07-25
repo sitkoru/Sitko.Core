@@ -13,16 +13,12 @@ public class ServiceDiscoveryGrpcClientModule<TClient> : GrpcClientModule<TClien
     public override string OptionsKey => $"Grpc:Client:{typeof(TClient).Name}";
     protected override bool NeedSocketHandler => true;
 
+    public override IEnumerable<Type> GetRequiredModules(IApplicationContext applicationContext,
+        ServiceDiscoveryGrpcClientModuleOptions<TClient> options) =>
+        [typeof(IServiceDiscoveryModule)];
+
     protected override Uri GenerateAddress(ServiceDiscoveryGrpcClientModuleOptions<TClient> options) => new(
         $"{ServiceDiscoveryResolverFactory.SchemeName}:///{GrpcServicesHelper.GetServiceNameForClient<TClient>()}");
-
-    public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider,
-        CancellationToken cancellationToken = default)
-    {
-        await base.InitAsync(applicationContext, serviceProvider, cancellationToken);
-        var resolver = serviceProvider.GetRequiredService<IServiceDiscoveryResolver>();
-        await resolver.LoadAsync(cancellationToken);
-    }
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         ServiceDiscoveryGrpcClientModuleOptions<TClient> startupOptions)

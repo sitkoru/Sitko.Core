@@ -3,7 +3,10 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.ServiceDiscovery;
 
-public class ServiceDiscoveryModule<TRegistrar, TResolver> : BaseApplicationModule<ServiceDiscoveryModuleOptions>
+public interface IServiceDiscoveryModule;
+
+public class ServiceDiscoveryModule<TRegistrar, TResolver> : BaseApplicationModule<ServiceDiscoveryModuleOptions>,
+    IServiceDiscoveryModule
     where TRegistrar : class, IServiceDiscoveryRegistrar
     where TResolver : class, IServiceDiscoveryResolver
 {
@@ -22,6 +25,14 @@ public class ServiceDiscoveryModule<TRegistrar, TResolver> : BaseApplicationModu
             services.AddHostedService<ServiceDiscoveryHostedService>();
             services.AddHostedService<ServiceDiscoveryRefresherService>();
         }
+    }
+
+    public override async Task InitAsync(IApplicationContext applicationContext, IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default)
+    {
+        await base.InitAsync(applicationContext, serviceProvider, cancellationToken);
+        var resolver = serviceProvider.GetRequiredService<IServiceDiscoveryResolver>();
+        await resolver.LoadAsync(cancellationToken);
     }
 }
 

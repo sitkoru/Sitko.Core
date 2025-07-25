@@ -12,7 +12,7 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
     IHostBuilderModule<TConfig>,
     IWebApplicationModule<TConfig> where TConfig : GrpcServerModuleOptions, new()
 {
-    private readonly List<Action<IEndpointRouteBuilder>> endpointRegistrations = new();
+    private readonly List<Action<IEndpointRouteBuilder>> endpointRegistrations = [];
 
     public virtual void RegisterService<TService>(string? requiredAuthorizationSchemeName, bool enableGrpcWeb = false)
         where TService : class =>
@@ -32,6 +32,9 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
                 });
             }
         });
+
+    public override IEnumerable<Type> GetRequiredModules(IApplicationContext applicationContext, TConfig options) =>
+        options.EnableServiceDiscovery ? [typeof(IServiceDiscoveryModule)] : [];
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TConfig startupOptions)
