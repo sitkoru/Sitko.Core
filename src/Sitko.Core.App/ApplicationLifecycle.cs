@@ -32,7 +32,7 @@ internal class ApplicationLifecycle(
         }
 
         logger.LogInformation("Check required modules");
-        var modulesCheckSuccess = true;
+        var missingModules = new Dictionary<Type, List<Type>>();
         foreach (var registration in enabledModules)
         {
             var result =
@@ -42,17 +42,22 @@ internal class ApplicationLifecycle(
             {
                 foreach (var missingModule in result.missingModules)
                 {
+                    if (!missingModules.ContainsKey(missingModule))
+                    {
+                        missingModules[missingModule] = [];
+                    }
+
+                    missingModules[missingModule].Add(registration.Type);
                     Log.Information("Required module {MissingModule} for module {Type} is not registered",
                         missingModule, registration.Type);
                 }
-
-                modulesCheckSuccess = false;
             }
         }
 
-        if (!modulesCheckSuccess)
+        if (missingModules.Count != 0)
         {
-            throw new InvalidOperationException("Check required modules failed");
+            throw new InvalidOperationException(
+                $"Check required modules failed: {string.Join(", ", missingModules.Select(x => $"{x.Key} -> {string.Join(", ", x.Value)}"))}");
         }
 
         logger.LogInformation("Init modules");
