@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Queue\Sitko.Core.Queue.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.Queue\Sitko.Core.Queue.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.Threading.Channels"/>
+    <PackageReference Include="System.Threading.Channels" />
   </ItemGroup>
 </Project>

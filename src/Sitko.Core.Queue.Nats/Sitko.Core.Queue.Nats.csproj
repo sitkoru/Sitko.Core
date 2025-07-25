@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Queue\Sitko.Core.Queue.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.Queue\Sitko.Core.Queue.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NATS.Client"/>
-    <PackageReference Include="STAN.Client"/>
-    <PackageReference Include="Grpc.Tools" PrivateAssets="none"/>
-    <PackageReference Include="Google.Protobuf"/>
+    <PackageReference Include="NATS.Client" />
+    <PackageReference Include="STAN.Client" />
+    <PackageReference Include="Grpc.Tools" PrivateAssets="none" />
+    <PackageReference Include="Google.Protobuf" />
   </ItemGroup>
   <ItemGroup>
-    <Protobuf Include="Proto\Sitko\Core\Queue\Nats\QueueMsg.proto" GrpcServices="None"/>
+    <Protobuf Include="Proto\Sitko\Core\Queue\Nats\QueueMsg.proto" GrpcServices="None" />
   </ItemGroup>
 </Project>

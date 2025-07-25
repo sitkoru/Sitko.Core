@@ -3,10 +3,10 @@
     <OpenApiGenerateDocumentsOnBuild>false</OpenApiGenerateDocumentsOnBuild>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" PrivateAssets="None"/>
-    <PackageReference Include="Swashbuckle.AspNetCore.Annotations"/>
+    <PackageReference Include="Swashbuckle.AspNetCore" PrivateAssets="None" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj" />
   </ItemGroup>
 </Project>

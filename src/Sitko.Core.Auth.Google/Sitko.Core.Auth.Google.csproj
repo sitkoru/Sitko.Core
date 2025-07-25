@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Auth\Sitko.Core.Auth.csproj"/>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google"/>
+    <ProjectReference Include="..\Sitko.Core.Auth\Sitko.Core.Auth.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
   </ItemGroup>
 </Project>

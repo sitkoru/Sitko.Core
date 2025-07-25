@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj"/>
-    <ProjectReference Include="..\Sitko.Core.Auth\Sitko.Core.Auth.csproj"/>
-    <ProjectReference Include="..\Sitko.Core.Db\Sitko.Core.Db.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.App.Web\Sitko.Core.App.Web.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Auth\Sitko.Core.Auth.csproj" />
+    <ProjectReference Include="..\Sitko.Core.Db\Sitko.Core.Db.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI"/>
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"/>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
   </ItemGroup>
 </Project>

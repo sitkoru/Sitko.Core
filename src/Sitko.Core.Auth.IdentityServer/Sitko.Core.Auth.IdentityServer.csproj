@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <PackageReference Include="Duende.AccessTokenManagement.OpenIdConnect"/>
-    <PackageReference Include="IdentityServer4.AccessTokenValidation"/>
-    <PackageReference Include="AspNetCore.HealthChecks.OpenIdConnectServer"/>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect"/>
+    <PackageReference Include="Duende.AccessTokenManagement.OpenIdConnect" />
+    <PackageReference Include="IdentityServer4.AccessTokenValidation" />
+    <PackageReference Include="AspNetCore.HealthChecks.OpenIdConnectServer" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Auth\Sitko.Core.Auth.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.Auth\Sitko.Core.Auth.csproj" />
   </ItemGroup>
 </Project>

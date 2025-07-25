@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <PackageReference Include="Elastic.Apm.NetCoreAll"/>
-    <PackageReference Include="Elastic.Apm.SerilogEnricher"/>
-    <PackageReference Include="Elastic.CommonSchema.Serilog"/>
-    <PackageReference Include="Serilog.Sinks.Elasticsearch"/>
+    <PackageReference Include="Elastic.Apm.NetCoreAll" />
+    <PackageReference Include="Elastic.Apm.SerilogEnricher" />
+    <PackageReference Include="Elastic.CommonSchema.Serilog" />
+    <PackageReference Include="Serilog.Sinks.Elasticsearch" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
   </ItemGroup>
 </Project>

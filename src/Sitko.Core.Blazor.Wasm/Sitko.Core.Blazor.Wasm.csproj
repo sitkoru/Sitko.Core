@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly"/>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication"/>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
     <PackageReference Include="Microsoft.Extensions.Localization" />
-    <PackageReference Include="Serilog.Sinks.BrowserConsole"/>
+    <PackageReference Include="Serilog.Sinks.BrowserConsole" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Blazor\Sitko.Core.Blazor.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.Blazor\Sitko.Core.Blazor.csproj" />
   </ItemGroup>
 </Project>

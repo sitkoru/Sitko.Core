@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Health\Sitko.Core.Health.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.Health\Sitko.Core.Health.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Telegram.Bot"/>
+    <PackageReference Include="Telegram.Bot" />
   </ItemGroup>
 </Project>
