@@ -18,6 +18,7 @@ public class GrpcClientWithServiceDiscoveryTest(ITestOutputHelper testOutputHelp
 public class GrpcClientWithServiceDiscoveryScope : GrpcClientScope
 {
     protected override bool RunApplication => false;
+    protected override bool EnableServiceDiscovery => true;
 
     protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {
