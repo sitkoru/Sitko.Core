@@ -43,10 +43,8 @@ public abstract class BaseServiceDiscoveryResolver(
     {
         if (!isInit)
         {
-            using var cts =
-                CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, loadCancellationTokenSource.Token);
             isInit = true;
-            await LoadServicesAsync(cts.Token);
+            await LoadServicesAsync(cancellationToken);
             refreshTask = StartRefreshTaskAsync();
         }
     }
