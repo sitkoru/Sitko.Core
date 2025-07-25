@@ -40,67 +40,6 @@ public class ServiceDiscoveryManager(
 
     private ulong lastIndex;
 
-    private static Dictionary<string, string> BuildMetadata(ApplicationService applicationService,
-        List<ServiceDiscoveryService> services)
-    {
-        var meta = new Dictionary<string, string>
-        {
-            { ServiceInfoKey, SerializeToBase64(applicationService) },
-            { ServicesListKey, SerializeToBase64(services.Select(service => service.Name).ToArray()) }
-        };
-        foreach (var service in services)
-        {
-            meta.Add(service.Name, SerializeToBase64(service));
-        }
-
-        return meta;
-    }
-
-    private static (ApplicationService ApplicationService,
-        List<ServiceDiscoveryService> Services) ReadMetadata(IDictionary<string, string> meta)
-    {
-        if (!meta.TryGetValue(ServiceInfoKey, out var serviceInfoData))
-        {
-            throw new InvalidOperationException("No service info header");
-        }
-
-        var appService = DeserializeFromBase64<ApplicationService>(serviceInfoData);
-        if (appService is null)
-        {
-            throw new InvalidOperationException($"Can't parse meta for app service");
-        }
-
-        if (!meta.TryGetValue(ServicesListKey, out var serviceNamesListData))
-        {
-            throw new InvalidOperationException("No service list header");
-        }
-
-        var serviceNamesList = DeserializeFromBase64<string[]>(serviceNamesListData);
-        if (serviceNamesList is null || serviceNamesList.Length == 0)
-        {
-            throw new InvalidOperationException("Empty service names list");
-        }
-
-        var services = new List<ServiceDiscoveryService>();
-        foreach (var serviceName in serviceNamesList)
-        {
-            if (!meta.TryGetValue(serviceName, out var serviceData))
-            {
-                throw new InvalidOperationException($"No meta for service {serviceName}");
-            }
-
-            var service = DeserializeFromBase64<ServiceDiscoveryService>(serviceData);
-            if (service is null)
-            {
-                throw new InvalidOperationException($"Can't parse meta for service {serviceName}");
-            }
-
-            services.Add(service);
-        }
-
-        return (appService, services);
-    }
-
     public async Task<(string Id, string ServiceName)> RegisterAsync(ApplicationService applicationService,
         List<ServiceDiscoveryService> services, CancellationToken cancellationToken)
     {
@@ -150,16 +89,19 @@ public class ServiceDiscoveryManager(
             await request.Execute(cancellationToken);
         if (serviceResponse.StatusCode == HttpStatusCode.OK)
         {
+            logger.LogDebug("Received services list from Consul");
             lastIndex = serviceResponse.LastIndex;
             if (serviceResponse.Response.Count != 0)
             {
                 var resolvedServices = new List<ResolvedService>();
                 foreach (var (serviceName, _) in serviceResponse.Response)
                 {
+                    logger.LogDebug("Request service {ServiceName} info", serviceName);
                     var serviceInfoResponse =
                         await consulClientProvider.Client.Catalog.Service(serviceName, cancellationToken);
                     if (serviceInfoResponse.StatusCode == HttpStatusCode.OK)
                     {
+                        logger.LogDebug("Received service {ServiceName} info", serviceName);
                         var services = serviceInfoResponse.Response.Where(catalogService =>
                             !catalogService.ServiceMeta.TryGetValue(EnvironmentKey, out var env) ||
                             env == applicationContext.Environment).ToList();
@@ -168,6 +110,9 @@ public class ServiceDiscoveryManager(
                             var meta = ReadMetadata(service.ServiceMeta);
                             foreach (var sdService in meta.Services)
                             {
+                                logger.LogDebug("Resolved service {ServiceName} ({ServiceType}) with address {Address}",
+                                    sdService.Name, sdService.Type,
+                                    $"{meta.ApplicationService.Scheme}://{service.ServiceAddress}:{service.ServicePort}");
                                 var resolvedService = new ResolvedService(sdService.Type, sdService.Name,
                                     new Dictionary<string, string>(), meta.ApplicationService.Scheme,
                                     service.ServiceAddress,
@@ -211,6 +156,67 @@ public class ServiceDiscoveryManager(
             logger.LogError(exception, "Error deregistering service {ServiceId}: {ErrorText}",
                 serviceId, exception.ToString());
         }
+    }
+
+    private static Dictionary<string, string> BuildMetadata(ApplicationService applicationService,
+        List<ServiceDiscoveryService> services)
+    {
+        var meta = new Dictionary<string, string>
+        {
+            { ServiceInfoKey, SerializeToBase64(applicationService) },
+            { ServicesListKey, SerializeToBase64(services.Select(service => service.Name).ToArray()) }
+        };
+        foreach (var service in services)
+        {
+            meta.Add(service.Name, SerializeToBase64(service));
+        }
+
+        return meta;
+    }
+
+    private static (ApplicationService ApplicationService,
+        List<ServiceDiscoveryService> Services) ReadMetadata(IDictionary<string, string> meta)
+    {
+        if (!meta.TryGetValue(ServiceInfoKey, out var serviceInfoData))
+        {
+            throw new InvalidOperationException("No service info header");
+        }
+
+        var appService = DeserializeFromBase64<ApplicationService>(serviceInfoData);
+        if (appService is null)
+        {
+            throw new InvalidOperationException("Can't parse meta for app service");
+        }
+
+        if (!meta.TryGetValue(ServicesListKey, out var serviceNamesListData))
+        {
+            throw new InvalidOperationException("No service list header");
+        }
+
+        var serviceNamesList = DeserializeFromBase64<string[]>(serviceNamesListData);
+        if (serviceNamesList is null || serviceNamesList.Length == 0)
+        {
+            throw new InvalidOperationException("Empty service names list");
+        }
+
+        var services = new List<ServiceDiscoveryService>();
+        foreach (var serviceName in serviceNamesList)
+        {
+            if (!meta.TryGetValue(serviceName, out var serviceData))
+            {
+                throw new InvalidOperationException($"No meta for service {serviceName}");
+            }
+
+            var service = DeserializeFromBase64<ServiceDiscoveryService>(serviceData);
+            if (service is null)
+            {
+                throw new InvalidOperationException($"Can't parse meta for service {serviceName}");
+            }
+
+            services.Add(service);
+        }
+
+        return (appService, services);
     }
 
     private static string SerializeToBase64(object data) =>
