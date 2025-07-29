@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <PackageReference Include="Grpc.Core.Api"/>
-    <PackageReference Include="Grpc.Tools" PrivateAssets="none"/>
-    <PackageReference Include="Google.Protobuf"/>
-    <PackageReference Include="PeanutButter.DuckTyping"/>
-    <Protobuf Include="Proto\**\*.proto" GrpcServices="None"/>
-    <None Pack="true" PackagePath="protos" Include="Proto\**\*.proto"/>
+    <PackageReference Include="Grpc.Core.Api" />
+    <PackageReference Include="Grpc.Tools" PrivateAssets="none" />
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="PeanutButter.DuckTyping" />
+    <Protobuf Include="Proto\**\*.proto" GrpcServices="None" />
+    <None Pack="true" PackagePath="protos" Include="Proto\**\*.proto" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
   </ItemGroup>
 </Project>
