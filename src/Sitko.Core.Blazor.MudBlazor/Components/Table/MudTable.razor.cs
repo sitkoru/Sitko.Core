@@ -34,6 +34,10 @@ public abstract partial class MudTable<TItem, TFilter> where TFilter : MudTableF
 
     [Parameter] public RenderFragment? FooterContent { get; set; }
 
+    [Parameter] public RenderFragment? NoRecordsContent { get; set; }
+
+    [Parameter] public RenderFragment? LoadingContent { get; set; }
+
     [Parameter] public RenderFragment? PagerContent { get; set; }
 
     [Parameter] public RenderFragment? ToolBarContent { get; set; }

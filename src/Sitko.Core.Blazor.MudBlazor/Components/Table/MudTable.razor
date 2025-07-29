@@ -73,10 +73,24 @@
             @FooterContent
         </FooterContent>
         <NoRecordsContent>
-            <MudText>No matching records found</MudText>
+            @if (NoRecordsContent != null)
+            {
+                @NoRecordsContent
+            }
+            else
+            {
+                <MudText>No matching records found</MudText>
+            }
         </NoRecordsContent>
         <LoadingContent>
-            <MudText>Loading...</MudText>
+            @if (LoadingContent != null)
+            {
+                @LoadingContent
+            }
+            else
+            {
+                <MudText>Loading...</MudText>
+            }
         </LoadingContent>
         <PagerContent>
             @if (PagerContent != null)
