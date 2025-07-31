@@ -9,9 +9,9 @@
     <NoWarn>CA1848;CA1716;BL0007;CA1711;NU1507</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Sitko.Core.Xunit\Sitko.Core.Xunit.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.Xunit\Sitko.Core.Xunit.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="GitHubActionsTestLogger" Version="2.3.3"/>
+    <PackageReference Include="GitHubActionsTestLogger" Version="2.4.1" />
   </ItemGroup>
 </Project>

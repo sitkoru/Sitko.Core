@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <PackageReference Include="Razor.Templating.Core"/>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson"/>
-    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis"/>
-    <PackageReference Include="AspNetCore.HealthChecks.UI.Client"/>
+    <PackageReference Include="Razor.Templating.Core" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
+    <PackageReference Include="AspNetCore.HealthChecks.UI.Client" />
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
+    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj" />
   </ItemGroup>
 </Project>
