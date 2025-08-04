@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Sdk.WebAssembly.Pack" Version="9.0.7" />
     <AdditionalFiles Include="Components\TestComponent.razor" />
   </ItemGroup>
 
