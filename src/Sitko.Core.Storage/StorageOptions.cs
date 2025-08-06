@@ -13,6 +13,8 @@ public abstract class StorageOptions : BaseModuleOptions
     [PublicAPI] public string? Prefix { get; set; }
     [PublicAPI] public string Name { get; set; }
     [PublicAPI] public bool IsDefault { get; set; }
+
+    [PublicAPI] public bool PreserveOriginalFileName { get; set; }
 }
 
 public abstract class StorageOptionsValidator<TStorageOptions> : AbstractValidator<TStorageOptions>
@@ -21,4 +23,3 @@ public abstract class StorageOptionsValidator<TStorageOptions> : AbstractValidat
     public StorageOptionsValidator() => RuleFor(o => o.Name).NotEmpty()
         .WithMessage($"Storage {typeof(TStorageOptions)} name is empty");
 }
-

@@ -258,10 +258,14 @@ public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsy
     protected abstract Task<IEnumerable<StorageItemInfo>> GetAllItemsAsync(string path,
         CancellationToken cancellationToken = default);
 
-    private static string GetStorageFileName(string fileName)
+    private string GetStorageFileName(string fileName)
     {
-        var extension = fileName.Substring(fileName.LastIndexOf('.'));
+        if (Options.PreserveOriginalFileName)
+        {
+            return fileName;
+        }
+
+        var extension = fileName[fileName.LastIndexOf('.')..];
         return Guid.NewGuid() + extension;
     }
 }
-
