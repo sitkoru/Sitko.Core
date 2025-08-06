@@ -3,6 +3,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OpenSearch.Net;
 using Sitko.Core.Xunit;
 using Xunit;
 
@@ -36,8 +37,8 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         provider.AddModel(fooModel).AddModel(barModel);
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
-        await Task.Delay(TimeSpan.FromSeconds(5));
-        var result = await searchProvider.SearchAsync("samsung", 10, SearchType.Morphology);
+
+        var result = await searchProvider.SearchAsync("samsung");
         result.Length.Should().Be(provider.Models.Count);
     }
 
@@ -65,9 +66,8 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         provider.AddModel(firstModel).AddModel(secondModel).AddModel(thirdModel).AddModel(forthModel);
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
-        await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result = await searchProvider.SearchAsync(searchText, 10, SearchType.Morphology);
+        var result = await searchProvider.SearchAsync(searchText);
         result.Length.Should().Be(foundDocs);
     }
 
@@ -88,9 +88,8 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         provider.AddModel(firstModel).AddModel(secondModel).AddModel(thirdModel).AddModel(forthModel);
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
-        await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result = await searchProvider.SearchAsync("walked", 10, SearchType.Morphology);
+        var result = await searchProvider.SearchAsync("walked");
         result.Length.Should().Be(3);
     }
 
@@ -115,9 +114,9 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         provider.AddModel(firstModel).AddModel(secondModel).AddModel(thirdModel).AddModel(forthModel);
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
-        await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result = await searchProvider.SearchAsync(searchText, 10, SearchType.Wildcard);
+        var result =
+            await searchProvider.SearchAsync(searchText, new SearchOptions { SearchType = SearchType.Wildcard });
         result.Length.Should().Be(foundDocs);
     }
 
@@ -142,9 +141,9 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         provider.AddModel(firstModel).AddModel(secondModel).AddModel(thirdModel).AddModel(forthModel);
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
-        await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result = await searchProvider.SearchAsync(searchText, 10, SearchType.Wildcard);
+        var result =
+            await searchProvider.SearchAsync(searchText, new SearchOptions { SearchType = SearchType.Wildcard });
         result.Length.Should().Be(foundDocs);
     }
 
@@ -171,9 +170,8 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         provider.AddModel(firstModel).AddModel(secondModel).AddModel(thirdModel);
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
-        await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result2 = await searchProvider.SearchAsync(searchText, 10, searchType);
+        var result2 = await searchProvider.SearchAsync(searchText, new SearchOptions { SearchType = searchType });
         result2.Length.Should().Be(foundDocs);
     }
 
@@ -191,9 +189,9 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         provider.AddModel(firstModel).AddModel(secondModel);
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
-        await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result = await searchProvider.SearchAsync("лщдуыф", 10, SearchType.Wildcard);
+        var result =
+            await searchProvider.SearchAsync("лщдуыф", new SearchOptions { SearchType = SearchType.Wildcard });
         result.Length.Should().Be(1);
     }
 
@@ -219,14 +217,203 @@ public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<Open
         provider.AddModel(firstModel).AddModel(secondModel);
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
-        await Task.Delay(TimeSpan.FromSeconds(5));
 
-        var result = await searchProvider.SearchAsync(searchText, 10, searchType, true);
+        var result = await searchProvider.SearchAsync(searchText,
+            new SearchOptions { SearchType = searchType, WithHighlight = true });
         result.Length.Should().Be(1);
-        result.First().ResultModel.Highlight.Count.Should().Be(1);
-        result.First().ResultModel.Highlight.First().Value.First().Contains("<span class='highlight'>").Should()
+        result.First().Highlight.Count.Should().Be(1);
+        result.First().Highlight.First().Value.First().Contains("<span class='highlight'>").Should()
             .BeTrue();
-        result.First().ResultModel.Highlight.First().Value.First().Contains("</span>").Should().BeTrue();
+        result.First().Highlight.First().Value.First().Contains("</span>").Should().BeTrue();
+    }
+
+
+    [Theory(DisplayName = "Search with tags")]
+    [InlineData(new[] { "ProjectId1" }, 1, 1)]
+    [InlineData(new[] { "ProjectId2" }, 1, 1)]
+    [InlineData(new[] { "ProjectId1", "ProjectId2" }, 1, 2)]
+    [InlineData(new[] { "ProjectId1", "ProjectId2" }, 2, 0)]
+    [InlineData(new[] { "ProjectId1", "ProjectId2", "ProjectId3", "SomeOtherTag" }, 1, 2)]
+    [InlineData(new[] { "ProjectId1", "ProjectId2", "ProjectId3", "SomeOtherTag" }, 2, 2)]
+    [InlineData(new[] { "ProjectId1", "ProjectId2", "ProjectId3", "SomeOtherTag" }, 3, 0)]
+    [InlineData(new[] { "ProjectId3" }, 1, 0)]
+    [InlineData(new string[0], 1, 2)]
+    public async Task TagsAsync(string[] tags, int minimalMatch, int expected)
+    {
+        var scope = await GetScopeAsync();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
+        var provider = scope.GetService<TestModelProvider>();
+        await searchProvider.DeleteIndexAsync();
+        await searchProvider.InitAsync();
+        var firstModel = new TestModel
+        {
+            Title = "Геймеры играют в компьютерные игры.",
+            Description = "Геймеры играют в компьютерные игры.",
+            Url = "mmicentre",
+            ProjectId = 1
+        };
+        var secondModel = new TestModel
+        {
+            Title = "Геймеры играют в настольные игры.",
+            Description = "Геймеры играют в настольные игры.",
+            Url = "mmicentre",
+            ProjectId = 2
+        };
+        provider.AddModel(firstModel).AddModel(secondModel);
+
+        await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
+
+        var result = await searchProvider.SearchAsync("играют",
+            new SearchOptions { Tags = tags, TagsMinimumMatch = minimalMatch });
+        result.Length.Should().Be(expected);
+    }
+
+    [Theory(DisplayName = "Search with limit")]
+    [InlineData(1, 1)]
+    [InlineData(2, 2)]
+    [InlineData(3, 2)]
+    public async Task LimitAsync(int limit, int expected)
+    {
+        var scope = await GetScopeAsync();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
+        var provider = scope.GetService<TestModelProvider>();
+        await searchProvider.DeleteIndexAsync();
+        await searchProvider.InitAsync();
+
+        var firstModel = new TestModel
+        {
+            Title = "Геймеры играют в компьютерные игры.",
+            Description = "Геймеры играют в компьютерные игры.",
+            Url = "mmicentre"
+        };
+        var secondModel = new TestModel
+        {
+            Title = "Геймеры играют в настольные игры.",
+            Description = "Геймеры играют в настольные игры.",
+            Url = "mmicentre"
+        };
+
+        provider.AddModel(firstModel).AddModel(secondModel);
+
+        await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
+
+        var result = await searchProvider.SearchAsync("играют",
+        new SearchOptions { Limit = limit });
+        result.Length.Should().Be(expected);
+    }
+
+    [Theory(DisplayName = "Search with offset")]
+    [InlineData(0, 2)]
+    [InlineData(1, 1)]
+    [InlineData(2, 0)]
+    public async Task OffsetAsync(int offset, int expected)
+    {
+        var scope = await GetScopeAsync();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
+        var provider = scope.GetService<TestModelProvider>();
+        await searchProvider.DeleteIndexAsync();
+        await searchProvider.InitAsync();
+
+        var firstModel = new TestModel
+        {
+            Title = "Геймеры играют в компьютерные игры.",
+            Description = "Геймеры играют в компьютерные игры.",
+            Url = "mmicentre"
+        };
+        var secondModel = new TestModel
+        {
+            Title = "Геймеры играют в настольные игры.",
+            Description = "Геймеры играют в настольные игры.",
+            Url = "mmicentre"
+        };
+
+        provider.AddModel(firstModel).AddModel(secondModel);
+
+        await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
+
+        var result = await searchProvider.SearchAsync("играют",
+        new SearchOptions { Offset = offset });
+        result.Length.Should().Be(expected);
+    }
+
+    [Theory(DisplayName = "Counting")]
+    [InlineData("компьютерные", SearchType.Morphology, 1)]
+    [InlineData("ге", SearchType.Wildcard, 2)]
+    [InlineData("ге", SearchType.Morphology, 0)]
+    [InlineData("", SearchType.Wildcard, 2)]
+    public async Task CountAsync(string searchText, SearchType searchType, int expected)
+    {
+        var scope = await GetScopeAsync();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
+        var provider = scope.GetService<TestModelProvider>();
+        await searchProvider.DeleteIndexAsync();
+        await searchProvider.InitAsync();
+
+        var firstModel = new TestModel
+        {
+            Title = "Геймеры играют в компьютерные игры.",
+            Description = "Геймеры играют в компьютерные игры.",
+            Url = "mmicentre"
+        };
+        var secondModel = new TestModel
+        {
+            Title = "Геймер играют в настольные игры.",
+            Description = "Геймеры играют в настольные игры.",
+            Url = "mmicentre"
+        };
+
+        provider.AddModel(firstModel).AddModel(secondModel);
+
+        await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
+
+        var result = await searchProvider.CountAsync(searchText,
+        new SearchOptions { SearchType = searchType });
+        result.Should().Be(expected);
+    }
+
+    [Fact]
+    public async Task AddOrUpdateAsync()
+    {
+        var scope = await GetScopeAsync();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
+        var provider = scope.GetService<TestModelProvider>();
+        await searchProvider.DeleteIndexAsync();
+        await searchProvider.InitAsync();
+
+        var firstModel = new TestModel
+        {
+            Title = "Геймеры играют в компьютерные игры.",
+            Description = "Геймеры играют в компьютерные игры.",
+            Url = "mmicentre"
+        };
+        var secondModel = new TestModel
+        {
+            Title = "Геймер играют в настольные игры.",
+            Description = "Геймеры играют в настольные игры.",
+            Url = "mmicentre"
+        };
+
+        provider.AddModel(firstModel).AddModel(secondModel);
+
+        var addResult = await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
+        addResult.Should().BeTrue();
+
+        var addEmptyResult = await searchProvider.AddOrUpdateEntitiesAsync([]);
+        addEmptyResult.Should().BeFalse();
+
+        firstModel.Title = "Все играют в компьютерные игры.";
+        secondModel.Title = "Все играют в настольные игры.";
+
+        var updateResult = await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
+        updateResult.Should().BeTrue();
+
+        var firstSearchResult = await searchProvider.SearchAsync("компьютерные");
+        firstSearchResult.Length.Should().Be(1);
+        Assert.Equal(firstSearchResult[0].Entity.Title, firstModel.Title);
+
+        var secondSearchResult = await searchProvider.SearchAsync("настольные");
+        secondSearchResult.Length.Should().Be(1);
+        Assert.Equal(secondSearchResult[0].Entity.Title, secondModel.Title);
     }
 }
 
@@ -239,14 +426,12 @@ public class OpenSearchTestScope : BaseTestScope
         {
             moduleOptions.Prefix = name.ToLower(CultureInfo.InvariantCulture);
             moduleOptions.EnableClientLogging = true;
-            moduleOptions.Url = hostBuilder.Configuration.GetSection("OpenSearchModuleOptions")["Url"];
-            moduleOptions.Login = hostBuilder.Configuration.GetSection("OpenSearchModuleOptions")["Login"];
-            moduleOptions.Password = hostBuilder.Configuration.GetSection("OpenSearchModuleOptions")["Password"];
             moduleOptions.InitProviders = false;
             moduleOptions.DisableCertificatesValidation = true;
             moduleOptions.CustomStemmer = "russian";
             moduleOptions.PreTags = "<span class='highlight'>";
             moduleOptions.PostTags = "</span>";
+            moduleOptions.Refresh = Refresh.True; // Force new data propagation
         });
 
         hostBuilder.Services.AddSingleton<TestModelProvider>();
@@ -262,13 +447,12 @@ public class TestModel
     public string Url { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public DateTimeOffset Date { get; set; } = DateTimeOffset.UtcNow;
+
+    public int? ProjectId { get; set; }
 }
 
 public class TestSearchModel : BaseSearchModel
 {
-    public TestSearchModel()
-    {
-    }
 }
 
 public class TestSearchProvider(
@@ -288,22 +472,24 @@ public class TestSearchProvider(
                 Date = e.Date,
                 Url = e.Url,
                 Title = e.Title,
-                Content = e.Description
+                Content = e.Description,
+                Tags = [$"ProjectId{e.ProjectId}", "SomeOtherTag"]
             })
             .ToArray());
 
-    protected override Task<SearchResult<TestModel, TestSearchModel>[]> GetEntitiesAsync(TestSearchModel[] searchModels,
+    protected override Task<SearchResult<TestModel>[]> GetEntitiesAsync(SearcherEntity<TestSearchModel>[] searchModels,
         CancellationToken cancellationToken = default)
     {
-        var ids = searchModels.Select(m => Guid.Parse(m.Id));
+        var ids = searchModels.Select(m => Guid.Parse(m.SearchModel.Id));
         var entities = testModelProvider.Models.Where(m => ids.Contains(m.Id));
-        List<SearchResult<TestModel, TestSearchModel>> result = [];
+        List<SearchResult<TestModel>> result = [];
         foreach (var entity in entities)
         {
-            var searchModel = searchModels.ToList().FirstOrDefault(model => model.Id == entity.Id.ToString());
-            if (searchModel != null)
+            var searcherResult = searchModels.ToList()
+                .FirstOrDefault(model => model.SearchModel.Id == entity.Id.ToString());
+            if (searcherResult != null)
             {
-                result.Add(new SearchResult<TestModel, TestSearchModel> { Entity = entity, ResultModel = searchModel });
+                result.Add(new SearchResult<TestModel>(entity, searcherResult.Highlight));
             }
         }
 

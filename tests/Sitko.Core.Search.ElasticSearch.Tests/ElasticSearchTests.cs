@@ -42,7 +42,7 @@ public class ElasticSearchTests : BaseTest<ElasticSearchTestScope>
 
         await searchProvider.AddOrUpdateEntitiesAsync(provider.Models.ToArray());
         await Task.Delay(TimeSpan.FromSeconds(5));
-        var result = await searchProvider.SearchAsync("samsung", 10, SearchType.Morphology);
+        var result = await searchProvider.SearchAsync("samsung");
         Assert.Equal(provider.Models.Count, result.Length);
         Assert.Equal(barModel.Id, result.First().Id);
     }
@@ -104,18 +104,19 @@ public class TestSearchProvider : BaseSearchProvider<TestModel, Guid, TestSearch
                 Content = e.Description
             }).ToArray());
 
-    protected override Task<SearchResult<TestModel, TestSearchModel>[]> GetEntitiesAsync(TestSearchModel[] searchModels,
+    protected override Task<SearchResult<TestModel>[]> GetEntitiesAsync(SearcherEntity<TestSearchModel>[] searchModels,
         CancellationToken cancellationToken = default)
     {
-        var ids = searchModels.Select(m => Guid.Parse(m.Id));
+        var ids = searchModels.Select(m => Guid.Parse(m.SearchModel.Id));
         var entities = testModelProvider.Models.Where(m => ids.Contains(m.Id));
-        List<SearchResult<TestModel, TestSearchModel>> result = [];
+        List<SearchResult<TestModel>> result = [];
         foreach (var entity in entities)
         {
-            var searchModel = searchModels.ToList().FirstOrDefault(model => model.Id == entity.Id.ToString());
-            if (searchModel != null)
+            var searcherResult = searchModels.ToList()
+                .FirstOrDefault(model => model.SearchModel.Id == entity.Id.ToString());
+            if (searcherResult != null)
             {
-                result.Add(new SearchResult<TestModel, TestSearchModel> { Entity = entity, ResultModel = searchModel });
+                result.Add(new SearchResult<TestModel>(entity, searcherResult.Highlight));
             }
         }
 
