@@ -13,7 +13,7 @@
     <PackageVersion Include="Scrutor" Version="6.1.0" />
     <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <PackageVersion Include="VaultSharp" Version="1.17.5.1" />
-    <PackageVersion Include="Consul" Version="1.7.14.7" />
+    <PackageVersion Include="Consul" Version="1.7.14.8" />
     <PackageVersion Include="TeamsHook.NET" Version="0.1.0.18" />
     <PackageVersion Include="Telegram.Bot" Version="22.5.1" />
     <PackageVersion Include="ImgProxy" Version="2.3.2" />
