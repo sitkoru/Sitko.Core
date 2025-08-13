@@ -1,6 +1,7 @@
 using KafkaFlow.Consumers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sitko.Core.Kafka.Monitoring;
 
 namespace Sitko.Core.Queue.Kafka;
 
@@ -24,6 +25,7 @@ public class KafkaQueueController(
                 try
                 {
                     await consumer.StartAsync();
+                    DisabledConsumers.Remove(consumer);
                     logger.LogInformation("Consumer {ConsumerName} started", consumer.ConsumerName);
                 }
                 catch (Exception ex)
@@ -52,6 +54,7 @@ public class KafkaQueueController(
                 try
                 {
                     await consumer.StopAsync();
+                    DisabledConsumers.Add(consumer);
                     logger.LogInformation("Consumer {ConsumerName} stopped", consumer.ConsumerName);
                 }
                 catch (Exception ex)

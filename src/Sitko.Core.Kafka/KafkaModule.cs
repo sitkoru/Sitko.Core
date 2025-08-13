@@ -9,6 +9,7 @@ using Polly;
 using Polly.Retry;
 using Sitko.Core.App;
 using Sitko.Core.App.OpenTelemetry;
+using Sitko.Core.Kafka.Monitoring;
 using Acks = Confluent.Kafka.Acks;
 using AutoOffsetReset = Confluent.Kafka.AutoOffsetReset;
 using SaslMechanism = KafkaFlow.Configuration.SaslMechanism;
@@ -29,6 +30,7 @@ public class KafkaModule : BaseApplicationModule<KafkaModuleOptions>, IOpenTelem
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
         services.AddSingleton<KafkaConsumerOffsetsEnsurer>();
+        services.AddHostedService<ConsumersMonitor>();
         services.AddKafka(builder =>
         {
             foreach (var (_, configurator) in configurators)
@@ -76,6 +78,17 @@ public class KafkaModule : BaseApplicationModule<KafkaModuleOptions>, IOpenTelem
 
         kafkaBus = serviceProvider.CreateKafkaBus();
         await kafkaBus.StartAsync(cancellationToken);
+
+        foreach (var (clusterName, configurator) in configurators)
+        {
+            if (configurator.ConsumerInitialState != ConsumerInitialState.Running)
+            {
+                foreach (var consumer in kafkaBus.Consumers.All.Where(c => c.ClusterName == clusterName))
+                {
+                    DisabledConsumers.Add(consumer);
+                }
+            }
+        }
 
         if (options.WaitForConsumerAssignments)
         {
@@ -148,6 +161,10 @@ public class KafkaModuleOptions : BaseModuleOptions
 
     public bool EnsureOffsets { get; set; }
     public bool WaitForConsumerAssignments { get; set; }
+
+    public bool RestartStoppedConsumers { get; set; }
+    public TimeSpan ConsumersMonitoringInterval { get; set; } = TimeSpan.FromMinutes(1);
+    public TimeSpan StoppedConsumersWaitForAssignmentsInterval { get; set; } = TimeSpan.FromMinutes(5);
 }
 
 public class KafkaModuleOptionsValidator : AbstractValidator<KafkaModuleOptions>
