@@ -17,7 +17,12 @@ public class JwtIdentityServerModule : IdentityServerModule<JwtIdentityServerMod
             options.Authority = startupOptions.OidcServerUrl;
             options.Audience = startupOptions.JwtAudience;
             options.RequireHttpsMetadata = startupOptions.RequireHttps;
+            if (startupOptions.ValidIssuers.Length > 0)
+            {
+                options.TokenValidationParameters.ValidIssuers = startupOptions.ValidIssuers;
+            }
+
+            startupOptions.ConfigureJwtBearerOptions?.Invoke(options);
         });
     }
 }
-
