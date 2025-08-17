@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Build
@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.App.Tests/Sitko.Core.App.Tests.csproj
 
@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install node.js
         uses: actions/setup-node@v4
         with:
@@ -56,7 +56,7 @@ jobs:
       consul:
         image: hashicorp/consul
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Grpc.Client.Tests/Sitko.Core.Grpc.Client.Tests.csproj
 
@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.ImgProxy.Tests/Sitko.Core.ImgProxy.Tests.csproj
 
@@ -74,7 +74,7 @@ jobs:
     env:
       PUPPETEER_EXECUTABLE_PATH: "/usr/bin/google-chrome-stable"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install chrome
         run: |
           apt-get update
@@ -92,7 +92,7 @@ jobs:
       nats:
         image: nats-streaming:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run tests Sitko.Core.Queue
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
       - name: Run tests Sitko.Core.Queue.Nats
@@ -114,7 +114,7 @@ jobs:
         env:
           POSTGRES_HOST_AUTH_METHOD: trust
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run EF Core tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Repository.EntityFrameworkCore.Tests/Sitko.Core.Repository.EntityFrameworkCore.Tests.csproj
       - name: Run Remote tests
@@ -129,7 +129,7 @@ jobs:
       sonyflake:
         image: titpetric/sonyflake
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.SonyFlake.Tests/Sitko.Core.SonyFlake.Tests.csproj
 
@@ -154,7 +154,7 @@ jobs:
           --health-timeout=5s
           --health-retries=10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run opensearch tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Search.OpenSearch.Tests/Sitko.Core.Search.OpenSearch.Tests.csproj
 
@@ -179,7 +179,7 @@ jobs:
         env:
           POSTGRES_HOST_AUTH_METHOD: trust
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Sitko.Core.Storage.FileSystem
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
       - name: Sitko.Core.Storage.S3
@@ -206,7 +206,7 @@ jobs:
           VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
         options: --cap-add=IPC_LOCK
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Configuration.Vault.Tests/Sitko.Core.Configuration.Vault.Tests.csproj
 
@@ -214,7 +214,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj
 
@@ -225,7 +225,7 @@ jobs:
     if: ${{ github.event_name == 'push' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           persist-credentials: false
