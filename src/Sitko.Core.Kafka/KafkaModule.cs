@@ -170,6 +170,7 @@ public class KafkaModuleOptions : BaseModuleOptions
 
     public int TopicPartitionsCount { get; set; } = 24;
     public short TopicReplicationFactor { get; set; } = 1;
+    public Dictionary<string, string> TopicConfigs { get; set; } = new();
 }
 
 public class KafkaModuleOptionsValidator : AbstractValidator<KafkaModuleOptions>

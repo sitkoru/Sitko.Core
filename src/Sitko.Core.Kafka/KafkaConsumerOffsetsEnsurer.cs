@@ -38,7 +38,8 @@ internal class KafkaConsumerOffsetsEnsurer(
                 {
                     Name = topic.Name,
                     NumPartitions = options.TopicPartitionsCount,
-                    ReplicationFactor = options.TopicReplicationFactor
+                    ReplicationFactor = options.TopicReplicationFactor,
+                    Configs = options.TopicConfigs
                 }
             ]);
             logger.LogInformation("Topic {Topic} created", topic);

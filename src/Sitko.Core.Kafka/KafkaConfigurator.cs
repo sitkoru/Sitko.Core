@@ -81,7 +81,7 @@ public class KafkaConfigurator
                     foreach (var topic in topics)
                     {
                         clusterBuilder.CreateTopicIfNotExists(topic, options.TopicPartitionsCount,
-                            options.TopicReplicationFactor);
+                            options.TopicReplicationFactor, options.TopicConfigs);
                     }
                 }
 
