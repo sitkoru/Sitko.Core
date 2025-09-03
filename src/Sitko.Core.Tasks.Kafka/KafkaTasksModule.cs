@@ -44,7 +44,7 @@ public class
         var kafkaConfigurator = applicationContext.GetModuleInstance<KafkaModule>()
             .CreateConfigurator("Kafka_Tasks_Cluster");
         kafkaConfigurator
-            .AutoCreateTopic(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
+            .AutoCreateTopic(kafkaTopic)
             .AddProducer(producerName, (builder, _) =>
             {
                 builder.DefaultTopic(kafkaTopic);
@@ -61,10 +61,7 @@ public class
             var bufferSize = groupConsumers.Max(r => r.BufferSize);
             var groupId = $"{kafkaGroupPrefix}_{commonRegistration.GroupId}".Replace(".", "_");
             kafkaConfigurator.AddConsumer(name, groupId,
-                new[]
-                {
-                    new TopicInfo(kafkaTopic, startupOptions.TopicPartitions, startupOptions.TopicReplicationFactor)
-                }, (consumerBuilder, _) =>
+                [new TopicInfo(kafkaTopic)], (consumerBuilder, _) =>
                 {
                     consumerBuilder.WithWorkersCount(parallelThreadCount);
                     consumerBuilder.WithBufferSize(bufferSize);

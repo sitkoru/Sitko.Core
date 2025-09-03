@@ -34,6 +34,7 @@ public class BaseKafkaQueueTestScope : BaseTestScope
                 options.AutoOffsetReset = AutoOffsetReset.Latest;
                 options.EnsureOffsets = EnsureOffsets;
                 options.WaitForConsumerAssignments = true;
+                options.TopicPartitionsCount = 3;
             })
             .ConfigureLogLevel("KafkaFlow", LogEventLevel.Debug)
             .ConfigureLogLevel("Sitko.Core.Kafka", LogEventLevel.Debug);
@@ -42,7 +43,6 @@ public class BaseKafkaQueueTestScope : BaseTestScope
             options.TopicPrefix = Guid.NewGuid().ToString();
             options.GroupPrefix = Guid.NewGuid().ToString();
             options.StartConsumers = StartConsumers;
-            options.PartitionsCount = 3;
             options.AddAssembly<BaseKafkaQueueTest>();
         });
 

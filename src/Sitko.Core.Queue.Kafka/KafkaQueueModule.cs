@@ -113,8 +113,7 @@ public class KafkaQueueModule : BaseApplicationModule<KafkaQueueModuleOptions>
             .CreateConfigurator(startupOptions.ClusterName);
         foreach (var topicName in events.Values.Select(x => x.PrefixedTopicName).Distinct())
         {
-            kafkaConfigurator.AutoCreateTopic(topicName, startupOptions.PartitionsCount,
-                startupOptions.ReplicationFactor);
+            kafkaConfigurator.AutoCreateTopic(topicName);
         }
 
         kafkaConfigurator.AddProducer(startupOptions.ProducerName, (builder, _) =>
@@ -160,7 +159,7 @@ public class KafkaQueueModule : BaseApplicationModule<KafkaQueueModuleOptions>
             $"{Environment.MachineName}/{consumer.PrefixedGroupName}/{consumer.PrefixedTopicName}";
         var bufferSize = consumer.BufferSize;
         kafkaConfigurator.AddConsumer(consumerName, consumer.PrefixedGroupName,
-            [new TopicInfo(consumer.PrefixedTopicName, options.PartitionsCount, options.ReplicationFactor)],
+            [new TopicInfo(consumer.PrefixedTopicName)],
             (consumerBuilder, _) =>
             {
                 consumerBuilder.WithWorkersCount(1);
@@ -186,7 +185,7 @@ public class KafkaQueueModule : BaseApplicationModule<KafkaQueueModuleOptions>
         var bufferSize = groupConsumers.Max(r => r.BufferSize);
         var handlerTypes = groupConsumers.Select(r => r.EventHandler).ToArray();
         kafkaConfigurator.AddConsumer(consumerName, commonRegistration.PrefixedGroupName,
-            [new TopicInfo(commonRegistration.PrefixedTopicName, options.PartitionsCount, options.ReplicationFactor)],
+            [new TopicInfo(commonRegistration.PrefixedTopicName)],
             (consumerBuilder, _) =>
             {
                 consumerBuilder.WithWorkersCount(parallelThreadCount);

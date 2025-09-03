@@ -16,7 +16,7 @@ public class KafkaConfigurator
 
     private readonly HashSet<ConsumerRegistration> consumers = [];
     private readonly Dictionary<string, Action<IProducerConfigurationBuilder, ProducerConfig>> producerActions = new();
-    private readonly Dictionary<string, (int Partitions, short ReplicationFactor)> topics = new();
+    private readonly HashSet<string> topics = new();
 
     internal KafkaConfigurator(string clusterName) => this.clusterName = clusterName;
 
@@ -39,9 +39,9 @@ public class KafkaConfigurator
         return this;
     }
 
-    public KafkaConfigurator AutoCreateTopic(string topic, int partitions, short replicationFactor)
+    public KafkaConfigurator AutoCreateTopic(string topic)
     {
-        topics[topic] = (partitions, replicationFactor);
+        topics.Add(topic);
         return this;
     }
 
@@ -78,9 +78,10 @@ public class KafkaConfigurator
 
                 if (!options.EnsureOffsets)
                 {
-                    foreach (var (topic, config) in topics)
+                    foreach (var topic in topics)
                     {
-                        clusterBuilder.CreateTopicIfNotExists(topic, config.Partitions, config.ReplicationFactor);
+                        clusterBuilder.CreateTopicIfNotExists(topic, options.TopicPartitionsCount,
+                            options.TopicReplicationFactor);
                     }
                 }
 
@@ -144,4 +145,4 @@ public class KafkaConfigurator
 
 internal record ConsumerRegistration(string Name, string GroupId, TopicInfo[] Topics);
 
-public record TopicInfo(string Name, int PartitionsCount, short ReplicationFactor);
+public record TopicInfo(string Name);

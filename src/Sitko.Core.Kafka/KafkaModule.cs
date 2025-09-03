@@ -167,6 +167,9 @@ public class KafkaModuleOptions : BaseModuleOptions
     public bool RestartStoppedConsumers { get; set; }
     public TimeSpan ConsumersMonitoringInterval { get; set; } = TimeSpan.FromMinutes(1);
     public TimeSpan StoppedConsumersWaitForAssignmentsInterval { get; set; } = TimeSpan.FromMinutes(5);
+
+    public int TopicPartitionsCount { get; set; } = 24;
+    public short TopicReplicationFactor { get; set; } = 1;
 }
 
 public class KafkaModuleOptionsValidator : AbstractValidator<KafkaModuleOptions>
