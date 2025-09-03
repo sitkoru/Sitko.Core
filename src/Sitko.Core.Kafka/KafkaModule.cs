@@ -152,6 +152,8 @@ public class KafkaModuleOptions : BaseModuleOptions
     public PartitionAssignmentStrategy PartitionAssignmentStrategy { get; set; } =
         PartitionAssignmentStrategy.CooperativeSticky;
 
+    public bool EnableStaticMembership { get; set; } = true;
+
     public TimeSpan MessageTimeout { get; set; } = TimeSpan.FromSeconds(12);
     public int MessageMaxBytes { get; set; } = 5 * 1024 * 1024;
     public TimeSpan MaxProducingTimeout { get; set; } = TimeSpan.FromMilliseconds(100);

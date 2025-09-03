@@ -125,7 +125,11 @@ public class KafkaConfigurator
                             SessionTimeoutMs = (int)options.SessionTimeout.TotalMilliseconds,
                             PartitionAssignmentStrategy = options.PartitionAssignmentStrategy
                         };
-                        if (options.PartitionAssignmentStrategy == PartitionAssignmentStrategy.CooperativeSticky)
+                        if (options is
+                            {
+                                PartitionAssignmentStrategy: PartitionAssignmentStrategy.CooperativeSticky,
+                                EnableStaticMembership: true
+                            })
                         {
                             consumerConfig.GroupInstanceId = consumerName;
                         }
