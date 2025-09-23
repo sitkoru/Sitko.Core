@@ -44,22 +44,3 @@ jobs:
           user: ${{ secrets.NUGET_USER }}
       - name: Push to Nuget
         run: find packages -type f -name 'Sitko.Core.*.nupkg' -print0 | xargs -0 -n 10 -P 4 dotnet nuget push -s https://api.nuget.org/v3/index.json -k ${{ steps.login.outputs.NUGET_API_KEY }}
-      - name: Download Sitko.Core
-        uses: actions/checkout@v4
-        with:
-          repository: "sitkoru/Sitko.Core"
-          path: proto
-          ref: "proto"
-          token: ${{ secrets.BOT_TOKEN }}
-      - name: Publish proto archive
-        run: |
-          tar czf proto/proto.tar.gz -C src/Sitko.Core.Grpc/Proto .
-          echo echo ${{ steps.prep.outputs.version }}> proto/VERSION
-          cd proto
-          git config user.name ${{ secrets.BOT_NAME }}
-          git config user.email ${{ secrets.BOT_EMAIL }}
-          git add proto.tar.gz
-          git add VERSION
-          git commit -m "publish proto archive ${{ steps.prep.outputs.version }}"
-          git push
-
