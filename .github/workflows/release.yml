@@ -9,6 +9,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
+    permissions:
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - name: Prepare
