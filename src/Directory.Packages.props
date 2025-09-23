@@ -23,7 +23,7 @@
     <PackageVersion Include="NATS.Client" Version="1.1.0" />
     <PackageVersion Include="STAN.Client" Version="0.3.0" />
     <PackageVersion Include="System.Linq.Dynamic.Core" Version="1.6.6" />
-    <PackageVersion Include="CompareNETObjects" Version="4.83.0" />
+    <PackageVersion Include="CompareNETObjects" Version="4.84.0" />
     <PackageVersion Include="Serialize.Linq" Version="2.0.0" />
     <PackageVersion Include="MimeMapping" Version="3.1.0" />
     <PackageVersion Include="AWSSDK.S3" Version="4.0.3.1" />
