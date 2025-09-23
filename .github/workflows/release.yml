@@ -11,6 +11,7 @@ jobs:
     container: ghcr.io/sitkoru/actions-container
     permissions:
       id-token: write
+      packages: write
     steps:
       - uses: actions/checkout@v4
       - name: Prepare
