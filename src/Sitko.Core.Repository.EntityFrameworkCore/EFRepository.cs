@@ -474,6 +474,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
 
     private static void AttachAllEntities(TDbContext context, IEntity entity, EntityChange[]? entityChanges)
     {
+        NormalizeEntityGraph(context, entity);
         // First, attach entities graph to dbContext
         context.ChangeTracker.TrackGraph(entity, node =>
         {
@@ -522,6 +523,252 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
                 }
             }
         }
+    }
+
+    private static void NormalizeEntityGraph(DbContext context, IEntity entity)
+    {
+        var cache = new Dictionary<EntityGraphKey, IEntity>();
+        NormalizeEntityGraphInternal(context, entity, cache);
+    }
+
+    private static IEntity NormalizeEntityGraphInternal(DbContext context, IEntity entity,
+        Dictionary<EntityGraphKey, IEntity> cache)
+    {
+        var entityType = context.Model.FindEntityType(entity.GetType());
+        if (entityType is null)
+        {
+            return entity;
+        }
+
+        var key = TryCreateKey(entityType, entity);
+        if (key is not null && cache.TryGetValue(key.Value, out var existing))
+        {
+            return existing;
+        }
+
+        if (key is not null)
+        {
+            cache[key.Value] = entity;
+        }
+
+        foreach (var navigation in entityType.GetNavigations())
+        {
+            NormalizeNavigation(context, entity, navigation, cache);
+        }
+
+        foreach (var skipNavigation in entityType.GetSkipNavigations())
+        {
+            NormalizeSkipNavigation(context, entity, skipNavigation, cache);
+        }
+
+        return entity;
+    }
+
+    private static void NormalizeNavigation(DbContext context, IEntity owner, INavigation navigation,
+        Dictionary<EntityGraphKey, IEntity> cache)
+    {
+        var propertyInfo = navigation.PropertyInfo;
+        if (propertyInfo is null)
+        {
+            return;
+        }
+
+        var value = propertyInfo.GetValue(owner);
+        if (value is null)
+        {
+            return;
+        }
+
+        if (!navigation.IsCollection)
+        {
+            if (value is IEntity referenceEntity)
+            {
+                var normalizedReference = NormalizeEntityGraphInternal(context, referenceEntity, cache);
+                if (!ReferenceEquals(referenceEntity, normalizedReference) && propertyInfo.CanWrite)
+                {
+                    propertyInfo.SetValue(owner, normalizedReference);
+                }
+            }
+
+            return;
+        }
+
+        NormalizeCollection(context, owner, propertyInfo, value, navigation.TargetEntityType, cache);
+    }
+
+    private static void NormalizeSkipNavigation(DbContext context, IEntity owner, ISkipNavigation navigation,
+        Dictionary<EntityGraphKey, IEntity> cache)
+    {
+        var propertyInfo = navigation.PropertyInfo;
+        if (propertyInfo is null)
+        {
+            return;
+        }
+
+        var value = propertyInfo.GetValue(owner);
+        if (value is null)
+        {
+            return;
+        }
+
+        NormalizeCollection(context, owner, propertyInfo, value, navigation.TargetEntityType, cache);
+    }
+
+    private static void NormalizeCollection(DbContext context, object owner, PropertyInfo propertyInfo, object value,
+        IEntityType targetEntityType, Dictionary<EntityGraphKey, IEntity> cache)
+    {
+        if (value is not IEnumerable enumerable)
+        {
+            return;
+        }
+
+        var normalizedItems = new List<object?>();
+        var seenKeys = new HashSet<EntityGraphKey>();
+        var hasChanges = false;
+
+        foreach (var item in enumerable)
+        {
+            if (item is not IEntity entityItem)
+            {
+                normalizedItems.Add(item);
+                continue;
+            }
+
+            var normalizedEntity = NormalizeEntityGraphInternal(context, entityItem, cache);
+            if (!ReferenceEquals(entityItem, normalizedEntity))
+            {
+                hasChanges = true;
+            }
+
+            var key = TryCreateKey(targetEntityType, normalizedEntity);
+            if (key is not null)
+            {
+                if (!seenKeys.Add(key.Value))
+                {
+                    hasChanges = true;
+                    continue;
+                }
+            }
+
+            normalizedItems.Add(normalizedEntity);
+        }
+
+        if (!hasChanges && value is IList existingList)
+        {
+            if (existingList.Count != normalizedItems.Count)
+            {
+                hasChanges = true;
+            }
+            else
+            {
+                for (var i = 0; i < existingList.Count; i++)
+                {
+                    if (!ReferenceEquals(existingList[i], normalizedItems[i]))
+                    {
+                        hasChanges = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!hasChanges)
+        {
+            return;
+        }
+
+        if (value is IList list)
+        {
+            list.Clear();
+            foreach (var item in normalizedItems)
+            {
+                list.Add(item);
+            }
+
+            return;
+        }
+
+        var clearMethod = value.GetType().GetMethod("Clear", Type.EmptyTypes);
+        MethodInfo? addMethod = null;
+        foreach (var method in value.GetType().GetMethods())
+        {
+            if (method.Name == "Add" && method.GetParameters().Length == 1)
+            {
+                addMethod = method;
+                break;
+            }
+        }
+
+        if (clearMethod is not null && addMethod is not null)
+        {
+            clearMethod.Invoke(value, null);
+            foreach (var item in normalizedItems)
+            {
+                addMethod.Invoke(value, new[] { item });
+            }
+
+            return;
+        }
+
+        if (!propertyInfo.CanWrite)
+        {
+            return;
+        }
+
+        var elementType = targetEntityType.ClrType;
+        var listType = typeof(List<>).MakeGenericType(elementType);
+        var replacement = (IList)Activator.CreateInstance(listType)!;
+        foreach (var item in normalizedItems)
+        {
+            replacement.Add(item);
+        }
+
+        propertyInfo.SetValue(owner, replacement);
+    }
+
+    private static EntityGraphKey? TryCreateKey(IEntityType entityType, IEntity entity)
+    {
+        var primaryKey = entityType.FindPrimaryKey();
+        if (primaryKey is null || primaryKey.Properties.Count == 0)
+        {
+            return null;
+        }
+
+        var keyValues = new object?[primaryKey.Properties.Count];
+        for (var i = 0; i < primaryKey.Properties.Count; i++)
+        {
+            var property = primaryKey.Properties[i];
+            if (property.PropertyInfo is null)
+            {
+                return null;
+            }
+
+            var value = property.PropertyInfo.GetValue(entity);
+            if (!IsKeyComponentSet(property, value))
+            {
+                return null;
+            }
+
+            keyValues[i] = value;
+        }
+
+        return new EntityGraphKey(entityType, keyValues);
+    }
+
+    private static bool IsKeyComponentSet(IProperty property, object? value)
+    {
+        if (value is null)
+        {
+            return false;
+        }
+
+        if (!property.ClrType.IsValueType)
+        {
+            return true;
+        }
+
+        var defaultValue = Activator.CreateInstance(property.ClrType);
+        return !Equals(value, defaultValue);
     }
 
     protected override async Task<PropertyChange[]> DoUpdateAsync(TEntity entity, TEntity? oldEntity,
@@ -961,6 +1208,56 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         }
 
         return Task.FromResult(changes.ToArray());
+    }
+
+    private readonly struct EntityGraphKey : IEquatable<EntityGraphKey>
+    {
+        private readonly object?[] values;
+
+        public EntityGraphKey(IEntityType entityType, object?[] values)
+        {
+            EntityType = entityType;
+            this.values = values;
+        }
+
+        public IEntityType EntityType { get; }
+
+        public bool Equals(EntityGraphKey other)
+        {
+            if (!ReferenceEquals(EntityType, other.EntityType))
+            {
+                return false;
+            }
+
+            if (values.Length != other.values.Length)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < values.Length; i++)
+            {
+                if (!Equals(values[i], other.values[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public override bool Equals(object? obj) => obj is EntityGraphKey other && Equals(other);
+
+        public override int GetHashCode()
+        {
+            var hash = new HashCode();
+            hash.Add(EntityType);
+            for (var i = 0; i < values.Length; i++)
+            {
+                hash.Add(values[i]);
+            }
+
+            return hash.ToHashCode();
+        }
     }
 }
 
