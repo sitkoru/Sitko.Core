@@ -86,6 +86,7 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         var originalEntry = dbContext.Entry(firstEntity as IEntity);
         var modifiedEntry = dbContext.Entry(secondEntity as IEntity);
         ProcessEntryChanges(originalEntry, modifiedEntry, changes, processed);
+        dbContext.ChangeTracker.Clear();
         return changes.ToArray();
     }
 
