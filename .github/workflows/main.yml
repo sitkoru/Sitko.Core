@@ -170,7 +170,7 @@ jobs:
       STORAGE__METADATA__POSTGRES__TESTS3STORAGESETTINGS__PASSWORD: 123
     services:
       minio:
-        image: minio/minio
+        image: bitnamilegacy/minio
         env:
           MINIO_ROOT_USER: ptTYf7VkCVbUjAzn
           MINIO_ROOT_PASSWORD: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
