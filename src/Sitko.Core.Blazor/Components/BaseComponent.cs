@@ -27,6 +27,8 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable
     private static readonly FieldInfo? HasNeverRendered = typeof(ComponentBase).GetField("_hasNeverRendered",
         BindingFlags.NonPublic | BindingFlags.Instance);
 
+    private CancellationTokenSource CancellationTokenSource { get; } = new();
+    protected CancellationToken CancellationToken => CancellationTokenSource.Token;
     private bool isDisposed;
 
     private ILocalizationProvider? localizationProvider;
@@ -119,6 +121,15 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable
     {
         if (!isDisposed)
         {
+            try
+            {
+                await CancellationTokenSource.CancelAsync();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Token source already disposed, ignore
+            }
+            CancellationTokenSource.Dispose();
             NavigationManager.LocationChanged -= HandleLocationChanged;
             Dispose(true);
             await DisposeAsync(true);
