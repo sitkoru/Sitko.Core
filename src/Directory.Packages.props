@@ -64,7 +64,7 @@
   </ItemGroup>
   <!--Blazor libraries-->
   <ItemGroup>
-    <PackageVersion Include="AntDesign" Version="0.20.4.2" />
+    <PackageVersion Include="AntDesign" Version="1.5.0" />
     <PackageVersion Include="Tewr.Blazor.FileReader" Version="3.4.0.24340" />
     <PackageVersion Include="MudBlazor" Version="8.8.0" />
   </ItemGroup>
