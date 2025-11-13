@@ -76,13 +76,13 @@ public class ClickHouseIntegrationTests(ClickHouseFixture fixture) : IClassFixtu
             using var finalConnection = provider.GetConnection(new Dictionary<string, string> { ["set_final"] = "1" });
             finalConnection.Open();
 
-            var defaultRows = ReadVersionedRows(provider, connection,
-                $"SELECT Version, Value FROM {tableName} WHERE Id = 1 ORDER BY Version");
             var finalRows = ReadVersionedRows(provider, finalConnection,
                 $"SELECT Version, Value FROM {tableName} WHERE Id = 1 ORDER BY Version");
-
-            defaultRows.Should().Equal((1u, olderValue), (2u, newerValue));
             finalRows.Should().Equal((2u, newerValue));
+
+            var defaultRows = ReadVersionedRows(provider, connection,
+                $"SELECT Version, Value FROM {tableName} WHERE Id = 1 ORDER BY Version");
+            defaultRows.Should().Equal((1u, olderValue), (2u, newerValue));
         }
         finally
         {
