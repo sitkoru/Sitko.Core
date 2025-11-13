@@ -6,10 +6,10 @@ internal sealed class HttpClientFactoryScope : IDisposable
 {
     private readonly ServiceProvider serviceProvider;
 
-    public HttpClientFactoryScope(ClickHouseModuleOptions options)
+    public HttpClientFactoryScope()
     {
         serviceProvider = new ServiceCollection()
-            .AddClickhouseClient(options)
+            .AddClickhouseClient()
             .BuildServiceProvider();
         Factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
     }

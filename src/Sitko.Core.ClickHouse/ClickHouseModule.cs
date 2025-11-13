@@ -21,7 +21,7 @@ public class
         ClickHouseModuleOptions startupOptions)
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
-        services.AddClickhouseClient(startupOptions);
+        services.AddClickhouseClient();
         services.AddScoped<IClickHouseDbProvider, ClickHouseDbProvider>();
     }
 }

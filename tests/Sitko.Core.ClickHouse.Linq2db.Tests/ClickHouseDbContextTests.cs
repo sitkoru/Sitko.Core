@@ -18,7 +18,7 @@ public class ClickHouseDbContextTests
         };
         var monitor = new StaticOptionsMonitor(options);
 
-        using var httpClientScope = new HttpClientFactoryScope(options);
+        using var httpClientScope = new HttpClientFactoryScope();
         using var context = new TestDbContext(httpClientScope.Factory, monitor, dbName: "analytics");
 
         var connectionOptions = GetConnectionOptions(context);
@@ -40,7 +40,7 @@ public class ClickHouseDbContextTests
         var monitor = new StaticOptionsMonitor(options);
         var settings = new Dictionary<string, string> { ["custom_setting"] = "value" };
 
-        using var httpClientScope = new HttpClientFactoryScope(options);
+        using var httpClientScope = new HttpClientFactoryScope();
         using var context = new TestDbContext(httpClientScope.Factory, monitor, settings: settings);
 
         var connectionOptions = GetConnectionOptions(context);
@@ -60,7 +60,7 @@ public class ClickHouseDbContextTests
         };
         var dataOptions = new DataOptions();
 
-        using var httpClientScope = new HttpClientFactoryScope(moduleOptions);
+        using var httpClientScope = new HttpClientFactoryScope();
         var configured = dataOptions.SetClickHouseConnection(httpClientScope.Factory, moduleOptions);
         var connectionOptions = GetConnectionOptions(configured);
 
@@ -84,7 +84,7 @@ public class ClickHouseDbContextTests
         };
         var dataOptions = new DataOptions();
 
-        using var httpClientScope = new HttpClientFactoryScope(moduleOptions);
+        using var httpClientScope = new HttpClientFactoryScope();
         var configured = dataOptions.SetClickHouseConnection(httpClientScope.Factory, moduleOptions);
 
         var connectionOptions = GetConnectionOptions(configured);

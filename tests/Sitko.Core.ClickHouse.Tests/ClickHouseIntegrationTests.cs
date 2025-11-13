@@ -156,7 +156,7 @@ public sealed class ClickHouseFixture : IAsyncLifetime
         };
 
         serviceProvider = new ServiceCollection()
-            .AddClickhouseClient(options)
+            .AddClickhouseClient()
             .BuildServiceProvider();
         var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
 
