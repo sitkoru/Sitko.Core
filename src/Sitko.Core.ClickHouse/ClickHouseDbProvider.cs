@@ -17,9 +17,3 @@ public class ClickHouseDbProvider(IOptionsMonitor<ClickHouseModuleOptions> optio
         return command;
     }
 }
-
-public interface IClickHouseDbProvider
-{
-    public DbConnection GetConnection(Dictionary<string, string>? settings = null, string? dbName = null);
-    public DbCommand GetCommand(string sql, IDbConnection connection);
-}
