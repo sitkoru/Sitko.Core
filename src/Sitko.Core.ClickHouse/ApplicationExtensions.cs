@@ -1,4 +1,6 @@
-﻿using JetBrains.Annotations;
+﻿using System.Net;
+using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
@@ -15,6 +17,7 @@ public static class ApplicationExtensions
         applicationBuilder.GetSitkoCore().AddClickHouse(configure, optionsKey);
         return applicationBuilder;
     }
+
     public static IHostApplicationBuilder AddClickHouse(
         this IHostApplicationBuilder applicationBuilder,
         Action<ClickHouseModuleOptions>? configure = null,
@@ -23,6 +26,7 @@ public static class ApplicationExtensions
         applicationBuilder.GetSitkoCore().AddClickHouse(configure, optionsKey);
         return applicationBuilder;
     }
+
     public static ISitkoCoreApplicationBuilder AddClickHouse(
         this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<IApplicationContext, ClickHouseModuleOptions> configure,
@@ -30,6 +34,7 @@ public static class ApplicationExtensions
         applicationBuilder
             .AddModule<ClickHouseModule, ClickHouseModuleOptions>(configure,
                 optionsKey);
+
     public static ISitkoCoreApplicationBuilder AddClickHouse(
         this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<ClickHouseModuleOptions>? configure = null,
@@ -37,4 +42,26 @@ public static class ApplicationExtensions
         applicationBuilder
             .AddModule<ClickHouseModule, ClickHouseModuleOptions>(configure,
                 optionsKey);
+
+    public static IServiceCollection AddClickhouseClient(this IServiceCollection services,
+        ClickHouseModuleOptions options)
+    {
+        services.AddHttpClient(ClickHouseModule.HttpClientName).ConfigurePrimaryHttpMessageHandler(() =>
+        {
+            var httpClientHandler = new HttpClientHandler
+            {
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                //MaxConnectionsPerServer = 1 will fix "session is locked", https://github.com/DarkWanderer/ClickHouse.Client/issues/236#issuecomment-2523069106
+                MaxConnectionsPerServer = options.MaxConnectionsPerServer,
+            };
+            if (options.DisableCertificatesValidation)
+            {
+                httpClientHandler.ServerCertificateCustomValidationCallback =
+                    HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            }
+
+            return httpClientHandler;
+        });
+        return services;
+    }
 }

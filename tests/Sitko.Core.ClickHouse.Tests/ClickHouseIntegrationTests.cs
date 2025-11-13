@@ -3,6 +3,7 @@ using System.Data.Common;
 using System.Globalization;
 using DotNet.Testcontainers.Builders;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Testcontainers.ClickHouse;
 using Xunit;
@@ -72,10 +73,7 @@ public class ClickHouseIntegrationTests(ClickHouseFixture fixture) : IClassFixtu
             ExecuteNonQuery(provider, connection,
                 $"INSERT INTO {tableName} (Id, Version, Value) VALUES (2, 1, 'another')");
 
-            using var finalConnection = provider.GetConnection(new Dictionary<string, string>
-            {
-                ["set_final"] = "1"
-            });
+            using var finalConnection = provider.GetConnection(new Dictionary<string, string> { ["set_final"] = "1" });
             finalConnection.Open();
 
             var defaultRows = ReadVersionedRows(provider, connection,
@@ -129,6 +127,7 @@ public class ClickHouseIntegrationTests(ClickHouseFixture fixture) : IClassFixtu
 public sealed class ClickHouseFixture : IAsyncLifetime
 {
     private ClickHouseContainer container = null!;
+    private ServiceProvider? serviceProvider;
     public ClickHouseDbProvider Provider { get; private set; } = null!;
 
     public async ValueTask InitializeAsync()
@@ -153,13 +152,16 @@ public sealed class ClickHouseFixture : IAsyncLifetime
             Database = "default",
             UserName = userName,
             Password = password,
-            Settings =
-            {
-                ["set_final"] = "0"
-            }
+            Settings = { ["set_final"] = "0" }
         };
 
-        Provider = new ClickHouseDbProvider(new TestOptionsMonitor<ClickHouseModuleOptions>(options));
+        serviceProvider = new ServiceCollection()
+            .AddClickhouseClient(options)
+            .BuildServiceProvider();
+        var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+
+        Provider = new ClickHouseDbProvider(new TestOptionsMonitor<ClickHouseModuleOptions>(options),
+            httpClientFactory);
 
         await WaitUntilReadyAsync();
     }
@@ -170,6 +172,8 @@ public sealed class ClickHouseFixture : IAsyncLifetime
         {
             await container.StopAsync(CancellationToken.None);
         }
+
+        serviceProvider?.Dispose();
     }
 
     private async Task WaitUntilReadyAsync()

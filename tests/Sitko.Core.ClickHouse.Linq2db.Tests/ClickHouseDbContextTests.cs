@@ -18,7 +18,8 @@ public class ClickHouseDbContextTests
         };
         var monitor = new StaticOptionsMonitor(options);
 
-        using var context = new TestDbContext(monitor, dbName: "analytics");
+        using var httpClientScope = new HttpClientFactoryScope(options);
+        using var context = new TestDbContext(httpClientScope.Factory, monitor, dbName: "analytics");
 
         var connectionOptions = GetConnectionOptions(context);
         connectionOptions.Should().NotBeNull();
@@ -39,7 +40,8 @@ public class ClickHouseDbContextTests
         var monitor = new StaticOptionsMonitor(options);
         var settings = new Dictionary<string, string> { ["custom_setting"] = "value" };
 
-        using var context = new TestDbContext(monitor, settings: settings);
+        using var httpClientScope = new HttpClientFactoryScope(options);
+        using var context = new TestDbContext(httpClientScope.Factory, monitor, settings: settings);
 
         var connectionOptions = GetConnectionOptions(context);
         connectionOptions.Should().NotBeNull();
@@ -54,14 +56,12 @@ public class ClickHouseDbContextTests
     {
         var moduleOptions = new ClickHouseModuleOptions
         {
-            Host = "plain",
-            Port = 8123,
-            Database = "default",
-            UserName = "user"
+            Host = "plain", Port = 8123, Database = "default", UserName = "user"
         };
         var dataOptions = new DataOptions();
 
-        var configured = dataOptions.SetClickHouseConnection(moduleOptions);
+        using var httpClientScope = new HttpClientFactoryScope(moduleOptions);
+        var configured = dataOptions.SetClickHouseConnection(httpClientScope.Factory, moduleOptions);
         var connectionOptions = GetConnectionOptions(configured);
 
         connectionOptions.Should().NotBeNull();
@@ -84,7 +84,8 @@ public class ClickHouseDbContextTests
         };
         var dataOptions = new DataOptions();
 
-        var configured = dataOptions.SetClickHouseConnection(moduleOptions);
+        using var httpClientScope = new HttpClientFactoryScope(moduleOptions);
+        var configured = dataOptions.SetClickHouseConnection(httpClientScope.Factory, moduleOptions);
 
         var connectionOptions = GetConnectionOptions(configured);
         connectionOptions.Should().NotBeNull();
@@ -97,9 +98,10 @@ public class ClickHouseDbContextTests
 
     private sealed class TestDbContext : BaseClickHouseDbContext
     {
-        public TestDbContext(IOptionsMonitor<ClickHouseModuleOptions> optionsMonitor,
+        public TestDbContext(IHttpClientFactory httpClientFactory,
+            IOptionsMonitor<ClickHouseModuleOptions> optionsMonitor,
             Dictionary<string, string>? settings = null, string? dbName = null)
-            : base(optionsMonitor, settings, dbName)
+            : base(httpClientFactory, optionsMonitor, settings, dbName)
         {
         }
     }
@@ -156,9 +158,11 @@ public class ClickHouseDbContextTests
     private static DbConnection? GetConnection(object connectionOptions)
     {
         const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-        if (connectionOptions.GetType().GetProperty("ConnectionFactory", bindingFlags)?.GetValue(connectionOptions) is not Delegate factory)
+        if (connectionOptions.GetType().GetProperty("ConnectionFactory", bindingFlags)?.GetValue(connectionOptions) is
+            not Delegate factory)
         {
-            if (connectionOptions.GetType().GetProperty("DbConnection", bindingFlags)?.GetValue(connectionOptions) is DbConnection dbConnection)
+            if (connectionOptions.GetType().GetProperty("DbConnection", bindingFlags)?.GetValue(connectionOptions) is
+                DbConnection dbConnection)
             {
                 return dbConnection;
             }

@@ -10,6 +10,7 @@ public class
     IOpenTelemetryModule<ClickHouseModuleOptions>
 {
     public override string OptionsKey => "ClickHouse";
+    public const string HttpClientName = "ClickHouseHttpClient";
 
     public OpenTelemetryBuilder ConfigureOpenTelemetry(IApplicationContext context,
         ClickHouseModuleOptions options,
@@ -20,6 +21,7 @@ public class
         ClickHouseModuleOptions startupOptions)
     {
         base.ConfigureServices(applicationContext, services, startupOptions);
+        services.AddClickhouseClient(startupOptions);
         services.AddScoped<IClickHouseDbProvider, ClickHouseDbProvider>();
     }
 }

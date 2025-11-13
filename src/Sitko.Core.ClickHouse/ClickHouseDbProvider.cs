@@ -5,10 +5,10 @@ using Microsoft.Extensions.Options;
 
 namespace Sitko.Core.ClickHouse;
 
-public class ClickHouseDbProvider(IOptionsMonitor<ClickHouseModuleOptions> optionsMonitor) : IClickHouseDbProvider
+public class ClickHouseDbProvider(IOptionsMonitor<ClickHouseModuleOptions> optionsMonitor, IHttpClientFactory httpClientFactory) : IClickHouseDbProvider
 {
     public DbConnection GetConnection(Dictionary<string, string>? settings = null, string? dbName = null) =>
-        optionsMonitor.CurrentValue.GetDbConnection(settings, dbName);
+        optionsMonitor.CurrentValue.GetDbConnection(httpClientFactory, settings, dbName);
 
     public DbCommand GetCommand(string sql, IDbConnection connection)
     {

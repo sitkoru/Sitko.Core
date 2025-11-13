@@ -20,7 +20,8 @@ public class ClickHouseDbProviderTests
             WithSsl = true
         };
         var monitor = new StaticOptionsMonitor(options);
-        var provider = new ClickHouseDbProvider(monitor);
+        using var httpClientScope = new HttpClientFactoryScope(options);
+        var provider = new ClickHouseDbProvider(monitor, httpClientScope.Factory);
 
         using var connection = provider.GetConnection();
 
@@ -38,7 +39,8 @@ public class ClickHouseDbProviderTests
             Host = "localhost", Port = 8123, Database = "default", UserName = "user"
         };
         var monitor = new StaticOptionsMonitor(options);
-        var provider = new ClickHouseDbProvider(monitor);
+        using var httpClientScope = new HttpClientFactoryScope(options);
+        var provider = new ClickHouseDbProvider(monitor, httpClientScope.Factory);
         using var connection = provider.GetConnection();
 
         using var command = provider.GetCommand("SELECT 1", connection);
