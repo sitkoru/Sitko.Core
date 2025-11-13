@@ -218,6 +218,16 @@ jobs:
       - name: Run tests
         run: dotnet test --logger GitHubActions tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj
 
+  clickhouse:
+    runs-on: ubuntu-latest
+    container: ghcr.io/sitkoru/actions-container
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sitko.Core.ClickHouse
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.ClickHouse.Tests/Sitko.Core.ClickHouse.Tests.csproj
+      - name: Sitko.Core.ClickHouse.Linq2db
+        run: dotnet test --logger GitHubActions tests/Sitko.Core.ClickHouse.Linq2db.Tests/Sitko.Core.ClickHouse.Linq2db.Tests.csproj
+
   release:
     name: Release
     runs-on: ubuntu-latest
