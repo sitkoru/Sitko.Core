@@ -1,12 +1,13 @@
 using System.Data.Common;
 using System.Reflection;
 using FluentAssertions;
+using LinqToDB;
 using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Sitko.Core.ClickHouse.Linq2db.Tests;
 
-public class BaseClickHouseDbContextTests
+public class ClickHouseDbContextTests
 {
     [Fact]
     public void ContextUsesDatabaseOverride()
@@ -49,26 +50,49 @@ public class BaseClickHouseDbContextTests
     }
 
     [Fact]
-    public void ContextUsesHttpsWhenSslEnabled()
+    public void SetClickHouseConnectionWithoutSslUsesConnectionString()
     {
-        var options = new ClickHouseModuleOptions
+        var moduleOptions = new ClickHouseModuleOptions
         {
-            Host = "db",
+            Host = "plain",
             Port = 8123,
-            Database = "default_db",
+            Database = "default",
+            UserName = "user"
+        };
+        var dataOptions = new DataOptions();
+
+        var configured = dataOptions.SetClickHouseConnection(moduleOptions);
+        var connectionOptions = GetConnectionOptions(configured);
+
+        connectionOptions.Should().NotBeNull();
+        var connectionString = GetConnectionString(connectionOptions!);
+        connectionString.Should().NotBeNull();
+        connectionString!.Should().ContainEquivalentOf("plain");
+        connectionString.Should().ContainEquivalentOf("default");
+    }
+
+    [Fact]
+    public void SetClickHouseConnectionWithSslUsesConnectionFactory()
+    {
+        var moduleOptions = new ClickHouseModuleOptions
+        {
+            Host = "secure",
+            Port = 9440,
+            Database = "secure_db",
             UserName = "user",
             WithSsl = true
         };
-        var monitor = new StaticOptionsMonitor(options);
+        var dataOptions = new DataOptions();
 
-        using var context = new TestDbContext(monitor);
+        var configured = dataOptions.SetClickHouseConnection(moduleOptions);
 
-        var connectionOptions = GetConnectionOptions(context);
+        var connectionOptions = GetConnectionOptions(configured);
         connectionOptions.Should().NotBeNull();
 
         using var connection = GetConnection(connectionOptions!);
         connection.Should().NotBeNull();
         connection!.ConnectionString.Should().ContainEquivalentOf("Protocol=https");
+        connection.ConnectionString.Should().ContainEquivalentOf("secure_db");
     }
 
     private sealed class TestDbContext : BaseClickHouseDbContext
@@ -132,11 +156,9 @@ public class BaseClickHouseDbContextTests
     private static DbConnection? GetConnection(object connectionOptions)
     {
         const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-        if (connectionOptions.GetType().GetProperty("ConnectionFactory", bindingFlags)?.GetValue(connectionOptions) is
-            not Delegate factory)
+        if (connectionOptions.GetType().GetProperty("ConnectionFactory", bindingFlags)?.GetValue(connectionOptions) is not Delegate factory)
         {
-            if (connectionOptions.GetType().GetProperty("DbConnection", bindingFlags)?.GetValue(connectionOptions) is
-                DbConnection dbConnection)
+            if (connectionOptions.GetType().GetProperty("DbConnection", bindingFlags)?.GetValue(connectionOptions) is DbConnection dbConnection)
             {
                 return dbConnection;
             }
