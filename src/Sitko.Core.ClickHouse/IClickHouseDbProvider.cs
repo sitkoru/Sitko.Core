@@ -1,10 +1,10 @@
 using System.Data;
-using System.Data.Common;
+using ClickHouse.Driver.ADO;
 
 namespace Sitko.Core.ClickHouse;
 
 public interface IClickHouseDbProvider
 {
-    public DbConnection GetConnection(Dictionary<string, string>? settings = null, string? dbName = null);
-    public DbCommand GetCommand(string sql, IDbConnection connection);
+    public ClickHouseConnection GetConnection(Dictionary<string, string>? settings = null, string? dbName = null);
+    public ClickHouseCommand GetCommand(string sql, IDbConnection connection);
 }
