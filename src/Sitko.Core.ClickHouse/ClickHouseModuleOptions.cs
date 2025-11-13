@@ -14,6 +14,9 @@ public class ClickHouseModuleOptions : BaseModuleOptions,
     public string Database { get; set; } = "";
     public bool UseSession { get; set; }
     public bool WithSsl { get; set; }
+
+    public int MaxConnectionsPerServer { get; set; } = 1;
+    public bool DisableCertificatesValidation { get; set; }
     public Dictionary<string, string> Settings { get; set; } = [];
 
     public ClickHouseConnectionStringBuilder GetConnection(Dictionary<string, string>? settings = null, string? dbName = null)

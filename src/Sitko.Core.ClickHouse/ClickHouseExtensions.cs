@@ -16,11 +16,14 @@ public static class ClickHouseExtensions
         var httpClientHandler = new HttpClientHandler
         {
             AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-            ServerCertificateCustomValidationCallback =
-                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
             //fix "session is locked", https://github.com/DarkWanderer/ClickHouse.Client/issues/236#issuecomment-2523069106
-            MaxConnectionsPerServer = 1
+            MaxConnectionsPerServer = options.MaxConnectionsPerServer
         };
+        if (options.DisableCertificatesValidation)
+        {
+            httpClientHandler.ServerCertificateCustomValidationCallback =
+                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+        }
         var httpClient = new HttpClient(httpClientHandler);
         return new ClickHouseConnection(options.GetConnectionString(settings, dbName), httpClient);
     }
