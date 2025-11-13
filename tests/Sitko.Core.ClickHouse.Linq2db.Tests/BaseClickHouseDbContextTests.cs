@@ -13,10 +13,7 @@ public class BaseClickHouseDbContextTests
     {
         var options = new ClickHouseModuleOptions
         {
-            Host = "db",
-            Port = 8123,
-            Database = "default_db",
-            UserName = "user"
+            Host = "db", Port = 8123, Database = "default_db", UserName = "user"
         };
         var monitor = new StaticOptionsMonitor(options);
 
@@ -36,16 +33,10 @@ public class BaseClickHouseDbContextTests
     {
         var options = new ClickHouseModuleOptions
         {
-            Host = "db",
-            Port = 8123,
-            Database = "default_db",
-            UserName = "user"
+            Host = "db", Port = 8123, Database = "default_db", UserName = "user"
         };
         var monitor = new StaticOptionsMonitor(options);
-        var settings = new Dictionary<string, string>
-        {
-            ["custom_setting"] = "value"
-        };
+        var settings = new Dictionary<string, string> { ["custom_setting"] = "value" };
 
         using var context = new TestDbContext(monitor, settings: settings);
 
@@ -75,20 +66,22 @@ public class BaseClickHouseDbContextTests
         var connectionOptions = GetConnectionOptions(context);
         connectionOptions.Should().NotBeNull();
 
-    using var connection = GetConnection(connectionOptions!);
-    connection.Should().NotBeNull();
-    connection!.ConnectionString.Should().ContainEquivalentOf("Protocol=https");
+        using var connection = GetConnection(connectionOptions!);
+        connection.Should().NotBeNull();
+        connection!.ConnectionString.Should().ContainEquivalentOf("Protocol=https");
     }
 
     private sealed class TestDbContext : BaseClickHouseDbContext
     {
-        public TestDbContext(IOptionsMonitor<ClickHouseModuleOptions> optionsMonitor, Dictionary<string, string>? settings = null, string? dbName = null)
+        public TestDbContext(IOptionsMonitor<ClickHouseModuleOptions> optionsMonitor,
+            Dictionary<string, string>? settings = null, string? dbName = null)
             : base(optionsMonitor, settings, dbName)
         {
         }
     }
 
-    private sealed class StaticOptionsMonitor(ClickHouseModuleOptions current) : IOptionsMonitor<ClickHouseModuleOptions>
+    private sealed class StaticOptionsMonitor(ClickHouseModuleOptions current)
+        : IOptionsMonitor<ClickHouseModuleOptions>
     {
         public ClickHouseModuleOptions CurrentValue => current;
 
@@ -99,6 +92,7 @@ public class BaseClickHouseDbContextTests
         private sealed class NullDisposable : IDisposable
         {
             public static readonly NullDisposable Instance = new();
+
             public void Dispose()
             {
             }
@@ -131,15 +125,18 @@ public class BaseClickHouseDbContextTests
     private static string? GetConnectionString(object connectionOptions)
     {
         const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-        return connectionOptions.GetType().GetProperty("ConnectionString", bindingFlags)?.GetValue(connectionOptions) as string;
+        return connectionOptions.GetType().GetProperty("ConnectionString", bindingFlags)
+            ?.GetValue(connectionOptions) as string;
     }
 
     private static DbConnection? GetConnection(object connectionOptions)
     {
         const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-        if (connectionOptions.GetType().GetProperty("ConnectionFactory", bindingFlags)?.GetValue(connectionOptions) is not Delegate factory)
+        if (connectionOptions.GetType().GetProperty("ConnectionFactory", bindingFlags)?.GetValue(connectionOptions) is
+            not Delegate factory)
         {
-            if (connectionOptions.GetType().GetProperty("DbConnection", bindingFlags)?.GetValue(connectionOptions) is DbConnection dbConnection)
+            if (connectionOptions.GetType().GetProperty("DbConnection", bindingFlags)?.GetValue(connectionOptions) is
+                DbConnection dbConnection)
             {
                 return dbConnection;
             }

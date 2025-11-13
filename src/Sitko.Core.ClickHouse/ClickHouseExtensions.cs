@@ -5,16 +5,6 @@ namespace Sitko.Core.ClickHouse;
 
 public static class ClickHouseExtensions
 {
-    // public static DataOptions SetClickHouseConnection(this DataOptions options, ClickHouseModuleOptions chOptions, bool allowFinal = true, string? dbName = null)
-    // {
-    //     if (!chOptions.WithSsl)
-    //     {
-    //         return options.UseClickHouse(ClickHouseProvider.ClickHouseClient, chOptions.GetConnectionString(dbName, allowFinal));
-    //     }
-    //     var connection = chOptions.GetConnection(allowFinal, dbName);
-    //     return options.UseConnection(ClickHouseTools.GetDataProvider(ClickHouseProvider.ClickHouseClient), connection);
-    // }
-
     public static ClickHouseConnection GetDbConnection(this ClickHouseModuleOptions options, Dictionary<string, string>? settings = null,
         string? dbName = null)
     {

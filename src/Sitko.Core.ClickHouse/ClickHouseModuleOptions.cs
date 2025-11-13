@@ -25,10 +25,6 @@ public class ClickHouseModuleOptions : BaseModuleOptions,
             Database = dbName ?? Database,
             Username = UserName,
             Password = Password,
-            // ["set_allow_experimental_object_type"] = 1,
-            // ["input_format_import_nested_json"] = 1,
-            // ["set_final"] = allowFinal && connection.SetFinal,
-            // ["set_session_timezone"] = connection.TimeZone,
             UseSession = UseSession
         };
         foreach (var (key, value) in Settings)

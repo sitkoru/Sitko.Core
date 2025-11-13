@@ -37,42 +37,4 @@ public static class ApplicationExtensions
         applicationBuilder
             .AddModule<ClickHouseModule, ClickHouseModuleOptions>(configure,
                 optionsKey);
-
-    // public static IHostApplicationBuilder AddClickHouseDb<TDbContext>(
-    //     this IHostApplicationBuilder applicationBuilder,
-    //     Action<IApplicationContext, ClickHouseModuleOptions> configure,
-    //     string? optionsKey = null)
-    //     where TDbContext : BaseClickHouseDbContext
-    // {
-    //     applicationBuilder.GetSitkoCore().AddClickHouseDb<TDbContext>(configure, optionsKey);
-    //     return applicationBuilder;
-    // }
-    //
-    // public static IHostApplicationBuilder AddClickHouseDb<TDbContext>(
-    //     this IHostApplicationBuilder applicationBuilder,
-    //     Action<ClickHouseModuleOptions>? configure = null,
-    //     string? optionsKey = null)
-    //     where TDbContext : BaseClickHouseDbContext
-    // {
-    //     applicationBuilder.GetSitkoCore().AddClickHouseDb<TDbContext>(configure, optionsKey);
-    //     return applicationBuilder;
-    // }
-    //
-    // public static ISitkoCoreApplicationBuilder AddClickHouseDb<TDbContext>(
-    //     this ISitkoCoreApplicationBuilder applicationBuilder,
-    //     Action<IApplicationContext, ClickHouseModuleOptions> configure,
-    //     string? optionsKey = null)
-    //     where TDbContext : BaseClickHouseDbContext =>
-    //     applicationBuilder
-    //         .AddModule<ClickHouseModule<TDbContext>, ClickHouseModuleOptions>(configure,
-    //             optionsKey);
-    //
-    // public static ISitkoCoreApplicationBuilder AddClickHouseDb<TDbContext>(
-    //     this ISitkoCoreApplicationBuilder applicationBuilder,
-    //     Action<ClickHouseModuleOptions>? configure = null,
-    //     string? optionsKey = null)
-    //     where TDbContext : BaseClickHouseDbContext =>
-    //     applicationBuilder
-    //         .AddModule<ClickHouseModule<TDbContext>, ClickHouseModuleOptions>(configure,
-    //             optionsKey);
 }

@@ -25,9 +25,9 @@ public class ClickHouseDbProviderTests
         using var connection = provider.GetConnection();
 
         connection.Should().BeOfType<ClickHouseConnection>();
-    connection.ConnectionString.Should().ContainEquivalentOf("db.internal");
-    connection.ConnectionString.Should().ContainEquivalentOf("8443");
-    connection.ConnectionString.Should().ContainEquivalentOf("Protocol=https");
+        connection.ConnectionString.Should().ContainEquivalentOf("db.internal");
+        connection.ConnectionString.Should().ContainEquivalentOf("8443");
+        connection.ConnectionString.Should().ContainEquivalentOf("Protocol=https");
     }
 
     [Fact]
@@ -35,10 +35,7 @@ public class ClickHouseDbProviderTests
     {
         var options = new ClickHouseModuleOptions
         {
-            Host = "localhost",
-            Port = 8123,
-            Database = "default",
-            UserName = "user"
+            Host = "localhost", Port = 8123, Database = "default", UserName = "user"
         };
         var monitor = new StaticOptionsMonitor(options);
         var provider = new ClickHouseDbProvider(monitor);
@@ -51,7 +48,8 @@ public class ClickHouseDbProviderTests
         command.Connection.Should().Be(connection);
     }
 
-    private sealed class StaticOptionsMonitor(ClickHouseModuleOptions current) : IOptionsMonitor<ClickHouseModuleOptions>
+    private sealed class StaticOptionsMonitor(ClickHouseModuleOptions current)
+        : IOptionsMonitor<ClickHouseModuleOptions>
     {
         public ClickHouseModuleOptions CurrentValue => current;
 
@@ -62,6 +60,7 @@ public class ClickHouseDbProviderTests
         private sealed class NullDisposable : IDisposable
         {
             public static readonly NullDisposable Instance = new();
+
             public void Dispose()
             {
             }
