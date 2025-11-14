@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="linq2db"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sitko.Core.ClickHouse\Sitko.Core.ClickHouse.csproj"/>
+  </ItemGroup>
+
+</Project>

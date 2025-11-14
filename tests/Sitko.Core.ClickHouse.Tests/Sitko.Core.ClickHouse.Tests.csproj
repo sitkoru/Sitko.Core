@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Sitko.Core.ClickHouse\Sitko.Core.ClickHouse.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Testcontainers.ClickHouse" Version="4.6.0" />
+  </ItemGroup>
+</Project>
