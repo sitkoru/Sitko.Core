@@ -10,10 +10,8 @@ public class ClickHouseDbProvider(
 {
     public ClickHouseConnection GetConnection(Dictionary<string, string>? settings = null,
         string? dbName = null) =>
-        !optionsMonitor.CurrentValue.WithSsl
-            ? new ClickHouseConnection(optionsMonitor.CurrentValue.GetConnectionString(settings, dbName))
-            : new ClickHouseConnection(optionsMonitor.CurrentValue.GetConnectionString(settings, dbName),
-                httpClientFactory, ClickHouseModule.HttpClientName);
+        new(optionsMonitor.CurrentValue.GetConnectionString(settings, dbName),
+            httpClientFactory, ClickHouseModule.HttpClientName);
 
     public ClickHouseCommand GetCommand(string sql, IDbConnection connection)
     {

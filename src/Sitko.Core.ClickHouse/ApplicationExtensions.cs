@@ -55,7 +55,7 @@ public static class ApplicationExtensions
                 //MaxConnectionsPerServer = 1 will fix "session is locked", https://github.com/DarkWanderer/ClickHouse.Client/issues/236#issuecomment-2523069106
                 MaxConnectionsPerServer = optionsMonitor.CurrentValue.MaxConnectionsPerServer,
             };
-            if (optionsMonitor.CurrentValue.DisableCertificatesValidation)
+            if (optionsMonitor.CurrentValue is { WithSsl: true, DisableCertificatesValidation: true })
             {
                 httpClientHandler.ServerCertificateCustomValidationCallback =
                     HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;

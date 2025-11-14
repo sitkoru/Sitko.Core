@@ -15,18 +15,17 @@ public class ClickHouseDbContextTests
         {
             Host = "db", Port = 8123, Database = "default_db", UserName = "user"
         };
-        var monitor = new StaticOptionsMonitor(options);
 
         using var scope = new ClickHouseDbFactoryScope(options);
-        using var context = new TestDbContext(scope.ClickHouseDbProvider, monitor, dbName: "analytics");
+        using var context = new TestDbContext(scope.ClickHouseDbProvider, dbName: "analytics");
 
         var connectionOptions = GetConnectionOptions(context);
         connectionOptions.Should().NotBeNull();
 
-        var connectionString = GetConnectionString(connectionOptions!);
-        connectionString.Should().NotBeNull();
-        connectionString!.Should().ContainEquivalentOf("analytics");
-        connectionString.Should().NotContain("default_db");
+        var connection = GetConnection(connectionOptions)!;
+        connection.ConnectionString.Should().NotBeNull();
+        connection.ConnectionString.Should().ContainEquivalentOf("analytics");
+        connection.ConnectionString.Should().NotContain("default_db");
     }
 
     [Fact]
@@ -36,18 +35,17 @@ public class ClickHouseDbContextTests
         {
             Host = "db", Port = 8123, Database = "default_db", UserName = "user"
         };
-        var monitor = new StaticOptionsMonitor(options);
-        var settings = new Dictionary<string, string> { ["custom_setting"] = "value" };
+        var settings = new Dictionary<string, string> { ["set_do_not_merge_across_partitions_select_final"] = "1" };
 
         using var scope = new ClickHouseDbFactoryScope(options);
-        using var context = new TestDbContext(scope.ClickHouseDbProvider, monitor, settings: settings);
+        using var context = new TestDbContext(scope.ClickHouseDbProvider, settings: settings);
 
         var connectionOptions = GetConnectionOptions(context);
         connectionOptions.Should().NotBeNull();
 
-        var connectionString = GetConnectionString(connectionOptions!);
-        connectionString.Should().NotBeNull();
-        connectionString!.Should().ContainEquivalentOf("custom_setting=value");
+        var connection = GetConnection(connectionOptions)!;
+        connection.ConnectionString.Should().NotBeNull();
+        connection.ConnectionString.Should().ContainEquivalentOf("set_do_not_merge_across_partitions_select_final=1");
     }
 
     [Fact]
@@ -57,17 +55,16 @@ public class ClickHouseDbContextTests
         {
             Host = "plain", Port = 8123, Database = "default", UserName = "user"
         };
-        var monitor = new StaticOptionsMonitor(moduleOptions);
 
         using var scope = new ClickHouseDbFactoryScope(moduleOptions);
-        using var context = new TestDbContext(scope.ClickHouseDbProvider, monitor);
+        using var context = new TestDbContext(scope.ClickHouseDbProvider);
         var connectionOptions = GetConnectionOptions(context);
 
         connectionOptions.Should().NotBeNull();
-        var connectionString = GetConnectionString(connectionOptions!);
-        connectionString.Should().NotBeNull();
-        connectionString!.Should().ContainEquivalentOf("plain");
-        connectionString.Should().ContainEquivalentOf("default");
+        var connection = GetConnection(connectionOptions)!;
+        connection.ConnectionString.Should().NotBeNull();
+        connection.ConnectionString.Should().ContainEquivalentOf("plain");
+        connection.ConnectionString.Should().ContainEquivalentOf("default");
     }
 
     [Fact]
@@ -81,26 +78,24 @@ public class ClickHouseDbContextTests
             UserName = "user",
             WithSsl = true
         };
-        var monitor = new StaticOptionsMonitor(moduleOptions);
 
         using var scope = new ClickHouseDbFactoryScope(moduleOptions);
-        using var context = new TestDbContext(scope.ClickHouseDbProvider, monitor);
+        using var context = new TestDbContext(scope.ClickHouseDbProvider);
 
         var connectionOptions = GetConnectionOptions(context);
         connectionOptions.Should().NotBeNull();
 
-        using var connection = GetConnection(connectionOptions!);
+        using var connection = GetConnection(connectionOptions);
         connection.Should().NotBeNull();
-        connection!.ConnectionString.Should().ContainEquivalentOf("Protocol=https");
+        connection.ConnectionString.Should().ContainEquivalentOf("Protocol=https");
         connection.ConnectionString.Should().ContainEquivalentOf("secure_db");
     }
 
     private sealed class TestDbContext : BaseClickHouseDbContext
     {
         public TestDbContext(IClickHouseDbProvider dbProvider,
-            IOptionsMonitor<ClickHouseModuleOptions> optionsMonitor,
             Dictionary<string, string>? settings = null, string? dbName = null)
-            : base(dbProvider, optionsMonitor, settings, dbName)
+            : base(dbProvider, settings, dbName)
         {
         }
     }
@@ -145,13 +140,6 @@ public class ClickHouseDbContextTests
         }
 
         return null;
-    }
-
-    private static string? GetConnectionString(object connectionOptions)
-    {
-        const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-        return connectionOptions.GetType().GetProperty("ConnectionString", bindingFlags)
-            ?.GetValue(connectionOptions) as string;
     }
 
     private static DbConnection? GetConnection(object connectionOptions)
