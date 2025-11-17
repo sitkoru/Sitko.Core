@@ -21,3 +21,4 @@ Provides base application and modules for fast application building.
 
 See [demo app](apps/Blazor/Sitko.Core.Apps.Blazor) for now
 
+
