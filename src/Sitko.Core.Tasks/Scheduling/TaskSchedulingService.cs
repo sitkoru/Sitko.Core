@@ -1,7 +1,9 @@
+using Medallion.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sitko.Core.App;
 using Sitko.Core.Tasks.Components;
 using Sitko.Core.Tasks.Data.Entities;
 
@@ -14,15 +16,19 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService
     private readonly IOptions<TaskSchedulingOptions<TTask>> taskOptions;
     private readonly IOptionsMonitor<TOptions> optionsMonitor;
     private readonly ILogger<TaskSchedulingService<TTask, TOptions>> logger;
+    private readonly IDistributedLock? distributedLock;
 
     public TaskSchedulingService(IServiceScopeFactory serviceScopeFactory,
         IOptions<TaskSchedulingOptions<TTask>> taskOptions, IOptionsMonitor<TOptions> optionsMonitor,
-        ILogger<TaskSchedulingService<TTask, TOptions>> logger)
+        ILogger<TaskSchedulingService<TTask, TOptions>> logger, IApplicationContext applicationContext,
+        IDistributedLockProvider? distributedLockProvider = null)
     {
         this.serviceScopeFactory = serviceScopeFactory;
         this.taskOptions = taskOptions;
         this.optionsMonitor = optionsMonitor;
         this.logger = logger;
+        distributedLock = distributedLockProvider?.CreateLock
+            ($"{applicationContext.Name}_{applicationContext.Environment}_{typeof(TTask).Name}");
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -32,6 +38,18 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService
         {
             try
             {
+                if (optionsMonitor.CurrentValue.UseDistributedLock && distributedLock != null)
+                {
+                    await using var handle = await distributedLock.TryAcquireAsync
+                        (TimeSpan.FromSeconds(optionsMonitor.CurrentValue.AcquireTimeoutInSeconds), cancellationToken: stoppingToken);
+                    if (handle is null)
+                    {
+                        logger.LogInformation("Skip scheduling task {Type}: lock is held by another instance", typeof(TTask));
+                        await Task.Delay(TimeSpan.FromSeconds(optionsMonitor.CurrentValue.RetryDelayInSeconds), stoppingToken);
+                        continue;
+                    }
+                }
+
                 logger.LogInformation("Calculate next scheduling time for task {Type}", typeof(TTask));
                 var now = DateTime.UtcNow;
                 var nextDate = taskOptions.Value.CronExpression.GetNextOccurrence(now);
