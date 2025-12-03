@@ -38,6 +38,13 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService
         {
             try
             {
+                if (optionsMonitor.CurrentValue.IsAllTasksDisabled ||
+                    optionsMonitor.CurrentValue.DisabledTasks.Contains(typeof(TTask).Name))
+                {
+                    logger.LogInformation("Skip disabled task {Type}", typeof(TTask));
+                    return;
+                }
+
                 if (optionsMonitor.CurrentValue.UseDistributedLock && distributedLock != null)
                 {
                     await using var handle = await distributedLock.TryAcquireAsync
@@ -48,53 +55,12 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService
                         await Task.Delay(TimeSpan.FromSeconds(optionsMonitor.CurrentValue.RetryDelayInSeconds), stoppingToken);
                         continue;
                     }
+                    await ScheduleAsync(stoppingToken);
                 }
-
-                logger.LogInformation("Calculate next scheduling time for task {Type}", typeof(TTask));
-                var now = DateTime.UtcNow;
-                var nextDate = taskOptions.Value.CronExpression.GetNextOccurrence(now);
-                logger.LogInformation("Next scheduling time for task {Type}: {Date}", typeof(TTask), nextDate);
-                if (nextDate != null)
+                else
                 {
-                    var secondsToWait = Math.Round((nextDate - now).Value.TotalSeconds,
-                        MidpointRounding.ToPositiveInfinity);
-                    logger.LogInformation("Wait {Seconds} seconds before scheduling task {Type}", secondsToWait,
-                        typeof(TTask));
-                    await Task.Delay(TimeSpan.FromSeconds(secondsToWait), stoppingToken);
+                    await ScheduleAsync(stoppingToken);
                 }
-
-                logger.LogInformation("Run scheduling task {Type}", typeof(TTask));
-                await using var scope = serviceScopeFactory.CreateAsyncScope();
-                var scheduler = scope.ServiceProvider.GetRequiredService<IBaseTaskFactory<TTask>>();
-                if (optionsMonitor.CurrentValue.IsAllTasksDisabled ||
-                    optionsMonitor.CurrentValue.DisabledTasks.Contains(typeof(TTask).Name))
-                {
-                    logger.LogInformation("Skip disabled task {Type}", typeof(TTask));
-                    return;
-                }
-
-                var tasksManager = scope.ServiceProvider.GetRequiredService<TasksManager>();
-                var tasks = await scheduler.GetTasksAsync(stoppingToken);
-                logger.LogInformation("Found {Count} {Type} tasks", tasks.Length, typeof(TTask));
-                foreach (var task in tasks)
-                {
-                    try
-                    {
-                        var runResult = await tasksManager
-                            .RunAsync(task, cancellationToken: stoppingToken) // cancels if application is stopping
-                            .WaitAsync(TimeSpan.FromMinutes(1), stoppingToken); // don't hang too long
-                        if (!runResult.IsSuccess)
-                        {
-                            throw new InvalidOperationException(runResult.ErrorMessage);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError("Error running task {Type}: {Ex}", typeof(TTask), ex);
-                    }
-                }
-
-                logger.LogInformation("Scheduling task {Type} success", typeof(TTask));
             }
             catch (TaskCanceledException)
             {
@@ -108,5 +74,47 @@ public class TaskSchedulingService<TTask, TOptions> : BackgroundService
         }
 
         logger.LogInformation("Exit from scheduling task {Type}", typeof(TTask));
+    }
+
+    private async Task ScheduleAsync(CancellationToken stoppingToken)
+    {
+        logger.LogInformation("Calculate next scheduling time for task {Type}", typeof(TTask));
+        var now = DateTime.UtcNow;
+        var nextDate = taskOptions.Value.CronExpression.GetNextOccurrence(now);
+        logger.LogInformation("Next scheduling time for task {Type}: {Date}", typeof(TTask), nextDate);
+        if (nextDate != null)
+        {
+            var secondsToWait = Math.Round((nextDate - now).Value.TotalSeconds,
+            MidpointRounding.ToPositiveInfinity);
+            logger.LogInformation("Wait {Seconds} seconds before scheduling task {Type}", secondsToWait,
+            typeof(TTask));
+            await Task.Delay(TimeSpan.FromSeconds(secondsToWait), stoppingToken);
+        }
+
+        logger.LogInformation("Run scheduling task {Type}", typeof(TTask));
+        await using var scope = serviceScopeFactory.CreateAsyncScope();
+        var scheduler = scope.ServiceProvider.GetRequiredService<IBaseTaskFactory<TTask>>();
+        var tasksManager = scope.ServiceProvider.GetRequiredService<TasksManager>();
+        var tasks = await scheduler.GetTasksAsync(stoppingToken);
+        logger.LogInformation("Found {Count} {Type} tasks", tasks.Length, typeof(TTask));
+        foreach (var task in tasks)
+        {
+            try
+            {
+                var runResult = await tasksManager
+                    .RunAsync(task, cancellationToken: stoppingToken)// cancels if application is stopping
+                    .WaitAsync(TimeSpan.FromMinutes(1), stoppingToken);// don't hang too long
+                if (!runResult.IsSuccess)
+                {
+                    throw new InvalidOperationException(runResult.ErrorMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error running task {Type}: {Ex}", typeof(TTask), ex);
+            }
+        }
+
+        logger.LogInformation("Scheduling task {Type} success", typeof(TTask));
     }
 }
