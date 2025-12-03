@@ -20,7 +20,7 @@ public abstract class TasksModuleOptions : BaseModuleOptions, IModuleOptionsWith
     public TimeSpan TasksInactivityTimeout { get; set; } = TimeSpan.FromMinutes(30);
     public TimeSpan TasksWaitTimeout { get; set; } = TimeSpan.FromMinutes(60);
     public StuckTasksProcessMode StuckTasksProcessMode { get; set; } = StuckTasksProcessMode.Fail;
-    public bool UseDistributedLock { get; set; }
+    public bool UseDistributedLock { get; set; } = true;
     public int AcquireTimeoutInSeconds { get; set; }
     public int RetryDelayInSeconds { get; set; } = 60;
 
