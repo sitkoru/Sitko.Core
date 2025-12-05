@@ -6,6 +6,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Cronos" />
+    <PackageReference Include="DistributedLock" />
     <PackageReference Include="Nito.AsyncEx" />
   </ItemGroup>
 </Project>
