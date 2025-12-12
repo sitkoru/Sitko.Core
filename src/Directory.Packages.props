@@ -97,7 +97,7 @@
   </ItemGroup>
   <!--ClickHouse libraries-->
   <ItemGroup>
-    <PackageVersion Include="ClickHouse.Driver" Version="0.7.20" />
+    <PackageVersion Include="ClickHouse.Driver" Version="0.9.0" />
     <PackageVersion Include="linq2db" Version="6.0.0-rc.3" />
   </ItemGroup>
   <!--Kafka libraries-->
