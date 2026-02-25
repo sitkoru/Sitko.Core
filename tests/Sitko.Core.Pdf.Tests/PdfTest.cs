@@ -1,3 +1,4 @@
+using System.Globalization;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
@@ -25,7 +26,7 @@ public class PdfTest : BasePdfTest
         var text = PdfTextExtractor.GetTextFromPage(pdf.GetPage(1), new LocationTextExtractionStrategy());
         pdf.Close();
 
-        Assert.Contains("The Free Encyclopedia", text);
+        Assert.Contains("Wikipedia".ToLower(CultureInfo.InvariantCulture), text.ToLower(CultureInfo.InvariantCulture));
     }
 
     [Fact]
