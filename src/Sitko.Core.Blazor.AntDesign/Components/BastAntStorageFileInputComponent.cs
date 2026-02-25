@@ -25,6 +25,7 @@ public abstract class BastAntStorageFileInputComponent<TInput> : BaseStorageFile
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public string ButtonText { get; set; } = "";
     [Parameter] public string ListType { get; set; } = "text";
+    [Parameter] public InjectScope InjectScopeType { get; set; } = InjectScope.Scoped;
 
     public virtual void Dispose()
     {
@@ -65,7 +66,7 @@ public abstract class BastAntStorageFileInputComponent<TInput> : BaseStorageFile
         if (firstRender)
         {
             await ScriptInjector.InjectAsync(
-                ScriptInjectRequest.FromUrl("fileupload", "/_content/Sitko.Core.Blazor.AntDesign/fileupload.js"),
+                ScriptInjectRequest.FromUrl("fileupload", "/_content/Sitko.Core.Blazor.AntDesign/fileupload.js", InjectScopeType),
                 async token =>
                 {
                     thisReference = DotNetObjectReference.Create(this);
