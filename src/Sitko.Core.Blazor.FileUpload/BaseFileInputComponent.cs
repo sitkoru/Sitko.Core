@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Blazor.Components;
-using Tewr.Blazor.FileReader;
 
 namespace Sitko.Core.Blazor.FileUpload;
 
@@ -14,14 +13,12 @@ public interface IBaseFileInputComponent
 public abstract class BaseFileInputComponent<TUploadResult, TValue> : InputBase<TValue?>, IBaseFileInputComponent
     where TUploadResult : IFileUploadResult
 {
-    protected ElementReference InputRef { get; set; }
+    protected Guid InputFileKey { get; private set; } = Guid.NewGuid();
     [Parameter] public string ContentTypes { get; set; } = "";
     [Parameter] public long MaxFileSize { get; set; }
-
     [Parameter] public int? MaxAllowedFiles { get; set; }
     [Parameter] public Func<TValue?, Task>? OnChange { get; set; }
 
-    [Inject] private IFileReaderService FileReaderService { get; set; } = null!;
     [Inject] private ILogger<BaseFileInputComponent<TUploadResult, TValue>> Logger { get; set; } = null!;
     [CascadingParameter] public IBaseComponent? Parent { get; set; }
 
@@ -47,37 +44,45 @@ public abstract class BaseFileInputComponent<TUploadResult, TValue> : InputBase<
         }
     }
 
-    protected async Task UploadFilesAsync()
+    // Теперь метод принимает события от InputFile
+    protected async Task UploadFilesAsync(InputFileChangeEventArgs e)
     {
         await StartLoadingAsync();
         var results = new List<TUploadResult>();
-        var files = (await FileReaderService.CreateReference(InputRef).EnumerateFilesAsync()).ToArray();
-        if (MaxAllowedFiles > 0 && files.Length > MaxAllowedFiles)
+
+        // Важно: GetMultipleFiles по умолчанию отдаст только 10 файлов.
+        // Передаем ему наш лимит, либо int.MaxValue.
+        var maxFilesLimit = MaxAllowedFiles > 0 ? MaxAllowedFiles.Value : int.MaxValue;
+
+        // Получаем список файлов (IBrowserFile)
+        var files = e.GetMultipleFiles(maxFilesLimit);
+
+        if (MaxAllowedFiles > 0 && files.Count > MaxAllowedFiles)
         {
             Logger.LogError("Max files count is {Count}", MaxAllowedFiles);
-            await NotifyMaxFilesCountExceededAsync(files.Length);
+            await NotifyMaxFilesCountExceededAsync(files.Count);
             await StopLoadingAsync();
             return;
         }
 
         foreach (var file in files)
         {
-            var info = await file.ReadFileInfoAsync();
             try
             {
-                if (MaxFileSize > 0 && info.Size > MaxFileSize)
+                // Свойства доступны напрямую, без ReadFileInfoAsync()
+                if (MaxFileSize > 0 && file.Size > MaxFileSize)
                 {
-                    Logger.LogError("File {File} exceeds max file size of {Size}", info.Name, info.Size);
-                    await NotifyFileExceedMaxSizeAsync(info.Name, info.Size);
+                    Logger.LogError("File {File} exceeds max file size of {Size}", file.Name, file.Size);
+                    await NotifyFileExceedMaxSizeAsync(file.Name, file.Size);
                     continue;
                 }
 
-                if (ContentTypes.Any() && !ContentTypes.Split(',').Contains(info.Type))
+                if (!string.IsNullOrEmpty(ContentTypes) && !ContentTypes.Split(',').Contains(file.ContentType))
                 {
                     Logger.LogError(
                         "File {File} content type {ContentType} is not in allowed list: {AllowedContentTypes}",
-                        info.Name, info.Type, ContentTypes);
-                    await NotifyFileContentTypeNotAllowedAsync(info.Name, info.Type);
+                        file.Name, file.ContentType, ContentTypes);
+                    await NotifyFileContentTypeNotAllowedAsync(file.Name, file.ContentType);
                     continue;
                 }
 
@@ -85,8 +90,13 @@ public abstract class BaseFileInputComponent<TUploadResult, TValue> : InputBase<
 
                 await using (FileStream fs = new(path, FileMode.Create))
                 {
-                    await (await file.OpenReadAsync()).CopyToAsync(fs);
-                    var request = new FileUploadRequest(info.Name, info.Type, info.Size, info.LastModifiedDate);
+                    // Важно: OpenReadStream также требует указать максимальный размер (по умолчанию 512 KB).
+                    var maxReadSize = MaxFileSize > 0 ? MaxFileSize : 512000;
+
+                    await using var stream = file.OpenReadStream(maxReadSize);
+                    await stream.CopyToAsync(fs);
+
+                    var request = new FileUploadRequest(file.Name, file.ContentType, file.Size, file.LastModified);
                     results.Add(await SaveFileAsync(request, fs));
                 }
 
@@ -94,8 +104,7 @@ public abstract class BaseFileInputComponent<TUploadResult, TValue> : InputBase<
             }
             catch (Exception ex)
             {
-                Logger.LogError("File: {Filename} Error: {Error}",
-                    info.Name, ex.Message);
+                Logger.LogError("File: {Filename} Error: {Error}", file.Name, ex.Message);
             }
         }
 
@@ -110,30 +119,21 @@ public abstract class BaseFileInputComponent<TUploadResult, TValue> : InputBase<
             }
         }
 
+        InputFileKey = Guid.NewGuid();
         await StopLoadingAsync();
     }
 
     protected abstract TValue? GetResult(IEnumerable<TUploadResult> results);
-
-
     protected abstract Task<TUploadResult> SaveFileAsync(FileUploadRequest file, FileStream stream);
-
     protected virtual Task NotifyMaxFilesCountExceededAsync(int filesCount) => Task.CompletedTask;
-
     protected virtual Task NotifyUploadAsync(int resultsCount) => Task.CompletedTask;
-
-
-    protected virtual Task NotifyFileContentTypeNotAllowedAsync(string fileName, string fileContentType) =>
-        Task.CompletedTask;
-
+    protected virtual Task NotifyFileContentTypeNotAllowedAsync(string fileName, string fileContentType) => Task.CompletedTask;
     protected virtual Task NotifyFileExceedMaxSizeAsync(string fileName, long fileSize) => Task.CompletedTask;
 
-    protected override bool TryParseValueFromString(string? value, out TValue result,
-        out string validationErrorMessage)
+    protected override bool TryParseValueFromString(string? value, out TValue result, out string validationErrorMessage)
     {
         result = default!;
         validationErrorMessage = "";
         return false;
     }
 }
-
