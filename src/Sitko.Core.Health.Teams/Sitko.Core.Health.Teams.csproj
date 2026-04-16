@@ -1,8 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Health\Sitko.Core.Health.csproj"/>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="TeamsHook.NET"/>
-  </ItemGroup>
-</Project>

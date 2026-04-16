@@ -13,9 +13,8 @@
     <PackageVersion Include="Tempus" Version="1.0.0" />
     <PackageVersion Include="Scrutor" Version="6.1.0" />
     <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
-    <PackageVersion Include="VaultSharp" Version="1.17.5.1" />
-    <PackageVersion Include="Consul" Version="1.7.14.8" />
-    <PackageVersion Include="TeamsHook.NET" Version="0.1.0.18" />
+    <PackageVersion Include="VaultSharp" Version="1.17.5" />
+    <PackageVersion Include="Consul" Version="1.8.0" />
     <PackageVersion Include="Telegram.Bot" Version="22.5.1" />
     <PackageVersion Include="ImgProxy" Version="2.3.2" />
     <PackageVersion Include="Nito.AsyncEx" Version="5.1.2" />
@@ -27,7 +26,7 @@
     <PackageVersion Include="CompareNETObjects" Version="4.84.0" />
     <PackageVersion Include="Serialize.Linq" Version="2.0.0" />
     <PackageVersion Include="MimeMapping" Version="3.1.0" />
-    <PackageVersion Include="AWSSDK.S3" Version="4.0.7.3" />
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.21" />
     <PackageVersion Include="Remote.Linq.Newtonsoft.Json" Version="7.2.2" />
     <PackageVersion Include="Microsoft.Extensions.Resilience" Version="9.7.0" />
   </ItemGroup>

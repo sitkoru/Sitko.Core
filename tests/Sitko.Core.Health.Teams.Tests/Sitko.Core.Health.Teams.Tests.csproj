@@ -1,5 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Sitko.Core.Health.Teams\Sitko.Core.Health.Teams.csproj"/>
-  </ItemGroup>
-</Project>
