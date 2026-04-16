@@ -1,9 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="NewRelic.LogEnrichers.Serilog" />
-    <PackageReference Include="Serilog.Sinks.NewRelic.Logs" />
-  </ItemGroup>
-</Project>
