@@ -1,20 +1,27 @@
-﻿@inherits BastAntStorageFileInputComponent<Sitko.Core.Storage.StorageItem>
+﻿@inherits BaseAntStorageFileInputComponent<Sitko.Core.Storage.StorageItem>
+@using Microsoft.AspNetCore.Components.Forms
 <div class="ant-upload ant-upload-select ant-upload-select-@(ListType)">
-    <span tabindex="0" class="ant-upload" @ref="Btn" role="button">
-        <input type="file" style="display: none;" accept="@ContentTypes" @ref="InputRef"/>
+    <span tabindex="0" class="ant-upload" role="button">
+        <InputFile id="@InputId" @key="InputFileKey" style="display: none;" OnChange="@UploadFilesAsync"
+                   accept="@ContentTypes"/>
         @if (ChildContent is null)
         {
             <div class="ant-upload ant-upload-select">
                 <span class="ant-upload">
-                    <AntDesign.Button Disabled="IsLoading" Loading="IsLoading" Icon="@(IsLoading ? "Loading" : "upload")">
+                    <label for="@InputId">
+                    <AntDesign.Button Disabled="IsLoading" Loading="IsLoading"
+                                      Icon="@(IsLoading ? "Loading" : "upload")">
                         <span>@ButtonText</span>
                     </AntDesign.Button>
+                    </label>
                 </span>
             </div>
         }
         else
         {
-            @ChildContent
+            <label for="@InputId">
+                @ChildContent
+            </label>
         }
     </span>
 </div>

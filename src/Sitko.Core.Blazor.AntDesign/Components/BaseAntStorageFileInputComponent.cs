@@ -1,40 +1,22 @@
 ﻿using AntDesign;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
-using Sitko.Blazor.ScriptInjector;
 using Sitko.Core.App.Helpers;
 using Sitko.Core.App.Localization;
 using Sitko.Core.Blazor.FileUpload;
 
 namespace Sitko.Core.Blazor.AntDesignComponents.Components;
 
-public abstract class BastAntStorageFileInputComponent<TInput> : BaseStorageFileInputComponent<TInput>, IDisposable
+public abstract class BaseAntStorageFileInputComponent<TInput> : BaseStorageFileInputComponent<TInput>
 {
-    private IDisposable? thisReference;
-    protected ElementReference Btn { get; set; }
-
+    protected string InputId { get; } = Guid.NewGuid().ToString();
     [Inject] private MessageService MessageService { get; set; } = null!;
-    [Inject] private IScriptInjector ScriptInjector { get; set; } = null!;
 
     [Inject]
-    protected ILocalizationProvider<BastAntStorageFileInputComponent<TInput>> LocalizationProvider { get; set; } =
-        null!;
-
-    [Inject] private IJSRuntime JsRuntime { get; set; } = null!;
+    protected ILocalizationProvider<BaseAntStorageFileInputComponent<TInput>> LocalizationProvider { get; set; } = null!;
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public string ButtonText { get; set; } = "";
     [Parameter] public string ListType { get; set; } = "text";
-    [Parameter] public InjectScope InjectScopeType { get; set; } = InjectScope.Scoped;
-
-    public virtual void Dispose()
-    {
-        thisReference?.Dispose();
-        GC.SuppressFinalize(this);
-    }
-
-    [JSInvokable]
-    public Task NotifyChange() => UploadFilesAsync();
 
     protected override void OnParametersSet()
     {
@@ -61,22 +43,6 @@ public abstract class BastAntStorageFileInputComponent<TInput> : BaseStorageFile
         return Task.CompletedTask;
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await ScriptInjector.InjectAsync(
-                ScriptInjectRequest.FromUrl("fileupload", "/_content/Sitko.Core.Blazor.AntDesign/fileupload.js", InjectScopeType),
-                async token =>
-                {
-                    thisReference = DotNetObjectReference.Create(this);
-                    await JsRuntime.InvokeVoidAsync("SitkoCoreBlazorAntDesign.FileUpload.init", token, InputRef,
-                        Btn,
-                        thisReference);
-                });
-        }
-    }
-
     protected override Task NotifyUploadAsync(int resultsCount)
     {
         MessageService.Success(LocalizationProvider["{0} files were uploaded", resultsCount]);
@@ -91,4 +57,3 @@ public abstract class BastAntStorageFileInputComponent<TInput> : BaseStorageFile
         return Task.CompletedTask;
     }
 }
-
