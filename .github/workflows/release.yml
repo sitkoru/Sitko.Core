@@ -57,4 +57,5 @@ jobs:
         run: find packages -type f -name 'Sitko.Core.*.nupkg' -print0 | xargs -0 -n 10 -P 4 dotnet nuget push --source internal-source --skip-duplicate --no-symbols -k ${INTERNAL_NUGET_TOKEN}
         env:
           INTERNAL_NUGET_TOKEN: ${{ secrets.INTERNAL_NUGET_PASSWORD }}
+          NUGET_BASE_URL: ${{ secrets.INTERNAL_NUGET_SHORT_URL }}
 
