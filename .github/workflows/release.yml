@@ -47,9 +47,12 @@ jobs:
           user: ${{ secrets.NUGET_USER }}
       - name: Push to Nuget
         run: find packages -type f -name 'Sitko.Core.*.nupkg' -print0 | xargs -0 -n 10 -P 4 dotnet nuget push -s https://api.nuget.org/v3/index.json -k ${{ steps.login.outputs.NUGET_API_KEY }}
-      - name: Push to internal Packages
-        run: find packages -type f -name 'Sitko.Core.*.nupkg' -print0 | xargs -0 -n 10 -P 4 dotnet nuget push -s ${INTERNAL_NUGET_URL} --skip-duplicate --no-symbols -k ${INTERNAL_NUGET_TOKEN}
-        env:
-          INTERNAL_NUGET_TOKEN: ${{ secrets.INTERNAL_NUGET_TOKEN }}
-          INTERNAL_NUGET_URL: ${{ secrets.INTERNAL_NUGET_URL }}
+      - name: Add Internal NuGet Source
+        run: >
+          dotnet nuget add source --username USERNAME
+          --password ${{ secrets.INTERNAL_NUGET_TOKEN }}
+          --store-password-in-clear-text
+          --name internal-source ${{ secrets.INTERNAL_NUGET_URL }}
+      - name: Push to Internal Packages
+        run: find packages -type f -name 'Sitko.Core.*.nupkg' -print0 | xargs -0 -n 10 -P 4 dotnet nuget push --source internal-source --skip-duplicate --no-symbols
 
