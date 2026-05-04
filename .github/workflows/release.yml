@@ -54,5 +54,7 @@ jobs:
           --store-password-in-clear-text
           --name internal-source ${{ secrets.INTERNAL_NUGET_URL }}
       - name: Push to Internal Packages
-        run: find packages -type f -name 'Sitko.Core.*.nupkg' -print0 | xargs -0 -n 10 -P 4 dotnet nuget push --source internal-source --skip-duplicate --no-symbols
+        run: find packages -type f -name 'Sitko.Core.*.nupkg' -print0 | xargs -0 -n 10 -P 4 dotnet nuget push --source internal-source --skip-duplicate --no-symbols -k ${INTERNAL_NUGET_TOKEN}
+        env:
+          INTERNAL_NUGET_TOKEN: ${{ secrets.INTERNAL_NUGET_PASSWORD }}
 
