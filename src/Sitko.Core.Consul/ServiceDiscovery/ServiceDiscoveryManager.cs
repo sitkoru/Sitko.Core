@@ -194,6 +194,8 @@ public class ServiceDiscoveryManager(
             serviceNamesList = tags
                 .Where(t => t.StartsWith(servicePrefix, StringComparison.Ordinal))
                 .Select(t => t[servicePrefix.Length..])
+                .Where(serviceName => !string.IsNullOrWhiteSpace(serviceName) && meta.ContainsKey(serviceName))
+                .Distinct()
                 .ToArray();
         }
 
