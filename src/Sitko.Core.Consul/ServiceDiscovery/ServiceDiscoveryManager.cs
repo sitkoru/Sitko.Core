@@ -107,7 +107,7 @@ public class ServiceDiscoveryManager(
                             env == applicationContext.Environment).ToList();
                         foreach (var service in services)
                         {
-                            var meta = ReadMetadata(service.ServiceMeta);
+                            var meta = ReadMetadata(service.ServiceMeta, service.ServiceTags);
                             foreach (var sdService in meta.Services)
                             {
                                 logger.LogDebug("Resolved service {ServiceName} ({ServiceType}) with address {Address}",
@@ -163,8 +163,7 @@ public class ServiceDiscoveryManager(
     {
         var meta = new Dictionary<string, string>
         {
-            { ServiceInfoKey, SerializeToBase64(applicationService) },
-            { ServicesListKey, SerializeToBase64(services.Select(service => service.Name).ToArray()) }
+            { ServiceInfoKey, SerializeToBase64(applicationService) }
         };
         foreach (var service in services)
         {
@@ -175,7 +174,7 @@ public class ServiceDiscoveryManager(
     }
 
     private static (ApplicationService ApplicationService,
-        List<ServiceDiscoveryService> Services) ReadMetadata(IDictionary<string, string> meta)
+        List<ServiceDiscoveryService> Services) ReadMetadata(IDictionary<string, string> meta, string[]? tags = null)
     {
         if (!meta.TryGetValue(ServiceInfoKey, out var serviceInfoData))
         {
@@ -188,15 +187,28 @@ public class ServiceDiscoveryManager(
             throw new InvalidOperationException("Can't parse meta for app service");
         }
 
-        if (!meta.TryGetValue(ServicesListKey, out var serviceNamesListData))
+        string[]? serviceNamesList = null;
+        const string servicePrefix = ServiceTag + ":";
+        if (tags is { Length: > 0 })
         {
-            throw new InvalidOperationException("No service list header");
+            serviceNamesList = tags
+                .Where(t => t.StartsWith(servicePrefix, StringComparison.Ordinal))
+                .Select(t => t[servicePrefix.Length..])
+                .ToArray();
         }
 
-        var serviceNamesList = DeserializeFromBase64<string[]>(serviceNamesListData);
         if (serviceNamesList is null || serviceNamesList.Length == 0)
         {
-            throw new InvalidOperationException("Empty service names list");
+            if (!meta.TryGetValue(ServicesListKey, out var serviceNamesListData))
+            {
+                throw new InvalidOperationException("No service list header");
+            }
+
+            serviceNamesList = DeserializeFromBase64<string[]>(serviceNamesListData);
+            if (serviceNamesList is null || serviceNamesList.Length == 0)
+            {
+                throw new InvalidOperationException("Empty service names list");
+            }
         }
 
         var services = new List<ServiceDiscoveryService>();
