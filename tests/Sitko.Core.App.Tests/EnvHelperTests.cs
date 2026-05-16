@@ -19,6 +19,20 @@ public class EnvHelperTests : BaseTest
         env.Should().Be(Environments.Production);
     }
 
+    [Fact]
+    public void FromEnvDoesNotPolluteProcessEnvironment()
+    {
+        const string sentinelName = "SITKO_ENV_HELPER_SENTINEL";
+        const string sentinelValue = "sentinel";
+
+        Environment.SetEnvironmentVariable(sentinelName, sentinelValue);
+
+        var env = GetEnvironmentNameFromEnv("DOTNET_ENVIRONMENT", "Development");
+
+        env.Should().Be(Environments.Development);
+        Environment.GetEnvironmentVariable(sentinelName).Should().Be(sentinelValue);
+    }
+
     [Theory]
     [InlineData("DOTNET_ENVIRONMENT", "DEVELOPMENT", "Development")]
     [InlineData("DOTNET_ENVIRONMENT", "Development", "Development")]
@@ -29,13 +43,46 @@ public class EnvHelperTests : BaseTest
     [InlineData("ASPNETCORE_environment", "stAgInG", "Staging")]
     public void FromEnv(string name, string value, string result)
     {
-        foreach (var key in Environment.GetEnvironmentVariables().Keys)
-        {
-            Environment.SetEnvironmentVariable(key.ToString()!, null);
-        }
-
-        Environment.SetEnvironmentVariable(name, value);
-        var env = EnvHelper.GetEnvironmentName();
+        var env = GetEnvironmentNameFromEnv(name, value);
         env.Should().Be(result);
+    }
+
+    private static string GetEnvironmentNameFromEnv(string name, string value)
+    {
+        var environment = Environment
+            .GetEnvironmentVariables()
+            .Keys
+            .Cast<object>()
+            .Select(key => key.ToString()!)
+            .ToDictionary(key => key, Environment.GetEnvironmentVariable);
+
+        try
+        {
+            foreach (var key in environment.Keys)
+            {
+                Environment.SetEnvironmentVariable(key, null);
+            }
+
+            Environment.SetEnvironmentVariable(name, value);
+            return EnvHelper.GetEnvironmentName();
+        }
+        finally
+        {
+            var currentKeys = Environment
+                .GetEnvironmentVariables()
+                .Keys
+                .Cast<object>()
+                .Select(key => key.ToString()!);
+
+            foreach (var key in currentKeys.Except(environment.Keys))
+            {
+                Environment.SetEnvironmentVariable(key, null);
+            }
+
+            foreach (var (key, originalValue) in environment)
+            {
+                Environment.SetEnvironmentVariable(key, originalValue);
+            }
+        }
     }
 }
