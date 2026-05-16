@@ -8,6 +8,11 @@ namespace Sitko.Core.App.Tests;
 
 public class EnvHelperTests : BaseTest
 {
+    private static readonly string[] RelevantEnvironmentVariableNames = [
+        "DOTNET_ENVIRONMENT",
+        "ASPNETCORE_ENVIRONMENT"
+    ];
+
     public EnvHelperTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
     }
@@ -54,6 +59,7 @@ public class EnvHelperTests : BaseTest
             .Keys
             .Cast<object>()
             .Select(key => key.ToString()!)
+            .Where(IsRelevantEnvironmentVariable)
             .ToDictionary(key => key, Environment.GetEnvironmentVariable);
 
         try
@@ -72,7 +78,8 @@ public class EnvHelperTests : BaseTest
                 .GetEnvironmentVariables()
                 .Keys
                 .Cast<object>()
-                .Select(key => key.ToString()!);
+                .Select(key => key.ToString()!)
+                .Where(IsRelevantEnvironmentVariable);
 
             foreach (var key in currentKeys.Except(environment.Keys))
             {
@@ -85,4 +92,7 @@ public class EnvHelperTests : BaseTest
             }
         }
     }
+
+    private static bool IsRelevantEnvironmentVariable(string key) =>
+        RelevantEnvironmentVariableNames.Any(name => string.Equals(name, key, StringComparison.OrdinalIgnoreCase));
 }
