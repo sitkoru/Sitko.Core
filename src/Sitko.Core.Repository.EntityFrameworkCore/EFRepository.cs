@@ -21,11 +21,11 @@ public interface IEFRepository<TEntity> : IEFRepository where TEntity : class, I
 {
     Task<int> DeleteAllAsync(Expression<Func<TEntity, bool>> where, CancellationToken cancellationToken = default);
 
-    Task<int> UpdateAllAsync(Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls,
+    Task<int> UpdateAllAsync(Action<UpdateSettersBuilder<TEntity>> setPropertyCalls,
         CancellationToken cancellationToken = default);
 
     Task<int> UpdateAllAsync(Expression<Func<TEntity, bool>> where,
-        Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls,
+        Action<UpdateSettersBuilder<TEntity>> setPropertyCalls,
         CancellationToken cancellationToken = default);
 }
 
@@ -62,14 +62,14 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
             cancellationToken);
 
     public Task<int> UpdateAllAsync(
-        Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls,
+        Action<UpdateSettersBuilder<TEntity>> setPropertyCalls,
         CancellationToken cancellationToken = default) =>
         ExecuteDbContextOperationAsync(
             context => context.Set<TEntity>().ExecuteUpdateAsync(setPropertyCalls, cancellationToken),
             cancellationToken);
 
     public Task<int> UpdateAllAsync(Expression<Func<TEntity, bool>> where,
-        Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls,
+        Action<UpdateSettersBuilder<TEntity>> setPropertyCalls,
         CancellationToken cancellationToken = default) =>
         ExecuteDbContextOperationAsync(
             context => context.Set<TEntity>().Where(where).ExecuteUpdateAsync(setPropertyCalls, cancellationToken),

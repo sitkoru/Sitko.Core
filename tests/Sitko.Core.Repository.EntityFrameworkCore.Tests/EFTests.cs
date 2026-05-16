@@ -120,7 +120,7 @@ public class EFTests : BasicRepositoryTests<EFTestScope>
         var efRepository = repository as IEFRepository<FooModel>;
         efRepository.Should().NotBeNull();
         var updated = await efRepository!.UpdateAllAsync(model => model.Id == item.Id,
-            calls => calls.SetProperty(model => model.FooText, newText));
+            calls => { calls.SetProperty(model => model.FooText, newText); });
         updated.Should().Be(1);
         item = await repository.RefreshAsync(item);
         item.FooText.Should().Be(newText);
@@ -140,7 +140,7 @@ public class EFTests : BasicRepositoryTests<EFTestScope>
 
         var efRepository = repository as IEFRepository<FooModel>;
         efRepository.Should().NotBeNull();
-        var updated = await efRepository!.UpdateAllAsync(calls => calls.SetProperty(model => model.FooText, newText));
+        var updated = await efRepository!.UpdateAllAsync(calls => { calls.SetProperty(model => model.FooText, newText); });
         updated.Should().Be(items.items.Length);
         items = await scope.CreateScope().ServiceProvider.GetRequiredService<IRepository<FooModel, Guid>>()
             .GetAllAsync();
