@@ -1,5 +1,8 @@
 name: Main
 
+env:
+  DOTNET_VERSION: 10.0.x
+
 on:
   push:
     branches:
@@ -14,6 +17,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
       - name: Build
         run: dotnet build -c Release
       - name: Create packages
@@ -23,14 +30,24 @@ jobs:
     container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v4
-      - name: Run tests
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.App.Tests/Sitko.Core.App.Tests.csproj
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Run Sitko.Core.App.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.App.Tests/Sitko.Core.App.Tests.csproj
+      - name: Run Sitko.Core.App.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.App.Tests/Sitko.Core.App.Tests.csproj
 
   blazor:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
       - name: Install node.js
         uses: actions/setup-node@v5
         with:
@@ -44,8 +61,10 @@ jobs:
         run: |
           npm ci
           npm run prod
-      - name: Run tests
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.App.Blazor.Tests/Sitko.Core.App.Blazor.Tests.csproj
+      - name: Run Sitko.Core.App.Blazor.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.App.Blazor.Tests/Sitko.Core.App.Blazor.Tests.csproj
+      - name: Run Sitko.Core.App.Blazor.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.App.Blazor.Tests/Sitko.Core.App.Blazor.Tests.csproj
 
   grpc:
     runs-on: ubuntu-latest
@@ -57,16 +76,28 @@ jobs:
         image: hashicorp/consul
     steps:
       - uses: actions/checkout@v4
-      - name: Run tests
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.Grpc.Client.Tests/Sitko.Core.Grpc.Client.Tests.csproj
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Run Sitko.Core.Grpc.Client.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Grpc.Client.Tests/Sitko.Core.Grpc.Client.Tests.csproj
+      - name: Run Sitko.Core.Grpc.Client.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Grpc.Client.Tests/Sitko.Core.Grpc.Client.Tests.csproj
 
   imgproxy:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v4
-      - name: Run tests
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.ImgProxy.Tests/Sitko.Core.ImgProxy.Tests.csproj
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Run Sitko.Core.ImgProxy.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.ImgProxy.Tests/Sitko.Core.ImgProxy.Tests.csproj
+      - name: Run Sitko.Core.ImgProxy.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.ImgProxy.Tests/Sitko.Core.ImgProxy.Tests.csproj
 
   pdf:
     runs-on: ubuntu-latest
@@ -75,12 +106,18 @@ jobs:
       PUPPETEER_EXECUTABLE_PATH: "/usr/bin/google-chrome-stable"
     steps:
       - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
       - name: Install chrome
         run: |
           apt-get update
           apt-get install -y google-chrome-stable
-      - name: Run tests
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
+      - name: Run Sitko.Core.Pdf.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
+      - name: Run Sitko.Core.Pdf.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
 
   queue:
     runs-on: ubuntu-latest
@@ -93,12 +130,22 @@ jobs:
         image: nats-streaming:latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run tests Sitko.Core.Queue
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
-      - name: Run tests Sitko.Core.Queue.Nats
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj
-      - name: Run tests Sitko.Core.Queue.InMemory
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Run Sitko.Core.Queue.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
+      - name: Run Sitko.Core.Queue.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
+      - name: Run Sitko.Core.Queue.Nats.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj
+      - name: Run Sitko.Core.Queue.Nats.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj
+      - name: Run Sitko.Core.Queue.InMemory.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj
+      - name: Run Sitko.Core.Queue.InMemory.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj
 
   repository:
     runs-on: ubuntu-latest
@@ -115,10 +162,18 @@ jobs:
           POSTGRES_HOST_AUTH_METHOD: trust
     steps:
       - uses: actions/checkout@v4
-      - name: Run EF Core tests
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.Repository.EntityFrameworkCore.Tests/Sitko.Core.Repository.EntityFrameworkCore.Tests.csproj
-      - name: Run Remote tests
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.Repository.Remote.Tests/Sitko.Core.Repository.Remote.Tests.csproj
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Run Sitko.Core.Repository.EntityFrameworkCore.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Repository.EntityFrameworkCore.Tests/Sitko.Core.Repository.EntityFrameworkCore.Tests.csproj
+      - name: Run Sitko.Core.Repository.EntityFrameworkCore.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Repository.EntityFrameworkCore.Tests/Sitko.Core.Repository.EntityFrameworkCore.Tests.csproj
+      - name: Run Sitko.Core.Repository.Remote.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Repository.Remote.Tests/Sitko.Core.Repository.Remote.Tests.csproj
+      - name: Run Sitko.Core.Repository.Remote.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Repository.Remote.Tests/Sitko.Core.Repository.Remote.Tests.csproj
 
   sonyflake:
     runs-on: ubuntu-latest
@@ -130,8 +185,14 @@ jobs:
         image: titpetric/sonyflake
     steps:
       - uses: actions/checkout@v4
-      - name: Run tests
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.SonyFlake.Tests/Sitko.Core.SonyFlake.Tests.csproj
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Run Sitko.Core.SonyFlake.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.SonyFlake.Tests/Sitko.Core.SonyFlake.Tests.csproj
+      - name: Run Sitko.Core.SonyFlake.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.SonyFlake.Tests/Sitko.Core.SonyFlake.Tests.csproj
 
   opensearch:
     runs-on: ubuntu-latest
@@ -155,8 +216,14 @@ jobs:
           --health-retries=10
     steps:
       - uses: actions/checkout@v4
-      - name: Run opensearch tests
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.Search.OpenSearch.Tests/Sitko.Core.Search.OpenSearch.Tests.csproj
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Run Sitko.Core.Search.OpenSearch.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Search.OpenSearch.Tests/Sitko.Core.Search.OpenSearch.Tests.csproj
+      - name: Run Sitko.Core.Search.OpenSearch.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Search.OpenSearch.Tests/Sitko.Core.Search.OpenSearch.Tests.csproj
 
   storage:
     runs-on: ubuntu-latest
@@ -180,14 +247,26 @@ jobs:
           POSTGRES_HOST_AUTH_METHOD: trust
     steps:
       - uses: actions/checkout@v4
-      - name: Sitko.Core.Storage.FileSystem
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
-      - name: Sitko.Core.Storage.S3
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
-      - name: Sitko.Core.Storage.Remote
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.Remote.Tests/Sitko.Core.Storage.Remote.Tests.csproj
-      - name: Sitko.Core.Storage.Metadata.Postgres
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.Storage.Metadata.Postgres.Tests/Sitko.Core.Storage.Metadata.Postgres.Tests.csproj
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Run Sitko.Core.Storage.FileSystem.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
+      - name: Run Sitko.Core.Storage.FileSystem.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
+      - name: Run Sitko.Core.Storage.S3.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
+      - name: Run Sitko.Core.Storage.S3.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
+      - name: Run Sitko.Core.Storage.Remote.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Storage.Remote.Tests/Sitko.Core.Storage.Remote.Tests.csproj
+      - name: Run Sitko.Core.Storage.Remote.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Storage.Remote.Tests/Sitko.Core.Storage.Remote.Tests.csproj
+      - name: Run Sitko.Core.Storage.Metadata.Postgres.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Storage.Metadata.Postgres.Tests/Sitko.Core.Storage.Metadata.Postgres.Tests.csproj
+      - name: Run Sitko.Core.Storage.Metadata.Postgres.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Storage.Metadata.Postgres.Tests/Sitko.Core.Storage.Metadata.Postgres.Tests.csproj
 
   vault:
     runs-on: ubuntu-latest
@@ -207,26 +286,46 @@ jobs:
         options: --cap-add=IPC_LOCK
     steps:
       - uses: actions/checkout@v4
-      - name: Run tests
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.Configuration.Vault.Tests/Sitko.Core.Configuration.Vault.Tests.csproj
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Run Sitko.Core.Configuration.Vault.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Configuration.Vault.Tests/Sitko.Core.Configuration.Vault.Tests.csproj
+      - name: Run Sitko.Core.Configuration.Vault.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Configuration.Vault.Tests/Sitko.Core.Configuration.Vault.Tests.csproj
 
   kafka:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v4
-      - name: Run tests
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Run Sitko.Core.Queue.Kafka.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj
+      - name: Run Sitko.Core.Queue.Kafka.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj
 
   clickhouse:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v4
-      - name: Sitko.Core.ClickHouse
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.ClickHouse.Tests/Sitko.Core.ClickHouse.Tests.csproj
-      - name: Sitko.Core.ClickHouse.Linq2db
-        run: dotnet test --logger GitHubActions tests/Sitko.Core.ClickHouse.Linq2db.Tests/Sitko.Core.ClickHouse.Linq2db.Tests.csproj
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Run Sitko.Core.ClickHouse.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.ClickHouse.Tests/Sitko.Core.ClickHouse.Tests.csproj
+      - name: Run Sitko.Core.ClickHouse.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.ClickHouse.Tests/Sitko.Core.ClickHouse.Tests.csproj
+      - name: Run Sitko.Core.ClickHouse.Linq2db.Tests net8.0
+        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.ClickHouse.Linq2db.Tests/Sitko.Core.ClickHouse.Linq2db.Tests.csproj
+      - name: Run Sitko.Core.ClickHouse.Linq2db.Tests net10.0
+        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.ClickHouse.Linq2db.Tests/Sitko.Core.ClickHouse.Linq2db.Tests.csproj
 
   release:
     name: Release

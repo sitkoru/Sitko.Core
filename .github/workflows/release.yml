@@ -1,5 +1,8 @@
 name: Release
 
+env:
+  DOTNET_VERSION: 10.0.x
+
 on:
   release:
     types:
@@ -14,6 +17,10 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
       - name: Prepare
         id: prep
         run: |
@@ -58,4 +65,3 @@ jobs:
         env:
           INTERNAL_NUGET_TOKEN: ${{ secrets.INTERNAL_NUGET_PASSWORD }}
           NUGET_BASE_URL: ${{ secrets.INTERNAL_NUGET_SHORT_URL }}
-
