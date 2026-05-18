@@ -56,13 +56,14 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
 
         validators.Should().NotBeEmpty();
         typedValidators.Should().ContainSingle();
+        validator.Should().NotBeNull();
         typeof(IValidator).Assembly.GetName().Version.Should().NotBeNull();
         typeof(FluentGraphValidator).Assembly.GetName().Version.Should().NotBeNull();
         item.Should().NotBeNull();
         item.Should().BeOfType<TestModel>();
         item!.Status = TestStatus.Error;
 
-        var directValidationResult = await validator.ValidateAsync(item);
+        var directValidationResult = await validator!.ValidateAsync(item);
         directValidationResult.IsValid.Should().BeFalse();
         directValidationResult.Errors.Should().ContainSingle(error => error.PropertyName == nameof(TestModel.Status)
                                                              && error.ErrorMessage == "Status can't be error");
