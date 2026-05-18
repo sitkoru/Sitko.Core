@@ -6,20 +6,6 @@ namespace Sitko.Core.Queue.Kafka.Tests;
 
 public class KafkaQueueTest(ITestOutputHelper testOutputHelper) : BaseKafkaQueueTest(testOutputHelper)
 {
-    private static async Task WaitUntilAsync(Func<bool> condition, TimeSpan timeout, CancellationToken cancellationToken)
-    {
-        var startedAt = DateTime.UtcNow;
-        while (!condition())
-        {
-            if (DateTime.UtcNow - startedAt >= timeout)
-            {
-                return;
-            }
-
-            await Task.Delay(100, cancellationToken);
-        }
-    }
-
     [Fact]
     public async Task Produce()
     {
@@ -28,8 +14,7 @@ public class KafkaQueueTest(ITestOutputHelper testOutputHelper) : BaseKafkaQueue
         EventRegistrator.IsRegistered(testEvent.Id).Should().BeFalse();
         var kafkaFlowProducer = scope.GetService<IEventProducer>();
         kafkaFlowProducer.Produce("test", testEvent);
-        await WaitUntilAsync(() => EventRegistrator.IsRegistered(testEvent.Id), TimeSpan.FromSeconds(5),
-            TestContext.Current.CancellationToken);
+        await Task.Delay(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
         EventRegistrator.IsRegistered(testEvent.Id).Should().BeTrue();
     }
 

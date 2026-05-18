@@ -27,8 +27,7 @@ public class BrowserProvider(
                 loggerFactory);
         }
 
-        var executablePath = Environment.GetEnvironmentVariable("PUPPETEER_EXECUTABLE_PATH");
-        if (string.IsNullOrEmpty(executablePath))
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PUPPETEER_EXECUTABLE_PATH")))
         {
             logger.LogDebug("Download browser");
             var browserFetcher = new BrowserFetcher(Options.Product);
@@ -48,7 +47,6 @@ public class BrowserProvider(
         return await PuppeteerSharp.Puppeteer.LaunchAsync(
             new LaunchOptions
             {
-                ExecutablePath = executablePath,
                 Headless = Options.Headless,
                 Args = Options.BrowserArgs,
                 AcceptInsecureCerts = Options.AcceptInsecureCerts,

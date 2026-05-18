@@ -1,69 +1,93 @@
+version: "2.1"
 services:
   nats:
-    image: nats-streaming:latest
-    command: ["-cid", "test-cluster"]
+    image: nats-streaming:0.21.2
+    command: -cid tests
     ports:
-      - "4222:4222"
-
+      - 4222:4222
   consul:
     image: hashicorp/consul
     ports:
       - "8500:8500"
-
   postgres:
     image: postgres:alpine
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: "123"
-      POSTGRES_HOST_AUTH_METHOD: trust
+      - POSTGRES_USER=postgres
+      - POSTGRES_HOST_AUTH_METHOD=trust
     ports:
-      - "5432:5432"
-
+      - 5432:5432
   sonyflake:
     image: titpetric/sonyflake
     ports:
-      - "8987:80"
-
-  opensearch:
-    image: opensearchproject/opensearch:latest
+      - 8987:80
+  elastic-es:
+    image: elasticsearch:8.3.2
+    restart: always
     environment:
-      discovery.type: single-node
-      plugins.security.disabled: "true"
-      OPENSEARCH_INITIAL_ADMIN_PASSWORD: sikdadasDA123@ituDSSaMydfdssdss
+      ES_JAVA_OPTS: "-Xms1g -Xmx1g"
+      cluster.name: "test"
+      xpack.security.enabled: "false"
+      bootstrap.memory_lock: "true"
+      discovery.type: "single-node"
+    volumes:
+      - "./hunspell:/usr/share/elasticsearch/config/hunspell:ro"
     ports:
-      - "9200:9200"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:9200/_cluster/health >/dev/null || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-
+      - 9200:9200
+  kibana:
+    image: kibana:8.3.2
+    restart: always
+    depends_on:
+      - elastic-es
+    environment:
+      ELASTICSEARCH_URL: http://elastic-es:9200
+      ELASTICSEARCH_HOSTS: http://elastic-es:9200
+    ports:
+      - 5601:5601
   minio:
     image: bitnamilegacy/minio
-    environment:
-      MINIO_ROOT_USER: ptTYf7VkCVbUjAzn
-      MINIO_ROOT_PASSWORD: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
     ports:
-      - "9000:9000"
-      - "9001:9001"
-
-  vault:
-    image: hashicorp/vault:1.21.4
+      - 9000:9000
+      - 9001:9001
     environment:
-      VAULT_DEV_ROOT_TOKEN_ID: twit3itPSAD0yok
-      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+      - MINIO_ROOT_USER=A8eENTqgEE7uYL7R
+      - MINIO_ROOT_PASSWORD=82bmVoDRkZgwy4B3PXkLzpXiuqGVZMug
+  mc:
+    image: minio/mc
+    volumes:
+      - "mc:/root/.mc"
+  vault:
+    image: hashicorp/vault
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=root
     cap_add:
       - IPC_LOCK
     ports:
       - "8200:8200"
-
+  kafka:
+    image: docker.io/bitnami/kafka:3.9
+    ports:
+      - "9092:9092"
+    volumes:
+      - "kafka_data:/bitnami"
+    environment:
+      # KRaft settings
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      # Listeners
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
   redis:
     image: redis:alpine
     command: redis-server --save 60 1 --loglevel warning --maxmemory 4G --maxmemory-policy noeviction
     ports:
-      - "6379:6379"
+      - 6379:6379
     volumes:
       - redis:/data
-
 volumes:
+  mc:
+  kafka_data:
   redis:

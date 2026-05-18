@@ -16,21 +16,20 @@ public class RemoteRepositoryTestScope : WebTestScope
     protected override WebApplicationBuilder ConfigureWebApplication(WebApplicationBuilder webApplicationBuilder,
         string name)
     {
-         base.ConfigureWebApplication(webApplicationBuilder, name).AddPostgresDatabase<TestDbContext>(options =>
-             {
-                 options.Database = name;
-                 options.EnableSensitiveLogging = true;
-                 options.EnableNpgsqlPooling = false;
-             })
-             .AddEFRepositories(options =>
-             {
-                 options.AddRepository<BarEFRepository>();
-                 options.AddRepository<TestEFRepository>();
-                 options.AddRepository<FooEFRepository>();
-                 options.AddRepositoriesFromAssemblyOf<TestModel>();
-             });
-         return webApplicationBuilder;
-     }
+        base.ConfigureWebApplication(webApplicationBuilder, name).AddPostgresDatabase<TestDbContext>(options =>
+            {
+                options.Database = name;
+                options.EnableSensitiveLogging = true;
+                options.EnableNpgsqlPooling = false;
+            })
+            .AddEFRepositories(options =>
+            {
+                options.AddRepository<BarEFRepository>();
+                options.AddRepository<TestEFRepository>();
+                options.AddRepository<FooEFRepository>();
+            });
+        return webApplicationBuilder;
+    }
 
     protected override async Task InitWebApplicationAsync(IServiceProvider hostServices)
     {

@@ -271,8 +271,7 @@ public class
             if (result is null)
             {
                 throw new InvalidOperationException("Empty response from server");
-            }
-
+}
             if (result.IsSuccess)
             {
                 snapshots[entity.Id] = CreateEntitySnapshot(result.Entity);
@@ -300,4 +299,3 @@ public class
         snapshots.TryRemove(entity.Id, out _);
     }
 }
-
