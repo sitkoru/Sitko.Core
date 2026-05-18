@@ -11,6 +11,104 @@ using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore;
 
+public sealed class UpdateSettersBuilder<TEntity> where TEntity : class
+{
+    private readonly List<IUpdateSetter<TEntity>> setters = [];
+
+    internal IReadOnlyList<IUpdateSetter<TEntity>> Setters => setters;
+
+    public void SetProperty<TProperty>(Expression<Func<TEntity, TProperty>> propertyExpression, TProperty value) =>
+        setters.Add(new ConstantUpdateSetter<TEntity, TProperty>(propertyExpression, value));
+
+    public void SetProperty<TProperty>(Expression<Func<TEntity, TProperty>> propertyExpression,
+        Expression<Func<TEntity, TProperty>> valueExpression) =>
+        setters.Add(new ExpressionUpdateSetter<TEntity, TProperty>(propertyExpression, valueExpression));
+}
+
+internal interface IUpdateSetter<TEntity> where TEntity : class
+{
+#if NET10_0_OR_GREATER
+    void Apply(Microsoft.EntityFrameworkCore.Query.UpdateSettersBuilder<TEntity> builder);
+#else
+    Expression Apply(Expression builder);
+#endif
+}
+
+internal sealed class ConstantUpdateSetter<TEntity, TProperty> : IUpdateSetter<TEntity> where TEntity : class
+{
+    private readonly Expression<Func<TEntity, TProperty>> propertyExpression;
+    private readonly TProperty value;
+
+    public ConstantUpdateSetter(Expression<Func<TEntity, TProperty>> propertyExpression, TProperty value)
+    {
+        this.propertyExpression = propertyExpression;
+        this.value = value;
+    }
+
+#if NET10_0_OR_GREATER
+    public void Apply(Microsoft.EntityFrameworkCore.Query.UpdateSettersBuilder<TEntity> builder) =>
+        builder.SetProperty(propertyExpression, value);
+#else
+    private static readonly MethodInfo SetPropertyMethod = typeof(SetPropertyCalls<TEntity>)
+        .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+        .Single(method =>
+        {
+            if (method.Name != nameof(SetPropertyCalls<TEntity>.SetProperty) || !method.IsGenericMethodDefinition)
+            {
+                return false;
+            }
+
+            var parameters = method.GetParameters();
+            return parameters.Length == 2 &&
+                   parameters[0].ParameterType.IsGenericType &&
+                   parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>) &&
+                   parameters[1].ParameterType.IsGenericParameter;
+        })
+        .MakeGenericMethod(typeof(TProperty));
+
+    public Expression Apply(Expression builder) =>
+        Expression.Call(builder, SetPropertyMethod, propertyExpression, Expression.Constant(value, typeof(TProperty)));
+#endif
+}
+
+internal sealed class ExpressionUpdateSetter<TEntity, TProperty> : IUpdateSetter<TEntity> where TEntity : class
+{
+    private readonly Expression<Func<TEntity, TProperty>> propertyExpression;
+    private readonly Expression<Func<TEntity, TProperty>> valueExpression;
+
+    public ExpressionUpdateSetter(Expression<Func<TEntity, TProperty>> propertyExpression,
+        Expression<Func<TEntity, TProperty>> valueExpression)
+    {
+        this.propertyExpression = propertyExpression;
+        this.valueExpression = valueExpression;
+    }
+
+#if NET10_0_OR_GREATER
+    public void Apply(Microsoft.EntityFrameworkCore.Query.UpdateSettersBuilder<TEntity> builder) =>
+        builder.SetProperty(propertyExpression, valueExpression);
+#else
+    private static readonly MethodInfo SetPropertyMethod = typeof(SetPropertyCalls<TEntity>)
+        .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+        .Single(method =>
+        {
+            if (method.Name != nameof(SetPropertyCalls<TEntity>.SetProperty) || !method.IsGenericMethodDefinition)
+            {
+                return false;
+            }
+
+            var parameters = method.GetParameters();
+            return parameters.Length == 2 &&
+                   parameters[0].ParameterType.IsGenericType &&
+                   parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>) &&
+                   parameters[1].ParameterType.IsGenericType &&
+                   parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>);
+        })
+        .MakeGenericMethod(typeof(TProperty));
+
+    public Expression Apply(Expression builder) => Expression.Call(builder, SetPropertyMethod, propertyExpression, valueExpression);
+#endif
+}
+
 public interface IEFRepository : IRepository
 {
     Task<int> DeleteAllRawAsync(string conditions, CancellationToken cancellationToken = default);
@@ -65,19 +163,47 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         Action<UpdateSettersBuilder<TEntity>> setPropertyCalls,
         CancellationToken cancellationToken = default) =>
         ExecuteDbContextOperationAsync(
-            context => context.Set<TEntity>().ExecuteUpdateAsync(setPropertyCalls, cancellationToken),
+            context => ExecuteUpdateAsync(context.Set<TEntity>(), setPropertyCalls, cancellationToken),
             cancellationToken);
 
     public Task<int> UpdateAllAsync(Expression<Func<TEntity, bool>> where,
         Action<UpdateSettersBuilder<TEntity>> setPropertyCalls,
         CancellationToken cancellationToken = default) =>
         ExecuteDbContextOperationAsync(
-            context => context.Set<TEntity>().Where(where).ExecuteUpdateAsync(setPropertyCalls, cancellationToken),
+            context => ExecuteUpdateAsync(context.Set<TEntity>().Where(where), setPropertyCalls, cancellationToken),
             cancellationToken);
 
     public Task<int> DeleteAllAsync(CancellationToken cancellationToken = default) =>
         ExecuteDbContextOperationAsync(context => context.Set<TEntity>().ExecuteDeleteAsync(cancellationToken),
             cancellationToken);
+
+    private static Task<int> ExecuteUpdateAsync(IQueryable<TEntity> query,
+        Action<UpdateSettersBuilder<TEntity>> setPropertyCalls,
+        CancellationToken cancellationToken)
+    {
+        var builder = new UpdateSettersBuilder<TEntity>();
+        setPropertyCalls(builder);
+#if NET10_0_OR_GREATER
+        return query.ExecuteUpdateAsync(setters =>
+        {
+            foreach (var setter in builder.Setters)
+            {
+                setter.Apply(setters);
+            }
+        }, cancellationToken);
+#else
+        var settersParameter = Expression.Parameter(typeof(SetPropertyCalls<TEntity>), "setters");
+        Expression body = settersParameter;
+        foreach (var setter in builder.Setters)
+        {
+            body = setter.Apply(body);
+        }
+
+        var settersExpression = Expression.Lambda<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>>(body,
+            settersParameter);
+        return query.ExecuteUpdateAsync(settersExpression, cancellationToken);
+#endif
+    }
 
     private EntityChange[] Compare(TEntity firstEntity, TEntity secondEntity)
     {

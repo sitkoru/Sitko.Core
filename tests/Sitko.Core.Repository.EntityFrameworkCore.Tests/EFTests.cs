@@ -146,4 +146,30 @@ public class EFTests : BasicRepositoryTests<EFTestScope>
             .GetAllAsync();
         items.items.Should().AllSatisfy(model => model.FooText.Should().Be(newText));
     }
+
+    [Fact]
+    public async Task UpdateAllExpression()
+    {
+        var scope = await GetScopeAsync();
+
+        var repository = scope.GetService<IRepository<FooModel, Guid>>();
+        Assert.NotNull(repository);
+        var items = await repository.GetAllAsync();
+        items.items.Should().NotBeEmpty();
+        items.items.Should().AllSatisfy(model => model.FooText.Should().NotBeNull());
+        var originalValues = items.items.ToDictionary(model => model.Id, model => model.FooText!);
+
+        var efRepository = repository as IEFRepository<FooModel>;
+        efRepository.Should().NotBeNull();
+        const string suffix = "_updated";
+        var updated = await efRepository!.UpdateAllAsync(calls =>
+        {
+            calls.SetProperty(model => model.FooText, model => model.FooText + suffix);
+        });
+
+        updated.Should().Be(items.items.Length);
+        items = await scope.CreateScope().ServiceProvider.GetRequiredService<IRepository<FooModel, Guid>>()
+            .GetAllAsync();
+        items.items.Should().AllSatisfy(model => model.FooText.Should().Be(originalValues[model.Id] + suffix));
+    }
 }
