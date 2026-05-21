@@ -1,6 +1,6 @@
 # Sitko.Core
 
-Opinionated framework on top of .NET 8 and ASP.NET Core for building microservices. 
+Opinionated framework on top of .NET 8 and .NET 10 with ASP.NET Core for building microservices.
 
 Provides base application and modules for fast application building.
 
@@ -20,5 +20,3 @@ Provides base application and modules for fast application building.
 # Using
 
 See [demo app](apps/Blazor/Sitko.Core.Apps.Blazor) for now
-
-

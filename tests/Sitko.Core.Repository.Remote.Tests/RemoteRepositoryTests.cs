@@ -1,4 +1,6 @@
 using FluentAssertions;
+using FluentValidation;
+using Sitko.FluentValidation.Graph;
 using Sitko.Core.Repository.Remote.Tests.Data;
 using Sitko.Core.Repository.Tests;
 using Sitko.Core.Repository.Tests.Data;
@@ -39,6 +41,39 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
         var repo = scope.GetService<TestRemoteRepository>();
         var result = await repo.CountAsync(q => q.Where(t => t.FooId == 5));
         result.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task ClientSideGraphValidation()
+    {
+        var scope = await GetScopeAsync();
+        var graphValidator = scope.GetService<FluentGraphValidator>();
+        var validators = scope.GetServices<IValidator>().ToList();
+        var typedValidators = scope.GetServices<IValidator<TestModel>>().ToList();
+        var validator = scope.GetService<IValidator<TestModel>>();
+        var repo = scope.GetService<TestRemoteRepository>();
+        var item = await repo.GetAsync();
+
+        validators.Should().NotBeEmpty();
+        typedValidators.Should().ContainSingle();
+        validator.Should().NotBeNull();
+        typeof(IValidator).Assembly.GetName().Version.Should().NotBeNull();
+        typeof(FluentGraphValidator).Assembly.GetName().Version.Should().NotBeNull();
+        item.Should().NotBeNull();
+        item.Should().BeOfType<TestModel>();
+        item!.Status = TestStatus.Error;
+
+        var directValidationResult = await validator!.ValidateAsync(item);
+        directValidationResult.IsValid.Should().BeFalse();
+        directValidationResult.Errors.Should().ContainSingle(error => error.PropertyName == nameof(TestModel.Status)
+                                                             && error.ErrorMessage == "Status can't be error");
+
+        var result = await graphValidator.TryValidateModelAsync(item);
+
+        result.IsValid.Should().BeFalse();
+        result.Results.SelectMany(validationResult => validationResult.Errors)
+            .Should().ContainSingle(error => error.PropertyName == nameof(TestModel.Status)
+                                     && error.ErrorMessage == "Status can't be error");
     }
 
     [Fact]

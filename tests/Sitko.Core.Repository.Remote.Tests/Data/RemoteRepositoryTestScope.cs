@@ -27,6 +27,7 @@ public class RemoteRepositoryTestScope : WebTestScope
                 options.AddRepository<BarEFRepository>();
                 options.AddRepository<TestEFRepository>();
                 options.AddRepository<FooEFRepository>();
+                options.AddRepositoriesFromAssemblyOf<TestModel>();
             });
         return webApplicationBuilder;
     }

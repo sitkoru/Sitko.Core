@@ -58,4 +58,3 @@ jobs:
         env:
           INTERNAL_NUGET_TOKEN: ${{ secrets.INTERNAL_NUGET_PASSWORD }}
           NUGET_BASE_URL: ${{ secrets.INTERNAL_NUGET_SHORT_URL }}
-
