@@ -166,6 +166,10 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable
             AfterInitialized();
             await AfterInitializedAsync();
         }
+        catch (OperationCanceledException)
+        {
+            LogComponentError("Initialization was canceled");
+        }
         catch (ObjectDisposedException)
         {
             // We got ObjectDisposedException during initialization. It may be caused by cancelled request. In such case
@@ -193,13 +197,16 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable
             }
 
             // Parent scope was disposed. Indicate in logs and suppress exception.
-            GlobalServiceProvider.GetRequiredService<ILogger<BaseComponent>>()
-                .Log(
-                    GlobalServiceProvider.GetRequiredService<IApplicationContext>().IsDevelopment()
-                        ? LogLevel.Warning
-                        : LogLevel.Debug, "Parent scope was disposed in {Component}", GetType());
+            LogComponentError("Parent scope was disposed");
         }
     }
+
+    private void LogComponentError(string message) =>
+        GlobalServiceProvider.GetRequiredService<ILogger<BaseComponent>>()
+            .Log(
+                GlobalServiceProvider.GetRequiredService<IApplicationContext>().IsDevelopment()
+                    ? LogLevel.Warning
+                    : LogLevel.Debug, "{Message} in {Component}", message, GetType());
 
     protected T? GetQueryString<T>(string key) => TryGetQueryString<T>(key, out var value) ? value : default;
 
