@@ -58,6 +58,8 @@ public static class WebApplicationBuilderExtensions
             webApplication.UseStaticFiles();
         }
 
+        webApplication.UseMiddleware<RequestCancellationHandlingMiddleware>();
+
         webApplication.UseAntiforgery();
 
         if (webOptions.CorsPolicies.Count != 0)

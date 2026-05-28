@@ -42,6 +42,10 @@ public class GrpcCallProcessor<TService> : GrpcCallProcessor, IGrpcCallProcessor
             var result = execute(response);
             ProcessResult(result, request, response, context.Method);
         }
+        catch (Exception exception) when (IsCancellationException(exception, context))
+        {
+            ProcessCancellationException(context.Method);
+        }
         catch (Exception ex)
         {
             ProcessResult(new GrpcCallResult(ex), request, response, context.Method);
@@ -63,6 +67,10 @@ public class GrpcCallProcessor<TService> : GrpcCallProcessor, IGrpcCallProcessor
         {
             var result = await executeAsync(response);
             ProcessResult(result, request, response, context.Method);
+        }
+        catch (Exception exception) when (IsCancellationException(exception, context))
+        {
+            ProcessCancellationException(context.Method);
         }
         catch (RpcException)
         {
@@ -105,6 +113,10 @@ public class GrpcCallProcessor<TService> : GrpcCallProcessor, IGrpcCallProcessor
                 await responseStream.WriteAsync(response);
             });
         }
+        catch (Exception exception) when (IsCancellationException(exception, context))
+        {
+            ProcessCancellationException(context.Method);
+        }
         catch (Exception ex)
         {
             var response = CreateResponse<TResponse>();
@@ -122,6 +134,10 @@ public class GrpcCallProcessor<TService> : GrpcCallProcessor, IGrpcCallProcessor
         {
             var result = await executeAsync(response);
             ProcessResult(result, null, response, context.Method);
+        }
+        catch (Exception exception) when (IsCancellationException(exception, context))
+        {
+            ProcessCancellationException(context.Method);
         }
         catch (Exception ex)
         {
@@ -145,6 +161,10 @@ public class GrpcCallProcessor<TService> : GrpcCallProcessor, IGrpcCallProcessor
                 await responseStream.WriteAsync(response);
             });
         }
+        catch (Exception exception) when (IsCancellationException(exception, context))
+        {
+            ProcessCancellationException(context.Method);
+        }
         catch (Exception ex)
         {
             var response = CreateResponse<TResponse>();
@@ -155,8 +175,18 @@ public class GrpcCallProcessor<TService> : GrpcCallProcessor, IGrpcCallProcessor
 
     public async Task<bool> ValidateRequestAsync(IMessage request, IMessage response, ServerCallContext context)
     {
-        var validationResult = await graphValidator.TryValidateModelAsync(
-            new ModelGraphValidationContext(request, ValidationOptions), context.CancellationToken);
+        ModelsValidationResult validationResult;
+        try
+        {
+            validationResult = await graphValidator.TryValidateModelAsync(
+                new ModelGraphValidationContext(request, ValidationOptions), context.CancellationToken);
+        }
+        catch (OperationCanceledException exception) when (IsCancellationException(exception, context))
+        {
+            ProcessCancellationException(context.Method);
+            return false;
+        }
+
         if (!validationResult.IsValid)
         {
             ProcessResult(
@@ -169,6 +199,13 @@ public class GrpcCallProcessor<TService> : GrpcCallProcessor, IGrpcCallProcessor
 
         return true;
     }
+
+    private static bool IsCancellationException(Exception exception, ServerCallContext context) =>
+        context.CancellationToken.IsCancellationRequested &&
+        exception is OperationCanceledException or RpcException { StatusCode: StatusCode.Cancelled };
+
+    private void ProcessCancellationException(string methodName) =>
+        logger.LogDebug("gRPC call {MethodName} was canceled by client", methodName);
 
     private static TResponse CreateResponse<TResponse>() where TResponse : class, IMessage, new()
     {
