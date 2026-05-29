@@ -18,7 +18,7 @@ public class EFRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where TEn
 
     internal EFRepositoryQuery(EFRepositoryQuerySource<TEntity> source,
         List<Func<IQueryable<TEntity>, IQueryable<TEntity>>> whereExpressions,
-        List<Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>> orderExpressions, int? limit, int? offset, bool asNoTracking)
+        List<Func<IQueryable<TEntity>, IQueryable<TEntity>>> orderExpressions, int? limit, int? offset, bool asNoTracking)
     {
         QuerySource = source;
         WhereExpressions = whereExpressions;
@@ -34,7 +34,7 @@ public class EFRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where TEn
 
     internal List<Func<IQueryable<TEntity>, IQueryable<TEntity>>> WhereExpressions { get; } = new();
 
-    internal List<Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>> OrderExpressions { get; } = new();
+    internal List<Func<IQueryable<TEntity>, IQueryable<TEntity>>> OrderExpressions { get; } = new();
     internal bool UseAsNoTracking { get; set; }
 
     internal List<string> IncludeProperties { get; } = new();
@@ -112,6 +112,22 @@ public class EFRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where TEn
         return this;
     }
 
+    public override IRepositoryQuery<TEntity> ThenByDescending(Expression<Func<TEntity, object>> orderBy)
+    {
+        OrderExpressions.Add(entities => entities is IOrderedQueryable<TEntity> orderedEntities
+            ? orderedEntities.ThenByDescending(orderBy)
+            : entities.OrderByDescending(orderBy));
+        return this;
+    }
+
+    public override IRepositoryQuery<TEntity> ThenBy(Expression<Func<TEntity, object>> orderBy)
+    {
+        OrderExpressions.Add(entities => entities is IOrderedQueryable<TEntity> orderedEntities
+            ? orderedEntities.ThenBy(orderBy)
+            : entities.OrderBy(orderBy));
+        return this;
+    }
+
     public override IRepositoryQuery<TEntity> Order(Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> order)
     {
         OrderExpressions.Add(order);
@@ -150,21 +166,37 @@ public class EFRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where TEn
         return new EFIncludableRepositoryQuery<TEntity, TProperty>(this);
     }
 
-    protected override void ApplySort((string propertyName, bool isDescending) sortQuery)
+    protected override void ApplySort((string propertyName, bool isDescending) sortQuery, bool append)
     {
         var property = typeof(TEntity).GetProperty(sortQuery.propertyName);
-        if (property == null || !property.CanWrite)
+        if (property == null || !property.CanRead)
         {
             return;
         }
 
+        Expression<Func<TEntity, object>> orderExpression = e => EF.Property<object>(e, sortQuery.propertyName);
+
         if (sortQuery.isDescending)
         {
-            OrderByDescending(e => EF.Property<TEntity>(e, sortQuery.propertyName));
+            if (append)
+            {
+                ThenByDescending(orderExpression);
+            }
+            else
+            {
+                OrderByDescending(orderExpression);
+            }
         }
         else
         {
-            OrderBy(e => EF.Property<TEntity>(e, sortQuery.propertyName));
+            if (append)
+            {
+                ThenBy(orderExpression);
+            }
+            else
+            {
+                OrderBy(orderExpression);
+            }
         }
     }
 }

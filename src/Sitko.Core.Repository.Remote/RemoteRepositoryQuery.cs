@@ -4,11 +4,12 @@ namespace Sitko.Core.Repository.Remote;
 
 public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where TEntity : class
 {
+    internal record RepositorySort(Expression<Func<TEntity, object>>? Expression, string? PropertyName,
+        bool IsDescending, bool Append);
+
     private readonly List<IRemoteIncludableQuery> includableQueries = new();
     private readonly List<string> includesByName = new();
-    private readonly List<Expression<Func<TEntity, object>>> orderByDescendingExpressions = new();
-    private readonly List<Expression<Func<TEntity, object>>> orderByExpressions = new();
-    private readonly List<(string propertyName, bool isDescending)> orderByStringExpressions = new();
+    private readonly List<RepositorySort> sorts = new();
     private readonly List<(string whereStr, object?[]? values)> whereByStringExpressions = new();
     private readonly List<Expression<Func<TEntity, bool>>> whereExpressions = new();
     private Expression? selectExpression;
@@ -21,8 +22,7 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
     {
         whereExpressions = source.whereExpressions;
         whereByStringExpressions = source.whereByStringExpressions;
-        orderByExpressions = source.orderByExpressions;
-        orderByDescendingExpressions = source.orderByDescendingExpressions;
+        sorts = source.sorts;
         includesByName = source.includesByName;
         includableQueries = source.includableQueries;
         selectExpression = source.selectExpression;
@@ -60,13 +60,25 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
 
     public override IRepositoryQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> orderBy)
     {
-        orderByDescendingExpressions.Add(orderBy);
+        sorts.Add(new RepositorySort(orderBy, null, true, false));
         return this;
     }
 
     public override IRepositoryQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> orderBy)
     {
-        orderByExpressions.Add(orderBy);
+        sorts.Add(new RepositorySort(orderBy, null, false, false));
+        return this;
+    }
+
+    public override IRepositoryQuery<TEntity> ThenByDescending(Expression<Func<TEntity, object>> orderBy)
+    {
+        sorts.Add(new RepositorySort(orderBy, null, true, true));
+        return this;
+    }
+
+    public override IRepositoryQuery<TEntity> ThenBy(Expression<Func<TEntity, object>> orderBy)
+    {
+        sorts.Add(new RepositorySort(orderBy, null, false, true));
         return this;
     }
 
@@ -101,8 +113,8 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
         return includableQuery;
     }
 
-    protected override void ApplySort((string propertyName, bool isDescending) sortQuery) =>
-        orderByStringExpressions.Add(sortQuery);
+    protected override void ApplySort((string propertyName, bool isDescending) sortQuery, bool append) =>
+        sorts.Add(new RepositorySort(null, sortQuery.propertyName, sortQuery.isDescending, append));
 
     public SerializedQuery<TEntity>
         Serialize()
@@ -110,9 +122,7 @@ public class RemoteRepositoryQuery<TEntity> : BaseRepositoryQuery<TEntity> where
         var serializedQuery = new SerializedQuery<TEntity>()
             .AddWhereExpressions(whereExpressions)
             .AddWhereByStringExpressions(whereByStringExpressions)
-            .AddOrderByExpressions(orderByExpressions)
-            .AddOrderByDescendingExpressions(orderByDescendingExpressions)
-            .AddOrderByStringExpressions(orderByStringExpressions)
+            .AddSorts(sorts)
             .AddIncludesByName(includesByName)
             .AddIncludes(includableQueries);
         if (selectExpression is not null)

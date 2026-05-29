@@ -304,6 +304,36 @@ public class EFQueryTests : BaseTest<EFTestScope>
         CompareSql(query, dbQuery);
     }
 
+    [Fact]
+    public async Task OrderByStringMultipleFields()
+    {
+        var scope = await GetScopeAsync();
+        var dbContext = scope.GetService<TestDbContext>();
+        var query = new EFRepositoryQuery<TestModel>(dbContext.Set<TestModel>());
+        query.OrderByString("status,-fooId,id");
+        var dbQuery = dbContext.Set<TestModel>()
+            .OrderBy(model => model.Status)
+            .ThenByDescending(model => model.FooId)
+            .ThenBy(model => model.Id);
+        CompareSql(query, dbQuery);
+    }
+
+    [Fact]
+    public async Task ThenByBuildsCompositeOrder()
+    {
+        var scope = await GetScopeAsync();
+        var dbContext = scope.GetService<TestDbContext>();
+        var query = new EFRepositoryQuery<TestModel>(dbContext.Set<TestModel>());
+        query.OrderBy(model => model.Status)
+            .ThenByDescending(model => model.FooId)
+            .ThenBy(model => model.Id);
+        var dbQuery = dbContext.Set<TestModel>()
+            .OrderBy(model => model.Status)
+            .ThenByDescending(model => model.FooId)
+            .ThenBy(model => model.Id);
+        CompareSql(query, dbQuery);
+    }
+
     private static void CompareSql<TItem>(EFRepositoryQuery<TItem> query, IQueryable<TItem> expectedQuery)
         where TItem : class
     {

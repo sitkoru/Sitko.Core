@@ -22,7 +22,10 @@ public interface IRepositoryQuery<TEntity> where TEntity : class
     IRepositoryQuery<TEntity> WhereByString(string whereJson);
     IRepositoryQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> orderBy);
     IRepositoryQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> orderBy);
+    IRepositoryQuery<TEntity> ThenByDescending(Expression<Func<TEntity, object>> orderBy);
+    IRepositoryQuery<TEntity> ThenBy(Expression<Func<TEntity, object>> orderBy);
     IRepositoryQuery<TEntity> OrderBy(string property, bool isDescending);
+    IRepositoryQuery<TEntity> ThenBy(string property, bool isDescending);
     IRepositoryQuery<TEntity> OrderByString(string orderBy);
     IRepositoryQuery<TEntity> Order(Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> order);
     IRepositoryQuery<TEntity> Configure(Action<IRepositoryQuery<TEntity>>? configureQuery = null);
