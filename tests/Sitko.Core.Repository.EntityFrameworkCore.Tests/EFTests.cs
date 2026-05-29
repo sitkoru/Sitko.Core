@@ -187,6 +187,26 @@ public class EFTests : BasicRepositoryTests<EFTestScope>
         items.items.Should().AllSatisfy(model => model.FooText.Should().Be(originalValues[model.Id] + suffix));
     }
 
+    [Fact]
+    public async Task GetAllThenByReturnsExpectedOrder()
+    {
+        var scope = await GetScopeAsync();
+
+        var repository = scope.GetService<IRepository<TestModel, Guid>>();
+        repository.Should().NotBeNull();
+
+        var result = await repository.GetAllAsync(query => query
+            .OrderBy(model => model.Status)
+            .ThenByDescending(model => model.FooId)
+            .ThenBy(model => model.Id), TestContext.Current.CancellationToken);
+
+        result.items.Should().BeEquivalentTo(result.items
+                .OrderBy(model => model.Status)
+                .ThenByDescending(model => model.FooId)
+                .ThenBy(model => model.Id),
+            options => options.WithStrictOrdering());
+    }
+
 #if NET8_0
     [Fact]
     public async Task UpdateAllLegacyExpressionOverload()

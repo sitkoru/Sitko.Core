@@ -29,6 +29,8 @@ public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> w
     public abstract IRepositoryQuery<TEntity> Where(string whereStr, object?[] values);
     public abstract IRepositoryQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> orderBy);
     public abstract IRepositoryQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> orderBy);
+    public abstract IRepositoryQuery<TEntity> ThenByDescending(Expression<Func<TEntity, object>> orderBy);
+    public abstract IRepositoryQuery<TEntity> ThenBy(Expression<Func<TEntity, object>> orderBy);
 
     public abstract IRepositoryQuery<TEntity> Order(Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> order);
     public abstract IRepositoryQuery<TEntity> Configure(Action<IRepositoryQuery<TEntity>>? configureQuery = null);
@@ -42,9 +44,11 @@ public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> w
         var sortQueries = GetSortParameters<TEntity>(orderBy);
         if (sortQueries.Any())
         {
+            var append = false;
             foreach (var sortQuery in sortQueries)
             {
-                ApplySort(sortQuery);
+                ApplySort(sortQuery, append);
+                append = true;
             }
         }
 
@@ -53,7 +57,13 @@ public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> w
 
     public IRepositoryQuery<TEntity> OrderBy(string property, bool isDescending)
     {
-        ApplySort((property, isDescending));
+        ApplySort((property, isDescending), false);
+        return this;
+    }
+
+    public IRepositoryQuery<TEntity> ThenBy(string property, bool isDescending)
+    {
+        ApplySort((property, isDescending), true);
         return this;
     }
 
@@ -144,7 +154,7 @@ public abstract class BaseRepositoryQuery<TEntity> : IRepositoryQuery<TEntity> w
     public IRepositoryQuery<TEntity> Select(Expression<Func<TEntity, long>> longSelect) =>
         throw new NotImplementedException();
 
-    protected abstract void ApplySort((string propertyName, bool isDescending) sortQuery);
+    protected abstract void ApplySort((string propertyName, bool isDescending) sortQuery, bool append);
 
     // ReSharper disable once MemberCanBePrivate.Global
     protected IRepositoryQuery<TEntity> ApplyConditions(IEnumerable<QueryContextConditionsGroup> conditionsGroups)

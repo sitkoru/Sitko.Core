@@ -4,6 +4,7 @@ using Sitko.FluentValidation.Graph;
 using Sitko.Core.Repository.Remote.Tests.Data;
 using Sitko.Core.Repository.Tests;
 using Sitko.Core.Repository.Tests.Data;
+using System.Linq.Expressions;
 using Xunit;
 
 namespace Sitko.Core.Repository.Remote.Tests;
@@ -179,6 +180,71 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
         var serialized = query.Serialize();
         serialized.Data.WhereByString.Should().HaveCount(1);
         serialized.Data.WhereByString.Should().Contain(tuple => tuple.WhereStr == "bla" && tuple.Values!.Contains(1));
+    }
+
+    [Fact]
+    public void SerializeThenByPreservesSortSequence()
+    {
+        var query = new RemoteRepositoryQuery<TestModel>();
+        query.OrderBy(model => model.Status)
+            .ThenByDescending(model => model.FooId)
+            .ThenBy(model => model.Id);
+
+        var serialized = query.Serialize();
+
+        serialized.Data.Sorts.Should().HaveCount(3);
+        serialized.Data.Sorts[0].IsDescending.Should().BeFalse();
+        serialized.Data.Sorts[0].Append.Should().BeFalse();
+        serialized.Data.Sorts[1].IsDescending.Should().BeTrue();
+        serialized.Data.Sorts[1].Append.Should().BeTrue();
+        serialized.Data.Sorts[2].IsDescending.Should().BeFalse();
+        serialized.Data.Sorts[2].Append.Should().BeTrue();
+        serialized.Data.Sorts.Should().OnlyContain(sort => sort.Expression != null && sort.PropertyName == null);
+    }
+
+    [Fact]
+    public void ApplyThenByPreservesSortSequence()
+    {
+        var sourceQuery = new RemoteRepositoryQuery<TestModel>();
+        sourceQuery.OrderBy(model => model.Status)
+            .ThenByDescending(model => model.FooId)
+            .ThenBy(model => model.Id);
+
+        var serialized = sourceQuery.Serialize();
+        var targetQuery = new RemoteRepositoryQuery<TestModel>();
+
+        serialized.Apply(targetQuery);
+
+        var appliedSerialized = targetQuery.Serialize();
+        appliedSerialized.Data.Sorts.Should().BeEquivalentTo(serialized.Data.Sorts, options => options.WithStrictOrdering());
+    }
+
+    [Fact]
+    public void ApplyLegacySortsPreservesLastWinsBehavior()
+    {
+        var serializer = new ExpressionSerializer();
+        var serialized = new SerializedQuery<TestModel>(new SerializedQueryData
+        {
+            OrderBy =
+            [
+                serializer.Serialize((Expression<Func<TestModel, object>>)(model => model.Status))
+            ],
+            OrderByDescending =
+            [
+                serializer.Serialize((Expression<Func<TestModel, object>>)(model => model.FooId))
+            ],
+            OrderByString =
+            [
+                new OrderByString(nameof(TestModel.FooId), false)
+            ]
+        });
+        var targetQuery = new RemoteRepositoryQuery<TestModel>();
+
+        serialized.Apply(targetQuery);
+
+        var appliedSerialized = targetQuery.Serialize();
+        appliedSerialized.Data.Sorts.Should().HaveCount(3);
+        appliedSerialized.Data.Sorts.Should().OnlyContain(sort => sort.Append == false);
     }
 
     [Theory]

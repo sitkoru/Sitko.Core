@@ -13,6 +13,7 @@ public record SerializedQueryData
 {
     public List<string> Where { get; set; } = new();
     public List<WhereByString> WhereByString { get; set; } = new();
+    public List<SerializedSort> Sorts { get; set; } = new();
     public List<string> OrderBy { get; set; } = new();
     public List<string> OrderByDescending { get; set; } = new();
     public List<OrderByString> OrderByString { get; set; } = new();
@@ -24,6 +25,8 @@ public record SerializedQueryData
 }
 
 public record WhereByString(string WhereStr, object?[]? Values);
+
+public record SerializedSort(string? Expression, string? PropertyName, bool IsDescending, bool Append);
 
 public record OrderByString(string PropertyName, bool IsDescending);
 

@@ -86,7 +86,9 @@ public record SerializedQuery<TEntity> where TEntity : class
 
     public SerializedQuery<TEntity> AddOrderByExpression(Expression<Func<TEntity, object>> expression)
     {
-        Data.OrderBy.Add(serializer.Serialize(expression));
+        var serializedExpression = serializer.Serialize(expression);
+        Data.OrderBy.Add(serializedExpression);
+        Data.Sorts.Add(new SerializedSort(serializedExpression, null, false, false));
         return this;
     }
 
@@ -103,7 +105,9 @@ public record SerializedQuery<TEntity> where TEntity : class
 
     public SerializedQuery<TEntity> AddOrderByDescendingExpression(Expression<Func<TEntity, object>> expression)
     {
-        Data.OrderByDescending.Add(serializer.Serialize(expression));
+        var serializedExpression = serializer.Serialize(expression);
+        Data.OrderByDescending.Add(serializedExpression);
+        Data.Sorts.Add(new SerializedSort(serializedExpression, null, true, false));
         return this;
     }
 
@@ -113,6 +117,21 @@ public record SerializedQuery<TEntity> where TEntity : class
         foreach (var expression in orderByStringExpressions)
         {
             Data.OrderByString.Add(new OrderByString(expression.propertyName, expression.isDescending));
+            Data.Sorts.Add(new SerializedSort(null, expression.propertyName, expression.isDescending, false));
+        }
+
+        return this;
+    }
+
+    internal SerializedQuery<TEntity> AddSorts(IEnumerable<RemoteRepositoryQuery<TEntity>.RepositorySort> sorts)
+    {
+        foreach (var sort in sorts)
+        {
+            Data.Sorts.Add(new SerializedSort(
+                sort.Expression is null ? null : serializer.Serialize(sort.Expression),
+                sort.PropertyName,
+                sort.IsDescending,
+                sort.Append));
         }
 
         return this;
@@ -182,21 +201,39 @@ public record SerializedQuery<TEntity> where TEntity : class
             }
         }
 
-        foreach (var expressionNode in Data.OrderBy)
+        if (Data.Sorts.Any())
         {
-            var ex = serializer.Deserialize<Expression<Func<TEntity, object>>>(expressionNode);
-            query.OrderBy(ex);
+            foreach (var sort in Data.Sorts)
+            {
+                if (!string.IsNullOrEmpty(sort.Expression))
+                {
+                    var ex = serializer.Deserialize<Expression<Func<TEntity, object>>>(sort.Expression);
+                    query = ApplyExpressionSort(query, ex, sort.IsDescending, sort.Append);
+                }
+                else if (!string.IsNullOrEmpty(sort.PropertyName))
+                {
+                    query = ApplyPropertySort(query, sort.PropertyName, sort.IsDescending, sort.Append);
+                }
+            }
         }
-
-        foreach (var expressionNode in Data.OrderByDescending)
+        else
         {
-            var ex = serializer.Deserialize<Expression<Func<TEntity, object>>>(expressionNode);
-            query.OrderByDescending(ex);
-        }
+            foreach (var expressionNode in Data.OrderBy)
+            {
+                var ex = serializer.Deserialize<Expression<Func<TEntity, object>>>(expressionNode);
+                query = ApplyExpressionSort(query, ex, false, false);
+            }
 
-        foreach (var (propertyName, isDescending) in Data.OrderByString)
-        {
-            query.OrderByString(isDescending ? $"-{propertyName}" : propertyName);
+            foreach (var expressionNode in Data.OrderByDescending)
+            {
+                var ex = serializer.Deserialize<Expression<Func<TEntity, object>>>(expressionNode);
+                query = ApplyExpressionSort(query, ex, true, false);
+            }
+
+            foreach (var (propertyName, isDescending) in Data.OrderByString)
+            {
+                query = ApplyPropertySort(query, propertyName, isDescending, false);
+            }
         }
 
         foreach (var include in Data.IncludesByName)
@@ -220,4 +257,14 @@ public record SerializedQuery<TEntity> where TEntity : class
             query.Skip(Data.Offset.Value);
         }
     }
+
+    private static IRepositoryQuery<TEntity> ApplyExpressionSort(IRepositoryQuery<TEntity> query,
+        Expression<Func<TEntity, object>> expression, bool isDescending, bool append) => append
+        ? isDescending ? query.ThenByDescending(expression) : query.ThenBy(expression)
+        : isDescending ? query.OrderByDescending(expression) : query.OrderBy(expression);
+
+    private static IRepositoryQuery<TEntity> ApplyPropertySort(IRepositoryQuery<TEntity> query, string propertyName,
+        bool isDescending, bool append) => append
+        ? query.ThenBy(propertyName, isDescending)
+        : query.OrderBy(propertyName, isDescending);
 }
