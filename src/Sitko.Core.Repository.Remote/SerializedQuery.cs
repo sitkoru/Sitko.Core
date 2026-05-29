@@ -86,8 +86,9 @@ public record SerializedQuery<TEntity> where TEntity : class
 
     public SerializedQuery<TEntity> AddOrderByExpression(Expression<Func<TEntity, object>> expression)
     {
-        Data.OrderBy.Add(serializer.Serialize(expression));
-        Data.Sorts.Add(new SerializedSort(serializer.Serialize(expression), null, false, false));
+        var serializedExpression = serializer.Serialize(expression);
+        Data.OrderBy.Add(serializedExpression);
+        Data.Sorts.Add(new SerializedSort(serializedExpression, null, false, false));
         return this;
     }
 
@@ -104,8 +105,9 @@ public record SerializedQuery<TEntity> where TEntity : class
 
     public SerializedQuery<TEntity> AddOrderByDescendingExpression(Expression<Func<TEntity, object>> expression)
     {
-        Data.OrderByDescending.Add(serializer.Serialize(expression));
-        Data.Sorts.Add(new SerializedSort(serializer.Serialize(expression), null, true, false));
+        var serializedExpression = serializer.Serialize(expression);
+        Data.OrderByDescending.Add(serializedExpression);
+        Data.Sorts.Add(new SerializedSort(serializedExpression, null, true, false));
         return this;
     }
 
@@ -216,25 +218,21 @@ public record SerializedQuery<TEntity> where TEntity : class
         }
         else
         {
-            var append = false;
             foreach (var expressionNode in Data.OrderBy)
             {
                 var ex = serializer.Deserialize<Expression<Func<TEntity, object>>>(expressionNode);
-                query = ApplyExpressionSort(query, ex, false, append);
-                append = true;
+                query = ApplyExpressionSort(query, ex, false, false);
             }
 
             foreach (var expressionNode in Data.OrderByDescending)
             {
                 var ex = serializer.Deserialize<Expression<Func<TEntity, object>>>(expressionNode);
-                query = ApplyExpressionSort(query, ex, true, append);
-                append = true;
+                query = ApplyExpressionSort(query, ex, true, false);
             }
 
             foreach (var (propertyName, isDescending) in Data.OrderByString)
             {
-                query = ApplyPropertySort(query, propertyName, isDescending, append);
-                append = true;
+                query = ApplyPropertySort(query, propertyName, isDescending, false);
             }
         }
 

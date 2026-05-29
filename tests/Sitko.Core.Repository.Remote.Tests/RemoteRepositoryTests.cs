@@ -4,6 +4,7 @@ using Sitko.FluentValidation.Graph;
 using Sitko.Core.Repository.Remote.Tests.Data;
 using Sitko.Core.Repository.Tests;
 using Sitko.Core.Repository.Tests.Data;
+using System.Linq.Expressions;
 using Xunit;
 
 namespace Sitko.Core.Repository.Remote.Tests;
@@ -216,6 +217,34 @@ public class RemoteRepositoryTests : BasicRepositoryTests<RemoteRepositoryTestSc
 
         var appliedSerialized = targetQuery.Serialize();
         appliedSerialized.Data.Sorts.Should().BeEquivalentTo(serialized.Data.Sorts, options => options.WithStrictOrdering());
+    }
+
+    [Fact]
+    public void ApplyLegacySortsPreservesLastWinsBehavior()
+    {
+        var serializer = new ExpressionSerializer();
+        var serialized = new SerializedQuery<TestModel>(new SerializedQueryData
+        {
+            OrderBy =
+            [
+                serializer.Serialize((Expression<Func<TestModel, object>>)(model => model.Status))
+            ],
+            OrderByDescending =
+            [
+                serializer.Serialize((Expression<Func<TestModel, object>>)(model => model.FooId))
+            ],
+            OrderByString =
+            [
+                new OrderByString(nameof(TestModel.FooId), false)
+            ]
+        });
+        var targetQuery = new RemoteRepositoryQuery<TestModel>();
+
+        serialized.Apply(targetQuery);
+
+        var appliedSerialized = targetQuery.Serialize();
+        appliedSerialized.Data.Sorts.Should().HaveCount(3);
+        appliedSerialized.Data.Sorts.Should().OnlyContain(sort => sort.Append == false);
     }
 
     [Theory]
