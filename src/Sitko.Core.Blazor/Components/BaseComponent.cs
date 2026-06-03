@@ -91,6 +91,10 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable
     {
         get
         {
+            if (CancellationTokenSource.IsCancellationRequested)
+            {
+                throw new OperationCanceledException();
+            }
             if (logger is null)
             {
                 var loggerType = typeof(ILogger<>);
@@ -106,6 +110,10 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable
     {
         get
         {
+            if (CancellationTokenSource.IsCancellationRequested)
+            {
+                throw new OperationCanceledException();
+            }
             if (localizationProvider is null)
             {
                 var localizationProviderType = typeof(ILocalizationProvider<>);
@@ -172,41 +180,23 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable
         }
         catch (ObjectDisposedException)
         {
-            // We got ObjectDisposedException during initialization. It may be caused by cancelled request. In such case
-            // ParentScope would be disposed before component initialization is completed.
-            var parentDisposed = false;
-            if (ParentScope is not null)
-            {
-                // We have parent scope. Let's check if it is disposed
-                try
-                {
-                    var unused = ParentScope.ServiceProvider.CreateScope();
-                }
-                catch (ObjectDisposedException)
-                {
-                    // Scope is disposed
-                    parentDisposed = true;
-                }
-            }
-
-            if (!parentDisposed)
-            {
-                // Parent scope was not disposed, so problem lies inside initialization code
-                // Pass exception
-                throw;
-            }
-
             // Parent scope was disposed. Indicate in logs and suppress exception.
             LogComponentError("Parent scope was disposed");
         }
     }
 
-    private void LogComponentError(string message) =>
+    private void LogComponentError(string message)
+    {
+        if (CancellationTokenSource.IsCancellationRequested)
+        {
+            return;
+        }
         GlobalServiceProvider.GetRequiredService<ILogger<BaseComponent>>()
             .Log(
                 GlobalServiceProvider.GetRequiredService<IApplicationContext>().IsDevelopment()
                     ? LogLevel.Warning
                     : LogLevel.Debug, "{Message} in {Component}", message, GetType());
+    }
 
     protected T? GetQueryString<T>(string key) => TryGetQueryString<T>(key, out var value) ? value : default;
 
