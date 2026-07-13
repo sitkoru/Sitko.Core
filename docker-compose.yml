@@ -64,7 +64,7 @@ services:
     ports:
       - "8200:8200"
   kafka:
-    image: docker.io/bitnami/kafka:3.9
+    image: docker.io/soldevelo/kafka:3.9
     ports:
       - "9092:9092"
     volumes:
