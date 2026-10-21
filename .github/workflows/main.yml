@@ -78,19 +78,62 @@ jobs:
 
   pdf:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    permissions:
+      contents: read
+      checks: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - sdk: '8.0'
+            sdk-version: '8.0.100'
+            framework: net8.0
+          - sdk: '10.0'
+            sdk-version: '10.0.201'
+            framework: net10.0
+    container: mcr.microsoft.com/dotnet/sdk:${{ matrix.sdk }}
     env:
-      PUPPETEER_EXECUTABLE_PATH: "/usr/bin/google-chrome-stable"
+      Puppeteer__BrowserWsEndpoint: ws://browserless:3000/chromium?token=pdf-ci
+    services:
+      browserless:
+        image: ghcr.io/browserless/chromium:v2.57.0@sha256:6bac628b3d8293f8fb251d3a6b63030dfc5a1cb0c7e5c39abe5efd8f4b25360b
+        env:
+          TOKEN: pdf-ci
+          CONCURRENT: '4'
+        options: >-
+          --health-cmd="curl --fail http://localhost:3000/pressure?token=pdf-ci"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=12
     steps:
       - uses: actions/checkout@v4
-      - name: Install chrome
+      - name: Select .NET SDK
         run: |
-          apt-get update
-          apt-get install -y google-chrome-stable
-      - name: Run Sitko.Core.Pdf.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
-      - name: Run Sitko.Core.Pdf.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
+          cat > global.json <<'JSON'
+          { "sdk": { "version": "${{ matrix.sdk-version }}", "rollForward": "latestFeature" } }
+          JSON
+          dotnet --version
+          dotnet --list-sdks
+      - name: Run Sitko.Core.Pdf.Tests ${{ matrix.framework }}
+        run: >-
+          dotnet test tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
+          --logger GitHubActions --logger "trx;LogFileName=pdf.trx"
+          --results-directory TestResults/pdf-${{ matrix.sdk }}
+          --framework ${{ matrix.framework }} -p:TargetFrameworks=${{ matrix.framework }}
+      - name: Save PDF test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-test-results-sdk-${{ matrix.sdk }}
+          path: TestResults/pdf-${{ matrix.sdk }}/*.trx
+          retention-days: 3
+      - name: Report PDF tests
+        if: ${{ always() && github.event_name == 'push' }}
+        uses: dorny/test-reporter@v2
+        with:
+          name: PDF tests SDK ${{ matrix.sdk }}
+          path: TestResults/pdf-${{ matrix.sdk }}/*.trx
+          reporter: dotnet-trx
 
   queue:
     runs-on: ubuntu-latest
@@ -272,7 +315,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     needs: [ build, apps, blazor, grpc, imgproxy, pdf, queue, repository, sonyflake, storage, vault, opensearch, kafka, clickhouse ]
-    if: ${{ github.event_name == 'push' }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
