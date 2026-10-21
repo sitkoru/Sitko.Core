@@ -78,6 +78,9 @@ jobs:
 
   pdf:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
     strategy:
       fail-fast: false
       matrix:
@@ -114,8 +117,23 @@ jobs:
       - name: Run Sitko.Core.Pdf.Tests ${{ matrix.framework }}
         run: >-
           dotnet test tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
-          --logger GitHubActions --framework ${{ matrix.framework }}
-          -p:TargetFrameworks=${{ matrix.framework }}
+          --logger GitHubActions --logger "trx;LogFileName=pdf.trx"
+          --results-directory TestResults/pdf-${{ matrix.sdk }}
+          --framework ${{ matrix.framework }} -p:TargetFrameworks=${{ matrix.framework }}
+      - name: Save PDF test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-test-results-sdk-${{ matrix.sdk }}
+          path: TestResults/pdf-${{ matrix.sdk }}/*.trx
+          retention-days: 3
+      - name: Report PDF tests
+        if: ${{ always() && github.event_name == 'push' }}
+        uses: dorny/test-reporter@v2
+        with:
+          name: PDF tests SDK ${{ matrix.sdk }}
+          path: TestResults/pdf-${{ matrix.sdk }}/*.trx
+          reporter: dotnet-trx
 
   queue:
     runs-on: ubuntu-latest
