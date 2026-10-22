@@ -129,7 +129,7 @@ jobs:
           retention-days: 3
       - name: Report PDF tests
         if: ${{ always() && github.event_name == 'push' }}
-        uses: dorny/test-reporter@v2
+        uses: dorny/test-reporter@v3
         with:
           name: PDF tests SDK ${{ matrix.sdk }}
           path: TestResults/pdf-${{ matrix.sdk }}/*.trx
