@@ -28,10 +28,8 @@ public class OidcAuthOptionsValidator : IdentityServerAuthOptionsValidator<OidcI
     {
         RuleFor(o => o.OidcClientId).NotEmpty().WithMessage("Oidc client id can't be empty");
         RuleFor(o => o.OidcClientSecret).NotEmpty().WithMessage("Oidc client secret can't be empty");
-        RuleFor(o => o.RedisHost).NotEmpty().When(o => o.TokenStoreType == TokenStoreType.Redis)
-            .WithMessage("Redis host can't be empty when TokenStore configure to redis");
-        RuleFor(o => o.RedisPort).GreaterThan(0).When(o => o.TokenStoreType == TokenStoreType.Redis)
-            .WithMessage("Redis port can't be empty when TokenStore configure to redis");
     }
-}
 
+    protected override bool RequiresRedis(OidcIdentityServerModuleOptions options) =>
+        base.RequiresRedis(options) || options.TokenStoreType == TokenStoreType.Redis;
+}

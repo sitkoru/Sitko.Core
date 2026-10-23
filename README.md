@@ -21,3 +21,5 @@ Provides base application and modules for fast application building.
 
 See [demo app](apps/Blazor/Sitko.Core.Apps.Blazor) for now
 
+
+Общее подключение `Sitko.Core.Redis`, настройки аутентификации и запуск тестов: [Redis и Valkey Sentinel](docs/redis-sentinel.md).

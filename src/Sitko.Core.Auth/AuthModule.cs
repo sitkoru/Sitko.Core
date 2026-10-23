@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.DataProtection.StackExchangeRedis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.App.Web;
+using Sitko.Core.Redis;
 using StackExchange.Redis;
 
 namespace Sitko.Core.Auth;
@@ -58,22 +61,19 @@ public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOpti
                     .FirstOrDefault(pair => pair.Key == startupOptions.ForcePolicy).Value;
             }
         });
+        _ = services.AddKeyedSingleton(typeof(TAuthOptions), (_, _) => new RedisConnection(startupOptions.GetRedisOptions()));
+        _ = services.AddKeyedSingleton<IDatabase>(typeof(TAuthOptions), static (provider, _) =>
+            provider.GetRequiredKeyedService<RedisConnection>(typeof(TAuthOptions)).Database);
         if (startupOptions.EnableRedisDataProtection)
         {
-            services.AddDataProtection().PersistKeysToStackExchangeRedis(() =>
-                    {
-                        var redis = ConnectionMultiplexer
-                            .Connect($"{startupOptions.RedisHost}:{startupOptions.RedisPort}", options =>
-                            {
-                                if (!string.IsNullOrEmpty(startupOptions.RedisPassword))
-                                {
-                                    options.Password = startupOptions.RedisPassword;
-                                }
-                            });
-                        return redis.GetDatabase(startupOptions.RedisDb);
-                    }, $"{applicationContext.Name}-DP")
+            _ = services.AddDataProtection()
                 .SetApplicationName(applicationContext.Name)
                 .SetDefaultKeyLifetime(TimeSpan.FromMinutes(startupOptions.DataProtectionLifeTimeInMinutes));
+            _ = services.AddOptions<KeyManagementOptions>().Configure<IServiceProvider>(
+                (options, provider) => options.XmlRepository =
+                    new RedisXmlRepository(
+                        () => provider.GetRequiredKeyedService<RedisConnection>(typeof(TAuthOptions)).Database,
+                        $"{applicationContext.Name}-DP"));
         }
     }
 

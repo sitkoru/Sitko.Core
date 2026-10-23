@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Sitko.Core.App;
+using Sitko.Core.Redis;
 
 namespace Sitko.Core.Auth;
 
@@ -17,6 +18,11 @@ public abstract class AuthOptions : BaseModuleOptions
     public int RedisPort { get; set; } = 6379;
     public int RedisDb { get; set; }
     public string? RedisPassword { get; set; }
+    public string? RedisUser { get; set; }
+    public string[] RedisSentinelEndpoints { get; set; } = [];
+    public string? RedisServiceName { get; set; }
+    public string? RedisSentinelUser { get; set; }
+    public string? RedisSentinelPassword { get; set; }
     public int DataProtectionLifeTimeInMinutes { get; set; } = 90 * 24 * 60;
     public abstract bool RequiresCookie { get; }
     public abstract bool RequiresAuthentication { get; }
@@ -25,6 +31,19 @@ public abstract class AuthOptions : BaseModuleOptions
     public int CookieExpireInMinutes { get; set; } = 30 * 24 * 60;
     public string UserIdClaimName { get; set; } = ClaimTypes.NameIdentifier;
     [JsonIgnore] public Action<CookieBuilder>? ConfigureCookie { get; set; }
+
+    internal RedisModuleOptions GetRedisOptions() => new()
+    {
+        Host = RedisHost,
+        Port = RedisPort,
+        Db = RedisDb,
+        Password = RedisPassword,
+        User = RedisUser,
+        SentinelEndpoints = RedisSentinelEndpoints,
+        ServiceName = RedisServiceName,
+        SentinelUser = RedisSentinelUser,
+        SentinelPassword = RedisSentinelPassword
+    };
 
     public AuthOptions AddPolicy(string name, Func<AuthorizationPolicyBuilder, AuthorizationPolicyBuilder> policyBuilder,
         bool forcePolicy = false)
@@ -50,11 +69,16 @@ public abstract class AuthOptionsValidator<TOptions> : AbstractValidator<TOption
 {
     protected AuthOptionsValidator()
     {
-        RuleFor(o => o.RedisHost).NotEmpty().When(o => o.EnableRedisDataProtection)
-            .WithMessage("Redis host can't be empty when Redis Data protection enabled");
-        RuleFor(o => o.RedisPort).GreaterThan(0).When(o => o.EnableRedisDataProtection)
-            .WithMessage("Redis port can't be empty when Redis Data protection enabled");
-        RuleFor(o => o.RedisDb).GreaterThanOrEqualTo(0).When(o => o.EnableRedisDataProtection)
+        _ = RuleFor(static o => o).Custom(static (options, context) =>
+        {
+            foreach (var failure in new RedisModuleOptionsValidator().Validate(options.GetRedisOptions()).Errors)
+            {
+                context.AddFailure($"Redis{failure.PropertyName}", failure.ErrorMessage);
+            }
+        }).When(RequiresRedis);
+        _ = RuleFor(static o => o.RedisDb).GreaterThanOrEqualTo(0).When(static o => o.EnableRedisDataProtection)
             .WithMessage("Can't use -1 database for data protection");
     }
+
+    protected virtual bool RequiresRedis(TOptions options) => options.EnableRedisDataProtection;
 }

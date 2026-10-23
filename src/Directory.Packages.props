@@ -3,6 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="StackExchange.Redis" Version="2.7.27" />
     <PackageVersion Include="Cronos" Version="0.13.0" />
     <PackageVersion Include="DistributedLock" Version="2.7.1" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
