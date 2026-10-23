@@ -1,34 +1,34 @@
 using StackExchange.Redis;
 
-namespace Sitko.Core.Auth
+namespace Sitko.Core.Redis
 {
-    internal sealed class AuthRedisConnection<TOptions> : IDisposable where TOptions : AuthOptions
+    public sealed class RedisConnection : IDisposable
     {
         private readonly ConnectionMultiplexer connection;
         private readonly ConnectionMultiplexer? sentinel;
         private readonly int database;
 
-        public AuthRedisConnection(TOptions options)
+        public RedisConnection(RedisModuleOptions options)
         {
-            database = options.RedisDb;
+            database = options.Db;
             var redisOptions = new ConfigurationOptions
             {
-                User = options.RedisUser,
-                Password = options.RedisPassword
+                User = options.User,
+                Password = options.Password
             };
-            if (!options.UseRedisSentinel)
+            if (!options.UseSentinel)
             {
-                redisOptions.EndPoints.Add(options.RedisHost!, options.RedisPort);
+                redisOptions.EndPoints.Add(options.Host!, options.Port);
                 connection = ConnectionMultiplexer.Connect(redisOptions);
                 return;
             }
 
             var sentinelOptions = new ConfigurationOptions
             {
-                User = options.RedisSentinelUser,
-                Password = options.RedisSentinelPassword
+                User = options.SentinelUser,
+                Password = options.SentinelPassword
             };
-            foreach (var endpoint in options.RedisSentinelEndpoints)
+            foreach (var endpoint in options.SentinelEndpoints)
             {
                 sentinelOptions.EndPoints.Add(endpoint);
             }
@@ -36,7 +36,7 @@ namespace Sitko.Core.Auth
             sentinel = ConnectionMultiplexer.SentinelConnect(sentinelOptions);
             try
             {
-                redisOptions.ServiceName = options.RedisServiceName;
+                redisOptions.ServiceName = options.ServiceName;
                 connection = sentinel.GetSentinelMasterConnection(redisOptions);
             }
             catch

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
+using Sitko.Core.Redis;
 using Sitko.Core.Auth.IdentityServer;
 using Xunit;
 using StackExchange.Redis;
@@ -16,6 +17,35 @@ namespace Sitko.Core.Auth.Tests
 {
     public sealed class RedisAuthTests
     {
+        [Fact]
+        public async Task RedisModuleWorksWithoutAuthAndDisposesConnection()
+        {
+            using var observer = ConnectSentinel();
+            var primary = await observer.GetServer("127.0.0.1", 26379).SentinelGetMasterAddressByNameAsync("sitko-test");
+            var primaryPort = Assert.IsType<IPEndPoint>(primary).Port;
+            var builder = Host.CreateApplicationBuilder();
+            _ = builder.AddSitkoCore().AddRedis(options =>
+            {
+                options.Host = "127.0.0.1";
+                options.Port = primaryPort;
+                options.Password = "default-test";
+                options.Db = 3;
+            });
+            IConnectionMultiplexer connection;
+            using (var app = builder.Build())
+            {
+                var database = app.Services.GetRequiredService<IDatabase>();
+                connection = database.Multiplexer;
+                var key = $"redis-module-{Guid.NewGuid():N}";
+                Assert.True(await database.StringSetAsync(key, "standalone"));
+                Assert.Equal("standalone", (await database.StringGetAsync(key)).ToString());
+                Assert.Equal(3, database.Database);
+                Assert.True(await database.KeyDeleteAsync(key));
+            }
+
+            Assert.False(connection.IsConnected);
+        }
+
         [Fact]
         public Task DirectConnectionPreservesDataProtectionAndTokens() => VerifyConnection(false);
 
@@ -61,26 +91,25 @@ namespace Sitko.Core.Auth.Tests
             var primary = await observer.GetServer("127.0.0.1", 26379).SentinelGetMasterAddressByNameAsync("sitko-test");
             Assert.NotNull(primary);
             var primaryPort = Assert.IsType<IPEndPoint>(primary).Port;
-            using var first = CreateApplication(name, sentinel, primaryPort);
-            var protector = first.Services.GetRequiredService<IDataProtectionProvider>().CreateProtector("test");
-            var protectedText = protector.Protect("before-failover");
-            var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, "alice")]));
-            var store = first.Services.GetRequiredService<IUserTokenStore>();
-            await store.StoreTokenAsync(user, new UserToken { AccessToken = "access-before", RefreshToken = "refresh-before" });
-
             using var admin = ConnectionMultiplexer.Connect(new ConfigurationOptions
             {
                 EndPoints = { primary },
                 Password = "default-test",
                 AllowAdmin = true
             });
-            using (var legacy = new ServiceCollection().AddLogging().AddDataProtection()
-                       .PersistKeysToStackExchangeRedis(() => admin.GetDatabase(3), $"{name}-DP")
-                       .SetApplicationName(name).Services.BuildServiceProvider())
-            {
-                Assert.Equal("before-failover", legacy.GetRequiredService<IDataProtectionProvider>()
-                    .CreateProtector("test").Unprotect(protectedText));
-            }
+            using var legacy = new ServiceCollection().AddLogging().AddDataProtection()
+                .PersistKeysToStackExchangeRedis(() => admin.GetDatabase(3), $"{name}-DP")
+                .SetApplicationName(name).Services.BuildServiceProvider();
+            var legacyProtector = legacy.GetRequiredService<IDataProtectionProvider>().CreateProtector("test");
+            var legacyProtectedText = legacyProtector.Protect("legacy-payload");
+            using var first = CreateApplication(name, sentinel, primaryPort);
+            var protector = first.Services.GetRequiredService<IDataProtectionProvider>().CreateProtector("test");
+            Assert.Equal("legacy-payload", protector.Unprotect(legacyProtectedText));
+            var protectedText = protector.Protect("before-failover");
+            Assert.Equal("before-failover", legacyProtector.Unprotect(protectedText));
+            var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, "alice")]));
+            var store = first.Services.GetRequiredService<IUserTokenStore>();
+            await store.StoreTokenAsync(user, new UserToken { AccessToken = "access-before", RefreshToken = "refresh-before" });
 
             if (sentinel)
             {
@@ -96,6 +125,7 @@ namespace Sitko.Core.Auth.Tests
                 });
                 await WaitUntilAsync(async () => (await store.GetTokenAsync(user)).AccessToken == "access-before");
                 Assert.Equal("before-failover", protector.Unprotect(protectedText));
+                Assert.Equal("legacy-payload", protector.Unprotect(legacyProtectedText));
                 _ = first.Services.GetRequiredService<IKeyManager>()
                     .CreateNewKey(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(90));
             }
@@ -103,6 +133,8 @@ namespace Sitko.Core.Auth.Tests
             using var second = CreateApplication(name, sentinel, primaryPort);
             Assert.Equal("before-failover", second.Services.GetRequiredService<IDataProtectionProvider>()
                 .CreateProtector("test").Unprotect(protectedText));
+            Assert.Equal("legacy-payload", second.Services.GetRequiredService<IDataProtectionProvider>()
+                .CreateProtector("test").Unprotect(legacyProtectedText));
             var restored = await second.Services.GetRequiredService<IUserTokenStore>().GetTokenAsync(user);
             Assert.Equal("access-before", restored.AccessToken);
             Assert.Equal("refresh-before", restored.RefreshToken);

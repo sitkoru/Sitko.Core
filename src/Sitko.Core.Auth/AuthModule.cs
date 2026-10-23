@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.App.Web;
+using Sitko.Core.Redis;
 using StackExchange.Redis;
 
 namespace Sitko.Core.Auth;
@@ -60,17 +61,19 @@ public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOpti
                     .FirstOrDefault(pair => pair.Key == startupOptions.ForcePolicy).Value;
             }
         });
-        _ = services.AddSingleton(_ => new AuthRedisConnection<TAuthOptions>(startupOptions));
+        _ = services.AddKeyedSingleton(typeof(TAuthOptions), (_, _) => new RedisConnection(startupOptions.GetRedisOptions()));
         _ = services.AddKeyedSingleton<IDatabase>(typeof(TAuthOptions), static (provider, _) =>
-            provider.GetRequiredService<AuthRedisConnection<TAuthOptions>>().Database);
+            provider.GetRequiredKeyedService<RedisConnection>(typeof(TAuthOptions)).Database);
         if (startupOptions.EnableRedisDataProtection)
         {
             _ = services.AddDataProtection()
                 .SetApplicationName(applicationContext.Name)
                 .SetDefaultKeyLifetime(TimeSpan.FromMinutes(startupOptions.DataProtectionLifeTimeInMinutes));
-            _ = services.AddOptions<KeyManagementOptions>().Configure<AuthRedisConnection<TAuthOptions>>(
-                (options, redis) => options.XmlRepository =
-                    new RedisXmlRepository(() => redis.Database, $"{applicationContext.Name}-DP"));
+            _ = services.AddOptions<KeyManagementOptions>().Configure<IServiceProvider>(
+                (options, provider) => options.XmlRepository =
+                    new RedisXmlRepository(
+                        () => provider.GetRequiredKeyedService<RedisConnection>(typeof(TAuthOptions)).Database,
+                        $"{applicationContext.Name}-DP"));
         }
     }
 

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Sitko.Core.App;
+using Sitko.Core.Redis;
 
 namespace Sitko.Core.Auth;
 
@@ -22,7 +23,6 @@ public abstract class AuthOptions : BaseModuleOptions
     public string? RedisServiceName { get; set; }
     public string? RedisSentinelUser { get; set; }
     public string? RedisSentinelPassword { get; set; }
-    internal bool UseRedisSentinel => RedisServiceName is not null || RedisSentinelEndpoints is { Length: > 0 };
     public int DataProtectionLifeTimeInMinutes { get; set; } = 90 * 24 * 60;
     public abstract bool RequiresCookie { get; }
     public abstract bool RequiresAuthentication { get; }
@@ -31,6 +31,19 @@ public abstract class AuthOptions : BaseModuleOptions
     public int CookieExpireInMinutes { get; set; } = 30 * 24 * 60;
     public string UserIdClaimName { get; set; } = ClaimTypes.NameIdentifier;
     [JsonIgnore] public Action<CookieBuilder>? ConfigureCookie { get; set; }
+
+    internal RedisModuleOptions GetRedisOptions() => new()
+    {
+        Host = RedisHost,
+        Port = RedisPort,
+        Db = RedisDb,
+        Password = RedisPassword,
+        User = RedisUser,
+        SentinelEndpoints = RedisSentinelEndpoints,
+        ServiceName = RedisServiceName,
+        SentinelUser = RedisSentinelUser,
+        SentinelPassword = RedisSentinelPassword
+    };
 
     public AuthOptions AddPolicy(string name, Func<AuthorizationPolicyBuilder, AuthorizationPolicyBuilder> policyBuilder,
         bool forcePolicy = false)
@@ -56,26 +69,16 @@ public abstract class AuthOptionsValidator<TOptions> : AbstractValidator<TOption
 {
     protected AuthOptionsValidator()
     {
-        _ = When(RequiresRedis, () =>
+        _ = RuleFor(static o => o).Custom(static (options, context) =>
         {
-            _ = RuleFor(static o => o.RedisHost).NotEmpty().When(static o => !o.UseRedisSentinel)
-                .WithMessage("Redis host can't be empty for a direct connection");
-            _ = RuleFor(static o => o.RedisPort).InclusiveBetween(1, 65535).When(static o => !o.UseRedisSentinel);
-            _ = RuleFor(static o => o.RedisServiceName).NotEmpty().When(static o => o.UseRedisSentinel)
-                .WithMessage("Redis service name is required for Sentinel");
-            _ = RuleFor(static o => o.RedisSentinelEndpoints).NotEmpty().When(static o => o.UseRedisSentinel)
-                .WithMessage("At least one Redis Sentinel endpoint is required");
-            _ = RuleForEach(static o => o.RedisSentinelEndpoints).Must(IsValidSentinelEndpoint)
-                .WithMessage("Redis Sentinel endpoint must be a host:port address with a valid port");
-        });
+            foreach (var failure in new RedisModuleOptionsValidator().Validate(options.GetRedisOptions()).Errors)
+            {
+                context.AddFailure($"Redis{failure.PropertyName}", failure.ErrorMessage);
+            }
+        }).When(RequiresRedis);
         _ = RuleFor(static o => o.RedisDb).GreaterThanOrEqualTo(0).When(static o => o.EnableRedisDataProtection)
             .WithMessage("Can't use -1 database for data protection");
     }
-
-    private static bool IsValidSentinelEndpoint(string endpoint) =>
-        Uri.TryCreate($"redis://{endpoint}", UriKind.Absolute, out var uri) &&
-        uri.Port > 0 && uri.Host.Length > 0 && uri.UserInfo.Length == 0 &&
-        uri.AbsolutePath == "/" && uri.Query.Length == 0 && uri.Fragment.Length == 0;
 
     protected virtual bool RequiresRedis(TOptions options) => options.EnableRedisDataProtection;
 }

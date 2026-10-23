@@ -1,7 +1,9 @@
-# Valkey Sentinel для аутентификации
+# Redis и Valkey Sentinel
 
-`Sitko.Core.Auth` и `Sitko.Core.Auth.IdentityServer` поддерживают прямое подключение
-к Redis-совместимому серверу и обнаружение основного узла через Valkey Sentinel.
+`Sitko.Core.Redis` содержит общую логику прямого подключения к Redis-совместимому
+серверу, обнаружения основного узла через Valkey Sentinel и освобождения соединений.
+`Sitko.Core.Auth` и `Sitko.Core.Auth.IdentityServer` используют этот проект
+для Data Protection и хранилища токенов.
 Одно соединение с данными используется для ключей ASP.NET Core Data Protection
 и хранилища токенов `RedisTokenStore` в рамках одного экземпляра модуля.
 В режиме Sentinel контейнер DI владеет обоими соединениями
@@ -15,7 +17,42 @@ Sentinel должен быть доступен и знать `RedisServiceName`
 завершиться ошибкой. Интеграция не добавляет автоматический повтор произвольных
 прикладных операций.
 
-## Конфигурация
+## Использование без Auth
+
+Добавьте ссылку на `Sitko.Core.Redis` и зарегистрируйте модуль:
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Sitko.Core.App;
+using Sitko.Core.Redis;
+using StackExchange.Redis;
+
+var builder = Host.CreateApplicationBuilder(args);
+builder.AddSitkoCore().AddRedis(options =>
+{
+    options.SentinelEndpoints = ["sentinel-1.example.net:26379", "sentinel-2.example.net:26379"];
+    options.ServiceName = "app-primary";
+    options.Db = 3;
+});
+using var host = builder.Build();
+var database = host.Services.GetRequiredService<IDatabase>();
+await database.StringSetAsync("example", "value");
+```
+
+Настройки `RedisModuleOptions` читаются из секции `Redis`; имя секции можно
+переопределить параметром `optionsKey` у `AddRedis`. Для прямого подключения
+задайте `Host` и `Port` вместо `SentinelEndpoints` и `ServiceName`.
+Названия остальных параметров совпадают с параметрами Auth ниже без префикса
+`Redis`: `Db`, `User`, `Password`, `SentinelUser`, `SentinelPassword`.
+Общий модуль регистрирует `RedisConnection` и `IDatabase` в DI; соединением
+владеет контейнер, вручную освобождать его в потребителе не нужно.
+
+Auth сохраняет собственные секции и прежние плоские параметры `Redis*`.
+Дополнительный вызов `AddRedis` для Auth не требуется: он использует общий
+`RedisConnection` с настройками соответствующего модуля аутентификации.
+
+## Конфигурация Auth
 
 Пример секции `Auth:IdentityServer:Oidc`:
 
