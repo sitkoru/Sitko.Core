@@ -1,0 +1,14 @@
+services:
+  valkey:
+    image: valkey/valkey:8.1.4-alpine@sha256:e706d1213aaba6896c162bb6a3a9e1894e1a435f28f8f856d14fab2e10aa098b
+    entrypoint: ["sh", "/fixture/start.sh"]
+    volumes:
+      - ./start.sh:/fixture/start.sh:ro
+    ports:
+      - "127.0.0.1:16379-16381:16379-16381"
+      - "127.0.0.1:26379-26381:26379-26381"
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli -p 26381 --user sentinel-client -a sentinel-test ping | grep -q PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 30

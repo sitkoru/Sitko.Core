@@ -4,6 +4,7 @@ using Duende.AccessTokenManagement.OpenIdConnect;
 using IdentityModel;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using StackExchange.Redis;
 
@@ -14,25 +15,15 @@ internal class RedisTokenStore : IUserTokenStore
     private readonly IApplicationContext applicationContext;
     private readonly IDataProtector dataProtector;
     private readonly IOptions<OidcIdentityServerModuleOptions> options;
-    private readonly Lazy<IDatabase> redis;
+    private readonly IDatabase redis;
 
     public RedisTokenStore(IDataProtectionProvider dataProtectionProvider, IApplicationContext applicationContext,
-        IOptions<OidcIdentityServerModuleOptions> options)
+        IOptions<OidcIdentityServerModuleOptions> options,
+        [FromKeyedServices(typeof(OidcIdentityServerModuleOptions))] IDatabase redis)
     {
         this.applicationContext = applicationContext;
         this.options = options;
-        redis = new Lazy<IDatabase>(() =>
-        {
-            return ConnectionMultiplexer.Connect($"{options.Value.RedisHost}:{options.Value.RedisPort}",
-                    configureOptions =>
-                    {
-                        if (!string.IsNullOrEmpty(options.Value.RedisPassword))
-                        {
-                            configureOptions.Password = options.Value.RedisPassword;
-                        }
-                    })
-                .GetDatabase(options.Value.RedisDb);
-        }, LazyThreadSafetyMode.ExecutionAndPublication);
+        this.redis = redis;
         dataProtector = dataProtectionProvider.CreateProtector(nameof(RedisTokenStore));
     }
 
@@ -40,7 +31,7 @@ internal class RedisTokenStore : IUserTokenStore
     {
         var userTokenKey = GetUserTokenKey(user);
 
-        var redisValue = redis.Value.StringGet(userTokenKey);
+        var redisValue = redis.StringGet(userTokenKey);
         if (redisValue.HasValue)
         {
             var protectedJson = redisValue.ToString();
@@ -62,7 +53,7 @@ internal class RedisTokenStore : IUserTokenStore
         var userTokenKey = GetUserTokenKey(user);
         var json = JsonSerializer.Serialize(token);
         var protectedJson = dataProtector.Protect(json);
-        redis.Value.StringSet(userTokenKey, protectedJson);
+        redis.StringSet(userTokenKey, protectedJson);
 
         return Task.CompletedTask;
     }
@@ -71,7 +62,7 @@ internal class RedisTokenStore : IUserTokenStore
     {
         var userTokenKey = GetUserTokenKey(user);
 
-        redis.Value.KeyDelete(userTokenKey);
+        redis.KeyDelete(userTokenKey);
         return Task.CompletedTask;
     }
 

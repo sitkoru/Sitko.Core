@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.DataProtection.StackExchangeRedis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
@@ -58,22 +60,17 @@ public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOpti
                     .FirstOrDefault(pair => pair.Key == startupOptions.ForcePolicy).Value;
             }
         });
+        _ = services.AddSingleton(_ => new AuthRedisConnection<TAuthOptions>(startupOptions));
+        _ = services.AddKeyedSingleton<IDatabase>(typeof(TAuthOptions), static (provider, _) =>
+            provider.GetRequiredService<AuthRedisConnection<TAuthOptions>>().Database);
         if (startupOptions.EnableRedisDataProtection)
         {
-            services.AddDataProtection().PersistKeysToStackExchangeRedis(() =>
-                    {
-                        var redis = ConnectionMultiplexer
-                            .Connect($"{startupOptions.RedisHost}:{startupOptions.RedisPort}", options =>
-                            {
-                                if (!string.IsNullOrEmpty(startupOptions.RedisPassword))
-                                {
-                                    options.Password = startupOptions.RedisPassword;
-                                }
-                            });
-                        return redis.GetDatabase(startupOptions.RedisDb);
-                    }, $"{applicationContext.Name}-DP")
+            _ = services.AddDataProtection()
                 .SetApplicationName(applicationContext.Name)
                 .SetDefaultKeyLifetime(TimeSpan.FromMinutes(startupOptions.DataProtectionLifeTimeInMinutes));
+            _ = services.AddOptions<KeyManagementOptions>().Configure<AuthRedisConnection<TAuthOptions>>(
+                (options, redis) => options.XmlRepository =
+                    new RedisXmlRepository(() => redis.Database, $"{applicationContext.Name}-DP"));
         }
     }
 
