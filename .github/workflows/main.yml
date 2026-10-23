@@ -127,6 +127,9 @@ jobs:
           name: pdf-test-results-sdk-${{ matrix.sdk }}
           path: TestResults/pdf-${{ matrix.sdk }}/*.trx
           retention-days: 3
+      - name: Trust workspace for PDF test report
+        if: ${{ always() && github.event_name == 'push' }}
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Report PDF tests
         if: ${{ always() && github.event_name == 'push' }}
         uses: dorny/test-reporter@v2
