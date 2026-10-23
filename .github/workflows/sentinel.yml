@@ -42,7 +42,7 @@ jobs:
         run: docker compose -p sitko-sentinel-tests -f tests/Sitko.Core.Auth.Tests/Valkey/compose.yml down --volumes
       - name: Сохранить результаты тестов
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sentinel-test-results-${{ matrix.framework }}
           path: TestResults/sentinel-${{ matrix.framework }}/*.trx
