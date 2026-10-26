@@ -211,7 +211,11 @@ docker compose -p sitko-sentinel-tests -f tests/Sitko.Core.Auth.Tests/Valkey/com
 docker compose -p sitko-sentinel-tests -f tests/Sitko.Core.Auth.Tests/Valkey/compose.yml down --volumes
 ```
 
-В CI `.github/workflows/sentinel.yml` выполняет эти тесты отдельно для `net8.0`
-и `net10.0`, сохраняет TRX и всегда запрашивает журналы и удаление стенда.
+В CI задание `redis` в `.github/workflows/main.yml` последовательно выполняет
+тесты для `net8.0` и `net10.0` в общем образе `actions-container`. Каждая платформа
+получает новые контейнеры Valkey и Sentinel. Они используют сетевое пространство
+контейнера задания, чтобы объявленные адреса `127.0.0.1` были доступны тестам.
+Задание сохраняет TRX в артефакт `redis-test-results` и всегда запрашивает журналы
+и удаление стенда.
 Локальный стенд и CI не проверяют Kubernetes-оператор, зональные диски
 или перенос существующих данных между серверами.
