@@ -3,7 +3,7 @@ name: Main
 on:
   push:
     branches:
-      - "**"
+      - master
   pull_request:
 
 jobs:
@@ -81,17 +81,7 @@ jobs:
     permissions:
       contents: read
       checks: write
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - sdk: '8.0'
-            sdk-version: '8.0.100'
-            framework: net8.0
-          - sdk: '10.0'
-            sdk-version: '10.0.201'
-            framework: net10.0
-    container: mcr.microsoft.com/dotnet/sdk:${{ matrix.sdk }}
+    container: ghcr.io/sitkoru/actions-container
     env:
       Puppeteer__BrowserWsEndpoint: ws://browserless:3000/chromium?token=pdf-ci
     services:
@@ -109,25 +99,24 @@ jobs:
       - uses: actions/checkout@v7
       - name: Configure Git safe directory
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: Select .NET SDK
-        run: |
-          cat > global.json <<'JSON'
-          { "sdk": { "version": "${{ matrix.sdk-version }}", "rollForward": "latestFeature" } }
-          JSON
-          dotnet --version
-          dotnet --list-sdks
-      - name: Run Sitko.Core.Pdf.Tests ${{ matrix.framework }}
+      - name: Запустить Sitko.Core.Pdf.Tests net8.0
         run: >-
           dotnet test tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
           --logger GitHubActions --logger "trx;LogFileName=pdf.trx"
-          --results-directory TestResults/pdf-${{ matrix.sdk }}
-          --framework ${{ matrix.framework }} -p:TargetFrameworks=${{ matrix.framework }}
+          --results-directory TestResults/pdf-net8.0
+          --framework net8.0
+      - name: Запустить Sitko.Core.Pdf.Tests net10.0
+        run: >-
+          dotnet test tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
+          --logger GitHubActions --logger "trx;LogFileName=pdf.trx"
+          --results-directory TestResults/pdf-net10.0
+          --framework net10.0
       - name: Save PDF test results
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: pdf-test-results-sdk-${{ matrix.sdk }}
-          path: TestResults/pdf-${{ matrix.sdk }}/*.trx
+          name: pdf-test-results
+          path: TestResults/pdf-*/*.trx
           retention-days: 3
       - name: Trust workspace for PDF test report
         if: ${{ always() && github.event_name == 'push' }}
@@ -136,9 +125,85 @@ jobs:
         if: ${{ always() && github.event_name == 'push' }}
         uses: dorny/test-reporter@v3
         with:
-          name: PDF tests SDK ${{ matrix.sdk }}
-          path: TestResults/pdf-${{ matrix.sdk }}/*.trx
+          name: PDF
+          path: TestResults/pdf-*/*.trx
           reporter: dotnet-trx
+
+  redis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    container: ghcr.io/sitkoru/actions-container
+    env:
+      REDIS_FIXTURE_PREFIX: redis-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Подготовить рабочий каталог Git
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Проверить Redis и Valkey на net8.0 и net10.0
+        shell: bash
+        env:
+          JOB_CONTAINER_ID: ${{ job.container.id }}
+        run: |
+          set -euo pipefail
+          for framework in net8.0 net10.0; do
+            # Тесты меняют роли узлов, поэтому каждая платформа получает новый стенд.
+            docker run -d --name "$REDIS_FIXTURE_PREFIX-sentinel" \
+              --network "container:$JOB_CONTAINER_ID" --volumes-from "$JOB_CONTAINER_ID:ro" \
+              --health-cmd 'valkey-cli -p 26381 --user sentinel-client -a sentinel-test ping | grep -q PONG' \
+              --health-interval 1s --health-timeout 3s --health-retries 30 \
+              --entrypoint sh \
+              valkey/valkey:8.1.4-alpine@sha256:e706d1213aaba6896c162bb6a3a9e1894e1a435f28f8f856d14fab2e10aa098b \
+              "$GITHUB_WORKSPACE/tests/Sitko.Core.Auth.Tests/Valkey/start.sh"
+            docker run -d --name "$REDIS_FIXTURE_PREFIX-cluster" \
+              --network "container:$JOB_CONTAINER_ID" --volumes-from "$JOB_CONTAINER_ID:ro" \
+              --health-cmd 'valkey-cli -p 17379 -a cluster-test cluster info | grep -q cluster_state:ok' \
+              --health-interval 1s --health-timeout 3s --health-retries 30 \
+              --entrypoint sh \
+              valkey/valkey:9.0.3-alpine@sha256:e1095c6c76ee982cb2d1e07edbb7fb2a53606630a1d810d5a47c9f646b708bf5 \
+              "$GITHUB_WORKSPACE/tests/Sitko.Core.Auth.Tests/Valkey/cluster-start.sh"
+            deadline=$((SECONDS + 60))
+            for fixture in sentinel cluster; do
+              until [ "$(docker inspect --format '{{.State.Health.Status}}' "$REDIS_FIXTURE_PREFIX-$fixture")" = healthy ]; do
+                if (( SECONDS >= deadline )); then
+                  echo "Стенд $fixture не готов за 60 секунд" >&2
+                  exit 1
+                fi
+                sleep 1
+              done
+            done
+            dotnet test tests/Sitko.Core.Auth.Tests/Sitko.Core.Auth.Tests.csproj \
+              --framework "$framework" --logger GitHubActions --logger 'trx;LogFileName=redis.trx' \
+              --results-directory "TestResults/redis-$framework"
+            for fixture in sentinel cluster; do
+              docker logs "$REDIS_FIXTURE_PREFIX-$fixture"
+              docker rm -f "$REDIS_FIXTURE_PREFIX-$fixture"
+            done
+          done
+      - name: Получить журналы оставшихся стендов Redis
+        if: always()
+        run: |
+          for fixture in sentinel cluster; do
+            if docker container inspect "$REDIS_FIXTURE_PREFIX-$fixture" >/dev/null 2>&1; then
+              docker logs "$REDIS_FIXTURE_PREFIX-$fixture"
+            fi
+          done
+      - name: Остановить оставшиеся стенды Redis
+        if: always()
+        run: |
+          for fixture in sentinel cluster; do
+            if docker container inspect "$REDIS_FIXTURE_PREFIX-$fixture" >/dev/null 2>&1; then
+              docker rm -f "$REDIS_FIXTURE_PREFIX-$fixture"
+            fi
+          done
+      - name: Сохранить результаты тестов Redis
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: redis-test-results
+          path: TestResults/redis-*/*.trx
+          retention-days: 3
 
   queue:
     runs-on: ubuntu-latest
@@ -319,7 +384,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    needs: [ build, apps, blazor, grpc, imgproxy, pdf, queue, repository, sonyflake, storage, vault, opensearch, kafka, clickhouse ]
+    needs: [ build, apps, blazor, grpc, imgproxy, pdf, redis, queue, repository, sonyflake, storage, vault, opensearch, kafka, clickhouse ]
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout

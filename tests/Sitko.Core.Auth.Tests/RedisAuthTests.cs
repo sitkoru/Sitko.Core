@@ -138,15 +138,49 @@ namespace Sitko.Core.Auth.Tests
             var restored = await second.Services.GetRequiredService<IUserTokenStore>().GetTokenAsync(user);
             Assert.Equal("access-before", restored.AccessToken);
             Assert.Equal("refresh-before", restored.RefreshToken);
-            await store.StoreTokenAsync(user, new UserToken { AccessToken = "access-after", RefreshToken = "refresh-after" });
-            Assert.Equal("access-after", (await second.Services.GetRequiredService<IUserTokenStore>().GetTokenAsync(user)).AccessToken);
+            var secondStore = second.Services.GetRequiredService<IUserTokenStore>();
+            if (sentinel)
+            {
+                await WaitUntilAsync(async () =>
+                {
+                    await store.StoreTokenAsync(user, new UserToken { AccessToken = "access-after", RefreshToken = "refresh-after" });
+                    return true;
+                });
+                await WaitUntilAsync(async () =>
+                {
+                    var updated = await secondStore.GetTokenAsync(user);
+                    return updated.AccessToken == "access-after" && updated.RefreshToken == "refresh-after";
+                });
+            }
+            else
+            {
+                await store.StoreTokenAsync(user, new UserToken { AccessToken = "access-after", RefreshToken = "refresh-after" });
+            }
+
+            var after = await secondStore.GetTokenAsync(user);
+            Assert.Equal("access-after", after.AccessToken);
+            Assert.Equal("refresh-after", after.RefreshToken);
             var newProtectedText = second.Services.GetRequiredService<IDataProtectionProvider>()
                 .CreateProtector("test").Protect("after-failover");
             using var third = CreateApplication(name, sentinel, primaryPort);
             Assert.Equal("after-failover", third.Services.GetRequiredService<IDataProtectionProvider>()
                 .CreateProtector("test").Unprotect(newProtectedText));
-            await store.ClearTokenAsync(user);
-            Assert.Equal("not found", (await third.Services.GetRequiredService<IUserTokenStore>().GetTokenAsync(user)).Error);
+            var thirdStore = third.Services.GetRequiredService<IUserTokenStore>();
+            if (sentinel)
+            {
+                await WaitUntilAsync(async () =>
+                {
+                    await store.ClearTokenAsync(user);
+                    return true;
+                });
+                await WaitUntilAsync(async () => (await thirdStore.GetTokenAsync(user)).Error == "not found");
+            }
+            else
+            {
+                await store.ClearTokenAsync(user);
+            }
+
+            Assert.Equal("not found", (await thirdStore.GetTokenAsync(user)).Error);
         }
 
         // Sentinel needs a PING handshake; the observer also needs CLIENT LIST.
@@ -166,9 +200,11 @@ namespace Sitko.Core.Auth.Tests
 
         private static async Task WaitUntilAsync(Func<Task<bool>> condition)
         {
+            // Ждём полный штатный интервал проверки ролей с запасом на команды и планирование CI.
+            var timeout = TimeSpan.FromSeconds(new ConfigurationOptions().ConfigCheckSeconds + 30);
             var timer = Stopwatch.StartNew();
             Exception? lastError = null;
-            while (timer.Elapsed < TimeSpan.FromSeconds(60))
+            while (timer.Elapsed < timeout)
             {
                 try
                 {
@@ -181,11 +217,16 @@ namespace Sitko.Core.Auth.Tests
                 {
                     lastError = exception;
                 }
+                catch (RedisCommandException exception) when (
+                    exception.Message.StartsWith("Command cannot be issued to a replica:", StringComparison.Ordinal))
+                {
+                    lastError = exception;
+                }
 
                 await Task.Delay(200);
             }
 
-            throw new TimeoutException("Sentinel did not restore the expected operation within 60 seconds", lastError);
+            throw new TimeoutException($"Sentinel did not restore the expected operation within {timeout.TotalSeconds} seconds", lastError);
         }
 
         private static IHost CreateApplication(string name, bool sentinel, int directPort)

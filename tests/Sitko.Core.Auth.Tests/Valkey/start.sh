@@ -22,6 +22,7 @@ EOF
     fi
     valkey-server /tmp/valkey-$port/server.conf &
 done
+# Даём запас относительно PING раз в 1 с на переподключение при смене роли.
 for port in 26379 26380 26381; do
     cat > /tmp/sentinel-$port.conf <<EOF
 bind 0.0.0.0
@@ -33,7 +34,7 @@ sentinel sentinel-pass sentinel-test
 sentinel monitor sitko-test 127.0.0.1 16379 2
 sentinel auth-user sitko-test app
 sentinel auth-pass sitko-test valkey-test
-sentinel down-after-milliseconds sitko-test 1000
+sentinel down-after-milliseconds sitko-test 5000
 sentinel failover-timeout sitko-test 10000
 sentinel announce-ip 127.0.0.1
 sentinel announce-port $port
