@@ -1,4 +1,4 @@
-name: Valkey Sentinel
+name: Совместимость Redis и Valkey
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   sentinel:
-    name: Sentinel ${{ matrix.framework }}
+    name: Redis ${{ matrix.framework }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -26,15 +26,15 @@ jobs:
           dotnet-version: |
             8.0.x
             10.0.x
-      - name: Запустить Valkey и Sentinel
+      - name: Запустить Valkey Sentinel и Cluster
         run: docker compose -p sitko-sentinel-tests -f tests/Sitko.Core.Auth.Tests/Valkey/compose.yml up -d --wait
-      - name: Проверить аутентификацию и переключение при отказе
+      - name: Проверить аутентификацию, изоляцию баз и переключение основного узла
         run: >-
           dotnet test tests/Sitko.Core.Auth.Tests/Sitko.Core.Auth.Tests.csproj
           --framework ${{ matrix.framework }}
           --logger "trx;LogFileName=sentinel.trx"
           --results-directory TestResults/sentinel-${{ matrix.framework }}
-      - name: Получить журналы Valkey и Sentinel
+      - name: Получить журналы Valkey Sentinel и Cluster
         if: always()
         run: docker compose -p sitko-sentinel-tests -f tests/Sitko.Core.Auth.Tests/Valkey/compose.yml logs --no-color
       - name: Остановить стенд
