@@ -37,6 +37,43 @@ namespace Sitko.Core.Auth.Tests
         }
 
         [Fact]
+        public async Task ClusterDatabaseDeleteRecoversAfterPrimarySwitch()
+        {
+            using var app = CreateApplication($"cluster-delete-{Guid.NewGuid():N}", 3);
+            var database = app.Services.GetRequiredKeyedService<IDatabase>(typeof(OidcIdentityServerModuleOptions));
+            var key = $"cluster-delete-value-{Guid.NewGuid():N}";
+            Assert.True(await database.StringSetAsync(key, "before-delete"));
+            using var observer = ConnectionMultiplexer.Connect(new ConfigurationOptions
+            {
+                EndPoints = { "127.0.0.1:17379" },
+                Password = "cluster-test",
+                AllowAdmin = true
+            });
+            var topology = await observer.GetServer("127.0.0.1", 17379).ClusterNodesAsync();
+            Assert.NotNull(topology);
+            var primary = topology.GetBySlot(key);
+            Assert.NotNull(primary);
+            var replica = Assert.Single(primary.Children);
+            Assert.NotNull(replica.EndPoint);
+            Assert.NotNull(primary.EndPoint);
+            var promoted = observer.GetServer(replica.EndPoint);
+            _ = await promoted.ExecuteAsync("CLUSTER", "FAILOVER");
+            await WaitUntilAsync(async () =>
+            {
+                var current = await promoted.ClusterNodesAsync();
+                return current?[replica.EndPoint] is { IsReplica: false } &&
+                       current[primary.EndPoint] is { IsReplica: true };
+            });
+            Assert.Equal("before-delete", (await database.StringGetAsync(key)).ToString());
+            await WaitUntilAsync(async () =>
+            {
+                _ = await database.KeyDeleteAsync(key);
+                return true;
+            });
+            await WaitUntilAsync(async () => !await database.KeyExistsAsync(key));
+        }
+
+        [Fact]
         public async Task ClusterDatabasesKeepValuesTokensAndDataProtectionIsolatedAfterManagedPrimarySwitches()
         {
             var name = $"cluster-auth-{Guid.NewGuid():N}";
@@ -94,14 +131,32 @@ namespace Sitko.Core.Auth.Tests
                 await VerifyBothDatabases();
             }
 
-            await zeroStore.ClearTokenAsync(user);
-            Assert.Equal("not found", (await zeroStore.GetTokenAsync(user)).Error);
+            await WaitUntilAsync(async () =>
+            {
+                await zeroStore.ClearTokenAsync(user);
+                return true;
+            });
+            await WaitUntilAsync(async () => (await zeroStore.GetTokenAsync(user)).Error == "not found");
             Assert.Equal("access-three", (await threeStore.GetTokenAsync(user)).AccessToken);
-            await threeStore.ClearTokenAsync(user);
-            Assert.Equal("not found", (await threeStore.GetTokenAsync(user)).Error);
-            Assert.True(await zeroDatabase.KeyDeleteAsync(key));
+            await WaitUntilAsync(async () =>
+            {
+                await threeStore.ClearTokenAsync(user);
+                return true;
+            });
+            await WaitUntilAsync(async () => (await threeStore.GetTokenAsync(user)).Error == "not found");
+            await WaitUntilAsync(async () =>
+            {
+                _ = await zeroDatabase.KeyDeleteAsync(key);
+                return true;
+            });
+            await WaitUntilAsync(async () => !await zeroDatabase.KeyExistsAsync(key));
             Assert.Equal("value-three", (await threeDatabase.StringGetAsync(key)).ToString());
-            Assert.True(await threeDatabase.KeyDeleteAsync(key));
+            await WaitUntilAsync(async () =>
+            {
+                _ = await threeDatabase.KeyDeleteAsync(key);
+                return true;
+            });
+            await WaitUntilAsync(async () => !await threeDatabase.KeyExistsAsync(key));
 
             async Task VerifyBothDatabases()
             {
@@ -126,9 +181,11 @@ namespace Sitko.Core.Auth.Tests
 
         private static async Task WaitUntilAsync(Func<Task<bool>> condition)
         {
+            // Ждём полный штатный интервал проверки ролей с запасом на команды и планирование CI.
+            var timeout = TimeSpan.FromSeconds(new ConfigurationOptions().ConfigCheckSeconds + 30);
             var timer = Stopwatch.StartNew();
             Exception? lastError = null;
-            while (timer.Elapsed < TimeSpan.FromSeconds(60))
+            while (timer.Elapsed < timeout)
             {
                 try
                 {
@@ -150,7 +207,7 @@ namespace Sitko.Core.Auth.Tests
                 await Task.Delay(200);
             }
 
-            throw new TimeoutException("Cluster did not restore the expected operation within 60 seconds", lastError);
+            throw new TimeoutException($"Cluster did not restore the expected operation within {timeout.TotalSeconds} seconds", lastError);
         }
 
         private static IHost CreateApplication(string name, int database)
