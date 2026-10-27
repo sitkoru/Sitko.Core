@@ -181,4 +181,13 @@
     <PackageVersion Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="9.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
   </ItemGroup>
+  <!--Test tooling and benchmarks; versions do not add references.-->
+  <ItemGroup>
+    <PackageVersion Include="BenchmarkDotNet" Version="0.15.2" />
+    <PackageVersion Include="FluentValidation" Version="12.0.0" />
+    <PackageVersion Include="GitHubActionsTestLogger" Version="2.3.3" />
+    <PackageVersion Include="Testcontainers.ClickHouse" Version="4.6.0" />
+    <PackageVersion Include="Testcontainers.Kafka" Version="4.6.0" />
+    <PackageVersion Include="itext7" Version="9.2.0" />
+  </ItemGroup>
 </Project>
