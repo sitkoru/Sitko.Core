@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sitko.Core 13 — SD/gRPC: отличия от v12</title>
+<style>
+:root{color-scheme:light;--ink:#202d39;--muted:#526273;--line:#cbd3da;--accent:#245f76;--paper:#f7f8fa;--soft:#e6eff3;--warm:#f7eedc}*{box-sizing:border-box}body{margin:0;background:#dde2e8;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}#stage{width:1280px;height:720px;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(var(--scale,1));background:var(--paper);overflow:hidden}.slide{height:656px;padding:40px 58px 18px;display:flex;flex-direction:column;gap:20px}.slide[hidden]{display:none}.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:15px;color:var(--muted);margin:0}h1{font-size:54px;line-height:1.12;font-weight:640;margin:12px 0 20px}h2{font-size:38px;line-height:1.15;letter-spacing:-.025em;font-weight:640;margin:0}h3{font-size:27px;line-height:1.2;margin:0 0 14px}p,li{font-size:26px;line-height:1.35;margin:0}p+p{margin-top:14px}strong{font-weight:650}ul{padding-left:25px;margin:0}li+li{margin-top:14px}.body{flex:1;min-height:0}.cols{display:grid;grid-template-columns:1fr 1fr;gap:42px}.cols.three{grid-template-columns:repeat(3,1fr);gap:30px}.cols>div+div{border-left:1px solid var(--line);padding-left:28px}.muted,.small{color:var(--muted)}.small{font-size:21px;line-height:1.35}.lead{font-size:31px;line-height:1.35}.note,.question{font-size:23px;line-height:1.35;padding:15px 20px;background:var(--soft);border-left:4px solid var(--accent);margin-top:20px}.question{background:var(--warm);border-color:#ad7930}.sources{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:16px;line-height:1.3;margin-top:auto}a{color:var(--accent);text-underline-offset:3px}a:focus-visible,button:focus-visible{outline:3px solid #be7e23;outline-offset:3px}code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.86em}pre{white-space:pre-wrap;font-size:24px;line-height:1.4;margin:0;padding:22px;background:#e9edf1;border-left:4px solid var(--accent)}table{border-collapse:collapse;width:100%;font-size:24px;line-height:1.3}td,th{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:19px;color:var(--muted);font-weight:600}.flow{display:flex;align-items:stretch;gap:13px;margin:20px 0}.node{flex:1;padding:20px 16px;border:1px solid var(--line);font-size:25px;line-height:1.25}.node.em{background:var(--soft);border-color:#749baa}.node small{display:block;font-size:20px;color:var(--muted);margin-top:12px}.arrow{align-self:center;font-size:34px;color:var(--accent)}.stack{display:grid;gap:14px}.timeline{display:flex;margin:26px 0 18px;gap:3px}.timeline>div{flex:1;background:var(--soft);padding:22px 16px;font-size:25px}.timeline small{display:block;font-size:20px;margin-top:10px}.big{font-size:40px;line-height:1.25}footer{height:64px;display:flex;align-items:center;gap:18px;padding:0 58px;border-top:1px solid var(--line);font-size:16px}button{font:inherit;color:var(--ink);padding:7px 12px;background:transparent;border:1px solid var(--line);cursor:pointer;border-radius:3px}button:disabled{opacity:.4;cursor:default}#counter{min-width:66px;font-variant-numeric:tabular-nums}#hint{margin-left:auto;color:var(--muted)}dialog{width:850px;max-height:80vh;border:1px solid var(--line);padding:26px;background:var(--paper)}dialog::backdrop{background:#1e293b77}dialog h2{font-size:26px;margin-bottom:20px}#contents{columns:2;column-gap:30px;padding-left:28px}#contents li{font-size:17px;margin:0 0 12px;break-inside:avoid}#contents a{display:inline-block}dialog button{float:right}@media print{body{background:white}#stage{position:static;transform:none;width:100%;height:auto;overflow:visible}.slide,.slide[hidden]{display:flex;width:1280px;height:720px;break-after:page}footer,dialog{display:none}@page{size:1280px 720px;margin:0}}
+
+/* Content review: explanations take priority over the final type scale. */
+.content-review p,.content-review li{font-size:20px;line-height:1.35}
+.content-review p+p{margin-top:13px}
+.content-review .eyebrow{font-size:15px;line-height:1.35}
+.content-review .lead{font-size:29px;line-height:1.3}
+.content-review .small{font-size:19px;line-height:1.3;margin-top:17px}
+.content-review h3{font-size:25px;margin-bottom:12px}
+.content-review table{font-size:20px;line-height:1.3;table-layout:fixed}
+.content-review td,.content-review th{padding:6px 12px}
+.content-review th{font-size:18px}
+.content-review .note,.content-review .question{font-size:20px;line-height:1.35;padding:12px 16px;margin-top:16px}
+.content-review .node{font-size:22px;padding:15px}
+.content-review .node small{font-size:19px;line-height:1.3;margin-top:10px}
+.content-review .flow{margin:18px 0}
+.content-review table th:first-child{width:27%}
+
+
+
+
+dialog{color:var(--ink)}pre{background:var(--soft)}
+.slide{gap:18px}.sources{font-size:15px}footer{font-size:15px}
+
+:root{color-scheme:dark;--ink:#edf2f8;--muted:#b0bdcd;--line:#39485b;--accent:#91c7f5;--paper:#17212e;--soft:#25394b;--warm:#403726}
+body{background:#101722}.slide{padding:38px 54px 18px}h2{font-size:42px;letter-spacing:-.035em;font-weight:620}.eyebrow{color:var(--accent)}
+.node{background:#202e3e;border:1px solid #526b83;border-radius:5px}.arrow{color:#91c7f5}.cols{gap:32px}.cols>div+div{padding-left:24px}
+.note{border-left:3px solid var(--accent)}.question{border-color:#e3bb70}th{color:#badbfa;border-bottom:2px solid #6989a7}tbody tr:nth-child(even){background:#1d2a39}button{background:#202e3e}footer{background:#131e2b;padding:0 54px}
+
+/* Rhythm follows meaning: separate blocks, keep headings with their text. */
+.body > * + *{margin-top:20px}
+.body > .flow:first-child{margin-top:0}
+.content-review p+p{margin-top:18px}
+.content-review h3{margin-bottom:16px}
+.content-review li+li{margin-top:10px}
+.content-review ul,.content-review ol{padding-left:25px}
+.content-review p+ul,.content-review p+ol{margin-top:12px}
+.content-review ul+p,.content-review ol+p{margin-top:18px}
+.content-review .note,.content-review .question{margin-top:22px}
+li::marker{color:var(--accent)}
+
+/* Local editorial additions; the standalone review template supplies navigation. */
+h1{font-size:48px;line-height:1.08;margin:0}h2{font-size:37px;line-height:1.14}
+.slide{gap:16px;padding-top:30px}.body{min-height:0}.content-review .lead{font-size:28px;line-height:1.35}
+.content-review p,.content-review li{font-size:21px;line-height:1.36}
+.content-review .small{font-size:17px;line-height:1.36;margin-top:16px}
+.content-review table{font-size:20px;line-height:1.3}
+.content-review table th:first-child{width:27%}
+.content-review h3{font-size:24px;line-height:1.25;margin-bottom:17px}
+.content-review .note{font-size:20px;line-height:1.35;margin-top:19px}
+pre{font-size:19px;line-height:1.37;padding:17px 19px;border-radius:0 6px 6px 0;tab-size:2}
+pre code{font-size:1em}code{overflow-wrap:anywhere}.cols>div{min-width:0}
+.tag{display:inline-block;font-size:14px;font-weight:650;vertical-align:middle;padding:4px 7px;border:1px solid var(--line);border-radius:5px;margin-right:6px}
+.tag.old{color:#c8d0da}.tag.new{color:#a4d6ff;border-color:#5e8cb1}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:29px!important}.hero-grid>div{padding:18px 24px 22px;border:1px solid var(--line);border-radius:8px;background:#1d2a39}
+.hero-grid p{font-size:23px;margin-top:12px}.hero-number{font-size:38px;font-weight:600;color:#b4c1d1}.accent{color:var(--accent)}
+.stack-diagram{display:grid;gap:10px;margin-top:18px!important}.diagram-row{display:flex;gap:16px;justify-content:center}.box{flex:1;display:block;padding:12px 16px;text-align:center;border:1px solid #526b83;background:#202e3e;border-radius:5px;font-size:21px;line-height:1.25}.wide{max-width:920px}.diagram-label{text-align:center;color:var(--accent);font-size:17px}
+.priority{counter-reset:rank;list-style:none;padding:0!important;display:grid;gap:8px}.priority li{margin:0!important;padding:10px 17px;background:#202e3e;border-left:3px solid #577c9c}.priority li::before{counter-increment:rank;content:counter(rank) '  ';color:var(--accent);font-variant-numeric:tabular-nums;white-space:pre}
+#hint a{color:var(--muted);margin-left:12px}.sources{min-height:20px;font-size:13px;gap:5px 16px}.sources a{color:#a7c8e5}
+#overview .body>.small{font-size:17px}#client-config pre{font-size:18px}#startup-rules table{font-size:19px}#preserved-features table{font-size:20px}
+#consul-settings pre{font-size:18px}#server-config pre{font-size:19px}#mycg-keeps table{font-size:19px}#breaking-changes table{font-size:19px}
+#module-responsibilities table{font-size:19px}#options-priority .small{margin-top:12px}
+#options-priority .priority{gap:6px;margin-top:14px}
+#options-priority .priority li{padding:6px 15px;font-size:20px}
+#options-priority .note{margin-top:14px}
+#enable-disable pre{font-size:18px;line-height:1.2}
+#breaking-changes td,#breaking-changes th{padding-top:5px;padding-bottom:5px}
+@media print{.slide,.slide[hidden]{height:720px;padding-bottom:30px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.sources{margin-top:auto}a{color:inherit}body{color:var(--ink)}}
+
+</style></head><body><main id="stage" aria-label="Презентация"><section class="slide content-review" id="overview" aria-labelledby="title-overview"><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h1 id="title-overview">SD и gRPC в Sitko.Core 13</h1><div class="body"><p class="lead">Меньше модулей и служебного кода.<br>Один способ регистрации, настройки каждого контракта.</p><div class="hero-grid"><div><span class="hero-number">v12</span><p>Собственный SD, отдельные клиенты для разных способов адресации, обёртки MYCG.</p></div><div><span class="hero-number accent">v13</span><p>Microsoft SD + Consul DNS SRV, единый gRPC-клиент, общий механизм настроек.</p></div></div><p class="small">Материал для обсуждения с коллегами · 27 октября 2026<br>Слева — проверенный код v12. Справа — проект изменений для новой мажорной версии.</p></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/ApplicationExtensions.cs" target="_blank" rel="noopener">v12: регистрация клиентов ↗</a><a href="https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.App/CGApplicationExtensions.cs" target="_blank" rel="noopener">MYCG.Core: обёртки gRPC ↗</a></div></section>
+<section class="slide content-review" id="main-deltas" aria-labelledby="title-main-deltas" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-main-deltas">Что меняется для разработчика</h2><div class="body"><table><thead><tr><th>Область</th><th>v12</th><th>v13 · проект</th></tr></thead><tbody><tr><td>SD</td><td>Собственный резолвер и каталог Consul</td><td>Microsoft SD и стандартный DNS SRV</td></tr><tr><td>Зависимости</td><td>Consul + SD + Resolver.Consul + Server.Consul</td><td>SD + один провайдер Consul</td></tr><tr><td>Клиент</td><td>Режим выбирается модулем в коде</td><td>Режим выбирается наличием Address</td></tr><tr><td>Сервер</td><td>Типы сервисов регистрируются в опциях</td><td>Цепочка RegisterService после AddGrpcServer</td></tr><tr><td>Настройки</td><td>Часть общих параметров — в коде</td><td>Общие значения + настройки контракта</td></tr><tr><td>MYCG</td><td>Обёртка на каждый клиент и сервер</td><td>Один AddMycgGrpc с политикой приложения</td></tr></tbody></table></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/ApplicationExtensions.cs" target="_blank" rel="noopener">v12: регистрация клиентов ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Server/GrpcServerModuleOptions.cs" target="_blank" rel="noopener">v12: регистрация в опциях ↗</a><a href="https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.App/CGApplicationExtensions.cs" target="_blank" rel="noopener">MYCG.Core: обёртки gRPC ↗</a></div></section>
+<section class="slide content-review" id="modules-before" aria-labelledby="title-modules-before" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-modules-before">v12: связка из нескольких слоёв</h2><div class="body"><p>App даёт конфигурацию, DI и жизненный цикл. SD — отдельная возможность, к которой подключаются реализация поиска и реализация публикации.</p><div class="stack-diagram"><div class="diagram-row"><span class="box">Grpc.Client / Discovery</span><span class="box">Grpc.Server</span></div><div class="diagram-label">↓ зависят от общего SD</div><div class="diagram-row"><span class="box wide">ServiceDiscovery + абстракции Resolver / Server</span></div><div class="diagram-row"><span class="box">Resolver.Consul</span><span class="box">Server.Consul</span></div><div class="diagram-label">↓ используют общее подключение</div><div class="diagram-row"><span class="box wide">Consul: клиент, каталог, регистрации, проверка доступности</span></div></div><p class="small">У статического клиента отдельный путь — ExternalGrpcClientModule. В MYCG поверх этих вариантов есть собственный переключатель.</p></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/Discovery/ServiceDiscoveryGrpcClientModule.cs" target="_blank" rel="noopener">v12: собственный резолвер ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Server/BaseGrpcServerModule.cs" target="_blank" rel="noopener">v12: сервер и публикация ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Consul/ConsulModule.cs" target="_blank" rel="noopener">v12: модуль Consul ↗</a><a href="https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.App/CGApplicationExtensions.cs" target="_blank" rel="noopener">MYCG.Core: обёртки gRPC ↗</a></div></section>
+<section class="slide content-review" id="modules-after" aria-labelledby="title-modules-after" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-modules-after">v13: SD остаётся отдельной возможностью</h2><div class="body"><div class="cols three"><div><h3>App</h3><p>Конфигурация, DI, жизненный цикл, телеметрия.</p><p class="small">SD не становится обязательной инфраструктурой каждого приложения.</p></div><div><h3>ServiceDiscovery</h3><p>Интеграция Microsoft SD, общие правила включения и объявления сервисов.</p><p class="small">Без собственного резолвера, кэша каталога и протокола sd:///.</p></div><div><h3>ServiceDiscovery.<br>Consul</h3><p>DNS SRV, HTTP-клиент агента, регистрация контрактов и TTL.</p><p class="small">Здесь же все параметры подключения к Consul.</p></div></div><div class="note"><code>Grpc.Client</code> и <code>Grpc.Server</code> знают общую интеграцию SD. Зависимость от Consul появляется только при подключении провайдера.</div></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.ServiceDiscovery/ServiceDiscoveryModule.cs" target="_blank" rel="noopener">v12: модуль SD ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Consul/ConsulModule.cs" target="_blank" rel="noopener">v12: модуль Consul ↗</a><a href="https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery/ServiceDiscoveryHttpClientBuilderExtensions.cs" target="_blank" rel="noopener">Microsoft: интеграция SD ↗</a></div></section>
+<section class="slide content-review" id="module-responsibilities" aria-labelledby="title-module-responsibilities" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-module-responsibilities">Как раскладываем существующий код</h2><div class="body"><table><thead><tr><th>Сейчас</th><th>В целевой схеме</th></tr></thead><tbody><tr><td>Consul</td><td>Отдельный модуль убирается. Нужное SD подключение становится внутренней частью провайдера Consul.</td></tr><tr><td>ServiceDiscovery.<br>Resolver.Consul<br>ServiceDiscovery.<br>Server.Consul</td><td>Объединяются в ServiceDiscovery.Consul.</td></tr><tr><td>Общие Resolver / Server, собственный кэш</td><td>Убираются; остаётся небольшой общий слой интеграции с Microsoft SD и публикации сервисов.</td></tr><tr><td>Grpc</td><td>Общие механизмы протокола; получение полного protobuf-имени контракта.</td></tr><tr><td>Grpc.Client / Grpc.Server</td><td>Единый клиент и сервер с общими и индивидуальными настройками.</td></tr></tbody></table><p class="small">Префикс <code>Sitko.Core.</code> в таблице опущен. Отдельный каталог подключений к нескольким Consul не вводим: текущего потребителя за пределами SD нет.</p></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Consul/ConsulModule.cs" target="_blank" rel="noopener">v12: модуль Consul ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Consul/ServiceDiscovery/ServiceDiscoveryManager.cs" target="_blank" rel="noopener">v12: чтение каталога ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc/GrpcHelper.cs" target="_blank" rel="noopener">v12: короткое имя ↗</a></div></section>
+<section class="slide content-review" id="request-path" aria-labelledby="title-request-path" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-request-path">Поиск адреса входит в обычный HTTP-путь gRPC</h2><div class="body"><div class="cols"><div><h3><span class="tag old">v12</span> Как работает сейчас</h3><p>Клиент обращается к <code>sd:///InvoiceService</code>. Наш ResolverFactory преобразует данные собственного SD в адреса для балансировщика grpc-dotnet.</p></div><div><h3><span class="tag new">v13</span> Целевая схема</h3><p>У клиента логическое HTTPS-имя. Стандартный обработчик Microsoft SD выбирает адрес из DNS SRV перед отправкой RPC.</p></div></div><div class="flow"><div class="node">gRPC-клиент<small>сгенерированный TClient</small></div><span class="arrow">→</span><div class="node em">Microsoft SD<small>DNS SRV → адрес и порт</small></div><span class="arrow">→</span><div class="node">TLS / HTTP/2<small>реальный сервер</small></div></div><p class="small">Подключение через <code>IHttpClientBuilder.AddServiceDiscovery()</code>. Встроенная балансировка grpc-dotnet при этой интеграции отключается. Consul передаёт адреса, тело RPC идёт напрямую серверу.</p></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/Discovery/ServiceDiscoveryGrpcClientModule.cs" target="_blank" rel="noopener">v12: собственный резолвер ↗</a><a href="https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery/ServiceDiscoveryHttpClientBuilderExtensions.cs" target="_blank" rel="noopener">Microsoft: интеграция SD ↗</a><a href="https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery/Http/ResolvingHttpDelegatingHandler.cs" target="_blank" rel="noopener">Microsoft: выбор адреса ↗</a></div></section>
+<section class="slide content-review" id="contract-identity" aria-labelledby="title-contract-identity" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-contract-identity">Имя контракта берём из protobuf целиком</h2><div class="body"><div class="cols"><div><h3><span class="tag old">v12</span> Как работает сейчас</h3><pre><code>InvoiceService</code></pre><p>Используется короткое имя из сгенерированного C#-типа. Разные пакеты могут дать одинаковое имя.</p></div><div><h3><span class="tag new">v13</span> Целевая схема</h3><pre><code>company.accounting.InvoiceService
+company.reports.InvoiceService</code></pre><p>Контракты различаются protobuf-пакетом. Тот же ключ используется для индивидуальных настроек.</p></div></div><div class="note">В Consul для пары «окружение + полный контракт» автоматически строится DNS-совместимое имя. По экземплярам различаются ID записей; таблицу адресов в приложении не ведём.</div><p class="small">Несколько контрактов одного процесса публикуются отдельными записями и могут указывать на один TLS-порт. Исходное имя и окружение сохраняются для диагностики.</p></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc/GrpcHelper.cs" target="_blank" rel="noopener">v12: короткое имя ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Consul/ServiceDiscovery/ServiceDiscoveryManager.cs" target="_blank" rel="noopener">v12: чтение каталога ↗</a><a href="https://developer.hashicorp.com/consul/api-docs/agent/service" target="_blank" rel="noopener">Consul: регистрация у агента ↗</a></div></section>
+<section class="slide content-review" id="registration-lifecycle" aria-labelledby="title-registration-lifecycle" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-registration-lifecycle">Публикуем только объявленные gRPC-контракты</h2><div class="body"><div class="flow"><div class="node">Kestrel запущен<small>известен фактический TLS-порт</small></div><span class="arrow">→</span><div class="node em">Регистрация<small>контракт × экземпляр</small></div><span class="arrow">→</span><div class="node">TTL и обновления<small>у того же агента Consul</small></div></div><ul><li>При штатной остановке удаляются только записи данного экземпляра.</li><li>При аварии истекает TTL: умерший экземпляр исключается из доступных DNS-результатов. Удаление записи из каталога может произойти позже.</li><li>После потери регистрации выполняется повторная регистрация.</li></ul><p class="small">Старую регистрацию каждого приложения и её heartbeat не возвращаем. В проверенном v12 регистрация уже ограничена объявленными SD-сервисами; старую проверку Consul leader также не переносим. DNS Consul должен исключать critical-экземпляры.</p></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.ServiceDiscovery.Server.Consul/ConsulServiceDiscoveryRegistrar.cs" target="_blank" rel="noopener">v12: регистрация сервисов ↗</a><a href="https://developer.hashicorp.com/consul/api-docs/agent/service" target="_blank" rel="noopener">Consul: регистрация у агента ↗</a><a href="https://developer.hashicorp.com/consul/docs/discover/dns" target="_blank" rel="noopener">Consul: DNS и состояние сервисов ↗</a></div></section>
+<section class="slide content-review" id="server-address" aria-labelledby="title-server-address" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-server-address">Объявляем доступный адрес и фактический порт</h2><div class="body"><div class="cols"><div><h3><span class="tag old">v12</span> Как работает сейчас</h3><p>Связь с именованными портами есть, но текущий регистратор сопоставляет фактический порт с настроенным значением. Для порта <code>0</code> это недостаточно.</p></div><div><h3><span class="tag new">v13</span> Целевая схема</h3><p>Регистрация начинается после привязки Kestrel. Для выбранного слушателя берётся реальный порт, в том числе назначенный операционной системой.</p></div></div><div class="cols"><div><h3>Локальная разработка</h3><p>TLS на loopback, динамический порт. Несколько процессов на одной машине находят друг друга через Consul.</p></div><div><h3>Kubernetes</h3><p>Объявляется доступный другим процессам адрес, например Pod IP из конфигурации. Wildcard-адрес слушателя публиковать нельзя.</p></div></div><p class="small">Настройки самого слушателя остаются в <code>Application:Web:Ports</code>. Новый механизм не требует ручного списка адресов каждого контракта.</p></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.ServiceDiscovery.Server/BaseServiceDiscoveryRegistrar.cs" target="_blank" rel="noopener">v12: публикация портов ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.App.Web/AppWebConfigurationModule.cs" target="_blank" rel="noopener">v12: слушатели Kestrel ↗</a></div></section>
+<section class="slide content-review" id="client-selection" aria-labelledby="title-client-selection" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-client-selection">Один клиент: режим определяется Address</h2><div class="body"><div class="cols"><div><h3><span class="tag old">v12</span> Как работает сейчас</h3><pre><code>app.AddGrpcClient&lt;InvoiceClient&gt;();
+
+// Другой модуль для прямого адреса:
+app.AddExternalGrpcClient&lt;InvoiceClient&gt;();</code></pre><p class="small">Статический модуль v12 уже читает Address из конфигурации. Но смена режима требует другой регистрации в коде; MYCG обходит это своей обёрткой и словарём адресов.</p></div><div><h3><span class="tag new">v13</span> Целевая схема</h3><pre><code>app.AddGrpcClient&lt;InvoiceClient&gt;();</code></pre><ul><li>Есть корректный <code>Address</code> — прямой вызов.</li><li>Адрес отсутствует — обнаружение через SD.</li><li>Смена режима: конфигурация и перезапуск, без новой сборки.</li></ul></div></div><div class="note">Ошибочный URI — ошибка конфигурации. Недоступность заданного прямого адреса не переключает клиент на SD.</div></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/ApplicationExtensions.cs" target="_blank" rel="noopener">v12: регистрация клиентов ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/External/ExternalGrpcClientModule.cs" target="_blank" rel="noopener">v12: адрес из настроек ↗</a><a href="https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.App/CGApplicationExtensions.cs" target="_blank" rel="noopener">MYCG.Core: обёртки gRPC ↗</a></div></section>
+<section class="slide content-review" id="client-config" aria-labelledby="title-client-config" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-client-config">Общие настройки и исключения для контрактов</h2><div class="body"><div class="cols"><div><pre><code>{
+  &quot;Grpc&quot;: {
+    &quot;Client&quot;: {
+      &quot;Default&quot;: {
+        &quot;MaxReceiveMessageSize&quot;: 16777216
+      },
+      &quot;Contracts&quot;: {
+        &quot;company.files.FileService&quot;: {
+          &quot;MaxReceiveMessageSize&quot;: 536870912
+        },
+        &quot;company.catalog.CatalogService&quot;: {
+          &quot;Address&quot;: &quot;https://catalog:8443&quot;
+        }
+      }
+    }
+  }
+}</code></pre></div><div><h3>Пример целевой конфигурации</h3><p><code>FileService</code> обнаруживается через SD и может принять ответ до 512 МиБ.</p><p><code>CatalogService</code> использует прямой HTTPS-адрес и общий предел приёма 16 МиБ.</p><p class="small">Размеры указаны в байтах. Тот же механизм настроек предусматривает deadline, параметры соединения и ограниченную политику повторов RPC. Одинаковые короткие имена не смешивают параметры.</p></div></div></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/External/ExternalGrpcClientModule.cs" target="_blank" rel="noopener">v12: адрес из настроек ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/GrpcClientModuleOptions.cs" target="_blank" rel="noopener">v12: опции и токены ↗</a><a href="https://learn.microsoft.com/en-us/aspnet/core/grpc/configuration?view=aspnetcore-10.0" target="_blank" rel="noopener">gRPC: общие и индивидуальные опции ↗</a></div></section>
+<section class="slide content-review" id="options-priority" aria-labelledby="title-options-priority" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-options-priority">Один порядок применения настроек</h2><div class="body"><p>Общие значения задают политику приложения. Настройка конкретного контракта уточняет её, а явный код сохраняет возможность точечного переопределения.</p><ol class="priority"><li>Значения SDK по умолчанию</li><li>Общая конфигурация <code>Default</code></li><li>Общий callback в коде</li><li>Конфигурация конкретного контракта</li><li>Callback конкретного клиента или сервиса</li></ol><div class="note">Предлагаемое правило: каждый следующий уровень меняет только явно заданные значения. Индивидуальные настройки не копируют общий объект целиком.</div><p class="small">Одинаковая модель применяется к клиенту и серверу. Повторные callbacks одного уровня выполняются по порядку; последнее явное присваивание свойства побеждает.</p></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.App/Helpers/OptionsHelper.cs" target="_blank" rel="noopener">v12: привязка конфигурации ↗</a><a href="https://learn.microsoft.com/en-us/aspnet/core/grpc/configuration?view=aspnetcore-10.0" target="_blank" rel="noopener">gRPC: общие и индивидуальные опции ↗</a></div></section>
+<section class="slide content-review" id="server-api" aria-labelledby="title-server-api" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-server-api">Сервисы регистрируются через builder</h2><div class="body"><div class="cols"><div><h3><span class="tag old">v12</span> Как работает сейчас</h3><pre><code>app.AddGrpcServer(options =&gt;
+    options
+        .RegisterService&lt;InvoiceGrpcService&gt;()
+        .RegisterService&lt;ReportsGrpcService&gt;());</code></pre></div><div><h3><span class="tag new">v13</span> Целевая схема</h3><pre><code>app.AddGrpcServer(options =&gt;
+    options.MaxReceiveMessageSize =
+        16 * 1024 * 1024)
+   .RegisterService&lt;InvoiceGrpcService&gt;(
+       options =&gt;
+           options.MaxSendMessageSize =
+               512 * 1024 * 1024)
+   .RegisterService&lt;ReportsGrpcService&gt;();</code></pre></div></div><div class="note"><code>AddGrpcServer</code> настраивает сервер в целом. <code>RegisterService&lt;TService&gt;</code> объявляет реализацию и при необходимости её индивидуальные опции.</div></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Server/GrpcServerModuleOptions.cs" target="_blank" rel="noopener">v12: регистрация в опциях ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Server/BaseGrpcServerModule.cs" target="_blank" rel="noopener">v12: сервер и публикация ↗</a><a href="https://learn.microsoft.com/en-us/aspnet/core/grpc/configuration?view=aspnetcore-10.0" target="_blank" rel="noopener">gRPC: общие и индивидуальные опции ↗</a></div></section>
+<section class="slide content-review" id="server-repeat" aria-labelledby="title-server-repeat" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-server-repeat">Повторное AddGrpcServer дополняет один сервер</h2><div class="body"><pre><code>// Модуль счетов
+app.AddGrpcServer()
+   .RegisterService&lt;InvoiceGrpcService&gt;();
+
+// Модуль отчётов в том же приложении
+app.AddGrpcServer()
+   .RegisterService&lt;ReportsGrpcService&gt;();</code></pre><div class="cols"><div><h3>Единичная регистрация</h3><p>Один серверный модуль на приложение. Повтор одного типа сервиса не создаёт второй маршрут или вторую SD-регистрацию.</p></div><div><h3>Общие настройки собираются вместе</h3><p>Все сервисы получают итоговую общую конфигурацию, включая callbacks, добавленные позже.</p></div></div><p class="small">Два разных типа реализации одного protobuf-контракта считаем ошибкой настройки. Состояние хранится в builder приложения, а не в статическом флаге процесса.</p></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.App/SitkoCoreBaseApplicationBuilder.cs" target="_blank" rel="noopener">v12: добавление модулей ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Server/GrpcServerModuleOptions.cs" target="_blank" rel="noopener">v12: регистрация в опциях ↗</a><a href="https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.App/CGApplicationExtensions.cs" target="_blank" rel="noopener">MYCG.Core: обёртки gRPC ↗</a></div></section>
+<section class="slide content-review" id="server-config" aria-labelledby="title-server-config" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-server-config">Лимиты сервера и reflection — в конфигурации</h2><div class="body"><div class="cols"><div><pre><code>{
+  &quot;Grpc&quot;: {
+    &quot;Server&quot;: {
+      &quot;EnableReflection&quot;: false,
+      &quot;Default&quot;: {
+        &quot;MaxReceiveMessageSize&quot;: 16777216
+      },
+      &quot;Contracts&quot;: {
+        &quot;company.files.FileService&quot;: {
+          &quot;MaxSendMessageSize&quot;: 536870912
+        }
+      }
+    }
+  }
+}</code></pre></div><div><h3>Что меняется</h3><p>Пределы сообщений задаются для сервера в целом и для отдельного сервиса, без callback с настройками канала.</p><p>Reflection выключен по умолчанию. Его можно включить настройкой окружения; MYCG больше не включает его принудительно.</p><p class="small">Большой ответ должен разрешать и лимит отправки сервера, и лимит приёма клиента. Настройка только одной стороны недостаточна.</p></div></div></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Server/GrpcServerModuleOptions.cs" target="_blank" rel="noopener">v12: регистрация в опциях ↗</a><a href="https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.App/CGApplicationExtensions.cs" target="_blank" rel="noopener">MYCG.Core: обёртки gRPC ↗</a><a href="https://learn.microsoft.com/en-us/aspnet/core/grpc/configuration?view=aspnetcore-10.0" target="_blank" rel="noopener">gRPC: общие и индивидуальные опции ↗</a></div></section>
+<section class="slide content-review" id="mycg-policy" aria-labelledby="title-mycg-policy" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-mycg-policy">MYCG задаёт политику один раз на приложение</h2><div class="body"><div class="cols"><div><h3><span class="tag old">v12</span> Как работает сейчас</h3><ul><li>Обёртка каждого клиента выбирает режим адресации.</li><li>Каждому клиенту назначает токены, проверку сертификатов и уровень HTTP-логов.</li><li>Серверная обёртка включает reflection и использует статический флаг.</li></ul></div><div><h3><span class="tag new">v13</span> Целевая схема</h3><pre><code>app.AddMycgGrpc();
+
+app.AddGrpcClient&lt;InvoiceClient&gt;();
+app.AddGrpcClient&lt;ReportsClient&gt;();
+
+app.AddGrpcServer()
+   .RegisterService&lt;InvoiceGrpcService&gt;();</code></pre><p class="small">Клиенты и сервер регистрируются штатным Sitko.Core API, в том числе из зависимых модулей.</p></div></div><div class="note"><code>AddMycgGrpc()</code> регистрирует поставщик токенов и общую политику логов и сертификатов. Он сам не добавляет сервер и Consul.</div></div><div class="sources"><a href="https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.App/CGApplicationExtensions.cs" target="_blank" rel="noopener">MYCG.Core: обёртки gRPC ↗</a><a href="https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.App/GrpcTokenProvider.cs" target="_blank" rel="noopener">MYCG.Core: поставщик токена ↗</a></div></section>
+<section class="slide content-review" id="auth-tls" aria-labelledby="title-auth-tls" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-auth-tls">TLS и передача токена сохраняются</h2><div class="body"><div class="cols"><div><h3>В Sitko.Core</h3><p>Механизм общих настроек клиента и поставщик токена по умолчанию. Отдельный клиент может явно переопределить поставщика.</p><p>Учитываются клиенты из зависимых модулей; результат не зависит от порядка подключения общей политики и клиентов.</p></div><div><h3>В MYCG.Core</h3><p>Выбор пользовательского или системного токена остаётся в <code>GrpcTokenProvider</code>. Получение токена выполняется для вызова с учётом текущего контекста.</p><p>Входящая JWT/OIDC-аутентификация сервера подключается приложением отдельно.</p></div></div><div class="note">Локально и в Kubernetes используем HTTPS / HTTP/2: обычные CallCredentials передаются по TLS. Текущая политика проверки сертификатов переносится в общие настройки MYCG и остаётся явной.</div><p class="small">Сейчас одного <code>IGrpcTokenProvider</code> в DI недостаточно: v12 проверяет фабрику конкретного TClient. Общий механизм потребует изменения Sitko.Core.</p></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/GrpcClientModuleOptions.cs" target="_blank" rel="noopener">v12: опции и токены ↗</a><a href="https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.App/GrpcTokenProvider.cs" target="_blank" rel="noopener">MYCG.Core: поставщик токена ↗</a><a href="https://learn.microsoft.com/en-us/aspnet/core/grpc/authn-and-authz?view=aspnetcore-10.0" target="_blank" rel="noopener">gRPC: CallCredentials и TLS ↗</a></div></section>
+<section class="slide content-review" id="mycg-keeps" aria-labelledby="title-mycg-keeps" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-mycg-keeps">Что остаётся и что уходит из MYCG.Core</h2><div class="body"><table><thead><tr><th>Остаётся в MYCG</th><th>Убирается или переносится</th></tr></thead><tbody><tr><td>Поставщик токенов и его зависимости</td><td>Его назначение в каждой клиентской обёртке → общая политика</td></tr><tr><td>Доменные protobuf-сообщения, контекст запроса <code>mycg</code>, преобразования типов</td><td>Словарь <code>GrpcClientsAddresses</code> → настройки контрактов Sitko.Core</td></tr><tr><td>Параметры пакетной выдачи <code>StreamBatchSize</code></td><td>Выбор static / SD и AddStaticGrpcClient → единый клиент</td></tr><tr><td>Явное подключение входящей аутентификации приложением</td><td>Статические <code>AuthEnabled</code> и <code>IsGrpcConfigured</code> → состояние приложения</td></tr><tr><td>Общая политика через <code>AddMycgGrpc()</code></td><td>Неявные Consul/SD в AddMinimal / AddWeb; принудительный reflection</td></tr></tbody></table></div><div class="sources"><a href="https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.App/CGApplicationExtensions.cs" target="_blank" rel="noopener">MYCG.Core: обёртки gRPC ↗</a><a href="https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.Grpc/GrpcExtensions.cs" target="_blank" rel="noopener">MYCG.Core: контекст и сообщения ↗</a><a href="https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.Grpc/GrpcServiceOptions.cs" target="_blank" rel="noopener">MYCG.Core: параметры пакетной выдачи ↗</a></div></section>
+<section class="slide content-review" id="enable-disable" aria-labelledby="title-enable-disable" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-enable-disable">Один выключатель для всего SD</h2><div class="body"><div class="cols"><div><h3><span class="tag old">v12</span> Как работает сейчас</h3><pre><code>{
+  &quot;Consul&quot;: {
+    &quot;Enabled&quot;: false
+  },
+  &quot;ServiceDiscovery&quot;: {
+    &quot;Enabled&quot;: false
+  },
+  &quot;Grpc&quot;: {
+    &quot;Server&quot;: {
+      &quot;EnableServiceDiscovery&quot;: false
+    }
+  }
+}</code></pre></div><div><h3><span class="tag new">v13</span> Целевая схема</h3><pre><code>{
+  &quot;ServiceDiscovery&quot;: {
+    &quot;Enabled&quot;: false
+  }
+}</code></pre><p>Не запускаются поиск, публикация, TTL и обращения провайдера к Consul.</p><p>Сервер продолжает принимать прямые вызовы. Клиенты с <code>Address</code> продолжают работать.</p></div></div><p class="small">Переключатель не выключает gRPC и не придумывает адрес для клиента без Address. Такие клиенты должны получить явный адрес или включённый SD.</p></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Consul/ConsulModule.cs" target="_blank" rel="noopener">v12: модуль Consul ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.ServiceDiscovery/ServiceDiscoveryModule.cs" target="_blank" rel="noopener">v12: модуль SD ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Server/BaseGrpcServerModule.cs" target="_blank" rel="noopener">v12: сервер и публикация ↗</a></div></section>
+<section class="slide content-review" id="startup-rules" aria-labelledby="title-startup-rules" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-startup-rules">Отсутствие SD имеет определённый результат</h2><div class="body"><table><thead><tr><th>Сценарий</th><th>Поведение в v13 · проект</th></tr></thead><tbody><tr><td>Клиент с Address</td><td>Работает напрямую, без модуля SD и провайдера Consul.</td></tr><tr><td>Клиент без Address; SD и провайдер подключены</td><td>Использует обнаружение по полному контракту.</td></tr><tr><td>Клиент без Address; SD выключен или провайдера нет</td><td>Понятная ошибка конфигурации при запуске с именем контракта.</td></tr><tr><td>Приложение без потребности в SD</td><td>Модуль не подключается. Серверу достаточно обычного gRPC-хостинга.</td></tr><tr><td>SD явно включён для публикации, провайдера нет</td><td>Ошибка конфигурации; фиктивный провайдер не подставляется.</td></tr><tr><td>Consul настроен, но временно недоступен</td><td>Фоновые повторные попытки. RPC ограничивается deadline и отменой.</td></tr></tbody></table><p class="small">Подключённый и включённый провайдер публикует объявленные серверные контракты автоматически. Ошибка подключения и отсутствие провайдера — разные ситуации.</p></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/Discovery/ServiceDiscoveryGrpcClientModule.cs" target="_blank" rel="noopener">v12: собственный резолвер ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Server/BaseGrpcServerModule.cs" target="_blank" rel="noopener">v12: сервер и публикация ↗</a><a href="https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery.Dns/Resolver/DnsResolver.cs" target="_blank" rel="noopener">Microsoft: ошибки DNS ↗</a></div></section>
+<section class="slide content-review" id="consul-settings" aria-labelledby="title-consul-settings" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-consul-settings">Все настройки Consul принадлежат провайдеру SD</h2><div class="body"><div class="cols"><div><h3>Целевая секция</h3><pre><code>ServiceDiscovery:
+  Enabled: true
+  Consul:
+    HttpAddress: http://127.0.0.1:8500
+    Dns:
+      Servers: [&quot;127.0.0.1:8600&quot;]
+      Timeout: 00:00:03
+      MaxAttempts: 2
+      DefaultRefreshPeriod: 00:01:00</code></pre><p class="small">Пример структуры. Названия полей и полный набор значений по умолчанию будут зафиксированы в контракте реализации.</p></div><div><h3>Кроме адресов настраиваются</h3><ul><li>DNS: задержки повторного обновления, верхняя граница и коэффициент роста.</li><li>Публикация: TTL, интервал heartbeat, задержка удаления, тайм-аут запроса и повторная регистрация.</li><li>Окружение и доступный адрес слушателя.</li></ul><p class="small">Общие подключения Kafka, Redis и других модулей эта переработка не меняет.</p></div></div></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Consul/ConsulModule.cs" target="_blank" rel="noopener">v12: модуль Consul ↗</a><a href="https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery.Dns/DnsResolverOptions.cs" target="_blank" rel="noopener">Microsoft: параметры DNS ↗</a><a href="https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery.Dns/DnsSrvServiceEndpointProvider.cs" target="_blank" rel="noopener">Microsoft: DNS SRV ↗</a></div></section>
+<section class="slide content-review" id="consul-failure" aria-labelledby="title-consul-failure" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-consul-failure">При отказе Consul допускаем ошибки обнаружения</h2><div class="body"><div class="cols"><div><h3>Принятый простой вариант</h3><p>Используем стандартный Microsoft DNS SRV. В проверенной версии 10.11.0 после исчерпания попыток DNS при тайм-ауте или SERVFAIL публикуется пустой список адресов.</p><p>На сохранение последних известных адресов не рассчитываем. Новый RPC может завершиться ошибкой.</p></div><div><h3>Что должно управляться настройками</h3><p>DNS-тайм-ауты, число попыток, обновления и задержки повторов. Отдельно — deadline RPC и политика его повторного выполнения.</p><p>Публикация восстанавливается после возвращения Consul; старт приложения не ждёт его бесконечно.</p></div></div><div class="note">Собственный Consul Health API-провайдер с сохранением последних адресов откладываем до появления реальной потребности. Изменение DNS-настроек не обещает прозрачного повтора бизнес-операции.</div></div><div class="sources"><a href="https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery.Dns/Resolver/DnsResolver.cs" target="_blank" rel="noopener">Microsoft: ошибки DNS ↗</a><a href="https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery.Dns/DnsSrvServiceEndpointProvider.cs" target="_blank" rel="noopener">Microsoft: DNS SRV ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/GrpcClientModuleOptions.cs" target="_blank" rel="noopener">v12: опции и токены ↗</a></div></section>
+<section class="slide content-review" id="long-lived-calls" aria-labelledby="title-long-lived-calls" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-long-lived-calls">Смена адресов не требует нового клиента в коде</h2><div class="body"><div class="timeline"><div>Сервер A<small>контракт → TLS-порт A</small></div><div>Остановка / перезапуск<small>публикация и DNS обновляются</small></div><div>Сервер B<small>тот же контракт → TLS-порт B</small></div></div><ul><li>Один и тот же логический клиент должен выполнять последующие RPC по актуальному адресу после обновления SD.</li><li>Канал и транспорт переиспользуются; новый канал на каждый вызов не создаётся. Дополнительного посредника для тела большого ответа нет.</li><li>Выполняющийся RPC или поток не переносится на новый сервер. Предел времени восстановления зависит от TTL, DNS и настроек клиента.</li></ul><p class="small">Это требование к реализации v13. В этом материале нет результатов проверки TLS-интеграции и производительности новой версии.</p></div><div class="sources"><a href="https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery/Http/ResolvingHttpDelegatingHandler.cs" target="_blank" rel="noopener">Microsoft: выбор адреса ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/GrpcClientModule.cs" target="_blank" rel="noopener">v12: канал и транспорт ↗</a><a href="https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery.Dns/DnsSrvServiceEndpointProvider.cs" target="_blank" rel="noopener">Microsoft: DNS SRV ↗</a></div></section>
+<section class="slide content-review" id="connection-example" aria-labelledby="title-connection-example" hidden><p class="eyebrow">Примеры целевого API · ещё не реализованы</p><h2 id="title-connection-example">Как приложение подключает новую схему</h2><div class="body"><div class="cols"><div><h3>Обычное приложение Sitko.Core</h3><pre><code>// Если приложению нужен SD:
+app.AddConsulServiceDiscovery();
+
+app.AddGrpcClient&lt;InvoiceClient&gt;();
+
+app.AddGrpcServer()
+   .RegisterService&lt;InvoiceGrpcService&gt;();</code></pre><p class="small">Фасад провайдера подключает общий модуль SD один раз. Клиентский host не требует Kestrel; публикация появляется при наличии сервера.</p></div><div><h3>Приложение MYCG</h3><pre><code>app.AddMycgGrpc();
+
+// При необходимости обнаружения:
+app.AddConsulServiceDiscovery();
+
+app.AddGrpcClient&lt;InvoiceClient&gt;();
+
+app.AddGrpcServer()
+   .RegisterService&lt;InvoiceGrpcService&gt;();</code></pre><p class="small">Для полностью статической адресации вызов AddConsulServiceDiscovery отсутствует; Address задаётся каждому клиенту.</p></div></div></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/ApplicationExtensions.cs" target="_blank" rel="noopener">v12: регистрация клиентов ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Server/BaseGrpcServerModule.cs" target="_blank" rel="noopener">v12: сервер и публикация ↗</a><a href="https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.App/CGApplicationExtensions.cs" target="_blank" rel="noopener">MYCG.Core: обёртки gRPC ↗</a></div></section>
+<section class="slide content-review" id="endpoint-selection" aria-labelledby="title-endpoint-selection" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-endpoint-selection">Балансировка переходит от gRPC к Microsoft SD</h2><div class="body"><div class="cols"><div><h3><span class="tag old">v12</span> Как работает сейчас</h3><p><code>LoadBalancingPolicy</code> выбирает встроенную стратегию grpc-dotnet: <code>None</code>, <code>RoundRobin</code> или <code>PickFirst</code>.</p><p>Стратегия работает вместе с собственным резолвером Sitko.Core.</p></div><div><h3><span class="tag new">v13</span> Целевая схема</h3><p>Microsoft SD выбирает адрес перед отправкой запроса. Для новой схемы используем его штатный <code>RoundRobin</code>.</p><p>Встроенный балансировщик grpc-dotnet в этом пути отключён; прежнее поле нельзя просто перенести без изменения смысла.</p></div></div><div class="note">Прямой Address задаёт один адрес. Для SD старые настройки None / PickFirst требуют явного решения при миграции; их эквивалентность новой схеме не обещается.</div><p class="small">Другую стратегию выбора можно обсудить при подтверждённой потребности. Реализация своего балансировщика в этот переход не входит.</p></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/GrpcClientModuleOptions.cs" target="_blank" rel="noopener">v12: опции и токены ↗</a><a href="https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery/ServiceDiscoveryHttpClientBuilderExtensions.cs" target="_blank" rel="noopener">Microsoft: интеграция SD ↗</a><a href="https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery/ServiceDiscoveryServiceCollectionExtensions.cs" target="_blank" rel="noopener">Microsoft: стандартный RoundRobin ↗</a></div></section>
+<section class="slide content-review" id="preserved-features" aria-labelledby="title-preserved-features" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-preserved-features">Служебная переработка сохраняет возможности gRPC</h2><div class="body"><table><thead><tr><th>Механизм</th><th>Как учитывается в схеме</th></tr></thead><tbody><tr><td>Токены, metadata, интерцепторы</td><td>Остаются расширениями клиента. Общая политика даёт значения по умолчанию.</td></tr><tr><td>Deadline и повторы RPC</td><td>Настраиваются отдельно от DNS-повторов. Миграция SD сама не расширяет повторы операций.</td></tr><tr><td>Настройка канала и обработчика</td><td>Сохраняется как расширение для случаев, не покрытых обычными параметрами.</td></tr><tr><td>gRPC-Web и серверная авторизация</td><td>Сохраняются; новые правила доступа этой переработкой не вводятся.</td></tr><tr><td>HealthService</td><td>Отдельный gRPC-механизм здоровья не смешивается со старой проверкой Consul leader.</td></tr></tbody></table><p class="small">Простые значения — размеры, тайм-ауты, флаги — должны задаваться конфигурацией. Исполняемые стратегии и типы зависимостей остаются в коде и DI.</p></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/GrpcClientModuleOptions.cs" target="_blank" rel="noopener">v12: опции и токены ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Server/BaseGrpcServerModule.cs" target="_blank" rel="noopener">v12: сервер и публикация ↗</a><a href="https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.App/CGApplicationExtensions.cs" target="_blank" rel="noopener">MYCG.Core: обёртки gRPC ↗</a></div></section>
+<section class="slide content-review" id="breaking-changes" aria-labelledby="title-breaking-changes" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-breaking-changes">Что требуется изменить при переходе с v12</h2><div class="body"><table><thead><tr><th>Поверхность</th><th>Действие потребителя</th></tr></thead><tbody><tr><td>Пакеты и подключение</td><td>Убрать отдельный Consul и старые Consul-провайдеры. Подключить объединённый провайдер, где нужен SD.</td></tr><tr><td>Регистрация сервера</td><td>Перенести RegisterService из опций в цепочку builder. Убрать серверную обёртку MYCG.</td></tr><tr><td>Регистрация клиентов</td><td>Перейти на единый AddGrpcClient; общие правила MYCG включить один раз.</td></tr><tr><td>Конфигурация</td><td>Перенести адреса MYCG и External в Contracts; ключи заменить полными protobuf-именами.</td></tr><tr><td>Consul и окружения</td><td>Обновить публикацию и чтение согласованно. Старые записи приложения/порта новая схема не читает.</td></tr><tr><td>Балансировка</td><td>При SD используется RoundRobin Microsoft. Старый LoadBalancingPolicy не управляет встроенным gRPC-балансировщиком в новом пути.</td></tr><tr><td>Reflection и выключение SD</td><td>Включать reflection явно при необходимости; оставить один ServiceDiscovery.Enabled.</td></tr></tbody></table></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/ApplicationExtensions.cs" target="_blank" rel="noopener">v12: регистрация клиентов ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Server/GrpcServerModuleOptions.cs" target="_blank" rel="noopener">v12: регистрация в опциях ↗</a><a href="https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.App/CGApplicationExtensions.cs" target="_blank" rel="noopener">MYCG.Core: обёртки gRPC ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Consul/ServiceDiscovery/ServiceDiscoveryManager.cs" target="_blank" rel="noopener">v12: чтение каталога ↗</a></div></section>
+<section class="slide content-review" id="boundaries" aria-labelledby="title-boundaries" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-boundaries">Почему выбрана именно такая граница</h2><div class="body"><div class="cols"><div><h3>Оставляем</h3><ul><li>SD как необязательную самостоятельную возможность.</li><li>Общий слой поверх Microsoft SD и отдельный провайдер Consul.</li><li>gRPC API, пригодный и для SD, и для прямых адресов.</li></ul></div><div><h3>Не вводим в эту переработку</h3><ul><li>SD в базовом App и фиктивный провайдер «на всякий случай».</li><li>Отдельный Consul-модуль без других потребителей.</li><li>Новый общий каталог подключений для Kafka, Redis и Consul.</li></ul></div></div><div class="note">Consul-специфика остаётся за границей gRPC. Это позволяет добавить другой провайдер позднее, не строя сейчас дополнительный фреймворк абстракций.</div></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.ServiceDiscovery/ServiceDiscoveryModule.cs" target="_blank" rel="noopener">v12: модуль SD ↗</a><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Consul/ConsulModule.cs" target="_blank" rel="noopener">v12: модуль Consul ↗</a><a href="https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery/ServiceDiscoveryHttpClientBuilderExtensions.cs" target="_blank" rel="noopener">Microsoft: интеграция SD ↗</a></div></section>
+<section class="slide content-review" id="release-and-status" aria-labelledby="title-release-and-status" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-release-and-status">Изменения входят в новую мажорную версию</h2><div class="body"><p class="lead">Это схема SD/gRPC для Sitko.Core 13.<br>Совместный режим старой и новой регистрации не планируется.</p><ol><li>Координатор согласует общий состав версии и подготовит ветку интеграции для бета-выпусков. Имя <code>v13</code> пока рабочее.</li><li>Ветка SD/gRPC ответвляется от подтверждённой основы и вливается в неё. Реализация остаётся в исходном чате задачи.</li><li>Потребители обновляют взаимосвязанные серверы, клиенты и MYCG.Core согласованно.</li></ol><p class="small">Сейчас подготовлена архитектурная схема. Реализация, границы тестов и проверки поведения ещё впереди; они не подтверждаются этой презентацией.</p></div><div class="sources"><span>Основание: решения обсуждения архитектуры и выпуска Sitko.Core 13.</span></div></section>
+<section class="slide content-review" id="sources-and-scope" aria-labelledby="title-sources-and-scope" hidden><p class="eyebrow">Отличия от v12 · целевая схема v13</p><h2 id="title-sources-and-scope">Основания и степень готовности</h2><div class="body"><div class="cols"><div><h3>Проверено по исходникам</h3><p>Sitko.Core: <code>fa94b4432244</code><br>MYCG.Core: <code>4da7e4ae5897</code></p><p>Встроенные ссылки фиксируют ревизии. В v12 проверены регистрация модулей, адресация, публикация, токены и обёртки MYCG.</p></div><div><h3>Запланировано для v13</h3><p>Публичная схема отражает решения обсуждения. Примеры JSON и новый API описывают цель, а не готовый SDK.</p><p>Точный формат DNS-имени, типы builder и полный справочник параметров будут закреплены перед реализацией.</p></div></div><div class="note">Ранние материалы Spec Kit подготовлены до переработки модулей и API; они требуют синхронизации с этой схемой. Исторические прототипы не служат проверкой готового Sitko.Core 13.</div><p class="small">HTML автономный: для просмотра сеть не нужна. Ссылки на код и документацию открываются отдельно. Для печати доступны все слайды подряд.</p></div><div class="sources"><a href="https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/ApplicationExtensions.cs" target="_blank" rel="noopener">v12: регистрация клиентов ↗</a><a href="https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.App/CGApplicationExtensions.cs" target="_blank" rel="noopener">MYCG.Core: обёртки gRPC ↗</a><a href="https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery/ServiceDiscoveryHttpClientBuilderExtensions.cs" target="_blank" rel="noopener">Microsoft: интеграция SD ↗</a><a href="https://learn.microsoft.com/en-us/aspnet/core/grpc/configuration?view=aspnetcore-10.0" target="_blank" rel="noopener">gRPC: общие и индивидуальные опции ↗</a></div></section>
+<footer><button id="prev" aria-label="Предыдущий слайд">←</button><span id="counter" aria-live="polite"></span><button id="next" aria-label="Следующий слайд">→</button><button id="toc">Оглавление</button><span id="hint">← → · Пробел · <a href="#" id="print-deck">Печать</a></span></footer></main>
+<dialog id="outline"><button id="close">Закрыть</button><h2>Содержание</h2><ol id="contents"></ol></dialog>
+<script type="application/json" id="source-manifest">{
+  "title": "Sitko.Core 13 — SD/gRPC: отличия от v12",
+  "created_at": "2026-10-27",
+  "checked_at": "2026-10-27",
+  "status": "architecture_proposal_no_implementation",
+  "mr_url": null,
+  "source_revisions": {
+    "Sitko.Core": "fa94b44322448f85c92956f5a88c14624cc2daf1",
+    "MYCG.Core": "4da7e4ae58972f0d1bef7d4f2960d6c08faf0611",
+    "Microsoft.Extensions.ServiceDiscovery": "25f07afa51034e37b334210642d7dc5f191c142d"
+  },
+  "source_packages": {
+    "Microsoft.Extensions.ServiceDiscovery": "10.11.0",
+    "Microsoft.Extensions.ServiceDiscovery.Dns": "10.11.0"
+  },
+  "source_materials": {
+    "client": {
+      "title": "v12: регистрация клиентов",
+      "url": "https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/ApplicationExtensions.cs"
+    },
+    "static": {
+      "title": "v12: адрес из настроек",
+      "url": "https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/External/ExternalGrpcClientModule.cs"
+    },
+    "resolver": {
+      "title": "v12: собственный резолвер",
+      "url": "https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/Discovery/ServiceDiscoveryGrpcClientModule.cs"
+    },
+    "channel": {
+      "title": "v12: канал и транспорт",
+      "url": "https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/GrpcClientModule.cs"
+    },
+    "clientopts": {
+      "title": "v12: опции и токены",
+      "url": "https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/GrpcClientModuleOptions.cs"
+    },
+    "serveropts": {
+      "title": "v12: регистрация в опциях",
+      "url": "https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Server/GrpcServerModuleOptions.cs"
+    },
+    "server": {
+      "title": "v12: сервер и публикация",
+      "url": "https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Server/BaseGrpcServerModule.cs"
+    },
+    "consul": {
+      "title": "v12: модуль Consul",
+      "url": "https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Consul/ConsulModule.cs"
+    },
+    "catalog": {
+      "title": "v12: чтение каталога",
+      "url": "https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Consul/ServiceDiscovery/ServiceDiscoveryManager.cs"
+    },
+    "sd": {
+      "title": "v12: модуль SD",
+      "url": "https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.ServiceDiscovery/ServiceDiscoveryModule.cs"
+    },
+    "registrar": {
+      "title": "v12: регистрация сервисов",
+      "url": "https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.ServiceDiscovery.Server.Consul/ConsulServiceDiscoveryRegistrar.cs"
+    },
+    "identity": {
+      "title": "v12: короткое имя",
+      "url": "https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc/GrpcHelper.cs"
+    },
+    "options": {
+      "title": "v12: привязка конфигурации",
+      "url": "https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.App/Helpers/OptionsHelper.cs"
+    },
+    "app": {
+      "title": "v12: добавление модулей",
+      "url": "https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.App/SitkoCoreBaseApplicationBuilder.cs"
+    },
+    "ports": {
+      "title": "v12: публикация портов",
+      "url": "https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.ServiceDiscovery.Server/BaseServiceDiscoveryRegistrar.cs"
+    },
+    "web": {
+      "title": "v12: слушатели Kestrel",
+      "url": "https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.App.Web/AppWebConfigurationModule.cs"
+    },
+    "mycg": {
+      "title": "MYCG.Core: обёртки gRPC",
+      "url": "https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.App/CGApplicationExtensions.cs"
+    },
+    "token": {
+      "title": "MYCG.Core: поставщик токена",
+      "url": "https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.App/GrpcTokenProvider.cs"
+    },
+    "mycgproto": {
+      "title": "MYCG.Core: контекст и сообщения",
+      "url": "https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.Grpc/GrpcExtensions.cs"
+    },
+    "mycgopts": {
+      "title": "MYCG.Core: параметры пакетной выдачи",
+      "url": "https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.Grpc/GrpcServiceOptions.cs"
+    },
+    "ms": {
+      "title": "Microsoft: интеграция SD",
+      "url": "https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery/ServiceDiscoveryHttpClientBuilderExtensions.cs"
+    },
+    "handler": {
+      "title": "Microsoft: выбор адреса",
+      "url": "https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery/Http/ResolvingHttpDelegatingHandler.cs"
+    },
+    "dns": {
+      "title": "Microsoft: DNS SRV",
+      "url": "https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery.Dns/DnsSrvServiceEndpointProvider.cs"
+    },
+    "dnsfail": {
+      "title": "Microsoft: ошибки DNS",
+      "url": "https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery.Dns/Resolver/DnsResolver.cs"
+    },
+    "dnsoptions": {
+      "title": "Microsoft: параметры DNS",
+      "url": "https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery.Dns/DnsResolverOptions.cs"
+    },
+    "grpcconfig": {
+      "title": "gRPC: общие и индивидуальные опции",
+      "url": "https://learn.microsoft.com/en-us/aspnet/core/grpc/configuration?view=aspnetcore-10.0"
+    },
+    "grpcauth": {
+      "title": "gRPC: CallCredentials и TLS",
+      "url": "https://learn.microsoft.com/en-us/aspnet/core/grpc/authn-and-authz?view=aspnetcore-10.0"
+    },
+    "consulapi": {
+      "title": "Consul: регистрация у агента",
+      "url": "https://developer.hashicorp.com/consul/api-docs/agent/service"
+    },
+    "consuldns": {
+      "title": "Consul: DNS и состояние сервисов",
+      "url": "https://developer.hashicorp.com/consul/docs/discover/dns"
+    },
+    "msselector": {
+      "title": "Microsoft: стандартный RoundRobin",
+      "url": "https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery/ServiceDiscoveryServiceCollectionExtensions.cs"
+    }
+  },
+  "slides": {
+    "overview": {
+      "title": "SD и gRPC в Sitko.Core 13",
+      "sources": [
+        "client",
+        "mycg"
+      ],
+      "target_status": "proposal"
+    },
+    "main-deltas": {
+      "title": "Что меняется для разработчика",
+      "sources": [
+        "client",
+        "serveropts",
+        "mycg"
+      ],
+      "target_status": "proposal"
+    },
+    "modules-before": {
+      "title": "v12: связка из нескольких слоёв",
+      "sources": [
+        "resolver",
+        "server",
+        "consul",
+        "mycg"
+      ],
+      "target_status": "proposal"
+    },
+    "modules-after": {
+      "title": "v13: SD остаётся отдельной возможностью",
+      "sources": [
+        "sd",
+        "consul",
+        "ms"
+      ],
+      "target_status": "proposal"
+    },
+    "module-responsibilities": {
+      "title": "Как раскладываем существующий код",
+      "sources": [
+        "consul",
+        "catalog",
+        "identity"
+      ],
+      "target_status": "proposal"
+    },
+    "request-path": {
+      "title": "Поиск адреса входит в обычный HTTP-путь gRPC",
+      "sources": [
+        "resolver",
+        "ms",
+        "handler"
+      ],
+      "target_status": "proposal"
+    },
+    "contract-identity": {
+      "title": "Имя контракта берём из protobuf целиком",
+      "sources": [
+        "identity",
+        "catalog",
+        "consulapi"
+      ],
+      "target_status": "proposal"
+    },
+    "registration-lifecycle": {
+      "title": "Публикуем только объявленные gRPC-контракты",
+      "sources": [
+        "registrar",
+        "consulapi",
+        "consuldns"
+      ],
+      "target_status": "proposal"
+    },
+    "server-address": {
+      "title": "Объявляем доступный адрес и фактический порт",
+      "sources": [
+        "ports",
+        "web"
+      ],
+      "target_status": "proposal"
+    },
+    "client-selection": {
+      "title": "Один клиент: режим определяется Address",
+      "sources": [
+        "client",
+        "static",
+        "mycg"
+      ],
+      "target_status": "proposal"
+    },
+    "client-config": {
+      "title": "Общие настройки и исключения для контрактов",
+      "sources": [
+        "static",
+        "clientopts",
+        "grpcconfig"
+      ],
+      "target_status": "proposal"
+    },
+    "options-priority": {
+      "title": "Один порядок применения настроек",
+      "sources": [
+        "options",
+        "grpcconfig"
+      ],
+      "target_status": "proposal"
+    },
+    "server-api": {
+      "title": "Сервисы регистрируются через builder",
+      "sources": [
+        "serveropts",
+        "server",
+        "grpcconfig"
+      ],
+      "target_status": "proposal"
+    },
+    "server-repeat": {
+      "title": "Повторное AddGrpcServer дополняет один сервер",
+      "sources": [
+        "app",
+        "serveropts",
+        "mycg"
+      ],
+      "target_status": "proposal"
+    },
+    "server-config": {
+      "title": "Лимиты сервера и reflection — в конфигурации",
+      "sources": [
+        "serveropts",
+        "mycg",
+        "grpcconfig"
+      ],
+      "target_status": "proposal"
+    },
+    "mycg-policy": {
+      "title": "MYCG задаёт политику один раз на приложение",
+      "sources": [
+        "mycg",
+        "token"
+      ],
+      "target_status": "proposal"
+    },
+    "auth-tls": {
+      "title": "TLS и передача токена сохраняются",
+      "sources": [
+        "clientopts",
+        "token",
+        "grpcauth"
+      ],
+      "target_status": "proposal"
+    },
+    "mycg-keeps": {
+      "title": "Что остаётся и что уходит из MYCG.Core",
+      "sources": [
+        "mycg",
+        "mycgproto",
+        "mycgopts"
+      ],
+      "target_status": "proposal"
+    },
+    "enable-disable": {
+      "title": "Один выключатель для всего SD",
+      "sources": [
+        "consul",
+        "sd",
+        "server"
+      ],
+      "target_status": "proposal"
+    },
+    "startup-rules": {
+      "title": "Отсутствие SD имеет определённый результат",
+      "sources": [
+        "resolver",
+        "server",
+        "dnsfail"
+      ],
+      "target_status": "proposal"
+    },
+    "consul-settings": {
+      "title": "Все настройки Consul принадлежат провайдеру SD",
+      "sources": [
+        "consul",
+        "dnsoptions",
+        "dns"
+      ],
+      "target_status": "proposal"
+    },
+    "consul-failure": {
+      "title": "При отказе Consul допускаем ошибки обнаружения",
+      "sources": [
+        "dnsfail",
+        "dns",
+        "clientopts"
+      ],
+      "target_status": "proposal"
+    },
+    "long-lived-calls": {
+      "title": "Смена адресов не требует нового клиента в коде",
+      "sources": [
+        "handler",
+        "channel",
+        "dns"
+      ],
+      "target_status": "proposal"
+    },
+    "connection-example": {
+      "title": "Как приложение подключает новую схему",
+      "sources": [
+        "client",
+        "server",
+        "mycg"
+      ],
+      "target_status": "proposal"
+    },
+    "endpoint-selection": {
+      "title": "Балансировка переходит от gRPC к Microsoft SD",
+      "sources": [
+        "clientopts",
+        "ms",
+        "msselector"
+      ],
+      "target_status": "proposal"
+    },
+    "preserved-features": {
+      "title": "Служебная переработка сохраняет возможности gRPC",
+      "sources": [
+        "clientopts",
+        "server",
+        "mycg"
+      ],
+      "target_status": "proposal"
+    },
+    "breaking-changes": {
+      "title": "Что требуется изменить при переходе с v12",
+      "sources": [
+        "client",
+        "serveropts",
+        "mycg",
+        "catalog"
+      ],
+      "target_status": "proposal"
+    },
+    "boundaries": {
+      "title": "Почему выбрана именно такая граница",
+      "sources": [
+        "sd",
+        "consul",
+        "ms"
+      ],
+      "target_status": "proposal"
+    },
+    "release-and-status": {
+      "title": "Изменения входят в новую мажорную версию",
+      "sources": [],
+      "target_status": "proposal"
+    },
+    "sources-and-scope": {
+      "title": "Основания и степень готовности",
+      "sources": [
+        "client",
+        "mycg",
+        "ms",
+        "grpcconfig"
+      ],
+      "target_status": "proposal"
+    }
+  },
+  "review_decisions": [
+    {
+      "decision": "SD остаётся отдельной возможностью; отдельный модуль Consul убирается",
+      "pending_source_sync": true
+    },
+    {
+      "decision": "Единый клиент: Address или SD; полные protobuf-имена; настройки общие и по контракту",
+      "pending_source_sync": true
+    },
+    {
+      "decision": "Fluent AddGrpcServer().RegisterService<T>() с повторным добавлением без дубликатов",
+      "pending_source_sync": true
+    },
+    {
+      "decision": "AddMycgGrpc задаёт общую политику; TLS сохраняется; reflection включается настройками",
+      "pending_source_sync": true
+    },
+    {
+      "decision": "Стандартный DNS SRV; без сохранения последних адресов и без совместимости со старым SD",
+      "pending_source_sync": true
+    },
+    {
+      "decision": "Новая мажорная версия 13; реализация в текущем чате после сигнала координатора",
+      "pending_source_sync": true
+    }
+  ],
+  "editorial_preferences": [
+    "Русский язык",
+    "Сравнение с v12",
+    "Самостоятельный HTML для коллег",
+    "Без реализации и плана тестов"
+  ],
+  "proposed_details": [
+    "Порядок применения настроек",
+    "Имена полей новых JSON-секций",
+    "Диагностика отсутствующего провайдера",
+    "RoundRobin Microsoft SD вместо встроенной балансировки grpc-dotnet",
+    "Повторные callbacks и конфликт реализаций одного контракта"
+  ]
+}</script>
+<script>
+document.querySelector('#print-deck').onclick=e=>{e.preventDefault();window.print()};
+const slides=[...document.querySelectorAll('.slide')];
+const prev=document.querySelector('#prev'),next=document.querySelector('#next'),counter=document.querySelector('#counter'),outline=document.querySelector('#outline');
+let current=0;
+function show(index){current=Math.max(0,Math.min(slides.length-1,index));slides.forEach((s,i)=>s.hidden=i!==current);counter.textContent=`${current+1} / ${slides.length}`;prev.disabled=current===0;next.disabled=current===slides.length-1;history.replaceState(null,'','#'+slides[current].id);}
+function fromHash(){const i=slides.findIndex(s=>'#'+s.id===location.hash);show(i<0?0:i)}
+function fit(){document.documentElement.style.setProperty('--scale',Math.min(innerWidth/1280,innerHeight/720))}
+prev.onclick=()=>show(current-1);next.onclick=()=>show(current+1);
+document.querySelector('#toc').onclick=()=>outline.showModal();document.querySelector('#close').onclick=()=>outline.close();
+slides.forEach((s,i)=>{const li=document.createElement('li'),a=document.createElement('a');a.textContent=s.querySelector('h1,h2').textContent;a.href='#'+s.id;a.onclick=e=>{e.preventDefault();show(i);outline.close()};li.append(a);document.querySelector('#contents').append(li)});
+document.addEventListener('keydown',e=>{if(outline.open||e.altKey||e.ctrlKey||e.metaKey||e.target.closest('a,button,input,textarea,select,[contenteditable]'))return;let i=current;if(['ArrowRight','ArrowDown','PageDown',' '].includes(e.key))i+=e.shiftKey&&e.key===' '?-1:1;else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key))i--;else if(e.key==='Home')i=0;else if(e.key==='End')i=slides.length-1;else return;e.preventDefault();show(i)});
+addEventListener('hashchange',fromHash);addEventListener('resize',fit);fit();fromHash();
+</script></body></html>
