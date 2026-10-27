@@ -274,10 +274,6 @@ jobs:
         run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Repository.EntityFrameworkCore.Tests/Sitko.Core.Repository.EntityFrameworkCore.Tests.csproj
       - name: Run Sitko.Core.Repository.EntityFrameworkCore.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Repository.EntityFrameworkCore.Tests/Sitko.Core.Repository.EntityFrameworkCore.Tests.csproj
-      - name: Run Sitko.Core.Repository.Remote.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Repository.Remote.Tests/Sitko.Core.Repository.Remote.Tests.csproj
-      - name: Run Sitko.Core.Repository.Remote.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Repository.Remote.Tests/Sitko.Core.Repository.Remote.Tests.csproj
 
   opensearch:
     runs-on: ubuntu-latest

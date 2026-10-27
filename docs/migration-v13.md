@@ -27,6 +27,7 @@
 | `Search.ElasticSearch` | Удалите `AddElasticSearch()` и настройки `Search:Elastic`. Выберите прямую интеграцию Elasticsearch либо отдельно спланируйте переход на `Search.OpenSearch`; автоматической миграции индексов и настроек нет. |
 | `Sentry` | Удалите `AddSentry()` и настройки модуля `Sentry`. При необходимости подключите SDK Sentry напрямую и восстановите необходимые параметры. |
 | `Swagger` | Удалите регистрацию модуля `AddSwagger()` и настройки `Swagger`. Зарегистрируйте генерацию OpenAPI и интерфейс документации напрямую, включая описание авторизации и настройки конечных точек. |
+| `Repository.Remote`, `Repository.Remote.Wasm`, `Repository.Remote.Server` | Удалите ссылки на три пакета, `AddRemoteRepositories()`, `AddHttpRepositoryTransport()`, `AddWasmHttpRepositoryTransport()` и настройки `Repositories:Remote`/`Repositories:Remote:Transports:Http`. Замените наследование от `BaseRemoteRepositoryController` и использование удалённых репозиториев явными клиентскими и серверными операциями выбранного API. Передача сериализованных LINQ-запросов по этому HTTP-транспорту не поддерживается; автоматического совместимого переноса на другой транспорт нет. |
 
 ## Сохраняемые возможности
 
@@ -34,9 +35,10 @@
 `Pdf` входят в сохраняемый состав. Обычные публикация сообщений и обработчики
 очереди работают без интеграции MediatR.
 
-На этом этапе `Repository.Remote`, `Repository.Remote.Wasm`,
-`Repository.Remote.Server` и демонстрационный `apps/Blazor` сохраняются;
-их отвязка выполняется отдельным этапом версии 13.
+`Storage.Remote` и `Repository.Grpc` сохраняют самостоятельные контракты и
+не относятся к удалённой тройке. Демонстрационный `apps/Blazor` сохраняет
+формы, валидацию, навигацию и загрузку файлов без `Repository.Remote*`;
+запуск и проверка описаны в [инструкции Blazor](ru/blazor-demo.md).
 
 Переименование `Auth.IdentityServer` в `Auth.OIDC` — отдельная задача версии 13.
 Эта инструкция не утверждает наличие нового имени пакета до её поставки.
