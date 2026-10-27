@@ -27,6 +27,7 @@ All module names in this table have the `Sitko.Core.` prefix.
 | `Search.ElasticSearch` | Remove `AddElasticSearch()` and `Search:Elastic` settings. Use a direct Elasticsearch integration or plan a separate migration to `Search.OpenSearch`; index and configuration migration is not automatic. |
 | `Sentry` | Remove `AddSentry()` and module `Sentry` settings. Register the Sentry SDK directly and restore the required settings if needed. |
 | `Swagger` | Remove the module's `AddSwagger()` registration and `Swagger` settings. Register OpenAPI generation and its documentation UI directly, including authentication descriptions and endpoint options. |
+| `Repository.Remote`, `Repository.Remote.Wasm`, `Repository.Remote.Server` | Remove the three package references, `AddRemoteRepositories()`, `AddHttpRepositoryTransport()`, `AddWasmHttpRepositoryTransport()` and `Repositories:Remote`/`Repositories:Remote:Transports:Http` settings. Replace inheritance from `BaseRemoteRepositoryController` and remote repository usage with explicit client and server operations in the chosen API. Sending serialized LINQ queries through this HTTP transport is unsupported; no automatic compatible migration to another transport is provided. |
 
 ## Retained capabilities
 
@@ -34,9 +35,10 @@ All module names in this table have the `Sitko.Core.` prefix.
 `Pdf` are retained. Normal queue publishing and message processors do not require
 the MediatR integration.
 
-At this stage, `Repository.Remote`, `Repository.Remote.Wasm`,
-`Repository.Remote.Server` and the `apps/Blazor` demo are retained; decoupling
-belongs to a separate stage of version 13.
+`Storage.Remote` and `Repository.Grpc` retain their separate contracts and
+are outside the removed set. The `apps/Blazor` demo retains forms, validation,
+navigation and file uploads without `Repository.Remote*`; see the
+[Blazor guide](en/blazor-demo.md) for startup and verification.
 
 Renaming `Auth.IdentityServer` to `Auth.OIDC` is a separate version 13 task.
 This guide does not claim that the new package name is available before delivery.
