@@ -9,32 +9,35 @@ public class ScreenshotTest : BasePdfTest
     {
     }
 
-    [Fact]
-    public async Task Url()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task HtmlAndUrlProduceFullPagePngWithExternalCss(bool fromUrl)
     {
         var scope = await GetScopeAsync();
         var renderer = scope.GetService<IPdfRenderer>();
-
-        var url = "https://github.com";
-        var bytes = await renderer.GetScreenshotByUrlAsync(url);
-        Assert.True(bytes.Length >= 24);
-        Assert.Equal(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }, bytes[..8]);
-        Assert.True(BinaryPrimitives.ReadUInt32BigEndian(bytes.AsSpan(16, 4)) > 0);
-        Assert.True(BinaryPrimitives.ReadUInt32BigEndian(bytes.AsSpan(20, 4)) > 0);
+        await using var server = await LocalPageServer.StartAsync();
+        var bytes = fromUrl
+            ? await renderer.GetScreenshotByUrlAsync(server.Url)
+            : await renderer.GetScreenshotByHtmlAsync(server.Html);
+        AssertPngSize(bytes, 800, 1100);
     }
 
     [Fact]
-    public async Task Pdf()
+    public async Task ScreenshotHonorsClipSize()
     {
         var scope = await GetScopeAsync();
         var renderer = scope.GetService<IPdfRenderer>();
+        var bytes = await renderer.GetScreenshotByHtmlAsync("<p>Размер снимка</p>",
+            new() { Clip = new() { X = 0, Y = 0, Width = 123, Height = 77 } });
+        AssertPngSize(bytes, 123, 77);
+    }
 
-        var html =
-            "<html lang=\"en\">\n<head>\n    <title>Title</title>\n</head>\n<body>\n<h1>Hello, World!</h1>\n</body>\n</html>";
-        var bytes = await renderer.GetScreenshotByHtmlAsync(html);
+    private static void AssertPngSize(byte[] bytes, uint width, uint height)
+    {
         Assert.True(bytes.Length >= 24);
         Assert.Equal(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }, bytes[..8]);
-        Assert.True(BinaryPrimitives.ReadUInt32BigEndian(bytes.AsSpan(16, 4)) > 0);
-        Assert.True(BinaryPrimitives.ReadUInt32BigEndian(bytes.AsSpan(20, 4)) > 0);
+        Assert.Equal(width, BinaryPrimitives.ReadUInt32BigEndian(bytes.AsSpan(16, 4)));
+        Assert.Equal(height, BinaryPrimitives.ReadUInt32BigEndian(bytes.AsSpan(20, 4)));
     }
 }

@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
-    <ProjectReference Include="..\Sitko.Core.Puppeteer\Sitko.Core.Puppeteer.csproj"/>
-    <PackageReference Include="Nito.AsyncEx"/>
+    <PackageReference Include="Microsoft.Playwright"/>
   </ItemGroup>
 </Project>

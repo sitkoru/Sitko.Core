@@ -1,122 +1,59 @@
 using Microsoft.Extensions.Logging;
-using PuppeteerSharp;
-using Sitko.Core.Puppeteer;
+using Microsoft.Extensions.Options;
+using Microsoft.Playwright;
 
 namespace Sitko.Core.Pdf;
 
-internal sealed class PdfRenderer : IPdfRenderer
+internal sealed class PdfRenderer(
+    IOptionsMonitor<PdfRendererModuleOptions> optionsMonitor,
+    ILogger<PdfRenderer> logger) : IPdfRenderer
 {
-    private readonly IBrowserProvider browserProvider;
-    private readonly PdfOptions defaultOptions = new() { PrintBackground = true };
+    public Task<byte[]> GetPdfByUrlAsync(string url, PagePdfOptions? options = null, TimeSpan? delay = null) =>
+        RenderAsync(page => page.GotoAsync(url), page => page.PdfAsync(options ?? new() { PrintBackground = true }), delay);
 
-    private readonly ScreenshotOptions defaultScreenshotOptions =
-        new() { FullPage = true, Type = ScreenshotType.Png };
+    public Task<byte[]> GetPdfByHtmlAsync(string html, PagePdfOptions? options = null, TimeSpan? delay = null) =>
+        RenderAsync(page => page.SetContentAsync(html), page => page.PdfAsync(options ?? new() { PrintBackground = true }), delay);
 
-    private readonly ILogger<PdfRenderer> logger;
+    public Task<byte[]> GetScreenshotByUrlAsync(string url, PageScreenshotOptions? options = null, TimeSpan? delay = null) =>
+        RenderAsync(page => page.GotoAsync(url),
+            page => page.ScreenshotAsync(options ?? new() { FullPage = true, Type = ScreenshotType.Png }), delay);
 
-    public PdfRenderer(IBrowserProvider browserProvider,
-        ILogger<PdfRenderer> logger)
-    {
-        this.browserProvider = browserProvider;
-        this.logger = logger;
-    }
+    public Task<byte[]> GetScreenshotByHtmlAsync(string html, PageScreenshotOptions? options = null, TimeSpan? delay = null) =>
+        RenderAsync(page => page.SetContentAsync(html),
+            page => page.ScreenshotAsync(options ?? new() { FullPage = true, Type = ScreenshotType.Png }), delay);
 
-    public async Task<byte[]> GetPdfByUrlAsync(string url, PdfOptions? options = null, TimeSpan? delay = null)
-    {
-        try
-        {
-            await using var browser = await browserProvider.GetBrowserAsync();
-            var page = await GetPageByUrl(browser, url, delay);
-            options ??= defaultOptions;
-            var pdf = await page.PdfDataAsync(options);
-            await browser.CloseAsync();
-            return pdf;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
-            throw new InvalidOperationException(ex.Message, ex);
-        }
-    }
-
-    public async Task<byte[]> GetPdfByHtmlAsync(string html, PdfOptions? options = null, TimeSpan? delay = null)
+    private async Task<byte[]> RenderAsync(Func<IPage, Task> load, Func<IPage, Task<byte[]>> render, TimeSpan? delay)
     {
         try
         {
-            await using var browser = await browserProvider.GetBrowserAsync();
-            var page = await GetPageWithHtml(browser, html, delay);
-            options ??= defaultOptions;
-            var pdf = await page.PdfDataAsync(options);
-            await browser.CloseAsync();
-            return pdf;
+            var options = optionsMonitor.CurrentValue;
+            using var playwright = await Playwright.CreateAsync();
+            await using var browser = string.IsNullOrEmpty(options.BrowserWsEndpoint)
+                ? await playwright.Chromium.LaunchAsync(new()
+                {
+                    Headless = options.Headless,
+                    Args = options.BrowserArgs,
+                    ExecutablePath = options.ExecutablePath
+                })
+                : await playwright.Chromium.ConnectOverCDPAsync(options.BrowserWsEndpoint);
+            await using var context = await browser.NewContextAsync(new()
+            {
+                IgnoreHTTPSErrors = options.AcceptInsecureCerts,
+                ViewportSize = options.ViewportSize
+            });
+            var page = await context.NewPageAsync();
+            await load(page);
+            if (delay != null)
+            {
+                await Task.Delay(delay.Value);
+            }
+
+            return await render(page);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error while generating pdf from html: {ErrorText}", ex.ToString());
+            logger.LogError(ex, "Error while rendering document: {ErrorText}", ex.Message);
             throw new InvalidOperationException(ex.Message, ex);
         }
-    }
-
-    public async Task<byte[]> GetScreenshotByUrlAsync(string url, ScreenshotOptions? options = null,
-        TimeSpan? delay = null)
-    {
-        try
-        {
-            await using var browser = await browserProvider.GetBrowserAsync();
-            var page = await GetPageByUrl(browser, url, delay);
-            options ??= defaultScreenshotOptions;
-            var screenshot = await page.ScreenshotDataAsync(options);
-            await browser.CloseAsync();
-            return screenshot;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
-            throw new InvalidOperationException(ex.Message, ex);
-        }
-    }
-
-    public async Task<byte[]> GetScreenshotByHtmlAsync(string html, ScreenshotOptions? options = null,
-        TimeSpan? delay = null)
-    {
-        try
-        {
-            await using var browser = await browserProvider.GetBrowserAsync();
-            var page = await GetPageWithHtml(browser, html, delay);
-            options ??= defaultScreenshotOptions;
-            var screenshot = await page.ScreenshotDataAsync(options);
-            await browser.CloseAsync();
-            return screenshot;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error while generating pdf from url: {ErrorText}", ex.ToString());
-            throw new InvalidOperationException(ex.Message, ex);
-        }
-    }
-
-    private static async Task<IPage> GetPageByUrl(IBrowser browser, string url, TimeSpan? delay = null)
-    {
-        var page = await browser.NewPageAsync();
-        await page.GoToAsync(url);
-        if (delay != null)
-        {
-            await Task.Delay(delay.Value);
-        }
-
-        return page;
-    }
-
-    private static async Task<IPage> GetPageWithHtml(IBrowser browser, string html, TimeSpan? delay = null)
-    {
-        var page = await browser.NewPageAsync();
-        await page.SetContentAsync(html);
-        if (delay != null)
-        {
-            await Task.Delay(delay.Value);
-        }
-
-        return page;
     }
 }
-
