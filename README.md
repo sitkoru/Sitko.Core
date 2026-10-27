@@ -38,9 +38,8 @@ See [demo app](apps/Blazor/Sitko.Core.Apps.Blazor) for now
 Подключены такие же расширения `assess` и `bug`, как в Jarvis. Прямые вызовы
 `$speckit-*` остаются доступны для выбора конкретного этапа.
 
-Конституция `.specify/memory/constitution.md` пока содержит штатный шаблон;
-принципы отдельно согласуем через `$speckit-constitution`. Текущая задача
-выбирается локально: `.specify/feature.json` исключён из Git.
+Инженерные принципы определяет [конституция Sitko.Core](.specify/memory/constitution.md).
+Текущая задача выбирается локально: `.specify/feature.json` исключён из Git.
 
 Для служебных команд нужен Specify CLI; [инструкция установки](https://github.com/github/spec-kit#quick-start).
 Команда `specify check` проверяет доступность инструментов в окружении.

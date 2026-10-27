@@ -1,50 +1,76 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# Sitko.Core Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Сначала факты и требования
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Перед выбором решения изучайте существующее поведение и затронутых потребителей.
+Различайте предположения, локальный опыт и подтверждённые факты. Требования и
+существенные основания решения должны быть проверяемыми.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### II. Простой интерфейс потребителя
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+Общую регистрацию зависимостей, общие настройки и служебные механизмы размещайте
+в Sitko.Core, чтобы приложения не повторяли одинаковый служебный код. Потребителю
+должны быть доступны необходимые для его сценария настройки.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### III. Минимальное достаточное решение
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Переиспользуйте подходящие существующие средства. Новый или существенно расширенный
+механизм вводите под явное требование или подтверждённую проблему и обосновывайте
+по [Контролю пропорциональности](../../AGENTS.md#контроль-пропорциональности).
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### IV. Совместимость меняется явно
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+Несовместимые изменения допустимы по согласованному требованию. При изменении
+перечисляйте затронутые публичные API, конфигурацию, данные и поведение, а также
+описывайте необходимые действия потребителей по переходу. Сохранение прежней
+реализации не является обязательным, если согласован переход на новую.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### V. Проверяется наблюдаемый результат
+
+Существенные изменения подтверждайте проверками, соответствующими поведению и
+рискам. Заявления о производительности и восстановлении подтверждайте реальными
+измерениями для рассматриваемого сценария. Различайте результаты локальных
+проверок, CI и фактической приёмки; указывайте ограничения выполненных проверок.
+
+### VI. Спецификации поддерживаются вместе с кодом
+
+Для каждой описанной возможности сохраняйте один актуальный `spec.md` как её
+контракт, а не историю задачи или ADR. Спецификация должна быть понятна человеку
+без зависимости от агента и согласована с кодом и обычной документацией.
+Жизненный цикл материалов определён в [правилах спецификаций](../../specs/README.md).
+
+## Инженерные ограничения
+
+Конституция закрепляет устойчивые принципы проекта. Практические инструкции для
+разработки находятся в [AGENTS.md](../../AGENTS.md), а описание поведения и
+использования — в документации проекта.
+
+## Рабочий процесс
+
+Выбирайте этапы работы по цели поручения и состоянию задачи согласно
+[sitko-core-workflow](../../.agents/skills/sitko-core-workflow/SKILL.md).
+Проверяйте соответствие реализации требованиям и конституции; результаты проверок
+и их ограничения сохраняйте в PR. Рабочие материалы завершённой реализации
+удаляйте после проверок и ревью перед слиянием, предварительно сохранив значимые
+сведения. Части контракта сохраняются. Подробный порядок определён в
+[правилах спецификаций](../../specs/README.md#завершение-реализации).
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Конституция задаёт принципы проекта; спецификации, планы и ревью проверяют на
+соответствие ей. При противоречии сначала разрешите его, изменив решение либо
+согласовав поправку к конституции.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+Поправка описывает причину, изменение смысла и последствия для действующих правил
+и документов. После согласования обновите конституцию и затронутые материалы,
+проверьте их согласованность и укажите результат в PR.
+
+Версия конституции независима от версий пакетов NuGet. Изменяйте её по правилам:
+
+- **MAJOR** — несовместимое изменение смысла или удаление принципа;
+- **MINOR** — новое или существенно расширенное обязательство;
+- **PATCH** — уточнение без изменения смысла.
+
+**Version**: 1.0.0 | **Ratified**: 2026-10-27 | **Last Amended**: 2026-10-27
