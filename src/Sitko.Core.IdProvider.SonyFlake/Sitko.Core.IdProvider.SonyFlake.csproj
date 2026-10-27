@@ -1,5 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.IdProvider\Sitko.Core.IdProvider.csproj"/>
-  </ItemGroup>
-</Project>
