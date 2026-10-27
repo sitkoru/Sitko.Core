@@ -12,13 +12,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Sitko.Core.Blazor.MudBlazor\Sitko.Core.Blazor.MudBlazor.csproj" />
     <ProjectReference Include="..\..\..\src\Sitko.Core.Blazor.Wasm\Sitko.Core.Blazor.Wasm.csproj" />
-    <ProjectReference Include="..\..\..\src\Sitko.Core.Repository.Remote.Wasm\Sitko.Core.Repository.Remote.Wasm.csproj" />
     <ProjectReference Include="..\..\..\src\Sitko.Core.Storage.Remote\Sitko.Core.Storage.Remote.csproj" />
     <ProjectReference Include="..\Sitko.Core.Apps.Blazor.Data\Sitko.Core.Apps.Blazor.Data.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AdditionalFiles Include="Components\TestComponent.razor" />
   </ItemGroup>
 
 </Project>
