@@ -32,11 +32,15 @@ See [demo app](apps/Blazor/Sitko.Core.Apps.Blazor) for now
 а шаблоны, сценарии и настройки — в `.specify/`. Эти файлы хранятся в Git;
 повторная инициализация после клонирования не требуется.
 
-Конституция `.specify/memory/constitution.md` пока содержит штатный шаблон.
-Сначала согласуем принципы через `$speckit-constitution`, затем оформляем
-требования через `$speckit-specify`, план через `$speckit-plan` и задачи через
-`$speckit-tasks`. Реализация запускается отдельно через `$speckit-implement`.
-Текущая задача выбирается локально: `.specify/feature.json` исключён из Git.
+Задачу можно описывать обычными словами: [sitko-core-workflow](.agents/skills/sitko-core-workflow/SKILL.md)
+выбирает этапы Spec Kit по цели запроса и уже разрешённым действиям. Правила
+канонических спецификаций находятся в [specs/README.md](specs/README.md).
+Подключены такие же расширения `assess` и `bug`, как в Jarvis. Прямые вызовы
+`$speckit-*` остаются доступны для выбора конкретного этапа.
+
+Конституция `.specify/memory/constitution.md` пока содержит штатный шаблон;
+принципы отдельно согласуем через `$speckit-constitution`. Текущая задача
+выбирается локально: `.specify/feature.json` исключён из Git.
 
 Для служебных команд нужен Specify CLI; [инструкция установки](https://github.com/github/spec-kit#quick-start).
 Команда `specify check` проверяет доступность инструментов в окружении.
