@@ -1,8 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <PackageReference Include="NEST"/>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Search\Sitko.Core.Search.csproj"/>
-  </ItemGroup>
-</Project>

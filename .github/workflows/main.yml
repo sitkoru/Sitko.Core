@@ -279,21 +279,6 @@ jobs:
       - name: Run Sitko.Core.Repository.Remote.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Repository.Remote.Tests/Sitko.Core.Repository.Remote.Tests.csproj
 
-  sonyflake:
-    runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
-    env:
-      IDPROVIDER__SONYFLAKE__URI: http://sonyflake
-    services:
-      sonyflake:
-        image: titpetric/sonyflake
-    steps:
-      - uses: actions/checkout@v7
-      - name: Run Sitko.Core.SonyFlake.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.SonyFlake.Tests/Sitko.Core.SonyFlake.Tests.csproj
-      - name: Run Sitko.Core.SonyFlake.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.SonyFlake.Tests/Sitko.Core.SonyFlake.Tests.csproj
-
   opensearch:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container
@@ -410,7 +395,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    needs: [ build, apps, blazor, grpc, imgproxy, pdf, redis, queue, repository, sonyflake, storage, vault, opensearch, kafka, clickhouse ]
+    needs: [ build, apps, blazor, grpc, imgproxy, pdf, redis, queue, repository, storage, vault, opensearch, kafka, clickhouse ]
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout

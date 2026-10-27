@@ -84,3 +84,5 @@ dotnet test tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj --framework n
 ```
 
 Set `PDF_TEST_BROWSER_WS_ENDPOINT` to repeat the suite with a remote browser. `PDF_TEST_HTTP_HOST` selects the fixture server address reachable from the browser, for example `host.docker.internal` for a browser in Docker and tests on macOS. The default is `127.0.0.1`. `PDF_TEST_BROWSER_EXECUTABLE_PATH` selects an explicit local executable. These variables belong to the test fixture; application configuration uses the `PdfRenderer` section.
+
+For the full removed-module list and standalone browser automation migration, see [migration to version 13](migration-v13.en.md).

@@ -1,6 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.App\Sitko.Core.App.csproj"/>
-    <PackageReference Include="PuppeteerSharp"/>
-  </ItemGroup>
-</Project>

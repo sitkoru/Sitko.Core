@@ -43,3 +43,7 @@ See [demo app](apps/Blazor/Sitko.Core.Apps.Blazor) for now
 
 Для служебных команд нужен Specify CLI; [инструкция установки](https://github.com/github/spec-kit#quick-start).
 Команда `specify check` проверяет доступность инструментов в окружении.
+
+## Переход на версию 13
+
+[Удалённые модули и действия потребителей](docs/migration-v13.md) · [English](docs/migration-v13.en.md).
