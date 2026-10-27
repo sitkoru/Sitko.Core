@@ -1,0 +1,49 @@
+@page "/Form"
+@using Sitko.Core.Apps.Blazor.Data
+@using Sitko.Core.Apps.Blazor.Client.Components.Forms
+@using Sitko.Core.Blazor.Forms
+@rendermode InteractiveAuto
+@inherits BaseComponent
+
+<AppPageLayout Title="Форма с валидацией">
+    <MudText Class="mb-4">Имя обязательно. Отправка показывает принятые значения только на этой странице, без сохранения.</MudText>
+    <DemoForm @ref="form" GetEntity="CreateModelAsync" Add="AcceptAsync" Update="AcceptAsync">
+        <ChildContent Context="formContext">
+            <MudPaper Class="pa-4">
+                <MudTextField Label="Имя" @bind-Value="formContext.Entity.Name" For="() => formContext.Entity.Name" />
+                <MudTextField Label="Сообщение" @bind-Value="formContext.Entity.Message" For="() => formContext.Entity.Message" Lines="3" />
+                <MudButton Class="mt-4 mr-2" Variant="Variant.Filled" Color="Color.Primary" OnClick="formContext.Form.SaveEntityAsync">Отправить</MudButton>
+                <MudButton Class="mt-4" Variant="Variant.Outlined" OnClick="ResetAsync">Сбросить</MudButton>
+            </MudPaper>
+        </ChildContent>
+    </DemoForm>
+    @if (accepted is not null)
+    {
+        <MudPaper Class="pa-4 mt-4" role="status">
+            <MudText Typo="Typo.h6">Принятые значения</MudText>
+            <MudText>Имя: @accepted.Name</MudText>
+            <MudText>Сообщение: @accepted.Message</MudText>
+        </MudPaper>
+    }
+</AppPageLayout>
+
+@code {
+    private DemoForm form = null!;
+    private DemoFormModel? accepted;
+
+    private static Task<(bool IsNew, DemoFormModel Entity)> CreateModelAsync() =>
+        Task.FromResult((true, new DemoFormModel()));
+
+    private async Task<FormSaveResult> AcceptAsync(DemoFormModel model)
+    {
+        accepted = new DemoFormModel { Name = model.Name, Message = model.Message };
+        await NotifyStateChangeAsync();
+        return new FormSaveResult(true, null);
+    }
+
+    private async Task ResetAsync()
+    {
+        accepted = null;
+        await form.ResetAsync();
+    }
+}
