@@ -51,3 +51,7 @@ See [demo app](apps/Blazor/Sitko.Core.Apps.Blazor) for now
 ## Настройки сборки / Build configuration
 
 [Русский](docs/ru/build-configuration.md) · [English](docs/en/build-configuration.md)
+
+## Запуск тестов / Running tests
+
+[Русский](docs/ru/testing.md) · [English](docs/en/testing.md)

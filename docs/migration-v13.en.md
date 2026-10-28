@@ -88,3 +88,7 @@ This guide does not claim that the new package name is available before delivery
 
 The Sitko.Core change does not migrate applications or environments.
 Library-set contract: [specification](../specs/20261027-233345-legacy-modules/spec.md).
+
+## Test infrastructure
+
+Test projects use xUnit4.0.2, MTP2.5.1 and AwesomeAssertions9.6.0. See [test infrastructure migration](en/testing.md#migrating-test-infrastructure-consumers) for runner references, SDK configuration, namespaces and commands.

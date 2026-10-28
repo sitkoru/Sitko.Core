@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using FluentValidation;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Sitko.Core.Repository.Tests.Data;
@@ -59,8 +59,7 @@ public abstract class BasicRepositoryTests<TScope> : BaseTest<TScope> where TSco
 
         var result = await repository.UpdateAsync(item);
         Assert.False(result.IsSuccess);
-        Assert.Single(result.Errors);
-        var error = result.Errors.First();
+        var error = Assert.Single(result.Errors);
         Assert.Equal(nameof(TestModel.Status), error.PropertyName);
         Assert.Equal("Status can't be error", error.ErrorMessage);
     }
@@ -129,8 +128,8 @@ public abstract class BasicRepositoryTests<TScope> : BaseTest<TScope> where TSco
         Assert.NotNull(item);
         Assert.NotNull(item.Bars);
         Assert.NotEmpty(item.Bars);
-        Assert.Single(item.Bars);
-        Assert.Equal(item.Id, item.Bars.First().TestId);
+        var bar = Assert.Single(item.Bars);
+        Assert.Equal(item.Id, bar.TestId);
     }
 
 

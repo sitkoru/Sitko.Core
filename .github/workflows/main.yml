@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Run Sitko.Core.App.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.App.Tests/Sitko.Core.App.Tests.csproj
+        run: dotnet test --project tests/Sitko.Core.App.Tests/Sitko.Core.App.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
 
   blazor:
     runs-on: ubuntu-latest
@@ -46,7 +46,7 @@ jobs:
           npm ci
           npm run prod
       - name: Run Sitko.Core.App.Blazor.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.App.Blazor.Tests/Sitko.Core.App.Blazor.Tests.csproj
+        run: dotnet test --project tests/Sitko.Core.App.Blazor.Tests/Sitko.Core.App.Blazor.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
 
   grpc:
     runs-on: ubuntu-latest
@@ -59,7 +59,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Run Sitko.Core.Grpc.Client.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Grpc.Client.Tests/Sitko.Core.Grpc.Client.Tests.csproj
+        run: dotnet test --project tests/Sitko.Core.Grpc.Client.Tests/Sitko.Core.Grpc.Client.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
 
   imgproxy:
     runs-on: ubuntu-latest
@@ -67,7 +67,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Run Sitko.Core.ImgProxy.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.ImgProxy.Tests/Sitko.Core.ImgProxy.Tests.csproj
+        run: dotnet test --project tests/Sitko.Core.ImgProxy.Tests/Sitko.Core.ImgProxy.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
 
   pdf:
     runs-on: ubuntu-latest
@@ -96,8 +96,8 @@ jobs:
         run: echo "PDF_TEST_HTTP_HOST=$(hostname -i | awk '{print $1}')" >> "$GITHUB_ENV"
       - name: Запустить Sitko.Core.Pdf.Tests через CDP net10.0
         run: >-
-          dotnet test tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
-          --logger GitHubActions --logger "trx;LogFileName=pdf.trx"
+          dotnet test --project tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj --minimum-expected-tests 1
+          --report-github --report-trx --report-trx-filename pdf.trx
           --results-directory TestResults/pdf-cdp-net10.0
           --framework net10.0
       - name: Install local Chromium
@@ -110,8 +110,8 @@ jobs:
           PDF_TEST_BROWSER_WS_ENDPOINT: ''
           PDF_TEST_HTTP_HOST: 127.0.0.1
         run: >-
-          dotnet test tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
-          --no-build --logger GitHubActions --logger "trx;LogFileName=pdf.trx"
+          dotnet test --project tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj --minimum-expected-tests 1
+          --no-build --report-github --report-trx --report-trx-filename pdf.trx
           --results-directory TestResults/pdf-local-net10.0
           --framework net10.0
       - name: Save PDF test results
@@ -176,8 +176,8 @@ jobs:
                 sleep 1
               done
             done
-            dotnet test tests/Sitko.Core.Auth.Tests/Sitko.Core.Auth.Tests.csproj \
-              --framework "$framework" --logger GitHubActions --logger 'trx;LogFileName=redis.trx' \
+            dotnet test --project tests/Sitko.Core.Auth.Tests/Sitko.Core.Auth.Tests.csproj --minimum-expected-tests 1 \
+              --framework "$framework" --report-github --report-trx --report-trx-filename redis.trx \
               --results-directory "TestResults/redis-$framework"
             for fixture in sentinel cluster; do
               docker logs "$REDIS_FIXTURE_PREFIX-$fixture"
@@ -220,11 +220,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Run Sitko.Core.Queue.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
+        run: dotnet test --project tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
       - name: Run Sitko.Core.Queue.Nats.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj
+        run: dotnet test --project tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
       - name: Run Sitko.Core.Queue.InMemory.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj
+        run: dotnet test --project tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
 
   repository:
     runs-on: ubuntu-latest
@@ -242,7 +242,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Run Sitko.Core.Repository.EntityFrameworkCore.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Repository.EntityFrameworkCore.Tests/Sitko.Core.Repository.EntityFrameworkCore.Tests.csproj
+        run: dotnet test --project tests/Sitko.Core.Repository.EntityFrameworkCore.Tests/Sitko.Core.Repository.EntityFrameworkCore.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
 
   opensearch:
     runs-on: ubuntu-latest
@@ -267,7 +267,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Run Sitko.Core.Search.OpenSearch.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Search.OpenSearch.Tests/Sitko.Core.Search.OpenSearch.Tests.csproj
+        run: dotnet test --project tests/Sitko.Core.Search.OpenSearch.Tests/Sitko.Core.Search.OpenSearch.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
 
   storage:
     runs-on: ubuntu-latest
@@ -292,13 +292,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Run Sitko.Core.Storage.FileSystem.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
+        run: dotnet test --project tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
       - name: Run Sitko.Core.Storage.S3.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
+        run: dotnet test --project tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
       - name: Run Sitko.Core.Storage.Remote.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Storage.Remote.Tests/Sitko.Core.Storage.Remote.Tests.csproj
+        run: dotnet test --project tests/Sitko.Core.Storage.Remote.Tests/Sitko.Core.Storage.Remote.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
       - name: Run Sitko.Core.Storage.Metadata.Postgres.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Storage.Metadata.Postgres.Tests/Sitko.Core.Storage.Metadata.Postgres.Tests.csproj
+        run: dotnet test --project tests/Sitko.Core.Storage.Metadata.Postgres.Tests/Sitko.Core.Storage.Metadata.Postgres.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
 
   vault:
     runs-on: ubuntu-latest
@@ -319,7 +319,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Run Sitko.Core.Configuration.Vault.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Configuration.Vault.Tests/Sitko.Core.Configuration.Vault.Tests.csproj
+        run: dotnet test --project tests/Sitko.Core.Configuration.Vault.Tests/Sitko.Core.Configuration.Vault.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
 
   kafka:
     runs-on: ubuntu-latest
@@ -327,7 +327,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Run Sitko.Core.Queue.Kafka.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj
+        run: dotnet test --project tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
 
   clickhouse:
     runs-on: ubuntu-latest
@@ -335,9 +335,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Run Sitko.Core.ClickHouse.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.ClickHouse.Tests/Sitko.Core.ClickHouse.Tests.csproj
+        run: dotnet test --project tests/Sitko.Core.ClickHouse.Tests/Sitko.Core.ClickHouse.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
       - name: Run Sitko.Core.ClickHouse.Linq2db.Tests net10.0
-        run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.ClickHouse.Linq2db.Tests/Sitko.Core.ClickHouse.Linq2db.Tests.csproj
+        run: dotnet test --project tests/Sitko.Core.ClickHouse.Linq2db.Tests/Sitko.Core.ClickHouse.Linq2db.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
 
   release:
     name: Release
