@@ -1,5 +1,4 @@
 using System.Globalization;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -32,8 +31,8 @@ public abstract class BaseTestScope<THostApplicationBuilder, TConfig> : IBaseTes
     private bool isDisposed;
     protected IServiceProvider? ServiceProvider { get; set; }
     protected Guid Id { get; } = Guid.NewGuid();
-    [PublicAPI] protected IApplicationContext? ApplicationContext { get; set; }
-    [PublicAPI] protected string? Name { get; private set; }
+    protected IApplicationContext? ApplicationContext { get; set; }
+    protected string? Name { get; private set; }
 
     public TConfig Config => GetService<IOptions<TConfig>>().Value;
 

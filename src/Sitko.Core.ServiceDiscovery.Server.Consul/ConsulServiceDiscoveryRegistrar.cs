@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -8,7 +7,6 @@ using Sitko.Core.Consul.ServiceDiscovery;
 
 namespace Sitko.Core.ServiceDiscovery.Server.Consul;
 
-[UsedImplicitly]
 public class ConsulServiceDiscoveryRegistrar(
     IServiceDiscoveryManager serviceDiscoveryManager,
     IOptionsMonitor<AppWebConfigurationModuleOptions> hostOptions,

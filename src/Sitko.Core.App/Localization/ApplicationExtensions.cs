@@ -1,9 +1,7 @@
-﻿using JetBrains.Annotations;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 
 namespace Sitko.Core.App.Localization;
 
-[PublicAPI]
 public static class ApplicationExtensions
 {
     public static IHostApplicationBuilder AddJsonLocalization(this IHostApplicationBuilder hostApplicationBuilder,

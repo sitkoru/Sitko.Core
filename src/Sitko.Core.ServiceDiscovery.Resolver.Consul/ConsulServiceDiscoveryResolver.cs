@@ -1,10 +1,8 @@
-using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.Consul.ServiceDiscovery;
 
 namespace Sitko.Core.ServiceDiscovery.Resolver.Consul;
 
-[UsedImplicitly]
 public class ConsulServiceDiscoveryResolver(
     IServiceDiscoveryManager serviceDiscoveryManager,
     ILogger<ConsulServiceDiscoveryResolver> logger) : BaseServiceDiscoveryResolver(logger)

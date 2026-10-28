@@ -1,8 +1,5 @@
-using JetBrains.Annotations;
-
 namespace Sitko.Core.Queue.Nats;
 
-[PublicAPI]
 public class NatsMessageOptions<T> : IQueueMessageOptions<T> where T : class
 {
     public TimeSpan? StartAt { get; set; }

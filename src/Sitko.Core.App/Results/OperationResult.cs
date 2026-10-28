@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using JetBrains.Annotations;
 
 namespace Sitko.Core.App.Results;
 
@@ -10,7 +9,6 @@ public interface IOperationResult
     string? ErrorMessage { get; }
 }
 
-[PublicAPI]
 public class OperationResult : IOperationResult
 {
     public OperationResult() => IsSuccess = true;
@@ -43,7 +41,6 @@ public class OperationResult : IOperationResult
     }
 }
 
-[PublicAPI]
 public class OperationResult<T> : IOperationResult
 {
     public OperationResult(T result)

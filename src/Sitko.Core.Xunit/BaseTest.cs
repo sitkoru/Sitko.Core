@@ -1,11 +1,9 @@
 using System.Runtime.CompilerServices;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Sitko.Core.Xunit;
 
-[PublicAPI]
 public abstract class BaseTest : IAsyncLifetime
 {
     protected BaseTest(ITestOutputHelper testOutputHelper) => TestOutputHelper = testOutputHelper;
