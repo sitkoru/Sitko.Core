@@ -108,7 +108,6 @@ public class GrpcClientModuleOptions : BaseModuleOptions
         };
         return this;
     }
-
 }
 
 public class GrpcClientModuleOptions<TClient> : GrpcClientModuleOptions where TClient : ClientBase<TClient>
@@ -146,13 +145,4 @@ public class GrpcClientModuleOptions<TClient> : GrpcClientModuleOptions where TC
         _ = base.AddInterceptor<TInterceptor>();
         return this;
     }
-
-    internal LoadBalancingConfig? GetLoadBalancingConfig() =>
-        LoadBalancingPolicy switch
-        {
-            LoadBalancingPolicy.None => null,
-            LoadBalancingPolicy.RoundRobin => new RoundRobinConfig(),
-            LoadBalancingPolicy.PickFirst => new PickFirstConfig(),
-            _ => throw new ArgumentOutOfRangeException()
-        };
 }

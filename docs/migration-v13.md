@@ -164,6 +164,11 @@ OpenSearch 3.x. Если приложение напрямую использу�
 подключённый провайдер обнаружения. Для Consul используйте
 `AddConsulServiceDiscovery()` и секцию `ServiceDiscovery:Consul`.
 
+Наследование от `GrpcClientModule<TClient, TOptions>` и `BaseGrpcServerModule<TOptions>`
+не поддерживается. Клиент настраивается через `AddGrpcClient<TClient>(...)` и
+`ConfigureGrpcClients(...)`, сервер — через `AddGrpcServer(...)` и регистрацию
+сервисов. Действующие модули — `GrpcClientModule<TClient>` и `GrpcServerModule`.
+
 Регистрации `options.RegisterService<T>()` и `options.RegisterServiceWithGrpcWeb<T>()`
 перенесите из обработчика options в цепочку builder:
 

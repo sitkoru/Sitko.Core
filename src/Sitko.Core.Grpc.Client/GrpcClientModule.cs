@@ -15,20 +15,32 @@ namespace Sitko.Core.Grpc.Client;
 
 public interface IGrpcClientModule<TClient> where TClient : ClientBase<TClient>;
 
-public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
-    BaseApplicationModule<TGrpcClientModuleOptions>,
-    IGrpcClientModule<TClient>, IOpenTelemetryModule<TGrpcClientModuleOptions>
+public class GrpcClientModule<TClient> : BaseApplicationModule<GrpcClientModuleOptions<TClient>>,
+    IGrpcClientModule<TClient>, IOpenTelemetryModule<GrpcClientModuleOptions<TClient>>
     where TClient : ClientBase<TClient>
-    where TGrpcClientModuleOptions : GrpcClientModuleOptions<TClient>, new()
 {
-    protected virtual bool NeedSocketHandler => false;
-    protected virtual bool UseNativeLoadBalancing => true;
-    protected virtual void ConfigureHttpClient(IHttpClientBuilder builder) { }
-    public override string[] OptionKeys => ["Grpc:Client:Default", OptionsKey];
+    private bool useDiscovery;
+    public override string[] OptionKeys => ["Grpc:Client"];
+    public override string OptionsKey => $"Grpc:Client:Contracts:{GrpcServicesHelper.GetServiceNameForClient<TClient>()}";
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
-        TGrpcClientModuleOptions startupOptions)
+        GrpcClientModuleOptions<TClient> startupOptions)
     {
+        if (startupOptions.Address is { } address &&
+            (!address.IsAbsoluteUri || (address.Scheme != Uri.UriSchemeHttps && address.Scheme != Uri.UriSchemeHttp) ||
+             string.IsNullOrWhiteSpace(address.Host)))
+        {
+            throw new InvalidOperationException($"Contract {GrpcServicesHelper.GetServiceNameForClient<TClient>()} has invalid Address: expected an absolute HTTP(S) URI");
+        }
+        useDiscovery = startupOptions.Address is null;
+        if (useDiscovery)
+        {
+            if (applicationContext.Configuration.GetValue<bool?>("ServiceDiscovery:Enabled") == false)
+            {
+                throw new InvalidOperationException($"Contract {GrpcServicesHelper.GetServiceNameForClient<TClient>()} requires Address or ServiceDiscovery.Enabled=true");
+            }
+            startupOptions.Address = new Uri($"https://{ServiceDiscoveryName.Create(applicationContext.Environment, GrpcServicesHelper.GetServiceNameForClient<TClient>())}");
+        }
         base.ConfigureServices(applicationContext, services, startupOptions);
         if (startupOptions.EnableHttp2UnencryptedSupport)
         {
@@ -39,7 +51,7 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
         services.TryAddSingleton(TimeProvider.System);
         var builder = services.AddGrpcClient<TClient>(GrpcServicesHelper.GetServiceNameForClient<TClient>(), (provider, options) =>
         {
-            options.Address = GenerateAddress(startupOptions);
+            options.Address = startupOptions.Address;
             options.CallOptionsActions.Add(context =>
             {
                 if (context.CallOptions.Deadline is null && startupOptions.DefaultDeadline is not null)
@@ -50,13 +62,13 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
                 }
             });
         });
-        ConfigureHttpClient(builder);
+        if (useDiscovery)
+        {
+            _ = builder.AddServiceDiscovery();
+        }
         services.AddTransient<IGrpcClientProvider<TClient>, GrpcClientProvider<TClient>>();
         startupOptions.ConfigureClient(services, builder);
-        builder.ConfigurePrimaryHttpMessageHandler(provider =>
-            NeedSocketHandler
-                ? CreateSocketHttpHandler(provider, startupOptions)
-                : CreateHttpClientHandler(provider, startupOptions));
+        _ = builder.ConfigurePrimaryHttpMessageHandler(() => CreateSocketHttpHandler(startupOptions));
         builder.ConfigureChannel(options =>
         {
             if (!startupOptions.EnableHttp2UnencryptedSupport)
@@ -66,10 +78,10 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
 
             options.ServiceConfig = new ServiceConfig();
 
-            var loadBalancingConfig = startupOptions.GetLoadBalancingConfig();
-            if (loadBalancingConfig is not null && NeedSocketHandler && UseNativeLoadBalancing)
+            if (!Enum.IsDefined(startupOptions.LoadBalancingPolicy))
             {
-                options.ServiceConfig.LoadBalancingConfigs.Add(loadBalancingConfig);
+                throw new ArgumentOutOfRangeException(nameof(startupOptions), startupOptions.LoadBalancingPolicy,
+                    "Invalid load balancing policy");
             }
 
             if (startupOptions.RetryPolicy is not null)
@@ -86,33 +98,11 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
         });
     }
 
-    public OpenTelemetryBuilder ConfigureOpenTelemetry(IApplicationContext context, TGrpcClientModuleOptions options,
+    public OpenTelemetryBuilder ConfigureOpenTelemetry(IApplicationContext context, GrpcClientModuleOptions<TClient> options,
         OpenTelemetryBuilder builder) =>
         builder.WithTracing(providerBuilder => providerBuilder.AddGrpcClientInstrumentation());
 
-    protected abstract Uri GenerateAddress(TGrpcClientModuleOptions options);
-
-    protected virtual HttpMessageHandler CreateHttpClientHandler(IServiceProvider provider,
-        TGrpcClientModuleOptions options)
-    {
-        var httpClientHandler = new HttpClientHandler();
-        if (options.DisableCertificatesValidation)
-        {
-            httpClientHandler.ServerCertificateCustomValidationCallback =
-                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        }
-
-        HttpMessageHandler handler = httpClientHandler;
-        if (options.ConfigureHttpHandler is not null)
-        {
-            handler = options.ConfigureHttpHandler(handler);
-        }
-
-        return options.UseGrpcWeb ? new GrpcWebHandler(handler) : handler;
-    }
-
-    protected virtual HttpMessageHandler CreateSocketHttpHandler(IServiceProvider serviceProvider,
-        TGrpcClientModuleOptions options)
+    private static HttpMessageHandler CreateSocketHttpHandler(GrpcClientModuleOptions<TClient> options)
     {
         var handler = new SocketsHttpHandler
         {
@@ -136,37 +126,6 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
         var result = options.ConfigureHttpHandler?.Invoke(handler) ?? handler;
         return options.UseGrpcWeb ? new GrpcWebHandler(result) : result;
     }
-}
-
-public class GrpcClientModule<TClient> : GrpcClientModule<TClient, GrpcClientModuleOptions<TClient>>
-    where TClient : ClientBase<TClient>
-{
-    private bool useDiscovery;
-    public override string[] OptionKeys => ["Grpc:Client"];
-    public override string OptionsKey => $"Grpc:Client:Contracts:{GrpcServicesHelper.GetServiceNameForClient<TClient>()}";
-    protected override bool NeedSocketHandler => true;
-    protected override bool UseNativeLoadBalancing => false;
-
-    public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
-        GrpcClientModuleOptions<TClient> startupOptions)
-    {
-        if (startupOptions.Address is { } address &&
-            (!address.IsAbsoluteUri || (address.Scheme != Uri.UriSchemeHttps && address.Scheme != Uri.UriSchemeHttp) ||
-             string.IsNullOrWhiteSpace(address.Host)))
-        {
-            throw new InvalidOperationException($"Contract {GrpcServicesHelper.GetServiceNameForClient<TClient>()} has invalid Address: expected an absolute HTTP(S) URI");
-        }
-        useDiscovery = startupOptions.Address is null;
-        if (useDiscovery)
-        {
-            if (applicationContext.Configuration.GetValue<bool?>("ServiceDiscovery:Enabled") == false)
-            {
-                throw new InvalidOperationException($"Contract {GrpcServicesHelper.GetServiceNameForClient<TClient>()} requires Address or ServiceDiscovery.Enabled=true");
-            }
-            startupOptions.Address = new Uri($"https://{ServiceDiscoveryName.Create(applicationContext.Environment, GrpcServicesHelper.GetServiceNameForClient<TClient>())}");
-        }
-        base.ConfigureServices(applicationContext, services, startupOptions);
-    }
 
     public override void PostConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         GrpcClientModuleOptions<TClient> startupOptions)
@@ -174,16 +133,6 @@ public class GrpcClientModule<TClient> : GrpcClientModule<TClient, GrpcClientMod
         if (useDiscovery && !services.Any(static service => service.ServiceType == typeof(IServiceEndpointProviderFactory)))
         {
             throw new InvalidOperationException($"Contract {GrpcServicesHelper.GetServiceNameForClient<TClient>()} requires a ServiceDiscovery provider or Address");
-        }
-    }
-
-    protected override Uri GenerateAddress(GrpcClientModuleOptions<TClient> options) => options.Address!;
-
-    protected override void ConfigureHttpClient(IHttpClientBuilder builder)
-    {
-        if (useDiscovery)
-        {
-            _ = builder.AddServiceDiscovery();
         }
     }
 }

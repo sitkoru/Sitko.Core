@@ -167,6 +167,11 @@ at `Grpc:Client:Contracts:<full protobuf name>:Address`; without an address,
 the client requires a discovery provider. For Consul, use
 `AddConsulServiceDiscovery()` and the `ServiceDiscovery:Consul` section.
 
+Deriving from `GrpcClientModule<TClient, TOptions>` or `BaseGrpcServerModule<TOptions>`
+is not supported. Configure clients through `AddGrpcClient<TClient>(...)` and
+`ConfigureGrpcClients(...)`; configure servers through `AddGrpcServer(...)` and
+service registration. The module types are `GrpcClientModule<TClient>` and `GrpcServerModule`.
+
 Move `options.RegisterService<T>()` and `options.RegisterServiceWithGrpcWeb<T>()`
 out of the options callback into the builder chain:
 

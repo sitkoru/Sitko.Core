@@ -1,10 +1,21 @@
 using Grpc.AspNetCore.Server;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
+using Sitko.Core.App.Web;
+using Sitko.Core.ServiceDiscovery;
 
 namespace Sitko.Core.Grpc.Server
 {
-    public class GrpcServerModule : BaseGrpcServerModule<GrpcServerModuleOptions>
+    public class GrpcServerModule : BaseApplicationModule<GrpcServerModuleOptions>, IGrpcServerModule,
+        IHostBuilderModule<GrpcServerModuleOptions>, IWebApplicationModule<GrpcServerModuleOptions>
     {
+        private readonly List<Action<IEndpointRouteBuilder>> endpointRegistrations = [];
+        private bool enableGrpcWebEndpoints;
+        private readonly List<Action<IServiceCollection, IApplicationContext>> serviceOptionsRegistrations = [];
         private readonly Dictionary<string, ServiceRegistration> registrations = [];
         internal List<Action<IApplicationContext, GrpcServerModuleOptions>> ConfigureActions { get; set; } = [];
         public override string OptionsKey => "Grpc:Server";
@@ -50,9 +61,95 @@ namespace Sitko.Core.Grpc.Server
             options.ConfigureGrpcService = configureService;
         }
 
-        protected override IReadOnlyDictionary<string, Action<IGrpcServerModule>> GetServiceRegistrations(GrpcServerModuleOptions options) =>
-            registrations.ToDictionary(static pair => pair.Key, pair => new Action<IGrpcServerModule>(module =>
-                pair.Value.Register(module, options, pair.Value.EnableGrpcWeb, pair.Value.Configure)));
+        public virtual void RegisterService<TService>(string? requiredAuthorizationSchemeName, bool enableGrpcWeb = false,
+            Action<GrpcServiceOptions>? configure = null)
+            where TService : class
+        {
+            enableGrpcWebEndpoints |= enableGrpcWeb;
+            serviceOptionsRegistrations.Add((services, context) =>
+                _ = services.AddGrpc().AddServiceOptions<TService>(serviceOptions =>
+                {
+                    serviceOptions.CompressionProviders = [.. serviceOptions.CompressionProviders];
+                    context.Configuration.GetSection($"Grpc:Server:Contracts:{GrpcServicesHelper.GetServiceName<TService>()}")
+                        .Bind(serviceOptions);
+                    configure?.Invoke(serviceOptions);
+                }));
+            endpointRegistrations.Add(builder =>
+            {
+                var grpcEndpoint = builder.MapGrpcService<TService>();
+                if (enableGrpcWeb)
+                {
+                    grpcEndpoint = grpcEndpoint.EnableGrpcWeb();
+                }
+
+                if (!string.IsNullOrEmpty(requiredAuthorizationSchemeName))
+                {
+                    grpcEndpoint.RequireAuthorization(new AuthorizeAttribute
+                    {
+                        AuthenticationSchemes = requiredAuthorizationSchemeName,
+                    });
+                }
+            });
+        }
+
+        public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
+            GrpcServerModuleOptions startupOptions)
+        {
+            base.ConfigureServices(applicationContext, services, startupOptions);
+            services.AddScoped(typeof(IGrpcCallProcessor<>), typeof(GrpcCallProcessor<>));
+            _ = services.AddGrpc(options => ConfigureServiceOptions(applicationContext, startupOptions, options));
+            if (startupOptions.EnableReflection)
+            {
+                services.AddGrpcReflection();
+            }
+
+            foreach (var (name, registration) in registrations)
+            {
+                registration.Register(this, startupOptions, registration.EnableGrpcWeb, registration.Configure);
+                _ = services.AddToServiceDiscovery(new ServiceDiscoveryService(GrpcModuleConstants.GrpcServiceDiscoveryType,
+                    name, new Dictionary<string, string>(), startupOptions.ServiceDiscoveryPortNames));
+            }
+            foreach (var configureServiceOptions in serviceOptionsRegistrations)
+            {
+                configureServiceOptions(services, applicationContext);
+            }
+        }
+
+        private static void ConfigureServiceOptions(IApplicationContext context, GrpcServerModuleOptions startupOptions,
+            GrpcServiceOptions options)
+        {
+            context.Configuration.GetSection("Grpc:Server:Default").Bind(options);
+            if (startupOptions.EnableDetailedErrors is { } enableDetailedErrors)
+            {
+                options.EnableDetailedErrors = enableDetailedErrors;
+            }
+            startupOptions.ConfigureGrpcService?.Invoke(options);
+        }
+
+        public void ConfigureWebHost(IApplicationContext applicationContext, ConfigureWebHostBuilder webHostBuilder,
+            GrpcServerModuleOptions options) =>
+            options.ConfigureWebHostDefaults?.Invoke(webHostBuilder);
+
+        public void ConfigureEndpoints(IApplicationContext applicationContext,
+            IApplicationBuilder appBuilder, IEndpointRouteBuilder endpoints)
+        {
+            var config = GetOptions(appBuilder.ApplicationServices);
+            if (enableGrpcWebEndpoints)
+            {
+                appBuilder.UseGrpcWeb();
+            }
+
+            foreach (var endpointRegistration in endpointRegistrations)
+            {
+                endpointRegistration(endpoints);
+            }
+
+            endpoints.MapGrpcService<HealthService>();
+            if (config.EnableReflection)
+            {
+                endpoints.MapGrpcReflectionService();
+            }
+        }
 
         private sealed record ServiceRegistration(Type ServiceType,
             Action<IGrpcServerModule, GrpcServerModuleOptions, bool, Action<GrpcServiceOptions>?> Register,
