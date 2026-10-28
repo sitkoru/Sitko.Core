@@ -30,6 +30,18 @@ public class ConfigurationTest : BaseVaultTest
     }
 
     [Fact]
+    public async Task GetNestedOptionsWithArrayAndFalse()
+    {
+        var scope = await GetScopeAsync();
+        var config = scope.GetService<IOptionsMonitor<TestConfig>>();
+
+        Assert.False(config.CurrentValue.Nested.Enabled);
+        Assert.Collection(config.CurrentValue.Nested.Values,
+            static value => Assert.Equal("first", value),
+            static value => Assert.Equal("second", value));
+    }
+
+    [Fact]
     public async Task Module()
     {
         var scope = await GetScopeAsync();
