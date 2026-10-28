@@ -43,18 +43,15 @@ namespace Sitko.Core.Grpc.Client.Tests
                     var reply = await client.GetAsync(new Accounting.Request(), deadline: DateTime.UtcNow.AddSeconds(2), cancellationToken: token);
                     _ = reply.Value.Should().Be("server-ok");
                     var reflection = clientHost.Services.GetRequiredService<ServerReflection.ServerReflectionClient>();
-                    using var call = reflection.ServerReflectionInfo(deadline: DateTime.UtcNow.AddSeconds(5), cancellationToken: token);
-                    await call.RequestStream.WriteAsync(new ServerReflectionRequest { ListServices = "" }, token);
-                    await call.RequestStream.CompleteAsync();
                     if (reflectionEnabled)
                     {
-                        _ = (await call.ResponseStream.MoveNext(token)).Should().BeTrue();
-                        _ = call.ResponseStream.Current.ListServicesResponse.Service.Select(static service => service.Name)
+                        var response = await ListServices(reflection, token);
+                        _ = response.ListServicesResponse.Service.Select(static service => service.Name)
                             .Should().Contain("accounting.v1.Invoice");
                     }
                     else
                     {
-                        var error = await Assert.ThrowsAsync<RpcException>(async () => await call.ResponseStream.MoveNext(token));
+                        var error = await Assert.ThrowsAsync<RpcException>(() => ListServices(reflection, token));
                         _ = error.StatusCode.Should().Be(StatusCode.Unimplemented);
                     }
                 }
@@ -64,6 +61,15 @@ namespace Sitko.Core.Grpc.Client.Tests
                     await server.StopAsync(token);
                 }
             }
+        }
+        private static async Task<ServerReflectionResponse> ListServices(
+            ServerReflection.ServerReflectionClient reflection, CancellationToken token)
+        {
+            using var call = reflection.ServerReflectionInfo(deadline: DateTime.UtcNow.AddSeconds(5), cancellationToken: token);
+            await call.RequestStream.WriteAsync(new ServerReflectionRequest { ListServices = "" }, token);
+            await call.RequestStream.CompleteAsync();
+            _ = (await call.ResponseStream.MoveNext(token)).Should().BeTrue();
+            return call.ResponseStream.Current;
         }
     }
 }
