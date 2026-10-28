@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace Sitko.Core.Queue.Kafka.Tests.Data;
 
@@ -14,4 +15,13 @@ public static class EventRegistrator
     public static void RegisterBatch(Guid[] messageIds) => RegisteredBatches[RegisteredBatches.Count] = messageIds;
 
     public static bool IsRegistered(Guid messageId) => RegisteredEvents.Contains(messageId);
+
+    public static async Task WaitUntilAsync(Func<bool> condition, CancellationToken cancellationToken)
+    {
+        var timer = Stopwatch.StartNew();
+        while (!condition() && timer.Elapsed < TimeSpan.FromSeconds(30))
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken);
+        }
+    }
 }
