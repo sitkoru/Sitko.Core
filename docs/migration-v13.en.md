@@ -66,10 +66,15 @@ version in use. Updating the client package does not upgrade the OpenSearch serv
 
 ## Development tool annotations
 
-Sitko.Core packages do not reference `JetBrains.Annotations` or use its
+Sitko.Core packages do not declare a direct `JetBrains.Annotations` dependency
+or use its
 `PublicAPI` and `UsedImplicitly` attributes. If an application received this
 package transitively and uses its attributes, add a direct
 `JetBrains.Annotations` reference or remove the unused application annotations.
+
+The Blazor dependency graph may still include this package transitively through
+`Sitko.Blazor.ScriptInjector`; removing the direct Sitko.Core reference does not
+exclude dependencies of third-party libraries.
 
 This change to development tool hints does not alter module registration or
 runtime operations. Nullable analysis attributes from
