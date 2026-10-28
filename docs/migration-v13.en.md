@@ -144,6 +144,24 @@ Test projects use xUnit4.0.2, MTP2.5.1 and AwesomeAssertions9.6.0. See [test inf
 
 ## gRPC clients and service discovery
 
+Remove references to `Sitko.Core.Consul`, `Sitko.Core.ServiceDiscovery.Resolver.Consul`,
+`Sitko.Core.ServiceDiscovery.Server` and `Sitko.Core.ServiceDiscovery.Server.Consul`.
+Use `Sitko.Core.ServiceDiscovery.Consul` where discovery is required.
+Replace `AddConsul()` and generic `AddServiceDiscovery<TRegistrar, TResolver>()` /
+`AddServiceDiscovery<TResolver>()` with `AddConsulServiceDiscovery()`.
+The previous resolver/registrar types and `sd:///` are removed.
+
+Move `Consul:ConsulUri` to `ServiceDiscovery:Consul:Address` and configure DNS
+addresses separately through `DnsServers`. Previous check/refresh settings in
+seconds are not read: configure `Ttl`, `HeartbeatInterval`, `DnsRefreshPeriod`
+and `DeregisterCriticalServiceAfter` according to their new roles. The new scheme
+does not read old application/port registrations; update communicating servers
+and clients together.
+
+With discovery, Microsoft's standard `RoundRobin` selects endpoints. The previous
+`LoadBalancingPolicy` does not control this path; `None`/`PickFirst` semantics
+are not preserved.
+
 Replace `AddExternalGrpcClient<T>` with `AddGrpcClient<T>`. Set a direct address
 at `Grpc:Client:Contracts:<full protobuf name>:Address`; without an address,
 the client requires a discovery provider. For Consul, use

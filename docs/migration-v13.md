@@ -145,6 +145,20 @@ OpenSearch 3.x. Если приложение напрямую использу�
 
 ## Клиент gRPC и включение обнаружения сервисов
 
+Удалите ссылки на `Sitko.Core.Consul`, `Sitko.Core.ServiceDiscovery.Resolver.Consul`,
+`Sitko.Core.ServiceDiscovery.Server` и `Sitko.Core.ServiceDiscovery.Server.Consul`.
+Подключите `Sitko.Core.ServiceDiscovery.Consul` там, где требуется обнаружение.
+`AddConsul()` и обобщённые `AddServiceDiscovery<TRegistrar, TResolver>()` /
+`AddServiceDiscovery<TResolver>()` заменяются на `AddConsulServiceDiscovery()`.
+Собственные типы прежнего resolver/registrar и `sd:///` удалены.
+
+`Consul:ConsulUri` переносится в `ServiceDiscovery:Consul:Address`; DNS-адреса
+задаются отдельно в `DnsServers`. Старые секундные параметры проверки/обновления
+не считываются: настройте `Ttl`, `HeartbeatInterval`, `DnsRefreshPeriod` и
+`DeregisterCriticalServiceAfter` по их назначению в новой схеме. Старые записи
+приложения/порта новая схема не читает; взаимодействующие серверы и клиенты
+обновляются согласованно.
+
 `AddExternalGrpcClient<T>` заменяется на `AddGrpcClient<T>`. Прямой адрес задаётся
 в `Grpc:Client:Contracts:<полное protobuf-имя>:Address`; без адреса клиент требует
 подключённый провайдер обнаружения. Для Consul используйте
@@ -158,6 +172,10 @@ app.AddGrpcServer(options => options.RequireSchemeAuthorization("Bearer"))
     .RegisterService<InvoiceGrpcService>()
     .RegisterServiceWithGrpcWeb<ReportsGrpcService>();
 ```
+
+При SD выбор адреса выполняет стандартный `RoundRobin` Microsoft. Прежний
+`LoadBalancingPolicy` не управляет этим путём; эквивалентность `None`/`PickFirst`
+не сохраняется.
 
 Общие клиентские параметры задаются через `ConfigureGrpcClients(...)`;
 `Grpc:Client:Default` и `Grpc:Server:Default` содержат общую конфигурацию,

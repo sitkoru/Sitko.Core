@@ -50,7 +50,6 @@
     <Project Path="src/Sitko.Core.ClickHouse.Linq2db/Sitko.Core.ClickHouse.Linq2db.csproj" />
     <Project Path="src/Sitko.Core.ClickHouse/Sitko.Core.ClickHouse.csproj" />
     <Project Path="src/Sitko.Core.Configuration.Vault/Sitko.Core.Configuration.Vault.csproj" />
-    <Project Path="src/Sitko.Core.Consul/Sitko.Core.Consul.csproj" />
     <Project Path="src/Sitko.Core.Db.InMemory/Sitko.Core.Db.InMemory.csproj" />
     <Project Path="src/Sitko.Core.Db.Postgres/Sitko.Core.Db.Postgres.csproj" />
     <Project Path="src/Sitko.Core.Db/Sitko.Core.Db.csproj" />
@@ -75,9 +74,6 @@
     <Project Path="src/Sitko.Core.Search.OpenSearch/Sitko.Core.Search.OpenSearch.csproj" />
     <Project Path="src/Sitko.Core.Search/Sitko.Core.Search.csproj" />
     <Project Path="src/Sitko.Core.ServiceDiscovery.Consul/Sitko.Core.ServiceDiscovery.Consul.csproj" />
-    <Project Path="src/Sitko.Core.ServiceDiscovery.Resolver.Consul/Sitko.Core.ServiceDiscovery.Resolver.Consul.csproj" />
-    <Project Path="src/Sitko.Core.ServiceDiscovery.Server.Consul/Sitko.Core.ServiceDiscovery.Server.Consul.csproj" />
-    <Project Path="src/Sitko.Core.ServiceDiscovery.Server/Sitko.Core.ServiceDiscovery.Server.csproj" />
     <Project Path="src/Sitko.Core.ServiceDiscovery/Sitko.Core.ServiceDiscovery.csproj" />
     <Project Path="src/Sitko.Core.Storage.FileSystem/Sitko.Core.Storage.FileSystem.csproj" />
     <Project Path="src/Sitko.Core.Storage.ImgProxy/Sitko.Core.Storage.ImgProxy.csproj" />

@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Sitko.Core.ServiceDiscovery.Server")]
 [assembly: InternalsVisibleTo("Sitko.Core.ServiceDiscovery.Consul")]
 
 namespace Sitko.Core.ServiceDiscovery;
