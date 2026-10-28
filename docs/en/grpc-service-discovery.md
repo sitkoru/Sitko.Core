@@ -150,6 +150,14 @@ Use `RegisterServiceWithGrpcWeb<TService>()` for gRPC-Web.
 `RequireSchemeAuthorization(...)` in shared server settings retains the required
 authentication scheme.
 
+Client `RetryPolicy` settings in `Default` or `Contracts` configure RPC retries:
+`MaxAttempts`, `InitialBackoff`, `MaxBackoff`, `BackoffMultiplier` and
+`RetryableStatusCodes`. An explicit code list replaces the previous list;
+omitting it preserves the previous list. Other policy fields remain unchanged
+unless overridden. For example, `"RetryableStatusCodes": ["Unavailable"]`
+excludes retries on `ResourceExhausted`. RPC retries are separate from DNS and
+registration retries.
+
 ## TLS and tokens
 
 TLS remains part of the gRPC transport. DNS selects an address and port; certificate configuration and trust remain application responsibilities. Existing `ConfigureHttpHandler`, `ConfigureChannelOptions`, token providers and metadata providers remain client extension points. `DisableCertificatesValidation` explicitly disables certificate validation when selected by the application.

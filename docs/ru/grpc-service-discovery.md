@@ -149,6 +149,13 @@ app.AddGrpcServer(options =>
 `RegisterServiceWithGrpcWeb<TService>()`. `RequireSchemeAuthorization(...)` в общих
 настройках сервера сохраняет требование указанной схемы аутентификации.
 
+Политика повторов RPC задаётся клиентским `RetryPolicy` в `Default` или
+`Contracts`: `MaxAttempts`, `InitialBackoff`, `MaxBackoff`, `BackoffMultiplier`
+и `RetryableStatusCodes`. Явно заданный список кодов заменяет предыдущий список;
+отсутствующий сохраняет его. Остальные не переопределённые поля политики сохраняются.
+Например, `"RetryableStatusCodes": ["Unavailable"]` исключает повтор по
+`ResourceExhausted`. Это настройка повторов RPC, отдельная от DNS и регистрации.
+
 ## TLS и токены
 
 TLS остаётся частью gRPC-транспорта. DNS выбирает адрес и порт; он не заменяет настройку сертификата и доверия к нему. Существующие `ConfigureHttpHandler`, `ConfigureChannelOptions`, поставщики токена и метаданных остаются точками настройки клиента. `DisableCertificatesValidation` явно отключает проверку сертификата, когда это предусмотрено конфигурацией приложения.

@@ -1,6 +1,5 @@
 using Grpc.Core;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Client;
@@ -36,8 +35,8 @@ public static class ApplicationExtensions
             (context, options) =>
             {
                 defaults.Apply(context, options);
-                context.Configuration.GetSection(optionsKey ?? $"Grpc:Client:Contracts:{GrpcServicesHelper.GetServiceNameForClient<TClient>()}")
-                    .Bind(options);
+                GrpcClientDefaultsModule.BindOptions(
+                    context.Configuration.GetSection(optionsKey ?? $"Grpc:Client:Contracts:{GrpcServicesHelper.GetServiceNameForClient<TClient>()}"), options);
                 configure(context, options);
             });
     }
