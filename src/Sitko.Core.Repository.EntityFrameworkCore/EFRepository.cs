@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Linq.Expressions;
 using System.Reflection;
+using FluentValidation.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -501,6 +502,22 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         CancellationToken cancellationToken = default) =>
         ExecuteDbContextOperationAsync(_ => query.BuildQuery().CountAsync(cancellationToken),
             cancellationToken);
+
+    protected override async Task<(bool isValid, IList<ValidationFailure> errors)> ValidateAsync(TEntity entity,
+        bool isNew, CancellationToken cancellationToken = default)
+    {
+        var result = await base.ValidateAsync(entity, isNew, cancellationToken);
+        if (!result.isValid)
+        {
+            _ = await ExecuteDbContextOperationAsync(context =>
+            {
+                context.Entry(entity).State = EntityState.Detached;
+                return Task.FromResult(true);
+            }, cancellationToken);
+        }
+
+        return result;
+    }
 
     protected override async Task DoSaveAsync(CancellationToken cancellationToken = default) =>
         await ExecuteDbContextOperationAsync(
