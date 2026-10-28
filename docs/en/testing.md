@@ -29,6 +29,31 @@ are not executed separately. Other test projects are MTP applications.
 Integration projects require their services: [PDF](../pdf.en.md#testing-the-module),
 [Redis/Valkey](../redis-sentinel.md) and the environments used by existing CI jobs.
 
+## GitHub Actions verification
+
+[Main](../../.github/workflows/main.yml) runs executable projects on `net10.0`
+in subsystem jobs. This includes the concrete `App.Web.Tests`, `Grpc.Server.Tests`,
+`Repository.Grpc.Tests`, and `Repository.Tests` suites. `Email.Smtp.Tests` is excluded:
+its existing scenario sends a real email and has no isolated SMTP fixture.
+
+Each invocation requires at least one test and writes TRX and diagnostics to
+`TestResults/<job>/<project>/net10.0/`; PDF uses separate `cdp` and `local`
+subdirectories. Jobs upload available files even after failure as
+`<job>-net10.0-test-results` artifacts retained for three days. A build failure
+may produce no TRX; diagnostics are retained if the runner has written them.
+Errors are not suppressed: a failing suite fails its job and blocks dependent publishing.
+
+Main pins the SDK image by digest. PostgreSQL uses `pg_isready`; Consul,
+MinIO, and Vault use HTTP probes with bounded retries; NATS waits for its TCP port
+for at most 60 seconds. PDF, OpenSearch, and Redis/Valkey retain their existing
+readiness checks. Kafka and ClickHouse use their own test fixtures.
+
+A new PR run cancels an outdated run of the same PR and workflow. Cancellation
+is disabled for push and release. [CodeQL](../../.github/workflows/codeql-analysis.yml)
+checks pushes and PRs targeting `v13`. Main retains its release conditions.
+
+Contract: [change verification](../../specs/20261028-110000-ci-verification/spec.md).
+
 ## Migrating test infrastructure consumers
 
 `Sitko.Core.Xunit` and `Sitko.Core.Xunit.Web` provide environment helpers as libraries.

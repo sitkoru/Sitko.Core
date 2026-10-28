@@ -7,10 +7,14 @@ on:
       - v13
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
     steps:
       - uses: actions/checkout@v7
         with:
@@ -21,23 +25,54 @@ jobs:
         run: dotnet pack -c Release --no-build -p:PackageOutputPath=$(pwd)/packages
   apps:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
     steps:
       - uses: actions/checkout@v7
       - name: Run Sitko.Core.App.Tests net10.0
-        run: dotnet test --project tests/Sitko.Core.App.Tests/Sitko.Core.App.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
+        run: >-
+          dotnet test --project tests/Sitko.Core.App.Tests/Sitko.Core.App.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.App.Tests-net10.0.trx
+          --results-directory TestResults/apps/Sitko.Core.App.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/apps/Sitko.Core.App.Tests/net10.0/diagnostics
+      - name: Run Sitko.Core.App.Web.Tests net10.0
+        run: >-
+          dotnet test --project tests/Sitko.Core.App.Web.Tests/Sitko.Core.App.Web.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.App.Web.Tests-net10.0.trx
+          --results-directory TestResults/apps/Sitko.Core.App.Web.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/apps/Sitko.Core.App.Web.Tests/net10.0/diagnostics
+      - name: Save test results and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: apps-net10.0-test-results
+          path: TestResults/apps/
+          retention-days: 3
 
   blazor:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
     steps:
       - uses: actions/checkout@v7
       - name: Run Sitko.Core.App.Blazor.Tests net10.0
-        run: dotnet test --project tests/Sitko.Core.App.Blazor.Tests/Sitko.Core.App.Blazor.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
+        run: >-
+          dotnet test --project tests/Sitko.Core.App.Blazor.Tests/Sitko.Core.App.Blazor.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.App.Blazor.Tests-net10.0.trx
+          --results-directory TestResults/blazor/Sitko.Core.App.Blazor.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/blazor/Sitko.Core.App.Blazor.Tests/net10.0/diagnostics
+      - name: Save test results and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: blazor-net10.0-test-results
+          path: TestResults/blazor/
+          retention-days: 3
 
   grpc:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
     env:
       CONSUL__CONSULURI: http://consul:8500
     services:
@@ -45,23 +80,69 @@ jobs:
         image: hashicorp/consul
     steps:
       - uses: actions/checkout@v7
+      - name: Wait for Consul
+        run: |
+          timeout 60 bash -c '
+            until leader=$(curl --fail --silent --show-error --max-time 5 http://consul:8500/v1/status/leader) &&
+              [[ "$leader" =~ ^\".+:[0-9]+\"$ ]]; do
+              sleep 1
+            done
+          '
       - name: Run Sitko.Core.Grpc.Client.Tests net10.0
-        run: dotnet test --project tests/Sitko.Core.Grpc.Client.Tests/Sitko.Core.Grpc.Client.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
+        run: >-
+          dotnet test --project tests/Sitko.Core.Grpc.Client.Tests/Sitko.Core.Grpc.Client.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.Grpc.Client.Tests-net10.0.trx
+          --results-directory TestResults/grpc/Sitko.Core.Grpc.Client.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/grpc/Sitko.Core.Grpc.Client.Tests/net10.0/diagnostics
+      - name: Run Sitko.Core.Grpc.Server.Tests net10.0
+        run: >-
+          dotnet test --project tests/Sitko.Core.Grpc.Server.Tests/Sitko.Core.Grpc.Server.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.Grpc.Server.Tests-net10.0.trx
+          --results-directory TestResults/grpc/Sitko.Core.Grpc.Server.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/grpc/Sitko.Core.Grpc.Server.Tests/net10.0/diagnostics
+      - name: Run Sitko.Core.Repository.Grpc.Tests net10.0
+        run: >-
+          dotnet test --project tests/Sitko.Core.Repository.Grpc.Tests/Sitko.Core.Repository.Grpc.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.Repository.Grpc.Tests-net10.0.trx
+          --results-directory TestResults/grpc/Sitko.Core.Repository.Grpc.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/grpc/Sitko.Core.Repository.Grpc.Tests/net10.0/diagnostics
+      - name: Save test results and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: grpc-net10.0-test-results
+          path: TestResults/grpc/
+          retention-days: 3
 
   imgproxy:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
     steps:
       - uses: actions/checkout@v7
       - name: Run Sitko.Core.ImgProxy.Tests net10.0
-        run: dotnet test --project tests/Sitko.Core.ImgProxy.Tests/Sitko.Core.ImgProxy.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
+        run: >-
+          dotnet test --project tests/Sitko.Core.ImgProxy.Tests/Sitko.Core.ImgProxy.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.ImgProxy.Tests-net10.0.trx
+          --results-directory TestResults/imgproxy/Sitko.Core.ImgProxy.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/imgproxy/Sitko.Core.ImgProxy.Tests/net10.0/diagnostics
+      - name: Save test results and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: imgproxy-net10.0-test-results
+          path: TestResults/imgproxy/
+          retention-days: 3
 
   pdf:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       checks: write
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
     env:
       PDF_TEST_BROWSER_WS_ENDPOINT: ws://browserless:3000/chromium?token=pdf-ci
     services:
@@ -84,9 +165,10 @@ jobs:
       - name: Запустить Sitko.Core.Pdf.Tests через CDP net10.0
         run: >-
           dotnet test --project tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj --minimum-expected-tests 1
-          --report-github --report-trx --report-trx-filename pdf.trx
-          --results-directory TestResults/pdf-cdp-net10.0
-          --framework net10.0
+          --report-github --report-trx --report-trx-filename Sitko.Core.Pdf.Tests-net10.0.trx
+          --results-directory TestResults/pdf/Sitko.Core.Pdf.Tests/net10.0/cdp
+          --framework net10.0 --diagnostic
+          --diagnostic-output-directory TestResults/pdf/Sitko.Core.Pdf.Tests/net10.0/cdp/diagnostics
       - name: Install local Chromium
         run: >-
           tests/Sitko.Core.Pdf.Tests/bin/Debug/net10.0/.playwright/node/linux-x64/node
@@ -98,15 +180,16 @@ jobs:
           PDF_TEST_HTTP_HOST: 127.0.0.1
         run: >-
           dotnet test --project tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj --minimum-expected-tests 1
-          --no-build --report-github --report-trx --report-trx-filename pdf.trx
-          --results-directory TestResults/pdf-local-net10.0
-          --framework net10.0
+          --no-build --report-github --report-trx --report-trx-filename Sitko.Core.Pdf.Tests-net10.0.trx
+          --results-directory TestResults/pdf/Sitko.Core.Pdf.Tests/net10.0/local
+          --framework net10.0 --diagnostic
+          --diagnostic-output-directory TestResults/pdf/Sitko.Core.Pdf.Tests/net10.0/local/diagnostics
       - name: Save PDF test results
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: pdf-test-results
-          path: TestResults/pdf-*/*.trx
+          name: pdf-net10.0-test-results
+          path: TestResults/pdf/
           retention-days: 3
       - name: Trust workspace for PDF test report
         if: ${{ always() && github.event_name == 'push' }}
@@ -116,7 +199,7 @@ jobs:
         uses: dorny/test-reporter@v3
         with:
           name: PDF
-          path: TestResults/pdf-*/*.trx
+          path: TestResults/pdf/**/*.trx
           reporter: dotnet-trx
 
   redis:
@@ -124,7 +207,7 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
     env:
       REDIS_FIXTURE_PREFIX: redis-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
@@ -164,8 +247,9 @@ jobs:
               done
             done
             dotnet test --project tests/Sitko.Core.Auth.Tests/Sitko.Core.Auth.Tests.csproj --minimum-expected-tests 1 \
-              --framework "$framework" --report-github --report-trx --report-trx-filename redis.trx \
-              --results-directory "TestResults/redis-$framework"
+              --framework "$framework" --report-github --report-trx --report-trx-filename Sitko.Core.Auth.Tests-net10.0.trx \
+              --results-directory "TestResults/redis/Sitko.Core.Auth.Tests/$framework" \
+              --diagnostic --diagnostic-output-directory "TestResults/redis/Sitko.Core.Auth.Tests/$framework/diagnostics"
             for fixture in sentinel cluster; do
               docker logs "$REDIS_FIXTURE_PREFIX-$fixture"
               docker rm -f "$REDIS_FIXTURE_PREFIX-$fixture"
@@ -191,13 +275,13 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: redis-test-results
-          path: TestResults/redis-*/*.trx
+          name: redis-net10.0-test-results
+          path: TestResults/redis/
           retention-days: 3
 
   queue:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
     env:
       QUEUE__NATS__SERVERS__0: nats://nats:4222
       QUEUE__NATS__CLUSTERNAME: test-cluster
@@ -206,16 +290,42 @@ jobs:
         image: nats-streaming:latest
     steps:
       - uses: actions/checkout@v7
+      - name: Wait for NATS
+        run: >-
+          timeout 60 bash -c
+          'until (echo > /dev/tcp/nats/4222) 2>/dev/null; do sleep 1; done'
       - name: Run Sitko.Core.Queue.Tests net10.0
-        run: dotnet test --project tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
+        run: >-
+          dotnet test --project tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.Queue.Tests-net10.0.trx
+          --results-directory TestResults/queue/Sitko.Core.Queue.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/queue/Sitko.Core.Queue.Tests/net10.0/diagnostics
       - name: Run Sitko.Core.Queue.Nats.Tests net10.0
-        run: dotnet test --project tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
+        run: >-
+          dotnet test --project tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.Queue.Nats.Tests-net10.0.trx
+          --results-directory TestResults/queue/Sitko.Core.Queue.Nats.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/queue/Sitko.Core.Queue.Nats.Tests/net10.0/diagnostics
       - name: Run Sitko.Core.Queue.InMemory.Tests net10.0
-        run: dotnet test --project tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
+        run: >-
+          dotnet test --project tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.Queue.InMemory.Tests-net10.0.trx
+          --results-directory TestResults/queue/Sitko.Core.Queue.InMemory.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/queue/Sitko.Core.Queue.InMemory.Tests/net10.0/diagnostics
+      - name: Save test results and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: queue-net10.0-test-results
+          path: TestResults/queue/
+          retention-days: 3
 
   repository:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
     env:
       DB__POSTGRES__TESTDBCONTEXT__HOST: postgres
       DB__POSTGRES__SECONDTESTDBCONTEXT__HOST: postgres
@@ -224,16 +334,40 @@ jobs:
     services:
       postgres:
         image: postgres:alpine
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=2s
+          --health-timeout=3s
+          --health-retries=30
         env:
           POSTGRES_HOST_AUTH_METHOD: trust
     steps:
       - uses: actions/checkout@v7
       - name: Run Sitko.Core.Repository.EntityFrameworkCore.Tests net10.0
-        run: dotnet test --project tests/Sitko.Core.Repository.EntityFrameworkCore.Tests/Sitko.Core.Repository.EntityFrameworkCore.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
+        run: >-
+          dotnet test --project tests/Sitko.Core.Repository.EntityFrameworkCore.Tests/Sitko.Core.Repository.EntityFrameworkCore.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.Repository.EntityFrameworkCore.Tests-net10.0.trx
+          --results-directory TestResults/repository/Sitko.Core.Repository.EntityFrameworkCore.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/repository/Sitko.Core.Repository.EntityFrameworkCore.Tests/net10.0/diagnostics
+      - name: Run Sitko.Core.Repository.Tests net10.0
+        run: >-
+          dotnet test --project tests/Sitko.Core.Repository.Tests/Sitko.Core.Repository.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.Repository.Tests-net10.0.trx
+          --results-directory TestResults/repository/Sitko.Core.Repository.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/repository/Sitko.Core.Repository.Tests/net10.0/diagnostics
+      - name: Save test results and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: repository-net10.0-test-results
+          path: TestResults/repository/
+          retention-days: 3
 
   opensearch:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
     env:
       Search__OpenSearch__Url: http://opensearch:9200
       Search__OpenSearch__Login: admin
@@ -254,11 +388,23 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Run Sitko.Core.Search.OpenSearch.Tests net10.0
-        run: dotnet test --project tests/Sitko.Core.Search.OpenSearch.Tests/Sitko.Core.Search.OpenSearch.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
+        run: >-
+          dotnet test --project tests/Sitko.Core.Search.OpenSearch.Tests/Sitko.Core.Search.OpenSearch.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.Search.OpenSearch.Tests-net10.0.trx
+          --results-directory TestResults/opensearch/Sitko.Core.Search.OpenSearch.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/opensearch/Sitko.Core.Search.OpenSearch.Tests/net10.0/diagnostics
+      - name: Save test results and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: opensearch-net10.0-test-results
+          path: TestResults/opensearch/
+          retention-days: 3
 
   storage:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
     env:
       STORAGE__S3__TESTS3STORAGESETTINGS__SERVER: http://minio:9000
       STORAGE__S3__TESTS3STORAGESETTINGS__ACCESSKEY: ptTYf7VkCVbUjAzn
@@ -274,22 +420,56 @@ jobs:
           MINIO_ROOT_PASSWORD: RddqonEnrZZaCU7kkZszN9yiMFkX7rH3
       postgres:
         image: postgres:alpine
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=2s
+          --health-timeout=3s
+          --health-retries=30
         env:
           POSTGRES_HOST_AUTH_METHOD: trust
     steps:
       - uses: actions/checkout@v7
+      - name: Wait for MinIO
+        run: curl --fail --silent --show-error --retry 30 --retry-all-errors --retry-delay 1 --retry-max-time 60 --max-time 5 http://minio:9000/minio/health/ready
       - name: Run Sitko.Core.Storage.FileSystem.Tests net10.0
-        run: dotnet test --project tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
+        run: >-
+          dotnet test --project tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.Storage.FileSystem.Tests-net10.0.trx
+          --results-directory TestResults/storage/Sitko.Core.Storage.FileSystem.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/storage/Sitko.Core.Storage.FileSystem.Tests/net10.0/diagnostics
       - name: Run Sitko.Core.Storage.S3.Tests net10.0
-        run: dotnet test --project tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
+        run: >-
+          dotnet test --project tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.Storage.S3.Tests-net10.0.trx
+          --results-directory TestResults/storage/Sitko.Core.Storage.S3.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/storage/Sitko.Core.Storage.S3.Tests/net10.0/diagnostics
       - name: Run Sitko.Core.Storage.Remote.Tests net10.0
-        run: dotnet test --project tests/Sitko.Core.Storage.Remote.Tests/Sitko.Core.Storage.Remote.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
+        run: >-
+          dotnet test --project tests/Sitko.Core.Storage.Remote.Tests/Sitko.Core.Storage.Remote.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.Storage.Remote.Tests-net10.0.trx
+          --results-directory TestResults/storage/Sitko.Core.Storage.Remote.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/storage/Sitko.Core.Storage.Remote.Tests/net10.0/diagnostics
       - name: Run Sitko.Core.Storage.Metadata.Postgres.Tests net10.0
-        run: dotnet test --project tests/Sitko.Core.Storage.Metadata.Postgres.Tests/Sitko.Core.Storage.Metadata.Postgres.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
+        run: >-
+          dotnet test --project tests/Sitko.Core.Storage.Metadata.Postgres.Tests/Sitko.Core.Storage.Metadata.Postgres.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.Storage.Metadata.Postgres.Tests-net10.0.trx
+          --results-directory TestResults/storage/Sitko.Core.Storage.Metadata.Postgres.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/storage/Sitko.Core.Storage.Metadata.Postgres.Tests/net10.0/diagnostics
+      - name: Save test results and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: storage-net10.0-test-results
+          path: TestResults/storage/
+          retention-days: 3
 
   vault:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
     env:
       VAULT__URI: http://vault:8200
       VAULT__TOKEN: twit3itPSAD0yok
@@ -305,26 +485,69 @@ jobs:
         options: --cap-add=IPC_LOCK
     steps:
       - uses: actions/checkout@v7
+      - name: Wait for Vault
+        run: curl --fail --silent --show-error --retry 30 --retry-all-errors --retry-delay 1 --retry-max-time 60 --max-time 5 http://vault:8200/v1/sys/health
       - name: Run Sitko.Core.Configuration.Vault.Tests net10.0
-        run: dotnet test --project tests/Sitko.Core.Configuration.Vault.Tests/Sitko.Core.Configuration.Vault.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
+        run: >-
+          dotnet test --project tests/Sitko.Core.Configuration.Vault.Tests/Sitko.Core.Configuration.Vault.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.Configuration.Vault.Tests-net10.0.trx
+          --results-directory TestResults/vault/Sitko.Core.Configuration.Vault.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/vault/Sitko.Core.Configuration.Vault.Tests/net10.0/diagnostics
+      - name: Save test results and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: vault-net10.0-test-results
+          path: TestResults/vault/
+          retention-days: 3
 
   kafka:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
     steps:
       - uses: actions/checkout@v7
       - name: Run Sitko.Core.Queue.Kafka.Tests net10.0
-        run: dotnet test --project tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
+        run: >-
+          dotnet test --project tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.Queue.Kafka.Tests-net10.0.trx
+          --results-directory TestResults/kafka/Sitko.Core.Queue.Kafka.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/kafka/Sitko.Core.Queue.Kafka.Tests/net10.0/diagnostics
+      - name: Save test results and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: kafka-net10.0-test-results
+          path: TestResults/kafka/
+          retention-days: 3
 
   clickhouse:
     runs-on: ubuntu-latest
-    container: ghcr.io/sitkoru/actions-container
+    container: ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
     steps:
       - uses: actions/checkout@v7
       - name: Run Sitko.Core.ClickHouse.Tests net10.0
-        run: dotnet test --project tests/Sitko.Core.ClickHouse.Tests/Sitko.Core.ClickHouse.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
+        run: >-
+          dotnet test --project tests/Sitko.Core.ClickHouse.Tests/Sitko.Core.ClickHouse.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.ClickHouse.Tests-net10.0.trx
+          --results-directory TestResults/clickhouse/Sitko.Core.ClickHouse.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/clickhouse/Sitko.Core.ClickHouse.Tests/net10.0/diagnostics
       - name: Run Sitko.Core.ClickHouse.Linq2db.Tests net10.0
-        run: dotnet test --project tests/Sitko.Core.ClickHouse.Linq2db.Tests/Sitko.Core.ClickHouse.Linq2db.Tests.csproj --framework net10.0 --report-github --minimum-expected-tests 1
+        run: >-
+          dotnet test --project tests/Sitko.Core.ClickHouse.Linq2db.Tests/Sitko.Core.ClickHouse.Linq2db.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 1
+          --report-trx --report-trx-filename Sitko.Core.ClickHouse.Linq2db.Tests-net10.0.trx
+          --results-directory TestResults/clickhouse/Sitko.Core.ClickHouse.Linq2db.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/clickhouse/Sitko.Core.ClickHouse.Linq2db.Tests/net10.0/diagnostics
+      - name: Save test results and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: clickhouse-net10.0-test-results
+          path: TestResults/clickhouse/
+          retention-days: 3
 
   release:
     name: Release
