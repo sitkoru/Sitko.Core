@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,55 @@ namespace Sitko.Core.Search.OpenSearch.Tests;
 
 public class OpenSearchTests(ITestOutputHelper testOutputHelper) : BaseTest<OpenSearchTestScope>(testOutputHelper)
 {
+    [Fact]
+    public async Task DeleteEntityAsyncRemovesOnlyTheRequestedDocument()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var scope = await GetScopeAsync();
+        var provider = scope.GetService<TestModelProvider>();
+        var searchProvider = scope.GetService<ISearchProvider<TestModel, Guid, TestSearchModel>>();
+        await searchProvider.DeleteIndexAsync(cancellationToken);
+        await searchProvider.InitAsync(cancellationToken);
+
+        var a = new TestModel
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000301"),
+            Title = "deletioncontractmarker",
+            Description = "deletioncontractmarker"
+        };
+        var b = new TestModel
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000302"),
+            Title = "deletioncontractmarker",
+            Description = "deletioncontractmarker"
+        };
+        _ = provider.AddModel(a).AddModel(b);
+        Assert.True(await searchProvider.AddOrUpdateEntitiesAsync([a, b], cancellationToken));
+        Guid[] initialIds = [a.Id, b.Id];
+        Assert.Equal(initialIds,
+            (await searchProvider.SearchAsync("deletioncontractmarker", cancellationToken: cancellationToken))
+            .Select(static result => result.Entity.Id).Order());
+
+        Assert.True(await searchProvider.DeleteEntityAsync(a, cancellationToken));
+        var timeout = Stopwatch.StartNew();
+        SearchResult<TestModel>[] remaining;
+        do
+        {
+            remaining = await searchProvider.SearchAsync("deletioncontractmarker",
+                cancellationToken: cancellationToken);
+            if (remaining.Length == 1 && remaining[0].Entity.Id == b.Id)
+            {
+                break;
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+        } while (timeout.Elapsed < TimeSpan.FromSeconds(10));
+
+        Guid[] expectedRemaining = [b.Id];
+        Assert.Equal(expectedRemaining, remaining.Select(static result => result.Entity.Id));
+        Assert.Contains(provider.Models, model => model.Id == a.Id);
+    }
+
     [Fact]
     public async Task SearchAsync()
     {
@@ -424,6 +474,7 @@ public class OpenSearchTestScope : BaseTestScope
         base.ConfigureApplication(hostBuilder, name);
         hostBuilder.AddOpenSearch(moduleOptions =>
         {
+            moduleOptions.Url = Environment.GetEnvironmentVariable("SITKO_TEST_OPENSEARCH_URL") ?? moduleOptions.Url;
             moduleOptions.Prefix = name.ToLower(CultureInfo.InvariantCulture);
             moduleOptions.EnableClientLogging = true;
             moduleOptions.InitProviders = false;
