@@ -91,6 +91,7 @@ jobs:
           --volume /var/run/docker.sock:/var/run/docker.sock
           --workdir "$GITHUB_WORKSPACE"
           --env GITHUB_ACTIONS --env GITHUB_WORKSPACE --env GITHUB_STEP_SUMMARY
+          --env TESTCONTAINERS_HOST_OVERRIDE=127.0.0.1
           ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
           dotnet test --project tests/Sitko.Core.Grpc.Client.Tests/Sitko.Core.Grpc.Client.Tests.csproj
           --framework net10.0 --report-github --minimum-expected-tests 1
