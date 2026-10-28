@@ -39,7 +39,7 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
             options.Address = GenerateAddress(startupOptions);
             options.CallOptionsActions.Add(context =>
             {
-                if (startupOptions.DefaultDeadline is not null)
+                if (context.CallOptions.Deadline is null && startupOptions.DefaultDeadline is not null)
                 {
                     context.CallOptions = context.CallOptions.WithDeadline(provider.GetRequiredService<TimeProvider>()
                         .GetUtcNow()
@@ -127,11 +127,7 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
 #pragma warning restore CA5359
         }
 
-        if (options.ConfigureHttpHandler is not null)
-        {
-            return options.ConfigureHttpHandler(handler);
-        }
-
-        return handler;
+        var result = options.ConfigureHttpHandler?.Invoke(handler) ?? handler;
+        return options.UseGrpcWeb ? new GrpcWebHandler(result) : result;
     }
 }

@@ -53,6 +53,8 @@ namespace Sitko.Core.Grpc.Client.Tests
                 ["ServiceDiscovery:Consul:Address"] = $"http://127.0.0.1:{consul.GetMappedPublicPort(8500)}",
                 ["ServiceDiscovery:Consul:DnsServers:0"] = $"127.0.0.1:{consul.GetMappedPublicPort("8600/udp")}"
             };
+            TestContext.Current.TestOutputHelper?.WriteLine(
+                $"Own Consul HTTP={config["ServiceDiscovery:Consul:Address"]}; DNS UDP={config["ServiceDiscovery:Consul:DnsServers:0"]}; DNS TCP=127.0.0.1:{consul.GetMappedPublicPort("8600/tcp")}");
             var serverBuilder = WebApplication.CreateBuilder();
             _ = serverBuilder.Configuration.AddInMemoryCollection(config);
             _ = serverBuilder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>

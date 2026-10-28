@@ -12,7 +12,6 @@ public class GrpcServerModuleOptions : BaseModuleOptions
     internal bool EnableGrpcWeb { get; private set; }
     public string? Host { get; set; }
     public int? Port { get; set; }
-    public bool EnableServiceDiscovery { get; set; } = true;
     public List<string> ServiceDiscoveryPortNames { get; set; } = ["gRPC", "https"];
     [JsonIgnore] public Action<IWebHostBuilder>? ConfigureWebHostDefaults { get; set; }
 

@@ -54,11 +54,8 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
         foreach (var (name, registrationAction) in GetServiceRegistrations(startupOptions))
         {
             registrationAction(this);
-            if (startupOptions.EnableServiceDiscovery)
-            {
-                services.AddToServiceDiscovery(new ServiceDiscoveryService(GrpcModuleConstants.GrpcServiceDiscoveryType,
-                    name, new Dictionary<string, string>(), startupOptions.ServiceDiscoveryPortNames));
-            }
+            _ = services.AddToServiceDiscovery(new ServiceDiscoveryService(GrpcModuleConstants.GrpcServiceDiscoveryType,
+                name, new Dictionary<string, string>(), startupOptions.ServiceDiscoveryPortNames));
         }
     }
 

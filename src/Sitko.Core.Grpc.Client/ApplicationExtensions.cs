@@ -1,7 +1,6 @@
 using Grpc.Core;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
-using Sitko.Core.Grpc.Client.External;
 
 namespace Sitko.Core.Grpc.Client;
 
@@ -45,46 +44,8 @@ public static class ApplicationExtensions
                 configure,
                 optionsKey);
 
-    public static IHostApplicationBuilder AddExternalGrpcClient<TClient>(
-        this IHostApplicationBuilder hostApplicationBuilder,
-        Action<IApplicationContext, ExternalGrpcClientModuleOptions<TClient>> configure,
-        string? optionsKey = null)
-        where TClient : ClientBase<TClient>
-    {
-        hostApplicationBuilder.GetSitkoCore().AddExternalGrpcClient(configure, optionsKey);
-        return hostApplicationBuilder;
-    }
-
-    public static IHostApplicationBuilder AddExternalGrpcClient<TClient>(
-        this IHostApplicationBuilder hostApplicationBuilder,
-        Action<ExternalGrpcClientModuleOptions<TClient>>? configure = null,
-        string? optionsKey = null)
-        where TClient : ClientBase<TClient>
-    {
-        hostApplicationBuilder.GetSitkoCore().AddExternalGrpcClient(configure, optionsKey);
-        return hostApplicationBuilder;
-    }
-
-    public static ISitkoCoreApplicationBuilder AddExternalGrpcClient<TClient>(
-        this ISitkoCoreApplicationBuilder applicationBuilder,
-        Action<IApplicationContext, ExternalGrpcClientModuleOptions<TClient>> configure,
-        string? optionsKey = null)
-        where TClient : ClientBase<TClient> =>
-        applicationBuilder.AddModule<ExternalGrpcClientModule<TClient>, ExternalGrpcClientModuleOptions<TClient>>(
-            configure,
-            optionsKey);
-
-    public static ISitkoCoreApplicationBuilder AddExternalGrpcClient<TClient>(
-        this ISitkoCoreApplicationBuilder applicationBuilder,
-        Action<ExternalGrpcClientModuleOptions<TClient>>? configure = null,
-        string? optionsKey = null)
-        where TClient : ClientBase<TClient> =>
-        applicationBuilder.AddModule<ExternalGrpcClientModule<TClient>, ExternalGrpcClientModuleOptions<TClient>>(
-            configure,
-            optionsKey);
-
     public static IHostApplicationBuilder AddGrpcWebClient<TClient>(this IHostApplicationBuilder hostApplicationBuilder,
-        Action<IApplicationContext, ExternalGrpcClientModuleOptions<TClient>> configure,
+        Action<IApplicationContext, GrpcClientModuleOptions<TClient>> configure,
         string? optionsKey = null)
         where TClient : ClientBase<TClient>
     {
@@ -93,7 +54,7 @@ public static class ApplicationExtensions
     }
 
     public static IHostApplicationBuilder AddGrpcWebClient<TClient>(this IHostApplicationBuilder hostApplicationBuilder,
-        Action<ExternalGrpcClientModuleOptions<TClient>>? configure = null,
+        Action<GrpcClientModuleOptions<TClient>>? configure = null,
         string? optionsKey = null)
         where TClient : ClientBase<TClient>
     {
@@ -103,10 +64,10 @@ public static class ApplicationExtensions
 
     public static ISitkoCoreApplicationBuilder AddGrpcWebClient<TClient>(
         this ISitkoCoreApplicationBuilder applicationBuilder,
-        Action<IApplicationContext, ExternalGrpcClientModuleOptions<TClient>> configure,
+        Action<IApplicationContext, GrpcClientModuleOptions<TClient>> configure,
         string? optionsKey = null)
         where TClient : ClientBase<TClient> =>
-        applicationBuilder.AddModule<ExternalGrpcClientModule<TClient>, ExternalGrpcClientModuleOptions<TClient>>(
+        applicationBuilder.AddModule<GrpcClientModule<TClient>, GrpcClientModuleOptions<TClient>>(
             (context, options) =>
             {
                 options.UseGrpcWeb = true;
@@ -116,10 +77,10 @@ public static class ApplicationExtensions
 
     public static ISitkoCoreApplicationBuilder AddGrpcWebClient<TClient>(
         this ISitkoCoreApplicationBuilder applicationBuilder,
-        Action<ExternalGrpcClientModuleOptions<TClient>>? configure = null,
+        Action<GrpcClientModuleOptions<TClient>>? configure = null,
         string? optionsKey = null)
         where TClient : ClientBase<TClient> =>
-        applicationBuilder.AddModule<ExternalGrpcClientModule<TClient>, ExternalGrpcClientModuleOptions<TClient>>(
+        applicationBuilder.AddModule<GrpcClientModule<TClient>, GrpcClientModuleOptions<TClient>>(
             options =>
             {
                 options.UseGrpcWeb = true;

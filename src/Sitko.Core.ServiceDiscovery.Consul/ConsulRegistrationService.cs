@@ -49,7 +49,7 @@ namespace Sitko.Core.ServiceDiscovery.Consul
                         registered = false;
                         logger.LogWarning(exception, "Cannot refresh Consul contract registrations");
                     }
-                    await Task.Delay(options.Value.HeartbeatInterval, stoppingToken);
+                    await Task.Delay(registered ? options.Value.HeartbeatInterval : options.Value.RegistrationRetryInterval, stoppingToken);
                 }
             }
             finally
@@ -99,7 +99,11 @@ namespace Sitko.Core.ServiceDiscovery.Consul
                         ["environment"] = context.Environment,
                         ["application"] = context.Name
                     },
-                    Check = new AgentServiceCheck { TTL = options.Value.Ttl }
+                    Check = new AgentServiceCheck
+                    {
+                        TTL = options.Value.Ttl,
+                        DeregisterCriticalServiceAfter = options.Value.DeregisterCriticalServiceAfter
+                    }
                 };
             })];
         }

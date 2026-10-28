@@ -62,6 +62,43 @@ Each contract of an application instance has its own Consul registration. Multip
 
 `DnsServers` configures DNS addresses and ports independently of the agent's HTTP `Address`. The library does not change system DNS settings. Consul outages may cause RPC failures; retaining the last known endpoints is not guaranteed.
 
+## Direct addresses and disabling discovery
+
+One client registration supports both addressing modes:
+
+```json
+{
+  "Grpc": {
+    "Client": {
+      "Contracts": {
+        "accounting.v1.Invoice": {
+          "Address": "https://invoices.example:7443"
+        }
+      }
+    }
+  }
+}
+```
+
+A valid `Address` selects a direct call without requiring an SD provider. An absent address selects discovery. An invalid address, disabled discovery, or missing required provider fails startup with the contract name. A failed direct call does not fall back to discovery. Changing modes requires configuration and an application restart, without recompilation or another client registration method.
+
+`ServiceDiscovery:Enabled=false` disables discovery, publication, and TTL. Direct clients and server RPCs continue to work. A standalone server does not require an SD provider. Explicitly adding `AddServiceDiscovery()` to publish server contracts requires a provider; no empty provider is substituted.
+
+## Provider intervals
+
+These settings belong to `ServiceDiscovery:Consul` and take effect after an application restart.
+
+| Setting | Purpose |
+| --- | --- |
+| `DnsTimeout`, `DnsMaxAttempts` | Timeout of one DNS attempt and number of attempts |
+| `DnsRefreshPeriod` | DNS refresh period when the response has no usable TTL |
+| `DnsMinRetryPeriod`, `DnsMaxRetryPeriod`, `DnsRetryBackOffFactor` | Resolution retry delays and multiplier |
+| `Ttl`, `HeartbeatInterval` | Instance check TTL and renewal interval |
+| `RequestTimeout`, `RegistrationRetryInterval` | Agent HTTP request timeout and registration recovery interval |
+| `DeregisterCriticalServiceAfter` | Consul's delay before removing a critical registration |
+
+Intervals and attempt counts must be positive, heartbeat must be shorter than TTL, and the maximum DNS retry delay must not be shorter than the initial delay. Excluding a dead instance from healthy DNS results and physically deleting its record are distinct events. RPC retries are configured separately.
+
 ## TLS and tokens
 
 TLS remains part of the gRPC transport. DNS selects an address and port; certificate configuration and trust remain application responsibilities. Existing `ConfigureHttpHandler`, `ConfigureChannelOptions`, token providers and metadata providers remain client extension points. `DisableCertificatesValidation` explicitly disables certificate validation when selected by the application.

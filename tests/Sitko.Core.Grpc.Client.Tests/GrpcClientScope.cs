@@ -32,8 +32,6 @@ public abstract class GrpcClientScope : WebTestScope
 
     protected override bool UseTestServer => false;
 
-    protected virtual bool EnableServiceDiscovery => false;
-
     protected override WebApplicationBuilder ConfigureWebApplication(WebApplicationBuilder webApplicationBuilder,
         string name)
     {
@@ -60,11 +58,7 @@ public abstract class GrpcClientScope : WebTestScope
         webApplicationBuilder.Configuration.AddJsonStream(jsonStream);
         base.ConfigureWebApplication(webApplicationBuilder, name);
         webApplicationBuilder.AddSitkoCoreWeb()
-            .AddGrpcServer(options =>
-            {
-                options.EnableServiceDiscovery = EnableServiceDiscovery;
-                RegisterService(options);
-            });
+            .AddGrpcServer(RegisterService);
 
         return webApplicationBuilder;
     }

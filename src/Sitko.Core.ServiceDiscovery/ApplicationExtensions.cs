@@ -5,6 +5,19 @@ namespace Sitko.Core.ServiceDiscovery;
 
 public static class ApplicationExtensions
 {
+    public static IHostApplicationBuilder AddServiceDiscovery(this IHostApplicationBuilder builder,
+        Action<ServiceDiscoveryModuleOptions>? configure = null)
+    {
+        _ = builder.GetSitkoCore().AddServiceDiscovery(configure);
+        return builder;
+    }
+
+    public static ISitkoCoreApplicationBuilder AddServiceDiscovery(this ISitkoCoreApplicationBuilder builder,
+        Action<ServiceDiscoveryModuleOptions>? configure = null) =>
+        builder.HasModule<ServiceDiscoveryModule>()
+            ? builder
+            : builder.AddModule<ServiceDiscoveryModule, ServiceDiscoveryModuleOptions>(configure);
+
     public static IHostApplicationBuilder AddServiceDiscovery<TRegistrar, TResolver>(
         this IHostApplicationBuilder hostApplicationBuilder,
         Action<IApplicationContext, ServiceDiscoveryModuleOptions> configure,
