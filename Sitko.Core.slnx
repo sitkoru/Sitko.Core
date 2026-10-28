@@ -1,0 +1,123 @@
+<Solution>
+  <Folder Name="/.github/">
+    <File Path=".github/dependabot.yml" />
+  </Folder>
+  <Folder Name="/.github/workflows/">
+    <File Path=".github/workflows/codeql-analysis.yml" />
+    <File Path=".github/workflows/main.yml" />
+    <File Path=".github/workflows/release.yml" />
+  </Folder>
+  <Folder Name="/apps/">
+    <File Path="apps/Directory.Build.props" />
+  </Folder>
+  <Folder Name="/apps/Blazor/">
+    <Project Path="apps/Blazor/Sitko.Core.Apps.Blazor.Client/Sitko.Core.Apps.Blazor.Client.csproj" />
+    <Project Path="apps/Blazor/Sitko.Core.Apps.Blazor.Data/Sitko.Core.Apps.Blazor.Data.csproj" />
+    <Project Path="apps/Blazor/Sitko.Core.Apps.Blazor/Sitko.Core.Apps.Blazor.csproj" />
+  </Folder>
+  <Folder Name="/apps/Grpc/">
+    <Project Path="apps/gRPC/Sitko.Core.Apps.Grpc/Sitko.Core.Apps.Grpc.csproj" />
+  </Folder>
+  <Folder Name="/perf/">
+    <Project Path="perf/Sitko.Core.App.Perf/Sitko.Core.App.Perf.csproj" />
+  </Folder>
+  <Folder Name="/Solution Files/">
+    <File Path="Directory.Packages.props" />
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="docker-compose.yml" />
+    <File Path="LICENSE.md" />
+    <File Path="nightly.cmd" />
+    <File Path="packageIcon.png" />
+    <File Path="README.md" />
+    <File Path="release.config.js" />
+  </Folder>
+  <Folder Name="/src/">
+    <File Path="src/Directory.Build.props" />
+    <Project Path="src/Sitko.Core.App.Web/Sitko.Core.App.Web.csproj" />
+    <Project Path="src/Sitko.Core.App/Sitko.Core.App.csproj" />
+    <Project Path="src/Sitko.Core.Auth.OIDC/Sitko.Core.Auth.OIDC.csproj" />
+    <Project Path="src/Sitko.Core.Auth/Sitko.Core.Auth.csproj" />
+    <Project Path="src/Sitko.Core.Blazor.AntDesign.Server/Sitko.Core.Blazor.AntDesign.Server.csproj" />
+    <Project Path="src/Sitko.Core.Blazor.AntDesign/Sitko.Core.Blazor.AntDesign.csproj" />
+    <Project Path="src/Sitko.Core.Blazor.FileUpload/Sitko.Core.Blazor.FileUpload.csproj" />
+    <Project Path="src/Sitko.Core.Blazor.FluentValidation/Sitko.Core.Blazor.FluentValidation.csproj" />
+    <Project Path="src/Sitko.Core.Blazor.MudBlazor.Server/Sitko.Core.Blazor.MudBlazor.Server.csproj" />
+    <Project Path="src/Sitko.Core.Blazor.MudBlazor/Sitko.Core.Blazor.MudBlazor.csproj" />
+    <Project Path="src/Sitko.Core.Blazor.Server/Sitko.Core.Blazor.Server.csproj" />
+    <Project Path="src/Sitko.Core.Blazor.Wasm/Sitko.Core.Blazor.Wasm.csproj" />
+    <Project Path="src/Sitko.Core.Blazor/Sitko.Core.Blazor.csproj" />
+    <Project Path="src/Sitko.Core.ClickHouse.Linq2db/Sitko.Core.ClickHouse.Linq2db.csproj" />
+    <Project Path="src/Sitko.Core.ClickHouse/Sitko.Core.ClickHouse.csproj" />
+    <Project Path="src/Sitko.Core.Configuration.Vault/Sitko.Core.Configuration.Vault.csproj" />
+    <Project Path="src/Sitko.Core.Consul/Sitko.Core.Consul.csproj" />
+    <Project Path="src/Sitko.Core.Db.InMemory/Sitko.Core.Db.InMemory.csproj" />
+    <Project Path="src/Sitko.Core.Db.Postgres/Sitko.Core.Db.Postgres.csproj" />
+    <Project Path="src/Sitko.Core.Db/Sitko.Core.Db.csproj" />
+    <Project Path="src/Sitko.Core.Email.Smtp/Sitko.Core.Email.Smtp.csproj" />
+    <Project Path="src/Sitko.Core.Email/Sitko.Core.Email.csproj" />
+    <Project Path="src/Sitko.Core.Grpc.Client/Sitko.Core.Grpc.Client.csproj" />
+    <Project Path="src/Sitko.Core.Grpc.Server/Sitko.Core.Grpc.Server.csproj" />
+    <Project Path="src/Sitko.Core.Grpc/Sitko.Core.Grpc.csproj" />
+    <Project Path="src/Sitko.Core.Identity/Sitko.Core.Identity.csproj" />
+    <Project Path="src/Sitko.Core.ImgProxy/Sitko.Core.ImgProxy.csproj" />
+    <Project Path="src/Sitko.Core.Kafka/Sitko.Core.Kafka.csproj" />
+    <Project Path="src/Sitko.Core.Pdf/Sitko.Core.Pdf.csproj" />
+    <Project Path="src/Sitko.Core.Queue.InMemory/Sitko.Core.Queue.InMemory.csproj" />
+    <Project Path="src/Sitko.Core.Queue.Kafka/Sitko.Core.Queue.Kafka.csproj" />
+    <Project Path="src/Sitko.Core.Queue.Nats/Sitko.Core.Queue.Nats.csproj" />
+    <Project Path="src/Sitko.Core.Queue/Sitko.Core.Queue.csproj" />
+    <Project Path="src/Sitko.Core.Redis/Sitko.Core.Redis.csproj" />
+    <Project Path="src/Sitko.Core.Repository.EntityFrameworkCore/Sitko.Core.Repository.EntityFrameworkCore.csproj" />
+    <Project Path="src/Sitko.Core.Repository.Grpc/Sitko.Core.Repository.Grpc.csproj" />
+    <Project Path="src/Sitko.Core.Repository.Search/Sitko.Core.Repository.Search.csproj" />
+    <Project Path="src/Sitko.Core.Repository/Sitko.Core.Repository.csproj" />
+    <Project Path="src/Sitko.Core.Search.OpenSearch/Sitko.Core.Search.OpenSearch.csproj" />
+    <Project Path="src/Sitko.Core.Search/Sitko.Core.Search.csproj" />
+    <Project Path="src/Sitko.Core.ServiceDiscovery.Resolver.Consul/Sitko.Core.ServiceDiscovery.Resolver.Consul.csproj" />
+    <Project Path="src/Sitko.Core.ServiceDiscovery.Server.Consul/Sitko.Core.ServiceDiscovery.Server.Consul.csproj" />
+    <Project Path="src/Sitko.Core.ServiceDiscovery.Server/Sitko.Core.ServiceDiscovery.Server.csproj" />
+    <Project Path="src/Sitko.Core.ServiceDiscovery/Sitko.Core.ServiceDiscovery.csproj" />
+    <Project Path="src/Sitko.Core.Storage.FileSystem/Sitko.Core.Storage.FileSystem.csproj" />
+    <Project Path="src/Sitko.Core.Storage.ImgProxy/Sitko.Core.Storage.ImgProxy.csproj" />
+    <Project Path="src/Sitko.Core.Storage.Metadata.Postgres/Sitko.Core.Storage.Metadata.Postgres.csproj" />
+    <Project Path="src/Sitko.Core.Storage.Remote.Server/Sitko.Core.Storage.Remote.Server.csproj" />
+    <Project Path="src/Sitko.Core.Storage.Remote/Sitko.Core.Storage.Remote.csproj" />
+    <Project Path="src/Sitko.Core.Storage.S3/Sitko.Core.Storage.S3.csproj" />
+    <Project Path="src/Sitko.Core.Storage/Sitko.Core.Storage.csproj" />
+    <Project Path="src/Sitko.Core.Tasks.Kafka/Sitko.Core.Tasks.Kafka.csproj" />
+    <Project Path="src/Sitko.Core.Tasks/Sitko.Core.Tasks.csproj" />
+    <Project Path="src/Sitko.Core.Xunit.Web/Sitko.Core.Xunit.Web.csproj" />
+    <Project Path="src/Sitko.Core.Xunit/Sitko.Core.Xunit.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <File Path="tests/Directory.Build.props" />
+    <Project Path="tests/Sitko.Core.App.Blazor.Tests/Sitko.Core.App.Blazor.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.App.Tests/Sitko.Core.App.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.App.Web.Tests/Sitko.Core.App.Web.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Auth.Tests/Sitko.Core.Auth.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.ClickHouse.Linq2db.Tests/Sitko.Core.ClickHouse.Linq2db.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.ClickHouse.Tests/Sitko.Core.ClickHouse.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Configuration.Vault.Tests/Sitko.Core.Configuration.Vault.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Email.Smtp.Tests/Sitko.Core.Email.Smtp.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Email.Tests/Sitko.Core.Email.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Grpc.Client.Tests/Sitko.Core.Grpc.Client.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Grpc.Server.Tests/Sitko.Core.Grpc.Server.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.ImgProxy.Tests/Sitko.Core.ImgProxy.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Repository.EntityFrameworkCore.Tests/Sitko.Core.Repository.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Repository.Grpc.Tests/Sitko.Core.Repository.Grpc.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Repository.Tests/Sitko.Core.Repository.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Search.OpenSearch.Tests/Sitko.Core.Search.OpenSearch.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Storage.Metadata.Postgres.Tests/Sitko.Core.Storage.Metadata.Postgres.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Storage.Remote.Tests/Sitko.Core.Storage.Remote.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Storage.Tests/Sitko.Core.Storage.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Tasks.Kafka.Tests/Sitko.Core.Tasks.Kafka.Tests.csproj" />
+  </Folder>
+</Solution>
