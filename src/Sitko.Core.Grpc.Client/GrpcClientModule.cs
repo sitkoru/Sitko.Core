@@ -76,6 +76,9 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
                 );
             }
 
+            options.MaxReceiveMessageSize = startupOptions.MaxReceiveMessageSize;
+            options.MaxSendMessageSize = startupOptions.MaxSendMessageSize;
+
             startupOptions.ConfigureChannelOptions?.Invoke(options);
         });
     }

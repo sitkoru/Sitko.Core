@@ -19,15 +19,22 @@ public static class ApplicationExtensions
         Action<IApplicationContext, GrpcServerModuleOptions> configure,
         string? optionsKey = null)
     {
-        _ = applicationBuilder.AddModule<GrpcServerModule, GrpcServerModuleOptions>(configure, optionsKey);
+        if (!applicationBuilder.HasModule<GrpcServerModule>())
+        {
+            List<Action<IApplicationContext, GrpcServerModuleOptions>> configureActions = [configure];
+            _ = applicationBuilder.AddModule<GrpcServerModule, GrpcServerModuleOptions>(
+                (context, options) => GrpcServerModule.ConfigureOptions(context, options, configureActions), optionsKey);
+            applicationBuilder.Context.GetModuleInstance<GrpcServerModule>().ConfigureActions = configureActions;
+        }
+        else
+        {
+            applicationBuilder.Context.GetModuleInstance<GrpcServerModule>().ConfigureActions.Add(configure);
+        }
         return new GrpcServerBuilder(applicationBuilder.Context.GetModuleInstance<GrpcServerModule>());
     }
 
     public static GrpcServerBuilder AddGrpcServer(this ISitkoCoreApplicationBuilder applicationBuilder,
         Action<GrpcServerModuleOptions>? configure = null,
-        string? optionsKey = null)
-    {
-        _ = applicationBuilder.AddModule<GrpcServerModule, GrpcServerModuleOptions>(configure, optionsKey);
-        return new GrpcServerBuilder(applicationBuilder.Context.GetModuleInstance<GrpcServerModule>());
-    }
+        string? optionsKey = null) =>
+        applicationBuilder.AddGrpcServer((_, options) => configure?.Invoke(options), optionsKey);
 }

@@ -90,14 +90,65 @@ These settings belong to `ServiceDiscovery:Consul` and take effect after an appl
 
 | Setting | Purpose |
 | --- | --- |
-| `DnsTimeout`, `DnsMaxAttempts` | Timeout of one DNS attempt and number of attempts |
+| `DnsTimeout`, `DnsMaxAttempts` | Timeout of one DNS attempt and number of attempts per DNS server |
 | `DnsRefreshPeriod` | DNS refresh period when the response has no usable TTL |
 | `DnsMinRetryPeriod`, `DnsMaxRetryPeriod`, `DnsRetryBackOffFactor` | Resolution retry delays and multiplier |
 | `Ttl`, `HeartbeatInterval` | Instance check TTL and renewal interval |
 | `RequestTimeout`, `RegistrationRetryInterval` | Agent HTTP request timeout and registration recovery interval |
 | `DeregisterCriticalServiceAfter` | Consul's delay before removing a critical registration |
 
-Intervals and attempt counts must be positive, heartbeat must be shorter than TTL, and the maximum DNS retry delay must not be shorter than the initial delay. Excluding a dead instance from healthy DNS results and physically deleting its record are distinct events. RPC retries are configured separately.
+Intervals and attempt counts must be positive, heartbeat must be shorter than TTL, and the maximum DNS retry delay must not be shorter than the initial delay. Excluding a dead instance from healthy DNS results and physically deleting its record are distinct events. RPC retries are configured separately. `DnsTimeout` does not bound the entire RPC: one DNS query may use several attempts and servers in sequence. Bound the call itself with a deadline or cancellation.
+
+## Default and contract-specific limits
+
+Limits are expressed in bytes. This configuration allows clients and servers
+to receive up to 1 MiB by default and up to 4 MiB for `accounting.v1.Invoice`:
+
+```json
+{
+  "Grpc": {
+    "Client": {
+      "Default": { "MaxReceiveMessageSize": 1048576 },
+      "Contracts": {
+        "accounting.v1.Invoice": { "MaxReceiveMessageSize": 4194304 }
+      }
+    },
+    "Server": {
+      "Default": { "MaxReceiveMessageSize": 1048576 },
+      "Contracts": {
+        "accounting.v1.Invoice": { "MaxReceiveMessageSize": 4194304 }
+      }
+    }
+  }
+}
+```
+
+`MaxSendMessageSize` limits sending independently. Both the sender's and receiver's
+limits must permit the message. The limit applies to the protobuf message, so payload
+at the exact boundary can exceed it once protocol fields are included.
+
+Settings apply in order: SDK values → `Default` → shared callback → `Contracts` →
+individual callback. An omitted field preserves its previous value. Register a shared
+client callback with `ConfigureGrpcClients(options => ...)` and an individual callback
+with `AddGrpcClient<T>(options => ...)`.
+
+Use `ConfigureGrpcService` for shared server SDK settings. The individual
+`RegisterService` callback receives `GrpcServiceOptions` directly:
+
+```csharp
+app.AddGrpcServer(options =>
+    options.ConfigureGrpcService = grpc => grpc.MaxReceiveMessageSize = 1048576)
+    .RegisterService<InvoiceGrpcService>(grpc => grpc.MaxReceiveMessageSize = 4194304)
+    .RegisterService<ReportsGrpcService>();
+```
+
+Repeated `AddGrpcServer` calls contribute to one server per application. Every
+contract receives the final shared settings, including callbacks added after
+service registration. Repeating the same type does not create another route;
+a different implementation type for the same protobuf contract causes an error.
+Use `RegisterServiceWithGrpcWeb<TService>()` for gRPC-Web.
+`RequireSchemeAuthorization(...)` in shared server settings retains the required
+authentication scheme.
 
 ## TLS and tokens
 

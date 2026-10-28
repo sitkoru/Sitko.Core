@@ -101,7 +101,7 @@ namespace Sitko.Core.Grpc.Client.Tests
 
         internal static async Task<(WebApplication Host, int Port)> StartServer<TService>(
             Dictionary<string, string?> config, X509Certificate2 certificate, bool publish,
-            CancellationToken cancellationToken) where TService : class
+            CancellationToken cancellationToken, Action<ISitkoCoreApplicationBuilder>? configure = null) where TService : class
         {
             var builder = WebApplication.CreateBuilder();
             _ = builder.Configuration.AddInMemoryCollection(config);
@@ -133,7 +133,14 @@ namespace Sitko.Core.Grpc.Client.Tests
             {
                 _ = app.AddConsulServiceDiscovery();
             }
-            _ = app.AddGrpcServer().RegisterService<TService>();
+            if (configure is null)
+            {
+                _ = app.AddGrpcServer().RegisterService<TService>();
+            }
+            else
+            {
+                configure(app);
+            }
             var host = builder.Build();
             _ = host.MapSitkoCore();
             await host.StartAsync(cancellationToken);

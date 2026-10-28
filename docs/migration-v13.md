@@ -142,3 +142,33 @@ OpenSearch 3.x. Если приложение напрямую использу�
 ## Тестовая инфраструктура
 
 Тестовые проекты используют xUnit4.0.2, MTP2.5.1 и AwesomeAssertions9.6.0. Ссылки на раннер, настройки SDK, пространства имён и команды описаны в [инструкции перехода оснастки](ru/testing.md#переход-потребителя-оснастки).
+
+## Клиент gRPC и включение обнаружения сервисов
+
+`AddExternalGrpcClient<T>` заменяется на `AddGrpcClient<T>`. Прямой адрес задаётся
+в `Grpc:Client:Contracts:<полное protobuf-имя>:Address`; без адреса клиент требует
+подключённый провайдер обнаружения. Для Consul используйте
+`AddConsulServiceDiscovery()` и секцию `ServiceDiscovery:Consul`.
+
+Регистрации `options.RegisterService<T>()` и `options.RegisterServiceWithGrpcWeb<T>()`
+перенесите из обработчика options в цепочку builder:
+
+```csharp
+app.AddGrpcServer(options => options.RequireSchemeAuthorization("Bearer"))
+    .RegisterService<InvoiceGrpcService>()
+    .RegisterServiceWithGrpcWeb<ReportsGrpcService>();
+```
+
+Общие клиентские параметры задаются через `ConfigureGrpcClients(...)`;
+`Grpc:Client:Default` и `Grpc:Server:Default` содержат общую конфигурацию,
+а `Contracts:<полное protobuf-имя>` — индивидуальные значения.
+
+Удалите `Grpc:Server:EnableServiceDiscovery`. Общий `ServiceDiscovery:Enabled=false`
+отключает обнаружение, публикацию и TTL. Сервер без подключения SD и клиенты
+с прямыми адресами продолжают работать. Клиент без адреса при выключенном SD
+завершает запуск с ошибкой конфигурации.
+
+Идентичность клиента использует полное protobuf-имя, например
+`accounting.v1.Invoice`, а не короткое C#-имя. Перенесите настройки контрактов
+на полные имена. Примеры регистрации, конфигурация TLS и параметры провайдера
+описаны в [инструкции gRPC/SD](ru/grpc-service-discovery.md).

@@ -17,7 +17,7 @@ public class GrpcServerTest : BaseTest
     public async Task TestResponse()
     {
         var hostBuilder = WebApplication.CreateBuilder();
-        _ = hostBuilder.AddSitkoCoreWeb().AddGrpcServer(static options => options.RegisterService<GrpcTestService>());
+        _ = hostBuilder.AddSitkoCoreWeb().AddGrpcServer().RegisterService<GrpcTestService>();
         _ = hostBuilder.WebHost.UseTestServer();
         await using var host = hostBuilder.Build();
         _ = host.MapSitkoCore();

@@ -57,12 +57,12 @@ public abstract class GrpcClientScope : WebTestScope
         var jsonStream = new MemoryStream(Encoding.UTF8.GetBytes(portsConfig));
         webApplicationBuilder.Configuration.AddJsonStream(jsonStream);
         base.ConfigureWebApplication(webApplicationBuilder, name);
-        webApplicationBuilder.AddSitkoCoreWeb()
-            .AddGrpcServer(RegisterService);
+        var grpcServer = webApplicationBuilder.AddSitkoCoreWeb().AddGrpcServer();
+        RegisterService(grpcServer);
 
         return webApplicationBuilder;
     }
 
-    protected virtual void RegisterService(GrpcServerModuleOptions options) =>
-        options.RegisterService<TestServiceServer>();
+    protected virtual void RegisterService(GrpcServerBuilder builder) =>
+        _ = builder.RegisterService<TestServiceServer>();
 }

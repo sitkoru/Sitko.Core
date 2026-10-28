@@ -141,3 +141,33 @@ Library-set contract: [specification](../specs/20261027-233345-legacy-modules/sp
 ## Test infrastructure
 
 Test projects use xUnit4.0.2, MTP2.5.1 and AwesomeAssertions9.6.0. See [test infrastructure migration](en/testing.md#migrating-test-infrastructure-consumers) for runner references, SDK configuration, namespaces and commands.
+
+## gRPC clients and service discovery
+
+Replace `AddExternalGrpcClient<T>` with `AddGrpcClient<T>`. Set a direct address
+at `Grpc:Client:Contracts:<full protobuf name>:Address`; without an address,
+the client requires a discovery provider. For Consul, use
+`AddConsulServiceDiscovery()` and the `ServiceDiscovery:Consul` section.
+
+Move `options.RegisterService<T>()` and `options.RegisterServiceWithGrpcWeb<T>()`
+out of the options callback into the builder chain:
+
+```csharp
+app.AddGrpcServer(options => options.RequireSchemeAuthorization("Bearer"))
+    .RegisterService<InvoiceGrpcService>()
+    .RegisterServiceWithGrpcWeb<ReportsGrpcService>();
+```
+
+Use `ConfigureGrpcClients(...)` for shared client settings.
+`Grpc:Client:Default` and `Grpc:Server:Default` hold shared configuration;
+`Contracts:<full protobuf name>` holds individual overrides.
+
+Remove `Grpc:Server:EnableServiceDiscovery`. The shared
+`ServiceDiscovery:Enabled=false` setting disables discovery, publication and TTL.
+Servers without SD and clients with direct addresses continue to work. A client
+without an address fails startup when SD is disabled.
+
+Client identity uses the full protobuf name, such as `accounting.v1.Invoice`,
+rather than a short C# name. Move contract settings to full names. Registration,
+TLS configuration and provider settings are covered in the
+[gRPC/SD guide](en/grpc-service-discovery.md).

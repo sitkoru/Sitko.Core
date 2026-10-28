@@ -9,13 +9,11 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Client;
 
-public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient : ClientBase<TClient>
+public class GrpcClientModuleOptions : BaseModuleOptions
 {
     public Uri? Address { get; set; }
-
-    private const string AuthorizationHeader = "Authorization";
-    private readonly List<Action<IServiceCollection>> configureServicesActions = new();
-    private readonly Dictionary<Type, Action<IServiceCollection, IHttpClientBuilder>> interceptorActions = new();
+    public int? MaxReceiveMessageSize { get; set; } = new GrpcChannelOptions().MaxReceiveMessageSize;
+    public int? MaxSendMessageSize { get; set; }
     public bool EnableHttp2UnencryptedSupport { get; set; }
     public bool DisableCertificatesValidation { get; set; }
     public TimeSpan? DefaultDeadline { get; set; } = TimeSpan.FromMinutes(30);
@@ -24,8 +22,14 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
     public bool UseGrpcWeb { get; set; }
     public TimeSpan? PooledConnectionLifetime { get; set; } = TimeSpan.FromMinutes(2);
     public LoadBalancingPolicy LoadBalancingPolicy { get; set; } = LoadBalancingPolicy.RoundRobin;
-
     [JsonIgnore] public RetryPolicy? RetryPolicy { get; set; } = GrpcClientRetryPolicies.Default;
+}
+
+public class GrpcClientModuleOptions<TClient> : GrpcClientModuleOptions where TClient : ClientBase<TClient>
+{
+    private const string AuthorizationHeader = "Authorization";
+    private readonly List<Action<IServiceCollection>> configureServicesActions = new();
+    private readonly Dictionary<Type, Action<IServiceCollection, IHttpClientBuilder>> interceptorActions = new();
 
     internal void ConfigureClient(IServiceCollection services, IHttpClientBuilder builder)
     {

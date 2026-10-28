@@ -11,6 +11,7 @@ namespace Sitko.Core.Grpc.Client
         where TClient : ClientBase<TClient>
     {
         private bool useDiscovery;
+        public override string[] OptionKeys => ["Grpc:Client"];
         public override string OptionsKey => $"Grpc:Client:Contracts:{GrpcServicesHelper.GetServiceNameForClient<TClient>()}";
         protected override bool NeedSocketHandler => true;
         protected override bool UseNativeLoadBalancing => false;

@@ -1,6 +1,6 @@
 # Исследование: обнаружение gRPC-сервисов
 
-Первичное исследование: 2026-10-27, Sitko.Core v12 `fa94b44322448f85c92956f5a88c14624cc2daf1`. Синхронизация принятых решений: 2026-10-28. Основа реализации v13 — `5e12c6756720d29bc3fc836b6735fcc7c03739e7`, HEAD подготовки `0847a20905c99c7a730696cafeba1054e9debe8f`. Исходные ссылки v12 сохранены как основания сравнения, а не описание обновлённой платформы. Архитектура и V01–V16 согласованы; реализация и выполнение проверок не начаты.
+Первичное исследование: 2026-10-27, Sitko.Core v12 `fa94b44322448f85c92956f5a88c14624cc2daf1`. Синхронизация принятых решений: 2026-10-28. Подготовка первоначально опиралась на `5e12c6756720d29bc3fc836b6735fcc7c03739e7`. Перед реализацией ветка перебазирована на v13 `b532204c103d1ed957889a2303ba6e9f8cabcc3f`. Исходные ссылки v12 сохранены как основания сравнения, а не описание обновлённой платформы. Архитектура и V01–V16 согласованы; реализация начата, V01/V04/V05 локально подтверждены. Текущее состояние задач — в tasks.md.
 
 ## Штатный Microsoft HTTP + DNS SRV
 
@@ -113,3 +113,10 @@
 - [MYCG.Core: контекст и сообщения](https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.Grpc/GrpcExtensions.cs).
 - [MYCG.Core: параметры пакетной выдачи](https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.Grpc/GrpcServiceOptions.cs).
 - [Microsoft: стандартный RoundRobin](https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery/ServiceDiscoveryServiceCollectionExtensions.cs).
+
+
+## Уточнения при реализации
+
+- Проверка связей проектов после T007: `Grpc.Client` и `Grpc.Server` ссылаются на общий `ServiceDiscovery`, без ссылки на Consul. Старые проекты `Consul`, `ServiceDiscovery.Resolver.Consul`, `ServiceDiscovery.Server.Consul`, `ServiceDiscovery.Server` и `Grpc.Client/Discovery` ещё сохраняются до T018. Поиск ссылок на старые пакеты вне `specs/` нашёл только их собственную группу и `Sitko.Core.slnx`; окончательный аудит повторяется после удаления.
+- Для T012 у App уже есть `HostedLifecycleService` и модульный `ApplicationStarted`, но `ApplicationLifecycle.StartedAsync` перехватывает ошибки модульного обработчика и только пишет их в журнал. Поэтому он не подходит для обязательного отказа запуска при неверном фактическом слушателе. Если текущую фоновую валидацию потребуется перенести в гарантированную проверку старта, достаточно стандартного `IHostedLifecycleService` у владельца регистрации; App core менять не требуется. Это основание выбора при реализации, ещё не выполненное изменение.
+- Проверки используют loopback-порты собственного Docker-контейнера. Текущая gRPC-задача CI запускает тесты внутри job-контейнера и имеет отдельный service Consul; он новым тестам не нужен. Перед итоговым CI требуется согласовать именно исполнение этих тестов в сетевом пространстве Docker-хоста; нельзя подменять оснастку общим `http://consul:8500`. [Документация Testcontainers](https://dotnet.testcontainers.org/dind/) отличает доступ из контейнера к Docker-хосту от loopback самого процесса. Точное изменение CI пока не реализовано.
