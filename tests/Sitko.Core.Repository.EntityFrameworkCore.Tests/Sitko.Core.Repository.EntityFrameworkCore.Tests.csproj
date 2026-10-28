@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\..\src\Sitko.Core.Repository.EntityFrameworkCore\Sitko.Core.Repository.EntityFrameworkCore.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.Repository.Search\Sitko.Core.Repository.Search.csproj"/>
     <ProjectReference Include="..\Sitko.Core.Repository.Tests\Sitko.Core.Repository.Tests.csproj"/>
   </ItemGroup>
 </Project>
