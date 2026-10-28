@@ -5,6 +5,8 @@
     <ProjectReference Include="..\..\src\Sitko.Core.Blazor.Wasm\Sitko.Core.Blazor.Wasm.csproj"/>
     <ProjectReference Include="..\..\src\Sitko.Core.Blazor.AntDesign.Server\Sitko.Core.Blazor.AntDesign.Server.csproj"/>
     <ProjectReference Include="..\..\src\Sitko.Core.Blazor.MudBlazor.Server\Sitko.Core.Blazor.MudBlazor.Server.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.Blazor.FileUpload\Sitko.Core.Blazor.FileUpload.csproj"/>
+    <ProjectReference Include="..\..\src\Sitko.Core.Storage.FileSystem\Sitko.Core.Storage.FileSystem.csproj"/>
     <ProjectReference Include="..\..\src\Sitko.Core.Xunit\Sitko.Core.Xunit.csproj"/>
   </ItemGroup>
 </Project>
