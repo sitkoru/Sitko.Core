@@ -1,19 +1,20 @@
-﻿using Duende.AccessTokenManagement.OpenIdConnect;
+using Duende.AccessTokenManagement.OpenIdConnect;
+using Duende.AccessTokenManagement;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
-namespace Sitko.Core.Auth.IdentityServer.Tokens;
+namespace Sitko.Core.Auth.OIDC.Tokens;
 
 internal class UserTokenProvider : IUserTokenProvider
 {
-    private readonly IUserTokenManagementService? userTokenManagementService;
+    private readonly IUserTokenManager? userTokenManagementService;
     private readonly IAuthenticationSchemeProvider authenticationSchemeProvider;
-    private readonly IOptions<OidcIdentityServerModuleOptions> oidcOptions;
+    private readonly IOptions<OidcAuthModuleOptions> oidcOptions;
 
     public UserTokenProvider(IAuthenticationSchemeProvider authenticationSchemeProvider,
-        IOptions<OidcIdentityServerModuleOptions> oidcOptions,
-        IUserTokenManagementService? userTokenManagementService = null)
+        IOptions<OidcAuthModuleOptions> oidcOptions,
+        IUserTokenManager? userTokenManagementService = null)
     {
         this.userTokenManagementService = userTokenManagementService;
         this.authenticationSchemeProvider = authenticationSchemeProvider;
@@ -33,12 +34,9 @@ internal class UserTokenProvider : IUserTokenProvider
                 // we have token management service and available oidc schema, so try to get token this way first
                 var schemaToken = await userTokenManagementService.GetAccessTokenAsync(
                     httpContext.User,
-                    new UserTokenRequestParameters { ChallengeScheme = oidcSchema.Name }, cancellationToken);
-                if (!string.IsNullOrEmpty(schemaToken.AccessToken) && !schemaToken.IsError)
-                {
-                    // we have token, no need to check other schemas
-                    return schemaToken.AccessToken;
-                }
+                    new UserTokenRequestParameters { ChallengeScheme = Scheme.Parse(oidcSchema.Name) }, cancellationToken);
+                // A failed refresh must not fall back to the stale token saved in the cookie.
+                return schemaToken.Succeeded ? schemaToken.Token.AccessToken.ToString() : null;
             }
         }
 

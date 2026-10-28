@@ -3,6 +3,7 @@
     <OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../src/Sitko.Core.Auth.IdentityServer/Sitko.Core.Auth.IdentityServer.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" />
+    <ProjectReference Include="../../src/Sitko.Core.Auth.OIDC/Sitko.Core.Auth.OIDC.csproj" />
   </ItemGroup>
 </Project>

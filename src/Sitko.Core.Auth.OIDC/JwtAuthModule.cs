@@ -2,18 +2,19 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Sitko.Core.Auth.IdentityServer;
+namespace Sitko.Core.Auth.OIDC;
 
-public class JwtIdentityServerModule : IdentityServerModule<JwtIdentityServerModuleOptions>
+public class JwtAuthModule : OidcProviderModule<JwtAuthModuleOptions>
 {
-    public override string OptionsKey => "Auth:IdentityServer:Jwt";
+    public override string OptionsKey => "Auth:OIDC:Jwt";
 
     protected override void ConfigureAuthentication(AuthenticationBuilder authenticationBuilder,
-        JwtIdentityServerModuleOptions startupOptions)
+        JwtAuthModuleOptions startupOptions)
     {
         JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         authenticationBuilder.AddJwtBearer(options =>
         {
+            options.MapInboundClaims = false;
             options.Authority = startupOptions.OidcServerUrl;
             options.Audience = startupOptions.JwtAudience;
             options.RequireHttpsMetadata = startupOptions.RequireHttps;

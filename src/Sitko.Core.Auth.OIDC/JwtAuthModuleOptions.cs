@@ -1,9 +1,9 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
-namespace Sitko.Core.Auth.IdentityServer;
+namespace Sitko.Core.Auth.OIDC;
 
-public class JwtIdentityServerModuleOptions : IdentityServerAuthOptions
+public class JwtAuthModuleOptions : OidcProviderAuthOptions
 {
     public string JwtAudience { get; set; } = string.Empty;
     public override bool RequiresCookie => false;
@@ -14,7 +14,7 @@ public class JwtIdentityServerModuleOptions : IdentityServerAuthOptions
     public Action<JwtBearerOptions>? ConfigureJwtBearerOptions { get; set; }
 }
 
-public class JwtAuthOptionsValidator : IdentityServerAuthOptionsValidator<JwtIdentityServerModuleOptions>
+public class JwtAuthOptionsValidator : OidcProviderAuthOptionsValidator<JwtAuthModuleOptions>
 {
     public JwtAuthOptionsValidator() =>
         RuleFor(o => o.JwtAudience).NotEmpty().WithMessage("Oidc jwt audience can't be empty");
