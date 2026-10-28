@@ -113,6 +113,15 @@ namespace Sitko.Core.Auth.Tests
 
             if (sentinel)
             {
+                // PING Sentinel ещё не означает, что обнаружены реплики и участники кворума.
+                foreach (var port in new[] { 26379, 26380, 26381 })
+                {
+                    var server = observer.GetServer("127.0.0.1", port);
+                    await WaitUntilAsync(async () =>
+                        (await server.SentinelGetReplicaAddressesAsync("sitko-test")).Length == 2 &&
+                        (await server.SentinelGetSentinelAddressesAsync("sitko-test")).Length == 2);
+                }
+
                 // A barrier on this connection covers preceding DP and token writes on the primary.
                 Assert.True(await admin.GetDatabase(3).StringSetAsync($"{name}-barrier", "replicated"));
                 Assert.Equal(2, (int)await admin.GetDatabase(3).ExecuteAsync("WAIT", 2, 10000));
@@ -214,6 +223,10 @@ namespace Sitko.Core.Auth.Tests
                     }
                 }
                 catch (RedisException exception)
+                {
+                    lastError = exception;
+                }
+                catch (RedisTimeoutException exception)
                 {
                     lastError = exception;
                 }
