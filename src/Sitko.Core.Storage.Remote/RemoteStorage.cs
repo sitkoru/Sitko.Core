@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sitko.Core.App.Json;
@@ -101,7 +102,15 @@ public class RemoteStorage<TStorageOptions> : Storage<TStorageOptions>
     protected override async Task<StorageItemDownloadInfo?> DoGetFileAsync(string path,
         CancellationToken cancellationToken = default)
     {
-        var response = await HttpClient.GetJsonAsync<RemoteStorageItem?>($"?path={path}", cancellationToken);
+        using var httpResponse = await HttpClient.GetAsync($"?path={path}", cancellationToken);
+        if (httpResponse.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        _ = httpResponse.EnsureSuccessStatusCode();
+        var response = JsonSerializer.Deserialize<RemoteStorageItem?>(
+            await httpResponse.Content.ReadAsByteArrayAsync(cancellationToken));
         if (response is null)
         {
             return null;

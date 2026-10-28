@@ -55,19 +55,6 @@ jobs:
     container: ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
     steps:
       - uses: actions/checkout@v7
-      - name: Install node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: |
-            src/Sitko.Core.Blazor.AntDesign/Web/package.json
-      - name: Build Sitko.Core.Blazor.AntDesign js
-        working-directory: src/Sitko.Core.Blazor.AntDesign/Web
-        shell: bash
-        run: |
-          npm ci
-          npm run prod
       - name: Run Sitko.Core.App.Blazor.Tests net10.0
         run: >-
           dotnet test --project tests/Sitko.Core.App.Blazor.Tests/Sitko.Core.App.Blazor.Tests.csproj
