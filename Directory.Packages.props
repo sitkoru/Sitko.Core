@@ -33,8 +33,8 @@
   </ItemGroup>
   <!--ASP.NET Core libraries-->
   <ItemGroup>
-    <PackageVersion Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
-    <PackageVersion Include="Duende.AccessTokenManagement.OpenIdConnect" Version="3.2.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.14" />
+    <PackageVersion Include="Duende.AccessTokenManagement.OpenIdConnect" Version="4.3.0" />
   </ItemGroup>
   <!-- OpenTelemetry -->
   <ItemGroup>

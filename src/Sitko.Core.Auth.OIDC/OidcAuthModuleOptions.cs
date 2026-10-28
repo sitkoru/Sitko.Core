@@ -1,11 +1,12 @@
 using Duende.AccessTokenManagement.OpenIdConnect;
 using FluentValidation;
-using IdentityModel;
-using Sitko.Core.Auth.IdentityServer.Tokens;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Duende.IdentityModel;
+using Sitko.Core.Auth.OIDC.Tokens;
 
-namespace Sitko.Core.Auth.IdentityServer;
+namespace Sitko.Core.Auth.OIDC;
 
-public class OidcIdentityServerModuleOptions : IdentityServerAuthOptions
+public class OidcAuthModuleOptions : OidcProviderAuthOptions
 {
     public string? OidcClientId { get; set; }
     public string? OidcClientSecret { get; set; }
@@ -19,10 +20,11 @@ public class OidcIdentityServerModuleOptions : IdentityServerAuthOptions
     public override string SignInScheme => "Cookies";
     public override string ChallengeScheme => "oidc";
     public TokenStoreType TokenStoreType { get; set; } = TokenStoreType.None;
+    public Action<OpenIdConnectOptions>? ConfigureOpenIdConnectOptions { get; set; }
     public Action<UserTokenManagementOptions>? ConfigureUserTokenManagement { get; set; }
 }
 
-public class OidcAuthOptionsValidator : IdentityServerAuthOptionsValidator<OidcIdentityServerModuleOptions>
+public class OidcAuthOptionsValidator : OidcProviderAuthOptionsValidator<OidcAuthModuleOptions>
 {
     public OidcAuthOptionsValidator()
     {
@@ -30,6 +32,6 @@ public class OidcAuthOptionsValidator : IdentityServerAuthOptionsValidator<OidcI
         RuleFor(o => o.OidcClientSecret).NotEmpty().WithMessage("Oidc client secret can't be empty");
     }
 
-    protected override bool RequiresRedis(OidcIdentityServerModuleOptions options) =>
+    protected override bool RequiresRedis(OidcAuthModuleOptions options) =>
         base.RequiresRedis(options) || options.TokenStoreType == TokenStoreType.Redis;
 }

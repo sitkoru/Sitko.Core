@@ -2,6 +2,8 @@ using System.Security.Claims;
 using System.Net;
 using System.Diagnostics;
 using Duende.AccessTokenManagement.OpenIdConnect;
+using Duende.AccessTokenManagement;
+using Duende.IdentityModel;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.Extensions.Configuration;
@@ -9,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.Redis;
-using Sitko.Core.Auth.IdentityServer;
+using Sitko.Core.Auth.OIDC;
 using Xunit;
 using StackExchange.Redis;
 
@@ -67,7 +69,7 @@ namespace Sitko.Core.Auth.Tests
             HashSet<long> sentinelClients;
             using (app)
             {
-                var database = app.Services.GetRequiredKeyedService<IDatabase>(typeof(OidcIdentityServerModuleOptions));
+                var database = app.Services.GetRequiredKeyedService<IDatabase>(typeof(OidcAuthModuleOptions));
                 connection = database.Multiplexer;
                 Assert.True(connection.IsConnected);
                 sentinelClients = [.. (await server.ClientListAsync())
@@ -109,7 +111,16 @@ namespace Sitko.Core.Auth.Tests
             Assert.Equal("before-failover", legacyProtector.Unprotect(protectedText));
             var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, "alice")]));
             var store = first.Services.GetRequiredService<IUserTokenStore>();
-            await store.StoreTokenAsync(user, new UserToken { AccessToken = "access-before", RefreshToken = "refresh-before" });
+            var context = first.Services.GetRequiredService<IApplicationContext>();
+            var legacyTokenKey = $"DOT_{context.Name}_{context.Environment}_alice".ToSha256();
+            var legacyTokenProtector = legacy.GetRequiredService<IDataProtectionProvider>().CreateProtector("RedisTokenStore");
+            _ = await admin.GetDatabase(3).StringSetAsync(legacyTokenKey, legacyTokenProtector.Protect(
+                """{"AccessToken":"legacy-access","RefreshToken":"legacy-refresh","Expiration":"2030-01-01T00:00:00+00:00","Scope":"openid"}"""));
+            var legacyToken = await store.GetTokenAsync(user, ct: TestContext.Current.CancellationToken);
+            Assert.True(legacyToken.Succeeded);
+            Assert.Equal("legacy-access", legacyToken.Token.TokenForSpecifiedParameters!.AccessToken.ToString());
+            Assert.Equal("legacy-refresh", legacyToken.Token.RefreshToken!.RefreshToken.ToString());
+            await store.StoreTokenAsync(user, new UserToken { AccessToken = AccessToken.Parse("access-before"), RefreshToken = RefreshToken.Parse("refresh-before"), ClientId = ClientId.Parse("test"), AccessTokenType = AccessTokenType.Parse("Bearer"), Expiration = DateTimeOffset.MaxValue }, ct: TestContext.Current.CancellationToken);
 
             if (sentinel)
             {
@@ -132,7 +143,7 @@ namespace Sitko.Core.Auth.Tests
                         .SentinelGetMasterAddressByNameAsync("sitko-test");
                     return next is not null && !next.Equals(primary);
                 });
-                await WaitUntilAsync(async () => (await store.GetTokenAsync(user)).AccessToken == "access-before");
+                await WaitUntilAsync(async () => (await store.GetTokenAsync(user, ct: TestContext.Current.CancellationToken)).Token!.TokenForSpecifiedParameters!.AccessToken.ToString() == "access-before");
                 Assert.Equal("before-failover", protector.Unprotect(protectedText));
                 Assert.Equal("legacy-payload", protector.Unprotect(legacyProtectedText));
                 _ = first.Services.GetRequiredService<IKeyManager>()
@@ -144,31 +155,31 @@ namespace Sitko.Core.Auth.Tests
                 .CreateProtector("test").Unprotect(protectedText));
             Assert.Equal("legacy-payload", second.Services.GetRequiredService<IDataProtectionProvider>()
                 .CreateProtector("test").Unprotect(legacyProtectedText));
-            var restored = await second.Services.GetRequiredService<IUserTokenStore>().GetTokenAsync(user);
-            Assert.Equal("access-before", restored.AccessToken);
-            Assert.Equal("refresh-before", restored.RefreshToken);
+            var restored = await second.Services.GetRequiredService<IUserTokenStore>().GetTokenAsync(user, ct: TestContext.Current.CancellationToken);
+            Assert.Equal("access-before", restored.Token!.TokenForSpecifiedParameters!.AccessToken.ToString());
+            Assert.Equal("refresh-before", restored.Token!.TokenForSpecifiedParameters!.RefreshToken.ToString());
             var secondStore = second.Services.GetRequiredService<IUserTokenStore>();
             if (sentinel)
             {
                 await WaitUntilAsync(async () =>
                 {
-                    await store.StoreTokenAsync(user, new UserToken { AccessToken = "access-after", RefreshToken = "refresh-after" });
+                    await store.StoreTokenAsync(user, new UserToken { AccessToken = AccessToken.Parse("access-after"), RefreshToken = RefreshToken.Parse("refresh-after"), ClientId = ClientId.Parse("test"), AccessTokenType = AccessTokenType.Parse("Bearer"), Expiration = DateTimeOffset.MaxValue }, ct: TestContext.Current.CancellationToken);
                     return true;
                 });
                 await WaitUntilAsync(async () =>
                 {
-                    var updated = await secondStore.GetTokenAsync(user);
-                    return updated.AccessToken == "access-after" && updated.RefreshToken == "refresh-after";
+                    var updated = await secondStore.GetTokenAsync(user, ct: TestContext.Current.CancellationToken);
+                    return updated.Token!.TokenForSpecifiedParameters!.AccessToken.ToString() == "access-after" && updated.Token!.TokenForSpecifiedParameters!.RefreshToken.ToString() == "refresh-after";
                 });
             }
             else
             {
-                await store.StoreTokenAsync(user, new UserToken { AccessToken = "access-after", RefreshToken = "refresh-after" });
+                await store.StoreTokenAsync(user, new UserToken { AccessToken = AccessToken.Parse("access-after"), RefreshToken = RefreshToken.Parse("refresh-after"), ClientId = ClientId.Parse("test"), AccessTokenType = AccessTokenType.Parse("Bearer"), Expiration = DateTimeOffset.MaxValue }, ct: TestContext.Current.CancellationToken);
             }
 
-            var after = await secondStore.GetTokenAsync(user);
-            Assert.Equal("access-after", after.AccessToken);
-            Assert.Equal("refresh-after", after.RefreshToken);
+            var after = await secondStore.GetTokenAsync(user, ct: TestContext.Current.CancellationToken);
+            Assert.Equal("access-after", after.Token!.TokenForSpecifiedParameters!.AccessToken.ToString());
+            Assert.Equal("refresh-after", after.Token!.TokenForSpecifiedParameters!.RefreshToken.ToString());
             var newProtectedText = second.Services.GetRequiredService<IDataProtectionProvider>()
                 .CreateProtector("test").Protect("after-failover");
             using var third = CreateApplication(name, sentinel, primaryPort);
@@ -179,17 +190,17 @@ namespace Sitko.Core.Auth.Tests
             {
                 await WaitUntilAsync(async () =>
                 {
-                    await store.ClearTokenAsync(user);
+                    await store.ClearTokenAsync(user, ct: TestContext.Current.CancellationToken);
                     return true;
                 });
-                await WaitUntilAsync(async () => (await thirdStore.GetTokenAsync(user)).Error == "not found");
+                await WaitUntilAsync(async () => (await thirdStore.GetTokenAsync(user, ct: TestContext.Current.CancellationToken)).FailedResult!.Error == "not found");
             }
             else
             {
-                await store.ClearTokenAsync(user);
+                await store.ClearTokenAsync(user, ct: TestContext.Current.CancellationToken);
             }
 
-            Assert.Equal("not found", (await thirdStore.GetTokenAsync(user)).Error);
+            Assert.Equal("not found", (await thirdStore.GetTokenAsync(user, ct: TestContext.Current.CancellationToken)).FailedResult!.Error);
         }
 
         // Sentinel needs a PING handshake; the observer also needs CLIENT LIST.
@@ -249,33 +260,33 @@ namespace Sitko.Core.Auth.Tests
             {
                 ["Application:Name"] = name,
                 ["Application:Environment"] = "Test",
-                ["Auth:IdentityServer:Oidc:OidcClientId"] = "test",
-                ["Auth:IdentityServer:Oidc:OidcClientSecret"] = "test",
-                ["Auth:IdentityServer:Oidc:EnableHealthChecks"] = "false",
-                ["Auth:IdentityServer:Oidc:EnableRedisDataProtection"] = "true",
-                ["Auth:IdentityServer:Oidc:TokenStoreType"] = "Redis",
-                ["Auth:IdentityServer:Oidc:RedisDb"] = "3",
-                ["Auth:IdentityServer:Oidc:RedisPassword"] = sentinel ? "valkey-test" : "default-test"
+                ["Auth:OIDC:Client:OidcClientId"] = "test",
+                ["Auth:OIDC:Client:OidcClientSecret"] = "test",
+                ["Auth:OIDC:Client:EnableHealthChecks"] = "false",
+                ["Auth:OIDC:Client:EnableRedisDataProtection"] = "true",
+                ["Auth:OIDC:Client:TokenStoreType"] = "Redis",
+                ["Auth:OIDC:Client:RedisDb"] = "3",
+                ["Auth:OIDC:Client:RedisPassword"] = sentinel ? "valkey-test" : "default-test"
             };
             if (sentinel)
             {
-                settings["Auth:IdentityServer:Oidc:RedisUser"] = "app";
-                settings["Auth:IdentityServer:Oidc:RedisServiceName"] = "sitko-test";
-                settings["Auth:IdentityServer:Oidc:RedisSentinelEndpoints:0"] = "127.0.0.1:26378";
-                settings["Auth:IdentityServer:Oidc:RedisSentinelEndpoints:1"] = "127.0.0.1:26379";
-                settings["Auth:IdentityServer:Oidc:RedisSentinelEndpoints:2"] = "127.0.0.1:26380";
-                settings["Auth:IdentityServer:Oidc:RedisSentinelEndpoints:3"] = "127.0.0.1:26381";
-                settings["Auth:IdentityServer:Oidc:RedisSentinelUser"] = "sentinel-client";
-                settings["Auth:IdentityServer:Oidc:RedisSentinelPassword"] = "sentinel-test";
+                settings["Auth:OIDC:Client:RedisUser"] = "app";
+                settings["Auth:OIDC:Client:RedisServiceName"] = "sitko-test";
+                settings["Auth:OIDC:Client:RedisSentinelEndpoints:0"] = "127.0.0.1:26378";
+                settings["Auth:OIDC:Client:RedisSentinelEndpoints:1"] = "127.0.0.1:26379";
+                settings["Auth:OIDC:Client:RedisSentinelEndpoints:2"] = "127.0.0.1:26380";
+                settings["Auth:OIDC:Client:RedisSentinelEndpoints:3"] = "127.0.0.1:26381";
+                settings["Auth:OIDC:Client:RedisSentinelUser"] = "sentinel-client";
+                settings["Auth:OIDC:Client:RedisSentinelPassword"] = "sentinel-test";
             }
             else
             {
-                settings["Auth:IdentityServer:Oidc:RedisHost"] = "127.0.0.1";
-                settings["Auth:IdentityServer:Oidc:RedisPort"] = directPort.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                settings["Auth:OIDC:Client:RedisHost"] = "127.0.0.1";
+                settings["Auth:OIDC:Client:RedisPort"] = directPort.ToString(System.Globalization.CultureInfo.InvariantCulture);
             }
 
             _ = builder.Configuration.AddInMemoryCollection(settings);
-            _ = builder.AddSitkoCore().AddModule<OidcIdentityServerModule, OidcIdentityServerModuleOptions>();
+            _ = builder.AddSitkoCore().AddModule<OidcAuthModule, OidcAuthModuleOptions>();
             return builder.Build();
         }
     }

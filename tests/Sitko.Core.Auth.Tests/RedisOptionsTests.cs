@@ -1,5 +1,5 @@
-using Sitko.Core.Auth.IdentityServer;
-using Sitko.Core.Auth.IdentityServer.Tokens;
+using Sitko.Core.Auth.OIDC;
+using Sitko.Core.Auth.OIDC.Tokens;
 using Xunit;
 
 namespace Sitko.Core.Auth.Tests
@@ -64,7 +64,7 @@ namespace Sitko.Core.Auth.Tests
             Assert.True(new OidcAuthOptionsValidator().Validate(options).IsValid);
         }
 
-        private static OidcIdentityServerModuleOptions CreateOptions(bool tokensOnly) => new()
+        private static OidcAuthModuleOptions CreateOptions(bool tokensOnly) => new()
         {
             OidcClientId = "test",
             OidcClientSecret = "test",

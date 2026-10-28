@@ -2,7 +2,7 @@
 
 `Sitko.Core.Redis` содержит общую логику прямого подключения к Redis-совместимому
 серверу, обнаружения основного узла через Valkey Sentinel и освобождения соединений.
-`Sitko.Core.Auth` и `Sitko.Core.Auth.IdentityServer` используют этот проект
+`Sitko.Core.Auth` и `Sitko.Core.Auth.OIDC` используют этот проект
 для Data Protection и хранилища токенов.
 Одно соединение с данными используется для ключей ASP.NET Core Data Protection
 и хранилища токенов `RedisTokenStore` в рамках одного экземпляра модуля.
@@ -54,13 +54,13 @@ Auth сохраняет собственные секции и прежние п
 
 ## Конфигурация Auth
 
-Пример секции `Auth:IdentityServer:Oidc`:
+Пример секции `Auth:OIDC:Client`:
 
 ```json
 {
   "Auth": {
-    "IdentityServer": {
-      "Oidc": {
+    "OIDC": {
+      "Client": {
         "EnableRedisDataProtection": true,
         "TokenStoreType": "Redis",
         "RedisSentinelEndpoints": [
