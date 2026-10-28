@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,7 +68,7 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable
 
     protected bool IsInitialized { get; private set; }
 
-    [PublicAPI] public Guid ComponentId { get; } = Guid.NewGuid();
+    public Guid ComponentId { get; } = Guid.NewGuid();
 
     [CascadingParameter(Name = "ParentScope")]
     private IServiceScope? ParentScope { get; set; }
@@ -81,9 +80,8 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable
     private IServiceProvider ServiceProvider =>
         scope?.ServiceProvider ?? ParentScope?.ServiceProvider ?? GlobalServiceProvider;
 
-    [PublicAPI] public bool IsLoading { get; private set; }
+    public bool IsLoading { get; private set; }
 
-    [PublicAPI]
     protected NavigationManager NavigationManager =>
         navigationManager ??= GlobalServiceProvider.GetRequiredService<NavigationManager>();
 
@@ -234,26 +232,20 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable
 
     protected override bool ShouldRender() => IsInitialized;
 
-    [PublicAPI]
     protected TService? GetService<TService>() where TService : notnull => ServiceProvider.GetService<TService>();
 
-    [PublicAPI]
     protected TService? GetService<TService>(Type type) where TService : class =>
         ServiceProvider.GetService(type) as TService;
 
-    [PublicAPI]
     protected TService GetRequiredService<TService>() where TService : notnull =>
         ServiceProvider.GetRequiredService<TService>();
 
-    [PublicAPI]
     protected TService GetRequiredService<TService>(Type type) where TService : class =>
         ServiceProvider.GetRequiredService(type) as TService ??
         throw new InvalidOperationException($"Can't resolver service {type}");
 
-    [PublicAPI]
     protected IEnumerable<TService> GetServices<TService>() => ServiceProvider.GetServices<TService>();
 
-    [PublicAPI]
     protected IServiceScope CreateServicesScope() => ServiceProvider.CreateScope();
 
     protected async Task<TResult> ExecuteServiceOperation<TService, TResult>(
@@ -265,7 +257,6 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable
         return result;
     }
 
-    [PublicAPI]
     protected void StartLoading()
     {
         IsLoading = true;
@@ -274,7 +265,6 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable
     }
 
 
-    [PublicAPI]
     protected void StopLoading()
     {
         IsLoading = false;
@@ -296,24 +286,20 @@ public abstract class BaseComponent : ComponentBase, IAsyncDisposable
         await NotifyStateChangeAsync();
     }
 
-    [PublicAPI]
     protected virtual void OnStartLoading(CancellationToken cancellationToken = default)
     {
     }
 
-    [PublicAPI]
     protected virtual void OnStopLoading(CancellationToken cancellationToken = default)
     {
     }
 
-    [PublicAPI]
     protected virtual Task OnStartLoadingAsync(CancellationToken cancellationToken = default)
     {
         OnStartLoading(cancellationToken);
         return Task.CompletedTask;
     }
 
-    [PublicAPI]
     protected virtual Task OnStopLoadingAsync(CancellationToken cancellationToken = default)
     {
         OnStopLoading(cancellationToken);

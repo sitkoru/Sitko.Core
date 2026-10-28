@@ -1,11 +1,9 @@
 ﻿using System.Runtime.CompilerServices;
-using JetBrains.Annotations;
 
 [assembly: InternalsVisibleTo("Sitko.Core.ServiceDiscovery.Server")]
 
 namespace Sitko.Core.ServiceDiscovery;
 
-[PublicAPI]
 public class ServiceDiscoveryOptions
 {
     private readonly HashSet<ServiceDiscoveryService> services = new();

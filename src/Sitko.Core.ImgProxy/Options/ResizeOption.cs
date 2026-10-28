@@ -1,9 +1,7 @@
 using ImgProxy;
-using JetBrains.Annotations;
 
 namespace Sitko.Core.ImgProxy.Options;
 
-[PublicAPI]
 public class ResizeOption : ImgProxyOption
 {
     public ResizeOption(string type, int width, int height, bool enlarge = false, bool extend = false)

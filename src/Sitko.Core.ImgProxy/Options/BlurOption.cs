@@ -1,9 +1,7 @@
 using ImgProxy;
-using JetBrains.Annotations;
 
 namespace Sitko.Core.ImgProxy.Options;
 
-[PublicAPI]
 public class BlurOption : ImgProxyOption
 {
     public BlurOption(float sigma)

@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
@@ -8,7 +7,6 @@ namespace Sitko.Core.Blazor;
 
 public interface ISitkoCoreBlazorApplicationBuilder : ISitkoCoreApplicationBuilder;
 
-[PublicAPI]
 public static class ApplicationExtensions
 {
     public static IHostApplicationBuilder AddPersistentState<TCompressor, TComponentState>(

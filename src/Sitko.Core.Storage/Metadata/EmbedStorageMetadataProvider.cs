@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nito.AsyncEx;
@@ -14,7 +13,7 @@ public abstract class
     where TOptions : EmbedStorageMetadataModuleOptions<TStorageOptions>
     where TStorageOptions : StorageOptions
 {
-    [PublicAPI] protected const string MetaDataExtension = ".metadata";
+    protected const string MetaDataExtension = ".metadata";
 
     //private readonly IServiceProvider serviceProvider;
     private readonly AsyncLock treeLock = new();

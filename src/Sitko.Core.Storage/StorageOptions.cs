@@ -1,5 +1,4 @@
 using FluentValidation;
-using JetBrains.Annotations;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Storage;
@@ -8,13 +7,13 @@ public abstract class StorageOptions : BaseModuleOptions
 {
     protected StorageOptions() => Name = GetType().Name;
 
-    [PublicAPI] public Uri? PublicUri { get; set; }
+    public Uri? PublicUri { get; set; }
 
-    [PublicAPI] public string? Prefix { get; set; }
-    [PublicAPI] public string Name { get; set; }
-    [PublicAPI] public bool IsDefault { get; set; }
+    public string? Prefix { get; set; }
+    public string Name { get; set; }
+    public bool IsDefault { get; set; }
 
-    [PublicAPI] public bool PreserveOriginalFileName { get; set; }
+    public bool PreserveOriginalFileName { get; set; }
 }
 
 public abstract class StorageOptionsValidator<TStorageOptions> : AbstractValidator<TStorageOptions>

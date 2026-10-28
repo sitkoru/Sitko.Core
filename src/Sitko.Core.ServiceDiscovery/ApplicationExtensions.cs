@@ -1,10 +1,8 @@
-﻿using JetBrains.Annotations;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
 namespace Sitko.Core.ServiceDiscovery;
 
-[PublicAPI]
 public static class ApplicationExtensions
 {
     public static IHostApplicationBuilder AddServiceDiscovery<TRegistrar, TResolver>(

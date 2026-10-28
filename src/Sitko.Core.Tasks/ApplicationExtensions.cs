@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
@@ -9,7 +8,6 @@ using Sitko.Core.Tasks.Data.Entities;
 
 namespace Sitko.Core.Tasks;
 
-[PublicAPI]
 public static class ApplicationExtensions
 {
     public static IHostApplicationBuilder AddTasks<TBaseTask, TDbContext>(

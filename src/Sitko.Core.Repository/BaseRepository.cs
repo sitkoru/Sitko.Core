@@ -1,6 +1,5 @@
 using System.Linq.Expressions;
 using FluentValidation.Results;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Sitko.Core.App.Json;
 using Sitko.FluentValidation.Graph;
@@ -29,11 +28,11 @@ public abstract class BaseRepository<TEntity, TEntityPk, TQuery> : IRepository<T
         Logger = repositoryContext.Logger;
     }
 
-    [PublicAPI] protected FluentGraphValidator FluentGraphValidator { get; set; }
+    protected FluentGraphValidator FluentGraphValidator { get; set; }
 
-    [PublicAPI] protected RepositoryFiltersManager FiltersManager { get; }
+    protected RepositoryFiltersManager FiltersManager { get; }
 
-    [PublicAPI] protected List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers { get; }
+    protected List<IAccessChecker<TEntity, TEntityPk>> AccessCheckers { get; }
 
     protected ILogger<IRepository<TEntity, TEntityPk>> Logger { get; }
 
