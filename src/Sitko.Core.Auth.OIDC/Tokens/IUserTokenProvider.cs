@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 
-namespace Sitko.Core.Auth.IdentityServer.Tokens;
+namespace Sitko.Core.Auth.OIDC.Tokens;
 
 public interface IUserTokenProvider
 {

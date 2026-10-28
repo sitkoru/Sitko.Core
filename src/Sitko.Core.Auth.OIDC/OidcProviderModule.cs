@@ -4,17 +4,17 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Sitko.Core.App;
 using Sitko.Core.App.Health;
-using Sitko.Core.Auth.IdentityServer.Tokens;
+using Sitko.Core.Auth.OIDC.Tokens;
 
-namespace Sitko.Core.Auth.IdentityServer;
+namespace Sitko.Core.Auth.OIDC;
 
-internal static class IdentityServerModuleChecks
+internal static class OidcProviderModuleChecks
 {
     internal static readonly ConcurrentDictionary<string, bool> Checks = new();
 }
 
-public abstract class IdentityServerModule<TAuthOptions> : AuthModule<TAuthOptions>
-    where TAuthOptions : IdentityServerAuthOptions, new()
+public abstract class OidcProviderModule<TAuthOptions> : AuthModule<TAuthOptions>
+    where TAuthOptions : OidcProviderAuthOptions, new()
 {
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TAuthOptions startupOptions)
@@ -25,7 +25,7 @@ public abstract class IdentityServerModule<TAuthOptions> : AuthModule<TAuthOptio
         {
             if (Uri.TryCreate(startupOptions.OidcServerUrl, UriKind.Absolute, out var oidcUri))
             {
-                if (IdentityServerModuleChecks.Checks.TryAdd(oidcUri.ToString(), true))
+                if (OidcProviderModuleChecks.Checks.TryAdd(oidcUri.ToString(), true))
                 {
                     services.AddHealthChecks().AddOpenIdConnectServer(oidcUri, name: $"IdSrv: {oidcUri}",
                         failureStatus: HealthStatus.Unhealthy,

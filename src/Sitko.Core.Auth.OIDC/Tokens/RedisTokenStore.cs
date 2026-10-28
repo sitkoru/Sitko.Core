@@ -1,25 +1,25 @@
 using System.Security.Claims;
-using System.Text.Json;
+using Duende.AccessTokenManagement;
 using Duende.AccessTokenManagement.OpenIdConnect;
-using IdentityModel;
+using Duende.IdentityModel;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using StackExchange.Redis;
 
-namespace Sitko.Core.Auth.IdentityServer.Tokens;
+namespace Sitko.Core.Auth.OIDC.Tokens;
 
 internal class RedisTokenStore : IUserTokenStore
 {
     private readonly IApplicationContext applicationContext;
     private readonly IDataProtector dataProtector;
-    private readonly IOptions<OidcIdentityServerModuleOptions> options;
+    private readonly IOptions<OidcAuthModuleOptions> options;
     private readonly IDatabase redis;
 
     public RedisTokenStore(IDataProtectionProvider dataProtectionProvider, IApplicationContext applicationContext,
-        IOptions<OidcIdentityServerModuleOptions> options,
-        [FromKeyedServices(typeof(OidcIdentityServerModuleOptions))] IDatabase redis)
+        IOptions<OidcAuthModuleOptions> options,
+        [FromKeyedServices(typeof(OidcAuthModuleOptions))] IDatabase redis)
     {
         this.applicationContext = applicationContext;
         this.options = options;
@@ -27,7 +27,7 @@ internal class RedisTokenStore : IUserTokenStore
         dataProtector = dataProtectionProvider.CreateProtector(nameof(RedisTokenStore));
     }
 
-    public Task<UserToken> GetTokenAsync(ClaimsPrincipal user, UserTokenRequestParameters? parameters = null)
+    public Task<TokenResult<TokenForParameters>> GetTokenAsync(ClaimsPrincipal user, UserTokenRequestParameters? parameters = null, CancellationToken ct = default)
     {
         var userTokenKey = GetUserTokenKey(user);
 
@@ -36,29 +36,23 @@ internal class RedisTokenStore : IUserTokenStore
         {
             var protectedJson = redisValue.ToString();
             var json = dataProtector.Unprotect(protectedJson);
-            var token = JsonSerializer.Deserialize<UserToken>(json);
-            if (token is null)
-            {
-                return Task.FromResult(new UserToken { Error = "bad token" });
-            }
-
-            return Task.FromResult(token);
+            return Task.FromResult(StoredUserToken.Deserialize(json, options.Value.OidcClientId!));
         }
 
-        return Task.FromResult(new UserToken { Error = "not found" });
+        return Task.FromResult<TokenResult<TokenForParameters>>(TokenResult.Failure("not found"));
     }
 
-    public Task StoreTokenAsync(ClaimsPrincipal user, UserToken token, UserTokenRequestParameters? parameters = null)
+    public Task StoreTokenAsync(ClaimsPrincipal user, UserToken token, UserTokenRequestParameters? parameters = null, CancellationToken ct = default)
     {
         var userTokenKey = GetUserTokenKey(user);
-        var json = JsonSerializer.Serialize(token);
+        var json = StoredUserToken.Serialize(token);
         var protectedJson = dataProtector.Protect(json);
         redis.StringSet(userTokenKey, protectedJson);
 
         return Task.CompletedTask;
     }
 
-    public Task ClearTokenAsync(ClaimsPrincipal user, UserTokenRequestParameters? parameters = null)
+    public Task ClearTokenAsync(ClaimsPrincipal user, UserTokenRequestParameters? parameters = null, CancellationToken ct = default)
     {
         var userTokenKey = GetUserTokenKey(user);
 

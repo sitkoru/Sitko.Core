@@ -1,4 +1,4 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
@@ -89,7 +89,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Grpc.Server.Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Repository.Tests", "tests\Sitko.Core.Repository.Tests\Sitko.Core.Repository.Tests.csproj", "{922B20FF-9328-43D1-A15A-B3C13E8417D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Auth.IdentityServer", "src\Sitko.Core.Auth.IdentityServer\Sitko.Core.Auth.IdentityServer.csproj", "{DDA51F9A-94B9-4EF6-924A-CF947F3F769D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Auth.OIDC", "src\Sitko.Core.Auth.OIDC\Sitko.Core.Auth.OIDC.csproj", "{DDA51F9A-94B9-4EF6-924A-CF947F3F769D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sitko.Core.Pdf", "src\Sitko.Core.Pdf\Sitko.Core.Pdf.csproj", "{653A9281-3F2E-4790-8857-EA7CDD7060AA}"
 EndProject
