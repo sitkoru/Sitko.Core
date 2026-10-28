@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.Repository.EntityFrameworkCore.Tests.Data;
 using Sitko.Core.Repository.Tests.Data;

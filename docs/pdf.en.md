@@ -79,7 +79,7 @@ Implementation: [interface](../src/Sitko.Core.Pdf/IPdfRenderer.cs), [renderer](.
 The `tests/Sitko.Core.Pdf.Tests` suite uses a real browser and a controlled HTTP server for HTML, CSS, and an image. After installing Chromium, run:
 
 ```sh
-dotnet test tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj --framework net10.0
+dotnet test --project tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj --framework net10.0
 ```
 
 Set `PDF_TEST_BROWSER_WS_ENDPOINT` to repeat the suite with a remote browser. `PDF_TEST_HTTP_HOST` selects the fixture server address reachable from the browser, for example `host.docker.internal` for a browser in Docker and tests on macOS. The default is `127.0.0.1`. `PDF_TEST_BROWSER_EXECUTABLE_PATH` selects an explicit local executable. These variables belong to the test fixture; application configuration uses the `PdfRenderer` section.

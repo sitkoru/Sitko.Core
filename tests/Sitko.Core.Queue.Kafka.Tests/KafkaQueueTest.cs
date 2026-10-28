@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using Sitko.Core.Queue.Kafka.Tests.Data;
 using Xunit;
 
@@ -14,7 +14,8 @@ public class KafkaQueueTest(ITestOutputHelper testOutputHelper) : BaseKafkaQueue
         EventRegistrator.IsRegistered(testEvent.Id).Should().BeFalse();
         var kafkaFlowProducer = scope.GetService<IEventProducer>();
         kafkaFlowProducer.Produce("test", testEvent);
-        await Task.Delay(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
+        await EventRegistrator.WaitUntilAsync(() => EventRegistrator.IsRegistered(testEvent.Id),
+            TestContext.Current.CancellationToken);
         EventRegistrator.IsRegistered(testEvent.Id).Should().BeTrue();
     }
 
@@ -31,7 +32,9 @@ public class KafkaQueueTest(ITestOutputHelper testOutputHelper) : BaseKafkaQueue
             producer.Produce($"test{testEvent.Id}", testEvent);
         }
 
-        await Task.Delay(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+        await EventRegistrator.WaitUntilAsync(
+            static () => EventRegistrator.BatchesMessagesCount == 100 && EventRegistrator.BatchesCount == 10,
+            TestContext.Current.CancellationToken);
         EventRegistrator.BatchesMessagesCount.Should().Be(100);
         EventRegistrator.BatchesCount.Should().Be(10);
     }

@@ -1,18 +1,18 @@
 using FluentValidation;
 
-namespace Sitko.Core.Auth.IdentityServer;
+namespace Sitko.Core.Auth.OIDC;
 
-public abstract class IdentityServerAuthOptions : AuthOptions
+public abstract class OidcProviderAuthOptions : AuthOptions
 {
     public string OidcServerUrl { get; set; } = "https://localhost";
     public bool RequireHttps { get; set; }
     public bool EnableHealthChecks { get; set; } = true;
 }
 
-public class IdentityServerAuthOptionsValidator<TOptions> : AuthOptionsValidator<TOptions>
-    where TOptions : IdentityServerAuthOptions
+public class OidcProviderAuthOptionsValidator<TOptions> : AuthOptionsValidator<TOptions>
+    where TOptions : OidcProviderAuthOptions
 {
-    public IdentityServerAuthOptionsValidator() =>
+    public OidcProviderAuthOptionsValidator() =>
         RuleFor(o => o.OidcServerUrl).NotEmpty().WithMessage("Oidc server url can't be empty");
 }
 

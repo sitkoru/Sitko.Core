@@ -11,7 +11,7 @@
 | Область | Общие настройки | Локальные настройки |
 | --- | --- | --- |
 | `src` | `net10.0`, `LangVersion=14.0`, nullable, implicit usings, предупреждения | Упаковка, метаданные пакетов, SourceLink, лицензия и иконка |
-| `tests` | Те же платформа и язык, nullable, implicit usings, предупреждения | `IsPackable=false`, ссылка на `Sitko.Core.Xunit`, `GitHubActionsTestLogger` |
+| `tests` | Те же платформа и язык, nullable, implicit usings, предупреждения | `IsPackable=false`, ссылка на `Sitko.Core.Xunit`; раннер и отчёты только у исполняемых тестов |
 | `apps` | Nullable, implicit usings, предупреждения | Один TFM `net10.0` и настройки конкретного приложения |
 | `perf` | Без общих переопределений свойств | Один TFM `net10.0`, `OutputType=Exe`, `IsPackable=false`, `DisableAppCheck=true` |
 
@@ -48,3 +48,5 @@
 Справка: [MSBuild](https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-by-directory),
 [NuGet CPM](https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management).
 Контракт: [спецификация](../../specs/20261028-080000-build-configuration/spec.md).
+
+[Запуск тестов и переход потребителей оснастки](testing.md).

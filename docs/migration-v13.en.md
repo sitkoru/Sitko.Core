@@ -11,8 +11,7 @@ these package references, namespaces and their former configuration.
 
 Microsoft packages and the .NET integrations (Npgsql, Razor, MudBlazor, gRPC,
 validation, logging and OpenTelemetry) use current compatible stable versions.
-AntDesign remains at `0.20.4`; the Duende upgrade belongs to the separate OIDC
-migration. The existing `OpenTelemetry.Instrumentation.GrpcNetClient` prerelease
+AntDesign remains at `0.20.4`; the OIDC module uses Duende `4.3.0`. The existing `OpenTelemetry.Instrumentation.GrpcNetClient` prerelease
 is retained because that package has no stable release.
 
 Sitko.Core 13 packages contain only `net10.0` assemblies. Applications targeting
@@ -125,8 +124,8 @@ are outside the removed set. The `apps/Blazor` demo retains forms, validation,
 navigation and file uploads without `Repository.Remote*`; see the
 [Blazor guide](en/blazor-demo.md) for startup and verification.
 
-Renaming `Auth.IdentityServer` to `Auth.OIDC` is a separate version 13 task.
-This guide does not claim that the new package name is available before delivery.
+`Auth.IdentityServer` is replaced by `Auth.OIDC`. See the [OIDC/JWT guide](en/oidc-authentication.md)
+for registration/configuration changes, Keycloak client-role admission and Google migration.
 
 ## Application verification
 
@@ -138,3 +137,7 @@ This guide does not claim that the new package name is available before delivery
 
 The Sitko.Core change does not migrate applications or environments.
 Library-set contract: [specification](../specs/20261027-233345-legacy-modules/spec.md).
+
+## Test infrastructure
+
+Test projects use xUnit4.0.2, MTP2.5.1 and AwesomeAssertions9.6.0. See [test infrastructure migration](en/testing.md#migrating-test-infrastructure-consumers) for runner references, SDK configuration, namespaces and commands.

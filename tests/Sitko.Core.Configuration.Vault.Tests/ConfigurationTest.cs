@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using Microsoft.Extensions.Options;
 using Xunit;
 

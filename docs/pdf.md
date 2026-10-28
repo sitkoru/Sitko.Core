@@ -79,7 +79,7 @@ pwsh bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 Тесты `tests/Sitko.Core.Pdf.Tests` вызывают настоящий браузер и поднимают контролируемый HTTP-сервер для HTML, CSS и изображения. После установки Chromium выполните:
 
 ```sh
-dotnet test tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj --framework net10.0
+dotnet test --project tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj --framework net10.0
 ```
 
 Для повтора через удалённый браузер задайте `PDF_TEST_BROWSER_WS_ENDPOINT`. Переменная `PDF_TEST_HTTP_HOST` задаёт адрес тестового сервера, доступный браузеру: например, `host.docker.internal` для браузера в Docker и тестов на macOS. По умолчанию используется `127.0.0.1`. Для явного локального исполняемого файла предназначена `PDF_TEST_BROWSER_EXECUTABLE_PATH`. Эти переменные относятся к тестовой оснастке, а конфигурация приложения использует секцию `PdfRenderer`.

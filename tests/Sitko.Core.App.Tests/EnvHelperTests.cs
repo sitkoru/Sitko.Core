@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App.Helpers;
 using Sitko.Core.Xunit;
