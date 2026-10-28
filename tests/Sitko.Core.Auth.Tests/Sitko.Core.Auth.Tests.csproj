@@ -5,5 +5,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.TestHost" />
     <ProjectReference Include="../../src/Sitko.Core.Auth.OIDC/Sitko.Core.Auth.OIDC.csproj" />
+    <ProjectReference Include="../../src/Sitko.Core.Identity/Sitko.Core.Identity.csproj" />
+    <ProjectReference Include="../../src/Sitko.Core.Db.InMemory/Sitko.Core.Db.InMemory.csproj" />
   </ItemGroup>
 </Project>
