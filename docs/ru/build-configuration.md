@@ -10,8 +10,8 @@
 
 | Область | Общие настройки | Локальные настройки |
 | --- | --- | --- |
-| `src` | `net8.0;net10.0`, `LangVersion=latest`, nullable, implicit usings, предупреждения | Упаковка, метаданные пакетов, SourceLink, лицензия и иконка |
-| `tests` | Те же TFM и язык, nullable, implicit usings, предупреждения | `IsPackable=false`, ссылка на `Sitko.Core.Xunit`, `GitHubActionsTestLogger` |
+| `src` | `net10.0`, `LangVersion=14.0`, nullable, implicit usings, предупреждения | Упаковка, метаданные пакетов, SourceLink, лицензия и иконка |
+| `tests` | Те же платформа и язык, nullable, implicit usings, предупреждения | `IsPackable=false`, ссылка на `Sitko.Core.Xunit`, `GitHubActionsTestLogger` |
 | `apps` | Nullable, implicit usings, предупреждения | Один TFM `net10.0` и настройки конкретного приложения |
 | `perf` | Без общих переопределений свойств | Один TFM `net10.0`, `OutputType=Exe`, `IsPackable=false`, `DisableAppCheck=true` |
 
@@ -21,10 +21,14 @@
 `PackageVersion` не подключает пакет и не переносит тестовые зависимости в библиотеки.
 Метаданные `PrivateAssets` и `IncludeAssets` остаются у соответствующей ссылки.
 
-Версии Microsoft-пакетов и EF Core выбираются по `TargetFramework`.
-PostgreSQL-тест использует общую версию `Microsoft.EntityFrameworkCore.Design`:
-`9.0.6` для `net8.0`, `10.0.8` для `net10.0`, без `VersionOverride`.
-При добавлении целевой платформы нужно согласованно задать её версии в таблице.
+Все проекты используют единственную платформу `net10.0`. Стабильный SDK задаётся
+в [global.json](../../global.json): `10.0.403`, `rollForward=latestFeature`,
+`allowPrerelease=false`. Этот выбор допускает более новый стабильный набор
+компонентов SDK 10.0, но не переключает сборку на SDK 11.
+
+Пакеты Microsoft используют актуальные совместимые стабильные версии; разные
+семейства не обязаны иметь одинаковый номер. `Microsoft.EntityFrameworkCore.Design`
+для PostgreSQL-теста получает общую версию без `VersionOverride`.
 
 Ссылки упаковки на лицензию и иконку привязаны к `MSBuildThisFileDirectory`.
 Пути protobuf, ресурсов и копируемых файлов остаются в проектах.

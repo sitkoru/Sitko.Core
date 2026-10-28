@@ -24,8 +24,6 @@ jobs:
     container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v7
-      - name: Run Sitko.Core.App.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.App.Tests/Sitko.Core.App.Tests.csproj
       - name: Run Sitko.Core.App.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.App.Tests/Sitko.Core.App.Tests.csproj
 
@@ -47,8 +45,6 @@ jobs:
         run: |
           npm ci
           npm run prod
-      - name: Run Sitko.Core.App.Blazor.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.App.Blazor.Tests/Sitko.Core.App.Blazor.Tests.csproj
       - name: Run Sitko.Core.App.Blazor.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.App.Blazor.Tests/Sitko.Core.App.Blazor.Tests.csproj
 
@@ -62,8 +58,6 @@ jobs:
         image: hashicorp/consul
     steps:
       - uses: actions/checkout@v7
-      - name: Run Sitko.Core.Grpc.Client.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Grpc.Client.Tests/Sitko.Core.Grpc.Client.Tests.csproj
       - name: Run Sitko.Core.Grpc.Client.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Grpc.Client.Tests/Sitko.Core.Grpc.Client.Tests.csproj
 
@@ -72,8 +66,6 @@ jobs:
     container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v7
-      - name: Run Sitko.Core.ImgProxy.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.ImgProxy.Tests/Sitko.Core.ImgProxy.Tests.csproj
       - name: Run Sitko.Core.ImgProxy.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.ImgProxy.Tests/Sitko.Core.ImgProxy.Tests.csproj
 
@@ -102,12 +94,6 @@ jobs:
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Configure HTTP fixture address for CDP
         run: echo "PDF_TEST_HTTP_HOST=$(hostname -i | awk '{print $1}')" >> "$GITHUB_ENV"
-      - name: Запустить Sitko.Core.Pdf.Tests через CDP net8.0
-        run: >-
-          dotnet test tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
-          --logger GitHubActions --logger "trx;LogFileName=pdf.trx"
-          --results-directory TestResults/pdf-cdp-net8.0
-          --framework net8.0
       - name: Запустить Sitko.Core.Pdf.Tests через CDP net10.0
         run: >-
           dotnet test tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
@@ -119,15 +105,6 @@ jobs:
           tests/Sitko.Core.Pdf.Tests/bin/Debug/net10.0/.playwright/node/linux-x64/node
           tests/Sitko.Core.Pdf.Tests/bin/Debug/net10.0/.playwright/package/cli.js
           install --with-deps chromium
-      - name: Запустить Sitko.Core.Pdf.Tests локально net8.0
-        env:
-          PDF_TEST_BROWSER_WS_ENDPOINT: ''
-          PDF_TEST_HTTP_HOST: 127.0.0.1
-        run: >-
-          dotnet test tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj
-          --no-build --logger GitHubActions --logger "trx;LogFileName=pdf.trx"
-          --results-directory TestResults/pdf-local-net8.0
-          --framework net8.0
       - name: Запустить Sitko.Core.Pdf.Tests локально net10.0
         env:
           PDF_TEST_BROWSER_WS_ENDPOINT: ''
@@ -167,13 +144,13 @@ jobs:
       - uses: actions/checkout@v7
       - name: Подготовить рабочий каталог Git
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: Проверить Redis и Valkey на net8.0 и net10.0
+      - name: Проверить Redis и Valkey на net10.0
         shell: bash
         env:
           JOB_CONTAINER_ID: ${{ job.container.id }}
         run: |
           set -euo pipefail
-          for framework in net8.0 net10.0; do
+          for framework in net10.0; do
             # Тесты меняют роли узлов, поэтому каждая платформа получает новый стенд.
             docker run -d --name "$REDIS_FIXTURE_PREFIX-sentinel" \
               --network "container:$JOB_CONTAINER_ID" --volumes-from "$JOB_CONTAINER_ID:ro" \
@@ -242,16 +219,10 @@ jobs:
         image: nats-streaming:latest
     steps:
       - uses: actions/checkout@v7
-      - name: Run Sitko.Core.Queue.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
       - name: Run Sitko.Core.Queue.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
-      - name: Run Sitko.Core.Queue.Nats.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj
       - name: Run Sitko.Core.Queue.Nats.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj
-      - name: Run Sitko.Core.Queue.InMemory.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj
       - name: Run Sitko.Core.Queue.InMemory.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj
 
@@ -270,8 +241,6 @@ jobs:
           POSTGRES_HOST_AUTH_METHOD: trust
     steps:
       - uses: actions/checkout@v7
-      - name: Run Sitko.Core.Repository.EntityFrameworkCore.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Repository.EntityFrameworkCore.Tests/Sitko.Core.Repository.EntityFrameworkCore.Tests.csproj
       - name: Run Sitko.Core.Repository.EntityFrameworkCore.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Repository.EntityFrameworkCore.Tests/Sitko.Core.Repository.EntityFrameworkCore.Tests.csproj
 
@@ -297,8 +266,6 @@ jobs:
           --health-retries=10
     steps:
       - uses: actions/checkout@v7
-      - name: Run Sitko.Core.Search.OpenSearch.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Search.OpenSearch.Tests/Sitko.Core.Search.OpenSearch.Tests.csproj
       - name: Run Sitko.Core.Search.OpenSearch.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Search.OpenSearch.Tests/Sitko.Core.Search.OpenSearch.Tests.csproj
 
@@ -324,20 +291,12 @@ jobs:
           POSTGRES_HOST_AUTH_METHOD: trust
     steps:
       - uses: actions/checkout@v7
-      - name: Run Sitko.Core.Storage.FileSystem.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
       - name: Run Sitko.Core.Storage.FileSystem.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Storage.FileSystem.Tests/Sitko.Core.Storage.FileSystem.Tests.csproj
-      - name: Run Sitko.Core.Storage.S3.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
       - name: Run Sitko.Core.Storage.S3.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Storage.S3.Tests/Sitko.Core.Storage.S3.Tests.csproj
-      - name: Run Sitko.Core.Storage.Remote.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Storage.Remote.Tests/Sitko.Core.Storage.Remote.Tests.csproj
       - name: Run Sitko.Core.Storage.Remote.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Storage.Remote.Tests/Sitko.Core.Storage.Remote.Tests.csproj
-      - name: Run Sitko.Core.Storage.Metadata.Postgres.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Storage.Metadata.Postgres.Tests/Sitko.Core.Storage.Metadata.Postgres.Tests.csproj
       - name: Run Sitko.Core.Storage.Metadata.Postgres.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Storage.Metadata.Postgres.Tests/Sitko.Core.Storage.Metadata.Postgres.Tests.csproj
 
@@ -359,8 +318,6 @@ jobs:
         options: --cap-add=IPC_LOCK
     steps:
       - uses: actions/checkout@v7
-      - name: Run Sitko.Core.Configuration.Vault.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Configuration.Vault.Tests/Sitko.Core.Configuration.Vault.Tests.csproj
       - name: Run Sitko.Core.Configuration.Vault.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Configuration.Vault.Tests/Sitko.Core.Configuration.Vault.Tests.csproj
 
@@ -369,8 +326,6 @@ jobs:
     container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v7
-      - name: Run Sitko.Core.Queue.Kafka.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj
       - name: Run Sitko.Core.Queue.Kafka.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj
 
@@ -379,12 +334,8 @@ jobs:
     container: ghcr.io/sitkoru/actions-container
     steps:
       - uses: actions/checkout@v7
-      - name: Run Sitko.Core.ClickHouse.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.ClickHouse.Tests/Sitko.Core.ClickHouse.Tests.csproj
       - name: Run Sitko.Core.ClickHouse.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.ClickHouse.Tests/Sitko.Core.ClickHouse.Tests.csproj
-      - name: Run Sitko.Core.ClickHouse.Linq2db.Tests net8.0
-        run: dotnet test --logger GitHubActions --framework net8.0 tests/Sitko.Core.ClickHouse.Linq2db.Tests/Sitko.Core.ClickHouse.Linq2db.Tests.csproj
       - name: Run Sitko.Core.ClickHouse.Linq2db.Tests net10.0
         run: dotnet test --logger GitHubActions --framework net10.0 tests/Sitko.Core.ClickHouse.Linq2db.Tests/Sitko.Core.ClickHouse.Linq2db.Tests.csproj
 
