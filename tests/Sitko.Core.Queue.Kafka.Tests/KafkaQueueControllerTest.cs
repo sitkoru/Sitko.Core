@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using Sitko.Core.Queue.Kafka.Tests.Data;
 using Xunit;
 

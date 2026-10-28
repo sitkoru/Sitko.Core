@@ -179,7 +179,7 @@ RESP3 по умолчанию. Параметры обнаружения опи�
 
 ```sh
 docker compose -p sitko-sentinel-tests -f tests/Sitko.Core.Auth.Tests/Valkey/compose.yml up -d --wait --force-recreate
-dotnet test tests/Sitko.Core.Auth.Tests/Sitko.Core.Auth.Tests.csproj --framework net10.0 --logger "trx;LogFileName=sentinel.trx" --results-directory TestResults/sentinel-net10.0
+dotnet test --project tests/Sitko.Core.Auth.Tests/Sitko.Core.Auth.Tests.csproj --framework net10.0 --report-trx --report-trx-filename sentinel.trx --results-directory TestResults/sentinel-net10.0
 ```
 
 Каждый запуск требует свежего стенда: тест переключения отключает
