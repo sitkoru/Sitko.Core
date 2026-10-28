@@ -3,12 +3,11 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="StackExchange.Redis" Version="3.2.0" />
+    <PackageVersion Include="StackExchange.Redis" Version="3.4.20" />
     <PackageVersion Include="Cronos" Version="0.13.0" />
     <PackageVersion Include="DistributedLock" Version="2.7.1" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.2.0" />
     <PackageVersion Include="IL.FluentValidation.Extensions.Options" Version="11.0.2" />
-    <PackageVersion Include="JetBrains.Annotations" Version="2024.3.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="PeanutButter.DuckTyping" Version="3.0.384" />
     <PackageVersion Include="Tempus" Version="1.0.0" />
@@ -62,10 +61,12 @@
   <!--Tests libraries-->
   <ItemGroup>
     <PackageVersion Include="AutoBogus" Version="2.13.1" />
-    <PackageVersion Include="FluentAssertions" Version="8.4.0" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
-    <PackageVersion Include="xunit.v3" Version="3.2.2" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+    <PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
+    <PackageVersion Include="xunit.v3.mtp-v2" Version="4.0.2" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="4.0.2" />
+    <PackageVersion Include="xunit.v3.assert" Version="4.0.2" />
+    <PackageVersion Include="Microsoft.Testing.Platform.MSBuild" Version="2.5.1" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="2.5.1" />
   </ItemGroup>
   <!--Hangfire libraries-->
   <ItemGroup>
@@ -100,7 +101,7 @@
   </ItemGroup>
   <!--OpenSearch libraries-->
   <ItemGroup>
-    <PackageVersion Include="OpenSearch.Client" Version="1.8.0" />
+    <PackageVersion Include="OpenSearch.Client" Version="2.2.0" />
   </ItemGroup>
   <!--Serilog libraries-->
   <ItemGroup>
@@ -153,7 +154,7 @@
   <ItemGroup>
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.2" />
     <PackageVersion Include="FluentValidation" Version="12.2.0" />
-    <PackageVersion Include="GitHubActionsTestLogger" Version="2.3.3" />
+    <PackageVersion Include="GitHubActionsTestLogger" Version="3.0.5" />
     <PackageVersion Include="Testcontainers.ClickHouse" Version="4.6.0" />
     <PackageVersion Include="Testcontainers.Kafka" Version="4.6.0" />
     <PackageVersion Include="itext7" Version="9.2.0" />

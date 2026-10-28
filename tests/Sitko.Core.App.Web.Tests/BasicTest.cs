@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using Razor.Templating.Core;
 using Sitko.Core.Xunit;
 using Xunit;

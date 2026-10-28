@@ -3,14 +3,12 @@ using Grpc.Core;
 using Grpc.Core.Interceptors;
 using Grpc.Net.Client;
 using Grpc.Net.Client.Configuration;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Client;
 
-[PublicAPI]
 public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient : ClientBase<TClient>
 {
     private const string AuthorizationHeader = "Authorization";

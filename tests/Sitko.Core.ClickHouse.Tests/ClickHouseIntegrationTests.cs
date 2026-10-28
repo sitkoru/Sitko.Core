@@ -2,7 +2,7 @@ using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using DotNet.Testcontainers.Builders;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Testcontainers.ClickHouse;

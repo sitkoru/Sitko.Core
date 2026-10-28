@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Sitko.Core.Xunit;
 using Xunit;
 
@@ -38,7 +37,6 @@ public class MultipleStorageTests : BaseTest<MultipleStorageTestsScope>
     }
 }
 
-[UsedImplicitly]
 public class MultipleStorageTestsScope : BaseFileSystemStorageTestScope
 {
     protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name) =>

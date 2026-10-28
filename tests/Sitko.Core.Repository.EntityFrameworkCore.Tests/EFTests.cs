@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.Repository.EntityFrameworkCore.Tests.Data;
 using Sitko.Core.Repository.Tests;
@@ -41,8 +41,7 @@ public class EFTests : BasicRepositoryTests<EFTestScope>
         Assert.NotNull(item);
         Assert.NotNull(item.Bars);
         Assert.NotEmpty(item.Bars);
-        Assert.Single(item.Bars);
-        var bar = item.Bars.First();
+        var bar = Assert.Single(item.Bars);
         Assert.Equal(item.Id, bar.TestId);
         Assert.NotEmpty(bar.Foos);
         var foo = bar.Foos.First();

@@ -1,12 +1,10 @@
 using System.Text.Json.Serialization;
 using Grpc.AspNetCore.Server;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Hosting;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Server;
 
-[PublicAPI]
 public class GrpcServerModuleOptions : BaseModuleOptions
 {
     private readonly Dictionary<string, Action<IGrpcServerModule>> serviceRegistrations = new();

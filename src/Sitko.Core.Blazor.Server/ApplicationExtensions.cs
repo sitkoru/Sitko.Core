@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
@@ -7,7 +6,6 @@ using Sitko.Core.App.Web;
 
 namespace Sitko.Core.Blazor.Server;
 
-[PublicAPI]
 public static class ApplicationExtensions
 {
     public static ISitkoCoreBlazorServerApplicationBuilder AddSitkoCoreBlazorServer(

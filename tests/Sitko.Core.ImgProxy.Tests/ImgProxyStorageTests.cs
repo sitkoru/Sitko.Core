@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using Sitko.Core.Storage;
 using Sitko.Core.Storage.ImgProxy;
 using Sitko.Core.Xunit;

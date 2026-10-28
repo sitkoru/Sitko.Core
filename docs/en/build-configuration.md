@@ -11,7 +11,7 @@ the nearest file.
 | Area | Common settings | Local settings |
 | --- | --- | --- |
 | `src` | `net10.0`, `LangVersion=14.0`, nullable, implicit usings, warnings | Packaging, package metadata, SourceLink, license and icon |
-| `tests` | The same target framework and language, nullable, implicit usings, warnings | `IsPackable=false`, reference to `Sitko.Core.Xunit`, `GitHubActionsTestLogger` |
+| `tests` | The same target framework and language, nullable, implicit usings, warnings | `IsPackable=false`, reference to `Sitko.Core.Xunit`; runner and reports only for executable tests |
 | `apps` | Nullable, implicit usings, warnings | Single TFM `net10.0` and application settings |
 | `perf` | No common property overrides | Single TFM `net10.0`, `OutputType=Exe`, `IsPackable=false`, `DisableAppCheck=true` |
 
@@ -40,3 +40,5 @@ scope of settings, including `apps` and `perf`.
 References: [MSBuild](https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-by-directory),
 [NuGet CPM](https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management).
 Contract: [specification](../../specs/20261028-080000-build-configuration/spec.md).
+
+[Running tests and migrating infrastructure consumers](testing.md).
