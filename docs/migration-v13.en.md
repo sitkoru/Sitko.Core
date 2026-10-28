@@ -42,6 +42,18 @@ This is the same API already exposed by the .NET 10 package variant. The platfor
 transition does not itself require database schema changes; review application
 model changes and EF Core migrations separately.
 
+## AntDesign assets
+
+`Sitko.Core.Blazor.AntDesign` retains its components, their API, and the
+`AntDesign 0.20.4` dependency. Version 13 does not ship
+`_content/Sitko.Core.Blazor.AntDesign/fileupload.js` or its additional upload-list
+styles.
+
+If your application explicitly loads this script, remove that reference.
+The components use the base AntDesign styles. If your application needs the
+previous additional rules for card sizes, file names, or action buttons,
+maintain those styles in the application and verify its upload forms.
+
 ## Redis client
 
 `Sitko.Core.Redis` uses `StackExchange.Redis 3.4.20`. Align direct application

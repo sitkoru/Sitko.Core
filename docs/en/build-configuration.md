@@ -37,6 +37,14 @@ Validate shared changes by evaluating all affected projects, building the soluti
 and packing without publishing. Check package metadata, package contents, and the
 scope of settings, including `apps` and `perf`.
 
+## AntDesign build
+
+`Sitko.Core.Blazor.AntDesign` builds and packs using standard .NET SDK commands.
+The module requires no Node.js setup or npm commands. Its components use styles
+from `AntDesign 0.20.4`; the package contains no additional Sitko.Core frontend
+assets for these components.
+See the [migration guide](../migration-v13.en.md) for application changes.
+
 References: [MSBuild](https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-by-directory),
 [NuGet CPM](https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management).
 Contract: [specification](../../specs/20261028-080000-build-configuration/spec.md).

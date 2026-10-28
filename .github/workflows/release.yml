@@ -19,19 +19,6 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
-      - name: Install node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: |
-            src/Sitko.Core.Blazor.AntDesign/Web/package.json
-      - name: Build Sitko.Core.Blazor.AntDesign js
-        working-directory: src/Sitko.Core.Blazor.AntDesign/Web
-        shell: bash
-        run: |
-          npm ci
-          npm run prod
       - name: Build
         run: dotnet build -c Release /p:Version=${{ steps.prep.outputs.version }}
       - name: Create packages
