@@ -198,6 +198,10 @@ namespace Sitko.Core.Auth.Tests
                 {
                     lastError = exception;
                 }
+                catch (RedisTimeoutException exception)
+                {
+                    lastError = exception;
+                }
                 catch (RedisCommandException exception) when (
                     exception.Message.StartsWith("Command cannot be issued to a replica:", StringComparison.Ordinal))
                 {
