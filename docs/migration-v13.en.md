@@ -42,6 +42,17 @@ This is the same API already exposed by the .NET 10 package variant. The platfor
 transition does not itself require database schema changes; review application
 model changes and EF Core migrations separately.
 
+## Development tool annotations
+
+Sitko.Core packages do not reference `JetBrains.Annotations` or use its
+`PublicAPI` and `UsedImplicitly` attributes. If an application received this
+package transitively and uses its attributes, add a direct
+`JetBrains.Annotations` reference or remove the unused application annotations.
+
+This change to development tool hints does not alter module registration or
+runtime operations. Nullable analysis attributes from
+`System.Diagnostics.CodeAnalysis` are retained.
+
 ## Removed modules and required changes
 
 All module names in this table have the `Sitko.Core.` prefix.

@@ -1,9 +1,7 @@
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Sitko.Core.Repository.EntityFrameworkCore;
 
-[PublicAPI]
 public static class RepositoryQueryExtensions
 {
     public static async Task<(T[] items, int itemsCount)> GetAllAsync<T>(this EFRepositoryQuery<T> query)

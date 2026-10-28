@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -7,7 +6,6 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.ClickHouse;
 
-[PublicAPI]
 public static class ApplicationExtensions
 {
     public static IHostApplicationBuilder AddClickHouse(

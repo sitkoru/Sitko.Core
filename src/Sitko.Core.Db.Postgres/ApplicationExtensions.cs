@@ -1,11 +1,9 @@
-﻿using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 
 namespace Sitko.Core.Db.Postgres;
 
-[PublicAPI]
 public static class ApplicationExtensions
 {
     public static IHostApplicationBuilder AddPostgresDatabase<TDbContext>(

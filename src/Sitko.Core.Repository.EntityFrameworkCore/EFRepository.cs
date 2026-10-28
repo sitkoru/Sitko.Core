@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Linq.Expressions;
 using System.Reflection;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -389,7 +388,6 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
         return entity;
     }
 
-    [PublicAPI]
     protected async Task<T> ExecuteDbContextOperationAsync<T>(Func<TDbContext, Task<T>> operation,
         CancellationToken cancellationToken = default)
     {
@@ -962,7 +960,6 @@ public abstract class EFRepository<TEntity, TEntityPk, TDbContext> :
             return Task.FromResult(entry.State == EntityState.Deleted);
         }, cancellationToken);
 
-    [PublicAPI]
     protected IQueryable<TEntity> GetBaseQuery() => dbContext.Set<TEntity>().AsQueryable();
 
     protected virtual IQueryable<TEntity> AddIncludes(IQueryable<TEntity> query) => query;
