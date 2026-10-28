@@ -171,3 +171,21 @@ Client identity uses the full protobuf name, such as `accounting.v1.Invoice`,
 rather than a short C# name. Move contract settings to full names. Registration,
 TLS configuration and provider settings are covered in the
 [gRPC/SD guide](en/grpc-service-discovery.md).
+
+### Separate MYCG.Core migration
+
+MYCG.Core is migrated in a separate task. A single `AddMycgGrpc()` should use
+`ConfigureGrpcClients` to select `MYCG.Core.App.GrpcTokenProvider`, shared logging
+settings and the application's certificate policy. Register the provider's
+dependencies through regular DI with appropriate lifetimes. The method should
+not implicitly enable a server or Consul.
+
+Business clients and services can then use ordinary Sitko.Core registrations.
+Replace static/SD selection wrappers, `GrpcClientsAddresses` and the static
+`IsGrpcConfigured` flag with contract configuration and application-owned server
+module state. Remove implicit SD registration from `AddMinimal`/`AddWeb`, and
+replace forced reflection in the server wrapper with explicit application configuration.
+
+Incoming JWT/OIDC authorization, domain protobuf types, converters and MYCG user
+context remain separate concerns. This Sitko.Core change does not modify MYCG.Core
+or validate an external identity provider.
