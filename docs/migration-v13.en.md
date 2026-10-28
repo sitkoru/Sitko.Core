@@ -42,6 +42,14 @@ This is the same API already exposed by the .NET 10 package variant. The platfor
 transition does not itself require database schema changes; review application
 model changes and EF Core migrations separately.
 
+## Redis client
+
+`Sitko.Core.Redis` uses `StackExchange.Redis 3.4.20`. Align direct application
+references to this client with the Sitko.Core dependencies. Sitko.Core connection
+settings and the selection of direct, Sentinel or Cluster connections are retained.
+Before updating a deployment, verify the connection mode in use, recovery after
+a primary change, and access to tokens and Data Protection keys.
+
 ## Development tool annotations
 
 Sitko.Core packages do not reference `JetBrains.Annotations` or use its
