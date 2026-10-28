@@ -174,6 +174,9 @@ namespace Sitko.Core.Grpc.Client.Tests
 
     public static class ReportsClientRegistration
     {
+        public static ISitkoCoreApplicationBuilder AddReportsClientModule(this ISitkoCoreApplicationBuilder builder) =>
+            builder.AddModule<ReportsClientModule>().AddGrpcClient<Reports.Invoice.InvoiceClient>();
+
         public static ISitkoCoreApplicationBuilder AddReportsClientModule(this ISitkoCoreApplicationBuilder builder,
             X509Certificate2 certificate) =>
             builder.AddModule<ReportsClientModule>()

@@ -156,4 +156,23 @@ TLS remains part of the gRPC transport. DNS selects an address and port; certifi
 
 `AddTokenAuth<TProvider>()` registers an `IGrpcTokenProvider`. The provider returns the entire `Authorization` header value, including its scheme, such as `Bearer …`, and is called for an RPC. Sending credentials over an insecure connection is not enabled automatically. Incoming server authorization is configured separately.
 
+A shared policy also applies to clients registered before it:
+
+```csharp
+app.ConfigureGrpcClients(options => options.AddTokenAuth<ApplicationTokenProvider>());
+app.AddGrpcClient<Invoice.InvoiceClient>();
+app.AddGrpcClient<Reports.ReportsClient>(options => options.AddTokenAuth<ReportsTokenProvider>());
+```
+
+The providers in this example implement `IGrpcTokenProvider`. An individual provider
+replaces the shared provider. To select its lifetime, register the concrete provider
+type in DI first, for example `services.AddScoped<ApplicationTokenProvider>()`;
+`AddTokenAuth` preserves that registration. Otherwise, it uses transient lifetime.
+The provider is resolved from the client's DI scope for every RPC, so a token change
+does not require a new client or channel. An explicit
+`IGrpcTokenProviderFactory<TClient>` takes priority over the shared provider.
+
+`ConfigureGrpcClients` also supports shared `AddMetadataProvider`, `AddInterceptor`,
+`ConfigureHttpHandler` and `ConfigureChannelOptions` settings.
+
 Implementation entry points: [gRPC client](../../src/Sitko.Core.Grpc.Client/GrpcClientModule.cs), [server](../../src/Sitko.Core.Grpc.Server/GrpcServerModule.cs), [Consul provider](../../src/Sitko.Core.ServiceDiscovery.Consul/ConsulServiceDiscoveryModule.cs). The migration contract is recorded in the [specification](../../specs/20261027-193928-service-discovery/spec.md).

@@ -155,4 +155,23 @@ TLS остаётся частью gRPC-транспорта. DNS выбирае�
 
 `AddTokenAuth<TProvider>()` подключает поставщик `IGrpcTokenProvider`. Поставщик возвращает значение заголовка `Authorization`, включая нужную схему, например `Bearer …`; оно запрашивается при RPC. Передача credentials по незащищённому соединению автоматически не включается. Входящая авторизация сервера настраивается отдельно.
 
+Общая политика применяется и к клиентам, зарегистрированным до неё:
+
+```csharp
+app.ConfigureGrpcClients(options => options.AddTokenAuth<ApplicationTokenProvider>());
+app.AddGrpcClient<Invoice.InvoiceClient>();
+app.AddGrpcClient<Reports.ReportsClient>(options => options.AddTokenAuth<ReportsTokenProvider>());
+```
+
+Поставщики в примере реализуют `IGrpcTokenProvider`. Индивидуальный поставщик
+заменяет общий. Для заданного времени жизни заранее зарегистрируйте конкретный
+тип поставщика в DI, например `services.AddScoped<ApplicationTokenProvider>()`;
+`AddTokenAuth` сохраняет эту регистрацию. Без неё используется transient.
+Поставщик разрешается из DI-области клиента при каждом RPC, поэтому изменение
+токена не требует нового клиента или канала. Явная
+`IGrpcTokenProviderFactory<TClient>` имеет приоритет над общим поставщиком.
+
+Через `ConfigureGrpcClients` также доступны общие `AddMetadataProvider`,
+`AddInterceptor`, `ConfigureHttpHandler` и `ConfigureChannelOptions`.
+
 Основные точки реализации: [gRPC-клиент](../../src/Sitko.Core.Grpc.Client/GrpcClientModule.cs), [сервер](../../src/Sitko.Core.Grpc.Server/GrpcServerModule.cs), [провайдер Consul](../../src/Sitko.Core.ServiceDiscovery.Consul/ConsulServiceDiscoveryModule.cs). Требования перехода собраны в [спецификации](../../specs/20261027-193928-service-discovery/spec.md).
