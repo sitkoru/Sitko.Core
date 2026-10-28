@@ -22,9 +22,10 @@ dotnet test --project tests/Sitko.Core.App.Tests/Sitko.Core.App.Tests.csproj --f
 Для диагностического журнала используйте `--diagnostic --diagnostic-output-directory TestResults/diagnostics`.
 Сбор покрытия не настроен.
 
-`Email.Tests` и `Storage.Tests` содержат общие абстрактные проверки для наследников.
-Они собираются как библиотеки и отдельно не запускаются. Остальные проекты тестов
-являются приложениями MTP.
+`Email.Tests` содержит общие абстрактные проверки для SMTP-наследника и собственные
+исполняемые проверки доставки через `DevEmailModule`. `Storage.Tests` содержит общие
+абстрактные проверки, собирается как библиотека и отдельно не запускается.
+Исполняемые проекты тестов являются приложениями MTP.
 
 `Tasks.Kafka.Tests` проверяет жизненный цикл задач через Kafka и PostgreSQL. Его
 [фикстура](../../tests/Sitko.Core.Tasks.Kafka.Tests/KafkaFixture.cs) создаёт собственные

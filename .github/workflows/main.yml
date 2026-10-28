@@ -42,6 +42,13 @@ jobs:
           --report-trx --report-trx-filename Sitko.Core.App.Web.Tests-net10.0.trx
           --results-directory TestResults/apps/Sitko.Core.App.Web.Tests/net10.0
           --diagnostic --diagnostic-output-directory TestResults/apps/Sitko.Core.App.Web.Tests/net10.0/diagnostics
+      - name: Run Sitko.Core.Email.Tests net10.0
+        run: >-
+          dotnet test --project tests/Sitko.Core.Email.Tests/Sitko.Core.Email.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 2
+          --report-trx --report-trx-filename Sitko.Core.Email.Tests-net10.0.trx
+          --results-directory TestResults/apps/Sitko.Core.Email.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/apps/Sitko.Core.Email.Tests/net10.0/diagnostics
       - name: Save test results and diagnostics
         if: always()
         uses: actions/upload-artifact@v7
