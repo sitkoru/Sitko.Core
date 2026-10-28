@@ -115,19 +115,15 @@ public class EFTests : BasicRepositoryTests<EFTestScope>
         Assert.NotNull(item);
         var oldValue = item.FooText;
         var newText = Guid.NewGuid().ToString();
-        oldValue.Should().NotBe(newText);
+        _ = oldValue.Should().NotBe(newText);
 
         var efRepository = repository as IEFRepository<FooModel>;
         efRepository.Should().NotBeNull();
         var updated = await efRepository!.UpdateAllAsync(model => model.Id == item.Id,
-#if NET10_0_OR_GREATER
             calls => { calls.SetProperty(model => model.FooText, newText); });
-#else
-            calls => calls.SetProperty(model => model.FooText, newText));
-#endif
-        updated.Should().Be(1);
+        _ = updated.Should().Be(1);
         item = await repository.RefreshAsync(item);
-        item.FooText.Should().Be(newText);
+        _ = item.FooText.Should().Be(newText);
     }
 
     [Fact]
@@ -139,21 +135,17 @@ public class EFTests : BasicRepositoryTests<EFTestScope>
         var newText = Guid.NewGuid().ToString();
         Assert.NotNull(repository);
         var items = await repository.GetAllAsync();
-        items.items.Should().NotBeEmpty();
-        items.items.Should().AllSatisfy(model => model.FooText.Should().NotBe(newText));
+        _ = items.items.Should().NotBeEmpty();
+        _ = items.items.Should().AllSatisfy(model => model.FooText.Should().NotBe(newText));
 
         var efRepository = repository as IEFRepository<FooModel>;
         efRepository.Should().NotBeNull();
         var updated = await efRepository!.UpdateAllAsync(
-#if NET10_0_OR_GREATER
             calls => { calls.SetProperty(model => model.FooText, newText); });
-#else
-            calls => calls.SetProperty(model => model.FooText, newText));
-#endif
-        updated.Should().Be(items.items.Length);
+        _ = updated.Should().Be(items.items.Length);
         items = await scope.CreateScope().ServiceProvider.GetRequiredService<IRepository<FooModel, Guid>>()
             .GetAllAsync();
-        items.items.Should().AllSatisfy(model => model.FooText.Should().Be(newText));
+        _ = items.items.Should().AllSatisfy(model => model.FooText.Should().Be(newText));
     }
 
     [Fact]
@@ -164,51 +156,23 @@ public class EFTests : BasicRepositoryTests<EFTestScope>
         var repository = scope.GetService<IRepository<FooModel, Guid>>();
         Assert.NotNull(repository);
         var items = await repository.GetAllAsync();
-        items.items.Should().NotBeEmpty();
-        items.items.Should().AllSatisfy(model => model.FooText.Should().NotBeNull());
+        _ = items.items.Should().NotBeEmpty();
+        _ = items.items.Should().AllSatisfy(model => model.FooText.Should().NotBeNull());
         var originalValues = items.items.ToDictionary(model => model.Id, model => model.FooText!);
 
         var efRepository = repository as IEFRepository<FooModel>;
         efRepository.Should().NotBeNull();
         const string suffix = "_updated";
         var updated = await efRepository!.UpdateAllAsync(
-#if NET10_0_OR_GREATER
             calls =>
             {
                 calls.SetProperty(model => model.FooText, model => model.FooText + suffix);
             });
-#else
-            calls => calls.SetProperty(model => model.FooText, model => model.FooText + suffix));
-#endif
 
-        updated.Should().Be(items.items.Length);
+        _ = updated.Should().Be(items.items.Length);
         items = await scope.CreateScope().ServiceProvider.GetRequiredService<IRepository<FooModel, Guid>>()
             .GetAllAsync();
-        items.items.Should().AllSatisfy(model => model.FooText.Should().Be(originalValues[model.Id] + suffix));
+        _ = items.items.Should().AllSatisfy(model => model.FooText.Should().Be(originalValues[model.Id] + suffix));
     }
 
-#if NET8_0
-    [Fact]
-    public async Task UpdateAllLegacyExpressionOverload()
-    {
-        var scope = await GetScopeAsync();
-
-        var repository = scope.GetService<IRepository<FooModel, Guid>>();
-        repository.Should().NotBeNull();
-        var item = await repository!.GetAsync();
-        item.Should().NotBeNull();
-
-        var efRepository = repository as IEFRepository<FooModel>;
-        efRepository.Should().NotBeNull();
-
-        var newText = Guid.NewGuid().ToString();
-        var updated = await efRepository!.UpdateAllAsync(model => model.Id == item!.Id,
-            calls => calls.SetProperty(model => model.FooText, newText)
-                .SetProperty(model => model.BarId, model => model.BarId));
-
-        updated.Should().Be(1);
-        item = await repository.RefreshAsync(item);
-        item.FooText.Should().Be(newText);
-    }
-#endif
 }

@@ -10,8 +10,8 @@ the nearest file.
 
 | Area | Common settings | Local settings |
 | --- | --- | --- |
-| `src` | `net8.0;net10.0`, `LangVersion=latest`, nullable, implicit usings, warnings | Packaging, package metadata, SourceLink, license and icon |
-| `tests` | The same TFMs and language, nullable, implicit usings, warnings | `IsPackable=false`, reference to `Sitko.Core.Xunit`, `GitHubActionsTestLogger` |
+| `src` | `net10.0`, `LangVersion=14.0`, nullable, implicit usings, warnings | Packaging, package metadata, SourceLink, license and icon |
+| `tests` | The same target framework and language, nullable, implicit usings, warnings | `IsPackable=false`, reference to `Sitko.Core.Xunit`, `GitHubActionsTestLogger` |
 | `apps` | Nullable, implicit usings, warnings | Single TFM `net10.0` and application settings |
 | `perf` | No common property overrides | Single TFM `net10.0`, `OutputType=Exe`, `IsPackable=false`, `DisableAppCheck=true` |
 
@@ -21,10 +21,14 @@ Projects use `PackageReference` without `Version`. A `PackageVersion` declaratio
 does not add a reference or introduce test dependencies into libraries.
 `PrivateAssets` and `IncludeAssets` remain on the corresponding reference.
 
-Microsoft and EF Core package versions depend on `TargetFramework`.
-The PostgreSQL test uses the shared `Microsoft.EntityFrameworkCore.Design` version:
-`9.0.6` for `net8.0` and `10.0.8` for `net10.0`, without `VersionOverride`.
-Adding a target framework requires matching entries in the version table.
+All projects target only `net10.0`. The stable SDK is selected by
+[global.json](../../global.json): `10.0.403`, `rollForward=latestFeature`,
+`allowPrerelease=false`. This permits newer stable SDK 10.0 feature bands,
+but does not switch the build to SDK 11.
+
+Microsoft packages use current compatible stable versions; different package
+families need not share the same version number. The PostgreSQL test obtains
+its shared `Microsoft.EntityFrameworkCore.Design` version without `VersionOverride`.
 
 Packaging paths for the license and icon are anchored to `MSBuildThisFileDirectory`.
 Protobuf, resource, and copied-file paths remain in their projects.

@@ -79,7 +79,6 @@ Implementation: [interface](../src/Sitko.Core.Pdf/IPdfRenderer.cs), [renderer](.
 The `tests/Sitko.Core.Pdf.Tests` suite uses a real browser and a controlled HTTP server for HTML, CSS, and an image. After installing Chromium, run:
 
 ```sh
-dotnet test tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj --framework net8.0
 dotnet test tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj --framework net10.0
 ```
 

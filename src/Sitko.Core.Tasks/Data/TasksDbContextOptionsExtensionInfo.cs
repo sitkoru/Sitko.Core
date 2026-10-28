@@ -9,15 +9,9 @@ internal class TasksDbContextOptionsExtensionInfo<TBaseTask> : DbContextOptionsE
     {
     }
 
-#if NET6_0_OR_GREATER
     public override int GetServiceProviderHashCode() => Extension.GetHashCode();
-#else
-    public override long GetServiceProviderHashCode() => Extension.GetHashCode();
-#endif
 
-#if NET6_0_OR_GREATER
     public override bool ShouldUseSameServiceProvider(DbContextOptionsExtensionInfo other) => true;
-#endif
     public override void PopulateDebugInfo(IDictionary<string, string> debugInfo)
     {
     }

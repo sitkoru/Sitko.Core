@@ -79,7 +79,6 @@ pwsh bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 Тесты `tests/Sitko.Core.Pdf.Tests` вызывают настоящий браузер и поднимают контролируемый HTTP-сервер для HTML, CSS и изображения. После установки Chromium выполните:
 
 ```sh
-dotnet test tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj --framework net8.0
 dotnet test tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj --framework net10.0
 ```
 

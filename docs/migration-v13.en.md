@@ -1,4 +1,4 @@
-# Migrating to Sitko.Core 13: removed modules
+# Migrating to Sitko.Core 13
 
 [Русский](migration-v13.md)
 
@@ -6,6 +6,41 @@ Version 13 contains a breaking reduction of the library set. The packages below
 are not released as part of 13; their types and registration methods are
 unavailable. Check direct and transitive application dependencies and remove
 these package references, namespaces and their former configuration.
+
+## .NET 10 platform
+
+Microsoft packages and the .NET integrations (Npgsql, Razor, MudBlazor, gRPC,
+validation, logging and OpenTelemetry) use current compatible stable versions.
+AntDesign remains at `0.20.4`; the Duende upgrade belongs to the separate OIDC
+migration. The existing `OpenTelemetry.Instrumentation.GrpcNetClient` prerelease
+is retained because that package has no stable release.
+
+Sitko.Core 13 packages contain only `net10.0` assemblies. Applications targeting
+.NET 8 must move to .NET 10 before upgrading these packages. Repository builds
+use the stable SDK selected in [global.json](../global.json); consumers need a
+compatible .NET 10 SDK. Install the current .NET 10 runtime and ASP.NET Core 10
+for web applications, and update application build environments and base container
+images. .NET 11 support is outside this release.
+
+Align direct Microsoft/ASP.NET Core/EF Core references with package 13 dependencies;
+do not pin transitive dependencies to older versions. Microsoft package families
+may have different version numbers. See [build configuration](en/build-configuration.md).
+
+When migrating from the .NET 8 package variant, `IEFRepository<TEntity>.UpdateAllAsync`
+uses `Action<UpdateSettersBuilder<TEntity>>`. Replace chained `SetProperty` calls
+with individual calls in a block:
+
+```csharp
+await repository.UpdateAllAsync(item => item.IsActive, setters =>
+{
+    setters.SetProperty(item => item.Title, "Updated");
+    setters.SetProperty(item => item.Count, item => item.Count + 1);
+});
+```
+
+This is the same API already exposed by the .NET 10 package variant. The platform
+transition does not itself require database schema changes; review application
+model changes and EF Core migrations separately.
 
 ## Removed modules and required changes
 

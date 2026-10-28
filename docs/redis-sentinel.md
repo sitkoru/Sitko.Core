@@ -164,9 +164,8 @@ RESP3 по умолчанию. Параметры обнаружения опи�
 
 ## Локальная проверка
 
-Нужны Docker с Docker Compose, .NET SDK, выбранный `global.json` (10.0.201
-с допустимым переходом на более новый набор компонентов SDK), и среда выполнения
-.NET 8 для запуска тестов `net8.0`. Команды выполняются из корня репозитория.
+Нужны Docker с Docker Compose, стабильный SDK .NET 10, выбранный `global.json`,
+и среда выполнения .NET 10. Команды выполняются из корня репозитория.
 Порты `16379–16381`, `17379–17384` и `26379–26381` на `127.0.0.1` должны быть свободны.
 
 Стенд `tests/Sitko.Core.Auth.Tests/Valkey/compose.yml` запускает два контейнера:
@@ -180,13 +179,10 @@ RESP3 по умолчанию. Параметры обнаружения опи�
 
 ```sh
 docker compose -p sitko-sentinel-tests -f tests/Sitko.Core.Auth.Tests/Valkey/compose.yml up -d --wait --force-recreate
-dotnet test tests/Sitko.Core.Auth.Tests/Sitko.Core.Auth.Tests.csproj --framework net8.0 --logger "trx;LogFileName=sentinel.trx" --results-directory TestResults/sentinel-net8.0
-
-docker compose -p sitko-sentinel-tests -f tests/Sitko.Core.Auth.Tests/Valkey/compose.yml up -d --wait --force-recreate
 dotnet test tests/Sitko.Core.Auth.Tests/Sitko.Core.Auth.Tests.csproj --framework net10.0 --logger "trx;LogFileName=sentinel.trx" --results-directory TestResults/sentinel-net10.0
 ```
 
-Каждая целевая платформа требует свежего стенда: тест переключения отключает
+Каждый запуск требует свежего стенда: тест переключения отключает
 исходный основной узел Sentinel, а тест Cluster переключает основной узел
 на реплику. Перед повторным запуском также пересоздайте контейнеры.
 Тесты обязательны и завершаются ошибкой при недоступном стенде.
@@ -217,7 +213,7 @@ docker compose -p sitko-sentinel-tests -f tests/Sitko.Core.Auth.Tests/Valkey/com
 ```
 
 В CI задание `redis` в `.github/workflows/main.yml` последовательно выполняет
-тесты для `net8.0` и `net10.0` в общем образе `actions-container`. Каждая платформа
+тесты для `net10.0` в общем образе `actions-container`. Каждый запуск
 получает новые контейнеры Valkey и Sentinel. Они используют сетевое пространство
 контейнера задания, чтобы объявленные адреса `127.0.0.1` были доступны тестам.
 Задание сохраняет TRX в артефакт `redis-test-results` и всегда запрашивает журналы
