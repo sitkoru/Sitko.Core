@@ -164,13 +164,14 @@ public abstract class BaseQueue<TConfig> : IQueue where TConfig : QueueModuleOpt
             return false;
         }
 
+        var allSucceeded = true;
         foreach (var subscription in queueSubscriptions)
         {
             if (subscription is QueueSubscription<T> payloadSubscription)
             {
                 try
                 {
-                    await payloadSubscription.ProcessAsync(message, context);
+                    allSucceeded &= await payloadSubscription.ProcessAsync(message, context);
                 }
                 catch (Exception ex)
                 {
@@ -181,7 +182,7 @@ public abstract class BaseQueue<TConfig> : IQueue where TConfig : QueueModuleOpt
             }
         }
 
-        return true;
+        return allSucceeded;
     }
 
     protected Task<bool> ProcessMessageAsync<T>(T message, QueueMessageContext context,
