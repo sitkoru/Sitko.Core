@@ -2,8 +2,8 @@
 
 [Русский](../ru/build-configuration.md)
 
-The [root Directory.Build.props](../../Directory.Build.props) scopes common settings
-to project directories. The local [src](../../src/Directory.Build.props),
+The [root Directory.Build.props](../../Directory.Build.props) defines common settings
+for all projects, including applications and benchmarks. The local [src](../../src/Directory.Build.props),
 [tests](../../tests/Directory.Build.props), and [apps](../../apps/Directory.Build.props)
 files import it first, then apply local settings. MSBuild automatically finds only
 the nearest file.
@@ -12,8 +12,8 @@ the nearest file.
 | --- | --- | --- |
 | `src` | `net10.0`, `LangVersion=14.0`, nullable, implicit usings, warnings | Packaging, package metadata, SourceLink, license and icon |
 | `tests` | The same target framework and language, nullable, implicit usings, warnings | `IsPackable=false`, reference to `Sitko.Core.Xunit`; runner and reports only for executable tests |
-| `apps` | Nullable, implicit usings, warnings | Single TFM `net10.0` and application settings |
-| `perf` | No common property overrides | Single TFM `net10.0`, `OutputType=Exe`, `IsPackable=false`, `DisableAppCheck=true` |
+| `apps` | The same target framework and language, nullable, implicit usings, warnings | Application settings |
+| `perf` | The same target framework and language, nullable, implicit usings, warnings | `OutputType=Exe`, `IsPackable=false`, `DisableAppCheck=true` |
 
 All direct package dependency versions are declared in the
 [root Directory.Packages.props](../../Directory.Packages.props).

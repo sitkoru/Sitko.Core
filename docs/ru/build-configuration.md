@@ -2,8 +2,9 @@
 
 [English](../en/build-configuration.md)
 
-[Корневой Directory.Build.props](../../Directory.Build.props) содержит общие
-настройки с явной областью действия по каталогам. Локальные файлы
+[Корневой Directory.Build.props](../../Directory.Build.props) задаёт общие
+настройки для всех проектов, включая приложения и измерения производительности.
+Локальные файлы
 [src](../../src/Directory.Build.props), [tests](../../tests/Directory.Build.props)
 и [apps](../../apps/Directory.Build.props) сначала импортируют корневой файл,
 затем добавляют свои настройки. MSBuild автоматически находит только ближайший файл.
@@ -12,8 +13,8 @@
 | --- | --- | --- |
 | `src` | `net10.0`, `LangVersion=14.0`, nullable, implicit usings, предупреждения | Упаковка, метаданные пакетов, SourceLink, лицензия и иконка |
 | `tests` | Те же платформа и язык, nullable, implicit usings, предупреждения | `IsPackable=false`, ссылка на `Sitko.Core.Xunit`; раннер и отчёты только у исполняемых тестов |
-| `apps` | Nullable, implicit usings, предупреждения | Один TFM `net10.0` и настройки конкретного приложения |
-| `perf` | Без общих переопределений свойств | Один TFM `net10.0`, `OutputType=Exe`, `IsPackable=false`, `DisableAppCheck=true` |
+| `apps` | Те же платформа и язык, nullable, implicit usings, предупреждения | Настройки конкретного приложения |
+| `perf` | Те же платформа и язык, nullable, implicit usings, предупреждения | `OutputType=Exe`, `IsPackable=false`, `DisableAppCheck=true` |
 
 Версии всех прямых пакетных зависимостей задаются в
 [корневом Directory.Packages.props](../../Directory.Packages.props).
