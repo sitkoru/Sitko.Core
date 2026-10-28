@@ -6,8 +6,8 @@
 
 The only solution file is [Sitko.Core.slnx](../../Sitko.Core.slnx).
 It includes libraries, tests, examples, and the benchmark project.
-Debug/Release configurations support Any CPU, x64, and x86; all three solution
-platforms map to the Any CPU project platform.
+The solution uses the default Debug/Release configurations and Any CPU platform.
+Explicit x64/x86 solution configurations are not defined.
 
 Build and pack commands from the root automatically select the only solution:
 `dotnet build -c Release` and `dotnet pack -c Release --no-build`.
