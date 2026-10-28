@@ -1,0 +1,6 @@
+syntax = "proto3";
+package reports.v1;
+option csharp_namespace = "Sitko.Core.Grpc.Client.Tests.Reports";
+service Invoice { rpc Get (Request) returns (Reply); }
+message Request {}
+message Reply { string value = 1; }

@@ -11,6 +11,8 @@ namespace Sitko.Core.Grpc.Client;
 
 public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient : ClientBase<TClient>
 {
+    public Uri? Address { get; set; }
+
     private const string AuthorizationHeader = "Authorization";
     private readonly List<Action<IServiceCollection>> configureServicesActions = new();
     private readonly Dictionary<Type, Action<IServiceCollection, IHttpClientBuilder>> interceptorActions = new();

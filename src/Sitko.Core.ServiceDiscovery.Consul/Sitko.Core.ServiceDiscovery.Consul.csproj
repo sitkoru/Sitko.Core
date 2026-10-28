@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Sitko.Core.ServiceDiscovery/Sitko.Core.ServiceDiscovery.csproj"/>
+    <ProjectReference Include="../Sitko.Core.App.Web/Sitko.Core.App.Web.csproj"/>
+    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery.Dns"/>
+    <PackageReference Include="Consul"/>
+  </ItemGroup>
+</Project>

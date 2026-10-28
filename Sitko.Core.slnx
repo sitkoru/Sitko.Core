@@ -74,6 +74,7 @@
     <Project Path="src/Sitko.Core.Repository/Sitko.Core.Repository.csproj" />
     <Project Path="src/Sitko.Core.Search.OpenSearch/Sitko.Core.Search.OpenSearch.csproj" />
     <Project Path="src/Sitko.Core.Search/Sitko.Core.Search.csproj" />
+    <Project Path="src/Sitko.Core.ServiceDiscovery.Consul/Sitko.Core.ServiceDiscovery.Consul.csproj" />
     <Project Path="src/Sitko.Core.ServiceDiscovery.Resolver.Consul/Sitko.Core.ServiceDiscovery.Resolver.Consul.csproj" />
     <Project Path="src/Sitko.Core.ServiceDiscovery.Server.Consul/Sitko.Core.ServiceDiscovery.Server.Consul.csproj" />
     <Project Path="src/Sitko.Core.ServiceDiscovery.Server/Sitko.Core.ServiceDiscovery.Server.csproj" />

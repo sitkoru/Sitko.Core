@@ -55,3 +55,7 @@ See [demo app](apps/Blazor/Sitko.Core.Apps.Blazor) for now
 ## Запуск тестов / Running tests
 
 [Русский](docs/ru/testing.md) · [English](docs/en/testing.md)
+
+## gRPC и обнаружение сервисов / gRPC and service discovery
+
+[Русский](docs/ru/grpc-service-discovery.md) · [English](docs/en/grpc-service-discovery.md)

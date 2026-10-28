@@ -19,6 +19,8 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
     where TGrpcClientModuleOptions : GrpcClientModuleOptions<TClient>, new()
 {
     protected virtual bool NeedSocketHandler => false;
+    protected virtual bool UseNativeLoadBalancing => true;
+    protected virtual void ConfigureHttpClient(IHttpClientBuilder builder) { }
     public override string[] OptionKeys => ["Grpc:Client:Default", OptionsKey];
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
@@ -32,7 +34,7 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
         }
 
         services.TryAddSingleton(TimeProvider.System);
-        var builder = services.AddGrpcClient<TClient>((provider, options) =>
+        var builder = services.AddGrpcClient<TClient>(GrpcServicesHelper.GetServiceNameForClient<TClient>(), (provider, options) =>
         {
             options.Address = GenerateAddress(startupOptions);
             options.CallOptionsActions.Add(context =>
@@ -45,6 +47,7 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
                 }
             });
         });
+        ConfigureHttpClient(builder);
         services.AddTransient<IGrpcClientProvider<TClient>, GrpcClientProvider<TClient>>();
         startupOptions.ConfigureClient(services, builder);
         builder.ConfigurePrimaryHttpMessageHandler(provider =>
@@ -61,7 +64,7 @@ public abstract class GrpcClientModule<TClient, TGrpcClientModuleOptions> :
             options.ServiceConfig = new ServiceConfig();
 
             var loadBalancingConfig = startupOptions.GetLoadBalancingConfig();
-            if (loadBalancingConfig is not null && NeedSocketHandler)
+            if (loadBalancingConfig is not null && NeedSocketHandler && UseNativeLoadBalancing)
             {
                 options.ServiceConfig.LoadBalancingConfigs.Add(loadBalancingConfig);
             }

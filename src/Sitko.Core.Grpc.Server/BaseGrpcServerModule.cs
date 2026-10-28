@@ -34,7 +34,7 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
         });
 
     public override IEnumerable<Type> GetRequiredModules(IApplicationContext applicationContext, TConfig options) =>
-        options.EnableServiceDiscovery ? [typeof(IServiceDiscoveryModule)] : [];
+        [];
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         TConfig startupOptions)
@@ -51,7 +51,7 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
             services.AddGrpcReflection();
         }
 
-        foreach (var (name, registrationAction) in startupOptions.ServiceRegistrations)
+        foreach (var (name, registrationAction) in GetServiceRegistrations(startupOptions))
         {
             registrationAction(this);
             if (startupOptions.EnableServiceDiscovery)
@@ -61,6 +61,9 @@ public abstract class BaseGrpcServerModule<TConfig> : BaseApplicationModule<TCon
             }
         }
     }
+
+    protected virtual IReadOnlyDictionary<string, Action<IGrpcServerModule>> GetServiceRegistrations(TConfig options) =>
+        options.ServiceRegistrations;
 
     public void ConfigureWebHost(IApplicationContext applicationContext, ConfigureWebHostBuilder webHostBuilder,
         TConfig options) =>
