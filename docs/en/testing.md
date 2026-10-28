@@ -23,8 +23,10 @@ projects in [tests/Directory.Build.props](../../tests/Directory.Build.props).
 For diagnostics use `--diagnostic --diagnostic-output-directory TestResults/diagnostics`.
 Code coverage collection is not configured.
 
-`Email.Tests` and `Storage.Tests` provide abstract tests inherited by concrete suites.
-They are libraries and are not executed separately. Other test projects are MTP applications.
+`Email.Tests` provides abstract tests inherited by the SMTP suite and executable
+delivery tests using `DevEmailModule`. `Storage.Tests` provides abstract tests,
+is built as a library, and is not executed separately. Executable test projects
+are MTP applications.
 
 `Tasks.Kafka.Tests` verifies task lifecycle scenarios with Kafka and PostgreSQL. Its
 [fixture](../../tests/Sitko.Core.Tasks.Kafka.Tests/KafkaFixture.cs) starts and disposes its

@@ -5,8 +5,7 @@
     <IsTestProject>true</IsTestProject>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Sitko.Core.Email.Tests'
-      Or '$(MSBuildProjectName)' == 'Sitko.Core.Storage.Tests'">
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Sitko.Core.Storage.Tests'">
     <IsTestProject>false</IsTestProject>
     <OutputType>Library</OutputType>
   </PropertyGroup>
