@@ -60,6 +60,8 @@ The client uses the same `Application:Environment` and `ServiceDiscovery:Consul`
 
 Each contract of an application instance has its own Consul registration. Multiple contracts can share a TLS port. The exact environment/full-contract pair determines a common DNS label; the original values remain in metadata. Registration and TTL use the same configured agent. Consul DNS must exclude instances whose checks are critical.
 
+Before application startup completes, discovery validates the actual positive port, HTTP/2 and advertised address. `ExternalAddress` cannot be a wildcard (`0.0.0.0`, `::`, `*`, `+`); errors name the contract. One background loop performs network registration after startup. Graceful shutdown removes only this instance’s registrations. After a crash, the record remains until Consul deletes it, but TTL expiry excludes it from healthy DNS responses. The existing client receives updated endpoints for subsequent RPCs; in-flight calls are not transferred.
+
 `DnsServers` configures DNS addresses and ports independently of the agent's HTTP `Address`. The library does not change system DNS settings. Consul outages may cause RPC failures; retaining the last known endpoints is not guaranteed.
 
 ## Direct addresses and disabling discovery

@@ -1,3 +1,4 @@
+using System.Net;
 using Consul;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Hosting;
@@ -15,8 +16,24 @@ namespace Sitko.Core.ServiceDiscovery.Consul
         IOptions<AppWebConfigurationModuleOptions> web,
         IOptions<ConsulServiceDiscoveryOptions> options,
         IConsulClient consul,
-        ILogger<ConsulRegistrationService> logger) : BackgroundService
+        ILogger<ConsulRegistrationService> logger) : BackgroundService, IHostedLifecycleService
     {
+        private AgentServiceRegistration[] registrations = [];
+
+        public Task StartingAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+        public Task StartedAsync(CancellationToken cancellationToken)
+        {
+            if (services.Value.Services.Count > 0)
+            {
+                registrations = CreateRegistrations();
+            }
+            return Task.CompletedTask;
+        }
+
+        public Task StoppingAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task StoppedAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             if (services.Value.Services.Count == 0)
@@ -26,7 +43,6 @@ namespace Sitko.Core.ServiceDiscovery.Consul
             var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             using var registration = lifetime.ApplicationStarted.Register(() => started.TrySetResult());
             await started.Task.WaitAsync(stoppingToken);
-            var registrations = CreateRegistrations();
             var registered = false;
             try
             {
@@ -82,10 +98,19 @@ namespace Sitko.Core.ServiceDiscovery.Consul
                     throw new InvalidOperationException($"Contract {service.Name} requires one named TLS HTTP/2 port");
                 }
                 var (name, port) = ports[0];
-                var actualPort = listeners[name].IPEndPoint?.Port ?? 0;
-                if (actualPort <= 0 || string.IsNullOrWhiteSpace(port.ExternalAddress))
+                if (!listeners.TryGetValue(name, out var listener) ||
+                    !listener.Protocols.HasFlag(HttpProtocols.Http2))
                 {
-                    throw new InvalidOperationException($"Contract {service.Name} requires a bound port and ExternalAddress");
+                    throw new InvalidOperationException($"Contract {service.Name} requires its named TLS HTTP/2 listener {name}");
+                }
+                var actualPort = listener.IPEndPoint?.Port ?? 0;
+                var wildcard = port.ExternalAddress is "*" or "+" ||
+                    (IPAddress.TryParse(port.ExternalAddress, out var address) &&
+                    (address.Equals(IPAddress.Any) || address.Equals(IPAddress.IPv6Any) ||
+                     (address.IsIPv4MappedToIPv6 && address.MapToIPv4().Equals(IPAddress.Any))));
+                if (actualPort <= 0 || string.IsNullOrWhiteSpace(port.ExternalAddress) || wildcard)
+                {
+                    throw new InvalidOperationException($"Contract {service.Name} requires a bound positive port and non-wildcard ExternalAddress");
                 }
                 return new AgentServiceRegistration
                 {

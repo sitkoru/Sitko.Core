@@ -103,6 +103,7 @@
     <Project Path="tests/Sitko.Core.Email.Smtp.Tests/Sitko.Core.Email.Smtp.Tests.csproj" />
     <Project Path="tests/Sitko.Core.Email.Tests/Sitko.Core.Email.Tests.csproj" />
     <Project Path="tests/Sitko.Core.Grpc.Client.Tests/Sitko.Core.Grpc.Client.Tests.csproj" />
+    <Project Path="tests/Sitko.Core.Grpc.Client.Tests.Host/Sitko.Core.Grpc.Client.Tests.Host.csproj" />
     <Project Path="tests/Sitko.Core.Grpc.Server.Tests/Sitko.Core.Grpc.Server.Tests.csproj" />
     <Project Path="tests/Sitko.Core.ImgProxy.Tests/Sitko.Core.ImgProxy.Tests.csproj" />
     <Project Path="tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj" />

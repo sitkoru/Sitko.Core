@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <ProjectReference Include="../Sitko.Core.Grpc.Client.Tests.Host/Sitko.Core.Grpc.Client.Tests.Host.csproj" />
     <ProjectReference Include="../../src/Sitko.Core.ServiceDiscovery.Consul/Sitko.Core.ServiceDiscovery.Consul.csproj"/>
     <PackageReference Include="Testcontainers"/>
     <ProjectReference Include="..\..\src\Sitko.Core.Grpc.Client\Sitko.Core.Grpc.Client.csproj"/>
