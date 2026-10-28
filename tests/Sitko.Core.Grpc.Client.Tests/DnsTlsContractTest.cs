@@ -52,6 +52,9 @@ namespace Sitko.Core.Grpc.Client.Tests
             {
                 ["Application:Environment"] = "sd-v01",
                 ["ServiceDiscovery:Consul:DnsRefreshPeriod"] = "00:00:01",
+                // Первый пустой DNS-ответ ожидает MaxRetryPeriod, а не DnsRefreshPeriod.
+                ["ServiceDiscovery:Consul:DnsMinRetryPeriod"] = "00:00:00.100",
+                ["ServiceDiscovery:Consul:DnsMaxRetryPeriod"] = "00:00:01",
                 ["ServiceDiscovery:Consul:Address"] = $"http://127.0.0.1:{consul.GetMappedPublicPort(8500)}",
                 ["ServiceDiscovery:Consul:DnsServers:0"] = $"127.0.0.1:{consul.GetMappedPublicPort("8600/udp")}"
             };
