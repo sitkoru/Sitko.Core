@@ -50,6 +50,20 @@ settings and the selection of direct, Sentinel or Cluster connections are retain
 Before updating a deployment, verify the connection mode in use, recovery after
 a primary change, and access to tokens and Data Protection keys.
 
+## OpenSearch search client
+
+`Sitko.Core.Search.OpenSearch` uses `OpenSearch.Client 2.2.0` and
+`OpenSearch.Net 2.2.0`. The [vendor compatibility matrix](https://github.com/opensearch-project/opensearch-net/blob/main/COMPATIBILITY.md) pairs client 2.x with
+OpenSearch server 3.x. If an application uses these packages' types directly or
+pins their versions, align its references with version 2.x and review the
+[client breaking changes](https://github.com/opensearch-project/opensearch-net/blob/main/UPGRADING.md).
+
+Sitko.Core module settings and public search operations are retained.
+The client uses the default Utf8Json serializer; it does not automatically switch
+to System.Text.Json. Before updating an application, verify index creation and
+reinitialization, document writes, searches and deletions against the server
+version in use. Updating the client package does not upgrade the OpenSearch server.
+
 ## Development tool annotations
 
 Sitko.Core packages do not reference `JetBrains.Annotations` or use its
