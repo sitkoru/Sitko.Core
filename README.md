@@ -47,3 +47,7 @@ See [demo app](apps/Blazor/Sitko.Core.Apps.Blazor) for now
 ## Переход на версию 13
 
 [Удалённые модули и действия потребителей](docs/migration-v13.md) · [English](docs/migration-v13.en.md).
+
+## Настройки сборки / Build configuration
+
+[Русский](docs/ru/build-configuration.md) · [English](docs/en/build-configuration.md)
