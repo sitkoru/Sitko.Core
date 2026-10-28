@@ -514,6 +514,13 @@ jobs:
           --report-trx --report-trx-filename Sitko.Core.Queue.Kafka.Tests-net10.0.trx
           --results-directory TestResults/kafka/Sitko.Core.Queue.Kafka.Tests/net10.0
           --diagnostic --diagnostic-output-directory TestResults/kafka/Sitko.Core.Queue.Kafka.Tests/net10.0/diagnostics
+      - name: Run Sitko.Core.Tasks.Kafka.Tests net10.0
+        run: >-
+          dotnet test --project tests/Sitko.Core.Tasks.Kafka.Tests/Sitko.Core.Tasks.Kafka.Tests.csproj
+          --framework net10.0 --report-github --minimum-expected-tests 3
+          --report-trx --report-trx-filename Sitko.Core.Tasks.Kafka.Tests-net10.0.trx
+          --results-directory TestResults/kafka/Sitko.Core.Tasks.Kafka.Tests/net10.0
+          --diagnostic --diagnostic-output-directory TestResults/kafka/Sitko.Core.Tasks.Kafka.Tests/net10.0/diagnostics
       - name: Save test results and diagnostics
         if: always()
         uses: actions/upload-artifact@v7

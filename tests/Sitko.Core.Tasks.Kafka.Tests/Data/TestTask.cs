@@ -1,13 +1,18 @@
-﻿using Sitko.Core.Tasks.Data.Entities;
+using Sitko.Core.Tasks.Data.Entities;
 
-namespace Sitko.Core.Tasks.Kafka.Tests.Data;
-
-public record TestTask : BaseTestTask<TestTaskConfig, TestTaskResult>;
-
-public record TestTaskResult : BaseTaskResult
+namespace Sitko.Core.Tasks.Kafka.Tests.Data
 {
-    public int Foo { get; init; }
-    public Guid Id { get; init; }
-}
+    public record TestTask : BaseTestTask<TestTaskConfig, TestTaskResult>;
 
-public record TestTaskConfig : BaseTaskConfig;
+    public record TestTaskResult : BaseTaskResult
+    {
+        public int Foo { get; init; }
+        public Guid Id { get; init; }
+    }
+
+    public record TestTaskConfig : BaseTaskConfig
+    {
+        public bool HasWarnings { get; init; }
+        public string? Error { get; init; }
+    }
+}
