@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography;
@@ -50,6 +51,7 @@ namespace Sitko.Core.Grpc.Client.Tests
             var config = new Dictionary<string, string?>
             {
                 ["Application:Environment"] = "sd-v01",
+                ["ServiceDiscovery:Consul:DnsRefreshPeriod"] = "00:00:01",
                 ["ServiceDiscovery:Consul:Address"] = $"http://127.0.0.1:{consul.GetMappedPublicPort(8500)}",
                 ["ServiceDiscovery:Consul:DnsServers:0"] = $"127.0.0.1:{consul.GetMappedPublicPort("8600/udp")}"
             };
@@ -104,10 +106,12 @@ namespace Sitko.Core.Grpc.Client.Tests
                     _ = client.Services.GetService<IServer>().Should().BeNull();
                     var accounting = client.Services.GetRequiredService<Accounting.Invoice.InvoiceClient>();
                     var reports = client.Services.GetRequiredService<Reports.Invoice.InvoiceClient>();
-                    var accountingReply = await accounting.GetAsync(new Accounting.Request(),
-                        deadline: DateTime.UtcNow.AddSeconds(30), cancellationToken: cancellationToken);
-                    var reportsReply = await reports.GetAsync(new Reports.Request(),
-                        deadline: DateTime.UtcNow.AddSeconds(30), cancellationToken: cancellationToken);
+                    var accountingReply = await WaitForEndpoint("accounting.v1.Invoice", deadline =>
+                        accounting.GetAsync(new Accounting.Request(), deadline: deadline,
+                            cancellationToken: cancellationToken).ResponseAsync, cancellationToken);
+                    var reportsReply = await WaitForEndpoint("reports.v1.Invoice", deadline =>
+                        reports.GetAsync(new Reports.Request(), deadline: deadline,
+                            cancellationToken: cancellationToken).ResponseAsync, cancellationToken);
                     _ = accountingReply.Value.Should().Be("accounting-ok");
                     _ = reportsReply.Value.Should().Be("reports-ok");
                 }
@@ -120,6 +124,36 @@ namespace Sitko.Core.Grpc.Client.Tests
             {
                 await server.StopAsync(cancellationToken);
             }
+        }
+
+        private static async Task<TReply> WaitForEndpoint<TReply>(string contract,
+            Func<DateTime, Task<TReply>> call, CancellationToken cancellationToken)
+        {
+            var elapsed = Stopwatch.StartNew();
+            var timeout = TimeSpan.FromSeconds(30);
+            RpcException? lastError = null;
+            while (elapsed.Elapsed < timeout)
+            {
+                try
+                {
+                    var reply = await call(DateTime.UtcNow.Add(timeout - elapsed.Elapsed));
+                    TestContext.Current.TestOutputHelper?.WriteLine($"{contract} ready after {elapsed.Elapsed}");
+                    return reply;
+                }
+                catch (RpcException exception) when (exception.StatusCode == StatusCode.Internal &&
+                    exception.Status.DebugException is InvalidOperationException
+                    { Message: "The endpoint collection contains no endpoints" })
+                {
+                    // Each contract is published asynchronously after the host starts; TLS and server failures still fail immediately.
+                    if (lastError is null)
+                    {
+                        TestContext.Current.TestOutputHelper?.WriteLine($"{contract}: waiting for its DNS endpoint");
+                    }
+                    lastError = exception;
+                }
+                await Task.Delay(100, cancellationToken);
+            }
+            throw new TimeoutException($"{contract} had no discovered endpoint within {timeout}", lastError);
         }
 
         internal static void ConfigureClient<TClient>(GrpcClientModuleOptions<TClient> options, X509Certificate2 certificate)
