@@ -1,6 +1,6 @@
 # Исследование: обнаружение gRPC-сервисов
 
-Дата: 2026-10-27. Базовая ревизия Sitko.Core: `fa94b44322448f85c92956f5a88c14624cc2daf1`. Это подготовительные сведения, а не свидетельство выполненной реализации.
+Первичное исследование: 2026-10-27, Sitko.Core v12 `fa94b44322448f85c92956f5a88c14624cc2daf1`. Синхронизация принятых решений: 2026-10-28. Основа реализации v13 — `5e12c6756720d29bc3fc836b6735fcc7c03739e7`, HEAD подготовки `0847a20905c99c7a730696cafeba1054e9debe8f`. Исходные ссылки v12 сохранены как основания сравнения, а не описание обновлённой платформы. Архитектура и V01–V16 согласованы; реализация и выполнение проверок не начаты.
 
 ## Штатный Microsoft HTTP + DNS SRV
 
@@ -32,7 +32,7 @@
 
 [Авторизация gRPC](https://learn.microsoft.com/en-us/aspnet/core/grpc/authn-and-authz?view=aspnetcore-10.0), [ограничения повторов](https://learn.microsoft.com/en-us/aspnet/core/grpc/retries?view=aspnetcore-10.0).
 
-Текущий grpc-dotnet — 2.80.0; версия 2.84.0 использовалась только в прежних прототипах. Прототипы не проверяли TLS/токены и ответ 256 МиБ в Sitko.Core. Обновление пакета не является самостоятельным требованием.
+На первичной основе v12 был grpc-dotnet 2.80.0. На принятой основе v13 уже используются runtime `2.84.0`, Tools `2.85.0`, Google.Protobuf `3.36.2`; откат не требуется. Исторические прототипы не доказывают TLS/токены и готовность новой реализации Sitko.Core. Проверка ответа 256 МиБ и сравнение времени/памяти удалены из приёмки по решению пользователя; V07 с 2 МиБ проверяет настройки лимитов.
 
 ## Идентичность и регистрация
 
@@ -40,7 +40,7 @@
 
 **Основание**: `GrpcServicesHelper` сейчас использует `DeclaringType.Name`, что смешивает короткие имена разных protobuf-пакетов. Старый `ServiceDiscoveryManager` публикует `приложение_порт` и собственные метаданные, а SRV-клиенту нужна регистрация самого логического контракта. Простая замена клиентского resolver оставила бы FR-002/003 невыполненными.
 
-В свежем MYCG.Core `CGApplicationExtensions.AddGrpcClient` использует прежний `GetServiceNameForClient<TClient>()` для поиска ключа в `GrpcClientsAddresses`. Изменение результата этого helper незаметно переключило бы статического клиента на SD. Поэтому его семантика сохраняется, а новая идентичность получается отдельными helper. Это минимальное сохранение публичной функции, а не поддержка старой discovery-схемы.
+В исследованном MYCG.Core `4da7e4ae58972f0d1bef7d4f2960d6c08faf0611` обёртка `CGApplicationExtensions.AddGrpcClient` использует короткое имя из `GetServiceNameForClient<TClient>()` как ключ `GrpcClientsAddresses`. Это подтверждённый источник несовместимости, а не требование сохранить словарь. Принят согласованный переход: единый Sitko.Core `AddGrpcClient`, прямые адреса в `Contracts` по полному protobuf-имени и один `AddMycgGrpc` для политики. Обёртки, словарь и статические флаги удаляются при отдельном обновлении MYCG; его код в этой задаче не меняется. Новый SD не обязан сохранять старые helper ради отвергнутой схемы.
 
 Для DNS используется общая ограниченная ASCII-форма с устойчивым хеш-суффиксом от точной пары окружение/контракт; исходные строки остаются в метаданных. Только замена разделителей и регистра недостаточна: она может смешать разные полные имена. Дополнительное хранилище соответствий не требуется.
 
@@ -66,6 +66,50 @@
 
 ## Проверки и непроверенные свойства
 
-Текущий SD-тест обращается к `localhost:8500`, использует фиксированный диапазон портов и проверяет поздний старт сервера. Требуются изолированные реальные проверки после подтверждения пользователем их границ. В репозитории уже есть Testcontainers 4.6.0 и генерация gRPC `.proto`; новая система проверки не нужна.
+Текущий SD-тест обращается к `localhost:8500`, использует фиксированный диапазон портов и проверяет поздний старт сервера. Согласованы изолированные реальные проверки V01–V16; их описание находится в [контракте проверок](contracts/verification.md). В репозитории уже есть Testcontainers 4.6.0 и генерация gRPC `.proto`; новая система проверки не нужна.
 
-На этапе исследования не запускались тесты, приложения или контейнеры. Windows/Linux, производственная конфигурация, реальное восстановление TLS-клиента Sitko.Core и производительность больших ответов ещё не проверены.
+На этапе исследования не запускались тесты, приложения или контейнеры. Windows/Linux, производственная конфигурация и реальное восстановление новой реализации TLS-клиента Sitko.Core ещё не проверены. Проверка производительности в согласованный набор не входит.
+
+## Принятые границы модулей и публичного API
+
+**Решение**: общий SD остаётся отдельным и необязательным, его основание — Microsoft SD. `Resolver.Consul`, `Server.Consul` и нужный Consul-клиент объединяются в `Sitko.Core.ServiceDiscovery.Consul`; отдельный `Sitko.Core.Consul` удаляется. gRPC не зависит от Consul. Один выключатель `ServiceDiscovery.Enabled` управляет всем SD.
+
+**Основание**: текущих потребителей самостоятельного Consul за пределами SD в исследовании не найдено. Сохранение слоя только ради прежней структуры не даёт нового поведения и распределяет настройки/включение. Перенос SD в App сделал бы инфраструктуру обязательной для не нуждающихся в ней приложений. Новый каталог подключений и фиктивный альтернативный провайдер не нужны.
+
+**Альтернатива**: заменить только resolver, сохранив пакеты и обёртки, недостаточно для согласованных единого клиента, общего выключателя и уменьшения модулей. Обоснование по конкретным существующим точкам — [Constitution Check](plan.md#constitution-check).
+
+Один клиент выбирает прямой `Address` либо SD; `Default`/`Contracts` и callbacks применяются по пятиуровневому приоритету. Сервер использует fluent-регистрацию, повторное добавление без дубликатов и итоговые общие настройки; reflection по умолчанию выключен. Общая политика токенов охватывает регистрацию до/после неё, токен читается для каждого RPC. Входящая JWT-авторизация и доменные protobuf/converters/context MYCG остаются отдельными механизмами. Полный целевой контракт — [module-api.md](contracts/module-api.md).
+
+Контрактный TTL сохраняется. Регистрация всех приложений и Consul leader healthcheck не возвращаются; в проверенном v12 безусловной регистрации всех приложений уже нет. Исходный registrar ограничен объявленными SD-сервисами.
+
+## Свежая платформа и ограничения подготовки
+
+На основе v13 только `net10.0`, SDK `10.0.403`; версии в корневом `Directory.Packages.props`. Переход xUnit `4.0.2`/MTP `2.5.1`/AwesomeAssertions `9.6.0` уже завершён платформенным изменением R14/PR #1222. Это состояние основы, не выполненная данной задачей проверка поведения; повторная миграция runner не нужна. Старые props под `src` и JetBrains annotations не восстанавливаются. Оставшиеся OIDC/Redis/OpenSearch/CI-задачи ведутся отдельно.
+
+До реализации уточняются конечные имена внутренних типов и новых полей конфигурации, точное DNS-кодирование и минимальная техническая форма V16. Это детали реализации в согласованных границах, не повод создавать дополнительные публичные абстракции. Сначала используется существующая тестовая инфраструктура; небольшой UDP relay допустим только для внешнего детерминированного наблюдения штатного DNS, без собственного resolver.
+
+## Точные источники архитектурного сравнения
+
+Источники и степень готовности сведены также в [review-v12-v13.html](review-v12-v13.html), блок `source-manifest`. Ссылки на зафиксированные ревизии ниже сохранены для проверки исходных причин; внешняя инфраструктура при синхронизации документов не вызывалась.
+
+- [v12: регистрация клиентов](https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/ApplicationExtensions.cs).
+- [v12: адрес из настроек](https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/External/ExternalGrpcClientModule.cs).
+- [v12: собственный резолвер](https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/Discovery/ServiceDiscoveryGrpcClientModule.cs).
+- [v12: канал и транспорт](https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/GrpcClientModule.cs).
+- [v12: опции и токены](https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Client/GrpcClientModuleOptions.cs).
+- [v12: регистрация в опциях](https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Server/GrpcServerModuleOptions.cs).
+- [v12: сервер и публикация](https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc.Server/BaseGrpcServerModule.cs).
+- [v12: модуль Consul](https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Consul/ConsulModule.cs).
+- [v12: чтение каталога](https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Consul/ServiceDiscovery/ServiceDiscoveryManager.cs).
+- [v12: модуль SD](https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.ServiceDiscovery/ServiceDiscoveryModule.cs).
+- [v12: регистрация сервисов](https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.ServiceDiscovery.Server.Consul/ConsulServiceDiscoveryRegistrar.cs).
+- [v12: короткое имя](https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.Grpc/GrpcHelper.cs).
+- [v12: привязка конфигурации](https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.App/Helpers/OptionsHelper.cs).
+- [v12: добавление модулей](https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.App/SitkoCoreBaseApplicationBuilder.cs).
+- [v12: публикация портов](https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.ServiceDiscovery.Server/BaseServiceDiscoveryRegistrar.cs).
+- [v12: слушатели Kestrel](https://github.com/sitkoru/Sitko.Core/blob/fa94b44322448f85c92956f5a88c14624cc2daf1/src/Sitko.Core.App.Web/AppWebConfigurationModule.cs).
+- [MYCG.Core: обёртки gRPC](https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.App/CGApplicationExtensions.cs).
+- [MYCG.Core: поставщик токена](https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.App/GrpcTokenProvider.cs).
+- [MYCG.Core: контекст и сообщения](https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.Grpc/GrpcExtensions.cs).
+- [MYCG.Core: параметры пакетной выдачи](https://github.com/sitkoru/MYCG.Core/blob/4da7e4ae58972f0d1bef7d4f2960d6c08faf0611/src/MYCG.Core.Grpc/GrpcServiceOptions.cs).
+- [Microsoft: стандартный RoundRobin](https://github.com/dotnet/extensions/blob/25f07afa51034e37b334210642d7dc5f191c142d/src/Libraries/Microsoft.Extensions.ServiceDiscovery/ServiceDiscoveryServiceCollectionExtensions.cs).
