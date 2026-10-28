@@ -158,6 +158,10 @@ app.AddGrpcServer(options =>
 Например, `"RetryableStatusCodes": ["Unavailable"]` исключает повтор по
 `ResourceExhausted`. Это настройка повторов RPC, отдельная от DNS и регистрации.
 
+## Reflection
+
+`Grpc:Server:EnableReflection` по умолчанию равен `false`: обычные RPC работают, запрос reflection возвращает `Unimplemented`. Значение `true` включает публикацию описаний зарегистрированных сервисов после перезапуска приложения.
+
 ## TLS и токены
 
 TLS остаётся частью gRPC-транспорта. DNS выбирает адрес и порт; он не заменяет настройку сертификата и доверия к нему. Существующие `ConfigureHttpHandler`, `ConfigureChannelOptions`, поставщики токена и метаданных остаются точками настройки клиента. `DisableCertificatesValidation` явно отключает проверку сертификата, когда это предусмотрено конфигурацией приложения.

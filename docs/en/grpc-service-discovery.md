@@ -160,6 +160,10 @@ unless overridden. For example, `"RetryableStatusCodes": ["Unavailable"]`
 excludes retries on `ResourceExhausted`. RPC retries are separate from DNS and
 registration retries.
 
+## Reflection
+
+`Grpc:Server:EnableReflection` defaults to `false`: normal RPCs work while reflection returns `Unimplemented`. Set it to `true` and restart the application to expose descriptions of registered services.
+
 ## TLS and tokens
 
 TLS remains part of the gRPC transport. DNS selects an address and port; certificate configuration and trust remain application responsibilities. Existing `ConfigureHttpHandler`, `ConfigureChannelOptions`, token providers and metadata providers remain client extension points. `DisableCertificatesValidation` explicitly disables certificate validation when selected by the application.
