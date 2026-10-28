@@ -22,9 +22,18 @@ dotnet test --project tests/Sitko.Core.App.Tests/Sitko.Core.App.Tests.csproj --f
 Для диагностического журнала используйте `--diagnostic --diagnostic-output-directory TestResults/diagnostics`.
 Сбор покрытия не настроен.
 
-`Email.Tests` и `Storage.Tests` содержат общие абстрактные проверки для наследников;
-`Tasks.Kafka.Tests` содержит заготовку без конкретных сценариев. Они собираются как
-библиотеки и отдельно не запускаются. Остальные проекты тестов являются приложениями MTP.
+`Email.Tests` и `Storage.Tests` содержат общие абстрактные проверки для наследников.
+Они собираются как библиотеки и отдельно не запускаются. Остальные проекты тестов
+являются приложениями MTP.
+
+`Tasks.Kafka.Tests` проверяет жизненный цикл задач через Kafka и PostgreSQL. Его
+[фикстура](../../tests/Sitko.Core.Tasks.Kafka.Tests/KafkaFixture.cs) создаёт собственные
+контейнеры и освобождает их после прогона; для запуска требуется доступный Docker.
+
+```sh
+dotnet test --project tests/Sitko.Core.Tasks.Kafka.Tests/Sitko.Core.Tasks.Kafka.Tests.csproj --minimum-expected-tests 3
+```
+
 Интеграционные проекты требуют своих сервисов: [PDF](../pdf.md#проверка-модуля),
 [Redis/Valkey](../redis-sentinel.md#локальная-проверка) и окружения существующих заданий CI.
 
@@ -32,7 +41,8 @@ dotnet test --project tests/Sitko.Core.App.Tests/Sitko.Core.App.Tests.csproj --f
 
 [Main](../../.github/workflows/main.yml) выполняет исполняемые проекты на
 `net10.0` в заданиях по подсистемам. Включены конкретные наборы
-`App.Web.Tests`, `Grpc.Server.Tests`, `Repository.Grpc.Tests` и `Repository.Tests`.
+`App.Web.Tests`, `Grpc.Server.Tests`, `Repository.Grpc.Tests`, `Repository.Tests`
+и `Tasks.Kafka.Tests`.
 `Email.Smtp.Tests` исключён: существующий сценарий отправляет настоящее письмо
 и не имеет изолированного SMTP-стенда.
 

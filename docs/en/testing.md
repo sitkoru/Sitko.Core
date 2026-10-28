@@ -23,9 +23,17 @@ projects in [tests/Directory.Build.props](../../tests/Directory.Build.props).
 For diagnostics use `--diagnostic --diagnostic-output-directory TestResults/diagnostics`.
 Code coverage collection is not configured.
 
-`Email.Tests` and `Storage.Tests` provide abstract tests inherited by concrete suites;
-`Tasks.Kafka.Tests` is a scaffold without concrete scenarios. They are libraries and
-are not executed separately. Other test projects are MTP applications.
+`Email.Tests` and `Storage.Tests` provide abstract tests inherited by concrete suites.
+They are libraries and are not executed separately. Other test projects are MTP applications.
+
+`Tasks.Kafka.Tests` verifies task lifecycle scenarios with Kafka and PostgreSQL. Its
+[fixture](../../tests/Sitko.Core.Tasks.Kafka.Tests/KafkaFixture.cs) starts and disposes its
+own containers; Docker must be available.
+
+```sh
+dotnet test --project tests/Sitko.Core.Tasks.Kafka.Tests/Sitko.Core.Tasks.Kafka.Tests.csproj --minimum-expected-tests 3
+```
+
 Integration projects require their services: [PDF](../pdf.en.md#testing-the-module),
 [Redis/Valkey](../redis-sentinel.md) and the environments used by existing CI jobs.
 
@@ -33,7 +41,8 @@ Integration projects require their services: [PDF](../pdf.en.md#testing-the-modu
 
 [Main](../../.github/workflows/main.yml) runs executable projects on `net10.0`
 in subsystem jobs. This includes the concrete `App.Web.Tests`, `Grpc.Server.Tests`,
-`Repository.Grpc.Tests`, and `Repository.Tests` suites. `Email.Smtp.Tests` is excluded:
+`Repository.Grpc.Tests`, `Repository.Tests`, and `Tasks.Kafka.Tests` suites.
+`Email.Smtp.Tests` is excluded:
 its existing scenario sends a real email and has no isolated SMTP fixture.
 
 Each invocation requires at least one test and writes TRX and diagnostics to
