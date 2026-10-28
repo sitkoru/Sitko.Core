@@ -2,6 +2,23 @@
 
 [Русский](../ru/build-configuration.md)
 
+## Solution and tooling
+
+The only solution file is [Sitko.Core.slnx](../../Sitko.Core.slnx).
+It includes libraries, tests, examples, and the benchmark project.
+Debug/Release configurations support Any CPU, x64, and x86; all three solution
+platforms map to the Any CPU project platform.
+
+Build and pack commands from the root automatically select the only solution:
+`dotnet build -c Release` and `dotnet pack -c Release --no-build`.
+Commands naming the solution explicitly use `Sitko.Core.slnx`.
+Project-based test commands do not depend on the solution format.
+
+The SDK selected by global.json supports SLNX. Use a Rider version supporting both .NET 10 and SLNX
+or Visual Studio 2026 (18.0) or later. Shared JetBrains settings remain in
+[Sitko.Core.sln.DotSettings](../../Sitko.Core.sln.DotSettings); this is not
+a second solution file. A parallel SLN solution is not maintained.
+
 The [root Directory.Build.props](../../Directory.Build.props) defines common settings
 for all projects, including applications and benchmarks. The local [src](../../src/Directory.Build.props),
 [tests](../../tests/Directory.Build.props), and [apps](../../apps/Directory.Build.props)
