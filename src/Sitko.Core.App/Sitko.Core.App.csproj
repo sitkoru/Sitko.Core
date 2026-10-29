@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+    <PackageReference Include="Grpc.Core.Api" VersionOverride="2.85.0" />
     <PackageReference Include="IL.FluentValidation.Extensions.Options" />
     <PackageReference Include="JetBrains.Annotations" />
     <PackageReference Include="Newtonsoft.Json" />
