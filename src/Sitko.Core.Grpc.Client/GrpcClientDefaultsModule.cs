@@ -22,7 +22,7 @@ namespace Sitko.Core.Grpc.Client
 
         internal void Apply(IApplicationContext context, GrpcClientModuleOptions options)
         {
-            BindOptions(context.Configuration.GetSection("Grpc:Client:Default"), options);
+            BindOptions(context.Configuration.GetSection($"{OptionsKey}:Default"), options);
             foreach (var configure in ConfigureActions)
             {
                 configure(context, options);
