@@ -36,7 +36,7 @@ public static class ApplicationExtensions
             {
                 defaults.Apply(context, options);
                 GrpcClientDefaultsModule.BindOptions(
-                    context.Configuration.GetSection(optionsKey ?? $"Grpc:Client:Contracts:{GrpcServicesHelper.GetServiceNameForClient<TClient>()}"), options);
+                    context.Configuration.GetSection(optionsKey ?? GrpcClientModule<TClient>.ContractOptionsKey), options);
                 configure(context, options);
             });
     }

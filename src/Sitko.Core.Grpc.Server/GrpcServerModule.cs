@@ -70,7 +70,7 @@ namespace Sitko.Core.Grpc.Server
                 _ = services.AddGrpc().AddServiceOptions<TService>(serviceOptions =>
                 {
                     serviceOptions.CompressionProviders = [.. serviceOptions.CompressionProviders];
-                    context.Configuration.GetSection($"Grpc:Server:Contracts:{GrpcServicesHelper.GetServiceName<TService>()}")
+                    context.Configuration.GetSection($"{OptionsKey}:Contracts:{GrpcServicesHelper.GetServiceName<TService>()}")
                         .Bind(serviceOptions);
                     configure?.Invoke(serviceOptions);
                 }));
@@ -115,10 +115,10 @@ namespace Sitko.Core.Grpc.Server
             }
         }
 
-        private static void ConfigureServiceOptions(IApplicationContext context, GrpcServerModuleOptions startupOptions,
+        private void ConfigureServiceOptions(IApplicationContext context, GrpcServerModuleOptions startupOptions,
             GrpcServiceOptions options)
         {
-            context.Configuration.GetSection("Grpc:Server:Default").Bind(options);
+            context.Configuration.GetSection($"{OptionsKey}:Default").Bind(options);
             if (startupOptions.EnableDetailedErrors is { } enableDetailedErrors)
             {
                 options.EnableDetailedErrors = enableDetailedErrors;

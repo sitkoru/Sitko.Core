@@ -21,7 +21,8 @@ public class GrpcClientModule<TClient> : BaseApplicationModule<GrpcClientModuleO
 {
     private bool useDiscovery;
     public override string[] OptionKeys => ["Grpc:Client"];
-    public override string OptionsKey => $"Grpc:Client:Contracts:{GrpcServicesHelper.GetServiceNameForClient<TClient>()}";
+    internal static string ContractOptionsKey => $"Grpc:Client:Contracts:{GrpcServicesHelper.GetServiceNameForClient<TClient>()}";
+    public override string OptionsKey => ContractOptionsKey;
 
     public override void ConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
         GrpcClientModuleOptions<TClient> startupOptions)
