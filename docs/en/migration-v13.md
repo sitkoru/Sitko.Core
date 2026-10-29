@@ -11,8 +11,9 @@ these package references, namespaces and their former configuration.
 
 Microsoft packages and the .NET integrations (Npgsql, Razor, MudBlazor, gRPC,
 validation, logging and OpenTelemetry) use current compatible stable versions.
-AntDesign remains at `0.20.4`; the OIDC module uses Duende `4.3.0`. The existing `OpenTelemetry.Instrumentation.GrpcNetClient` prerelease
-is retained because that package has no stable release.
+AntDesign remains at `0.20.4`; the OIDC module uses Duende `4.3.0`.
+`OpenTelemetry.Instrumentation.GrpcNetClient` uses the
+`1.20.1-beta.1` prerelease because the package has no stable release.
 
 Sitko.Core 13 packages contain only `net10.0` assemblies. Applications targeting
 .NET 8 must move to .NET 10 before upgrading these packages. Repository builds
@@ -63,8 +64,8 @@ a primary change, and access to tokens and Data Protection keys.
 
 ## OpenSearch search client
 
-`Sitko.Core.Search.OpenSearch` uses `OpenSearch.Client 2.2.0` and
-`OpenSearch.Net 2.2.0`. The [vendor compatibility matrix](https://github.com/opensearch-project/opensearch-net/blob/main/COMPATIBILITY.md) pairs client 2.x with
+`Sitko.Core.Search.OpenSearch` uses `OpenSearch.Client 2.3.0` and
+`OpenSearch.Net 2.3.0`. The [vendor compatibility matrix](https://github.com/opensearch-project/opensearch-net/blob/main/COMPATIBILITY.md) pairs client 2.x with
 OpenSearch server 3.x. If an application uses these packages' types directly or
 pins their versions, align its references with version 2.x and review the
 [client breaking changes](https://github.com/opensearch-project/opensearch-net/blob/main/UPGRADING.md).
@@ -74,6 +75,45 @@ The client uses the default Utf8Json serializer; it does not automatically switc
 to System.Text.Json. Before updating an application, verify index creation and
 reinitialization, document writes, searches and deletions against the server
 version in use. Updating the client package does not upgrade the OpenSearch server.
+
+## Dependency updates and compatibility
+
+`Sitko.Core.ClickHouse.Linq2db` uses `linq2db 6.5.1` instead of `6.3.0`.
+The public `BaseClickHouseDbContext` derives from `DataConnection`, so query
+translation changes also affect application queries. Review these cases:
+
+- Date differences expressed as `TotalDays`/`TotalHours` and other units measure
+  elapsed time rather than calendar boundaries crossed.
+- Projection calculations over non-nullable numeric and `bool` fields from a missing
+  `LEFT JOIN` row use the .NET default value; filters and aggregates retain
+  SQL `NULL`. This change does not apply to value-converted fields.
+- Set and column operations with different value converters can throw
+  `LinqToDBException` when storage representations are incompatible. For identical
+  delegate-based conversions, use expression-based `HasConversion`.
+- Arguments of a `FormattableString` stored in a variable and used in a query
+  become SQL parameters. Use `RawSqlString` where the database only accepts
+  a literal in that position.
+
+See the [LINQ2DB 6.4–6.5.1 release notes](https://github.com/linq2db/linq2db/wiki/releases-and-roadmap#release-651)
+for details and other changes.
+
+`Storage` uses `MimeMapping 4.0.0`. `MimeUtility.GetMimeMapping(string)` is retained,
+but the extension database and priority-based selection algorithm are updated,
+so extensions associated with multiple MIME types can produce a different type. Check application-relevant extensions and MIME-based rules; see the
+[database changes](https://github.com/zone117x/MimeMapping/releases/tag/v4.0.0).
+
+`Grpc.Client` uses `OpenTelemetry.Instrumentation.GrpcNetClient 1.20.1-beta.1`
+with OpenTelemetry core `1.20.1`. When migrating from `1.15.1-beta.1`, account for
+semantic conventions `1.42.0` and context propagation regardless of
+`SuppressDownstreamInstrumentation`, which can change the downstream server
+span's parent. Review monitoring queries and rules that depend on RPC attributes
+and span relationships against the [instrumentation release notes](https://github.com/open-telemetry/opentelemetry-dotnet-contrib/blob/4f2a49444969d8ffae3d46007ce533d28ad153d3/src/OpenTelemetry.Instrumentation.GrpcNetClient/CHANGELOG.md).
+
+`Queue.Nats` retains `NATS.Client 1.1.0` with `STAN.Client 0.3.0`.
+NATS `1.1.1–1.1.8` is binary-incompatible with this STAN version: replacing
+`CreateConnection(string)` with an overload that has an additional parameter
+causes `MissingMethodException`. Do not override this dependency independently;
+see the [NATS API change](https://github.com/nats-io/nats.net.v1/compare/1.1.0...1.1.1).
 
 ## Development tool annotations
 
