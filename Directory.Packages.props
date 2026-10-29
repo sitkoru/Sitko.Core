@@ -13,6 +13,8 @@
     <PackageVersion Include="Tempus" Version="1.0.0" />
     <PackageVersion Include="Scrutor" Version="7.0.0" />
     <PackageVersion Include="VaultSharp" Version="1.17.5" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.11.0" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery.Dns" Version="10.11.0" />
     <PackageVersion Include="Consul" Version="1.8.0" />
     <PackageVersion Include="ImgProxy" Version="2.3.2" />
     <PackageVersion Include="Nito.AsyncEx" Version="5.1.2" />
@@ -155,6 +157,7 @@
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.2" />
     <PackageVersion Include="FluentValidation" Version="12.2.0" />
     <PackageVersion Include="GitHubActionsTestLogger" Version="3.0.5" />
+    <PackageVersion Include="Testcontainers" Version="4.6.0" />
     <PackageVersion Include="Testcontainers.ClickHouse" Version="4.6.0" />
     <PackageVersion Include="Testcontainers.Kafka" Version="4.6.0" />
     <PackageVersion Include="itext7" Version="9.2.0" />

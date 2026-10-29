@@ -9,11 +9,11 @@ using Sitko.Core.App;
 
 namespace Sitko.Core.Grpc.Client;
 
-public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient : ClientBase<TClient>
+public class GrpcClientModuleOptions : BaseModuleOptions
 {
-    private const string AuthorizationHeader = "Authorization";
-    private readonly List<Action<IServiceCollection>> configureServicesActions = new();
-    private readonly Dictionary<Type, Action<IServiceCollection, IHttpClientBuilder>> interceptorActions = new();
+    public Uri? Address { get; set; }
+    public int? MaxReceiveMessageSize { get; set; } = new GrpcChannelOptions().MaxReceiveMessageSize;
+    public int? MaxSendMessageSize { get; set; }
     public bool EnableHttp2UnencryptedSupport { get; set; }
     public bool DisableCertificatesValidation { get; set; }
     public TimeSpan? DefaultDeadline { get; set; } = TimeSpan.FromMinutes(30);
@@ -22,10 +22,15 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
     public bool UseGrpcWeb { get; set; }
     public TimeSpan? PooledConnectionLifetime { get; set; } = TimeSpan.FromMinutes(2);
     public LoadBalancingPolicy LoadBalancingPolicy { get; set; } = LoadBalancingPolicy.RoundRobin;
-
     [JsonIgnore] public RetryPolicy? RetryPolicy { get; set; } = GrpcClientRetryPolicies.Default;
+    private const string AuthorizationHeader = "Authorization";
+    private protected List<Action<IServiceCollection>> ConfigureServicesActions { get; } = [];
+    private Func<IServiceProvider, IGrpcTokenProvider>? resolveTokenProvider;
+    private Func<IServiceProvider, IGrpcMetadataProvider>? resolveMetadataProvider;
+    private readonly Dictionary<Type, Action<IServiceCollection, IHttpClientBuilder>> interceptorActions = [];
 
-    internal void ConfigureClient(IServiceCollection services, IHttpClientBuilder builder)
+    private protected void ConfigureClient<TClient>(IServiceCollection services, IHttpClientBuilder builder)
+        where TClient : ClientBase<TClient>
     {
         foreach (var (_, configure) in interceptorActions)
         {
@@ -33,17 +38,17 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
         }
 
 
-        foreach (var configure in configureServicesActions)
+        foreach (var configure in ConfigureServicesActions)
         {
             configure(services);
         }
 
-        builder.AddCallCredentials(async (_, metadata, serviceProvider) =>
+        _ = builder.AddCallCredentials(async (_, metadata, serviceProvider) =>
         {
             var tokenProviderFactory = serviceProvider.GetService<IGrpcTokenProviderFactory<TClient>>();
-            if (tokenProviderFactory is not null)
+            var tokenProvider = tokenProviderFactory?.GetProvider(serviceProvider) ?? resolveTokenProvider?.Invoke(serviceProvider);
+            if (tokenProvider is not null)
             {
-                var tokenProvider = tokenProviderFactory.GetProvider(serviceProvider);
                 var token = await tokenProvider.GetTokenAsync();
                 if (!string.IsNullOrEmpty(token))
                 {
@@ -53,9 +58,9 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
 
 
             var metadataProviderFactory = serviceProvider.GetService<IGrpcMetadataProviderFactory<TClient>>();
-            if (metadataProviderFactory is not null)
+            var metadataProvider = metadataProviderFactory?.GetProvider(serviceProvider) ?? resolveMetadataProvider?.Invoke(serviceProvider);
+            if (metadataProvider is not null)
             {
-                var metadataProvider = metadataProviderFactory.GetProvider(serviceProvider);
                 var newMetadata = await metadataProvider.GetMetadataAsync();
                 if (newMetadata?.Count > 0)
                 {
@@ -73,53 +78,71 @@ public class GrpcClientModuleOptions<TClient> : BaseModuleOptions where TClient 
         var oldEntries = metadata.GetAll(key);
         foreach (var entry in oldEntries)
         {
-            metadata.Remove(entry);
+            _ = metadata.Remove(entry);
         }
 
         metadata.Add(key, value);
     }
 
-    public GrpcClientModuleOptions<TClient> AddMetadataProvider<TMetadataProvider>()
+    public GrpcClientModuleOptions AddMetadataProvider<TMetadataProvider>()
         where TMetadataProvider : class, IGrpcMetadataProvider
     {
-        configureServicesActions.Add(services =>
-        {
-            services
-                .AddTransient<IGrpcMetadataProviderFactory<TClient>,
-                    GrpcMetadataProviderFactory<TClient, TMetadataProvider>>();
-            services.AddTransient<IGrpcMetadataProvider, TMetadataProvider>();
-        });
+        ConfigureServicesActions.Add(static services => services.TryAddTransient<TMetadataProvider>());
+        resolveMetadataProvider = static provider => provider.GetRequiredService<TMetadataProvider>();
         return this;
     }
 
-    public GrpcClientModuleOptions<TClient> AddTokenAuth<TTokenProvider>()
-        where TTokenProvider : class, IGrpcTokenProvider
+    public GrpcClientModuleOptions AddTokenAuth<TTokenProvider>() where TTokenProvider : class, IGrpcTokenProvider
     {
-        configureServicesActions.Add(services =>
-        {
-            services
-                .AddTransient<IGrpcTokenProviderFactory<TClient>, GrpcTokenProviderFactory<TClient, TTokenProvider>>();
-            services.AddTransient<IGrpcTokenProvider, TTokenProvider>();
-        });
+        ConfigureServicesActions.Add(static services => services.TryAddTransient<TTokenProvider>());
+        resolveTokenProvider = static provider => provider.GetRequiredService<TTokenProvider>();
         return this;
     }
 
-    public GrpcClientModuleOptions<TClient> AddInterceptor<TInterceptor>() where TInterceptor : Interceptor
+    public GrpcClientModuleOptions AddInterceptor<TInterceptor>() where TInterceptor : Interceptor
     {
-        interceptorActions[typeof(TInterceptor)] = (services, builder) =>
+        interceptorActions[typeof(TInterceptor)] = static (services, builder) =>
         {
             services.TryAddSingleton<TInterceptor>();
-            builder.AddInterceptor<TInterceptor>();
+            _ = builder.AddInterceptor<TInterceptor>();
         };
         return this;
     }
+}
 
-    internal LoadBalancingConfig? GetLoadBalancingConfig() =>
-        LoadBalancingPolicy switch
+public class GrpcClientModuleOptions<TClient> : GrpcClientModuleOptions where TClient : ClientBase<TClient>
+{
+    internal void ConfigureClient(IServiceCollection services, IHttpClientBuilder builder) =>
+        ConfigureClient<TClient>(services, builder);
+
+    public new GrpcClientModuleOptions<TClient> AddMetadataProvider<TMetadataProvider>()
+        where TMetadataProvider : class, IGrpcMetadataProvider
+    {
+        ConfigureServicesActions.Add(static services =>
         {
-            LoadBalancingPolicy.None => null,
-            LoadBalancingPolicy.RoundRobin => new RoundRobinConfig(),
-            LoadBalancingPolicy.PickFirst => new PickFirstConfig(),
-            _ => throw new ArgumentOutOfRangeException()
-        };
+            _ = services
+                .AddTransient<IGrpcMetadataProviderFactory<TClient>,
+                    GrpcMetadataProviderFactory<TClient, TMetadataProvider>>();
+            services.TryAddTransient<TMetadataProvider>();
+        });
+        return this;
+    }
+
+    public new GrpcClientModuleOptions<TClient> AddTokenAuth<TTokenProvider>()
+        where TTokenProvider : class, IGrpcTokenProvider
+    {
+        ConfigureServicesActions.Add(static services =>
+        {
+            _ = services
+                .AddTransient<IGrpcTokenProviderFactory<TClient>, GrpcTokenProviderFactory<TClient, TTokenProvider>>();
+            services.TryAddTransient<TTokenProvider>();
+        });
+        return this;
+    }
+
+    public new GrpcClientModuleOptions<TClient> AddInterceptor<TInterceptor>() where TInterceptor : Interceptor
+    {
+        _ = base.AddInterceptor<TInterceptor>();
+        return this;
+    }
 }

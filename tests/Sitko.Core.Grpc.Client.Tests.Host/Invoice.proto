@@ -1,0 +1,6 @@
+syntax = "proto3";
+package accounting.v1;
+option csharp_namespace = "Sitko.Core.Grpc.LifecycleHost.Contract";
+service Invoice { rpc Get(Request) returns (Reply); }
+message Request {}
+message Reply { string value = 1; }

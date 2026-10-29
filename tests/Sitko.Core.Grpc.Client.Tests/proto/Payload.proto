@@ -1,0 +1,7 @@
+syntax = "proto3";
+package options.v1;
+option csharp_namespace = "Sitko.Core.Grpc.Client.Tests.Payload";
+service Invoice { rpc Transfer (TransferRequest) returns (TransferReply); }
+service Reports { rpc Transfer (TransferRequest) returns (TransferReply); }
+message TransferRequest { bytes data = 1; int32 response_size = 2; }
+message TransferReply { bytes data = 1; string confirmation = 2; }

@@ -80,23 +80,19 @@ jobs:
   grpc:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
-    env:
-      CONSUL__CONSULURI: http://consul:8500
-    services:
-      consul:
-        image: hashicorp/consul
     steps:
       - uses: actions/checkout@v7
-      - name: Wait for Consul
-        run: |
-          timeout 60 bash -c '
-            until leader=$(curl --fail --silent --show-error --max-time 5 http://consul:8500/v1/status/leader) &&
-              [[ "$leader" =~ ^\".+:[0-9]+\"$ ]]; do
-              sleep 1
-            done
-          '
       - name: Run Sitko.Core.Grpc.Client.Tests net10.0
+        env:
+          JOB_CONTAINER_ID: ${{ job.container.id }}
         run: >-
+          docker run --rm --network host
+          --volumes-from "$JOB_CONTAINER_ID"
+          --volume /var/run/docker.sock:/var/run/docker.sock
+          --workdir "$GITHUB_WORKSPACE"
+          --env GITHUB_ACTIONS --env GITHUB_WORKSPACE --env GITHUB_STEP_SUMMARY
+          --env TESTCONTAINERS_HOST_OVERRIDE=127.0.0.1
+          ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
           dotnet test --project tests/Sitko.Core.Grpc.Client.Tests/Sitko.Core.Grpc.Client.Tests.csproj
           --framework net10.0 --report-github --minimum-expected-tests 1
           --report-trx --report-trx-filename Sitko.Core.Grpc.Client.Tests-net10.0.trx

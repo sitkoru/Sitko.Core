@@ -141,3 +141,74 @@ Library-set contract: [specification](../specs/20261027-233345-legacy-modules/sp
 ## Test infrastructure
 
 Test projects use xUnit4.0.2, MTP2.5.1 and AwesomeAssertions9.6.0. See [test infrastructure migration](en/testing.md#migrating-test-infrastructure-consumers) for runner references, SDK configuration, namespaces and commands.
+
+## gRPC clients and service discovery
+
+Remove references to `Sitko.Core.Consul`, `Sitko.Core.ServiceDiscovery.Resolver.Consul`,
+`Sitko.Core.ServiceDiscovery.Server` and `Sitko.Core.ServiceDiscovery.Server.Consul`.
+Use `Sitko.Core.ServiceDiscovery.Consul` where discovery is required.
+Replace `AddConsul()` and generic `AddServiceDiscovery<TRegistrar, TResolver>()` /
+`AddServiceDiscovery<TResolver>()` with `AddConsulServiceDiscovery()`.
+The previous resolver/registrar types and `sd:///` are removed.
+
+Move `Consul:ConsulUri` to `ServiceDiscovery:Consul:Address` and configure DNS
+addresses separately through `DnsServers`. Previous check/refresh settings in
+seconds are not read: configure `Ttl`, `HeartbeatInterval`, `DnsRefreshPeriod`
+and `DeregisterCriticalServiceAfter` according to their new roles. The new scheme
+does not read old application/port registrations; update communicating servers
+and clients together.
+
+With discovery, Microsoft's standard `RoundRobin` selects endpoints. The previous
+`LoadBalancingPolicy` does not control this path; `None`/`PickFirst` semantics
+are not preserved.
+
+Replace `AddExternalGrpcClient<T>` with `AddGrpcClient<T>`. Set a direct address
+at `Grpc:Client:Contracts:<full protobuf name>:Address`; without an address,
+the client requires a discovery provider. For Consul, use
+`AddConsulServiceDiscovery()` and the `ServiceDiscovery:Consul` section.
+
+Deriving from `GrpcClientModule<TClient, TOptions>` or `BaseGrpcServerModule<TOptions>`
+is not supported. Configure clients through `AddGrpcClient<TClient>(...)` and
+`ConfigureGrpcClients(...)`; configure servers through `AddGrpcServer(...)` and
+service registration. The module types are `GrpcClientModule<TClient>` and `GrpcServerModule`.
+
+Move `options.RegisterService<T>()` and `options.RegisterServiceWithGrpcWeb<T>()`
+out of the options callback into the builder chain:
+
+```csharp
+app.AddGrpcServer(options => options.RequireSchemeAuthorization("Bearer"))
+    .RegisterService<InvoiceGrpcService>()
+    .RegisterServiceWithGrpcWeb<ReportsGrpcService>();
+```
+
+Use `ConfigureGrpcClients(...)` for shared client settings.
+`Grpc:Client:Default` and `Grpc:Server:Default` hold shared configuration;
+`Contracts:<full protobuf name>` holds individual overrides.
+
+Remove `Grpc:Server:EnableServiceDiscovery`. The shared
+`ServiceDiscovery:Enabled=false` setting disables discovery, publication and TTL.
+Servers without SD and clients with direct addresses continue to work. A client
+without an address fails startup when SD is disabled.
+
+Client identity uses the full protobuf name, such as `accounting.v1.Invoice`,
+rather than a short C# name. Move contract settings to full names. Registration,
+TLS configuration and provider settings are covered in the
+[gRPC/SD guide](en/grpc-service-discovery.md).
+
+### Separate MYCG.Core migration
+
+MYCG.Core is migrated in a separate task. A single `AddMycgGrpc()` should use
+`ConfigureGrpcClients` to select `MYCG.Core.App.GrpcTokenProvider`, shared logging
+settings and the application's certificate policy. Register the provider's
+dependencies through regular DI with appropriate lifetimes. The method should
+not implicitly enable a server or Consul.
+
+Business clients and services can then use ordinary Sitko.Core registrations.
+Replace static/SD selection wrappers, `GrpcClientsAddresses` and the static
+`IsGrpcConfigured` flag with contract configuration and application-owned server
+module state. Remove implicit SD registration from `AddMinimal`/`AddWeb`, and
+replace forced reflection in the server wrapper with explicit application configuration.
+
+Incoming JWT/OIDC authorization, domain protobuf types, converters and MYCG user
+context remain separate concerns. This Sitko.Core change does not modify MYCG.Core
+or validate an external identity provider.

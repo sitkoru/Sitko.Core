@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>Sitko.Core.Grpc.LifecycleHost</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Sitko.Core.Grpc.Server/Sitko.Core.Grpc.Server.csproj" />
+    <ProjectReference Include="../../src/Sitko.Core.ServiceDiscovery.Consul/Sitko.Core.ServiceDiscovery.Consul.csproj" />
+    <PackageReference Include="Grpc.Tools" PrivateAssets="all" />
+    <Protobuf Include="Invoice.proto" GrpcServices="Server" />
+  </ItemGroup>
+</Project>
