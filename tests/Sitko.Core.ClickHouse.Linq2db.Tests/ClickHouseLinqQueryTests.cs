@@ -67,8 +67,7 @@ namespace Sitko.Core.ClickHouse.Linq2db.Tests
         {
             const string userName = "test";
             const string password = "test";
-            container = new ClickHouseBuilder()
-                .WithImage("clickhouse/clickhouse-server:25.8")
+            container = new ClickHouseBuilder("clickhouse/clickhouse-server:25.8")
                 .WithWaitStrategy(Wait.ForUnixContainer()
                     .UntilHttpRequestIsSucceeded(static request => request.ForPort(8123).ForPath("/ping")))
                 .WithEnvironment("CLICKHOUSE_USER", userName)

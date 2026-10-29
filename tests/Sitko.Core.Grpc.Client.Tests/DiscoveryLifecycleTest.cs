@@ -219,8 +219,7 @@ namespace Sitko.Core.Grpc.Client.Tests
             TestContext.Current.TestOutputHelper?.WriteLine($"20 consecutive replica-b RPCs after {transition.Elapsed}");
         }
 
-        internal static IContainer CreateConsul() => new ContainerBuilder()
-            .WithImage("hashicorp/consul:1.21")
+        internal static IContainer CreateConsul() => new ContainerBuilder("hashicorp/consul:1.21")
             .WithName($"sitko-sd-lifecycle-{Guid.NewGuid():N}")
             .WithCommand("agent", "-dev", "-client=0.0.0.0", "-dns-port=8600")
             .WithPortBinding("8500/tcp", true)
@@ -228,6 +227,7 @@ namespace Sitko.Core.Grpc.Client.Tests
             .WithPortBinding("8600/udp", true)
             .WithCreateParameterModifier(static parameters =>
             {
+                ArgumentNullException.ThrowIfNull(parameters.HostConfig);
                 foreach (var bindings in parameters.HostConfig.PortBindings.Values)
                 {
                     foreach (var binding in bindings)
