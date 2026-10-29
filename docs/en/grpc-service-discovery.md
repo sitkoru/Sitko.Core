@@ -128,6 +128,8 @@ to receive up to 1 MiB by default and up to 4 MiB for `accounting.v1.Invoice`:
 `MaxSendMessageSize` limits sending independently. Both the sender's and receiver's
 limits must permit the message. The limit applies to the protobuf message, so payload
 at the exact boundary can exceed it once protocol fields are included.
+`MaxReceiveMessageSize` limits both the compressed and decompressed message size.
+If either exceeds the limit, the receiver returns `ResourceExhausted` before deserialization.
 
 Settings apply in order: SDK values → `Default` → shared callback → `Contracts` →
 individual callback. An omitted field preserves its previous value. Register a shared

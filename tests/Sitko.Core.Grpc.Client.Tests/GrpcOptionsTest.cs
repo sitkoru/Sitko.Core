@@ -15,8 +15,10 @@ namespace Sitko.Core.Grpc.Client.Tests
     {
         private const int MiB = 1024 * 1024;
 
-        [Fact]
-        public async Task ContractClientReceiveLimitOverridesDefaultForTwoMiBResponse()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ContractClientReceiveLimitOverridesDefaultForTwoMiBResponse(bool compressed)
         {
             var cancellationToken = TestContext.Current.CancellationToken;
             using var certificate = ClientAddressSelectionTest.CreateCertificate();
@@ -27,8 +29,10 @@ namespace Sitko.Core.Grpc.Client.Tests
                 ["Grpc:Client:Contracts:options.v1.Reports:MaxReceiveMessageSize"] = "4194304"
             };
             var (server, port) = await ClientAddressSelectionTest.StartServer<LimitInvoiceServer>(config,
-                certificate, false, cancellationToken, static app =>
-                    app.AddGrpcServer().RegisterService<LimitInvoiceServer>().RegisterService<LimitReportsServer>());
+                certificate, false, cancellationToken, app =>
+                    app.AddGrpcServer(options => options.ConfigureGrpcService = service =>
+                            service.ResponseCompressionAlgorithm = compressed ? "gzip" : null)
+                        .RegisterService<LimitInvoiceServer>().RegisterService<LimitReportsServer>());
             await using var serverLifetime = server;
             using var client = await StartClients(config, certificate, port, cancellationToken);
             try
@@ -52,8 +56,10 @@ namespace Sitko.Core.Grpc.Client.Tests
             }
         }
 
-        [Fact]
-        public async Task ContractServerReceiveLimitOverridesDefaultForTwoMiBRequest()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ContractServerReceiveLimitOverridesDefaultForTwoMiBRequest(bool compressed)
         {
             var cancellationToken = TestContext.Current.CancellationToken;
             using var certificate = ClientAddressSelectionTest.CreateCertificate();
@@ -74,13 +80,14 @@ namespace Sitko.Core.Grpc.Client.Tests
                 {
                     Data = ByteString.CopyFrom([.. Enumerable.Repeat((byte)0x5a, 2 * MiB)])
                 };
+                var headers = compressed ? new Metadata { { "grpc-internal-encoding-request", "gzip" } } : null;
                 var invoice = client.Services.GetRequiredService<Payload.Invoice.InvoiceClient>();
                 var reports = client.Services.GetRequiredService<Payload.Reports.ReportsClient>();
                 var error = await Assert.ThrowsAsync<RpcException>(async () =>
-                    await invoice.TransferAsync(request, deadline: DateTime.UtcNow.AddSeconds(15),
+                    await invoice.TransferAsync(request, headers, deadline: DateTime.UtcNow.AddSeconds(15),
                         cancellationToken: cancellationToken));
                 Assert.Equal(StatusCode.ResourceExhausted, error.StatusCode);
-                var reply = await reports.TransferAsync(request, deadline: DateTime.UtcNow.AddSeconds(15),
+                var reply = await reports.TransferAsync(request, headers, deadline: DateTime.UtcNow.AddSeconds(15),
                     cancellationToken: cancellationToken);
                 Assert.Equal("reports-ok", reply.Confirmation);
             }
