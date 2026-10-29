@@ -16,7 +16,8 @@ not imply that the corresponding NuGet packages have been published.
 
 The [Blazor demo](blazor-demo.md) shows forms, URLs and files without an external database.
 [gRPC/SD](grpc-service-discovery.md) covers registration, configuration and TLS/Consul
-requirements. [Testing](testing.md) explains checks and test-environment limitations.
+requirements. The [gRPC demo](grpc-demo.md) calls an RPC through local Consul.
+[Testing](testing.md) explains checks and test-environment limitations.
 
 ## Feature catalog
 
