@@ -8,5 +8,6 @@
     <PackageReference Include="Cronos" />
     <PackageReference Include="DistributedLock" />
     <PackageReference Include="Nito.AsyncEx" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
 </Project>
