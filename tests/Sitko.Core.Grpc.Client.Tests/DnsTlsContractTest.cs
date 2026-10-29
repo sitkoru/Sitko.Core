@@ -26,8 +26,7 @@ namespace Sitko.Core.Grpc.Client.Tests
         public async Task SameShortNameContractsUseDnsTlsAndPerCallCredentials()
         {
             var cancellationToken = TestContext.Current.CancellationToken;
-            await using var consul = new ContainerBuilder()
-                .WithImage("hashicorp/consul:1.21")
+            await using var consul = new ContainerBuilder("hashicorp/consul:1.21")
                 .WithName($"sitko-sd-v01-{Guid.NewGuid():N}")
                 .WithCommand("agent", "-dev", "-client=0.0.0.0", "-dns-port=8600")
                 .WithPortBinding("8500/tcp", true)
@@ -35,6 +34,7 @@ namespace Sitko.Core.Grpc.Client.Tests
                 .WithPortBinding("8600/udp", true)
                 .WithCreateParameterModifier(parameters =>
                 {
+                    ArgumentNullException.ThrowIfNull(parameters.HostConfig);
                     foreach (var bindings in parameters.HostConfig.PortBindings.Values)
                     {
                         foreach (var binding in bindings)

@@ -3,7 +3,7 @@
 [English](../en/testing.md)
 
 Репозиторий использует .NET SDK из [global.json](../../global.json), xUnit `4.0.2`,
-Microsoft.Testing.Platform `2.5.1` и AwesomeAssertions `9.6.0`. Версии задаются в
+Microsoft.Testing.Platform `2.5.2` и AwesomeAssertions `9.6.0`. Версии задаются в
 [Directory.Packages.props](../../Directory.Packages.props). Команды выполняются из корня.
 
 ```sh

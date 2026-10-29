@@ -14,8 +14,8 @@ namespace Sitko.Core.Tasks.Kafka.Tests
 
         public async ValueTask InitializeAsync()
         {
-            Kafka = new KafkaBuilder().WithImage("confluentinc/cp-kafka:7.4.0").Build();
-            Postgres = new ContainerBuilder().WithImage("postgres:17-alpine")
+            Kafka = new KafkaBuilder("confluentinc/cp-kafka:7.4.0").Build();
+            Postgres = new ContainerBuilder("postgres:17-alpine")
                 .WithEnvironment("POSTGRES_PASSWORD", "tasks-tests")
                 .WithPortBinding(5432, true)
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilCommandIsCompleted("pg_isready", "-h", "127.0.0.1", "-U", "postgres"))

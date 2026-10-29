@@ -3,7 +3,7 @@
 [Русский](../ru/testing.md)
 
 The repository uses the .NET SDK selected by [global.json](../../global.json),
-xUnit `4.0.2`, Microsoft.Testing.Platform `2.5.1`, and AwesomeAssertions `9.6.0`.
+xUnit `4.0.2`, Microsoft.Testing.Platform `2.5.2`, and AwesomeAssertions `9.6.0`.
 Versions are declared in [Directory.Packages.props](../../Directory.Packages.props).
 Run commands from the repository root.
 

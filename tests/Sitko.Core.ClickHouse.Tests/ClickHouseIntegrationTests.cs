@@ -135,8 +135,7 @@ public sealed class ClickHouseFixture : IAsyncLifetime
         const string userName = "test";
         const string password = "test";
 
-        container = new ClickHouseBuilder()
-            .WithImage("clickhouse/clickhouse-server:25.8")
+        container = new ClickHouseBuilder("clickhouse/clickhouse-server:25.8")
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilHttpRequestIsSucceeded(request => request.ForPort(8123).ForPath("/ping")))
             .WithEnvironment("CLICKHOUSE_USER", userName)
