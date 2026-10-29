@@ -61,7 +61,7 @@ SDK из global.json поддерживает SLNX. Для IDE нужен Rider 
 .NET SDK. Подготовка Node.js и запуск npm для модуля не требуются.
 Компоненты используют стили пакета `AntDesign 0.20.4`; дополнительных
 фронтенд-ресурсов Sitko.Core для них в пакете нет.
-Действия для приложений описаны в [инструкции перехода](../migration-v13.md).
+Действия для приложений описаны в [инструкции перехода](migration-v13.md).
 
 Справка: [MSBuild](https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-by-directory),
 [NuGet CPM](https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management).

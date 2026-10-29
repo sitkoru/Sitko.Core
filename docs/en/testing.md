@@ -36,8 +36,8 @@ own containers; Docker must be available.
 dotnet test --project tests/Sitko.Core.Tasks.Kafka.Tests/Sitko.Core.Tasks.Kafka.Tests.csproj --minimum-expected-tests 3
 ```
 
-Integration projects require their services: [PDF](../pdf.en.md#testing-the-module),
-[Redis/Valkey](../redis-sentinel.md) and the environments used by existing CI jobs.
+Integration projects require their services: [PDF](pdf.md#testing-the-module),
+[Redis/Valkey](redis-sentinel.md) and the environments used by existing CI jobs.
 
 ## GitHub Actions verification
 

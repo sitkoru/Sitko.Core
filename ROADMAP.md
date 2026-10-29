@@ -91,7 +91,7 @@ PR #1204; полный `semantic-release --dry-run` относится к R12.
 
 В [Main #2083](https://github.com/sitkoru/Sitko.Core/actions/runs/40557342001)
 прошли 15 проверочных заданий; Release пропущен. Документация пока находится
-в [docs/pdf.md](docs/pdf.md) и [docs/pdf.en.md](docs/pdf.en.md).
+в [docs/ru/pdf.md](docs/ru/pdf.md) и [docs/en/pdf.md](docs/en/pdf.md).
 Production и потребители не менялись; их переход и приёмка — внешние действия.
 
 ### R03

@@ -1,6 +1,6 @@
 # Аутентификация OIDC и JWT
 
-[English](../en/oidc-authentication.md) · [Переход на версию 13](../migration-v13.md)
+[English](../en/oidc-authentication.md) · [Переход на версию 13](migration-v13.md)
 
 `Sitko.Core.Auth.OIDC` подключает стандартные обработчики ASP.NET Core для входа
 через OpenID Connect и проверки входящих JWT. Модуль рассчитан на серверное
@@ -132,7 +132,7 @@ access token текущего запроса либо `null`, если полу�
 | `TokenStoreType` | Поведение |
 | --- | --- |
 | `None` (`0`, по умолчанию) | Читает токен, сохранённый обработчиком аутентификации. Автоматического refresh нет; при `SaveTokens = false` сохранённого токена не будет. |
-| `Redis` (`1`) | Duende обновляет токены и хранит их в Redis. Настройка соединения и Data Protection — в [инструкции Redis](../redis-sentinel.md). |
+| `Redis` (`1`) | Duende обновляет токены и хранит их в Redis. Настройка соединения и Data Protection — в [инструкции Redis](redis-sentinel.md). |
 | `InMemory` (`2`) | Duende обновляет токены; содержимое теряется при остановке процесса и не разделяется между репликами. |
 
 При управляемом хранилище отказ refresh не подменяется прежним токеном cookie.
