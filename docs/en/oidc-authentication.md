@@ -1,6 +1,6 @@
 # OIDC and JWT authentication
 
-[Русский](../ru/oidc-authentication.md) · [Version 13 migration](../migration-v13.en.md)
+[Русский](../ru/oidc-authentication.md) · [Version 13 migration](migration-v13.md)
 
 `Sitko.Core.Auth.OIDC` registers standard ASP.NET Core handlers for OpenID Connect
 login and incoming JWT validation in a server-side .NET 10 application. Keycloak
@@ -129,7 +129,7 @@ current request's access token, or `null` when it cannot obtain one.
 | `TokenStoreType` | Behavior |
 | --- | --- |
 | `None` (`0`, default) | Reads the authentication handler's saved token; no automatic refresh. With `SaveTokens = false`, there is no saved token. |
-| `Redis` (`1`) | Duende refreshes tokens and stores them in Redis. See [Redis configuration](../redis-sentinel.md) for connections and Data Protection. |
+| `Redis` (`1`) | Duende refreshes tokens and stores them in Redis. See [Redis configuration](redis-sentinel.md) for connections and Data Protection. |
 | `InMemory` (`2`) | Duende refreshes tokens; storage is lost on process shutdown and is not shared by replicas. |
 
 A failed managed refresh does not fall back to the stale cookie token. Handle `null`

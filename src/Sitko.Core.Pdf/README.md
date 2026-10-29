@@ -4,5 +4,5 @@
 
 PDF documents and page screenshots from HTML and URLs using Playwright and Chromium.
 
-- [Регистрация, настройки и переход на версию 13](../../docs/pdf.md)
-- [Registration, configuration, and migration to version 13](../../docs/pdf.en.md)
+- [Регистрация, настройки и переход на версию 13](../../docs/ru/pdf.md)
+- [Registration, configuration, and migration to version 13](../../docs/en/pdf.md)

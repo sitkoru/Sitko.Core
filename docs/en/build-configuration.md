@@ -60,7 +60,7 @@ scope of settings, including `apps` and `perf`.
 The module requires no Node.js setup or npm commands. Its components use styles
 from `AntDesign 0.20.4`; the package contains no additional Sitko.Core frontend
 assets for these components.
-See the [migration guide](../migration-v13.en.md) for application changes.
+See the [migration guide](migration-v13.md) for application changes.
 
 References: [MSBuild](https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-by-directory),
 [NuGet CPM](https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management).

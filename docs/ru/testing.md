@@ -35,8 +35,8 @@ dotnet test --project tests/Sitko.Core.App.Tests/Sitko.Core.App.Tests.csproj --f
 dotnet test --project tests/Sitko.Core.Tasks.Kafka.Tests/Sitko.Core.Tasks.Kafka.Tests.csproj --minimum-expected-tests 3
 ```
 
-Интеграционные проекты требуют своих сервисов: [PDF](../pdf.md#проверка-модуля),
-[Redis/Valkey](../redis-sentinel.md#локальная-проверка) и окружения существующих заданий CI.
+Интеграционные проекты требуют своих сервисов: [PDF](pdf.md#проверка-модуля),
+[Redis/Valkey](redis-sentinel.md#локальная-проверка) и окружения существующих заданий CI.
 
 ## Проверки GitHub Actions
 
