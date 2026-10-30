@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using Sitko.Core.App.Collections;
 using Sitko.Core.Xunit;
 using Xunit;

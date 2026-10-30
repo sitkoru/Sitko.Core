@@ -1,9 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Repository\Sitko.Core.Repository.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="CompareNETObjects" />
-    <PackageReference Include="Remote.Linq.Newtonsoft.Json" />
-  </ItemGroup>
-</Project>

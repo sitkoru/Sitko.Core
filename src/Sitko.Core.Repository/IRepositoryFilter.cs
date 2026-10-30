@@ -1,9 +1,7 @@
 using FluentValidation.Results;
-using JetBrains.Annotations;
 
 namespace Sitko.Core.Repository;
 
-[PublicAPI]
 public interface IRepositoryFilter
 {
     bool CanProcess(Type type);

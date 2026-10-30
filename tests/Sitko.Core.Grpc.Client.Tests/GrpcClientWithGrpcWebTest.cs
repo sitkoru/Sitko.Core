@@ -9,8 +9,8 @@ public class GrpcClientWithGrpcWebTest(ITestOutputHelper testOutputHelper)
 
 public class GrpcClientWithGrpcWebScope : GrpcClientScope
 {
-    protected override void RegisterService(GrpcServerModuleOptions options) =>
-        options.RegisterServiceWithGrpcWeb<TestServiceServer>();
+    protected override void RegisterService(GrpcServerBuilder builder) =>
+        _ = builder.RegisterServiceWithGrpcWeb<TestServiceServer>();
 
     protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
     {

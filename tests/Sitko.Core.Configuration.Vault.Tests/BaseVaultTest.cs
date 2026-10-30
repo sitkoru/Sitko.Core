@@ -26,7 +26,12 @@ public class VaultTestScope : BaseTestScope
         vaultClient = new VaultClient(new VaultClientSettings(Environment.GetEnvironmentVariable("VAULT__URI"),
             new TokenAuthMethodInfo(Environment.GetEnvironmentVariable("VAULT__TOKEN"))));
 
-    public TestConfig FirstConfig { get; } = new() { Bar = Guid.NewGuid(), Foo = Guid.NewGuid().ToString() };
+    public TestConfig FirstConfig { get; } = new()
+    {
+        Bar = Guid.NewGuid(),
+        Foo = Guid.NewGuid().ToString(),
+        Nested = new TestNestedConfig { Enabled = false, Values = ["first", "second"] }
+    };
     public TestConfig2 SecondConfig { get; } = new() { Bar = Guid.NewGuid(), Foo = Guid.NewGuid().ToString() };
 
     protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
@@ -108,6 +113,13 @@ public class TestConfig
 {
     public string Foo { get; set; } = "";
     public Guid Bar { get; set; }
+    public TestNestedConfig Nested { get; set; } = new();
+}
+
+public class TestNestedConfig
+{
+    public bool Enabled { get; set; } = true;
+    public string[] Values { get; set; } = [];
 }
 
 public class TestConfig2

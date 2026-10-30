@@ -14,6 +14,5 @@ internal class GrpcTokenProviderFactory<TClient, TTokenProvider> : IGrpcTokenPro
 
 {
     public IGrpcTokenProvider GetProvider(IServiceProvider serviceProvider) =>
-        serviceProvider.GetServices<IGrpcTokenProvider>().OfType<TTokenProvider>().FirstOrDefault() ??
-        throw new InvalidDataException($"Service {typeof(TTokenProvider)} is not register");
+        serviceProvider.GetRequiredService<TTokenProvider>();
 }

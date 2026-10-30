@@ -1,7 +1,10 @@
+using Grpc.AspNetCore.Server;
+
 namespace Sitko.Core.Grpc.Server;
 
 public interface IGrpcServerModule
 {
-    void RegisterService<TService>(string? requiredAuthorizationSchemeName, bool enableGrpcWeb = false) where TService : class;
+    public void RegisterService<TService>(string? requiredAuthorizationSchemeName, bool enableGrpcWeb = false,
+        Action<GrpcServiceOptions>? configure = null) where TService : class;
 }
 

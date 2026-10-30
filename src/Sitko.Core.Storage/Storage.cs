@@ -234,13 +234,14 @@ public abstract class Storage<TStorageOptions> : IStorage<TStorageOptions>, IAsy
         else
         {
             result = await DoGetFileAsync(GetPathWithPrefix(path), cancellationToken);
-            if (result is not null && MetadataProvider is not null)
+        }
+
+        if (result is not null && MetadataProvider is not null)
+        {
+            var metadata = await MetadataProvider.GetMetadataAsync(path, cancellationToken);
+            if (metadata is not null)
             {
-                var metadata = await MetadataProvider.GetMetadataAsync(path, cancellationToken);
-                if (metadata is not null)
-                {
-                    result.SetMetadata(metadata);
-                }
+                result.SetMetadata(metadata);
             }
         }
 

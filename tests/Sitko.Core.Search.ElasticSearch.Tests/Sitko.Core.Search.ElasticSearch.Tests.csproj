@@ -1,5 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Sitko.Core.Search.ElasticSearch\Sitko.Core.Search.ElasticSearch.csproj"/>
-  </ItemGroup>
-</Project>

@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using Sitko.Core.App.Results;
 using Sitko.Core.Xunit;
 using Xunit;

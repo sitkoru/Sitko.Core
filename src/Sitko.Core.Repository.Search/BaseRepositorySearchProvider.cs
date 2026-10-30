@@ -18,7 +18,7 @@ public abstract class
 
     public async Task ReindexAsync(int batchSize, CancellationToken cancellationToken = default)
     {
-        var page = 0;
+        var page = 1;
         while (true)
         {
             var (items, _) =
