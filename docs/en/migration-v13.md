@@ -7,6 +7,23 @@ are not released as part of 13; their types and registration methods are
 unavailable. Check direct and transitive application dependencies and remove
 these package references, namespaces and their former configuration.
 
+## OTEL export
+
+For `HttpProtobuf`, `OpenTelemetry:Endpoint` is a base URL. If configuration contains
+an exact URL such as `http://collector:4318/v1/traces`, change it to
+`http://collector:4318`: the module appends `/v1/logs`, `/v1/metrics`, or `/v1/traces`
+for each signal. A custom receiver with a single exact HTTP path must expose or
+route these signal paths. The gRPC address is unchanged.
+
+Nonempty common `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_PROTOCOL`, and
+`OTEL_EXPORTER_OTLP_HEADERS` override their corresponding configuration fields
+for all three signals. `OTEL_EXPORTER_OTLP_HEADERS` replaces the entire set, so
+include every required header, including the organization. There is no requirement
+to remove these variables during migration. Store credentials in Vault using
+`OpenTelemetry:Headers` if desired; a nonempty standard environment variable will
+still override this dictionary. Restart after changes. See the [OTEL guide](observability.md)
+for valid values, restrictions, and the exact environment support matrix.
+
 ## .NET 10 platform
 
 Microsoft packages and the .NET integrations (Npgsql, Razor, MudBlazor, gRPC,

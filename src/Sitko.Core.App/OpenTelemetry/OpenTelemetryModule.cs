@@ -1,4 +1,3 @@
-﻿using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
@@ -35,10 +34,7 @@ public class OpenTelemetryModule : BaseApplicationModule<OpenTelemetryModuleOpti
                 if (startupOptions.EnableOtlpExport)
                 {
                     builder.AddOtlpExporter(exporterBuilder =>
-                    {
-                        exporterBuilder.Endpoint = startupOptions.Endpoint!;
-                        exporterBuilder.Protocol = startupOptions.OtlpExportProtocol;
-                    });
+                        OtlpExportSettings.Resolve(startupOptions).Apply(exporterBuilder, "traces"));
                 }
             });
         }
@@ -51,10 +47,7 @@ public class OpenTelemetryModule : BaseApplicationModule<OpenTelemetryModuleOpti
                 if (startupOptions.EnableOtlpExport)
                 {
                     builder.AddOtlpExporter(exporterBuilder =>
-                    {
-                        exporterBuilder.Endpoint = startupOptions.Endpoint!;
-                        exporterBuilder.Protocol = startupOptions.OtlpExportProtocol;
-                    });
+                        OtlpExportSettings.Resolve(startupOptions).Apply(exporterBuilder, "metrics"));
                 }
             });
         }
@@ -70,28 +63,33 @@ public class OpenTelemetryModule : BaseApplicationModule<OpenTelemetryModuleOpti
     {
         if (options is { EnableOtlpExport: true, EnableLogs: true })
         {
+            var settings = OtlpExportSettings.Resolve(options);
             loggerConfiguration
                 .Enrich.WithProperty("ApplicationId", context.Id)
                 .Enrich.WithProperty("ApplicationName", context.Name)
                 .Enrich.WithProperty("ApplicationVersion", context.Version)
                 .WriteTo.OpenTelemetry(sinkOptions =>
                 {
-                    sinkOptions.Protocol = options.OtlpExportProtocol switch
+                    sinkOptions.Protocol = settings.Protocol switch
                     {
                         OtlpExportProtocol.Grpc => OtlpProtocol.Grpc,
                         OtlpExportProtocol.HttpProtobuf => OtlpProtocol.HttpProtobuf,
-                        _ => throw new InvalidEnumArgumentException($"Unknown value {options.OtlpExportProtocol}")
+                        _ => throw new InvalidOperationException("Unsupported OTLP protocol.")
                     };
-                    sinkOptions.Endpoint = options.Endpoint!.ToString();
-                    sinkOptions.LogsEndpoint = options.Endpoint!.ToString();
-                    sinkOptions.TracesEndpoint = options.Endpoint!.ToString();
+                    sinkOptions.Headers = settings.Headers;
+                    sinkOptions.Endpoint = null;
+                    sinkOptions.LogsEndpoint = settings.GetEndpoint("logs").AbsoluteUri;
+                    sinkOptions.TracesEndpoint = settings.GetEndpoint("traces").AbsoluteUri;
                     sinkOptions.ResourceAttributes = new Dictionary<string, object>
                     {
                         ["service.name"] = context.Name,
                         ["deployment.environment"] = context.Environment,
                         ["host.name"] = Environment.MachineName
                     };
-                });
+                }, getConfigurationVariable: static name => name is
+                    "OTEL_EXPORTER_OTLP_ENDPOINT" or "OTEL_EXPORTER_OTLP_PROTOCOL" or "OTEL_EXPORTER_OTLP_HEADERS"
+                    ? null
+                    : Environment.GetEnvironmentVariable(name));
         }
 
         return loggerConfiguration;
