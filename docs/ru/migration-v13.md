@@ -188,24 +188,6 @@ OpenSearch 3.x. Если приложение напрямую использу�
 `Queue:Nats` не поддерживаются. Зависимости `NATS.Client` и `STAN.Client`
 исключены из состава Sitko.Core.
 
-До обновления приложения удалите ссылку на этот пакет и регистрацию NATS.
-Для межпроцессной передачи сообщений используйте `Sitko.Core.Queue.Kafka`:
-`AddKafkaQueue(...)`, `IEventProducer.Produce(key, message)` и обработчики
-с `QueueHandlerAttribute`/`QueueBatchHandlerAttribute`; настройте секции
-`Kafka` и `Kafka:Queue` по [руководству очередей](messaging.md#kafka).
-
-Kafka здесь использует отдельный API и не реализует `IQueue`. Замены одного
-вызова регистрации недостаточно: перенесите публикацию и обработчики, согласуйте
-ключи и имена topics/groups, порядок, подтверждения, повторные попытки и защиту
-от повторного выполнения. Для `RequestAsync`/`ReplyAsync` и настроек STAN
-`Durable`, `ManualAck`, `AckWaitInSeconds`, `MaxInFlight` автоматического
-соответствия нет. `Queue.InMemory` сохраняется для работы внутри процесса
-и не заменяет межпроцессную доставку.
-
-Удаление модуля не переносит накопленные сообщения, подписки или позиции STAN
-в Kafka и не очищает брокер. Переход приложений и проверка доставки выполняются
-отдельно до отключения их NATS/STAN; эта инструкция не подтверждает их завершение.
-
 ## Аннотации для инструментов разработки
 
 Пакеты Sitko.Core не объявляют прямую зависимость от `JetBrains.Annotations`
@@ -239,7 +221,7 @@ Kafka здесь использует отдельный API и не реали�
 | `MediatR` | Удалите регистрацию модуля `AddMediatR<TAssembly>()`. Для обычного MediatR подключите библиотеку напрямую. Передача уведомлений через `QueueModuleOptions.TranslateMediatRNotification<T>()`, `TranslateMediatRTypes` и требование `IMediatRModule` удалены; отправляйте сообщения через сохраняемый `IQueue` явно. |
 | `OpenSearch` | Удалите `AddOpenSearchLogging()` и настройки `OpenSearch:Logging`; настройте экспорт логов через OTEL или прямое подключение нужного sink. Поисковый модуль `Search.OpenSearch` сохраняется. |
 | `Puppeteer` | Удалите `AddPuppeteer()`, настройки `Puppeteer` и зависимости от `IBrowserProvider` этого модуля. Для собственного управления браузером подключите PuppeteerSharp напрямую. Для PDF достаточно `AddPdfRenderer()`; параметры и подготовка браузера описаны в [инструкции PDF](pdf.md#переход-на-sitkocore-13). |
-| `Queue.Nats` | См. [удаление NATS/STAN](#удаление-natsstan) и переход на Kafka. |
+| `Queue.Nats` | См. [удаление NATS/STAN](#удаление-natsstan). |
 | `Search.ElasticSearch` | Удалите `AddElasticSearch()` и настройки `Search:Elastic`. Выберите прямую интеграцию Elasticsearch либо отдельно спланируйте переход на `Search.OpenSearch`; автоматической миграции индексов и настроек нет. |
 | `Sentry` | Удалите `AddSentry()` и настройки модуля `Sentry`. При необходимости подключите SDK Sentry напрямую и восстановите необходимые параметры. |
 | `Swagger` | Удалите регистрацию модуля `AddSwagger()` и настройки `Swagger`. Зарегистрируйте генерацию OpenAPI и интерфейс документации напрямую, включая описание авторизации и настройки конечных точек. |
