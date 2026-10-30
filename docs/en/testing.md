@@ -55,8 +55,8 @@ may produce no TRX; diagnostics are retained if the runner has written them.
 Errors are not suppressed: a failing suite fails its job and blocks dependent publishing.
 
 Main pins the SDK image by digest. PostgreSQL uses `pg_isready`; Consul,
-MinIO, and Vault use HTTP probes with bounded retries; NATS waits for its TCP port
-for at most 60 seconds. PDF, OpenSearch, and Redis/Valkey retain their existing
+MinIO, and Vault use HTTP probes with bounded retries.
+PDF, OpenSearch, and Redis/Valkey retain their existing
 readiness checks. Kafka and ClickHouse use their own test fixtures.
 
 A new PR run cancels an outdated run of the same PR and workflow. Cancellation

@@ -181,11 +181,12 @@ OpenSearch 3.x. Если приложение напрямую использу�
 сегмента трассировки. Проверьте запросы и правила мониторинга, использующие RPC-атрибуты
 и связи сегментов, по [примечаниям инструментации](https://github.com/open-telemetry/opentelemetry-dotnet-contrib/blob/4f2a49444969d8ffae3d46007ce533d28ad153d3/src/OpenTelemetry.Instrumentation.GrpcNetClient/CHANGELOG.md).
 
-`Queue.Nats` сохраняет пару `NATS.Client 1.1.0` и `STAN.Client 0.3.0`.
-Версии NATS `1.1.1–1.1.8` бинарно несовместимы с этим STAN: замена
-`CreateConnection(string)` перегрузкой с дополнительным параметром приводит к
-`MissingMethodException`. Не переопределяйте эту зависимость отдельно; см.
-[изменение API NATS](https://github.com/nats-io/nats.net.v1/compare/1.1.0...1.1.1).
+## Удаление NATS/STAN
+
+В версии 13 удалён пакет `Sitko.Core.Queue.Nats`: `AddNatsQueue`, `NatsQueue`,
+`NatsQueueModule`, `NatsQueueModuleOptions`, `NatsMessageOptions<T>` и секция
+`Queue:Nats` не поддерживаются. Зависимости `NATS.Client` и `STAN.Client`
+исключены из состава Sitko.Core.
 
 ## Аннотации для инструментов разработки
 
@@ -220,6 +221,7 @@ OpenSearch 3.x. Если приложение напрямую использу�
 | `MediatR` | Удалите регистрацию модуля `AddMediatR<TAssembly>()`. Для обычного MediatR подключите библиотеку напрямую. Передача уведомлений через `QueueModuleOptions.TranslateMediatRNotification<T>()`, `TranslateMediatRTypes` и требование `IMediatRModule` удалены; отправляйте сообщения через сохраняемый `IQueue` явно. |
 | `OpenSearch` | Удалите `AddOpenSearchLogging()` и настройки `OpenSearch:Logging`; настройте экспорт логов через OTEL или прямое подключение нужного sink. Поисковый модуль `Search.OpenSearch` сохраняется. |
 | `Puppeteer` | Удалите `AddPuppeteer()`, настройки `Puppeteer` и зависимости от `IBrowserProvider` этого модуля. Для собственного управления браузером подключите PuppeteerSharp напрямую. Для PDF достаточно `AddPdfRenderer()`; параметры и подготовка браузера описаны в [инструкции PDF](pdf.md#переход-на-sitkocore-13). |
+| `Queue.Nats` | См. [удаление NATS/STAN](#удаление-natsstan). |
 | `Search.ElasticSearch` | Удалите `AddElasticSearch()` и настройки `Search:Elastic`. Выберите прямую интеграцию Elasticsearch либо отдельно спланируйте переход на `Search.OpenSearch`; автоматической миграции индексов и настроек нет. |
 | `Sentry` | Удалите `AddSentry()` и настройки модуля `Sentry`. При необходимости подключите SDK Sentry напрямую и восстановите необходимые параметры. |
 | `Swagger` | Удалите регистрацию модуля `AddSwagger()` и настройки `Swagger`. Зарегистрируйте генерацию OpenAPI и интерфейс документации напрямую, включая описание авторизации и настройки конечных точек. |

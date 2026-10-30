@@ -64,7 +64,6 @@
     <Project Path="src/Sitko.Core.Pdf/Sitko.Core.Pdf.csproj" />
     <Project Path="src/Sitko.Core.Queue.InMemory/Sitko.Core.Queue.InMemory.csproj" />
     <Project Path="src/Sitko.Core.Queue.Kafka/Sitko.Core.Queue.Kafka.csproj" />
-    <Project Path="src/Sitko.Core.Queue.Nats/Sitko.Core.Queue.Nats.csproj" />
     <Project Path="src/Sitko.Core.Queue/Sitko.Core.Queue.csproj" />
     <Project Path="src/Sitko.Core.Redis/Sitko.Core.Redis.csproj" />
     <Project Path="src/Sitko.Core.Repository.EntityFrameworkCore/Sitko.Core.Repository.EntityFrameworkCore.csproj" />
@@ -105,7 +104,6 @@
     <Project Path="tests/Sitko.Core.Pdf.Tests/Sitko.Core.Pdf.Tests.csproj" />
     <Project Path="tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj" />
     <Project Path="tests/Sitko.Core.Queue.Kafka.Tests/Sitko.Core.Queue.Kafka.Tests.csproj" />
-    <Project Path="tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj" />
     <Project Path="tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj" />
     <Project Path="tests/Sitko.Core.Repository.EntityFrameworkCore.Tests/Sitko.Core.Repository.EntityFrameworkCore.Tests.csproj" />
     <Project Path="tests/Sitko.Core.Repository.Grpc.Tests/Sitko.Core.Repository.Grpc.Tests.csproj" />

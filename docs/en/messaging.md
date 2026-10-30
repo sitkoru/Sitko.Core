@@ -2,12 +2,11 @@
 
 [Русский](../ru/messaging.md) · [All topics](README.md)
 
-## IQueue: in-process and NATS
+## IQueue: in-process
 
 `Sitko.Core.Queue` defines `IQueue`, processors and middleware.
-After [registering Sitko.Core](application.md), select a transport:
-`AddInMemoryQueue(...)` from `Sitko.Core.Queue.InMemory` or `AddNatsQueue(...)`
-from `Sitko.Core.Queue.Nats`.
+After [registering Sitko.Core](application.md), register the queue with
+`AddInMemoryQueue(...)` from `Sitko.Core.Queue.InMemory`.
 
 For an in-process queue without an external server:
 
@@ -42,20 +41,12 @@ publishing and callback completion are separate events. Keep the application Hos
 alive until the required work finishes. InMemory does not persist messages across
 restarts or connect separate processes.
 
-Sections are `Queue:InMemory` and `Queue:Nats`. Options expose
+The section is `Queue:InMemory`. Options expose
 `RegisterProcessor<TProcessor,TMessage>()`, `RegisterProcessors<TAssembly>()`,
 `RegisterMiddleware<T>()` and `ConfigureMessage<T>(...)`. Processors have scoped
 lifetimes. Request/reply (`RequestAsync`/`ReplyAsync`) and explicit unsubscribe
 (`UnsubscribeAsync`) are available. Check publication/subscription results and
 missing replies; transport acceptance does not prove business operation completion.
-
-NATS uses **STAN** and requires NATS Streaming, not just NATS Core or JetStream.
-Set `Servers`, `ClusterName` and optionally `ClientName`, `ConsumerGroupName`,
-`QueueNamePrefix`. The connection timeout is 10 seconds.
-`NatsMessageOptions<T>` defaults to `Durable=true`, `ManualAck=true`,
-`AckWaitInSeconds=2`, `MaxInFlight=200`. With manual acknowledgement, a callback
-returning `false` does not acknowledge the message; redelivery is possible.
-Make application actions safe to repeat.
 
 ## Kafka
 
@@ -98,6 +89,5 @@ Verify delivery, successful/failed completion, retry and persisted state in an
 isolated environment. For a real Kafka/PostgreSQL example, see
 [Tasks.Kafka.Tests](../../tests/Sitko.Core.Tasks.Kafka.Tests).
 Sources: [IQueue](../../src/Sitko.Core.Queue/IQueue.cs),
-[NATS](../../src/Sitko.Core.Queue.Nats/NatsQueue.cs),
 [Kafka](../../src/Sitko.Core.Queue.Kafka/KafkaQueueModule.cs),
 [tasks](../../src/Sitko.Core.Tasks.Kafka/ApplicationExtensions.cs).

@@ -33,7 +33,7 @@ guide, grouping shared contracts and implementations within a related topic.
 | [Local accounts](identity.md) | `Identity` |
 | [Redis and Valkey](redis-sentinel.md) | `Redis` |
 | [Databases and repositories](data.md) | `Db`, `Db.InMemory`, `Db.Postgres`, `Repository`, `Repository.EntityFrameworkCore`, `Repository.Grpc`, `Repository.Search`, `ClickHouse`, `ClickHouse.Linq2db`, `Search`, `Search.OpenSearch` |
-| [Queues and tasks](messaging.md) | `Queue`, `Queue.InMemory`, `Queue.Nats`, `Queue.Kafka`, `Kafka`, `Tasks`, `Tasks.Kafka` |
+| [Queues and tasks](messaging.md) | `Queue`, `Queue.InMemory`, `Queue.Kafka`, `Kafka`, `Tasks`, `Tasks.Kafka` |
 | [Files and images](storage.md) | `Storage`, `Storage.FileSystem`, `Storage.S3`, `Storage.Metadata.Postgres`, `Storage.Remote`, `Storage.Remote.Server`, `Storage.ImgProxy`, `ImgProxy` |
 | [Email](email.md) | `Email`, `Email.Smtp` |
 | [gRPC and service discovery](grpc-service-discovery.md) | `Grpc`, `Grpc.Client`, `Grpc.Server`, `ServiceDiscovery`, `ServiceDiscovery.Consul` |

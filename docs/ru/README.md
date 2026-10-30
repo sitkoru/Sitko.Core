@@ -33,7 +33,7 @@ Sitko.Core — модульная основа приложений на .NET 10
 | [Локальные учётные записи](identity.md) | `Identity` |
 | [Redis и Valkey](redis-sentinel.md) | `Redis` |
 | [Базы и репозитории](data.md) | `Db`, `Db.InMemory`, `Db.Postgres`, `Repository`, `Repository.EntityFrameworkCore`, `Repository.Grpc`, `Repository.Search`, `ClickHouse`, `ClickHouse.Linq2db`, `Search`, `Search.OpenSearch` |
-| [Очереди и задачи](messaging.md) | `Queue`, `Queue.InMemory`, `Queue.Nats`, `Queue.Kafka`, `Kafka`, `Tasks`, `Tasks.Kafka` |
+| [Очереди и задачи](messaging.md) | `Queue`, `Queue.InMemory`, `Queue.Kafka`, `Kafka`, `Tasks`, `Tasks.Kafka` |
 | [Файлы и изображения](storage.md) | `Storage`, `Storage.FileSystem`, `Storage.S3`, `Storage.Metadata.Postgres`, `Storage.Remote`, `Storage.Remote.Server`, `Storage.ImgProxy`, `ImgProxy` |
 | [Почта](email.md) | `Email`, `Email.Smtp` |
 | [gRPC и обнаружение сервисов](grpc-service-discovery.md) | `Grpc`, `Grpc.Client`, `Grpc.Server`, `ServiceDiscovery`, `ServiceDiscovery.Consul` |
