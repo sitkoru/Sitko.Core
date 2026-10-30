@@ -7,12 +7,12 @@ Sitko.Core 13 объединяет согласованное сокращени
 
 Используется [Spec of Specs](https://github.github.com/spec-kit/concepts/spec-of-specs.html):
 обычный Markdown со стабильными ID, границами и зависимостями. Новые задачи
-получают новые ID; R01–R17 не перенумеровываются при изменении порядка.
+получают новые ID; R01–R19 не перенумеровываются при изменении порядка.
 
 ## Состояние и свидетельства
 
-Срез состояния проверен 29 октября 2026 года. Основа — `v13`,
-`2ee7a068868f76e375e4d060be575b7a298b9874`. Подтверждённые слияния,
+Срез состояния проверен 30 октября 2026 года. Основа — `v13`,
+`a2793e08b873e157712c0f06e57d01b3eaca8c2d`. Подтверждённые слияния,
 проверенные head и результаты CI приведены в разделах задач. Частичные результаты
 и продолжающаяся работа не означают завершения всей задачи.
 
@@ -26,14 +26,14 @@ Sitko.Core 13 объединяет согласованное сокращени
 - **CI прошёл** — проверки успешны для конкретного SHA; это не приёмка потребителей.
 - **Влито** — GitHub подтверждает слияние PR в `v13`; сохраняется merge SHA.
 
-План сохраняет зависимости и границы согласованного объёма. R01–R06,
-R07–R11 и R13–R17 влиты. Согласованный объём R09 и весь R10 завершены.
-Итоговая приёмка R12 пройдена; 29 октября 2026 года выпущена первая
-[beta 13.0.0-beta.1](https://github.com/sitkoru/Sitko.Core/releases/tag/13.0.0-beta.1).
-GitHub Packages содержит 52 пакета; NuGet принял 52 пакета и 52 пакета символов,
-но их публичная индексация пока не подтверждена. Перенос стабилизации Redis влит отдельно.
-Stable, слияние в `master`, production и миграция потребителей требуют отдельных
-поручений. Автоматическая публикация beta из `v13` выключена.
+План сохраняет зависимости и границы согласованного объёма. R01–R11 и
+R13–R19 влиты; согласованный объём R09 и весь R10 завершены. Приёмка R12
+пройдена перед первой beta. После неё влиты Redis и OTLP; 30 октября выпущена
+[13.0.0-beta.2](https://github.com/sitkoru/Sitko.Core/releases/tag/13.0.0-beta.2).
+Удаление NATS/STAN влито после beta.2 и в неё не входит. Всего удалён 21 модуль:
+первоначальные 20 и `Queue.Nats`. Миграция внешних приложений и production не
+подтверждена. Stable и слияние в `master` требуют отдельных поручений;
+автоматическая публикация beta из `v13` выключена.
 
 Для согласованных и порученных задач действует разрешение доводить работу
 до слияния проверенного PR в `v13` без отдельного вопроса о каждом слиянии:
@@ -61,7 +61,7 @@ R04 уже оставила единственный TFM `net10.0` и удали
 | --- | --- | --- | --- | --- |
 | [R01](#r01) | Основа `v13`, предварительная ветка beta и проверки push | — | Влито | [PR #1204](https://github.com/sitkoru/Sitko.Core/pull/1204), `5abbda7cd1477a7273989656ae86317137668dc0` |
 | [R02](#r02) | Самостоятельная генерация PDF без зависимости от Puppeteer | R01 | Влито; CI прошёл для `a63ecd55c1db0987b5b449a800ed4ed9fb002055` | [Контракт PDF](specs/20261027-150000-pdf-rendering/spec.md), [PR #1205](https://github.com/sitkoru/Sitko.Core/pull/1205), `cc021029ca4dfd3489b9fc86dd8e2e7f7927fbd2` |
-| [R03](#r03) | Удаление 20 согласованных модулей | R03a: R02; R03b: работающая отвязка Blazor в R10 | Влито: R03a + R03b, все 20 модулей | [PR #1208](https://github.com/sitkoru/Sitko.Core/pull/1208) и [PR #1212](https://github.com/sitkoru/Sitko.Core/pull/1212), merge R03b `bb5f6de21c067877e06e6786adf5fa691e7cb4fe`; [Main #2090](https://github.com/sitkoru/Sitko.Core/actions/runs/40571619979) успешен для `3d402f3eb6be71a3b722d298fdf1c93d63b9f544` |
+| [R03](#r03) | Удаление первоначальных 20 модулей и последующее удаление `Queue.Nats` | R03a: R02; R03b: работающая отвязка Blazor в R10 | Влито: R03a + R03b + R03c, всего 21 модуль | [PR #1208](https://github.com/sitkoru/Sitko.Core/pull/1208), [PR #1212](https://github.com/sitkoru/Sitko.Core/pull/1212) и [PR #1281](https://github.com/sitkoru/Sitko.Core/pull/1281), merge R03b `bb5f6de21c067877e06e6786adf5fa691e7cb4fe`; [Main #2090](https://github.com/sitkoru/Sitko.Core/actions/runs/40571619979) успешен для `3d402f3eb6be71a3b722d298fdf1c93d63b9f544` |
 | [R04](#r04) | Только .NET 10: net10.0 без net8.0; все Microsoft-пакеты — совместимые стабильные версии | R03 → R13 | Влито; PR-CI прошёл | [PR #1217](https://github.com/sitkoru/Sitko.Core/pull/1217), merge `b4886c5074b2fb10c79240eac6b2b09243be5516`; [Main #2094](https://github.com/sitkoru/Sitko.Core/actions/runs/40633703256) успешен для `da511392e579cd8d4d39e399ddaa204f4726877f` |
 | [R05](#r05) | Аудит сторонних пакетов и согласованные обновления | Для общих файлов: R13 → R04; для специальных пакетов — задача их модуля | Первоначальные части и последующее обновление зависимостей влиты; PR-CI прошёл | [PR #1220](https://github.com/sitkoru/Sitko.Core/pull/1220), merge `7ef19495029c095c69b39cd86d0fae3fe34cd290`; [Main #2097](https://github.com/sitkoru/Sitko.Core/actions/runs/40636663072) успешен для `41d8e3d2724e248c74e62b2679dd31dfbbfb2090`; [последующие свидетельства](#r05) |
 | [R06](#r06) | `Auth.OIDC` и Duende | R04 (влито) | Влито; PR-CI прошёл | [Контракт OIDC](specs/20261028-102000-oidc-authentication/spec.md), [PR #1226](https://github.com/sitkoru/Sitko.Core/pull/1226), merge `d20b7eeee614d6c007f661127120771983ceec8a`; [Main #2104](https://github.com/sitkoru/Sitko.Core/actions/runs/40638966276) успешен для `23ecf12cf083b22a44464129beda50572c03a1e7` |
@@ -70,12 +70,14 @@ R04 уже оставила единственный TFM `net10.0` и удали
 | [R09](#r09) | Аудит и согласованные критичные тесты сохраняемых модулей | R14, контракты возможностей | Согласованный объём P1/P2 завершён; P2 — Xunit исключена | См. свидетельства в разделе R09 |
 | [R10](#r10) | Полезные воспроизводимые приложения-примеры | Blazor-отвязка: текущие TFM, до R03b; итоговая проверка .NET 10: R04; gRPC: R07 | Завершена: Blazor принят, gRPC-демо влито | [PR #1209](https://github.com/sitkoru/Sitko.Core/pull/1209), [PR #1270](https://github.com/sitkoru/Sitko.Core/pull/1270); свидетельства в разделе R10 |
 | [R11](#r11) | Общая документация на русском и английском | Стабилизация состава и интерфейсов R03–R09, включая принятые результаты R13–R15 | Завершена | [PR #1268](https://github.com/sitkoru/Sitko.Core/pull/1268), merge `fc6e261f3a3ffdab17c0cde6760b43f5006721d8`; [RU](docs/ru/README.md), [EN](docs/en/README.md) |
-| [R12](#r12) | Итоговая проверка `v13` и первая beta | Принятые результаты R01–R11, R13–R17 | Приёмка пройдена; beta выпущена, публичная индексация NuGet не подтверждена | [Результаты приёмки и выпуска](#r12) |
+| [R12](#r12) | Итоговая проверка `v13` и первая beta | Принятые результаты R01–R11, R13–R17 | Приёмка пройдена для первой beta; выпущена beta.2 | [Результаты приёмки и выпуска](#r12) |
 | [R13](#r13) | Общие корневые настройки сборки и версий пакетов | Полный R03 | Влито, включая проекты `perf` | [PR #1237](https://github.com/sitkoru/Sitko.Core/pull/1237), head `751ef106de3393c6b85e27af665f7f235b0d5c1b`, merge `8e90cb58f1f1816a2fabe7985e39249be8917654`, [Main #2131](https://github.com/sitkoru/Sitko.Core/actions/runs/40643196853) — успешно |
 | [R14](#r14) | Единая миграция AwesomeAssertions, xUnit и тестовой платформы на MTP v2 | R04 (влито); до новых тестов R09; последовательная интеграция CI с R08 | Влито; PR-CI прошёл | [Контракт тестовой платформы](specs/20261028-103000-test-platform/spec.md), [PR #1222](https://github.com/sitkoru/Sitko.Core/pull/1222), merge `5e12c6756720d29bc3fc836b6735fcc7c03739e7`; [Main #2099](https://github.com/sitkoru/Sitko.Core/actions/runs/40637912082) успешен для `ec73c7b5c4f3268902d2a3da76a4b570fe9c68db` |
 | [R15](#r15) | Удаление фронтенд-кода AntDesign/Web и npm/Node.js-шагов CI | Последовательная интеграция с R08/R14 | Влито | [PR #1223](https://github.com/sitkoru/Sitko.Core/pull/1223), head `3e040b1dfe986fa0509a20af265d2b491f737104`, merge `acca8fdfca1f255da48bf34ee4d6560e58a7c8bd`, [Main #2123](https://github.com/sitkoru/Sitko.Core/actions/runs/40641840734) — успешно |
 | [R16](#r16) | Стабилизация Kafka-тестов | R14; согласованные сценарии R09 | Оба согласованных исправления влиты | [PR #1234](https://github.com/sitkoru/Sitko.Core/pull/1234), head `63015b78932b9b7d594e991e1bccb34eda4af94c`, merge `d9b2af5ba98b0ebebe2dcc3c0afc5f5ebf028467`, [Main #2114](https://github.com/sitkoru/Sitko.Core/actions/runs/40640607234) — успешно |
 | [R17](#r17) | Переход решения на SLNX | R13 | Влито | [Контракт сборки](specs/20261028-080000-build-configuration/spec.md), [PR #1240](https://github.com/sitkoru/Sitko.Core/pull/1240), head `f92c74923b6ab3b7d36a369f6f50299e71a5167a`, merge `c6304630e405d83cec7ae60cfd2437ed3c892a3e`, [Main #2146](https://github.com/sitkoru/Sitko.Core/actions/runs/40648778820) и [CodeQL #2867](https://github.com/sitkoru/Sitko.Core/actions/runs/40648778851) — успешно |
+| [R18](#r18) | Единое подключение Redis | R06 | Влито | [Спецификация](specs/20261030-090000-redis-connection/spec.md), [PR #1279](https://github.com/sitkoru/Sitko.Core/pull/1279) |
+| [R19](#r19) | Единые настройки экспорта OTLP | R18 | Влито | [Спецификация](specs/20261030-090000-otel-export-configuration/spec.md), [PR #1280](https://github.com/sitkoru/Sitko.Core/pull/1280) |
 
 ## Границы и завершение задач
 
@@ -146,6 +148,10 @@ PR-CI R03b [Main #2090](https://github.com/sitkoru/Sitko.Core/actions/runs/40571
 заданий прошли, Release пропущен. Успех относится к этому PR-CI;
 результат push-CI нового merge-коммита здесь не подтверждён.
 
+**R03c — последующее удаление:** [PR #1281](https://github.com/sitkoru/Sitko.Core/pull/1281) удалил `Queue.Nats`, зависимости, примеры, тесты и стенд CI NATS/STAN. `AddNatsQueue`, `NatsQueueModule`, его настройки и `NatsMessageOptions<T>` отсутствуют. Общие Queue, InMemory и Kafka сохранены. [Контракт](specs/20261027-233345-legacy-modules/spec.md). Первоначальные 20 выше остаются историческим составом #1208/#1212; с R03c удалён 21 модуль. Удаление произошло после beta.2.
+
+Для кодовой основы `e57affe920716a36079a5aa9492aff58d5320df8` успешны [Main](https://github.com/sitkoru/Sitko.Core/actions/runs/41025944231) и [CodeQL](https://github.com/sitkoru/Sitko.Core/actions/runs/41025944227). Итоговый head `48b0b30bdf45159cb1fd5e5005cae4ee6bb530b4` меняет только документацию и пропустил CI; для merge `a2793e08b873e157712c0f06e57d01b3eaca8c2d` отдельный успешный CI не заявляется. Локально упакован 51 пакет; это не число опубликованных пакетов beta.2.
+
 ### R04
 
 R04 завершена: [PR #1217](https://github.com/sitkoru/Sitko.Core/pull/1217) влит,
@@ -187,7 +193,7 @@ PR-CI [Main #2097](https://github.com/sitkoru/Sitko.Core/actions/runs/4063666307
 Стабилизация Redis-тестов из внешней задачи не включена в результат #1220;
 она поставлена отдельным #1225 и описана ниже, с собственным PR-CI.
 
-Последующая сверка 109 используемых прямых NuGet-зависимостей завершена: 19 обновлены, 87 уже были актуальны, `AntDesign 0.20.4` и `STAN.Client 0.3.0` оставлены по решению пользователя. `NATS.Client 1.1.0` сохранён из-за воспроизведённой `MissingMethodException` с STAN на версиях 1.1.1–1.1.8, а не по отдельному запрету обновления.
+Историческая сверка до удаления NATS/STAN в #1281 охватила 109 используемых прямых NuGet-зависимостей: 19 обновлены, 87 уже были актуальны, `AntDesign 0.20.4` и `STAN.Client 0.3.0` оставлены по решению пользователя. `NATS.Client 1.1.0` сохранён из-за воспроизведённой `MissingMethodException` с STAN на версиях 1.1.1–1.1.8, а не по отдельному запрету обновления.
 
 - [PR #1273](https://github.com/sitkoru/Sitko.Core/pull/1273) обновил 12 библиотечных зависимостей, включая `OpenSearch.Client 2.3.0` и разрешённую `OpenTelemetry.Instrumentation.GrpcNetClient 1.20.1-beta.1`, и дополнил инструкции перехода RU/EN. Head `03915793dc590b6927fdbe79d0fa81f2ae8b88fa`, merge `220d4bc39e7ac5a0b88301f28c4d2d6396cef164`; [Main](https://github.com/sitkoru/Sitko.Core/actions/runs/40849481131) и [CodeQL](https://github.com/sitkoru/Sitko.Core/actions/runs/40849481091) успешны для head. Экспорт нового сегмента трассировки и внешний сборщик телеметрии не проверялись.
 - [PR #1274](https://github.com/sitkoru/Sitko.Core/pull/1274) обновил семь инструментальных зависимостей с необходимой адаптацией API; `SSH.NET 2026.0.0` заменил уязвимую версию в тестовых графах. Head `4b0cf5b1a31a967532884c94e83ddc5b31f25bd4`, merge `200f14a3c1e2d05482267d0d930d39ca9765402c`; [Main](https://github.com/sitkoru/Sitko.Core/actions/runs/40851743264) и [CodeQL](https://github.com/sitkoru/Sitko.Core/actions/runs/40851743296) успешны для head.
@@ -240,7 +246,7 @@ R08 завершена: [PR #1230](https://github.com/sitkoru/Sitko.Core/pull/12
 | Отклонённая валидацией сущность | [PR #1236](https://github.com/sitkoru/Sitko.Core/pull/1236), head `a5526eba674f7d8211d60ac5ee69a27a83e657c9`, merge `a2acae8cea561b0b854633102dd3e11097400921`, [Main #2129](https://github.com/sitkoru/Sitko.Core/actions/runs/40642698070) — успешно |
 | Tasks: три сценария Kafka/PostgreSQL и существующий CI Kafka | [PR #1238](https://github.com/sitkoru/Sitko.Core/pull/1238), head `7965b3c00ccff334b77cfd9279f118c9118125d9`, merge `5fdccd99ea53988c5b12dc097d4069fe6074fa35`, [Main #2138](https://github.com/sitkoru/Sitko.Core/actions/runs/40646408711) — успешно |
 | Повторные вызовы подписчиков InMemory | [PR #1239](https://github.com/sitkoru/Sitko.Core/pull/1239), head `94732e33b1fdf52fba9f8ebcca7155cc4d64b852`, merge `c6ee8a9784eb088f0747168261e3e236955ecbc5`, [Main #2139](https://github.com/sitkoru/Sitko.Core/actions/runs/40646414438) — успешно |
-| NATS: повтор после отказа обработчика | [PR #1241](https://github.com/sitkoru/Sitko.Core/pull/1241), head `c9787d71c7bc487414e11a95a1292ba09e1bdfb9`, merge `d6d5503da10d2f53f9c33c14bcf4305e5e9a88ab`, [Main #2152](https://github.com/sitkoru/Sitko.Core/actions/runs/40653620842) — успешно |
+| NATS: повтор после отказа обработчика (исторический результат; модуль удалён в #1281) | [PR #1241](https://github.com/sitkoru/Sitko.Core/pull/1241), head `c9787d71c7bc487414e11a95a1292ba09e1bdfb9`, merge `d6d5503da10d2f53f9c33c14bcf4305e5e9a88ab`, [Main #2152](https://github.com/sitkoru/Sitko.Core/actions/runs/40653620842) — успешно |
 | App/App.Web: жизненный цикл и ответ | [PR #1244](https://github.com/sitkoru/Sitko.Core/pull/1244), head `ea7902f52aad4bba60e6c43d1fac7a771ac08b92`, merge `b5f48d35b8185c8503810d1721f08b4243d8be53`, [Main #2153](https://github.com/sitkoru/Sitko.Core/actions/runs/40654475216) — успешно |
 | AntDesign и MudBlazor: формы | [PR #1245](https://github.com/sitkoru/Sitko.Core/pull/1245), head `06aae7ec6ecd106eb361d6cc5a72284829227c07`, merge `422fdcbbd8f6376b6b077c38acc4821574b4de8d`, [Main #2158](https://github.com/sitkoru/Sitko.Core/actions/runs/40656803532) — успешно |
 | Email: HTML, вложения и отказ адресата | [PR #1246](https://github.com/sitkoru/Sitko.Core/pull/1246), head `4a81b0f9d99ad4ae216993c98274eb6c8cc54759`, merge `f2d3949e34ce86b45c792aceb36b33ddf1c6520b`, [Main #2161](https://github.com/sitkoru/Sitko.Core/actions/runs/40660535906) — успешно |
@@ -324,6 +330,8 @@ head `19175e90f6e4f3ff6fa5b16481f3c6d72908925c`, merge `7c507e843da5651201da6148
 подтвердили доступность ни одного из 52 пакетов. Опубликованные DLL/PDB повторно
 не проверялись; побайтовое совпадение с локальной упаковкой не заявляется.
 
+30 октября опубликована [13.0.0-beta.2](https://github.com/sitkoru/Sitko.Core/releases/tag/13.0.0-beta.2) на `c65d7ad428e06ce6b759c29cf01ce60e408a58cd`, включая Redis #1279 и OTLP #1280. Удаление NATS/STAN #1281 выполнено позднее и в beta.2 не входит. Новая приёмка и состав опубликованных пакетов здесь не заявляются. Данные о 52 пакетах и индексации выше относятся к наблюдению beta.1 29 октября.
+
 Stable, слияние в `master`, production и миграция потребителей требуют отдельного
 поручения. Основной PR #1233 остаётся черновиком.
 
@@ -398,11 +406,20 @@ AntDesign и API компонентов сохранены. Потребител
 и `Any CPU` без явного `Configurations`, `x64` и `x86`.
 [Каноническая спецификация сборки и SLNX](specs/20261028-080000-build-configuration/spec.md).
 
+### R18
+
+Единое подключение Redis поставлено в [PR #1279](https://github.com/sitkoru/Sitko.Core/pull/1279), head `056b1e541e1d80bd8389d2ec4b1c7134d6e3b5d0`, merge `047a4adee1110f5664ffa5189143538ef80c53b1`; [Main](https://github.com/sitkoru/Sitko.Core/actions/runs/41011392297) и [CodeQL](https://github.com/sitkoru/Sitko.Core/actions/runs/41011392347) успешны для head. `Redis:Connection` задаёт `Mode`, `Configuration` и `SentinelConfiguration`. Для Sentinel поддерживаются раздельные учётные данные Sentinel и узлов данных. Redis, Auth Data Protection и токены используют общего владельца; когда Auth нужен Redis, регистрация выполняется автоматически. Старые поля `RedisModuleOptions` и `AuthOptions.Redis*` удалены без совместимого резервного пути. Форматы Data Protection и токенов сохранены. [Спецификация](specs/20261030-090000-redis-connection/spec.md). Миграция приложений, Vault и production не подтверждена.
+
+### R19
+
+Единые настройки OTLP поставлены в [PR #1280](https://github.com/sitkoru/Sitko.Core/pull/1280), head `42e81a24935ecfe5de97a95ee1bc6a521c57ddac`, merge `c65d7ad428e06ce6b759c29cf01ce60e408a58cd`; [Main](https://github.com/sitkoru/Sitko.Core/actions/runs/41014477777) и [CodeQL](https://github.com/sitkoru/Sitko.Core/actions/runs/41014478315) успешны для head. `OpenTelemetry` поддерживает `Headers`; непустые общие `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_PROTOCOL` и `OTEL_EXPORTER_OTLP_HEADERS` переопределяют соответствующие значения, заголовки заменяются целым набором. Окружение не включает выключенный экспорт. Для `HttpProtobuf` URI теперь базовый, с добавлением `/v1/logs`, `/v1/metrics`, `/v1/traces`: это несовместимо с заданным точным HTTP URI. URI `Grpc` сохранён. [Спецификация](specs/20261030-090000-otel-export-configuration/spec.md), [таблица поддержки](docs/ru/observability.md).
+
 ## Порядок поставки и параллельная работа
 
 1. R01–R06, R08–R09, R13–R17 и Blazor-часть R10 влиты. R05 дополнена обновлением прямых зависимостей в #1273 и #1274; транзитивная зависимость JetBrains через ScriptInjector остаётся. Redis перенесён отдельно в #1225.
 2. R09 завершена в согласованном объёме P1/P2; P2 — Xunit исключена, пересечения остаются у владельцев возможностей. Оба исправления R16 влиты.
-3. R07, R10 и R11 завершены. Приёмка R12 пройдена, первая beta выпущена; публичная индексация NuGet пока не подтверждена.
+3. R07, R10 и R11 завершены. Приёмка R12 пройдена, первая beta выпущена.
+4. R18 и R19 влиты до beta.2; R03c влита после неё.
 
 ### Внешняя интеграция Redis для R05/R14
 
@@ -454,6 +471,8 @@ PR-CI [Main #2103](https://github.com/sitkoru/Sitko.Core/actions/runs/4063886289
 | R15 | Исполнитель согласованного удаления фронтенд-кода: `01a180e7-61ce-75e3-9032-3960636c1ff2` |
 | R16 | Оба исправления завершены прежней тестовой сессией: `01a17e92-5f0b-7263-8a54-fb40d4b8ed87` |
 | R17 | Исполнитель сборки: `01a17e99-394f-7632-8075-9c6b49d6bff4` |
+| R18 | Координатор: `01a17e62-8248-7123-ac16-27dbea7bc343` |
+| R19 | Координатор: `01a17e62-8248-7123-ac16-27dbea7bc343` |
 
 Координатор поддерживает план вручную через отдельные сессии, без автоматической
 синхронизации. При изменении границ сначала уточняется соответствующая запись,
@@ -465,7 +484,7 @@ PR-CI [Main #2103](https://github.com/sitkoru/Sitko.Core/actions/runs/4063886289
 с соответствующим ID, а запись здесь — ссылку обратно на них. Для PDF такая
 связь оформлена с R02. Канонический контракт тестовой платформы связан с R14;
 его обратная ссылка пока отсутствует и добавляется при следующем обновлении
-этой спецификации. В этой правке меняется только ROADMAP. Детальные планы
+этой спецификации. В этой правке обновлены ROADMAP и обратные ссылки R18 и R19 в спецификациях. Детальные планы
 не копируются в общий документ.
 При обновлении статуса указываются отдельные свидетельства реализации, проверок
 и слияния: PR, проверенный SHA, результат CI и merge SHA. Непроверенная миграция
