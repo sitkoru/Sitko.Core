@@ -41,6 +41,11 @@ app.Run();
 }
 ```
 
+`OidcServerUrl` допускает адрес issuer/realm с завершающим `/` и без него.
+При включённом healthcheck discovery-документ запрашивается внутри этого пути:
+`https://sso.example.com/realms/example/.well-known/openid-configuration`.
+Нормализация адреса healthcheck не изменяет `OidcServerUrl` и `Authority`.
+
 По умолчанию используются схемы `Cookies` и `oidc`, Code Flow с PKCE,
 `SaveTokens = true`, `GetClaimsFromUserInfoEndpoint = true`; к стандартным scopes
 добавляется `offline_access`. Разрешите нужные scopes у поставщика; если автономное

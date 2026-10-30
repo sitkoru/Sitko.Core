@@ -41,6 +41,11 @@ app.Run();
 }
 ```
 
+`OidcServerUrl` accepts an issuer/realm URL with or without a trailing `/`.
+When the healthcheck is enabled, it requests the discovery document within that path:
+`https://sso.example.com/realms/example/.well-known/openid-configuration`.
+Healthcheck URL normalization does not change `OidcServerUrl` or `Authority`.
+
 Defaults are schemes `Cookies` and `oidc`, Code Flow with PKCE, `SaveTokens = true`
 and `GetClaimsFromUserInfoEndpoint = true`. `offline_access` is added to the standard
 scopes. Allow the required scopes at the provider, or remove `offline_access` through

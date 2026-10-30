@@ -27,7 +27,11 @@ public abstract class OidcProviderModule<TAuthOptions> : AuthModule<TAuthOptions
             {
                 if (OidcProviderModuleChecks.Checks.TryAdd(oidcUri.ToString(), true))
                 {
-                    services.AddHealthChecks().AddOpenIdConnectServer(oidcUri, name: $"IdSrv: {oidcUri}",
+                    var healthCheckUri = new UriBuilder(oidcUri)
+                    {
+                        Path = oidcUri.AbsolutePath.TrimEnd('/') + "/"
+                    }.Uri;
+                    services.AddHealthChecks().AddOpenIdConnectServer(healthCheckUri, name: $"IdSrv: {oidcUri}",
                         failureStatus: HealthStatus.Unhealthy,
                         tags: HealthCheckStages.GetSkipTags(HealthCheckStages.Liveness, HealthCheckStages.Readiness));
                 }
