@@ -408,7 +408,7 @@ AntDesign и API компонентов сохранены. Потребител
 
 ### R18
 
-Единое подключение Redis поставлено в [PR #1279](https://github.com/sitkoru/Sitko.Core/pull/1279), head `056b1e541e1d80bd8389d2ec4b1c7134d6e3b5d0`, merge `047a4adee1110f5664ffa5189143538ef80c53b1`; [Main](https://github.com/sitkoru/Sitko.Core/actions/runs/41011392297) и [CodeQL](https://github.com/sitkoru/Sitko.Core/actions/runs/41011392347) успешны для head. `Redis:Connection` задаёт `Mode`, `Configuration` и `SentinelConfiguration`; Для Sentinel поддерживаются раздельные учётные данные Sentinel и узлов данных. Redis, Auth Data Protection и токены используют общего владельца; когда Auth нужен Redis, регистрация выполняется автоматически. Старые поля `RedisModuleOptions` и `AuthOptions.Redis*` удалены без совместимого резервного пути. Форматы Data Protection и токенов сохранены. [Спецификация](specs/20261030-090000-redis-connection/spec.md). Миграция приложений, Vault и production не подтверждена.
+Единое подключение Redis поставлено в [PR #1279](https://github.com/sitkoru/Sitko.Core/pull/1279), head `056b1e541e1d80bd8389d2ec4b1c7134d6e3b5d0`, merge `047a4adee1110f5664ffa5189143538ef80c53b1`; [Main](https://github.com/sitkoru/Sitko.Core/actions/runs/41011392297) и [CodeQL](https://github.com/sitkoru/Sitko.Core/actions/runs/41011392347) успешны для head. `Redis:Connection` задаёт `Mode`, `Configuration` и `SentinelConfiguration`. Для Sentinel поддерживаются раздельные учётные данные Sentinel и узлов данных. Redis, Auth Data Protection и токены используют общего владельца; когда Auth нужен Redis, регистрация выполняется автоматически. Старые поля `RedisModuleOptions` и `AuthOptions.Redis*` удалены без совместимого резервного пути. Форматы Data Protection и токенов сохранены. [Спецификация](specs/20261030-090000-redis-connection/spec.md). Миграция приложений, Vault и production не подтверждена.
 
 ### R19
 
@@ -484,7 +484,7 @@ PR-CI [Main #2103](https://github.com/sitkoru/Sitko.Core/actions/runs/4063886289
 с соответствующим ID, а запись здесь — ссылку обратно на них. Для PDF такая
 связь оформлена с R02. Канонический контракт тестовой платформы связан с R14;
 его обратная ссылка пока отсутствует и добавляется при следующем обновлении
-этой спецификации. В этой правке меняется только ROADMAP. Детальные планы
+этой спецификации. В этой правке обновлены ROADMAP и обратные ссылки R18 и R19 в спецификациях. Детальные планы
 не копируются в общий документ.
 При обновлении статуса указываются отдельные свидетельства реализации, проверок
 и слияния: PR, проверенный SHA, результат CI и merge SHA. Непроверенная миграция
