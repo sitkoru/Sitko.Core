@@ -54,13 +54,71 @@ The components use the base AntDesign styles. If your application needs the
 previous additional rules for card sizes, file names, or action buttons,
 maintain those styles in the application and verify its upload forms.
 
-## Redis client
+## Redis client and migration from v12
 
-`Sitko.Core.Redis` uses `StackExchange.Redis 3.4.20`. Align direct application
-references to this client with the Sitko.Core dependencies. Sitko.Core connection
-settings and the selection of direct, Sentinel or Cluster connections are retained.
-Before updating a deployment, verify the connection mode in use, recovery after
-a primary change, and access to tokens and Data Protection keys.
+`Sitko.Core.Redis` uses `StackExchange.Redis 3.4.20`; align direct client references
+with this version. The v13 connection format breaks compatibility with flat v12
+settings: the [shared contract](redis-sentinel.md) lives under `Redis:Connection`.
+Standalone Redis, Auth Data Protection and Redis token storage share one transport
+and one database per application. There are no per-module connections or legacy fallbacks.
+
+| Previous setting or API | Action for v13 |
+| --- | --- |
+| `Redis:Host/Port/Db/User/Password`, flat `Auth.Redis*` | Put addresses, `user`, `password`, `defaultDatabase` in `Redis:Connection:Configuration`. Old properties are removed from `RedisModuleOptions` and `AuthOptions`. |
+| `SentinelEndpoints`, `ServiceName`, `SentinelUser`, `SentinelPassword` and `Auth.Redis*` equivalents | Set `Mode=Sentinel`; put `serviceName` and data credentials in `Configuration`, Sentinel addresses and credentials in `SentinelConfiguration`. |
+| Keyed `RedisConnection` / `IDatabase` by AuthOptions type | Resolve shared `RedisConnection` / `IDatabase` without a key. Access the multiplexer through `RedisConnection.Connection`; consumers must not dispose it. |
+| Overrides of `AuthOptionsValidator.RequiresRedis` | The registration condition is now in `AuthModule.RequiresRedis`; override it in a custom module when needed. |
+
+`EnableRedisDataProtection`, `DataProtectionLifeTimeInMinutes` and `TokenStoreType`
+are retained. Auth automatically registers Redis only when required.
+Key names, token JSON and protection purpose do not change.
+
+Keep existing values in a shared v12/v13 configuration document and add the new
+section. Addresses in this example are illustrative:
+
+```json
+{
+  "Redis": {
+    "Host": "old-valkey",
+    "Port": 6379,
+    "Db": 0,
+    "ConnectionString": "old-valkey:6379,defaultDatabase=0",
+    "Connection": {
+      "Mode": "Direct",
+      "Configuration": "cluster-node-1:6379,cluster-node-2:6379,cluster-node-3:6379,defaultDatabase=0"
+    }
+  }
+}
+```
+
+v12 keeps reading old fields and ignores the new nested section; v13 reads only the
+new section. Also preserve old `Auth.Redis*`, `RedisPersistent` and other fields still
+used by v12 applications. Do not replace their addresses with Cluster addresses.
+
+1. Set the new Cluster addresses in the shared `Redis:Connection` section, keeping
+   the old server addresses in the legacy fields for v12. Use `Mode=Direct` for
+   Cluster, without `serviceName`; include credentials and a server-supported
+   database in `Configuration`.
+2. Before upgrading an application, copy the required Data Protection keys to the
+   target database, preserving `ApplicationName`, environment and user claim.
+   Key and protected-data formats are retained; the library does not copy data.
+3. Upgrade the application to v13. It starts using Cluster from the new section;
+   v12 applications continue using the old server. No individual address override
+   is required for each application. Verify existing protected data, normal
+   operations and recovery after a primary change.
+
+In the Sitkoru scenario, the maintainer has confirmed that Data Protection keys
+have already been copied; upgrading the version performs the Cluster cutover.
+Library checks do not verify that live copy. Migrating caches, sessions and tokens
+is not a mandatory step in this scenario; preserving such state requires a
+separately agreed migration when needed.
+
+After new Cluster writes, reverting to v12 does not copy current state back to the
+old server. Do not merge nonzero databases into DB0 without a separate decision;
+support for nonzero Cluster databases depends on the server. Updating Sitko.Core
+does not migrate custom registrations in MYCG.Core, Communications.Core or
+applications: inspect their direct connections separately. The library does not
+change Vault or live data.
 
 ## OpenSearch search client
 

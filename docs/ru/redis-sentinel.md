@@ -2,22 +2,17 @@
 
 [English](../en/redis-sentinel.md)
 
-`Sitko.Core.Redis` содержит общую логику прямого подключения к Redis-совместимому
-серверу, обнаружения основного узла через Valkey Sentinel и освобождения соединений.
-`Sitko.Core.Auth` и `Sitko.Core.Auth.OIDC` используют этот проект
-для Data Protection и хранилища токенов.
-Одно соединение с данными используется для ключей ASP.NET Core Data Protection
-и хранилища токенов `RedisTokenStore` в рамках одного экземпляра модуля.
-В режиме Sentinel контейнер DI владеет обоими соединениями
-`ConnectionMultiplexer`: с Sentinel и с данными. Переключением при отказе управляет
-`StackExchange.Redis`; прикладной цикл опроса основного узла не нужен.
+`Sitko.Core.Redis` предоставляет одно подключение приложения к Redis-совместимому
+серверу. Самостоятельный модуль Redis, Data Protection в Auth и хранилище токенов
+OIDC используют один `RedisConnection` и одну выбранную базу в контейнере DI.
+Разные приложения имеют независимые подключения.
 
-Соединения создаются при первом обращении через DI. При первоначальном подключении
-Sentinel должен быть доступен и знать `RedisServiceName`, иначе подключение
-завершается ошибкой. После успешного подключения библиотека обнаруживает смену
-основного узла и переподключается; отдельные операции во время переключения могут
-завершиться ошибкой. Интеграция не добавляет автоматический повтор произвольных
-прикладных операций.
+Владелец `RedisConnection` освобождает транспорт данных и, в режиме Sentinel,
+отдельный транспорт Sentinel при уничтожении контейнера. Потребители получают
+`IDatabase` из DI или `IConnectionMultiplexer` через `RedisConnection.Connection`
+и не вызывают `Dispose` самостоятельно. Параметры фиксируются при построении
+приложения; изменение источника конфигурации требует перезапуска.
+Сеть открывается при первом обращении к подключению через DI.
 
 ## Использование без Auth
 
@@ -31,94 +26,89 @@ using Sitko.Core.Redis;
 using StackExchange.Redis;
 
 var builder = Host.CreateApplicationBuilder(args);
-builder.AddSitkoCore().AddRedis(options =>
-{
-    options.SentinelEndpoints = ["sentinel-1.example.net:26379", "sentinel-2.example.net:26379"];
-    options.ServiceName = "app-primary";
-    options.Db = 3;
-});
+builder.AddSitkoCore().AddRedis();
 using var host = builder.Build();
 var database = host.Services.GetRequiredService<IDatabase>();
 await database.StringSetAsync("example", "value");
 ```
 
-Настройки `RedisModuleOptions` читаются из секции `Redis`; имя секции можно
-переопределить параметром `optionsKey` у `AddRedis`. Для прямого подключения
-задайте `Host` и `Port` вместо `SentinelEndpoints` и `ServiceName`.
-Названия остальных параметров совпадают с параметрами Auth ниже без префикса
-`Redis`: `Db`, `User`, `Password`, `SentinelUser`, `SentinelPassword`.
-Общий модуль регистрирует `RedisConnection` и `IDatabase` в DI; соединением
-владеет контейнер, вручную освобождать его в потребителе не нужно.
+`RedisModuleOptions` читает секцию `Redis:Connection`. Параметры также можно задать
+через callback `AddRedis`; `optionsKey` выбирает другую секцию для того же единого
+подключения приложения, а не создаёт отдельное подключение модуля.
 
-Auth сохраняет собственные секции и прежние плоские параметры `Redis*`.
-Дополнительный вызов `AddRedis` для Auth не требуется: он использует общий
-`RedisConnection` с настройками соответствующего модуля аутентификации.
+## Конфигурация подключения и Auth
 
-## Конфигурация Auth
-
-Пример секции `Auth:OIDC:Client`:
+Пример прямого подключения (standalone или Cluster):
 
 ```json
 {
+  "Redis": {
+    "Connection": {
+      "Mode": "Direct",
+      "Configuration": "redis.example.net:6379,user=app,password=example-data-password,defaultDatabase=0"
+    }
+  },
   "Auth": {
     "OIDC": {
       "Client": {
         "EnableRedisDataProtection": true,
-        "TokenStoreType": "Redis",
-        "RedisSentinelEndpoints": [
-          "sentinel-1.example.net:26379",
-          "sentinel-2.example.net:26379",
-          "sentinel-3.example.net:26379"
-        ],
-        "RedisServiceName": "auth-primary",
-        "RedisDb": 3,
-        "RedisUser": "auth-app",
-        "RedisPassword": "example-data-password",
-        "RedisSentinelUser": "sentinel-client",
-        "RedisSentinelPassword": "example-sentinel-password"
+        "TokenStoreType": "Redis"
       }
     }
   }
 }
 ```
 
-Пароли здесь вымышлены; реальные значения передавайте через используемый приложением
-источник секретов. Остальные обязательные настройки OIDC задаются как обычно.
-Имя `RedisServiceName` должно совпадать с именем группы в `sentinel monitor`.
-Адреса `RedisSentinelEndpoints` задаются в виде `host:port`.
+Пароли в примерах вымышлены; реальные значения передавайте через источник секретов.
+Остальные обязательные настройки OIDC задаются как обычно. Auth автоматически
+регистрирует общее подключение при включённом Redis Data Protection или хранилище
+токенов `Redis`. Дополнительный `AddRedis` не требуется. Если он есть, Auth использует
+его подключение независимо от порядка регистрации. При выключенных обоих потребителях
+Auth не требует настроек Redis и не открывает сеть к Redis.
 
 | Параметр | Назначение |
 | --- | --- |
-| `RedisSentinelEndpoints` | Начальные адреса Sentinel; задаются вместе с `RedisServiceName`. |
-| `RedisServiceName` | Имя группы, основной узел которой обнаруживается через Sentinel. |
-| `RedisUser`, `RedisPassword` | Учётные данные для узлов с данными; пользователь необязателен при парольной аутентификации без отдельного пользователя ACL. |
-| `RedisSentinelUser`, `RedisSentinelPassword` | Отдельные учётные данные для подключения приложения к Sentinel. |
-| `RedisDb` | Номер базы с данными, ключами Data Protection и токенами; к Sentinel не применяется. |
-| `RedisHost`, `RedisPort` | Адрес прямого подключения; в режиме Sentinel игнорируется. |
+| `Mode` | `Direct` по умолчанию или `Sentinel`. Отдельного режима Cluster нет. |
+| `Configuration` | Штатная строка StackExchange.Redis: начальные адреса, `user`, `password`, `defaultDatabase`, TLS, таймауты и другие параметры клиента. |
+| `SentinelConfiguration` | Отдельная строка адресов и реквизитов Sentinel; используется только при `Mode=Sentinel`. |
 
-Учётные данные Sentinel **не наследуются** из `RedisUser` или `RedisPassword`.
-Если Sentinel требует аутентификацию, задайте её явно. Учётные данные,
-с которыми сами процессы Sentinel обращаются к узлам с данными
-(`sentinel auth-user` и `sentinel auth-pass`), настраиваются на стороне Sentinel.
+Для Sentinel задайте:
 
-Если параметры Sentinel отсутствуют, сохраняется прежнее прямое подключение
-через `RedisHost`, `RedisPort`, `RedisPassword` и `RedisDb`.
-Новый `RedisUser` также доступен для прямого подключения.
-Не задавайте только одну половину конфигурации Sentinel:
-нужны и непустой список адресов, и непустое имя группы.
+```json
+{
+  "Redis": {
+    "Connection": {
+      "Mode": "Sentinel",
+      "Configuration": "serviceName=auth-primary,user=auth-app,password=example-data-password,defaultDatabase=3",
+      "SentinelConfiguration": "sentinel-1.example.net:26379,sentinel-2.example.net:26379,sentinel-3.example.net:26379,user=sentinel-client,password=example-sentinel-password"
+    }
+  }
+}
+```
+
+`serviceName` должен совпадать с группой в `sentinel monitor`. Реквизиты Sentinel
+не наследуются из `Configuration`; параметры доступа процессов Sentinel к данным
+(`sentinel auth-user`, `sentinel auth-pass`) настраиваются на стороне Sentinel.
+Нужны непустое имя группы и адреса Sentinel. Неизвестный режим, пустая или
+некорректная строка отклоняются при построении использующего Redis приложения.
+В `Direct` поле `SentinelConfiguration` игнорируется, а `serviceName` внутри
+`Configuration` запрещён, чтобы клиент не включил Sentinel неявно.
+
+При первом подключении Sentinel должен быть доступен и знать группу. После успешного
+подключения StackExchange.Redis обнаруживает смену основного узла и переподключается.
+Отдельные операции во время переключения могут завершиться ошибкой; интеграция
+не повторяет произвольные прикладные операции автоматически.
 
 ## Valkey Cluster и несколько баз
 
-Для подключения к Cluster задайте начальный узел через `Host` и `Port` общего
-модуля либо `RedisHost` и `RedisPort` Auth. `ServiceName` / `RedisServiceName`
-и списки адресов Sentinel должны отсутствовать; пустая строка имени сервиса
-не отключает режим Sentinel. Клиент обнаруживает остальные узлы автоматически.
+Для подключения к Cluster используйте `Mode=Direct` и один или несколько начальных
+адресов в `Configuration`. Клиент обнаруживает остальные узлы автоматически.
 Из приложения должны быть доступны все объявленные кластером адреса.
 После смены основного узла открытым соединениям требуется время на обновление
 маршрутов. В этот период отдельные операции могут завершаться ошибкой; модуль
 не добавляет автоматический повтор прикладных операций.
 
-Номер базы задаётся через `Db` / `RedisDb`. Для баз, отличных от DB 0, требуется
+Номер базы задаётся через `defaultDatabase` в `Configuration`. Для баз, отличных от DB 0, требуется
 Valkey версии 9.0 или новее и параметр `cluster-databases` на узлах сервера.
 Например, `cluster-databases 4` разрешает DB 0–3; по умолчанию доступна только DB 0.
 Настройка `databases` в режиме Cluster не применяется.
@@ -151,7 +141,7 @@ Valkey версии 9.0 или новее и параметр `cluster-databases
 Valkey на диск и политику `maxmemory-policy noeviction`.
 Потеря ключей мешает расшифровке ранее выданных защищённых данных.
 Для экземпляров одного приложения сохраняйте одинаковые `ApplicationName` и
-`RedisDb`. Имя ключа — `{ApplicationName}-DP`, имя приложения
+`defaultDatabase`. Имя ключа — `{ApplicationName}-DP`, имя приложения
 для Data Protection — `ApplicationName`. Общая база сама по себе не заменяет совпадение
 имени приложения.
 
@@ -189,7 +179,8 @@ dotnet test --project tests/Sitko.Core.Auth.Tests/Sitko.Core.Auth.Tests.csproj -
 на реплику. Перед повторным запуском также пересоздайте контейнеры.
 Тесты обязательны и завершаются ошибкой при недоступном стенде.
 
-Проверка охватывает прямое подключение, отдельную аутентификацию Sentinel,
+Проверка охватывает единое подключение и DB, независимость legacy-полей, ошибки
+конфигурации, выключенный Redis, владение транспортом, прямое подключение и отдельную аутентификацию Sentinel,
 общие данные между экземплярами приложения и переключение при отказе.
 Проверка Cluster охватывает изоляцию DB 0 и DB 3, Data Protection, пользовательские
 токены и восстановление чтения и записи на исходных соединениях после

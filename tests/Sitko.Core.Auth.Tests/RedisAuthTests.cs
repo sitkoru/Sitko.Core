@@ -17,6 +17,7 @@ using StackExchange.Redis;
 
 namespace Sitko.Core.Auth.Tests
 {
+    [Collection("Redis standalone")]
     public sealed class RedisAuthTests
     {
         [Fact]
@@ -27,12 +28,7 @@ namespace Sitko.Core.Auth.Tests
             var primaryPort = Assert.IsType<IPEndPoint>(primary).Port;
             var builder = Host.CreateApplicationBuilder();
             _ = builder.AddSitkoCore().AddRedis(options =>
-            {
-                options.Host = "127.0.0.1";
-                options.Port = primaryPort;
-                options.Password = "default-test";
-                options.Db = 3;
-            });
+                options.Configuration = $"127.0.0.1:{primaryPort},password=default-test,defaultDatabase=3");
             IConnectionMultiplexer connection;
             using (var app = builder.Build())
             {
@@ -69,7 +65,7 @@ namespace Sitko.Core.Auth.Tests
             HashSet<long> sentinelClients;
             using (app)
             {
-                var database = app.Services.GetRequiredKeyedService<IDatabase>(typeof(OidcAuthModuleOptions));
+                var database = app.Services.GetRequiredService<IDatabase>();
                 connection = database.Multiplexer;
                 Assert.True(connection.IsConnected);
                 sentinelClients = [.. (await server.ClientListAsync())
@@ -265,25 +261,13 @@ namespace Sitko.Core.Auth.Tests
                 ["Auth:OIDC:Client:EnableHealthChecks"] = "false",
                 ["Auth:OIDC:Client:EnableRedisDataProtection"] = "true",
                 ["Auth:OIDC:Client:TokenStoreType"] = "Redis",
-                ["Auth:OIDC:Client:RedisDb"] = "3",
-                ["Auth:OIDC:Client:RedisPassword"] = sentinel ? "valkey-test" : "default-test"
+                ["Redis:Connection:Mode"] = sentinel ? "Sentinel" : "Direct",
+                ["Redis:Connection:Configuration"] = sentinel
+                    ? "serviceName=sitko-test,user=app,password=valkey-test,defaultDatabase=3"
+                    : $"127.0.0.1:{directPort},password=default-test,defaultDatabase=3",
+                ["Redis:Connection:SentinelConfiguration"] =
+                    "127.0.0.1:26378,127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381,user=sentinel-client,password=sentinel-test"
             };
-            if (sentinel)
-            {
-                settings["Auth:OIDC:Client:RedisUser"] = "app";
-                settings["Auth:OIDC:Client:RedisServiceName"] = "sitko-test";
-                settings["Auth:OIDC:Client:RedisSentinelEndpoints:0"] = "127.0.0.1:26378";
-                settings["Auth:OIDC:Client:RedisSentinelEndpoints:1"] = "127.0.0.1:26379";
-                settings["Auth:OIDC:Client:RedisSentinelEndpoints:2"] = "127.0.0.1:26380";
-                settings["Auth:OIDC:Client:RedisSentinelEndpoints:3"] = "127.0.0.1:26381";
-                settings["Auth:OIDC:Client:RedisSentinelUser"] = "sentinel-client";
-                settings["Auth:OIDC:Client:RedisSentinelPassword"] = "sentinel-test";
-            }
-            else
-            {
-                settings["Auth:OIDC:Client:RedisHost"] = "127.0.0.1";
-                settings["Auth:OIDC:Client:RedisPort"] = directPort.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            }
 
             _ = builder.Configuration.AddInMemoryCollection(settings);
             _ = builder.AddSitkoCore().AddModule<OidcAuthModule, OidcAuthModuleOptions>();

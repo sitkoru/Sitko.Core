@@ -4,7 +4,6 @@ using Duende.AccessTokenManagement.OpenIdConnect;
 using Duende.IdentityModel;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using StackExchange.Redis;
 
@@ -19,7 +18,7 @@ internal class RedisTokenStore : IUserTokenStore
 
     public RedisTokenStore(IDataProtectionProvider dataProtectionProvider, IApplicationContext applicationContext,
         IOptions<OidcAuthModuleOptions> options,
-        [FromKeyedServices(typeof(OidcAuthModuleOptions))] IDatabase redis)
+        IDatabase redis)
     {
         this.applicationContext = applicationContext;
         this.options = options;

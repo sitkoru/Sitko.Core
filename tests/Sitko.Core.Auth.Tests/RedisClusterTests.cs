@@ -22,12 +22,7 @@ namespace Sitko.Core.Auth.Tests
         {
             var builder = Host.CreateApplicationBuilder();
             _ = builder.AddSitkoCore().AddRedis(static options =>
-            {
-                options.Host = "127.0.0.1";
-                options.Port = 17379;
-                options.Password = "cluster-test";
-                options.Db = 3;
-            });
+                options.Configuration = "127.0.0.1:17379,password=cluster-test,defaultDatabase=3");
             using var app = builder.Build();
             var database = app.Services.GetRequiredService<IDatabase>();
             var key = $"cluster-db-{Guid.NewGuid():N}";
@@ -41,7 +36,7 @@ namespace Sitko.Core.Auth.Tests
         public async Task ClusterDatabaseDeleteRecoversAfterPrimarySwitch()
         {
             using var app = CreateApplication($"cluster-delete-{Guid.NewGuid():N}", 3);
-            var database = app.Services.GetRequiredKeyedService<IDatabase>(typeof(OidcAuthModuleOptions));
+            var database = app.Services.GetRequiredService<IDatabase>();
             var key = $"cluster-delete-value-{Guid.NewGuid():N}";
             Assert.True(await database.StringSetAsync(key, "before-delete"));
             using var observer = ConnectionMultiplexer.Connect(new ConfigurationOptions
@@ -82,8 +77,8 @@ namespace Sitko.Core.Auth.Tests
             var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, "alice")]));
             using var zero = CreateApplication(name, 0);
             using var three = CreateApplication(name, 3);
-            var zeroDatabase = zero.Services.GetRequiredKeyedService<IDatabase>(typeof(OidcAuthModuleOptions));
-            var threeDatabase = three.Services.GetRequiredKeyedService<IDatabase>(typeof(OidcAuthModuleOptions));
+            var zeroDatabase = zero.Services.GetRequiredService<IDatabase>();
+            var threeDatabase = three.Services.GetRequiredService<IDatabase>();
             Assert.Equal(0, zeroDatabase.Database);
             Assert.Equal(3, threeDatabase.Database);
             Assert.True(await zeroDatabase.StringSetAsync(key, "value-zero"));
@@ -227,10 +222,8 @@ namespace Sitko.Core.Auth.Tests
                 ["Auth:OIDC:Client:EnableHealthChecks"] = "false",
                 ["Auth:OIDC:Client:EnableRedisDataProtection"] = "true",
                 ["Auth:OIDC:Client:TokenStoreType"] = "Redis",
-                ["Auth:OIDC:Client:RedisHost"] = "127.0.0.1",
-                ["Auth:OIDC:Client:RedisPort"] = "17379",
-                ["Auth:OIDC:Client:RedisPassword"] = "cluster-test",
-                ["Auth:OIDC:Client:RedisDb"] = database.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                ["Redis:Connection:Configuration"] =
+                    $"127.0.0.1:17379,password=cluster-test,defaultDatabase={database}"
             });
             _ = builder.AddSitkoCore().AddModule<OidcAuthModule, OidcAuthModuleOptions>();
             return builder.Build();
