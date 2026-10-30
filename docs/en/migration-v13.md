@@ -184,11 +184,31 @@ semantic conventions `1.42.0` and context propagation regardless of
 span's parent. Review monitoring queries and rules that depend on RPC attributes
 and span relationships against the [instrumentation release notes](https://github.com/open-telemetry/opentelemetry-dotnet-contrib/blob/4f2a49444969d8ffae3d46007ce533d28ad153d3/src/OpenTelemetry.Instrumentation.GrpcNetClient/CHANGELOG.md).
 
-`Queue.Nats` retains `NATS.Client 1.1.0` with `STAN.Client 0.3.0`.
-NATS `1.1.1–1.1.8` is binary-incompatible with this STAN version: replacing
-`CreateConnection(string)` with an overload that has an additional parameter
-causes `MissingMethodException`. Do not override this dependency independently;
-see the [NATS API change](https://github.com/nats-io/nats.net.v1/compare/1.1.0...1.1.1).
+## NATS/STAN removal
+
+Version 13 removes the `Sitko.Core.Queue.Nats` package: `AddNatsQueue`, `NatsQueue`,
+`NatsQueueModule`, `NatsQueueModuleOptions`, `NatsMessageOptions<T>` and the
+`Queue:Nats` section are unsupported. `NATS.Client` and `STAN.Client` dependencies
+are removed from Sitko.Core.
+
+Before upgrading an application, remove this package reference and NATS registration.
+For messaging between processes, use `Sitko.Core.Queue.Kafka`:
+`AddKafkaQueue(...)`, `IEventProducer.Produce(key, message)` and handlers with
+`QueueHandlerAttribute`/`QueueBatchHandlerAttribute`; configure `Kafka` and
+`Kafka:Queue` using the [messaging guide](messaging.md#kafka).
+
+Kafka uses a separate API here and does not implement `IQueue`. Changing only
+registration is insufficient: migrate publishing and handlers, agree keys and
+topic/group names, ordering, acknowledgements, retries and protection against
+repeated execution. There is no automatic equivalent for `RequestAsync`/`ReplyAsync`
+or the STAN settings `Durable`, `ManualAck`, `AckWaitInSeconds`, `MaxInFlight`.
+`Queue.InMemory` remains available within a process and does not replace messaging
+between processes.
+
+Removing the module does not migrate stored messages, subscriptions or STAN positions
+to Kafka or clean the broker. Application migration and delivery verification must
+be completed separately before disabling their NATS/STAN; this guide does not confirm
+that work is complete.
 
 ## Development tool annotations
 
@@ -223,6 +243,7 @@ All module names in this table have the `Sitko.Core.` prefix.
 | `MediatR` | Remove the module's `AddMediatR<TAssembly>()` registration. Register the library directly for normal MediatR usage. `QueueModuleOptions.TranslateMediatRNotification<T>()`, `TranslateMediatRTypes` and the `IMediatRModule` requirement are removed; publish messages explicitly through the retained `IQueue`. |
 | `OpenSearch` | Remove `AddOpenSearchLogging()` and `OpenSearch:Logging` settings; configure OTEL log export or register the required sink directly. The `Search.OpenSearch` search module is retained. |
 | `Puppeteer` | Remove `AddPuppeteer()`, `Puppeteer` settings and dependencies on this module's `IBrowserProvider`. Register PuppeteerSharp directly for custom browser automation. PDF requires only `AddPdfRenderer()`; see the [PDF migration guide](pdf.md#migrating-to-sitkocore-13) for options and browser setup. |
+| `Queue.Nats` | See [NATS/STAN removal](#natsstan-removal) and migration to Kafka. |
 | `Search.ElasticSearch` | Remove `AddElasticSearch()` and `Search:Elastic` settings. Use a direct Elasticsearch integration or plan a separate migration to `Search.OpenSearch`; index and configuration migration is not automatic. |
 | `Sentry` | Remove `AddSentry()` and module `Sentry` settings. Register the Sentry SDK directly and restore the required settings if needed. |
 | `Swagger` | Remove the module's `AddSwagger()` registration and `Swagger` settings. Register OpenAPI generation and its documentation UI directly, including authentication descriptions and endpoint options. |

@@ -55,8 +55,8 @@ dotnet test --project tests/Sitko.Core.Tasks.Kafka.Tests/Sitko.Core.Tasks.Kafka.
 неуспешный набор блокирует задание и зависимую публикацию.
 
 Main использует образ SDK по digest. PostgreSQL проходит `pg_isready`;
-Consul, MinIO и Vault — проверку HTTP с ограниченными повторами; NATS —
-ожидание доступного TCP-порта не более 60 секунд. PDF, OpenSearch и Redis/Valkey
+Consul, MinIO и Vault — проверку HTTP с ограниченными повторами.
+PDF, OpenSearch и Redis/Valkey
 используют существующие проверки готовности. Kafka и ClickHouse подготавливаются
 своими тестовыми фикстурами.
 

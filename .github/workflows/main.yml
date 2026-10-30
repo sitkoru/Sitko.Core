@@ -285,18 +285,8 @@ jobs:
   queue:
     runs-on: ubuntu-latest
     container: ghcr.io/sitkoru/actions-container@sha256:64891a80d26f2ce15e2b94ccfff7330f26363e615c4864ba91d19650b7c9ffa8
-    env:
-      QUEUE__NATS__SERVERS__0: nats://nats:4222
-      QUEUE__NATS__CLUSTERNAME: test-cluster
-    services:
-      nats:
-        image: nats-streaming:latest
     steps:
       - uses: actions/checkout@v7
-      - name: Wait for NATS
-        run: >-
-          timeout 60 bash -c
-          'until (echo > /dev/tcp/nats/4222) 2>/dev/null; do sleep 1; done'
       - name: Run Sitko.Core.Queue.Tests net10.0
         run: >-
           dotnet test --project tests/Sitko.Core.Queue.Test/Sitko.Core.Queue.Tests.csproj
@@ -304,13 +294,6 @@ jobs:
           --report-trx --report-trx-filename Sitko.Core.Queue.Tests-net10.0.trx
           --results-directory TestResults/queue/Sitko.Core.Queue.Tests/net10.0
           --diagnostic --diagnostic-output-directory TestResults/queue/Sitko.Core.Queue.Tests/net10.0/diagnostics
-      - name: Run Sitko.Core.Queue.Nats.Tests net10.0
-        run: >-
-          dotnet test --project tests/Sitko.Core.Queue.Nats.Tests/Sitko.Core.Queue.Nats.Tests.csproj
-          --framework net10.0 --report-github --minimum-expected-tests 1
-          --report-trx --report-trx-filename Sitko.Core.Queue.Nats.Tests-net10.0.trx
-          --results-directory TestResults/queue/Sitko.Core.Queue.Nats.Tests/net10.0
-          --diagnostic --diagnostic-output-directory TestResults/queue/Sitko.Core.Queue.Nats.Tests/net10.0/diagnostics
       - name: Run Sitko.Core.Queue.InMemory.Tests net10.0
         run: >-
           dotnet test --project tests/Sitko.Core.Queue.InMemory.Tests/Sitko.Core.Queue.InMemory.Tests.csproj
