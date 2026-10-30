@@ -42,6 +42,9 @@ public class OidcAuthModule : OidcProviderModule<OidcAuthModuleOptions>
             startupOptions.ConfigureOpenIdConnectOptions?.Invoke(options);
         });
 
+    protected override bool RequiresRedis(OidcAuthModuleOptions options) =>
+        base.RequiresRedis(options) || options.TokenStoreType == TokenStoreType.Redis;
+
     protected override void ConfigureCookieOptions(CookieAuthenticationOptions options,
         OidcAuthModuleOptions moduleOptions)
     {

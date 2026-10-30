@@ -2,19 +2,16 @@
 
 [Русский](../ru/redis-sentinel.md) · [All topics](README.md)
 
-`Sitko.Core.Redis` provides direct Redis-compatible connections, primary discovery
-through Valkey Sentinel and connection disposal. `Sitko.Core.Auth` and
-`Sitko.Core.Auth.OIDC` use it for Data Protection and token storage.
-One data connection is shared by ASP.NET Core Data Protection keys and
-`RedisTokenStore` within a module instance. In Sentinel mode, DI owns both
-`ConnectionMultiplexer` connections: Sentinel and data. `StackExchange.Redis`
-manages failover; there is no application polling loop for the primary.
+`Sitko.Core.Redis` provides one Redis-compatible connection per application.
+The standalone Redis module, Auth Data Protection and OIDC token storage share
+one `RedisConnection` and one selected database within the DI container.
+Separate applications own separate connections.
 
-Connections are created on first DI access. During initial connection, Sentinel
-must be reachable and know `RedisServiceName`, otherwise connection fails.
-After a successful connection, the library discovers a new primary and reconnects;
-individual operations may fail during failover. The integration does not
-automatically retry arbitrary application operations.
+`RedisConnection` disposes the data transport and, in Sentinel mode, the separate
+Sentinel transport when the container is disposed. Consumers obtain `IDatabase`
+from DI or `IConnectionMultiplexer` through `RedisConnection.Connection` and must
+not dispose them themselves. Settings are fixed when the application is built;
+configuration changes require a restart. Network connections open on first DI access.
 
 ## Usage without Auth
 
@@ -28,89 +25,87 @@ using Sitko.Core.Redis;
 using StackExchange.Redis;
 
 var builder = Host.CreateApplicationBuilder(args);
-builder.AddSitkoCore().AddRedis(options =>
-{
-    options.SentinelEndpoints = ["sentinel-1.example.net:26379", "sentinel-2.example.net:26379"];
-    options.ServiceName = "app-primary";
-    options.Db = 3;
-});
+builder.AddSitkoCore().AddRedis();
 using var host = builder.Build();
 var database = host.Services.GetRequiredService<IDatabase>();
 await database.StringSetAsync("example", "value");
 ```
 
-`RedisModuleOptions` binds section `Redis`; `AddRedis` accepts `optionsKey` to select
-another section. For a direct connection, set `Host` and `Port` instead of
-`SentinelEndpoints` and `ServiceName`. Other options match Auth settings below
-without the `Redis` prefix: `Db`, `User`, `Password`, `SentinelUser`, `SentinelPassword`.
-The shared module registers `RedisConnection` and `IDatabase` in DI. The container
-owns the connection; consumers must not dispose it manually.
+`RedisModuleOptions` binds `Redis:Connection`. An `AddRedis` callback can also set
+these options; `optionsKey` selects another section for the same application-wide
+connection, rather than creating a separate module connection.
 
-Auth keeps its own sections and flat `Redis*` settings. Do not call `AddRedis` just
-for Auth: it uses the shared `RedisConnection` with its authentication module's settings.
+## Connection and Auth configuration
 
-## Auth configuration
-
-Example section `Auth:OIDC:Client`:
+Direct connection example (standalone or Cluster):
 
 ```json
 {
+  "Redis": {
+    "Connection": {
+      "Mode": "Direct",
+      "Configuration": "redis.example.net:6379,user=app,password=example-data-password,defaultDatabase=0"
+    }
+  },
   "Auth": {
     "OIDC": {
       "Client": {
         "EnableRedisDataProtection": true,
-        "TokenStoreType": "Redis",
-        "RedisSentinelEndpoints": [
-          "sentinel-1.example.net:26379",
-          "sentinel-2.example.net:26379",
-          "sentinel-3.example.net:26379"
-        ],
-        "RedisServiceName": "auth-primary",
-        "RedisDb": 3,
-        "RedisUser": "auth-app",
-        "RedisPassword": "example-data-password",
-        "RedisSentinelUser": "sentinel-client",
-        "RedisSentinelPassword": "example-sentinel-password"
+        "TokenStoreType": "Redis"
       }
     }
   }
 }
 ```
 
-These passwords are fictional; supply real values through your application's
-secret source. Supply other required OIDC settings as usual. `RedisServiceName`
-must match the group name in `sentinel monitor`. Use `host:port` addresses
-for `RedisSentinelEndpoints`.
+Example passwords are fictional; supply actual values through your secret source.
+Provide other required OIDC settings as usual. Auth automatically registers the
+shared connection when Redis Data Protection or the `Redis` token store is enabled.
+No additional `AddRedis` call is needed. If present, Auth uses its connection
+regardless of registration order. With both consumers disabled, Auth requires no
+Redis settings and opens no Redis network connection.
 
 | Setting | Purpose |
 | --- | --- |
-| `RedisSentinelEndpoints` | Initial Sentinel addresses; required together with `RedisServiceName`. |
-| `RedisServiceName` | Group whose primary is discovered through Sentinel. |
-| `RedisUser`, `RedisPassword` | Data-node credentials; username is optional for password authentication without a separate ACL user. |
-| `RedisSentinelUser`, `RedisSentinelPassword` | Separate application credentials for Sentinel. |
-| `RedisDb` | Database for data, Data Protection keys and tokens; does not apply to Sentinel. |
-| `RedisHost`, `RedisPort` | Direct connection address; ignored in Sentinel mode. |
+| `Mode` | `Direct` by default, or `Sentinel`. There is no separate Cluster mode. |
+| `Configuration` | Native StackExchange.Redis string: initial addresses, `user`, `password`, `defaultDatabase`, TLS, timeouts and other client settings. |
+| `SentinelConfiguration` | Separate Sentinel addresses and credentials; used only with `Mode=Sentinel`. |
 
-Sentinel credentials are **not inherited** from `RedisUser` or `RedisPassword`.
-Set them explicitly when Sentinel requires authentication. Credentials used by
-Sentinel processes to access data nodes (`sentinel auth-user`, `sentinel auth-pass`)
-are configured on Sentinel itself.
+For Sentinel, configure:
 
-With no Sentinel settings, direct connection uses `RedisHost`, `RedisPort`,
-`RedisPassword`, `RedisDb`; `RedisUser` is also available for direct connections.
-Do not supply only half of the Sentinel configuration: both a nonempty address
-list and a nonempty group name are required.
+```json
+{
+  "Redis": {
+    "Connection": {
+      "Mode": "Sentinel",
+      "Configuration": "serviceName=auth-primary,user=auth-app,password=example-data-password,defaultDatabase=3",
+      "SentinelConfiguration": "sentinel-1.example.net:26379,sentinel-2.example.net:26379,sentinel-3.example.net:26379,user=sentinel-client,password=example-sentinel-password"
+    }
+  }
+}
+```
+
+`serviceName` must match the group in `sentinel monitor`. Sentinel credentials are
+not inherited from `Configuration`; credentials used by Sentinel processes to
+access data (`sentinel auth-user`, `sentinel auth-pass`) are configured on Sentinel.
+A nonempty group name and Sentinel addresses are required. Unknown modes, empty or
+invalid strings fail when building an application that uses Redis. `Direct` ignores
+`SentinelConfiguration` and rejects `serviceName` inside `Configuration`, preventing
+the client from implicitly enabling Sentinel.
+
+Sentinel must be reachable and know the group on initial connection. After connecting,
+StackExchange.Redis discovers primary changes and reconnects. Individual operations
+may fail during failover; this integration does not automatically retry arbitrary
+application operations.
 
 ## Valkey Cluster and multiple databases
 
-For Cluster, set an initial node through the shared module's `Host`/`Port` or Auth's
-`RedisHost`/`RedisPort`. Omit `ServiceName`/`RedisServiceName` and Sentinel address
-lists; an empty service name does not disable Sentinel mode. The client discovers
-other nodes automatically. All cluster-announced addresses must be reachable from
+For Cluster, use `Mode=Direct` with one or more initial addresses in `Configuration`.
+The client discovers other nodes automatically. All cluster-announced addresses must be reachable from
 the application. After a primary changes, existing connections need time to update
 routes. Individual operations can fail; the module adds no automatic application retries.
 
-Set the database through `Db`/`RedisDb`. Databases other than DB 0 require Valkey
+Set the database through `defaultDatabase` in `Configuration`. Databases other than DB 0 require Valkey
 9.0 or later and `cluster-databases` on server nodes. For example,
 `cluster-databases 4` permits DB 0–3; the default exposes only DB 0.
 The `databases` setting does not apply in Cluster mode. Multi-key operations
@@ -138,7 +133,7 @@ by the application. See [Valkey Sentinel](https://valkey.io/topics/sentinel/).
 Data Protection keys require persistent storage: configure Valkey disk persistence
 and `maxmemory-policy noeviction`. Losing keys prevents decryption of previously
 issued protected data. Application replicas must share `ApplicationName` and
-`RedisDb`. The key name is `{ApplicationName}-DP`, and Data Protection uses
+`defaultDatabase`. The key name is `{ApplicationName}-DP`, and Data Protection uses
 `ApplicationName` as its application name. A shared database alone does not replace
 matching application names.
 
@@ -174,7 +169,8 @@ Every run requires fresh containers: Sentinel failover stops the original primar
 the Cluster test promotes a replica. Recreate containers before repeating the run.
 Tests are mandatory and fail when the environment is unavailable.
 
-Coverage includes direct connection, separate Sentinel authentication, data shared
+Coverage includes the shared connection and database, legacy-setting isolation,
+invalid configuration, disabled Redis, transport ownership, direct connections and separate Sentinel authentication, data shared
 between application instances and failover. Cluster verification covers DB 0/DB 3
 isolation, Data Protection, user tokens and recovered reads/writes on original
 connections after a primary changes. The Sentinel scenario waits for replication

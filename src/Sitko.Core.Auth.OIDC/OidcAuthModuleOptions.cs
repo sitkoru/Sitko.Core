@@ -32,6 +32,4 @@ public class OidcAuthOptionsValidator : OidcProviderAuthOptionsValidator<OidcAut
         RuleFor(o => o.OidcClientSecret).NotEmpty().WithMessage("Oidc client secret can't be empty");
     }
 
-    protected override bool RequiresRedis(OidcAuthModuleOptions options) =>
-        base.RequiresRedis(options) || options.TokenStoreType == TokenStoreType.Redis;
 }

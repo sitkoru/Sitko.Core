@@ -1,40 +1,90 @@
+using System.Net;
 using FluentValidation;
 using Sitko.Core.App;
+using StackExchange.Redis;
 
 namespace Sitko.Core.Redis
 {
     public class RedisModuleOptions : BaseModuleOptions
     {
-        public string? Host { get; set; }
-        public int Port { get; set; } = 6379;
-        public int Db { get; set; }
-        public string? Password { get; set; }
-        public string? User { get; set; }
-        public string[] SentinelEndpoints { get; set; } = [];
-        public string? ServiceName { get; set; }
-        public string? SentinelUser { get; set; }
-        public string? SentinelPassword { get; set; }
-        internal bool UseSentinel => ServiceName is not null || SentinelEndpoints is { Length: > 0 };
+        public RedisConnectionMode Mode { get; set; }
+        public string? Configuration { get; set; }
+        public string? SentinelConfiguration { get; set; }
+
+        internal (ConfigurationOptions Data, ConfigurationOptions? Sentinel) ParseConfiguration()
+        {
+            if (!Enum.IsDefined(Mode))
+            {
+                throw new ArgumentException("Redis connection mode must be Direct or Sentinel");
+            }
+
+            var data = Parse(Configuration, "Redis:Connection:Configuration");
+            if (Mode == RedisConnectionMode.Direct)
+            {
+                if (data.EndPoints.Count == 0 || !string.IsNullOrEmpty(data.ServiceName))
+                {
+                    throw new ArgumentException("Direct Redis requires endpoints and forbids serviceName");
+                }
+
+                return (data, null);
+            }
+
+            if (string.IsNullOrWhiteSpace(data.ServiceName))
+            {
+                throw new ArgumentException("Sentinel Redis requires serviceName in Configuration");
+            }
+
+            var sentinel = Parse(SentinelConfiguration, "Redis:Connection:SentinelConfiguration");
+            if (sentinel.EndPoints.Count == 0)
+            {
+                throw new ArgumentException("SentinelConfiguration requires endpoints");
+            }
+
+            return (data, sentinel);
+        }
+
+        private static ConfigurationOptions Parse(string? configuration, string key)
+        {
+            try
+            {
+                var options = ConfigurationOptions.Parse(configuration ?? "");
+                if (options.EndPoints.OfType<DnsEndPoint>().Any(static endpoint => endpoint.Host.Contains('/')))
+                {
+                    throw new ArgumentException("Redis endpoints must be host names or IP addresses");
+                }
+
+                return options;
+            }
+            catch (ArgumentException)
+            {
+                // Parser errors may contain credentials from the supplied configuration.
+                throw new ArgumentException($"Invalid {key}");
+            }
+        }
     }
 
     public class RedisModuleOptionsValidator : AbstractValidator<RedisModuleOptions>
     {
         public RedisModuleOptionsValidator()
         {
-            _ = RuleFor(static o => o.Host).NotEmpty().When(static o => !o.UseSentinel)
-                .WithMessage("Redis host can't be empty for a direct connection");
-            _ = RuleFor(static o => o.Port).InclusiveBetween(1, 65535).When(static o => !o.UseSentinel);
-            _ = RuleFor(static o => o.ServiceName).NotEmpty().When(static o => o.UseSentinel)
-                .WithMessage("Redis service name is required for Sentinel");
-            _ = RuleFor(static o => o.SentinelEndpoints).NotEmpty().When(static o => o.UseSentinel)
-                .WithMessage("At least one Redis Sentinel endpoint is required");
-            _ = RuleForEach(static o => o.SentinelEndpoints).Must(IsValidSentinelEndpoint)
-                .WithMessage("Redis Sentinel endpoint must be a host:port address with a valid port");
+            _ = RuleFor(static o => o.Mode).IsInEnum();
+            _ = RuleFor(static o => o).Custom(static (options, context) =>
+            {
+                try
+                {
+                    _ = options.ParseConfiguration();
+                }
+                catch (ArgumentException exception)
+                {
+                    context.AddFailure(nameof(RedisModuleOptions.Configuration), exception.Message);
+                }
+            });
         }
+    }
 
-        private static bool IsValidSentinelEndpoint(string endpoint) =>
-            Uri.TryCreate($"redis://{endpoint}", UriKind.Absolute, out var uri) &&
-            uri.Port > 0 && uri.Host.Length > 0 && uri.UserInfo.Length == 0 &&
-            uri.AbsolutePath == "/" && uri.Query.Length == 0 && uri.Fragment.Length == 0;
+    public enum RedisConnectionMode
+    {
+        Direct,
+        Sentinel
     }
 }
