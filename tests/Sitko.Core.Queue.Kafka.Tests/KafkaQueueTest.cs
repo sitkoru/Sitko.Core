@@ -1,3 +1,4 @@
+using Confluent.Kafka;
 using AwesomeAssertions;
 using Sitko.Core.Queue.Kafka.Tests.Data;
 using Xunit;
@@ -17,6 +18,35 @@ public class KafkaQueueTest(ITestOutputHelper testOutputHelper) : BaseKafkaQueue
         await EventRegistrator.WaitUntilAsync(() => EventRegistrator.IsRegistered(testEvent.Id),
             TestContext.Current.CancellationToken);
         EventRegistrator.IsRegistered(testEvent.Id).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ProduceAsyncReturnsCoordinatesOfReadableMessage()
+    {
+        var scope = await GetScopeAsync();
+        var message = new TestEvent { Id = Guid.NewGuid(), Name = "confirmed" };
+        var producer = scope.GetService<IEventProducer>();
+        var report = await producer.ProduceAsync("confirmed-key", message);
+
+        Assert.Equal(PersistenceStatus.Persisted, report.Status);
+        Assert.EndsWith("-TestEvents", report.Topic, StringComparison.Ordinal);
+        Assert.True(report.Partition.Value >= 0);
+        Assert.True(report.Offset.Value >= 0);
+        using var consumer = new ConsumerBuilder<string, string>(new ConsumerConfig
+        {
+            BootstrapServers = $"{KafkaFixture.KafkaContainer.Hostname}:{KafkaFixture.KafkaContainer.GetMappedPublicPort(9092)}",
+            GroupId = Guid.NewGuid().ToString(),
+            EnableAutoCommit = false
+        }).Build();
+        consumer.Assign(report.TopicPartitionOffset);
+        var received = consumer.Consume(TimeSpan.FromSeconds(15));
+        Assert.NotNull(received);
+        Assert.Equal(report.TopicPartitionOffset, received.TopicPartitionOffset);
+        Assert.Equal("confirmed-key", received.Message.Key);
+        Assert.Contains(message.Id.ToString(), received.Message.Value, StringComparison.OrdinalIgnoreCase);
+        await EventRegistrator.WaitUntilAsync(() => EventRegistrator.IsRegistered(message.Id),
+            TestContext.Current.CancellationToken);
+        Assert.True(EventRegistrator.IsRegistered(message.Id));
     }
 
     [Fact]

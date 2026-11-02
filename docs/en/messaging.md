@@ -68,6 +68,41 @@ and `DurableLatest` do not implement those policies. The API does not guarantee
 exactly-once execution or automatically protect application side effects.
 See [Kafka tests](../../tests/Sitko.Core.Queue.Kafka.Tests) for registrations and handlers.
 
+### Delivery confirmation
+
+Use `await producer.ProduceAsync(key, message)` when the application needs a
+delivery result. It returns `Confluent.Kafka.DeliveryResult<byte[], byte[]>`
+with `Persisted` status, a nonempty `Topic`, and nonnegative `Partition` and
+`Offset`. This confirms a broker write, not consumer handler completion.
+
+```csharp
+var report = await producer.ProduceAsync(key, message);
+Console.WriteLine($"{report.Topic}/{report.Partition.Value}/{report.Offset.Value}");
+```
+
+`Produce(key, message)` sends without returning a delivery report to the caller.
+Both methods use the same registration, routing and event serialization.
+Custom `IEventProducer` implementations must implement `ProduceAsync`.
+
+`ProduceAsync` preserves the original KafkaFlow exceptions. For
+`ProduceException<byte[], byte[]>`, inspect `DeliveryResult.Status`:
+`NotPersisted` confirms this attempt did not write the message;
+`PossiblyPersisted` means the write may have happened. Other exceptions without
+a reliable report do not prove non-delivery: an exception can occur after the write.
+A missing report, unconfirmed status or invalid coordinates causes
+`InvalidOperationException`; this also does not prove non-delivery.
+
+The method adds no application retries. Kafka's internal retries remain in effect;
+defaults are `MessageTimeout=12s`, `EnableIdempotence=true`, `Acks=All`.
+Calling the method again is a new send and may create a duplicate when the previous
+outcome is unknown. Producer idempotence does not remove that risk.
+
+There is no `CancellationToken` parameter. Stopping the wait with `WaitAsync`
+does not stop the original send; retain the original task to observe its eventual
+outcome. Cancellation or a wait timeout does not imply that no write occurred.
+`MessageTimeout` bounds Kafka delivery, not all custom middleware and completion
+handlers. The method does not persist unsent messages across process restarts.
+
 ## Stateful tasks
 
 `Sitko.Core.Tasks` defines task state models, executors and maintenance;
