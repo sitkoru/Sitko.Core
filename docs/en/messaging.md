@@ -63,7 +63,7 @@ Section `Kafka:Queue` contains `TopicPrefix`, `GroupPrefix`, `StartConsumers=tru
 and `SimpleRetryCount=5`. Current name construction inserts a hyphen between
 prefix and name even when the prefix is empty; align actual names with other parties.
 
-Only `Simple` connects retry handling in this module; `Forever`, `DurableOrdered`
+For consumer handlers, only `Simple` connects retry handling; `Forever`, `DurableOrdered`
 and `DurableLatest` do not implement those policies. The API does not guarantee
 exactly-once execution or automatically protect application side effects.
 See [Kafka tests](../../tests/Sitko.Core.Queue.Kafka.Tests) for registrations and handlers.
@@ -86,13 +86,15 @@ Custom `IEventProducer` implementations must implement `ProduceAsync`.
 
 `ProduceAsync` preserves the original KafkaFlow exceptions. For
 `ProduceException<byte[], byte[]>`, inspect `DeliveryResult.Status`:
-`NotPersisted` confirms this attempt did not write the message;
-`PossiblyPersisted` means the write may have happened. Other exceptions without
+`PossiblyPersisted` means the write may have happened. `NotPersisted` alone does not
+prove non-delivery: Confluent.Kafka 2.8.0 recreates some error reports in
+`ProduceAsync`, losing their original persistence status. Even a timeout with
+`NotPersisted` is therefore unsafe to retry. Other exceptions without
 a reliable report do not prove non-delivery: an exception can occur after the write.
 A missing report, unconfirmed status or invalid coordinates causes
 `InvalidOperationException`; this also does not prove non-delivery.
 
-The method adds no application retries. Kafka's internal retries remain in effect;
+The method adds no application retries unless explicitly configured. Kafka's internal retries remain in effect;
 defaults are `MessageTimeout=12s`, `EnableIdempotence=true`, `Acks=All`.
 Calling the method again is a new send and may create a duplicate when the previous
 outcome is unknown. Producer idempotence does not remove that risk.
@@ -102,6 +104,64 @@ does not stop the original send; retain the original task to observe its eventua
 outcome. Cancellation or a wait timeout does not imply that no write occurred.
 `MessageTimeout` bounds Kafka delivery, not all custom middleware and completion
 handlers. The method does not persist unsent messages across process restarts.
+
+### Additional safe retries
+
+An application can retry when the producer's local queue is full and has not
+accepted the message. Register a common policy or one for a specific event type
+before building the Host:
+
+```csharp
+using Sitko.Core.Queue.Kafka;
+using Polly;
+
+builder.Services.AddKafkaProducerResiliencePipeline(options =>
+{
+    options.MaxRetryAttempts = 2;
+    options.Delay = TimeSpan.FromMilliseconds(100);
+    options.BackoffType = DelayBackoffType.Exponential;
+});
+
+// Example: Notice is an event type registered by the application.
+builder.Services.AddKafkaProducerResiliencePipeline<Notice>(options =>
+{
+    options.MaxRetryAttempts = 4;
+    options.Delay = TimeSpan.FromMilliseconds(200);
+});
+
+// Example: CriticalNotice is another registered event type.
+builder.Services.DisableKafkaProducerResiliencePipeline<CriticalNotice>();
+```
+
+An event policy or explicit disable takes precedence over the common policy;
+policies do not stack. Selection uses `T` in `ProduceAsync<T>`, just like routing,
+not the runtime type of the object. The last registration for the same scope wins.
+Without an applicable policy there is one send. `Produce` and `Tasks.Kafka`
+do not use these settings.
+
+Configuration uses standard `Polly.Retry.RetryStrategyOptions`. Internally,
+named pipelines are registered through `Microsoft.Extensions.Resilience`;
+the library chooses the names. Arbitrary pipelines, timeouts and hedging cannot
+be attached. `MaxRetryAttempts` counts additional attempts, so `2` permits up to
+three sends. Standard delays, jitter, `DelayGenerator`, `OnRetry` and an additional
+`ShouldHandle` predicate can be configured.
+
+The mandatory guard permits only nonfatal `Local_QueueFull` in a
+`ProduceException<byte[], byte[]>` with `NotPersisted`, the same topic,
+`Offset.Unset`, and partition `Any` or a nonnegative partition. The application's
+`ShouldHandle` can narrow this set, never broaden it. Success, missing or invalid
+reports, unknown outcomes, timeouts, serialization, authorization, size and
+configuration errors do not permit a retry. Exhaustion preserves the last original
+exception and its `DeliveryResult`.
+
+Attempts are sequential and retain the key, event object and route. Budget for
+Kafka's internal waits plus the additional delays: a new attempt receives a fresh
+Kafka delivery budget. Ordering between concurrent calls, exactly-once processing
+and survival across process failure are not guaranteed.
+
+Sources: [Confluent 2.8.0 report recreation](https://github.com/confluentinc/confluent-kafka-dotnet/blob/v2.8.0/src/Confluent.Kafka/Producer.cs#L833)
+and [local queue rejection before accepting a message](https://github.com/confluentinc/librdkafka/blob/v2.8.0/src/rdkafka_int.h#L772).
+Implementation: [policy registration](../../src/Sitko.Core.Queue.Kafka/KafkaProducerResilienceExtensions.cs).
 
 ## Stateful tasks
 
