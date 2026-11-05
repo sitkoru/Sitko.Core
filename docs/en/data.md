@@ -40,6 +40,58 @@ check transaction rollback separately against real PostgreSQL.
 arbitrary repository. Your application server owns filtering limits and data access;
 see [gRPC/SD](grpc-service-discovery.md) for transport configuration.
 
+### Multiple PostgreSQL hosts
+
+`Host` accepts a comma-separated list: `pg1,pg2,pg3`. `Port` supplies the shared
+port; specify different ports in `Host`, for example `pg1:5432,pg2:5433`.
+The module passes the list and `ConnectionOptions` to Npgsql. A suitable host is
+selected when a connection opens; if the first host is unavailable, Npgsql tries the next.
+
+Example for a context that writes data and applies migrations:
+
+```json
+{
+  "Db": {
+    "Postgres": {
+      "AppDbContext": {
+        "Host": "pg1,pg2,pg3",
+        "Port": 5432,
+        "Username": "app",
+        "Database": "app",
+        "ConnectionOptions": {
+          "Target Session Attributes": "read-write",
+          "Load Balance Hosts": false,
+          "Host Recheck Seconds": 10
+        }
+      }
+    }
+  }
+}
+```
+
+These are example settings, not new defaults. Supply the password from an external
+configuration source and select TLS settings for your environment.
+`read-write` requires a server that accepts writes with
+`default_transaction_read_only` disabled. Without an explicit setting, Npgsql uses
+`PGTARGETSESSIONATTRS` from the environment, or `Any` if it is absent. `Any` can select a replica;
+`PreferPrimary` falls back to a replica when no primary is available and does not
+guarantee writes. `Load Balance Hosts=false` preserves the host order.
+`Host Recheck Seconds` controls how long a cached host state remains valid;
+it is not a background polling interval.
+
+The module and Npgsql do not configure replication or promote a new primary.
+An interrupted command or transaction fails: listing multiple hosts does not
+replay it on another server. To balance reads, use a separately configured
+connection to replicas with explicitly chosen Npgsql settings; do not enable
+such balancing for a context used for writes and migrations.
+
+The [integration test](../../tests/Sitko.Core.Tasks.Kafka.Tests/PostgresMultiHostTests.cs)
+executes a query through the module with an unavailable first endpoint and an
+available second endpoint. It reuses PostgreSQL from the Kafka Tasks fixture and
+does not model replication or primary promotion. See Npgsql's
+[host selection](https://www.npgsql.org/doc/failover-and-load-balancing.html) and
+[connection parameters](https://www.npgsql.org/doc/connection-string-parameters.html).
+
 ## ClickHouse
 
 `Sitko.Core.ClickHouse`: `AddClickHouse(...)`, section `ClickHouse`, settings
