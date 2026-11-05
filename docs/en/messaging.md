@@ -51,6 +51,7 @@ missing replies; transport acceptance does not prove business operation completi
 ## Kafka
 
 `Sitko.Core.Kafka` provides KafkaFlow infrastructure under section `Kafka`.
+The package uses `Confluent.Kafka` 2.16.0 with `librdkafka` 2.16.0. This client allows a static consumer to rejoin the group after its session times out while waiting for a Heartbeat response.
 Set `Brokers`, security parameters and suitable topic settings.
 `TopicPartitionsCount=24`, `TopicReplicationFactor=1`, `AutoOffsetReset=Latest`;
 these defaults are not a production cluster reliability policy.
@@ -87,7 +88,7 @@ Custom `IEventProducer` implementations must implement `ProduceAsync`.
 `ProduceAsync` preserves the original KafkaFlow exceptions. For
 `ProduceException<byte[], byte[]>`, inspect `DeliveryResult.Status`:
 `PossiblyPersisted` means the write may have happened. `NotPersisted` alone does not
-prove non-delivery: Confluent.Kafka 2.8.0 recreates some error reports in
+prove non-delivery: Confluent.Kafka 2.16.0 recreates some error reports in
 `ProduceAsync`, losing their original persistence status. Even a timeout with
 `NotPersisted` is therefore unsafe to retry. Other exceptions without
 a reliable report do not prove non-delivery: an exception can occur after the write.
@@ -159,8 +160,8 @@ Kafka's internal waits plus the additional delays: a new attempt receives a fres
 Kafka delivery budget. Ordering between concurrent calls, exactly-once processing
 and survival across process failure are not guaranteed.
 
-Sources: [Confluent 2.8.0 report recreation](https://github.com/confluentinc/confluent-kafka-dotnet/blob/v2.8.0/src/Confluent.Kafka/Producer.cs#L833)
-and [local queue rejection before accepting a message](https://github.com/confluentinc/librdkafka/blob/v2.8.0/src/rdkafka_int.h#L772).
+Sources: [Confluent 2.16.0 report recreation](https://github.com/confluentinc/confluent-kafka-dotnet/blob/v2.16.0/src/Confluent.Kafka/Producer.cs#L911-L919)
+and [local queue rejection before accepting a message](https://github.com/confluentinc/librdkafka/blob/v2.16.0/src/rdkafka_int.h#L905-L924).
 Implementation: [policy registration](../../src/Sitko.Core.Queue.Kafka/KafkaProducerResilienceExtensions.cs).
 
 ## Stateful tasks

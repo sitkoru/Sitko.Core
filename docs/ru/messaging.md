@@ -51,6 +51,7 @@ public record Notice(string Text);
 ## Kafka
 
 `Sitko.Core.Kafka` содержит инфраструктуру KafkaFlow, секция `Kafka`.
+Пакет подключает `Confluent.Kafka` 2.16.0 с `librdkafka` 2.16.0. С этим клиентом статический потребитель может повторно войти в группу после истечения тайм-аута сессии при задержке ответа Heartbeat.
 Задайте `Brokers`, параметры безопасности и допустимые настройки topics.
 `TopicPartitionsCount=24`, `TopicReplicationFactor=1`, `AutoOffsetReset=Latest`;
 эти значения не являются готовой политикой надёжности рабочего кластера.
@@ -90,7 +91,7 @@ Console.WriteLine($"{report.Topic}/{report.Partition.Value}/{report.Offset.Value
 `ProduceAsync` сохраняет исходные исключения KafkaFlow. В
 `ProduceException<byte[], byte[]>` смотрите `DeliveryResult.Status`:
 `PossiblyPersisted` означает, что запись могла состояться. `NotPersisted` сам по себе
-не доказывает недоставку: Confluent.Kafka 2.8.0 пересоздаёт отчёт некоторых ошибок
+не доказывает недоставку: Confluent.Kafka 2.16.0 пересоздаёт отчёт некоторых ошибок
 в `ProduceAsync`, теряя исходный статус доставки. Поэтому даже таймаут с
 `NotPersisted` нельзя безопасно повторять. Другая ошибка без
 надёжного отчёта не доказывает недоставку: исключение может возникнуть после записи.
@@ -164,8 +165,8 @@ builder.Services.DisableKafkaProducerResiliencePipeline<CriticalNotice>();
 параллельными вызовами, ровно однократная обработка и сохранность после падения
 процесса не гарантируются.
 
-Основания ограничения: [пересоздание отчёта Confluent 2.8.0](https://github.com/confluentinc/confluent-kafka-dotnet/blob/v2.8.0/src/Confluent.Kafka/Producer.cs#L833)
-и [отказ локальной очереди до принятия сообщения](https://github.com/confluentinc/librdkafka/blob/v2.8.0/src/rdkafka_int.h#L772).
+Основания ограничения: [пересоздание отчёта Confluent 2.16.0](https://github.com/confluentinc/confluent-kafka-dotnet/blob/v2.16.0/src/Confluent.Kafka/Producer.cs#L911-L919)
+и [отказ локальной очереди до принятия сообщения](https://github.com/confluentinc/librdkafka/blob/v2.16.0/src/rdkafka_int.h#L905-L924).
 Реализация: [регистрация политик](../../src/Sitko.Core.Queue.Kafka/KafkaProducerResilienceExtensions.cs).
 
 ## Задачи с состоянием
