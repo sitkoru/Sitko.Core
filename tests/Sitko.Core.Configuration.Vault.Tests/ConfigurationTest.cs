@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -27,6 +27,18 @@ public class ConfigurationTest : BaseVaultTest
         var config = scope.GetService<IOptionsMonitor<TestConfig2>>();
         config.CurrentValue.Foo.Should().Be(scope.SecondConfig.Foo);
         config.CurrentValue.Bar.Should().Be(scope.SecondConfig.Bar);
+    }
+
+    [Fact]
+    public async Task GetNestedOptionsWithArrayAndFalse()
+    {
+        var scope = await GetScopeAsync();
+        var config = scope.GetService<IOptionsMonitor<TestConfig>>();
+
+        Assert.False(config.CurrentValue.Nested.Enabled);
+        Assert.Collection(config.CurrentValue.Nested.Values,
+            static value => Assert.Equal("first", value),
+            static value => Assert.Equal("second", value));
     }
 
     [Fact]

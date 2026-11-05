@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.Repository.EntityFrameworkCore.Tests.Data;
@@ -28,8 +28,7 @@ public class EFDisconnectedManyToManyTests : BaseTest<EFTestScope>
             Assert.NotNull(originalBar);
         }
 
-        Assert.Single(originalBar.Foos);
-        var foo = originalBar.Foos.First();
+        var foo = Assert.Single(originalBar.Foos);
         Assert.Empty(foo.BazModels);
 
         using (var scope2 = scope.CreateScope())

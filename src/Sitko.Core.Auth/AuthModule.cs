@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
 using Sitko.Core.App.Web;
 using Sitko.Core.Redis;
-using StackExchange.Redis;
 
 namespace Sitko.Core.Auth;
 
@@ -61,9 +60,6 @@ public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOpti
                     .FirstOrDefault(pair => pair.Key == startupOptions.ForcePolicy).Value;
             }
         });
-        _ = services.AddKeyedSingleton(typeof(TAuthOptions), (_, _) => new RedisConnection(startupOptions.GetRedisOptions()));
-        _ = services.AddKeyedSingleton<IDatabase>(typeof(TAuthOptions), static (provider, _) =>
-            provider.GetRequiredKeyedService<RedisConnection>(typeof(TAuthOptions)).Database);
         if (startupOptions.EnableRedisDataProtection)
         {
             _ = services.AddDataProtection()
@@ -72,10 +68,22 @@ public abstract class AuthModule<TAuthOptions> : BaseApplicationModule<TAuthOpti
             _ = services.AddOptions<KeyManagementOptions>().Configure<IServiceProvider>(
                 (options, provider) => options.XmlRepository =
                     new RedisXmlRepository(
-                        () => provider.GetRequiredKeyedService<RedisConnection>(typeof(TAuthOptions)).Database,
+                        () => provider.GetRequiredService<RedisConnection>().Database,
                         $"{applicationContext.Name}-DP"));
         }
     }
+
+    public override void PostConfigureServices(IApplicationContext applicationContext, IServiceCollection services,
+        TAuthOptions startupOptions)
+    {
+        base.PostConfigureServices(applicationContext, services, startupOptions);
+        if (RequiresRedis(startupOptions))
+        {
+            RedisModule.EnsureConnection(applicationContext, services);
+        }
+    }
+
+    protected virtual bool RequiresRedis(TAuthOptions options) => options.EnableRedisDataProtection;
 
     protected virtual void ConfigureCookieOptions(CookieAuthenticationOptions options, TAuthOptions moduleOptions)
     {

@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -32,10 +31,8 @@ public class SitkoCoreBlazorServerApplicationBuilder : SitkoCoreWebApplicationBu
         }
     }
 
-    [PublicAPI]
     public ISitkoCoreBlazorServerApplicationBuilder AddForms<TAssembly>() => AddForms(typeof(TAssembly).Assembly);
 
-    [PublicAPI]
     public ISitkoCoreBlazorServerApplicationBuilder AddForms(Assembly assembly)
     {
          Services.Scan(s =>

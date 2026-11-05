@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MudBlazor.Services;
 using Sitko.Core.App;
@@ -7,7 +6,6 @@ using Sitko.Core.App.Localization;
 
 namespace Sitko.Core.Blazor.MudBlazorComponents;
 
-[PublicAPI]
 public static class ApplicationExtensions
 {
     public static IHostApplicationBuilder AddMudBlazor(this IHostApplicationBuilder hostApplicationBuilder)

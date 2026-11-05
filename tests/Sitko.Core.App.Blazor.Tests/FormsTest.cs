@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using KellermanSoftware.CompareNetObjects;
 using Sitko.Core.Blazor.Forms;
 using Sitko.Core.Repository;

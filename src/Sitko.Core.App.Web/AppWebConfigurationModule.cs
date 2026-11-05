@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,6 +11,9 @@ public class AppWebConfigurationModule : BaseApplicationModule<AppWebConfigurati
     IHostBuilderModule,
     IWebApplicationModule<AppWebConfigurationModuleOptions>
 {
+    private readonly Dictionary<string, ListenOptions> listeners = new(StringComparer.OrdinalIgnoreCase);
+    public IReadOnlyDictionary<string, ListenOptions> Listeners => listeners;
+
     public override string OptionsKey => "Application:Web";
 
     public void ConfigureWebHost(IApplicationContext applicationContext, ConfigureWebHostBuilder webHostBuilder,
@@ -20,11 +23,12 @@ public class AppWebConfigurationModule : BaseApplicationModule<AppWebConfigurati
         {
             webHostBuilder.ConfigureKestrel(serverOptions =>
             {
-                foreach (var applicationPort in options.Ports.Values)
+                foreach (var (name, applicationPort) in options.Ports)
                 {
                     applicationContext.Logger.LogInformation("Listen to {ApplicationPort}", applicationPort);
                     serverOptions.ListenAnyIP(applicationPort.Port, listenOptions =>
                     {
+                        listeners[name] = listenOptions;
                         listenOptions.Protocols = applicationPort.Protocol;
                         if (applicationPort.UseTLS)
                         {

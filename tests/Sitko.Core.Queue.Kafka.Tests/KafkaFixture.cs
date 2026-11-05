@@ -9,7 +9,7 @@ public class KafkaFixture : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
-        KafkaContainer = new KafkaBuilder().WithImage("confluentinc/cp-kafka:7.4.0").Build();
+        KafkaContainer = new KafkaBuilder("confluentinc/cp-kafka:7.4.0").Build();
 
         await KafkaContainer.StartAsync()
             .ConfigureAwait(false);

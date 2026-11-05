@@ -1,0 +1,12 @@
+name: sitko-grpc-demo
+
+services:
+  consul:
+    image: hashicorp/consul:1.21
+    command: ["agent", "-dev", "-client=0.0.0.0"]
+    environment:
+      CONSUL_LOCAL_CONFIG: '{"dns_config":{"only_passing":true}}'
+    ports:
+      - "127.0.0.1:18500:8500"
+      - "127.0.0.1:18600:8600/tcp"
+      - "127.0.0.1:18600:8600/udp"

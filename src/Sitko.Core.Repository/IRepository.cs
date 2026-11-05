@@ -1,12 +1,9 @@
 using System.Linq.Expressions;
-using JetBrains.Annotations;
 
 namespace Sitko.Core.Repository;
 
-[PublicAPI]
 public interface IRepository;
 
-[PublicAPI]
 public interface IRepository<TEntity, TEntityPk> : IRepository
     where TEntity : class, IEntity<TEntityPk> where TEntityPk : notnull
 {

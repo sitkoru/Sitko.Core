@@ -3,7 +3,6 @@ using Amazon;
 using Amazon.Auth.AccessControlPolicy;
 using Amazon.S3;
 using FluentValidation;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
@@ -60,7 +59,6 @@ public class S3StorageModule<TS3StorageOptions> : StorageModule<S3Storage<TS3Sto
         builder.WithTracing(providerBuilder => providerBuilder.AddAWSInstrumentation());
 }
 
-[PublicAPI]
 public class S3StorageOptions : StorageOptions, IModuleOptionsWithValidation
 {
     public Uri? Server { get; set; }

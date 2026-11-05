@@ -1,9 +1,7 @@
 using System.Linq.Expressions;
-using JetBrains.Annotations;
 
 namespace Sitko.Core.Repository;
 
-[PublicAPI]
 public interface IRepositoryQuery<TEntity> where TEntity : class
 {
     public int? Limit { get; }

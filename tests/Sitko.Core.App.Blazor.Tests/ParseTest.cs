@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using Sitko.Core.Blazor.Components;
 using Sitko.Core.Xunit;
 using Xunit;

@@ -23,16 +23,12 @@ trim_trailing_whitespace = true
 # File Extension Settings
 ##########################################
 
-# Visual Studio Solution Files
-[*.sln]
-indent_style = tab
-
 # Visual Studio XML Project Files
 [*.{csproj,vbproj,vcxproj.filters,proj,projitems,shproj}]
 indent_size = 2
 
 # XML Configuration Files
-[*.{xml,config,props,targets,nuspec,resx,ruleset,vsixmanifest,vsct}]
+[*.{xml,config,props,targets,nuspec,resx,ruleset,vsixmanifest,vsct,slnx}]
 indent_size = 2
 
 # JSON Files

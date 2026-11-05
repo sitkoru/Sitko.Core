@@ -1,9 +1,7 @@
-using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
 namespace Sitko.Core.Search;
 
-[PublicAPI]
 public abstract class BaseSearchProvider<T, TEntityPk, TSearchModel> : ISearchProvider<T, TEntityPk, TSearchModel>
     where T : class where TSearchModel : BaseSearchModel
 {

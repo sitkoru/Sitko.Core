@@ -9,9 +9,11 @@ namespace Sitko.Core.Queue.InMemory;
 
 public class InMemoryQueue : BaseQueue<InMemoryQueueModuleOptions>
 {
-    private readonly ConcurrentDictionary<Type, InMemoryQueueChannel> channels =
+    private readonly ConcurrentDictionary<Type, Lazy<InMemoryQueueChannel>> channels =
         new();
 
+
+    private readonly Dictionary<Type, Guid> channelSubscriptions = [];
 
     public InMemoryQueue(IOptionsMonitor<InMemoryQueueModuleOptions> config, QueueContext context,
         ILogger<InMemoryQueue> logger) : base(config, context, logger)
@@ -19,12 +21,12 @@ public class InMemoryQueue : BaseQueue<InMemoryQueueModuleOptions>
     }
 
     private InMemoryQueueChannel<T> GetOrCreateChannel<T>() where T : class =>
-        (InMemoryQueueChannel<T>)channels.GetOrAdd(typeof(T), _ =>
+        (InMemoryQueueChannel<T>)channels.GetOrAdd(typeof(T), type => new Lazy<InMemoryQueueChannel>(() =>
         {
             var channel = new InMemoryQueueChannel<T>(Logger);
             channel.Run();
             return channel;
-        });
+        })).Value;
 
     protected override Task<QueuePublishResult> DoPublishAsync<T>(T message, QueueMessageContext context)
     {
@@ -109,9 +111,15 @@ public class InMemoryQueue : BaseQueue<InMemoryQueueModuleOptions>
         var result = new QueueSubscribeResult();
         try
         {
-            var channel = GetOrCreateChannel<T>();
-            channel.Subscribe((message, context) =>
-                context.ReplyTo == null ? ProcessMessageAsync(message, context) : Task.CompletedTask);
+            lock (channelSubscriptions)
+            {
+                if (!channelSubscriptions.ContainsKey(typeof(T)))
+                {
+                    var channel = GetOrCreateChannel<T>();
+                    channelSubscriptions.Add(typeof(T), channel.Subscribe((message, context) =>
+                        context.ReplyTo == null ? ProcessMessageAsync(message, context) : Task.CompletedTask));
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -121,12 +129,18 @@ public class InMemoryQueue : BaseQueue<InMemoryQueueModuleOptions>
         return Task.FromResult(result);
     }
 
-    protected override async Task DoUnsubscribeAsync<T>()
+    protected override Task DoUnsubscribeAsync<T>()
     {
-        if (channels.TryRemove(typeof(T), out var channel))
+        lock (channelSubscriptions)
         {
-            await channel.StopAsync();
+            if (channelSubscriptions.Remove(typeof(T), out var subscriptionId))
+            {
+                // BaseQueue удалил обычные подписки; отдельные обработчики запросов и ответов сохраняем.
+                _ = GetOrCreateChannel<T>().UnSubscribe(subscriptionId);
+            }
         }
+
+        return Task.CompletedTask;
     }
 
     protected override async Task DoStopAsync()
@@ -134,10 +148,17 @@ public class InMemoryQueue : BaseQueue<InMemoryQueueModuleOptions>
         await base.DoStopAsync();
         foreach (var channel in channels.Values)
         {
-            await channel.StopAsync();
+            if (channel.IsValueCreated)
+            {
+                await channel.Value.StopAsync();
+            }
         }
 
         channels.Clear();
+        lock (channelSubscriptions)
+        {
+            channelSubscriptions.Clear();
+        }
     }
 
     public override Task<(HealthStatus status, string? errorMessage)> CheckHealthAsync() =>

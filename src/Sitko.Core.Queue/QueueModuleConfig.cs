@@ -1,7 +1,5 @@
 using System.Text.Json.Serialization;
-using MediatR;
 using Sitko.Core.App;
-using Sitko.Core.Queue.MediatR;
 
 namespace Sitko.Core.Queue;
 
@@ -9,19 +7,11 @@ public class QueueModuleOptions : BaseModuleOptions
 {
     [JsonIgnore] public HashSet<Type> Middlewares { get; } = new();
 
-    [JsonIgnore]
-    public List<(Type serviceType, Type implementationType)> TranslateMediatRTypes { get; } =
-        new();
-
     [JsonIgnore] public HashSet<QueueProcessorEntry> ProcessorEntries { get; } = new();
 
     [JsonIgnore] public Dictionary<Type, IQueueMessageOptions> Options { get; } = new();
 
     public bool HealthChecksEnabled { get; set; }
-
-    public void TranslateMediatRNotification<TNotification>() where TNotification : class, INotification =>
-        TranslateMediatRTypes.Add((typeof(INotificationHandler<TNotification>),
-            typeof(MediatRTranslator<TNotification>)));
 
     public void ConfigureMessage<T>(IQueueMessageOptions<T> options) where T : class
     {

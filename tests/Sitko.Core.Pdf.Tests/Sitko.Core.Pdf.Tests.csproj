@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App"/>
     <ProjectReference Include="..\..\src\Sitko.Core.Pdf\Sitko.Core.Pdf.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="itext7" Version="9.2.0" />
+    <PackageReference Include="itext7" />
   </ItemGroup>
 </Project>

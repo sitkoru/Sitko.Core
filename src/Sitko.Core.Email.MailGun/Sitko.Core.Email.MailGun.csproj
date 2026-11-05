@@ -1,8 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Email\Sitko.Core.Email.csproj"/>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="FluentEmail.Mailgun"/>
-  </ItemGroup>
-</Project>

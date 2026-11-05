@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Serilog.Context;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -24,5 +23,4 @@ public class LoggingTests : BaseTest<LoggingTestScope>
     }
 }
 
-[UsedImplicitly]
 public class LoggingTestScope : BaseTestScope;

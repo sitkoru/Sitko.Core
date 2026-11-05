@@ -10,33 +10,17 @@ namespace Sitko.Core.Redis
 
         public RedisConnection(RedisModuleOptions options)
         {
-            database = options.Db;
-            var redisOptions = new ConfigurationOptions
+            var (redisOptions, sentinelOptions) = options.ParseConfiguration();
+            database = redisOptions.DefaultDatabase ?? -1;
+            if (sentinelOptions is null)
             {
-                User = options.User,
-                Password = options.Password
-            };
-            if (!options.UseSentinel)
-            {
-                redisOptions.EndPoints.Add(options.Host!, options.Port);
                 connection = ConnectionMultiplexer.Connect(redisOptions);
                 return;
-            }
-
-            var sentinelOptions = new ConfigurationOptions
-            {
-                User = options.SentinelUser,
-                Password = options.SentinelPassword
-            };
-            foreach (var endpoint in options.SentinelEndpoints)
-            {
-                sentinelOptions.EndPoints.Add(endpoint);
             }
 
             sentinel = ConnectionMultiplexer.SentinelConnect(sentinelOptions);
             try
             {
-                redisOptions.ServiceName = options.ServiceName;
                 connection = sentinel.GetSentinelMasterConnection(redisOptions);
             }
             catch
@@ -45,6 +29,8 @@ namespace Sitko.Core.Redis
                 throw;
             }
         }
+
+        public IConnectionMultiplexer Connection => connection;
 
         public IDatabase Database => connection.GetDatabase(database);
 

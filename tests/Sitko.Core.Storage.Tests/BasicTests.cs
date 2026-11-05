@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using Sitko.Core.Xunit;
 using Xunit;
 
@@ -45,11 +45,10 @@ public abstract class BasicTests<T> : BaseTest<T>
         Assert.NotNull(storage);
 
         StorageItem uploaded;
-        long fileLength;
+        const long fileLength = 5;
         const string fileName = "file.txt";
-        await using (var file = File.Open("Data/file.txt", FileMode.Open))
+        await using (var file = new MemoryStream([0, 1, 127, 128, 255]))
         {
-            fileLength = file.Length;
             uploaded = await storage.SaveAsync(file, fileName, "upload");
         }
 
@@ -68,6 +67,9 @@ public abstract class BasicTests<T> : BaseTest<T>
             }
 
             Assert.Equal(fileName, downloaded.StorageItem.FileName);
+            await using var content = new MemoryStream();
+            await downloaded.Stream.CopyToAsync(content);
+            Assert.Equal(new byte[] { 0, 1, 127, 128, 255 }, content.ToArray());
         }
     }
 
@@ -92,6 +94,7 @@ public abstract class BasicTests<T> : BaseTest<T>
         var result = await storage.DeleteAsync(uploaded.FilePath);
 
         Assert.True(result);
+        Assert.Null(await storage.GetAsync(uploaded.FilePath));
     }
 
     [Fact]

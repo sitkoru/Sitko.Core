@@ -1,10 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using JetBrains.Annotations;
 
 namespace Sitko.Core.Storage.Metadata.Postgres.DB.Models;
 
-[PublicAPI]
 [Table(StorageDbContext.Table, Schema = StorageDbContext.Schema)]
 public class StorageItemRecord
 {

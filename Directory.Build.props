@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <WarningsAsErrors>CS4014;CA2016</WarningsAsErrors>
+    <NoWarn>CA1848;CA1716;BL0007;CA1711;NU1507</NoWarn>
+  </PropertyGroup>
+</Project>

@@ -1,6 +1,5 @@
 ﻿// TODO: DELETE
 // using System.Globalization;
-// using JetBrains.Annotations;
 // using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 // using Microsoft.Extensions.Configuration;
 // using Microsoft.Extensions.DependencyInjection;
@@ -133,7 +132,6 @@
 //         ? GetContext(appHost.Services)
 //         : throw new InvalidOperationException("App host is not built yet");
 //
-//     [PublicAPI]
 //     protected IApplicationContext GetContext(IWebAssemblyHostEnvironment environment,
 //         IConfiguration configuration) =>
 //         new WasmApplicationContext(this, configuration, environment);

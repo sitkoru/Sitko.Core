@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.DataProtection;
@@ -156,7 +155,6 @@ public class SitkoCoreWebApplicationBuilder : SitkoCoreServerApplicationBuilder,
     }
 }
 
-[PublicAPI]
 public class SitkoCoreWebOptions
 {
     internal Dictionary<string, (CorsPolicy policy, bool isDefault)> CorsPolicies { get; } = new();

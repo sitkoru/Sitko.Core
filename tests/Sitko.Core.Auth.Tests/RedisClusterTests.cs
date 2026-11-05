@@ -2,12 +2,13 @@ using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Duende.AccessTokenManagement.OpenIdConnect;
+using Duende.AccessTokenManagement;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
-using Sitko.Core.Auth.IdentityServer;
+using Sitko.Core.Auth.OIDC;
 using Sitko.Core.Redis;
 using StackExchange.Redis;
 using Xunit;
@@ -21,12 +22,7 @@ namespace Sitko.Core.Auth.Tests
         {
             var builder = Host.CreateApplicationBuilder();
             _ = builder.AddSitkoCore().AddRedis(static options =>
-            {
-                options.Host = "127.0.0.1";
-                options.Port = 17379;
-                options.Password = "cluster-test";
-                options.Db = 3;
-            });
+                options.Configuration = "127.0.0.1:17379,password=cluster-test,defaultDatabase=3");
             using var app = builder.Build();
             var database = app.Services.GetRequiredService<IDatabase>();
             var key = $"cluster-db-{Guid.NewGuid():N}";
@@ -40,7 +36,7 @@ namespace Sitko.Core.Auth.Tests
         public async Task ClusterDatabaseDeleteRecoversAfterPrimarySwitch()
         {
             using var app = CreateApplication($"cluster-delete-{Guid.NewGuid():N}", 3);
-            var database = app.Services.GetRequiredKeyedService<IDatabase>(typeof(OidcIdentityServerModuleOptions));
+            var database = app.Services.GetRequiredService<IDatabase>();
             var key = $"cluster-delete-value-{Guid.NewGuid():N}";
             Assert.True(await database.StringSetAsync(key, "before-delete"));
             using var observer = ConnectionMultiplexer.Connect(new ConfigurationOptions
@@ -81,16 +77,16 @@ namespace Sitko.Core.Auth.Tests
             var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, "alice")]));
             using var zero = CreateApplication(name, 0);
             using var three = CreateApplication(name, 3);
-            var zeroDatabase = zero.Services.GetRequiredKeyedService<IDatabase>(typeof(OidcIdentityServerModuleOptions));
-            var threeDatabase = three.Services.GetRequiredKeyedService<IDatabase>(typeof(OidcIdentityServerModuleOptions));
+            var zeroDatabase = zero.Services.GetRequiredService<IDatabase>();
+            var threeDatabase = three.Services.GetRequiredService<IDatabase>();
             Assert.Equal(0, zeroDatabase.Database);
             Assert.Equal(3, threeDatabase.Database);
             Assert.True(await zeroDatabase.StringSetAsync(key, "value-zero"));
             Assert.True(await threeDatabase.StringSetAsync(key, "value-three"));
             var zeroStore = zero.Services.GetRequiredService<IUserTokenStore>();
             var threeStore = three.Services.GetRequiredService<IUserTokenStore>();
-            await zeroStore.StoreTokenAsync(user, new UserToken { AccessToken = "access-zero", RefreshToken = "refresh-zero" });
-            await threeStore.StoreTokenAsync(user, new UserToken { AccessToken = "access-three", RefreshToken = "refresh-three" });
+            await zeroStore.StoreTokenAsync(user, new UserToken { AccessToken = AccessToken.Parse("access-zero"), RefreshToken = RefreshToken.Parse("refresh-zero"), ClientId = ClientId.Parse("test"), AccessTokenType = AccessTokenType.Parse("Bearer"), Expiration = DateTimeOffset.MaxValue }, ct: TestContext.Current.CancellationToken);
+            await threeStore.StoreTokenAsync(user, new UserToken { AccessToken = AccessToken.Parse("access-three"), RefreshToken = RefreshToken.Parse("refresh-three"), ClientId = ClientId.Parse("test"), AccessTokenType = AccessTokenType.Parse("Bearer"), Expiration = DateTimeOffset.MaxValue }, ct: TestContext.Current.CancellationToken);
             var protectedZero = zero.Services.GetRequiredService<IDataProtectionProvider>().CreateProtector("test")
                 .Protect("payload-zero");
             var protectedThree = three.Services.GetRequiredService<IDataProtectionProvider>().CreateProtector("test")
@@ -123,27 +119,27 @@ namespace Sitko.Core.Auth.Tests
                 await VerifyBothDatabases();
                 await WaitUntilAsync(async () =>
                 {
-                    await zeroStore.StoreTokenAsync(user, new UserToken { AccessToken = "access-zero", RefreshToken = "refresh-zero" });
-                    await threeStore.StoreTokenAsync(user, new UserToken { AccessToken = "access-three", RefreshToken = "refresh-three" });
-                    return (await zeroStore.GetTokenAsync(user)).AccessToken == "access-zero" &&
-                           (await threeStore.GetTokenAsync(user)).AccessToken == "access-three";
+                    await zeroStore.StoreTokenAsync(user, new UserToken { AccessToken = AccessToken.Parse("access-zero"), RefreshToken = RefreshToken.Parse("refresh-zero"), ClientId = ClientId.Parse("test"), AccessTokenType = AccessTokenType.Parse("Bearer"), Expiration = DateTimeOffset.MaxValue }, ct: TestContext.Current.CancellationToken);
+                    await threeStore.StoreTokenAsync(user, new UserToken { AccessToken = AccessToken.Parse("access-three"), RefreshToken = RefreshToken.Parse("refresh-three"), ClientId = ClientId.Parse("test"), AccessTokenType = AccessTokenType.Parse("Bearer"), Expiration = DateTimeOffset.MaxValue }, ct: TestContext.Current.CancellationToken);
+                    return (await zeroStore.GetTokenAsync(user, ct: TestContext.Current.CancellationToken)).Token!.TokenForSpecifiedParameters!.AccessToken.ToString() == "access-zero" &&
+                           (await threeStore.GetTokenAsync(user, ct: TestContext.Current.CancellationToken)).Token!.TokenForSpecifiedParameters!.AccessToken.ToString() == "access-three";
                 });
                 await VerifyBothDatabases();
             }
 
             await WaitUntilAsync(async () =>
             {
-                await zeroStore.ClearTokenAsync(user);
+                await zeroStore.ClearTokenAsync(user, ct: TestContext.Current.CancellationToken);
                 return true;
             });
-            await WaitUntilAsync(async () => (await zeroStore.GetTokenAsync(user)).Error == "not found");
-            Assert.Equal("access-three", (await threeStore.GetTokenAsync(user)).AccessToken);
+            await WaitUntilAsync(async () => (await zeroStore.GetTokenAsync(user, ct: TestContext.Current.CancellationToken)).FailedResult!.Error == "not found");
+            Assert.Equal("access-three", (await threeStore.GetTokenAsync(user, ct: TestContext.Current.CancellationToken)).Token!.TokenForSpecifiedParameters!.AccessToken.ToString());
             await WaitUntilAsync(async () =>
             {
-                await threeStore.ClearTokenAsync(user);
+                await threeStore.ClearTokenAsync(user, ct: TestContext.Current.CancellationToken);
                 return true;
             });
-            await WaitUntilAsync(async () => (await threeStore.GetTokenAsync(user)).Error == "not found");
+            await WaitUntilAsync(async () => (await threeStore.GetTokenAsync(user, ct: TestContext.Current.CancellationToken)).FailedResult!.Error == "not found");
             await WaitUntilAsync(async () =>
             {
                 _ = await zeroDatabase.KeyDeleteAsync(key);
@@ -164,12 +160,12 @@ namespace Sitko.Core.Auth.Tests
                 Assert.Equal("value-three", (await threeDatabase.StringGetAsync(key)).ToString());
                 using var restoredZero = CreateApplication(name, 0);
                 using var restoredThree = CreateApplication(name, 3);
-                var tokenZero = await restoredZero.Services.GetRequiredService<IUserTokenStore>().GetTokenAsync(user);
-                var tokenThree = await restoredThree.Services.GetRequiredService<IUserTokenStore>().GetTokenAsync(user);
-                Assert.Equal("access-zero", tokenZero.AccessToken);
-                Assert.Equal("refresh-zero", tokenZero.RefreshToken);
-                Assert.Equal("access-three", tokenThree.AccessToken);
-                Assert.Equal("refresh-three", tokenThree.RefreshToken);
+                var tokenZero = await restoredZero.Services.GetRequiredService<IUserTokenStore>().GetTokenAsync(user, ct: TestContext.Current.CancellationToken);
+                var tokenThree = await restoredThree.Services.GetRequiredService<IUserTokenStore>().GetTokenAsync(user, ct: TestContext.Current.CancellationToken);
+                Assert.Equal("access-zero", tokenZero.Token!.TokenForSpecifiedParameters!.AccessToken.ToString());
+                Assert.Equal("refresh-zero", tokenZero.Token!.TokenForSpecifiedParameters!.RefreshToken.ToString());
+                Assert.Equal("access-three", tokenThree.Token!.TokenForSpecifiedParameters!.AccessToken.ToString());
+                Assert.Equal("refresh-three", tokenThree.Token!.TokenForSpecifiedParameters!.RefreshToken.ToString());
                 var protectorZero = restoredZero.Services.GetRequiredService<IDataProtectionProvider>().CreateProtector("test");
                 var protectorThree = restoredThree.Services.GetRequiredService<IDataProtectionProvider>().CreateProtector("test");
                 Assert.Equal("payload-zero", protectorZero.Unprotect(protectedZero));
@@ -221,17 +217,15 @@ namespace Sitko.Core.Auth.Tests
             {
                 ["Application:Name"] = name,
                 ["Application:Environment"] = "Test",
-                ["Auth:IdentityServer:Oidc:OidcClientId"] = "test",
-                ["Auth:IdentityServer:Oidc:OidcClientSecret"] = "test",
-                ["Auth:IdentityServer:Oidc:EnableHealthChecks"] = "false",
-                ["Auth:IdentityServer:Oidc:EnableRedisDataProtection"] = "true",
-                ["Auth:IdentityServer:Oidc:TokenStoreType"] = "Redis",
-                ["Auth:IdentityServer:Oidc:RedisHost"] = "127.0.0.1",
-                ["Auth:IdentityServer:Oidc:RedisPort"] = "17379",
-                ["Auth:IdentityServer:Oidc:RedisPassword"] = "cluster-test",
-                ["Auth:IdentityServer:Oidc:RedisDb"] = database.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                ["Auth:OIDC:Client:OidcClientId"] = "test",
+                ["Auth:OIDC:Client:OidcClientSecret"] = "test",
+                ["Auth:OIDC:Client:EnableHealthChecks"] = "false",
+                ["Auth:OIDC:Client:EnableRedisDataProtection"] = "true",
+                ["Auth:OIDC:Client:TokenStoreType"] = "Redis",
+                ["Redis:Connection:Configuration"] =
+                    $"127.0.0.1:17379,password=cluster-test,defaultDatabase={database}"
             });
-            _ = builder.AddSitkoCore().AddModule<OidcIdentityServerModule, OidcIdentityServerModuleOptions>();
+            _ = builder.AddSitkoCore().AddModule<OidcAuthModule, OidcAuthModuleOptions>();
             return builder.Build();
         }
     }

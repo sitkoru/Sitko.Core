@@ -17,10 +17,10 @@ public class GrpcServerTest : BaseTest
     public async Task TestResponse()
     {
         var hostBuilder = WebApplication.CreateBuilder();
-        hostBuilder.AddSitkoCoreWeb().AddGrpcServer(options => options.RegisterService<GrpcTestService>());
-        hostBuilder.WebHost.UseTestServer();
+        _ = hostBuilder.AddSitkoCoreWeb().AddGrpcServer().RegisterService<GrpcTestService>();
+        _ = hostBuilder.WebHost.UseTestServer();
         await using var host = hostBuilder.Build();
-        host.MapSitkoCore();
+        _ = host.MapSitkoCore();
         await host.StartAsync(TestContext.Current.CancellationToken);
         var service = host.GetTestServer();
         var responseVersionHandler = new ResponseVersionHandler { InnerHandler = service.CreateHandler() };

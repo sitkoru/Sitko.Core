@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +8,6 @@ using Sitko.Core.Db.Postgres;
 
 namespace Sitko.Core.Xunit;
 
-[PublicAPI]
 public abstract class DbBaseTestScope<TApplicationBuilder, TConfig> : BaseTestScope<TApplicationBuilder, TConfig>
     where TConfig : BaseDbTestConfig, new() where TApplicationBuilder : IHostApplicationBuilder
 {
@@ -105,7 +103,6 @@ public abstract class DbBaseTestScope<TApplicationBuilder, TConfig> : BaseTestSc
     }
 }
 
-[PublicAPI]
 public abstract class
     DbBaseTestScope<TApplicationBuilder, TDbContext, TConfig> : DbBaseTestScope<TApplicationBuilder, TConfig>
     where TDbContext : DbContext

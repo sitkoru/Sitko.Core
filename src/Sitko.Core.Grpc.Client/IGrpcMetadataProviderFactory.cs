@@ -14,6 +14,5 @@ internal class GrpcMetadataProviderFactory<TClient, TMetadataProvider> : IGrpcMe
 
 {
     public IGrpcMetadataProvider GetProvider(IServiceProvider serviceProvider) =>
-        serviceProvider.GetServices<IGrpcMetadataProvider>().OfType<TMetadataProvider>().FirstOrDefault() ??
-        throw new InvalidDataException($"Service {typeof(TMetadataProvider)} is not register");
+        serviceProvider.GetRequiredService<TMetadataProvider>();
 }

@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -76,17 +75,17 @@ public class VaultConfigurationModuleOptions : BaseModuleOptions
     public string Uri { get; set; } = string.Empty;
     public string Token { get; set; } = string.Empty;
     public string MountPoint { get; set; } = "secret";
-    public string? VaultSecret { get; [UsedImplicitly] set; }
-    public string? VaultRoleId { get; [UsedImplicitly] set; }
+    public string? VaultSecret { get; set; }
+    public string? VaultRoleId { get; set; }
     public bool ReloadOnChange { get; set; } = true;
     public int ReloadCheckIntervalSeconds { get; set; } = 60;
-    public bool OmitVaultKeyName { get; [UsedImplicitly] set; }
+    public bool OmitVaultKeyName { get; set; }
     public bool RenewToken { get; set; } = true;
     public int TokenRenewIntervalMinutes { get; set; } = 60;
     public bool ThrowOnEmptySecrets { get; set; } = true;
     public VaultAuthType AuthType { get; set; } = VaultAuthType.Token;
 
-    public IEnumerable<char>? AdditionalCharactersForConfigurationPath { get; [UsedImplicitly] set; }
+    public IEnumerable<char>? AdditionalCharactersForConfigurationPath { get; set; }
 
     public override void Configure(IApplicationContext applicationContext)
     {

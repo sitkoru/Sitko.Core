@@ -7,6 +7,7 @@ public class OpenTelemetryModuleOptions : BaseModuleOptions
 {
     public bool EnableOtlpExport { get; set; }
     public Uri? Endpoint { get; set; }
+    public Dictionary<string, string> Headers { get; set; } = [];
     public OtlpExportProtocol OtlpExportProtocol { get; set; } = OtlpExportProtocol.Grpc;
     public bool EnableLogs { get; set; } = true;
     public bool EnableMetrics { get; set; } = true;

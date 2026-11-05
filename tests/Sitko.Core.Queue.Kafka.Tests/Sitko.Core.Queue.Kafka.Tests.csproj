@@ -5,7 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Testcontainers.Kafka" Version="4.6.0"/>
+    <PackageReference Include="Testcontainers.Kafka"/>
   </ItemGroup>
 
 </Project>

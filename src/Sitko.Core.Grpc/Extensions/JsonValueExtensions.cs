@@ -1,9 +1,7 @@
 using System.Text.Json;
-using JetBrains.Annotations;
 
 namespace Sitko.Core.Grpc.Extensions;
 
-[PublicAPI]
 public static class JsonValueExtensions
 {
     private static readonly JsonSerializerOptions Settings = new()

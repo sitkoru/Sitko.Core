@@ -1,5 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Sitko.Core.IdProvider.SonyFlake\Sitko.Core.IdProvider.SonyFlake.csproj"/>
-  </ItemGroup>
-</Project>

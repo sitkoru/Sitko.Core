@@ -54,16 +54,16 @@ public abstract class BaseFileInputComponent<TUploadResult, TValue> : InputBase<
         // Передаем ему наш лимит, либо int.MaxValue.
         var maxFilesLimit = MaxAllowedFiles > 0 ? MaxAllowedFiles.Value : int.MaxValue;
 
-        // Получаем список файлов (IBrowserFile)
-        var files = e.GetMultipleFiles(maxFilesLimit);
-
-        if (MaxAllowedFiles > 0 && files.Count > MaxAllowedFiles)
+        if (MaxAllowedFiles > 0 && e.FileCount > MaxAllowedFiles)
         {
             Logger.LogError("Max files count is {Count}", MaxAllowedFiles);
-            await NotifyMaxFilesCountExceededAsync(files.Count);
+            await NotifyMaxFilesCountExceededAsync(e.FileCount);
             await StopLoadingAsync();
             return;
         }
+
+        // Получаем список файлов (IBrowserFile)
+        var files = e.GetMultipleFiles(maxFilesLimit);
 
         foreach (var file in files)
         {

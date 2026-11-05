@@ -5,7 +5,7 @@ namespace Sitko.Core.Grpc.Client;
 
 public static class GrpcClientRetryPolicies
 {
-    public static RetryPolicy Default { get; } = new()
+    public static RetryPolicy Default => new()
     {
         MaxAttempts = 5,
         InitialBackoff = TimeSpan.FromSeconds(1),

@@ -1,22 +1,20 @@
-﻿using JetBrains.Annotations;
-using Sitko.Core.App.Helpers;
+﻿using Sitko.Core.App.Helpers;
 
 namespace Sitko.Core.Storage;
 
 public sealed record StorageNode
 {
     private readonly List<StorageNode> children = new();
-    [PublicAPI] public string Name { get; set; } = string.Empty;
-    [PublicAPI] public string FullPath { get; set; } = string.Empty;
-    [PublicAPI] public DateTimeOffset LastModified { get; set; } = DateTimeOffset.UtcNow;
-    [PublicAPI] public long Size { get; set; }
-    [PublicAPI] public StorageNodeType Type { get; private set; }
+    public string Name { get; set; } = string.Empty;
+    public string FullPath { get; set; } = string.Empty;
+    public DateTimeOffset LastModified { get; set; } = DateTimeOffset.UtcNow;
+    public long Size { get; set; }
+    public StorageNodeType Type { get; private set; }
     public IEnumerable<StorageNode> Children => children.ToArray();
-    [PublicAPI] public StorageItem? StorageItem { get; private set; }
+    public StorageItem? StorageItem { get; private set; }
 
-    [PublicAPI] public string HumanSize => FilesHelper.HumanSize(Size);
+    public string HumanSize => FilesHelper.HumanSize(Size);
 
-    [PublicAPI]
     public static StorageNode CreateDirectory(string name, string fullPath,
         IEnumerable<StorageNode>? directoryChildren = null)
     {
@@ -29,7 +27,6 @@ public sealed record StorageNode
         return node;
     }
 
-    [PublicAPI]
     public static StorageNode CreateStorageItem(StorageItem storageItem) =>
         new()
         {
@@ -50,7 +47,6 @@ public sealed record StorageNode
         }
     }
 
-    [PublicAPI]
     public void SetChildren(IEnumerable<StorageNode> directoryChildren)
     {
         var directoryChildrenArr = directoryChildren.ToArray();
@@ -62,7 +58,6 @@ public sealed record StorageNode
         }
     }
 
-    [PublicAPI]
     public void AddItem(StorageItem item)
     {
         var parts = item.FilePath.Split("/");
@@ -88,10 +83,8 @@ public sealed record StorageNode
         }
     }
 
-    [PublicAPI]
     public void RemoveItem(StorageItem item) => RemoveItem(item.FilePath);
 
-    [PublicAPI]
     public void RemoveItem(string filePath)
     {
         var parts = filePath.Split("/");

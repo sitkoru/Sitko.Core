@@ -1,6 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Blazor.Wasm\Sitko.Core.Blazor.Wasm.csproj"/>
-    <ProjectReference Include="..\Sitko.Core.Repository.Remote\Sitko.Core.Repository.Remote.csproj"/>
-  </ItemGroup>
-</Project>

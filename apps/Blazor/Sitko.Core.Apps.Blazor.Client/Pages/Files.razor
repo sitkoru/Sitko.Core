@@ -1,0 +1,41 @@
+@page "/Files"
+@rendermode InteractiveAuto
+@inherits BaseComponent
+
+<AppPageLayout Title="Загрузка файлов">
+    <MudText Class="mb-4">До 2 МиБ на файл; до 5 файлов за один выбор. Файлы и метаданные сохраняются локально в wwwroot/static/demo до ручной очистки. Выбор файлов на странице не сохраняется после её закрытия.</MudText>
+    <MudPaper Class="pa-4 mb-4">
+        <MudText Typo="Typo.h6" Class="mb-4">Один файл</MudText>
+        <Sitko.Core.Blazor.MudBlazorComponents.MudFileUpload Storage="Storage" @bind-Value="file"
+            UploadPath="demo" MaxFileSize="MaxFileSize" UploadText="Выбрать файл" DownloadText="Скачать" RemoveText="Убрать из выбора" />
+        @if (file is not null)
+        {
+            <MudLink Class="mt-4 d-block" Href="@Storage.PublicUri(file).ToString()" Target="_blank">Скачать @file.FileName</MudLink>
+        }
+    </MudPaper>
+    <MudPaper Class="pa-4 mb-4">
+        <MudText Typo="Typo.h6" Class="mb-4">Несколько файлов</MudText>
+        <MudFilesUpload Storage="Storage" TCollection="List<StorageItem>" @bind-Value="files"
+            UploadPath="demo" MaxFileSize="MaxFileSize" MaxAllowedFiles="5" EnableOrdering="false"
+            UploadText="Выбрать файлы" DownloadText="Скачать" RemoveText="Очистить выбор" />
+        @foreach (var item in files ?? [])
+        {
+            <MudLink Class="mt-4 d-block" Href="@Storage.PublicUri(item).ToString()" Target="_blank">Скачать @item.FileName</MudLink>
+        }
+    </MudPaper>
+    <MudPaper Class="pa-4">
+        <MudText Typo="Typo.h6" Class="mb-4">Изображение с просмотром</MudText>
+        <MudText Class="mb-4">JPEG или PNG. Нажмите на значок просмотра после загрузки.</MudText>
+        <Sitko.Core.Blazor.MudBlazorComponents.MudFileUpload Storage="Storage" @bind-Value="image"
+            UploadPath="demo" MaxFileSize="MaxFileSize" DisplayMode="FileUploadDisplayMode.Image" ContentTypes="image/jpeg,image/png"
+            UploadText="Выбрать изображение" PreviewText="Посмотреть" RemoveText="Убрать из выбора" />
+    </MudPaper>
+</AppPageLayout>
+
+@code {
+    private const long MaxFileSize = 2 * 1024 * 1024;
+    private IStorage Storage => GetRequiredService<IStorage>();
+    private StorageItem? file;
+    private List<StorageItem>? files;
+    private StorageItem? image;
+}

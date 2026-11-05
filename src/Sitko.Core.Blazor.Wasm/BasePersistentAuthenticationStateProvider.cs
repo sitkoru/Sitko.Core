@@ -14,7 +14,7 @@ public abstract class BasePersistentAuthenticationStateProvider<TUser>: Authenti
 
     protected BasePersistentAuthenticationStateProvider(PersistentComponentState state)
     {
-        if (!state.TryTakeFromJson<TUser>(nameof(TUser), out var userInfo) || userInfo is null)
+        if (!state.TryTakeFromJson<TUser>(typeof(TUser).FullName!, out var userInfo) || userInfo is null)
         {
             return;
         }

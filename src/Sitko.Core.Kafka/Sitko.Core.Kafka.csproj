@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <PackageReference Include="Confluent.Kafka" />
     <PackageReference Include="KafkaFlow" />
     <PackageReference Include="KafkaFlow.Extensions.Hosting" />
     <PackageReference Include="KafkaFlow.LogHandler.Microsoft" />

@@ -3,7 +3,6 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.App.Health;
-using Sitko.Core.MediatR;
 using Sitko.Core.Queue.Internal;
 
 namespace Sitko.Core.Queue;
@@ -50,22 +49,5 @@ public abstract class QueueModule<TQueue, TConfig> : BaseApplicationModule<TConf
                 services.AddSingleton(typeof(IHostedService), host);
             }
         }
-
-        foreach (var (serviceType, implementationType) in startupOptions.TranslateMediatRTypes)
-        {
-            services.AddTransient(serviceType, implementationType);
-        }
-    }
-
-    public override IEnumerable<Type> GetRequiredModules(IApplicationContext applicationContext, TConfig options)
-    {
-        var modules = new List<Type>(base.GetRequiredModules(applicationContext, options));
-
-        if (options.TranslateMediatRTypes.Any())
-        {
-            modules.Add(typeof(IMediatRModule));
-        }
-
-        return modules;
     }
 }

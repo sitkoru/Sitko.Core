@@ -1,9 +1,7 @@
-using JetBrains.Annotations;
 using Sitko.Core.App;
 
 namespace Sitko.Core.ImgProxy;
 
-[PublicAPI]
 public class ImgProxyModuleOptions : BaseModuleOptions
 {
     public string Host { get; set; } = "";

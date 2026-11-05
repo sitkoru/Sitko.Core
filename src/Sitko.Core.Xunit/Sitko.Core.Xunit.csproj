@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sitko.Core.Db.InMemory\Sitko.Core.Db.InMemory.csproj"/>
@@ -8,9 +8,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AutoBogus"/>
-    <PackageReference Include="FluentAssertions"/>
-    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="None"/>
-    <PackageReference Include="xunit.v3"/>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" PrivateAssets="None"/>
+    <PackageReference Include="AwesomeAssertions"/>
+    <PackageReference Include="xunit.v3.extensibility.core"/>
+    <PackageReference Include="xunit.v3.assert"/>
   </ItemGroup>
 </Project>

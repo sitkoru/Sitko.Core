@@ -2,4 +2,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Sitko.Core.Tasks.Kafka\Sitko.Core.Tasks.Kafka.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Testcontainers.Kafka" />
+  </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using Sitko.Core.App.Json;
 using Sitko.Core.Grpc;
 using Xunit;

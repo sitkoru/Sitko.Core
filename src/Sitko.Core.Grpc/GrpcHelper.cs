@@ -1,20 +1,18 @@
-﻿using Grpc.Core;
+using System.Reflection;
+using Google.Protobuf.Reflection;
+using Grpc.Core;
 
-namespace Sitko.Core.Grpc;
-
-public static class GrpcServicesHelper
+namespace Sitko.Core.Grpc
 {
-    public static string GetServiceName<T>()
+    public static class GrpcServicesHelper
     {
-        var serviceName = typeof(T).BaseType?.DeclaringType?.Name;
-        if (string.IsNullOrEmpty(serviceName))
-        {
-            throw new InvalidOperationException($"Can't find service name for {typeof(T)}");
-        }
+        public static string GetServiceName<T>() => GetDescriptor(typeof(T).BaseType?.DeclaringType).FullName;
 
-        return serviceName;
+        public static string GetServiceNameForClient<TClient>() where TClient : ClientBase<TClient> =>
+            GetDescriptor(typeof(TClient).DeclaringType).FullName;
+
+        private static ServiceDescriptor GetDescriptor(Type? serviceType) =>
+            serviceType?.GetProperty("Descriptor", BindingFlags.Public | BindingFlags.Static)?.GetValue(null)
+                as ServiceDescriptor ?? throw new InvalidOperationException($"Cannot find protobuf service descriptor for {serviceType}");
     }
-
-    public static string GetServiceNameForClient<TClient>() where TClient : ClientBase<TClient> =>
-        typeof(TClient).BaseType!.GenericTypeArguments.First().DeclaringType!.Name;
 }

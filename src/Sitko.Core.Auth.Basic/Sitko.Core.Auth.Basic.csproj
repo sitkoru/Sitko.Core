@@ -1,8 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <PackageReference Include="idunno.Authentication.Basic"/>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Sitko.Core.Auth\Sitko.Core.Auth.csproj"/>
-  </ItemGroup>
-</Project>

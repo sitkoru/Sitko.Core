@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Sitko.Core.Repository.EntityFrameworkCore.Tests.Data.TPH;
 using Sitko.Core.Xunit;

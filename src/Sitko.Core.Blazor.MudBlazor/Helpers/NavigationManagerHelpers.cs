@@ -1,9 +1,7 @@
-﻿using JetBrains.Annotations;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 
 namespace Sitko.Core.Blazor.MudBlazorComponents.Helpers;
 
-[PublicAPI]
 public static class NavigationManagerHelpers
 {
     public static bool IsSubGroupExpanded(this NavigationManager navigationManager, string path)

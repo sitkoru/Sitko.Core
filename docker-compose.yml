@@ -1,10 +1,5 @@
 version: "2.1"
 services:
-  nats:
-    image: nats-streaming:0.21.2
-    command: -cid tests
-    ports:
-      - 4222:4222
   consul:
     image: hashicorp/consul
     ports:

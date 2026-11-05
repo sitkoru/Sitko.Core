@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using MudBlazor;
@@ -443,7 +442,6 @@ public record MudTableFilter
     public string? Search { get; set; }
 }
 
-[PublicAPI]
 public static class ListFilterExtensions
 {
     public static void Toggle<T>(this List<T> list, T value)

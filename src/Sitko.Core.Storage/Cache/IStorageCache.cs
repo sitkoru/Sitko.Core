@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using Sitko.Core.App;
 using Sitko.Core.Storage.Internal;
 using Sitko.Core.Storage.Metadata;
@@ -37,8 +36,8 @@ public interface IStorageCacheRecord
 
 public abstract class StorageCacheOptions : BaseModuleOptions
 {
-    [PublicAPI] public int TtlInMinutes { get; set; } = 720;
-    [PublicAPI] public long MaxFileSizeToStore { get; set; }
-    [PublicAPI] public long? MaxCacheSize { get; set; }
+    public int TtlInMinutes { get; set; } = 720;
+    public long MaxFileSizeToStore { get; set; }
+    public long? MaxCacheSize { get; set; }
 }
 

@@ -1,12 +1,10 @@
 ﻿using System.Text;
 using System.Web;
-using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Sitko.Core.Grpc;
 
 namespace Sitko.Core.Repository.Grpc;
 
-[PublicAPI]
 public static class ApiRequestInfoExtensions
 {
     public static ApiRequestInfo SetFilter(this ApiRequestInfo apiRequestInfo,

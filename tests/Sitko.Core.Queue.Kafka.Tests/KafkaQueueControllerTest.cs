@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using AwesomeAssertions;
 using Sitko.Core.Queue.Kafka.Tests.Data;
 using Xunit;
 
@@ -20,7 +20,8 @@ public class KafkaQueueControllerTest(ITestOutputHelper testOutputHelper)
         EventRegistrator.IsRegistered(testEvent.Id).Should().BeFalse();
 
         await controller.StartAsync();
-        await Task.Delay(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
+        await EventRegistrator.WaitUntilAsync(() => EventRegistrator.IsRegistered(testEvent.Id),
+            TestContext.Current.CancellationToken);
         EventRegistrator.IsRegistered(testEvent.Id).Should().BeTrue();
     }
 }

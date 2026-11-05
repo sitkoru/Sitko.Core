@@ -1,9 +1,7 @@
-using JetBrains.Annotations;
 using Sitko.Core.App.Results;
 
 namespace Sitko.Core.Grpc.Extensions;
 
-[PublicAPI]
 public static class GrpcExtensions
 {
     public static string PrepareString(string? s) => s ?? string.Empty;

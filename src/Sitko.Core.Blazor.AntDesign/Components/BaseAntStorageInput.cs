@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Sitko.Core.App.Collections;
 using Sitko.Core.App.Localization;
@@ -46,7 +45,7 @@ public abstract class BaseAntStorageInput<TValue> : InputBase<TValue>, IBaseComp
     [Parameter] public string RightText { get; set; } = "";
     [Parameter] public RenderFragment<BaseAntStorageInput<TValue>>? CustomUploadButton { get; set; }
     [Parameter] public Func<BaseAntStorageInput<TValue>, Task<TValue>>? CustomUpload { get; set; }
-    [PublicAPI] protected int ItemsCount => Files.Count();
+    protected int ItemsCount => Files.Count();
     protected bool ShowOrdering => EnableOrdering && ItemsCount > 1;
     protected IBaseFileInputComponent? FileInput { get; set; }
     protected bool IsSpinning => FileInput?.IsLoading ?? false;
