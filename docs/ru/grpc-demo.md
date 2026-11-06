@@ -64,7 +64,7 @@ dotnet run --project apps/gRPC/Sitko.Core.Apps.Grpc/Sitko.Core.Apps.Grpc.csproj 
 
 ```bash
 curl -fsS http://127.0.0.1:18500/v1/agent/services
-dig @127.0.0.1 -p 18600 grpc-e10cea5836abef17d515d08191aa0a5fb094324879d81d95579e6a6af0.service.consul SRV +short
+dig @127.0.0.1 -p 18600 grpc-grpc-demo-foo-e10cea5836ab.service.consul SRV +short
 ```
 
 В HTTP-ответе должны быть оба контракта в `Meta.contract`, окружение `grpc-demo`,

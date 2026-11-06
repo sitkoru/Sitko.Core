@@ -26,7 +26,7 @@ app.AddGrpcClient<Invoice.InvoiceClient>();
 
 An application package can register its clients from its module registration extension. Register modules before `Build`; the current App does not support adding modules inside `ConfigureHostBuilder` while building the container. A client-only application does not require a web server.
 
-The full protobuf name, such as `accounting.v1.Invoice`, identifies both the discovered contract and the named gRPC client. Equal short C# names in different protobuf packages remain distinct. Clients do not need the server application's name.
+The full protobuf name, such as `accounting.v1.Invoice`, identifies configuration entries and the named gRPC client. Equal short names in different protobuf packages have distinct DNS hash suffixes. Clients do not need the server application's name.
 
 ## Consul and server addresses
 
@@ -58,7 +58,26 @@ Example for separate processes on the same host:
 
 The client uses the same `Application:Environment` and `ServiceDiscovery:Consul` settings, without `Web`. `Port=0` lets the operating system select a port. After Kestrel starts, discovery publishes the actual port of the named TLS/HTTP2 listener. `ExternalAddress` is the address advertised to clients; it does not restrict the listening interface. In Kubernetes, use a reachable Pod IP. Loopback is suitable only for processes on the same host.
 
-Each contract of an application instance has its own Consul registration. Multiple contracts can share a TLS port. The exact environment/full-contract pair determines a common DNS label; the original values remain in metadata. Registration and TTL use the same configured agent. Consul DNS must exclude instances whose checks are critical.
+Each contract of an application instance has its own Consul registration. Multiple contracts can share a TLS port. The DNS label has the format `grpc-<environment>-<short-contract>-<hash>`; the original values remain in metadata. Registration and TTL use the same configured agent. Consul DNS must exclude instances whose checks are critical.
+
+`ServiceDiscoveryName.Create` takes the contract name after the last dot and removes
+only a trailing, case-sensitive `Service`. The environment and short name are
+converted to `kebab-case`; characters outside ASCII `a-z` and `0-9` become hyphens,
+and consecutive or leading/trailing hyphens are removed. For example, `production`
+and `MYCG.Auth.Grpc.UsersService` produce `grpc-production-users-2dddfe5cbf3f`.
+
+The final 12 hex characters are the first 12 characters of SHA-256 over the UTF-8
+string `<environment.Length>:<environment><full-contract>`, using the original
+inputs without normalization. This suffix is always present to distinguish equal
+short names, case differences and normalization collisions. It provides 48-bit
+probabilistic collision protection. The readable part keeps at most its first
+50 characters, without a trailing hyphen; the hash stays at the end and the total
+length never exceeds 63 characters.
+
+Client and server must use the same naming scheme. This scheme is incompatible
+with `grpc-` followed by 58 hex characters; no dual registration is performed.
+Coordinate client and server versions when upgrading. Configuration keys remain
+full protobuf names.
 
 Before application startup completes, discovery validates the actual positive port, HTTP/2 and advertised address. `ExternalAddress` cannot be a wildcard (`0.0.0.0`, `::`, `*`, `+`); errors name the contract. One background loop performs network registration after startup. Graceful shutdown removes only this instance’s registrations. After a crash, the record remains until Consul deletes it, but TTL expiry excludes it from healthy DNS responses. The existing client receives updated endpoints for subsequent RPCs; in-flight calls are not transferred.
 
