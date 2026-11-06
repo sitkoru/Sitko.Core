@@ -56,7 +56,7 @@
   <!--Blazor libraries-->
   <ItemGroup>
     <PackageVersion Include="AntDesign" Version="0.20.4" />
-    <PackageVersion Include="MudBlazor" Version="9.11.0" />
+    <PackageVersion Include="MudBlazor" Version="9.12.0" />
   </ItemGroup>
   <!--Tests libraries-->
   <ItemGroup>
