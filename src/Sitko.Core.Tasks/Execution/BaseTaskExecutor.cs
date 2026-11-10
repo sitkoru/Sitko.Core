@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog.Context;
 using Sitko.Core.Repository;
@@ -29,7 +29,10 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
 
     protected ILogger<BaseTaskExecutor<TTask, TConfig, TResult>> Logger { get; }
 
-    public async Task ExecuteAsync(Guid id, CancellationToken cancellationToken)
+    public Task ExecuteAsync(Guid id, CancellationToken cancellationToken) =>
+        ExecuteAsync(id, cancellationToken, cancellationToken);
+
+    public async Task ExecuteAsync(Guid id, CancellationToken cancellationToken, CancellationToken completionToken)
     {
         using (LogContext.PushProperty("TaskId", id.ToString()))
         using (LogContext.PushProperty("TaskType", typeof(TTask).Name))
@@ -38,7 +41,7 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
             {
                 using var activity = TracingHelper.ActivitySource.StartActivity($"Tasks/{typeof(TTask)}");
                 activity?.SetTag("jobId", id.ToString());
-                var task = await ExecuteTaskAsync(id, cancellationToken);
+                var task = await ExecuteTaskAsync(id, cancellationToken, completionToken);
                 if (task.TaskStatus == TaskStatus.Fails)
                 {
                     throw new JobFailedException(id, typeof(TTask).Name,
@@ -57,10 +60,10 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
         }
     }
 
-    private async Task<TTask> ExecuteTaskAsync(Guid id, CancellationToken cancellationToken)
+    private async Task<TTask> ExecuteTaskAsync(Guid id, CancellationToken cancellationToken, CancellationToken completionToken)
     {
         Logger.LogInformation("Start job {JobId}", id);
-        var task = await repository.GetByIdAsync(id, cancellationToken);
+        var task = await repository.GetByIdAsync(id, completionToken);
         if (task is null)
         {
             throw new InvalidOperationException($"Task {id} not found");
@@ -82,7 +85,7 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
         task.ExecuteDateStart = DateTimeOffset.UtcNow;
         task.TaskStatus = TaskStatus.InProgress;
         task.LastActivityDate = DateTimeOffset.UtcNow;
-        await repository.UpdateAsync(task, cancellationToken);
+        await repository.UpdateAsync(task, completionToken);
 
         TResult result;
         TaskStatus status;
@@ -92,11 +95,11 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
             {
                 await using var scope = serviceScopeFactory.CreateAsyncScope();
                 var scopedRepository = scope.ServiceProvider.GetRequiredService<IRepository<TTask, Guid>>();
-                var scopedTask = await scopedRepository.GetByIdAsync(id, CancellationToken.None);
+                var scopedTask = await scopedRepository.GetByIdAsync(id, activityTaskCts.Token);
                 if (scopedTask is not null)
                 {
                     scopedTask.LastActivityDate = DateTimeOffset.UtcNow;
-                    await scopedRepository.UpdateAsync(scopedTask, CancellationToken.None);
+                    await scopedRepository.UpdateAsync(scopedTask, activityTaskCts.Token);
                 }
 
                 try
@@ -111,6 +114,7 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
         }, activityTaskCts.Token);
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             Logger.LogInformation("Try to execute job {JobId}", id);
             result = await ExecuteAsync(task, cancellationToken);
             if (result.IsSuccess)
@@ -126,6 +130,11 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
                 status = TaskStatus.Fails;
             }
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            status = TaskStatus.Fails;
+            result = new TResult { IsSuccess = false, ErrorMessage = "Task execution was cancelled" };
+        }
         catch (Exception ex)
         {
             Logger.LogInformation(ex, "Job {JobId} execution failed with error: {ErrorText}", id, ex.ToString());
@@ -133,27 +142,30 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
             result = new TResult { IsSuccess = false, ErrorMessage = ex.Message };
         }
 
-        await activityTaskCts.CancelAsync();
-        try
+        finally
         {
-            await activityTask;
-        }
-        catch (OperationCanceledException)
-        {
-            // do nothing
-        }
-        catch (Exception ex)
-        {
-            Logger.LogInformation(ex, "Activity task error: {ErrorText}", ex.ToString());
+            await activityTaskCts.CancelAsync();
+            try
+            {
+                await activityTask;
+            }
+            catch (OperationCanceledException)
+            {
+                // do nothing
+            }
+            catch (Exception ex)
+            {
+                Logger.LogInformation(ex, "Activity task error: {ErrorText}", ex.ToString());
+            }
         }
 
         Logger.LogInformation("Set job {JobId} result and save", id);
-        task = await repository.RefreshAsync(task, cancellationToken);
+        task = await repository.RefreshAsync(task, completionToken);
         task.Result = result;
         task.TaskStatus = status;
         task.ExecuteDateEnd = DateTimeOffset.UtcNow;
 
-        await repository.UpdateAsync(task, cancellationToken);
+        await repository.UpdateAsync(task, completionToken);
         Logger.LogInformation("Job {JobId} finished", id);
         return task;
     }

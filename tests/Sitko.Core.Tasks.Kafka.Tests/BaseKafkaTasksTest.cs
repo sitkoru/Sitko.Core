@@ -2,6 +2,7 @@ using Confluent.Kafka;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sitko.Core.Repository.EntityFrameworkCore;
+using Sitko.Core.Repository;
 using Sitko.Core.Tasks.Kafka.Tests.Data;
 using Sitko.Core.Xunit;
 using Xunit;
@@ -13,10 +14,16 @@ namespace Sitko.Core.Tasks.Kafka.Tests
 
     public class BaseKafkaTasksTestScope : BaseTestScope
     {
+        public IHost Host { get; private set; } = null!;
+
+        protected override IHost BuildApplication(HostApplicationBuilder builder) => Host = base.BuildApplication(builder);
+
         protected override IHostApplicationBuilder ConfigureApplication(IHostApplicationBuilder hostBuilder, string name)
         {
             _ = base.ConfigureApplication(hostBuilder, name);
             _ = hostBuilder.Services.AddSingleton<TaskExecutionControl>();
+            _ = hostBuilder.Services.AddScoped<TaskDependency>();
+            _ = hostBuilder.Services.AddSingleton<IRepositoryFilter, InitialTaskUpdateFilter>();
             _ = hostBuilder.AddEFRepositories();
             _ = hostBuilder.AddKafkaTasks<BaseTestTask, TestDbContext>(options =>
             {

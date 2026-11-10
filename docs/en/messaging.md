@@ -181,6 +181,18 @@ The section is `Kafka:Tasks:<base task type name>`. Shared settings include
 `StuckTasksProcessMode=Fail`, `UseDistributedLock=true`, `RetryDelayInSeconds=60`.
 Default topic/group prefixes include the application and environment.
 
+Each task executor receives its own DI scope, disposed after execution and result
+persistence finish. Kafka partition rebalancing and disposal of the message scope
+do not cancel a task that has already started.
+
+During graceful shutdown, the application stops accepting new executions and
+signals cancellation to active executors. Executors must forward that token to
+asynchronous operations. The standard `BaseTaskExecutor` persists expected
+cancellation as `Fails`, without an automatic retry. Final state persistence uses a
+separate token, so cancelling the work does not prevent finalization. The application waits for active executions
+within the host shutdown budget. A task that ignores cancellation may outlive that
+budget; persistence after the deadline or forced process termination is not guaranteed.
+
 Verify delivery, successful/failed completion, retry and persisted state in an
 isolated environment. For a real Kafka/PostgreSQL example, see
 [Tasks.Kafka.Tests](../../tests/Sitko.Core.Tasks.Kafka.Tests).

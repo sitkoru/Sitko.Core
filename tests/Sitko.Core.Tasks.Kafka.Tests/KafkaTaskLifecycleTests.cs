@@ -1,7 +1,9 @@
 using System.Diagnostics;
+using KafkaFlow.Consumers;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.Tasks.Components;
 using Sitko.Core.Tasks.Execution;
+using Sitko.Core.Tasks.Kafka.Execution;
 using Sitko.Core.Tasks.Data.Repository;
 using Sitko.Core.Tasks.Kafka.Tests.Data;
 using Xunit;
@@ -11,6 +13,237 @@ namespace Sitko.Core.Tasks.Kafka.Tests
 {
     public class KafkaTaskLifecycleTests(ITestOutputHelper testOutputHelper) : BaseKafkaTasksTest(testOutputHelper)
     {
+        [Fact]
+        public async Task DirectExecutionWithCancelledTokenLeavesWaitingTaskUnchanged()
+        {
+            var cancellationToken = TestContext.Current.CancellationToken;
+            var scope = await GetScopeAsync();
+            var task = new TestTask { Id = Guid.NewGuid(), Config = new TestTaskConfig() };
+            var response = await scope.GetService<ITaskRepository<TestTask>>().AddAsync(task, cancellationToken);
+            Assert.True(response.IsSuccess, response.ErrorsString);
+            using var cancelled = new CancellationTokenSource();
+            await cancelled.CancelAsync();
+
+            await scope.GetService<ITaskExecutor<TestTask>>().ExecuteAsync(task.Id, cancelled.Token);
+
+            var unchanged = await ReadTaskAsync(scope, task.Id, cancellationToken);
+            Assert.Equal(TaskStatus.Wait, unchanged.TaskStatus);
+            Assert.Null(unchanged.Result);
+            Assert.Equal(0, scope.GetService<TaskExecutionControl>().ExecutionCount);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task AcceptedTaskCancelledBeforeBusinessExecutionPersistsFailedResult(bool duringInitialUpdate)
+        {
+            var cancellationToken = TestContext.Current.CancellationToken;
+            var scope = await GetScopeAsync();
+            var control = scope.GetService<TaskExecutionControl>();
+            var executions = scope.GetService<KafkaTaskExecutions>();
+            var task = new TestTask { Id = Guid.NewGuid(), Config = new TestTaskConfig() };
+            var response = await scope.GetService<ITaskRepository<TestTask>>().AddAsync(task, cancellationToken);
+            Assert.True(response.IsSuccess, response.ErrorsString);
+            void Stop() => executions.StoppingAsync(CancellationToken.None).GetAwaiter().GetResult();
+            if (duringInitialUpdate)
+            {
+                control.BeforeInitialUpdate = Stop;
+            }
+            else
+            {
+                control.BeforeExecution = Stop;
+            }
+
+            var handler = ActivatorUtilities.CreateInstance<KafkaExecutor<TestTask, TestTaskExecutor>>(scope.Host.Services);
+            await handler.Handle(new TestMessageContext(), task);
+            var completed = await ReadTaskAsync(scope, task.Id, cancellationToken);
+            Assert.Equal(TaskStatus.Fails, completed.TaskStatus);
+            Assert.Equal("Task execution was cancelled", completed.Result?.ErrorMessage);
+            _ = Assert.NotNull(completed.ExecuteDateStart);
+            _ = Assert.NotNull(completed.ExecuteDateEnd);
+            Assert.Equal(0, control.ExecutionCount);
+        }
+
+        [Fact]
+        public async Task MessageReceivedAfterShutdownIsNotExecutedOrAcknowledged()
+        {
+            var cancellationToken = TestContext.Current.CancellationToken;
+            var scope = await GetScopeAsync();
+            var task = new TestTask { Id = Guid.NewGuid(), Config = new TestTaskConfig() };
+            var response = await scope.GetService<ITaskRepository<TestTask>>().AddAsync(task, cancellationToken);
+            Assert.True(response.IsSuccess, response.ErrorsString);
+            await scope.Host.StopAsync(cancellationToken);
+            var context = new TestMessageContext();
+            var handler = ActivatorUtilities.CreateInstance<KafkaExecutor<TestTask, TestTaskExecutor>>(scope.Host.Services);
+            await handler.Handle(context, task);
+            Assert.False(context.ShouldStoreOffset);
+            Assert.Equal(0, scope.GetService<TaskExecutionControl>().ExecutionCount);
+            var unchanged = await ReadTaskAsync(scope, task.Id, cancellationToken);
+            Assert.Equal(TaskStatus.Wait, unchanged.TaskStatus);
+            Assert.Null(unchanged.ExecuteDateStart);
+            Assert.Null(unchanged.Result);
+        }
+
+        [Fact]
+        public async Task ConsumerStopKeepsRunningTaskAliveWithoutCancellingIt()
+        {
+            var cancellationToken = TestContext.Current.CancellationToken;
+            var scope = await GetScopeAsync();
+            var control = scope.GetService<TaskExecutionControl>();
+            control.IgnoreCancellation = true;
+            var task = new TestTask { Id = Guid.NewGuid(), FooId = 7, Config = new TestTaskConfig() };
+            try
+            {
+                var response = await scope.GetService<TasksManager>().RunAsync(task, cancellationToken: cancellationToken);
+                Assert.True(response.IsSuccess, response.ErrorMessage);
+                await control.Entered.Task.WaitAsync(TimeSpan.FromSeconds(30), cancellationToken);
+                var consumer = Assert.Single(scope.GetService<IConsumerAccessor>().All);
+                await consumer.StopAsync().WaitAsync(TimeSpan.FromSeconds(45), cancellationToken);
+                Assert.False(control.CancellationObserved.Task.IsCompleted);
+                var running = await ReadTaskAsync(scope, task.Id, cancellationToken);
+                Assert.Equal(TaskStatus.InProgress, running.TaskStatus);
+                Assert.False(control.DependencyDisposed.Task.IsCompleted);
+                var stopping = scope.Host.StopAsync(cancellationToken);
+                await control.CancellationObserved.Task.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
+                Assert.False(stopping.IsCompleted);
+                _ = control.Release.TrySetResult();
+                await stopping.WaitAsync(TimeSpan.FromSeconds(10), cancellationToken);
+                Assert.True(control.DependencyDisposed.Task.IsCompleted);
+                var completed = await WaitForStatusAsync(scope, task.Id, TaskStatus.Success, cancellationToken);
+                Assert.Equal(7, completed.Result?.Foo);
+            }
+            finally
+            {
+                _ = control.Release.TrySetResult();
+            }
+        }
+
+        [Fact]
+        public async Task HostShutdownPreservesSuccessfulResultAfterLateCancellation()
+        {
+            var cancellationToken = TestContext.Current.CancellationToken;
+            var scope = await GetScopeAsync();
+            var control = scope.GetService<TaskExecutionControl>();
+            control.IgnoreCancellation = true;
+            var task = new TestTask { Id = Guid.NewGuid(), FooId = 7, Config = new TestTaskConfig() };
+            try
+            {
+                var response = await scope.GetService<TasksManager>().RunAsync(task, cancellationToken: cancellationToken);
+                Assert.True(response.IsSuccess, response.ErrorMessage);
+                await control.Entered.Task.WaitAsync(TimeSpan.FromSeconds(30), cancellationToken);
+                var stopping = scope.Host.StopAsync(cancellationToken);
+                await control.CancellationObserved.Task.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
+                _ = control.Release.TrySetResult();
+                await stopping.WaitAsync(TimeSpan.FromSeconds(10), cancellationToken);
+                var completed = await ReadTaskAsync(scope, task.Id, cancellationToken);
+                Assert.Equal(TaskStatus.Success, completed.TaskStatus);
+                Assert.Equal(7, completed.Result?.Foo);
+            }
+            finally
+            {
+                _ = control.Release.TrySetResult();
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task HostShutdownHonoursDeadlineForTaskIgnoringCancellation(bool blockCancellationCallback)
+        {
+            var cancellationToken = TestContext.Current.CancellationToken;
+            var scope = await GetScopeAsync();
+            var control = scope.GetService<TaskExecutionControl>();
+            control.IgnoreCancellation = true;
+            control.BlockCancellationCallback = blockCancellationCallback;
+            var task = new TestTask { Id = Guid.NewGuid(), Config = new TestTaskConfig() };
+            var response = await scope.GetService<TasksManager>().RunAsync(task, cancellationToken: cancellationToken);
+            Assert.True(response.IsSuccess, response.ErrorMessage);
+            try
+            {
+                await control.Entered.Task.WaitAsync(TimeSpan.FromSeconds(30), cancellationToken);
+                using var deadline = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
+                var timer = Stopwatch.StartNew();
+                var error = await Record.ExceptionAsync(() => scope.Host.StopAsync(deadline.Token));
+                Assert.NotNull(error);
+                if (error is AggregateException aggregate)
+                {
+                    Assert.All(aggregate.Flatten().InnerExceptions,
+                        static exception => _ = Assert.IsType<OperationCanceledException>(exception, exactMatch: false));
+                }
+                else
+                {
+                    _ = Assert.IsType<OperationCanceledException>(error, exactMatch: false);
+                }
+                Assert.True(timer.Elapsed < TimeSpan.FromSeconds(5));
+                Assert.True(control.CancellationObserved.Task.IsCompleted);
+                Assert.False(control.DependencyDisposed.Task.IsCompleted);
+            }
+            finally
+            {
+                _ = control.Release.TrySetResult();
+                await control.DependencyDisposed.Task.WaitAsync(TimeSpan.FromSeconds(10), cancellationToken);
+            }
+        }
+
+        [Fact]
+        public async Task HostShutdownCancelsRunningTaskAndWaitsForFailedResult()
+        {
+            var cancellationToken = TestContext.Current.CancellationToken;
+            var scope = await GetScopeAsync();
+            var control = scope.GetService<TaskExecutionControl>();
+            var task = new TestTask { Id = Guid.NewGuid(), Config = new TestTaskConfig() };
+            try
+            {
+                var response = await scope.GetService<TasksManager>().RunAsync(task, cancellationToken: cancellationToken);
+                Assert.True(response.IsSuccess, response.ErrorMessage);
+                await control.Entered.Task.WaitAsync(TimeSpan.FromSeconds(30), cancellationToken);
+                var stopping = scope.Host.StopAsync(cancellationToken);
+                await control.CancellationObserved.Task.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
+                Assert.False(stopping.IsCompleted);
+                _ = control.Release.TrySetResult();
+                await stopping.WaitAsync(TimeSpan.FromSeconds(10), cancellationToken);
+                var completed = await ReadTaskAsync(scope, task.Id, cancellationToken);
+                Assert.Equal(TaskStatus.Fails, completed.TaskStatus);
+                Assert.False(completed.Result?.IsSuccess);
+                Assert.Equal("Task execution was cancelled", completed.Result?.ErrorMessage);
+                _ = Assert.NotNull(completed.ExecuteDateEnd);
+            }
+            finally
+            {
+                _ = control.Release.TrySetResult();
+            }
+        }
+
+        [Fact]
+        public async Task MessageScopeDisposalDoesNotDisposeRunningTask()
+        {
+            var cancellationToken = TestContext.Current.CancellationToken;
+            var scope = await GetScopeAsync();
+            var control = scope.GetService<TaskExecutionControl>();
+            var task = new TestTask { Id = Guid.NewGuid(), FooId = 7, Config = new TestTaskConfig() };
+            var response = await scope.GetService<ITaskRepository<TestTask>>().AddAsync(task, cancellationToken);
+            Assert.True(response.IsSuccess, response.ErrorsString);
+            var messageScope = scope.CreateScope();
+            var handler = ActivatorUtilities.CreateInstance<KafkaExecutor<TestTask, TestTaskExecutor>>(messageScope.ServiceProvider);
+            var execution = handler.Handle(null!, task);
+            try
+            {
+                await control.Entered.Task.WaitAsync(TimeSpan.FromSeconds(30), cancellationToken);
+                messageScope.Dispose();
+                Assert.False(execution.IsCompleted);
+                _ = control.Release.TrySetResult();
+                await execution.WaitAsync(TimeSpan.FromSeconds(30), cancellationToken);
+                var completed = await ReadTaskAsync(scope, task.Id, cancellationToken);
+                Assert.Equal(TaskStatus.Success, completed.TaskStatus);
+                Assert.Equal(7, completed.Result?.Foo);
+            }
+            finally
+            {
+                _ = control.Release.TrySetResult();
+                messageScope.Dispose();
+            }
+        }
+
         [Fact]
         public async Task RunPersistsProgressResultAndSkipsRepeatedExecution()
         {
