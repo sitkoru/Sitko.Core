@@ -42,6 +42,7 @@ namespace Sitko.Core.Tasks.Kafka.Tests.Data
     public sealed class TaskExecutionControl
     {
         private int executionCount;
+        private int updateCount;
         public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource CancellationObserved { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -50,6 +51,8 @@ namespace Sitko.Core.Tasks.Kafka.Tests.Data
         public bool BlockCancellationCallback { get; set; }
         public Action? BeforeExecution { get; set; }
         public Action? BeforeInitialUpdate { get; set; }
+        public Func<CancellationToken, Task>? DuringActivityUpdate { get; set; }
+        public int RecordUpdate() => Interlocked.Increment(ref updateCount);
         public int ExecutionCount => Volatile.Read(ref executionCount);
         public void RecordExecution() => Interlocked.Increment(ref executionCount);
     }

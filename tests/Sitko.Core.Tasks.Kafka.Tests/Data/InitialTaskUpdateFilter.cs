@@ -6,16 +6,23 @@ namespace Sitko.Core.Tasks.Kafka.Tests.Data
 {
     public sealed class InitialTaskUpdateFilter(TaskExecutionControl control) : BaseRepositoryFilter<TestTask>
     {
-        public override Task<bool> BeforeValidateAsync<TEntity, TEntityPk>(TEntity item,
+        public override async Task<bool> BeforeValidateAsync<TEntity, TEntityPk>(TEntity item,
             (bool isValid, IList<ValidationFailure> errors) validationResult, bool isNew,
             CancellationToken cancellationToken = default)
         {
             if (!isNew && item is TestTask { TaskStatus: TaskStatus.InProgress })
             {
-                control.BeforeInitialUpdate?.Invoke();
+                if (control.RecordUpdate() == 1)
+                {
+                    control.BeforeInitialUpdate?.Invoke();
+                }
+                else if (control.DuringActivityUpdate is { } duringActivityUpdate)
+                {
+                    await duringActivityUpdate(cancellationToken);
+                }
             }
 
-            return Task.FromResult(true);
+            return true;
         }
     }
 }

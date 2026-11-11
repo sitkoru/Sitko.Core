@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using KafkaFlow.Consumers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Sitko.Core.Tasks.Components;
 using Sitko.Core.Tasks.Execution;
 using Sitko.Core.Tasks.Kafka.Execution;
@@ -355,6 +356,72 @@ namespace Sitko.Core.Tasks.Kafka.Tests
             _ = Assert.NotNull(completed.ExecuteDateEnd);
             Assert.True(completed.ExecuteDateEnd >= completed.ExecuteDateStart);
             Assert.Equal(1, control.ExecutionCount);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task DisposeReportsActivityFailuresButNotItsCancellation(bool failActivity)
+        {
+            var cancellationToken = TestContext.Current.CancellationToken;
+            var scope = await GetScopeAsync();
+            var control = scope.GetService<TaskExecutionControl>();
+            var activityEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var failure = new InvalidOperationException("activity failure");
+            control.DuringActivityUpdate = async token =>
+            {
+                _ = activityEntered.TrySetResult();
+                if (failActivity)
+                {
+                    throw failure;
+                }
+                await Task.Delay(Timeout.InfiniteTimeSpan, token);
+            };
+            var task = new TestTask { Id = Guid.NewGuid(), Config = new TestTaskConfig() };
+            var response = await scope.GetService<ITaskRepository<TestTask>>().AddAsync(task, cancellationToken);
+            Assert.True(response.IsSuccess, response.ErrorsString);
+            using var executionScope = scope.CreateScope();
+            var logger = new ActivityTestLogger();
+            var executor = ActivatorUtilities.CreateInstance<TestTaskExecutor>(executionScope.ServiceProvider, logger);
+            try
+            {
+                var execution = executor.ExecuteAsync(task.Id, cancellationToken);
+                await activityEntered.Task.WaitAsync(TimeSpan.FromSeconds(30), cancellationToken);
+                _ = control.Release.TrySetResult();
+                await execution.WaitAsync(TimeSpan.FromSeconds(30), cancellationToken);
+                executor.Dispose();
+
+                var completed = await ReadTaskAsync(scope, task.Id, cancellationToken);
+                Assert.Equal(TaskStatus.Success, completed.TaskStatus);
+                Assert.True(completed.Result?.IsSuccess);
+                if (failActivity)
+                {
+                    Assert.Same(failure, Assert.Single(logger.Errors));
+                }
+                else
+                {
+                    Assert.Empty(logger.Errors);
+                }
+            }
+            finally
+            {
+                _ = control.Release.TrySetResult();
+            }
+        }
+
+        private sealed class ActivityTestLogger : ILogger<TestTaskExecutor>
+        {
+            public List<Exception?> Errors { get; } = [];
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+            public bool IsEnabled(LogLevel logLevel) => true;
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
+                Func<TState, Exception?, string> formatter)
+            {
+                if (logLevel == LogLevel.Error)
+                {
+                    Errors.Add(exception);
+                }
+            }
         }
 
         private static async Task<TestTask> ReadTaskAsync(BaseKafkaTasksTestScope scope, Guid id,
