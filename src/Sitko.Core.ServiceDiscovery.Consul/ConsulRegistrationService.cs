@@ -20,6 +20,7 @@ namespace Sitko.Core.ServiceDiscovery.Consul
         IOptions<AppWebConfigurationModuleOptions> web,
         IOptions<ConsulServiceDiscoveryOptions> options,
         IConsulClient consul,
+        ConsulRegistrationHealthCheck readiness,
         ILogger<ConsulRegistrationService> logger) : BackgroundService, IHostedLifecycleService
     {
         private AgentServiceRegistration[] registrations = [];
@@ -63,6 +64,7 @@ namespace Sitko.Core.ServiceDiscovery.Consul
                             await consul.Agent.PassTTL($"service:{service.ID}", "", stoppingToken);
                         }
                         registered = true;
+                        readiness.MarkRegistered();
                     }
                     catch (Exception exception) when (!stoppingToken.IsCancellationRequested)
                     {
