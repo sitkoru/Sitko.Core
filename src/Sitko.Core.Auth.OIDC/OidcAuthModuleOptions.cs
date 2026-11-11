@@ -20,6 +20,7 @@ public class OidcAuthModuleOptions : OidcProviderAuthOptions
     public override string SignInScheme => "Cookies";
     public override string ChallengeScheme => "oidc";
     public TokenStoreType TokenStoreType { get; set; } = TokenStoreType.None;
+    public bool EnableSessionRecovery { get; set; }
     public Action<OpenIdConnectOptions>? ConfigureOpenIdConnectOptions { get; set; }
     public Action<UserTokenManagementOptions>? ConfigureUserTokenManagement { get; set; }
 }

@@ -6,6 +6,13 @@
 Общая база: OidcProviderModule<TOptions>/OidcProviderAuthOptions. Validators получают
 соответствующее имя без IdentityServer. IUserTokenProvider и TokenStoreType переносятся
 в пространство Tokens без изменения сигнатуры получения токена и чисел enum.
+
+`OidcAuthModuleOptions.EnableSessionRecovery` по умолчанию выключен. При включении
+`IUserTokenProvider` сообщает о подтверждённо непригодной пользовательской сессии
+через `InvalidUserSessionException`. Модуль подключает обработчик защищённых
+HTML-страниц; при самостоятельной сборке HTTP-конвейера доступен
+`UseOidcSessionRecovery`. Для интерактивного Blazor Server доступны
+`AddOidcSessionRecoveryForBlazor` и компонент `OidcSessionRecovery`.
 Настройки по умолчанию Auth:OIDC:Client и Auth:OIDC:Jwt. Схемы Cookies/oidc/Bearer.
 Свойство ConfigureOpenIdConnectOptions позволяет настроить штатные options.
 Старые имена автоматически не поддерживаются. Полный переход описывается в docs RU/EN.
