@@ -58,6 +58,8 @@ Example for separate processes on the same host:
 
 The client uses the same `Application:Environment` and `ServiceDiscovery:Consul` settings, without `Web`. `Port=0` lets the operating system select a port. After Kestrel starts, discovery publishes the actual port of the named TLS/HTTP2 listener. `ExternalAddress` is the address advertised to clients; it does not restrict the listening interface. In Kubernetes, use a reachable Pod IP. Loopback is suitable only for processes on the same host.
 
+When `Application:Web:Ports` is absent or empty, a local server uses the actual HTTPS address from `IServerAddressesFeature` after Kestrel starts. For `Grpc:Server:ServiceDiscoveryPortNames` filtering, this address is named `https`, which is included by default. Exactly one matching HTTPS address is required; a missing or ambiguous address causes startup to fail with the contract name. A wildcard listening address is replaced with local loopback. This scenario does not require `ExternalAddress`. Configure HTTPS and HTTP/2 through the standard Kestrel settings; address discovery does not validate HTTP/2 support.
+
 Each contract of an application instance has its own Consul registration. Multiple contracts can share a TLS port. The DNS label has the format `grpc-<environment>-<short-contract>-<hash>`; the original values remain in metadata. Registration and TTL use the same configured agent. Consul DNS must exclude instances whose checks are critical.
 
 `ServiceDiscoveryName.Create` takes the contract name after the last dot and removes
@@ -79,7 +81,7 @@ with `grpc-` followed by 58 hex characters; no dual registration is performed.
 Coordinate client and server versions when upgrading. Configuration keys remain
 full protobuf names.
 
-Before application startup completes, discovery validates the actual positive port, HTTP/2 and advertised address. `ExternalAddress` cannot be a wildcard (`0.0.0.0`, `::`, `*`, `+`); errors name the contract. One background loop performs network registration after startup. Graceful shutdown removes only this instance’s registrations. After a crash, the record remains until Consul deletes it, but TTL expiry excludes it from healthy DNS responses. The existing client receives updated endpoints for subsequent RPCs; in-flight calls are not transferred.
+Before application startup completes, discovery validates the actual positive port and advertised address; named listeners are also checked for TLS and HTTP/2. `ExternalAddress` cannot be a wildcard (`0.0.0.0`, `::`, `*`, `+`); errors name the contract. One background loop performs network registration after startup. Graceful shutdown removes only this instance’s registrations. After a crash, the record remains until Consul deletes it, but TTL expiry excludes it from healthy DNS responses. The existing client receives updated endpoints for subsequent RPCs; in-flight calls are not transferred.
 
 `DnsServers` configures DNS addresses and ports independently of the agent's HTTP `Address`. The library does not change system DNS settings. Consul outages may cause RPC failures; retaining the last known endpoints is not guaranteed.
 
