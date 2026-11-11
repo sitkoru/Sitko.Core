@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,8 +16,8 @@ namespace Sitko.Core.Auth.OIDC
 {
     public static class SessionRecoveryExtensions
     {
-        private const string AttemptKey = ".sitko.session-recovery";
-        private const string RetryKey = "__sitko_relogin";
+        private const string AttemptKey = ".sitkocore.session-recovery";
+        private const string RetryKey = "__sitkocore_relogin";
         public static IApplicationBuilder UseOidcSessionRecovery(this IApplicationBuilder app) =>
             app.Use(async (context, next) =>
             {
@@ -44,7 +45,7 @@ namespace Sitko.Core.Auth.OIDC
                         var query = QueryString.Create(context.Request.Query.Where(pair => !string.Equals(pair.Key, RetryKey, StringComparison.OrdinalIgnoreCase))
                             .SelectMany(pair => pair.Value.Select(value => new KeyValuePair<string, string?>(pair.Key, value))));
                         var destination = context.Request.PathBase + context.Request.Path + query;
-                        if (destination.StartsWith("//", StringComparison.Ordinal) || destination.StartsWith("/\\", StringComparison.Ordinal))
+                        if (!RedirectHttpResult.IsLocalUrl(destination))
                         {
                             destination = "/";
                         }

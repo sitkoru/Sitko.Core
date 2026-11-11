@@ -253,8 +253,7 @@ change the cookie name and require new login when switching providers.
 
 A Blazor Server circuit is not an HTTP request. Use `IUserTokenProvider` where an
 up-to-date `HttpContext` exists. For recovery in an active circuit, register
-`AddOidcSessionRecoveryForBlazor()` and add `OidcSessionRecovery` to the root
-interactive markup. Verify full-page reload after login/logout,
+`AddOidcSessionRecoveryForBlazor()`. Verify full-page reload after login/logout,
 reconnect and session expiration in the actual application. Blazor WebAssembly needs
 its own client-side OIDC integration; never send the server client secret to it.
 

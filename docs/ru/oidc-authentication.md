@@ -258,8 +258,7 @@ email-строки в произвольный claim без проверки с�
 
 Для Blazor Server интерактивный circuit не равен HTTP-запросу. Получайте токен через
 `IUserTokenProvider` там, где есть актуальный `HttpContext`. Для восстановления
-в открытом circuit зарегистрируйте `AddOidcSessionRecoveryForBlazor()` и добавьте
-`OidcSessionRecovery` в корневую интерактивную разметку. Проверьте
+в открытом circuit зарегистрируйте `AddOidcSessionRecoveryForBlazor()`. Проверьте
 полную перезагрузку после входа/выхода, reconnect и истечение сессии в конкретном
 приложении. Blazor WebAssembly требует отдельной клиентской OIDC-интеграции;
 серверный client secret туда не передаётся.

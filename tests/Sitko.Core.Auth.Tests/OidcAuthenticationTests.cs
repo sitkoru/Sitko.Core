@@ -351,8 +351,8 @@ namespace Sitko.Core.Auth.Tests
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
             Assert.Null(response.Headers.Location);
             var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            Assert.Contains("__sitko_relogin=1", body);
-            using var manual = new HttpRequestMessage(HttpMethod.Get, "/page?__SITKO_RELOGIN=1");
+            Assert.Contains("__sitkocore_relogin=1", body);
+            using var manual = new HttpRequestMessage(HttpMethod.Get, "/page?__SITKOCORE_RELOGIN=1");
             manual.Headers.Accept.ParseAdd("text/html");
             using var manualChallenge = await fixture.Client.SendAsync(manual, TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.Redirect, manualChallenge.StatusCode);

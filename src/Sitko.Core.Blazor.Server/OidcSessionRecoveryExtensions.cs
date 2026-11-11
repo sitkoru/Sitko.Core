@@ -9,7 +9,6 @@ namespace Sitko.Core.Blazor.Server
     {
         public static IServiceCollection AddOidcSessionRecoveryForBlazor(this IServiceCollection services)
         {
-            services.TryAddScoped<OidcSessionRecoveryState>();
             services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, OidcSessionRecoveryCircuitHandler>());
             return services;
         }
