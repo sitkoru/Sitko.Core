@@ -179,6 +179,10 @@ public abstract class BaseTaskExecutor<TTask, TConfig, TResult> : ITaskExecutor<
         {
             activityTask?.GetAwaiter().GetResult();
         }
+        catch (OperationCanceledException ex) when (ex.CancellationToken == activityTaskCts.Token)
+        {
+            // Activity cancellation is expected during disposal.
+        }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error in activity task: {ErrorText}", ex.ToString());
