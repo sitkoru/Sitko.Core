@@ -9,6 +9,8 @@
 
 ## Экспорт OTLP
 
+Для завершённых SQL span источника `Npgsql` с `db.system.name=postgresql` длительностью менее 100 мс без ошибки и события исключения модуль удаляет `db.npgsql.data_source` перед экспортом, если присутствуют непустые строки `server.address`, `db.namespace` и `db.query.text`. Остальные атрибуты и все span сохраняются; при отсутствии этих данных, ошибке, исключении или длительности от 100 мс исходный атрибут сохраняется.
+
 ```json
 {
   "Application": { "Name": "example-api", "EnableConsoleLogging": true },

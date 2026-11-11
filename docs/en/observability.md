@@ -9,6 +9,8 @@ when building the container. No separate Sitko.Core logging package is required.
 
 ## OTLP export
 
+For completed SQL spans from `Npgsql` with `db.system.name=postgresql` under 100 ms without an error or exception event, the module removes `db.npgsql.data_source` before export when `server.address`, `db.namespace`, and `db.query.text` are non-empty strings. All other attributes and all spans are retained; the original attribute remains when these fields are missing, on an error or exception, or at durations of 100 ms or more.
+
 ```json
 {
   "Application": { "Name": "example-api", "EnableConsoleLogging": true },

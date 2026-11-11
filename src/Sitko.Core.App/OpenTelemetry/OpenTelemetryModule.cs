@@ -29,6 +29,7 @@ public class OpenTelemetryModule : BaseApplicationModule<OpenTelemetryModuleOpti
         {
             otelBuilder.WithTracing(builder =>
             {
+                _ = builder.AddProcessor(new NpgsqlDataSourceProcessor());
                 builder.AddSource("Sitko.*");
                 builder.AddHttpClientInstrumentation();
                 if (startupOptions.EnableOtlpExport)

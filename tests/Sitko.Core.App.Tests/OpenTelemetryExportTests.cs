@@ -14,6 +14,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sitko.Core.App.OpenTelemetry;
+using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Serilog;
@@ -349,6 +350,112 @@ namespace Sitko.Core.App.Tests
             await ExportAsync(settings);
 
             await receiver.AssertSignalsAsync(accepted: true, ["logs"]);
+        }
+
+        [Fact]
+        public async Task NpgsqlAttributesAreReducedBeforeOtlpExport()
+        {
+            using var environment = new ExportEnvironment();
+            await using var receiver = await OtlpReceiver.StartAsync(Authorization, expectedSignals: 1);
+            var settings = Settings(receiver.Endpoint);
+            settings["OpenTelemetry:Headers:Authorization"] = Authorization;
+            settings["OpenTelemetry:EnableLogs"] = "false";
+            settings["OpenTelemetry:EnableMetrics"] = "false";
+            var builder = Host.CreateApplicationBuilder();
+            _ = builder.Configuration.AddInMemoryCollection(settings);
+            _ = builder.AddSitkoCore().ConfigureOpenTelemetry(static (_, _, telemetry) =>
+                telemetry.WithTracing(static tracing => tracing.AddSource("Npgsql")));
+            using var host = builder.Build();
+            await host.StartAsync(TestContext.Current.CancellationToken);
+            using var source = new ActivitySource("Npgsql");
+            foreach (var slow in new[] { false, true })
+            {
+                using var activity = source.StartActivity(Marker + "-trace-" + (slow ? "slow" : "fast"), ActivityKind.Client,
+                    default(ActivityContext), startTime: DateTimeOffset.UtcNow - (slow ? TimeSpan.FromMilliseconds(100) : TimeSpan.Zero))!;
+                _ = activity.SetTag("db.system.name", "postgresql");
+                _ = activity.SetTag("server.address", "localhost");
+                _ = activity.SetTag("db.namespace", "db");
+                _ = activity.SetTag("db.query.text", "SELECT 1");
+                _ = activity.SetTag("db.npgsql.data_source", slow ? "slow-source-value" : "fast-source-value");
+            }
+
+            _ = host.Services.GetRequiredService<TracerProvider>().ForceFlush();
+            await receiver.AssertSignalsAsync(accepted: true, ["traces"]);
+            var payload = Encoding.UTF8.GetString(receiver.Payloads["traces"]);
+            Assert.Contains(Marker + "-trace-fast", payload, StringComparison.Ordinal);
+            Assert.Contains(Marker + "-trace-slow", payload, StringComparison.Ordinal);
+            Assert.DoesNotContain("fast-source-value", payload, StringComparison.Ordinal);
+            Assert.Contains("slow-source-value", payload, StringComparison.Ordinal);
+            await host.StopAsync(TestContext.Current.CancellationToken);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task NpgsqlAttributesAreReducedBeforeSdkExport(bool batch)
+        {
+            using var environment = new ExportEnvironment();
+            var exported = new ConcurrentDictionary<string, Dictionary<string, object?>>();
+            var builder = Host.CreateApplicationBuilder();
+            var settings = Settings("http://localhost:4317");
+            settings["OpenTelemetry:EnableOtlpExport"] = "false";
+            _ = builder.Configuration.AddInMemoryCollection(settings);
+            _ = builder.AddSitkoCore().ConfigureOpenTelemetry((_, _, telemetry) =>
+                telemetry.WithTracing(tracing =>
+                {
+                    _ = tracing.AddSource("Npgsql");
+                    var exporter = new ActivityCaptureExporter(exported);
+                    _ = tracing.AddProcessor(batch
+                        ? new BatchActivityExportProcessor(exporter)
+                        : new SimpleActivityExportProcessor(exporter));
+                }));
+            using var host = builder.Build();
+            await host.StartAsync(TestContext.Current.CancellationToken);
+            using var source = new ActivitySource("Npgsql");
+            using var otherSource = new ActivitySource("Sitko.Other");
+            foreach (var scenario in new[] { "fast", "slow", "error", "exception", "source", "server", "database", "query", "empty", "system" })
+            {
+                var currentSource = scenario == "source" ? otherSource : source;
+                using var activity = currentSource.StartActivity(scenario, ActivityKind.Client, default(ActivityContext),
+                    startTime: DateTimeOffset.UtcNow - (scenario == "slow" ? TimeSpan.FromMilliseconds(100) : TimeSpan.Zero))!;
+                _ = activity.SetTag("db.system.name", scenario == "system" ? null : "postgresql");
+                _ = activity.SetTag("server.address", scenario == "server" ? null : "localhost");
+                _ = activity.SetTag("db.namespace", scenario == "database" ? null : "db");
+                _ = activity.SetTag("db.query.text", scenario == "query" ? null : scenario == "empty" ? "" : "SELECT 1");
+                _ = activity.SetTag("db.npgsql.data_source", "long-source-value");
+                _ = activity.SetTag("unchanged", "value");
+                if (scenario == "error")
+                {
+                    _ = activity.SetStatus(ActivityStatusCode.Error);
+                }
+
+                if (scenario == "exception")
+                {
+                    _ = activity.AddEvent(new ActivityEvent("exception"));
+                }
+            }
+
+            _ = host.Services.GetRequiredService<TracerProvider>().ForceFlush();
+            Assert.Equal(10, exported.Count);
+            Assert.DoesNotContain("db.npgsql.data_source", exported["fast"].Keys);
+            Assert.All(exported.Where(static pair => pair.Key != "fast"),
+                static pair => Assert.Equal("long-source-value", pair.Value["db.npgsql.data_source"]));
+            Assert.All(exported.Values, static tags => Assert.Equal("value", tags["unchanged"]));
+            await host.StopAsync(TestContext.Current.CancellationToken);
+        }
+
+        private sealed class ActivityCaptureExporter(ConcurrentDictionary<string, Dictionary<string, object?>> exported)
+            : BaseExporter<Activity>
+        {
+            public override ExportResult Export(in Batch<Activity> batch)
+            {
+                foreach (var activity in batch)
+                {
+                    exported[activity.OperationName] = activity.TagObjects.ToDictionary(static tag => tag.Key, static tag => tag.Value);
+                }
+
+                return ExportResult.Success;
+            }
         }
 
         private static Dictionary<string, string?> Settings(string endpoint) => new()
