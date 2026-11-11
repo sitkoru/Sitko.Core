@@ -2,6 +2,8 @@
 using KafkaFlow;
 using KafkaFlow.Serializer;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Sitko.Core.App;
 using Sitko.Core.Kafka;
 using Sitko.Core.Tasks.Data;
@@ -23,6 +25,9 @@ public class
         IServiceCollection services,
         KafkaTasksModuleOptions<TBaseTask, TDbContext> startupOptions, List<ExecutorRegistration> executors)
     {
+        services.TryAddSingleton<KafkaTaskExecutions>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, KafkaTaskExecutions>(
+            static provider => provider.GetRequiredService<KafkaTaskExecutions>()));
         var kafkaTopicPrefix = startupOptions.AddTopicPrefix
             ? string.IsNullOrEmpty(startupOptions.TopicPrefix)
                 ? $"{applicationContext.Name}_{applicationContext.Environment}"

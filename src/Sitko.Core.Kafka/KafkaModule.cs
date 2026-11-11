@@ -128,7 +128,7 @@ public class KafkaModule : BaseApplicationModule<KafkaModuleOptions>, IOpenTelem
         IServiceProvider serviceProvider, CancellationToken cancellationToken = default)
     {
         await base.ApplicationStopping(applicationContext, serviceProvider, cancellationToken);
-        await (kafkaBus?.StopAsync() ?? Task.CompletedTask);
+        await (kafkaBus?.StopAsync() ?? Task.CompletedTask).WaitAsync(cancellationToken);
     }
 
     public KafkaConfigurator CreateConfigurator(string name) =>
