@@ -83,6 +83,8 @@ full protobuf names.
 
 Before application startup completes, discovery validates the actual positive port and advertised address; named listeners are also checked for TLS and HTTP/2. `ExternalAddress` cannot be a wildcard (`0.0.0.0`, `::`, `*`, `+`); errors name the contract. One background loop performs network registration after startup. Graceful shutdown removes only this instance’s registrations. After a crash, the record remains until Consul deletes it, but TTL expiry excludes it from healthy DNS responses. The existing client receives updated endpoints for subsequent RPCs; in-flight calls are not transferred.
 
+Until the Consul agent confirms registration and the first TTL for every contract of this instance, `/ready` returns 503. After the first complete success, later heartbeat failures do not revoke readiness. If there are no contracts or the module is disabled, this condition does not block readiness. The `/health/startup` and `/healthz` checks exclude it; `/health/all` includes it in the diagnostic result. Agent confirmation does not guarantee DNS propagation.
+
 `DnsServers` configures DNS addresses and ports independently of the agent's HTTP `Address`. The library does not change system DNS settings. Consul outages may cause RPC failures; retaining the last known endpoints is not guaranteed.
 
 ## Direct addresses and disabling discovery

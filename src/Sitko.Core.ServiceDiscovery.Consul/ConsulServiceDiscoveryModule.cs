@@ -2,7 +2,9 @@ using System.Net;
 using Consul;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Sitko.Core.App;
+using Sitko.Core.App.Health;
 
 namespace Sitko.Core.ServiceDiscovery.Consul
 {
@@ -34,6 +36,10 @@ namespace Sitko.Core.ServiceDiscovery.Consul
                 config.Address = startupOptions.Address;
                 config.WaitTime = startupOptions.RequestTimeout;
             }, client => client.Timeout = startupOptions.RequestTimeout));
+            _ = services.AddSingleton<ConsulRegistrationHealthCheck>();
+            _ = services.AddHealthChecks().Add(new HealthCheckRegistration("Consul registration",
+                provider => provider.GetRequiredService<ConsulRegistrationHealthCheck>(), null,
+                HealthCheckStages.GetSkipTags(HealthCheckStages.Startup, HealthCheckStages.Liveness)));
             _ = services.AddHostedService<ConsulRegistrationService>();
         }
     }
