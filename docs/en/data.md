@@ -125,6 +125,8 @@ synchronized. After `Url`, `Login`, `Password` or
 `DisableCertificatesValidation` changes, the next operation receives a new
 client; a previously obtained client remains usable to finish its operation.
 Old clients are not retained in a separate configuration cache.
+All steps of one index initialization use the same client, even if connection
+settings change between closing and reopening the index.
 
 `EnableClientLogging` takes effect without recreating the client; detailed
 request and response logs use the `OpenSearchClientProvider` category when using

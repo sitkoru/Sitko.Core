@@ -178,14 +178,15 @@ public class OpenSearchSearcher<TSearchModel> : ISearcher<TSearchModel>
     public async Task InitAsync(string indexName, CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";
-        var indexExists = await GetClient().Indices.ExistsAsync(indexName, ct: cancellationToken);
+        var client = GetClient();
+        var indexExists = await client.Indices.ExistsAsync(indexName, ct: cancellationToken);
         if (indexExists.Exists)
         {
             logger.LogDebug("Update existing index {IndexName}", indexName);
-            await GetClient().Indices.CloseAsync(indexName, ct: cancellationToken);
-            var result = await GetClient().Indices.UpdateSettingsAsync(indexName, c => c.IndexSettings(s =>
+            await client.Indices.CloseAsync(indexName, ct: cancellationToken);
+            var result = await client.Indices.UpdateSettingsAsync(indexName, c => c.IndexSettings(s =>
                 s.Analysis(CreateAnalysisDescriptor)), cancellationToken);
-            await GetClient().Indices.OpenAsync(indexName, ct: cancellationToken);
+            await client.Indices.OpenAsync(indexName, ct: cancellationToken);
             if (!result.IsValid)
             {
                 if (result.ServerError != null)
@@ -206,7 +207,7 @@ public class OpenSearchSearcher<TSearchModel> : ISearcher<TSearchModel>
         else
         {
             logger.LogDebug("Create new index {IndexName}", indexName);
-            var result = await GetClient().Indices.CreateAsync(indexName, CreateIndexDescriptor, ct: cancellationToken);
+            var result = await client.Indices.CreateAsync(indexName, CreateIndexDescriptor, ct: cancellationToken);
             if (!result.IsValid)
             {
                 if (result.ServerError != null)

@@ -85,6 +85,52 @@ public class OpenSearchClientLifetimeTests
         Assert.Equal("Found", Assert.Single(oldResponse.Hits).Source.Title);
     }
 
+    [Fact]
+    public async Task InitKeepsClientWhenUrlChangesAfterClosingIndex()
+    {
+        var options = new MutableOptions();
+        options.CurrentValue.Url = "http://first.example:9200";
+        var connection = new SwitchingConnection(options);
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton<IOptionsMonitor<OpenSearchModuleOptions>>(options);
+        new TestOpenSearchModule().Register(services);
+        services.AddSingleton(_ => new OpenSearchClientProvider(options, NullLogger.Instance,
+            uri => new ConnectionSettings(uri, connection)));
+        using var root = services.BuildServiceProvider();
+        using var scope = root.CreateScope();
+        var searcher = scope.ServiceProvider.GetRequiredService<ISearcher<TestSearchModel>>();
+
+        await searcher.InitAsync("items", TestContext.Current.CancellationToken);
+        Assert.Equal(4, connection.Requests.Count);
+        Assert.EndsWith("/_close", connection.Requests[1].AbsolutePath);
+        Assert.EndsWith("/_settings", connection.Requests[2].AbsolutePath);
+        Assert.EndsWith("/_open", connection.Requests[3].AbsolutePath);
+        Assert.All(connection.Requests, request => Assert.Equal("first.example", request.Host));
+
+        await searcher.CountAsync("items", "needle", null, TestContext.Current.CancellationToken);
+        Assert.Equal("second.example", connection.Requests[4].Host);
+        Assert.EndsWith("/_count", connection.Requests[4].AbsolutePath);
+    }
+
+    private sealed class SwitchingConnection(MutableOptions options)
+        : InMemoryConnection(Encoding.UTF8.GetBytes("""{"acknowledged":true,"count":7}"""), 200)
+    {
+        public List<Uri> Requests { get; } = [];
+
+        public override async Task<TResponse> RequestAsync<TResponse>(RequestData requestData, CancellationToken cancellationToken)
+        {
+            Requests.Add(requestData.Uri);
+            var result = await base.RequestAsync<TResponse>(requestData, cancellationToken);
+            if (requestData.Uri.AbsolutePath.EndsWith("/_close", StringComparison.Ordinal))
+            {
+                options.CurrentValue = new OpenSearchModuleOptions { Url = "http://second.example:9200" };
+            }
+
+            return result;
+        }
+    }
+
     private sealed class TestOpenSearchModule : OpenSearchModule
     {
         public void Register(IServiceCollection services) => ConfigureSearch(services);
