@@ -4,6 +4,8 @@
 
 `Sitko.Core.Grpc.Client` uses Microsoft Service Discovery and DNS SRV. `Sitko.Core.ServiceDiscovery.Consul` publishes server contracts and configures DNS. The gRPC client and server packages do not depend on Consul; applications add the provider separately.
 
+When enabled, the Service Discovery module excludes the `ResolutionFailed` event from `Microsoft.Extensions.ServiceDiscovery.ServiceEndpointWatcher` if it contains an `OperationCanceledException`. The event does not identify the cause of cancellation, so the filter also hides matching cancellations for other reasons, including a possible timeout. Other discovery errors remain logged.
+
 ## Registration
 
 Register server implementations through the fluent API:

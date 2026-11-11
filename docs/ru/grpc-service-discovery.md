@@ -4,6 +4,8 @@
 
 `Sitko.Core.Grpc.Client` вызывает сервис через Microsoft Service Discovery и DNS SRV. `Sitko.Core.ServiceDiscovery.Consul` публикует серверные контракты в Consul и настраивает DNS. Клиентский и серверный gRPC-пакеты не зависят от Consul; приложение подключает провайдер отдельно.
 
+Включённый модуль Service Discovery исключает из журнала событие `ResolutionFailed` наблюдателя `Microsoft.Extensions.ServiceDiscovery.ServiceEndpointWatcher`, если оно содержит `OperationCanceledException`. Событие не позволяет определить причину отмены, поэтому фильтр также скрывает совпадающие отмены по другим причинам, включая возможный тайм-аут. Остальные ошибки обнаружения сохраняются.
+
 ## Регистрация
 
 Сервер подключает провайдер и объявляет реализации контрактов:
