@@ -1,23 +1,33 @@
-﻿using System.Globalization;
-using System.Text;
+using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenSearch.Client;
-using OpenSearch.Net;
 
 namespace Sitko.Core.Search.OpenSearch;
 
-public class OpenSearchSearcher<TSearchModel>(
-    IOptionsMonitor<OpenSearchModuleOptions> optionsMonitor,
-    ILogger<OpenSearchSearcher<TSearchModel>> logger)
-    : ISearcher<TSearchModel>
+public class OpenSearchSearcher<TSearchModel> : ISearcher<TSearchModel>
     where TSearchModel : BaseSearchModel, new()
 {
     private const string CustomAnalyze = "custom_analyze";
     private const string CustomCharFilterAnalyze = "char_filter_analyze";
     private const string StemmerName = "custom_stemmer";
     private const string CustomCharFilter = "rus_en_key";
-    private OpenSearchClient? client;
+    private readonly IOptionsMonitor<OpenSearchModuleOptions> optionsMonitor;
+    private readonly ILogger<OpenSearchSearcher<TSearchModel>> logger;
+    private readonly OpenSearchClientProvider clientProvider;
+
+    public OpenSearchSearcher(IOptionsMonitor<OpenSearchModuleOptions> optionsMonitor,
+        ILogger<OpenSearchSearcher<TSearchModel>> logger)
+        : this(optionsMonitor, logger, new OpenSearchClientProvider(optionsMonitor, logger)) { }
+
+    public OpenSearchSearcher(IOptionsMonitor<OpenSearchModuleOptions> optionsMonitor,
+        ILogger<OpenSearchSearcher<TSearchModel>> logger, OpenSearchClientProvider clientProvider)
+    {
+        this.optionsMonitor = optionsMonitor;
+        this.logger = logger;
+        this.clientProvider = clientProvider;
+    }
+
     private OpenSearchModuleOptions Options => optionsMonitor.CurrentValue;
 
     public async Task<bool> AddOrUpdateAsync(string indexName, IEnumerable<TSearchModel> searchModels,
@@ -168,14 +178,15 @@ public class OpenSearchSearcher<TSearchModel>(
     public async Task InitAsync(string indexName, CancellationToken cancellationToken = default)
     {
         indexName = $"{Options.Prefix}_{indexName}";
-        var indexExists = await GetClient().Indices.ExistsAsync(indexName, ct: cancellationToken);
+        var client = GetClient();
+        var indexExists = await client.Indices.ExistsAsync(indexName, ct: cancellationToken);
         if (indexExists.Exists)
         {
             logger.LogDebug("Update existing index {IndexName}", indexName);
-            await GetClient().Indices.CloseAsync(indexName, ct: cancellationToken);
-            var result = await GetClient().Indices.UpdateSettingsAsync(indexName, c => c.IndexSettings(s =>
+            await client.Indices.CloseAsync(indexName, ct: cancellationToken);
+            var result = await client.Indices.UpdateSettingsAsync(indexName, c => c.IndexSettings(s =>
                 s.Analysis(CreateAnalysisDescriptor)), cancellationToken);
-            await GetClient().Indices.OpenAsync(indexName, ct: cancellationToken);
+            await client.Indices.OpenAsync(indexName, ct: cancellationToken);
             if (!result.IsValid)
             {
                 if (result.ServerError != null)
@@ -196,7 +207,7 @@ public class OpenSearchSearcher<TSearchModel>(
         else
         {
             logger.LogDebug("Create new index {IndexName}", indexName);
-            var result = await GetClient().Indices.CreateAsync(indexName, CreateIndexDescriptor, ct: cancellationToken);
+            var result = await client.Indices.CreateAsync(indexName, CreateIndexDescriptor, ct: cancellationToken);
             if (!result.IsValid)
             {
                 if (result.ServerError != null)
@@ -237,49 +248,7 @@ public class OpenSearchSearcher<TSearchModel>(
         return q;
     }
 
-    private OpenSearchClient GetClient()
-    {
-        if (client != null)
-        {
-            return client;
-        }
-
-        logger.LogDebug("Create OpenSearch client");
-        var settings = new ConnectionSettings(new Uri(Options.Url)).DisableDirectStreaming()
-            .OnRequestCompleted(details =>
-            {
-                if (!Options.EnableClientLogging)
-                {
-                    return;
-                }
-
-                logger.LogDebug("### OpenSearch REQUEST ###");
-                if (details.RequestBodyInBytes != null)
-                {
-                    logger.LogDebug("{Request}", Encoding.UTF8.GetString(details.RequestBodyInBytes));
-                }
-
-                logger.LogDebug("### OpenSearch RESPONSE ###");
-                if (details.ResponseBodyInBytes != null)
-                {
-                    logger.LogDebug("{Response}", Encoding.UTF8.GetString(details.ResponseBodyInBytes));
-                }
-            })
-            .PrettyJson();
-        if (!string.IsNullOrEmpty(Options.Login))
-        {
-            settings.BasicAuthentication(Options.Login, Options.Password);
-        }
-
-        if (Options.DisableCertificatesValidation)
-        {
-            settings.ServerCertificateValidationCallback(CertificateValidations.AllowAll)
-                .ServerCertificateValidationCallback((_, _, _, _) => true);
-        }
-
-        client = new OpenSearchClient(settings);
-        return client;
-    }
+    private OpenSearchClient GetClient() => clientProvider.GetClient();
 
     private static string GetSearchText(string? term)
     {

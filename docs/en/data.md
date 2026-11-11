@@ -118,6 +118,22 @@ and highlighting/stemmer settings. This is a search module, not a logging sink.
 `Sitko.Core.Repository.Search` connects repositories to search providers through
 `AddSearchRepository()`.
 
+When registered through `AddOpenSearch(...)`, searchers remain `Scoped`, while
+`OpenSearchClientProvider` shares one client and its serializer cache across DI
+scopes and search model types within the application. Client creation is
+synchronized. After `Url`, `Login`, `Password` or
+`DisableCertificatesValidation` changes, the next operation receives a new
+client; a previously obtained client remains usable to finish its operation.
+Old clients are not retained in a separate configuration cache.
+All steps of one index initialization use the same client, even if connection
+settings change between closing and reopening the index.
+
+`EnableClientLogging` takes effect without recreating the client; detailed
+request and response logs use the `OpenSearchClientProvider` category when using
+DI. Searchers continue to read index, highlighting and stemmer options.
+The existing two-parameter `OpenSearchSearcher<T>` constructor is retained for
+direct construction; shared clients are supplied by module registration.
+
 Search providers initialize in the background and log failures; successful Host
 startup does not mean an index is ready. With `Refresh=False`, writes need not
 be immediately searchable. Verify indexing, search and multi-page reindexing on

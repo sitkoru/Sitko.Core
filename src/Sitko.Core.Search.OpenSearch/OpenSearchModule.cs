@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Sitko.Core.Search.OpenSearch;
 
@@ -6,6 +6,9 @@ public class OpenSearchModule : SearchModule<OpenSearchModuleOptions>
 {
     public override string OptionsKey => "Search:OpenSearch";
 
-    protected override void ConfigureSearch(IServiceCollection services) =>
+    protected override void ConfigureSearch(IServiceCollection services)
+    {
+        services.AddSingleton<OpenSearchClientProvider>();
         services.AddScoped(typeof(ISearcher<>), typeof(OpenSearchSearcher<>));
+    }
 }
