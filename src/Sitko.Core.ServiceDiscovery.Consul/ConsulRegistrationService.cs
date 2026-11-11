@@ -1,6 +1,9 @@
 using System.Net;
 using Consul;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -12,6 +15,7 @@ namespace Sitko.Core.ServiceDiscovery.Consul
     internal sealed class ConsulRegistrationService(
         IApplicationContext context,
         IHostApplicationLifetime lifetime,
+        IServiceProvider serviceProvider,
         IOptions<ServiceDiscoveryOptions> services,
         IOptions<AppWebConfigurationModuleOptions> web,
         IOptions<ConsulServiceDiscoveryOptions> options,
@@ -90,33 +94,59 @@ namespace Sitko.Core.ServiceDiscovery.Consul
             var listeners = context.GetModuleInstance<AppWebConfigurationModule>().Listeners;
             return [.. services.Value.Services.Select(service =>
             {
-                var ports = web.Value.Ports.Where(port => port.Value.UseTLS &&
-                    port.Value.Protocol.HasFlag(HttpProtocols.Http2) &&
-                    (service.PortNames is null || service.PortNames.Contains(port.Key, StringComparer.OrdinalIgnoreCase))).ToArray();
-                if (ports.Length != 1)
+                string address;
+                int actualPort;
+                if (web.Value.Ports.Count == 0)
                 {
-                    throw new InvalidOperationException($"Contract {service.Name} requires one named TLS HTTP/2 port");
+                    var addresses = serviceProvider.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()?.Addresses
+                        .Select(value => Uri.TryCreate(value, UriKind.Absolute, out var uri) ? uri : null)
+                        .Where(uri => uri is { Scheme: "https", Port: > 0 } &&
+                            (service.PortNames is null || service.PortNames.Contains("https", StringComparer.OrdinalIgnoreCase)))
+                        .ToArray() ?? [];
+                    if (addresses.Length != 1)
+                    {
+                        throw new InvalidOperationException($"Contract {service.Name} requires one bound HTTPS address");
+                    }
+                    var uri = addresses[0]!;
+                    address = uri.DnsSafeHost switch
+                    {
+                        "*" or "+" or "0.0.0.0" => "127.0.0.1",
+                        "::" => "::1",
+                        _ => uri.DnsSafeHost
+                    };
+                    actualPort = uri.Port;
                 }
-                var (name, port) = ports[0];
-                if (!listeners.TryGetValue(name, out var listener) ||
-                    !listener.Protocols.HasFlag(HttpProtocols.Http2))
+                else
                 {
-                    throw new InvalidOperationException($"Contract {service.Name} requires its named TLS HTTP/2 listener {name}");
-                }
-                var actualPort = listener.IPEndPoint?.Port ?? 0;
-                var wildcard = port.ExternalAddress is "*" or "+" ||
-                    (IPAddress.TryParse(port.ExternalAddress, out var address) &&
-                    (address.Equals(IPAddress.Any) || address.Equals(IPAddress.IPv6Any) ||
-                     (address.IsIPv4MappedToIPv6 && address.MapToIPv4().Equals(IPAddress.Any))));
-                if (actualPort <= 0 || string.IsNullOrWhiteSpace(port.ExternalAddress) || wildcard)
-                {
-                    throw new InvalidOperationException($"Contract {service.Name} requires a bound positive port and non-wildcard ExternalAddress");
+                    var ports = web.Value.Ports.Where(port => port.Value.UseTLS &&
+                        port.Value.Protocol.HasFlag(HttpProtocols.Http2) &&
+                        (service.PortNames is null || service.PortNames.Contains(port.Key, StringComparer.OrdinalIgnoreCase))).ToArray();
+                    if (ports.Length != 1)
+                    {
+                        throw new InvalidOperationException($"Contract {service.Name} requires one named TLS HTTP/2 port");
+                    }
+                    var (name, port) = ports[0];
+                    if (!listeners.TryGetValue(name, out var listener) ||
+                        !listener.Protocols.HasFlag(HttpProtocols.Http2))
+                    {
+                        throw new InvalidOperationException($"Contract {service.Name} requires its named TLS HTTP/2 listener {name}");
+                    }
+                    actualPort = listener.IPEndPoint?.Port ?? 0;
+                    var wildcard = port.ExternalAddress is "*" or "+" ||
+                        (IPAddress.TryParse(port.ExternalAddress, out var parsedAddress) &&
+                        (parsedAddress.Equals(IPAddress.Any) || parsedAddress.Equals(IPAddress.IPv6Any) ||
+                         (parsedAddress.IsIPv4MappedToIPv6 && parsedAddress.MapToIPv4().Equals(IPAddress.Any))));
+                    if (actualPort <= 0 || string.IsNullOrWhiteSpace(port.ExternalAddress) || wildcard)
+                    {
+                        throw new InvalidOperationException($"Contract {service.Name} requires a bound positive port and non-wildcard ExternalAddress");
+                    }
+                    address = port.ExternalAddress;
                 }
                 return new AgentServiceRegistration
                 {
                     ID = $"{context.Id:N}-{ServiceDiscoveryName.Create(context.Environment, service.Name)}",
                     Name = ServiceDiscoveryName.Create(context.Environment, service.Name),
-                    Address = port.ExternalAddress,
+                    Address = address,
                     Port = actualPort,
                     Meta = new Dictionary<string, string>
                     {
