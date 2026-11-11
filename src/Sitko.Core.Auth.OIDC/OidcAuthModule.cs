@@ -3,15 +3,20 @@ using Duende.IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Sitko.Core.App;
+using Sitko.Core.App.Web;
 using Sitko.Core.Auth.OIDC.Tokens;
 
 namespace Sitko.Core.Auth.OIDC;
 
-public class OidcAuthModule : OidcProviderModule<OidcAuthModuleOptions>
+public class OidcAuthModule : OidcProviderModule<OidcAuthModuleOptions>, IWebApplicationModule
 {
     public override string OptionsKey => "Auth:OIDC:Client";
+
+    void IWebApplicationModule.ConfigureAfterUseRouting(IApplicationContext applicationContext, IApplicationBuilder appBuilder) =>
+        appBuilder.UseOidcSessionRecovery();
 
     protected override void ConfigureAuthentication(AuthenticationBuilder authenticationBuilder,
         OidcAuthModuleOptions startupOptions) =>

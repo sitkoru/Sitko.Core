@@ -141,6 +141,15 @@ A failed managed refresh does not fall back to the stale cookie token. Handle `n
 and initiate a new login if appropriate. `ConfigureUserTokenManagement` receives
 Duende 4 options.
 
+With `EnableSessionRecovery = true`, a confirmed `invalid_grant`, missing user
+token, or expired `expires_at` with `None` raises `InvalidUserSessionException`.
+Temporary refresh failures do not invalidate the session. For an authorized HTML
+page, the module checks the current cookie and starts OIDC login. If the new session
+also fails within five minutes, it displays a manual retry link. It does not revoke
+tokens; a successful login replaces the cookie. API and anonymous pages are not
+redirected by this mechanism. The option is disabled by default. With `None`, a
+token revoked before its expiration cannot be detected this way.
+
 The application owns login/logout actions. Use `ChallengeAsync("oidc")` for login.
 `SignOutAsync("Cookies")` ends the local session; with managed tokens it also requests
 refresh token revocation and clears storage. Additionally call
@@ -243,8 +252,8 @@ An existing Google cookie does not prove Keycloak admission: end old sessions or
 change the cookie name and require new login when switching providers.
 
 A Blazor Server circuit is not an HTTP request. Use `IUserTokenProvider` where an
-up-to-date `HttpContext` exists. The module does not add circuit/authentication-state
-refresh or browser token storage. Verify full-page reload after login/logout,
+up-to-date `HttpContext` exists. For recovery in an active circuit, register
+`AddOidcSessionRecoveryForBlazor()`. Verify full-page reload after login/logout,
 reconnect and session expiration in the actual application. Blazor WebAssembly needs
 its own client-side OIDC integration; never send the server client secret to it.
 
